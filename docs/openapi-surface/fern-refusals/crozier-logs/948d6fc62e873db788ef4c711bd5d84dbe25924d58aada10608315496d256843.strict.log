@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: undefined-component-reference: paths//carts/{id}.json/get/parameters/0: #/components/parameters/CartIDParam (fern-strict refusal)

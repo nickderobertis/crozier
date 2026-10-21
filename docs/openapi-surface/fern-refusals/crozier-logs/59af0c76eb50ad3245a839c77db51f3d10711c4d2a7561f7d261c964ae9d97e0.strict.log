@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//comments/post/responses/204: #/components/schemas/Verify (fern-strict refusal)

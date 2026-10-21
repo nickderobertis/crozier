@@ -28,6 +28,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-refusals" / "tests"))
 
 from fern_refusals_test import (
+    CERTIFIED,
+    MEASURE_LOADS,
     REGISTRY,
     REPO,
     rows,
@@ -35,24 +37,11 @@ from fern_refusals_test import (
     write_rows,
 )
 
-MEASURE_LOADS = (
-    "tools/fern-refusals/fern-refusals.py",
-    "assets/scaffolding/metadata.json",
-    "tools/witness-search/witness-search-github.py",
-    "tools/witness-search/witness-search-github-index.py",
-    "tools/witness-search/witness_screen.py",
-    "tools/witness-search/rate_limit_guard.py",
-    "tools/witness-search/witness-search-redo.py",
-    "tools/surface-census/openapi-surface-census.py",
-    "tools/surface-census/witness-search-region-keys.py",
-    "tools/corpus/corpus_remote_ref_pins.py",
-)
-
 
 @unittest.skipIf(os.name == "nt", "`measure` runs `target/release/crozier`, a path with no `.exe`")
 class ScratchCheckout(unittest.TestCase):
     """A scratch checkout whose population is one class's committed probe,
-    screened by its committed `fern check` log, with the compiled crozier binary
+    screened at the certified pair by its committed `fern check` log, with the compiled crozier binary
     where `measure` looks for it. The suites below run the REAL script in it."""
 
     # An evaluated `names` class whose probe Fern still refuses at the pin, so
@@ -125,7 +114,9 @@ class ScratchCheckout(unittest.TestCase):
         (screens / "screens.jsonl").write_text(
             json.dumps(
                 {
-                    "fern": "failed: check exit 1",
+                    # Taken at the certified pair, so `measure` reuses its log.
+                    "fern": f"failed: check exit 1 at CLI {CERTIFIED['cliVersion']}, "
+                    f"fernapi/fern-python-sdk:{CERTIFIED['generatorVersion']}",
                     "source": "scratch",
                     "repository": "scratch/probes",
                     "commit": "0" * 40,
@@ -185,23 +176,20 @@ class StrictMeasurement(ScratchCheckout):
     def test_measure_records_the_strict_exit_and_build_writes_it(self) -> None:
         measured = self.measure()
         self.assertEqual(measured["digest"], self.digest)
-        # crozier refuses the probe's colliding type name in both modes, writing nothing.
-        self.assertEqual((measured["crozier_exit"], measured["crozier_files"]), ("1", "0"))
+        # crozier refuses the probe's colliding type name under --fern-strict; no
+        # default-mode generation is taken, since nothing reads its exit or files.
         self.assertEqual(measured["crozier_strict_exit"], "1")
-        self.assertEqual(self.built_row()[9:12], ["1", "0", "1"])
+        self.assertEqual((measured["crozier_exit"], measured["crozier_files"]), ("", ""))
+        self.assertEqual(self.built_row()[9:12], ["—", "—", "1"])
 
     def test_measure_runs_the_strict_exit_under_fern_strict(self) -> None:
-        # Every names class refuses in both modes, so the exits agree; the strict
-        # run is told apart by the cause its refusal line names.
+        # The strict run is told apart by the cause its refusal line names.
         self.measure()
-        logs = self.root / ".local" / "fern-refusals" / "crozier-logs"
-        default = (logs / f"{self.digest}.default.log").read_text(encoding="utf-8")
+        logs = self.root / "docs" / "openapi-surface" / "fern-refusals" / "crozier-logs"
         strict = (logs / f"{self.digest}.strict.log").read_text(encoding="utf-8")
-        cause = "(fern-strict: Fern refuses this document)"
-        self.assertIn(f"{self.CLASS}: ", default)
-        self.assertNotIn(cause, default)
         self.assertIn(f"{self.CLASS}: ", strict)
-        self.assertIn(cause, strict)
+        self.assertIn("(fern-strict: Fern refuses this document)", strict)
+        self.assertFalse((logs / f"{self.digest}.default.log").exists(), "a default-mode run was taken")
 
     def test_an_unevaluated_class_builds_no_strict_exit(self) -> None:
         self.measure()
@@ -296,13 +284,13 @@ class FetchedAndMeasured(ScratchCheckout):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
 
-    def test_a_fetched_document_is_checked_generated_and_run_through_crozier(self) -> None:
+    def test_a_fetched_document_is_checked_generated_and_run_through_strict_crozier(self) -> None:
         self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served
         row = self.measured()[self.served_digest]
         self.assertEqual(row["unretrievable"], "")
         self.assertEqual((row["check_exit"], row["generate_exit"], row["generate_files"]), ("0", "0", "4"))
-        # crozier refuses the probe's colliding type name, as it does the committed one.
-        self.assertEqual((row["crozier_exit"], row["crozier_files"], row["crozier_strict_exit"]), ("1", "0", "1"))
+        # crozier's --fern-strict run refuses the probe's colliding type name, as it does the committed one.
+        self.assertEqual((row["crozier_exit"], row["crozier_files"], row["crozier_strict_exit"]), ("", "", "1"))
         for log in (row["check_log"], row["generate_log"]):
             self.assertTrue((self.root / log).is_file(), log)
         calls = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]

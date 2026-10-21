@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: GET /malicious-domain/{id}/notes parameter noteId (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: default-not-enum-value: paths//calculator/post/parameters/1/categories/schema default "[\"public\",\"consumption\",\"transport\",\"food\",\"energy\"]" (fern-strict refusal)

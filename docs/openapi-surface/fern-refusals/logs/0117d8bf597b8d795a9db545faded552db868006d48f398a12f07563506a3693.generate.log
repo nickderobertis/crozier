@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -6,8 +7,8 @@ Warnings for generators.yml:
 
 <--- Last few GCs --->
 
-[3214264:0x45d0c000]  1224844 ms: Scavenge (during sweeping) 16354.0 (16370.4) -> 16347.3 (16370.9) MB, pooled: 0.0 MB, 54.82 / 0.00 ms (average mu = 0.218, current mu = 0.183) allocation failure; 
-[3214264:0x45d0c000]  1243301 ms: Incremental Mark-Compact (reduce) 16349.0 (16370.9) -> 16346.9 (16356.4) MB, pooled: 0.0 MB, 17041.10 / 0.00 ms (+ 232.2 ms in 28 steps since start of marking, biggest step 16.7 ms, walltime since start of marking 17536 m
+[1153793:0x38085000]  1399610 ms: Scavenge (during sweeping) 16359.2 (16376.7) -> 16352.1 (16377.5) MB, pooled: 0.0 MB, 49.17 / 0.00 ms (average mu = 0.215, current mu = 0.172) allocation failure; 
+[1153793:0x38085000]  1410987 ms: Incremental Mark-Compact (reduce) 16353.9 (16377.5) -> 16351.6 (16362.7) MB, pooled: 0.0 MB, 10732.24 / 0.00 ms (+ 133.5 ms in 28 steps since start of marking, biggest step 5.4 ms, walltime since start of marking 11001 ms
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 ----- Native stack trace -----
 
@@ -17,6 +18,7 @@ FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaS
  4: 0xf02b05  [node]
  5: 0xf00d0c  [node]
  6: 0xe4160f  [node]
- 7: 0x138c63e  [node]
- 8: 0x78957663ea76 
+ 7: 0x1362c17  [node]
+ 8: 0x197ec3f  [node]
+ 9: 0x721d43bdf964 
 Aborted (core dumped)

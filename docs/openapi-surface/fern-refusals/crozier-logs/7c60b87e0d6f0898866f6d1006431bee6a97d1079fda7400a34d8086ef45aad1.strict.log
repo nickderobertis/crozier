@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-missing-required-property: POST /task_template_lists/{id}/copy.json components/schemas/TaskTemplateList collides with TaskTemplate_List (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /im/chat/sessions/{sessionId} response example "string [date]" (fern-strict refusal)

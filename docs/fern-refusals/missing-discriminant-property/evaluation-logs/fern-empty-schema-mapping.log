@@ -1,20 +1,23 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
-$ fern check
-exit: 0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Cat" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Dog" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
 All checks passed
 
-$ fern generate --group python-sdk --local --preview
-exit: 0
+generate exit: 0
+files: 41
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/runs/empty-schema-mapping/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Discriminated union "Pet (Pet)" lists "#/components/schemas/Cat" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: python-sdk Discriminated union "Pet (Pet)" lists "#/components/schemas/Dog" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
-[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/runs/empty-schema-mapping/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
 [api]: python-sdk fernapi/fern-python-sdk Finished.
 [api]: python-sdk Finished.

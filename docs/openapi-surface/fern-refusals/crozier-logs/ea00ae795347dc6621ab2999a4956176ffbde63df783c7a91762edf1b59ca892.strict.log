@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: discriminant-value-unsuitable: #/components/schemas/PoolData discriminant "$_type"; use a letter-led identifier containing letters, numbers and underscores (fern-strict: Fern refuses this document)

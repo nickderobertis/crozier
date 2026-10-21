@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: default-not-valid-for-type: paths//v1/inventoryvalue/get/parameters/4/maxAvailable/schema default String("null") (fern-strict refusal)

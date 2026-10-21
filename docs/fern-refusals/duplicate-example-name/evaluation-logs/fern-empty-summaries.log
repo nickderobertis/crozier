@@ -1,4 +1,4 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -8,3 +8,18 @@ Warnings for generators.yml:
         issue: Duplicate example name: 
 
 Found 1 error and 0 warnings in <n> seconds.
+
+generate exit: 1
+files: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> probe
+                  __package__.yml
+                  [error] Duplicate example name: 
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

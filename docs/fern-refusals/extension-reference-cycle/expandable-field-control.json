@@ -1,0 +1,1 @@
+{"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {}, "components": {"schemas": {"Node": {"type": "object", "properties": {"parent": {"anyOf": [{"type": "string"}, {"$ref": "#/components/schemas/Node"}], "x-expansionResources": {"oneOf": [{"$ref": "#/components/schemas/Node"}]}}}}}}}

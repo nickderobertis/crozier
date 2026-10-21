@@ -1,0 +1,42 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 6 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames -> request -> body
+        issue: Object has multiple properties named "result":
+  - <Inlined Request> -> result
+  - <Inlined Request> -> (extends) ApiCollection -> result
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames -> request -> body
+        issue: Object has multiple properties named "errors":
+  - <Inlined Request> -> errors
+  - <Inlined Request> -> (extends) ApiCollection -> errors
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames -> request -> body
+        issue: Object has multiple properties named "success":
+  - <Inlined Request> -> success
+  - <Inlined Request> -> (extends) ApiCollection -> success
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames
+        issue: Multiple request properties have the name result. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> result
+  - Body property: <Request Body> -> (extends) ApiCollection -> result
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames
+        issue: Multiple request properties have the name errors. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> errors
+  - Body property: <Request Body> -> (extends) ApiCollection -> errors
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceHostnames
+        issue: Multiple request properties have the name success. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> success
+  - Body property: <Request Body> -> (extends) ApiCollection -> success
+
+Found 6 errors and 0 warnings in <n> seconds.

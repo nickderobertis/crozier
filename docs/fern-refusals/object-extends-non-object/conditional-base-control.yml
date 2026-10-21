@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FieldDef'}
+components:
+  schemas:
+    FieldBase:
+      type: object
+      properties:
+        name: {type: string}
+    FileParameters:
+      type: object
+      properties:
+        format: {type: string}
+    FileOnlyConditional:
+      type: object
+      anyOf:
+        - $ref: '#/components/schemas/FileParameters'
+        - not:
+            properties:
+              format: {}
+    FieldDef:
+      allOf:
+        - $ref: '#/components/schemas/FieldBase'
+        - $ref: '#/components/schemas/FileOnlyConditional'

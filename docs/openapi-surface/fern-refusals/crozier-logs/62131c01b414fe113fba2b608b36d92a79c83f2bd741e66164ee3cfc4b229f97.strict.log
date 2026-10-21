@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//recurring/{accountId}/get/responses/415: #/response/RecurringPaymentInvalidContentType (fern-strict refusal)

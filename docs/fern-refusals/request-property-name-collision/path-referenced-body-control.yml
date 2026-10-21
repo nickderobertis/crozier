@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /requests/{id}:
+    patch:
+      operationId: updateRequest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+components:
+  schemas:
+    CommonRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        note:
+          type: string
+    Request:
+      allOf:
+      - $ref: '#/components/schemas/CommonRequest'
+      - type: object
+        properties:
+          level:
+            type: integer

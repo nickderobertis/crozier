@@ -21,8 +21,17 @@ const METHODS: [&str; 8] = [
 
 /// The first example value Fern's check rejects, as the class it reports and
 /// the offending element.
+#[cfg(test)]
 pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
-    let doc = Doc { root };
+    first_violation_in(root, "")
+}
+
+/// [`first_violation`] over a document whose source text is `text`.
+pub(super) fn first_violation_in(root: &Value, text: &str) -> Option<(Class, String)> {
+    let doc = Doc {
+        root,
+        plain: plain_timestamps(root, text),
+    };
     for operation in doc.operations() {
         let element = format!(
             "{} {}",
@@ -32,7 +41,6 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
         let found = doc
             .version_header_redeclared(&operation)
             .or_else(|| doc.header_default_override(&operation))
-            .or_else(|| doc.empty_body_request_examples(&operation))
             .or_else(|| doc.header_name_fallback(&operation))
             .or_else(|| doc.nullable_parent_example(&operation))
             .or_else(|| doc.read_only_shadows_required_parent(&operation))
@@ -41,13 +49,13 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
             .or_else(|| doc.media_scalar_example(&operation))
             .or_else(|| doc.shadowed_union_property(&operation))
             .or_else(|| doc.fern_examples(&operation))
-            .or_else(|| doc.error_examples(&operation));
+            .or_else(|| doc.error_examples(&operation))
+            .or_else(|| doc.non_object_error_examples(&operation));
         if let Some((class, detail)) = found {
             return Some((class, format!("{element} {detail}")));
         }
     }
     doc.colliding_component()
-        .or_else(|| doc.required_beside_definitions_member())
         .or_else(|| doc.colliding_property())
         .or_else(|| doc.scalar_taken_by_inline_object())
         .or_else(|| doc.merged_member_enum())
@@ -62,6 +70,265 @@ struct Operation<'a> {
 
 struct Doc<'a> {
     root: &'a Value,
+    /// The nodes of `root` the source writes as plain YAML timestamps (see
+    /// [`plain_timestamps`]), by address: one occurrence each, never a value.
+    plain: HashSet<*const Value>,
+}
+
+/// Every node of `root` that its YAML source `text` writes as a plain
+/// (unquoted) timestamp scalar, decided per occurrence from that scalar's own
+/// style: a quoted copy of the same text elsewhere is not one, and neither is
+/// timestamp-like text inside a comment, a block scalar or a quoted string. A
+/// node an alias or a `<<` merge places is one where its anchored scalar is.
+///
+/// Fern's YAML parser reads such a scalar as a timestamp, not a string, so a
+/// `date` example written that way is no string it rejects: measured at Fern
+/// CLI 5.163.1, the class probe's quoted `"2006-01-02T15:04:05+00:00"` is
+/// refused and the same value unquoted generates (`unquoted-date-example`
+/// control; Asana's `due_at`, `2019-09-15T02:06:58.147Z`). crozier's parser
+/// reads both as one string, so the plain ones are found in the source.
+fn plain_timestamps(root: &Value, text: &str) -> HashSet<*const Value> {
+    plain_timestamp_paths(text)
+        .iter()
+        .filter_map(|path| {
+            path.iter().try_fold(root, |node, step| match node {
+                Value::Object(fields) => fields.get(step),
+                Value::Array(items) => items.get(step.parse::<usize>().ok()?),
+                _ => None,
+            })
+        })
+        .map(std::ptr::from_ref)
+        .collect()
+}
+
+/// Where [`plain_timestamp_paths`] stands in a collection: a mapping (see
+/// [`Entry`] and [`Merges`]) or a sequence at its next index.
+enum Frame {
+    Map(Entry, Merges),
+    Seq(usize),
+}
+
+/// A mapping awaiting its next key, or the value of the key just read (`None`
+/// for a key with no path of its own: an alias or a collection).
+enum Entry {
+    Key,
+    Value(Option<String>),
+}
+
+/// What a mapping's `<<` sources would supply, held until the mapping closes:
+/// YAML merge precedence gives its own keys, wherever written, priority over
+/// every source, and an earlier source priority over a later one.
+#[derive(Default)]
+struct Merges {
+    /// The keys the mapping writes itself.
+    own: HashSet<String>,
+    /// The keys some `<<` source has supplied, the first source's winning.
+    supplied: HashSet<String>,
+    /// The plain timestamps those sources place, relative to the mapping.
+    plain: Vec<Vec<String>>,
+}
+
+/// What an anchor names: the plain timestamps under it, relative to it, and,
+/// for a mapping, its keys, which a `<<` of it supplies.
+#[derive(Clone, Default)]
+struct Anchored {
+    plain: Vec<Vec<String>>,
+    keys: Vec<String>,
+}
+
+/// An anchored collection being read: what its anchor will hold once it closes.
+struct Recording {
+    anchor: usize,
+    /// How many frames enclosed it when it opened.
+    depth: usize,
+    /// The length of its own path, which the paths it holds are relative to.
+    base: usize,
+    held: Vec<Vec<String>>,
+}
+
+/// The paths (mapping keys and sequence indices) of every plain timestamp
+/// scalar in `text`'s first document; see [`plain_timestamps`].
+fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
+    use serde_saphyr::granit_parser::{Event, Parser, ScalarStyle};
+    static TIMESTAMP: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
+    let timestamp = TIMESTAMP.get_or_init(|| {
+        fancy_regex::Regex::new(
+            r"^\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?$",
+        )
+        .expect("the YAML timestamp pattern compiles")
+    });
+    let mut frames: Vec<Frame> = Vec::new();
+    let mut found: Vec<Vec<String>> = Vec::new();
+    let mut anchors: std::collections::HashMap<usize, Anchored> = std::collections::HashMap::new();
+    let mut recording: Vec<Recording> = Vec::new();
+    // Depth inside a collection used as a mapping key, whose content has no path.
+    let mut in_key = 0usize;
+    // The path of the node about to be read; `None` under a key with no path.
+    let path_of = |frames: &[Frame]| -> Option<Vec<String>> {
+        frames
+            .iter()
+            .map(|frame| match frame {
+                Frame::Map(Entry::Value(key), _) => key.clone(),
+                Frame::Seq(index) => Some(index.to_string()),
+                Frame::Map(Entry::Key, _) => None,
+            })
+            .collect()
+    };
+    let mut record = |path: Vec<String>, recording: &mut Vec<Recording>| {
+        for open in recording.iter_mut() {
+            if path.len() >= open.base {
+                open.held.push(path[open.base..].to_vec());
+            }
+        }
+        found.push(path);
+    };
+    // The key just read (`None`: one with no path); its value comes next.
+    let keyed = |frames: &mut Vec<Frame>, key: Option<String>| {
+        if let Some(Frame::Map(entry, merges)) = frames.last_mut() {
+            if let Some(own) = key.as_deref().filter(|key| *key != "<<") {
+                merges.own.insert(own.to_owned());
+            }
+            *entry = Entry::Value(key);
+        }
+    };
+    // A value is complete: the next node is its mapping's next key, or its
+    // sequence's next item.
+    let advance = |frames: &mut Vec<Frame>| match frames.last_mut() {
+        Some(Frame::Map(entry, _)) => *entry = Entry::Key,
+        Some(Frame::Seq(index)) => *index += 1,
+        None => {}
+    };
+    let merging = |frame: Option<&Frame>| matches!(frame, Some(Frame::Map(Entry::Value(Some(key)), _)) if key == "<<");
+    let mut parser = Parser::new_from_str(text);
+    while let Some(Ok((event, _span))) = parser.next_event() {
+        if in_key > 0 {
+            match event {
+                Event::MappingStart(..) | Event::SequenceStart(..) => in_key += 1,
+                Event::MappingEnd | Event::SequenceEnd => {
+                    in_key -= 1;
+                    if in_key == 0 {
+                        keyed(&mut frames, None);
+                    }
+                }
+                _ => {}
+            }
+            continue;
+        }
+        let at_key = matches!(frames.last(), Some(Frame::Map(Entry::Key, _)));
+        match event {
+            Event::DocumentEnd => break,
+            Event::Scalar(value, _, _, _) if at_key => keyed(&mut frames, Some(value.into_owned())),
+            Event::Alias(_) if at_key => keyed(&mut frames, None),
+            Event::MappingStart(..) | Event::SequenceStart(..) if at_key => in_key = 1,
+            Event::Scalar(value, style, anchor, _tag) => {
+                let plain =
+                    style == ScalarStyle::Plain && timestamp.is_match(&value).unwrap_or(false);
+                if anchor != 0 {
+                    let plain = if plain { vec![Vec::new()] } else { Vec::new() };
+                    anchors.insert(
+                        anchor,
+                        Anchored {
+                            plain,
+                            keys: Vec::new(),
+                        },
+                    );
+                }
+                if plain {
+                    if let Some(path) = path_of(&frames) {
+                        record(path, &mut recording);
+                    }
+                }
+                advance(&mut frames);
+            }
+            Event::Alias(anchor) => {
+                let held = anchors.get(&anchor).cloned().unwrap_or_default();
+                let depth = frames.len();
+                // A `<<` source (one alias, or a sequence of them): its keys
+                // wait on the merging mapping, which decides them once it closes.
+                let target = if merging(frames.last()) {
+                    Some(depth - 1)
+                } else if matches!(frames.last(), Some(Frame::Seq(_)))
+                    && depth >= 2
+                    && merging(frames.get(depth - 2))
+                {
+                    Some(depth - 2)
+                } else {
+                    None
+                };
+                match target.map(|index| &mut frames[index]) {
+                    Some(Frame::Map(_, merges)) => {
+                        for key in held.keys {
+                            if merges.supplied.insert(key.clone()) {
+                                merges.plain.extend(
+                                    held.plain
+                                        .iter()
+                                        .filter(|relative| relative.first() == Some(&key))
+                                        .cloned(),
+                                );
+                            }
+                        }
+                    }
+                    _ => {
+                        if let Some(base) = path_of(&frames) {
+                            for relative in held.plain {
+                                record([base.clone(), relative].concat(), &mut recording);
+                            }
+                        }
+                    }
+                }
+                advance(&mut frames);
+            }
+            Event::MappingStart(_, anchor, _) | Event::SequenceStart(_, anchor, _) => {
+                if anchor != 0 {
+                    if let Some(path) = path_of(&frames) {
+                        recording.push(Recording {
+                            anchor,
+                            depth: frames.len(),
+                            base: path.len(),
+                            held: Vec::new(),
+                        });
+                    }
+                }
+                frames.push(if matches!(event, Event::MappingStart(..)) {
+                    Frame::Map(Entry::Key, Merges::default())
+                } else {
+                    Frame::Seq(0)
+                });
+            }
+            Event::MappingEnd | Event::SequenceEnd => {
+                let depth = frames.len();
+                let mapping = path_of(&frames[..depth - 1]);
+                let mut keys = Vec::new();
+                if let Some(Frame::Map(_, merges)) = frames.pop() {
+                    // A merged key the mapping writes itself is its own value.
+                    if let Some(mapping) = mapping {
+                        for relative in merges.plain {
+                            if relative
+                                .first()
+                                .is_some_and(|key| !merges.own.contains(key))
+                            {
+                                record([mapping.clone(), relative].concat(), &mut recording);
+                            }
+                        }
+                    }
+                    keys = merges.own.union(&merges.supplied).cloned().collect();
+                }
+                while let Some(open) = recording.pop_if(|open| open.depth == frames.len()) {
+                    let keys = keys.clone();
+                    anchors.insert(
+                        open.anchor,
+                        Anchored {
+                            plain: open.held,
+                            keys,
+                        },
+                    );
+                }
+                advance(&mut frames);
+            }
+            _ => {}
+        }
+    }
+    found
 }
 
 fn str_of<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
@@ -199,6 +466,12 @@ fn json_media(content: Option<&Value>) -> Option<&Value> {
 }
 
 impl<'a> Doc<'a> {
+    /// [`bad_scalar`], less a `date` example the source writes as a plain
+    /// timestamp.
+    fn bad_scalar(&self, schema: &Value, value: &Value) -> bool {
+        bad_scalar(schema, value) && !self.plain.contains(&std::ptr::from_ref(value))
+    }
+
     fn resolve(&self, mut node: &'a Value) -> Option<&'a Value> {
         for _ in 0..20 {
             let Some(reference) = str_of(node, "$ref") else {
@@ -401,51 +674,6 @@ impl<'a> Doc<'a> {
         None
     }
 
-    /// GitHub's `convertMemberToOutsideCollaborator`: two or more named request
-    /// examples, a `204`, and another `2XX` whose JSON body is an object with an
-    /// explicitly empty `properties` map. Fern pairs the request examples so that
-    /// `examples[0] -> request` is `undefined` (*Expected example to be an
-    /// object. Example is: undefined*), whatever the examples hold. One named
-    /// example, no `204`, a `205`/`201` in its place, `type: object` without
-    /// `properties`, a declared property or `additionalProperties: true` are
-    /// each measured accepted.
-    fn empty_body_request_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
-        let named = self
-            .request_media(operation)?
-            .get("examples")
-            .and_then(Value::as_object)?;
-        if named.len() < 2 {
-            return None;
-        }
-        let successes = self.successes(operation);
-        if !successes.iter().any(|(code, _)| code == "204") {
-            return None;
-        }
-        successes
-            .iter()
-            .filter(|(code, _)| code != "204")
-            .filter_map(|(_, response)| json_media(response.get("content"))?.get("schema"))
-            .filter_map(|schema| self.resolve(schema))
-            .any(|schema| {
-                schema
-                    .get("properties")
-                    .and_then(Value::as_object)
-                    .is_some_and(serde_json::Map::is_empty)
-                    && matches!(
-                        schema.get("additionalProperties"),
-                        None | Some(Value::Bool(false))
-                    )
-                    && object_or_untyped(schema)
-                    && !has_composition(schema)
-            })
-            .then(|| {
-                (
-                    Class::ExampleTypeMismatch,
-                    "requestBody examples".to_owned(),
-                )
-            })
-    }
-
     /// A tagged operation answering a `$ref`'d JSON object, with an optional
     /// header whose schema `$ref`s a component Fern cannot fill from the header's
     /// name: Fern's example passes the header its own name, then validates it
@@ -644,7 +872,7 @@ impl<'a> Doc<'a> {
     fn schema_scalar_example(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let mut visit = |node: &'a Value| {
             let example = node.get("example")?;
-            (scalar(example) && bad_scalar(node, example))
+            (scalar(example) && self.bad_scalar(node, example))
                 .then(|| format!("example {}", literal(example)))
         };
         let unexampled =
@@ -675,7 +903,7 @@ impl<'a> Doc<'a> {
                 }
                 let schema = self.resolve(parameter.get("schema")?)?;
                 let example = parameter.get("example").or_else(|| schema.get("example"))?;
-                (scalar(example) && bad_scalar(schema, example)).then(|| {
+                (scalar(example) && self.bad_scalar(schema, example)).then(|| {
                     (
                         Class::ExampleTypeMismatch,
                         format!(
@@ -741,7 +969,7 @@ impl<'a> Doc<'a> {
                     .iter()
                     .find_map(|item| self.written_scalar(item_schema, item, depth + 1))
             }
-            _ => (scalar(value) && bad_scalar(schema, value))
+            _ => (scalar(value) && self.bad_scalar(schema, value))
                 .then(|| format!("example {}", literal(value))),
         }
     }
@@ -921,6 +1149,76 @@ impl<'a> Doc<'a> {
             })
     }
 
+    /// A written example that is no object, media-level or named, of a `4xx`/`5xx`
+    /// JSON response (a range like `4XX` included) whose schema is an object:
+    /// measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, `fern check` and
+    /// `fern generate` refuse it with `Expected example to be an object`
+    /// (`error-*-string-example` probes; Gumlet's JSON-in-a-string `401`
+    /// examples). An object example there generates, and so does any example
+    /// once another operation declares the code with no body or another schema
+    /// (`error-response-*-sibling` controls; Jira's `403`s): Fern's one error
+    /// type for the code then validates none.
+    fn non_object_error_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        operation
+            .op
+            .get("responses")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+            .find_map(|(code, response)| {
+                if code.len() != 3 || !(code.starts_with('4') || code.starts_with('5')) {
+                    return None;
+                }
+                let media = json_media(self.resolve(response)?.get("content"))?;
+                let schema = self.resolve(media.get("schema")?)?;
+                if !(is_type(schema, "object")
+                    || (schema.get("type").is_none() && schema.get("properties").is_some()))
+                    || has_composition(schema)
+                    || !self
+                        .error_body_schemas(code)
+                        .all(|body| body.is_some_and(|body| std::ptr::eq(body, schema)))
+                {
+                    return None;
+                }
+                let named = media
+                    .get("examples")
+                    .and_then(Value::as_object)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|(name, example)| {
+                        Some((
+                            format!("examples/{name}"),
+                            self.resolve(example)?.get("value")?,
+                        ))
+                    });
+                std::iter::once(("example".to_owned(), media.get("example")))
+                    .filter_map(|(name, value)| Some((name, value?)))
+                    .chain(named)
+                    .find(|(_, value)| !value.is_object() && !value.is_null())
+                    .map(|(name, value)| {
+                        (
+                            Class::ExampleTypeMismatch,
+                            format!("response {code} {name} {}", literal(value)),
+                        )
+                    })
+            })
+    }
+
+    /// The JSON body schema of every operation's response for one error status
+    /// code, `None` where that response declares none.
+    fn error_body_schemas(&self, code: &str) -> impl Iterator<Item = Option<&'a Value>> + '_ {
+        let code = code.to_owned();
+        self.operations().into_iter().filter_map(move |operation| {
+            let responses = operation.op.get("responses")?.as_object()?;
+            let response = responses.iter().find(|(key, _)| key.as_str() == code)?.1;
+            Some(
+                json_media(self.resolve(response)?.get("content"))
+                    .and_then(|media| media.get("schema"))
+                    .and_then(|schema| self.resolve(schema)),
+            )
+        })
+    }
+
     /// Every JSON body schema the document declares for one error status code.
     fn error_bodies(&self, code: &str) -> impl Iterator<Item = &'a Value> + '_ {
         let code = code.to_owned();
@@ -954,8 +1252,10 @@ impl<'a> Doc<'a> {
             let Some(text) = value.as_str() else {
                 return Some((Class::ExampleTypeMismatch, literal(value)));
             };
-            return (str_of(schema, "format") == Some("date") && !is_date(text))
-                .then(|| (Class::ExampleTypeMismatch, literal(value)));
+            return (str_of(schema, "format") == Some("date")
+                && !is_date(text)
+                && !self.plain.contains(&std::ptr::from_ref(value)))
+            .then(|| (Class::ExampleTypeMismatch, literal(value)));
         }
         if is_type(schema, "integer") {
             return (!is_integral(value)).then(|| (Class::ExampleTypeMismatch, literal(value)));
@@ -1099,58 +1399,6 @@ impl<'a> Doc<'a> {
         flat.insert("properties".into(), properties.into());
         flat.insert("required".into(), required.into());
         Some(flat.into())
-    }
-
-    /// A component declaring a required property beside an `allOf` with a
-    /// member referenced into a component's own `definitions`/`$defs` (an
-    /// NSwag document's, as CommunityToolkit Datasync's `KitchenSink`): Fern
-    /// does not follow that member, and its example of the component, reached
-    /// from a response, carries the required property no member it reads
-    /// declares, which is unexpected. Measured accepted: the member referencing
-    /// a component, an absent reference, an optional or no top-level property.
-    fn required_beside_definitions_member(&self) -> Option<(Class, String)> {
-        for (key, schema) in self.component_schemas() {
-            let Some(members) = schema.get("allOf").and_then(Value::as_array) else {
-                continue;
-            };
-            let into_definitions = |member: &Value| {
-                str_of(member, "$ref")
-                    .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
-                    .is_some_and(|pointer| {
-                        pointer
-                            .split('/')
-                            .skip(1)
-                            .any(|part| matches!(part, "definitions" | "$defs"))
-                    })
-            };
-            if !members.iter().any(into_definitions) {
-                continue;
-            }
-            let read: Vec<&Value> = members
-                .iter()
-                .filter(|member| !into_definitions(member))
-                .filter_map(|member| self.resolve(member))
-                .collect();
-            let Some(property) = required_names(schema).into_iter().find(|name| {
-                schema
-                    .get("properties")
-                    .is_some_and(|properties| properties.get(*name).is_some())
-                    && !read.iter().any(|member| {
-                        member
-                            .get("properties")
-                            .is_some_and(|properties| properties.get(*name).is_some())
-                    })
-            }) else {
-                continue;
-            };
-            if let Some(element) = self.response_reaching(schema) {
-                return Some((
-                    Class::ExampleUnexpectedProperty,
-                    format!("{element} components/schemas/{key} property {property}"),
-                ));
-            }
-        }
-        None
     }
 
     /// A component object's inline property schema named (owner + property)
@@ -1426,6 +1674,266 @@ mod tests {
     }
 
     #[test]
+    fn an_error_example_is_judged_only_where_its_code_has_one_body_throughout() {
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            let text = std::fs::read_to_string(class.join(shape)).unwrap();
+            first_violation_in(&yaml(&text), &text).map(|(class, _)| class.id())
+        };
+        for probe in [
+            "error-response-string-example-probe.yml",
+            "error-response-two-string-examples-probe.yml",
+            "error-response-one-of-two-string-examples-probe.yml",
+        ] {
+            assert_eq!(verdict(probe), Some("example-type-mismatch"), "{probe}");
+        }
+        for control in [
+            "error-response-bodiless-sibling-control.yml",
+            "error-response-other-schema-sibling-control.yml",
+        ] {
+            assert_eq!(verdict(control), None, "{control}");
+        }
+    }
+
+    /// The text of each node [`plain_timestamps`] finds in `text`, sorted.
+    fn plain_texts(text: &str) -> Vec<String> {
+        fn visit(node: &Value, plain: &HashSet<*const Value>, found: &mut Vec<String>) {
+            if plain.contains(&std::ptr::from_ref(node)) {
+                found.push(node.as_str().unwrap_or_default().to_owned());
+            }
+            match node {
+                Value::Object(fields) => fields.values().for_each(|v| visit(v, plain, found)),
+                Value::Array(items) => items.iter().for_each(|v| visit(v, plain, found)),
+                _ => {}
+            }
+        }
+        let root = yaml(text);
+        let mut found = Vec::new();
+        visit(&root, &plain_timestamps(&root, text), &mut found);
+        found.sort_unstable();
+        found
+    }
+
+    #[test]
+    fn a_date_example_written_as_a_plain_timestamp_is_no_string_fern_rejects() {
+        assert_eq!(
+            plain_texts(
+                "a:\n  example: 2019-09-15T02:06:58.147Z\n  b: [1706-01-17 00:00:00, x]\n  \
+                 l:\n    - 2006-01-02T15:04:05+00:00 # comment\n  c: \"2001-02-03T04:05:06Z\"\n  \
+                 d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n  \
+                 # example: 2001-02-03T04:05:09Z\n  f: x # g: 2001-02-03T04:05:10Z\n  \
+                 h: |\n    example: 2001-02-03T04:05:11Z\n  i: 'a # b' # j: 2001-02-03T04:05:12Z\n  \
+                 k: \"text: 2001-02-03T04:05:13Z\"\n  m: [\"x\", '2001-02-03T04:05:14Z']\n"
+            ),
+            [
+                "1706-01-17 00:00:00",
+                "2006-01-02T15:04:05+00:00",
+                "2019-09-15T02:06:58.147Z"
+            ]
+        );
+        // The class probe quotes its datetime; the control writes it plain.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            let text = std::fs::read_to_string(class.join(shape)).unwrap();
+            first_violation_in(&yaml(&text), &text).map(|(class, _)| class.id())
+        };
+        assert_eq!(verdict("probe.yml"), Some("example-type-mismatch"));
+        assert_eq!(verdict("unquoted-date-example-control.yml"), None);
+    }
+
+    #[test]
+    fn a_quoted_date_example_is_refused_beside_a_plain_copy_of_its_text() {
+        // The probe's quoted example, with the same text written plain in a
+        // vendor extension elsewhere: each occurrence is judged by its own style.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+        let mixed = probe.replace(
+            "info:\n  title: probe\n",
+            "info:\n  x-released: 2006-01-02T15:04:05+00:00\n  title: probe\n",
+        );
+        assert_ne!(mixed, probe);
+        let root = yaml(&mixed);
+        assert_eq!(
+            first_violation_in(&root, &mixed).map(|(class, detail)| (class.id(), detail)),
+            first_violation_in(&yaml(&probe), &probe).map(|(class, detail)| (class.id(), detail)),
+        );
+        assert_eq!(
+            first_violation_in(&root, &mixed).map(|(class, _)| class.id()),
+            Some("example-type-mismatch")
+        );
+        // The plain copy is the one occurrence found, and the quoted example is not.
+        let plain = plain_timestamps(&root, &mixed);
+        assert!(plain.contains(&std::ptr::from_ref(&root["info"]["x-released"])));
+        let example = &root["components"]["schemas"]["Thing"]["properties"]["born"]["example"];
+        assert!(!plain.contains(&std::ptr::from_ref(example)));
+        // Written plain, the example itself is accepted, beside the other copy too.
+        let unquoted = mixed.replace(
+            "example: \"2006-01-02T15:04:05+00:00\"",
+            "example: 2006-01-02T15:04:05+00:00",
+        );
+        assert_ne!(unquoted, mixed);
+        assert_eq!(
+            first_violation_in(&yaml(&unquoted), &unquoted).map(|(_, detail)| detail),
+            None
+        );
+    }
+
+    #[test]
+    fn a_quoted_example_overriding_a_merged_plain_one_is_still_refused() {
+        // YAML merge precedence: a mapping's own key wins over every `<<`
+        // source, wherever it is written, so the occurrence that lands is the
+        // explicit quoted example and Fern rejects it.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+        let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+        assert!(probe.contains(quoted));
+        let with_defaults = probe.replace(
+            "info:\n  title: probe\n",
+            "info:\n  x-defaults: &defaults {example: 2006-01-02T15:04:05+00:00}\n  title: probe\n",
+        );
+        let merge = "          <<: *defaults\n";
+        for (placement, text) in [
+            (
+                "after <<",
+                with_defaults.replace(quoted, &format!("{merge}{quoted}")),
+            ),
+            (
+                "before <<",
+                with_defaults.replace(quoted, &format!("{quoted}{merge}")),
+            ),
+        ] {
+            assert_ne!(text, with_defaults, "{placement}");
+            let root = yaml(&text);
+            let example = &root["components"]["schemas"]["Thing"]["properties"]["born"]["example"];
+            assert_eq!(example, "2006-01-02T15:04:05+00:00", "{placement}");
+            assert!(
+                !plain_timestamps(&root, &text).contains(&std::ptr::from_ref(example)),
+                "{placement}: the explicit quoted example was exempted"
+            );
+            assert_eq!(
+                first_violation_in(&root, &text).map(|(class, detail)| (class.id(), detail)),
+                Some((
+                    "example-type-mismatch",
+                    "GET /probe response example \"2006-01-02T15:04:05+00:00\"".to_owned()
+                )),
+                "{placement}"
+            );
+        }
+    }
+
+    #[test]
+    fn of_two_merge_sources_the_first_supplies_a_key_both_hold() {
+        let text = "quoted: &quoted {at: '2001-02-03T04:05:06Z'}\n\
+                    plain: &plain {at: 2001-02-03T04:05:06Z, other: 2001-02-03T04:05:07Z}\n\
+                    quoted_first:\n  <<: [*quoted, *plain]\n\
+                    plain_first:\n  <<: [*plain, *quoted]\n";
+        let root = yaml(text);
+        let plain = plain_timestamps(&root, text);
+        let at = |path: &str| plain.contains(&std::ptr::from_ref(root.pointer(path).unwrap()));
+        assert!(!at("/quoted_first/at"));
+        assert!(at("/quoted_first/other"));
+        assert!(at("/plain_first/at"));
+        assert!(at("/plain_first/other"));
+    }
+
+    #[test]
+    fn an_aliased_or_merged_plain_timestamp_is_plain_where_it_lands() {
+        let text = "base: &base {at: 2001-02-03T04:05:06Z, note: x}\n\
+                    one: &one 2001-02-03T04:05:07Z\n\
+                    copy: *one\n\
+                    merged:\n  <<: *base\n  own: '2001-02-03T04:05:08Z'\n\
+                    listed:\n  <<: [*base]\n\
+                    items: [x, 2001-02-03T04:05:09Z]\n";
+        let root = yaml(text);
+        let plain = plain_timestamps(&root, text);
+        for path in [
+            "/base/at",
+            "/one",
+            "/copy",
+            "/merged/at",
+            "/listed/at",
+            "/items/1",
+        ] {
+            let node = root
+                .pointer(path)
+                .unwrap_or_else(|| panic!("{path} parses"));
+            assert!(plain.contains(&std::ptr::from_ref(node)), "{path}");
+        }
+        let own = root.pointer("/merged/own").unwrap();
+        assert!(!plain.contains(&std::ptr::from_ref(own)));
+        assert_eq!(plain.len(), 6);
+    }
+
+    #[test]
+    fn a_required_property_beside_a_definitions_member_is_no_unexpected_property() {
+        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: Fern follows an
+        // `allOf` member referenced into a component's own `definitions`, so
+        // these shapes (and CommunityToolkit Datasync's `KitchenSink`) generate.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-unexpected-property");
+        for shape in [
+            "definitions-member-control.yml",
+            "definitions-member-direct-control.yml",
+            "definitions-open-member-control.yml",
+        ] {
+            let root = yaml(&std::fs::read_to_string(class.join(shape)).unwrap());
+            assert_eq!(
+                first_violation(&root).map(|(_, detail)| detail),
+                None,
+                "{shape}"
+            );
+        }
+        // The class's probe is still refused.
+        let probe = yaml(&std::fs::read_to_string(class.join("probe.yml")).unwrap());
+        assert!(
+            matches!(
+                first_violation(&probe),
+                Some((Class::ExampleUnexpectedProperty, _))
+            ),
+            "{:?}",
+            first_violation(&probe).map(|(_, detail)| detail)
+        );
+    }
+
+    #[test]
+    fn a_non_object_example_of_an_object_error_body_is_a_type_mismatch() {
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            first_violation(&yaml(&std::fs::read_to_string(class.join(shape)).unwrap()))
+        };
+        for (shape, detail) in [
+            (
+                "error-named-string-example-probe.json",
+                "response 401 examples/Result",
+            ),
+            (
+                "error-media-string-example-probe.json",
+                "response 401 example",
+            ),
+            (
+                "error-range-string-example-probe.json",
+                "response 4XX examples/Result",
+            ),
+        ] {
+            let found = verdict(shape);
+            assert!(
+                matches!(&found, Some((Class::ExampleTypeMismatch, text)) if text.contains(detail)),
+                "{shape}: {:?}",
+                found.map(|(_, text)| text)
+            );
+        }
+        assert_eq!(
+            verdict("error-object-example-control.json").map(|(_, text)| text),
+            None
+        );
+    }
+
+    #[test]
     fn dates_are_judged_by_shape_and_integers_by_their_fraction() {
         assert!(is_date("2006-01-02"));
         for text in [
@@ -1459,7 +1967,10 @@ mod tests {
             "components:\n  schemas:\n    Thing:\n      type: object\n      required: [id]\n      \
              properties:\n        id: {type: string}\n        kind: {type: string, enum: [A]}\n",
         );
-        let doc = Doc { root: &root };
+        let doc = Doc {
+            root: &root,
+            plain: HashSet::new(),
+        };
         let schema = yaml("{$ref: '#/components/schemas/Thing'}");
         let class = |value: &str| {
             doc.validate(&schema, &yaml(value), 0)

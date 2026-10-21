@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-value-unnameable: POST /sendDice request body/properties/emoji enum value "🎲"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

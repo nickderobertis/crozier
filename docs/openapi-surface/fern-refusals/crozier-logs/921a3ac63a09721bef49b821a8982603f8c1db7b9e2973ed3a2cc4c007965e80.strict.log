@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: generator-lint-failure: paths//v1/chat/completions/post/requestBody/content/application/json/schema/properties/metadata/anyOf/1 enum has no non-null value (fern-strict refusal)

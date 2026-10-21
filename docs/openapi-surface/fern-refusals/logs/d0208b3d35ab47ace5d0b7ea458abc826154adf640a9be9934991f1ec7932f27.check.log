@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 234 errors
+[sdk] 242 errors
     [error]
         path: __package__.yml -> types -> AaaAuditLogsV2OrgResponseCollection -> extends -> AaaAuditLogsResponseCollection
         issue: Objects can only extend other objects, and AaaAuditLogsResponseCollection is not an object.
@@ -70,6 +71,42 @@ Warnings for generators.yml:
         issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
 
     [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "errors":
+  - ClientRequestErrorBody -> errors
+  - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "messages":
+  - ClientRequestErrorBody -> messages
+  - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "success":
+  - ClientRequestErrorBody -> success
+  - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> success
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBodyZero
+        issue: Object has multiple properties named "errors":
+  - ClientRequestErrorBodyZero -> errors
+  - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBodyZero
+        issue: Object has multiple properties named "messages":
+  - ClientRequestErrorBodyZero -> messages
+  - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBodyZero
+        issue: Object has multiple properties named "success":
+  - ClientRequestErrorBodyZero -> success
+  - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> success
+
+    [error]
         path: __package__.yml -> types -> DlpEntryUpdateType
         issue: DlpEntryUpdateType is already declared in zeroTrustDlpEntries.yml
 
@@ -122,6 +159,30 @@ Warnings for generators.yml:
     [error]
         path: __package__.yml -> types -> RealtimekitPagingResponsePaging
         issue: RealtimekitPagingResponsePaging is already declared in realtimekitRecordings.yml
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "result":
+  - ServerErrorBody -> result
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> result
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "errors":
+  - ServerErrorBody -> errors
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "messages":
+  - ServerErrorBody -> messages
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "success":
+  - ServerErrorBody -> success
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> success
 
     [error]
         path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
@@ -234,12 +295,6 @@ Warnings for generators.yml:
     [error]
         path: firewallWafPackages.yml -> service -> endpoints -> edit -> examples[0] -> response
         issue: Example is missing required property "response.body.success"
-
-    [error]
-        path: intelIndicatorFeedsProviders.yml -> service -> endpoints -> create
-        issue: Multiple request properties have the name account_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "account_id"
-  - Body property: <Request Body> -> account_id
 
     [error]
         path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/{dataset}/timeseries -> post
@@ -392,12 +447,6 @@ Warnings for generators.yml:
     [error]
         path: openapi/openapi.yml -> paths -> /zones/{zone_id}/stream/usage -> get
         issue: SDK method stream.usage.get already exists (x-fern-sdk-group-name: stream.usage, x-fern-sdk-method-name: get)
-
-    [error]
-        path: organizationMember.yml -> service -> endpoints -> delete
-        issue: Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "member_id"
-  - Body property: <Request Body> -> member_id
 
     [error]
         path: organizationsLogsAudit.yml -> service -> endpoints -> get -> examples[0] -> response
@@ -963,4 +1012,4 @@ Warnings for generators.yml:
         path: zonesRatePlans.yml -> service -> endpoints -> get -> examples[0] -> response
         issue: Unexpected property "name"
 
-Found 234 errors and 467 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 242 errors and 467 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,101 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 24 errors
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.ActorCategory
+        issue: Objects can only extend other objects, and root.ActorCategory is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Address
+        issue: Objects can only extend other objects, and root.Address is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Confidence
+        issue: Objects can only extend other objects, and root.Confidence is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CreatedAt
+        issue: Objects can only extend other objects, and root.CreatedAt is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CrimeCategory
+        issue: Objects can only extend other objects, and root.CrimeCategory is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CryptoSource
+        issue: Objects can only extend other objects, and root.CryptoSource is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Currency
+        issue: Objects can only extend other objects, and root.Currency is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Email
+        issue: Objects can only extend other objects, and root.Email is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Price
+        issue: Objects can only extend other objects, and root.Price is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Procedure
+        issue: Objects can only extend other objects, and root.Procedure is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.SiteLink
+        issue: Objects can only extend other objects, and root.SiteLink is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Status
+        issue: Objects can only extend other objects, and root.Status is not an object.
+
+    [error]
+        path: cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.UpdatedAt
+        issue: Objects can only extend other objects, and root.UpdatedAt is not an object.
+
+    [error]
+        path: maliciousDomain.yml -> service -> endpoints -> GetMalDomainNoteList
+        issue: Path parameter is unreferenced in endpoint: noteId.
+
+    [error]
+        path: maliciousDomain.yml -> service -> endpoints -> PostMalDomainNote
+        issue: Path parameter is unreferenced in endpoint: noteId.
+
+    [error]
+        path: maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Asn
+        issue: Objects can only extend other objects, and root.Asn is not an object.
+
+    [error]
+        path: maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Brand
+        issue: Objects can only extend other objects, and root.Brand is not an object.
+
+    [error]
+        path: maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Ip
+        issue: Objects can only extend other objects, and root.Ip is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Brand
+        issue: Objects can only extend other objects, and root.Brand is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.CallerIdDisplayedNumber
+        issue: Objects can only extend other objects, and root.CallerIdDisplayedNumber is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Carrier
+        issue: Objects can only extend other objects, and root.Carrier is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.CPniReportedNumber
+        issue: Objects can only extend other objects, and root.CPniReportedNumber is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.LandingTelephoneNumber
+        issue: Objects can only extend other objects, and root.LandingTelephoneNumber is not an object.
+
+    [error]
+        path: maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Url
+        issue: Objects can only extend other objects, and root.Url is not an object.
+
+Found 24 errors and 0 warnings in <n> seconds.

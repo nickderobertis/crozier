@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 4 errors
+[sdk] 3 errors
     [error]
         path: __package__.yml -> types -> DataEntry
         issue: Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
@@ -10,13 +11,7 @@ Warnings for generators.yml:
         issue: Expected example to be an object. Example is: "schedule"
 
     [error]
-        path: experiment.yml -> service -> endpoints -> CreateNewPromptVersionForExperiment
-        issue: Multiple request properties have the name experimentId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "experimentId"
-  - Body property: <Request Body> -> experimentId
-
-    [error]
         path: experiment.yml -> service -> endpoints -> DeletePromptVersion
         issue: DeletePromptVersionRequest is already declared in prompt.yml
 
-Found 4 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 3 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

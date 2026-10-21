@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: type-name-collision: POST /goals/{goal_gid}/addFollowers request type AddFollowersRequest collides with another declaration; give the types distinct declared names (fern-strict: Fern refuses this document)

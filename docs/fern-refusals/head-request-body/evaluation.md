@@ -1,5 +1,11 @@
 # head-request-body: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 1 document at this pair, as at Fern CLI 5.67.1. crozier's release build refuses it under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 The minimal probe declares a required JSON string body on `HEAD /patina`.
 Before this detector, crozier's default SDK imported and its public client
 completed the request through `httpx.MockTransport`, but sent an empty body.

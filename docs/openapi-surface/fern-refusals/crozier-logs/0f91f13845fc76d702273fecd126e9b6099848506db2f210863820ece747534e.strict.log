@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-not-enum-value: GET /v1/accounts/activities components/schemas/Activity member property type collides with ActivityType (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: list-default-not-array: components/schemas/builds_CreateTriggerRequest/properties/path_includes default String("*") (fern-strict refusal)

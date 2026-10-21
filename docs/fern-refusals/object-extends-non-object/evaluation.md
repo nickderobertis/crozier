@@ -1,5 +1,13 @@
 # object-extends-non-object: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 5 probe and 18 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 114 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 114 of the 114 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: The shapes the older naming filed as controls but Fern refuses are probes; none changed verdict. An `allOf` over any union generates, whatever its members: objects, unions of them, a conditional (`anyOf` of a model and a bare `not`), and union-sample's `Signal` untyped, as an `anyOf` or with a string member (`union-base`, `nested-union-base`, `conditional-base`, `untyped-ref-union-base`, `anyof-ref-union-base` and `scalar-member-union-base` controls), each of which crozier refused before. So does a single referenced member with no fields of its own, typed `object`, `nullable` or neither (`typed-scalar-alias` and `typed-nullable-scalar-alias` controls). crozier no longer refuses any of them; a scalar, array, map or empty-object base stays refused, as the class's probes are.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.
 Measurements use CPython 3.12.3, mypy 1.13.0 and the generated
 `pyproject.toml` configuration with its declared dependencies.
@@ -64,3 +72,10 @@ no files and one class/element line, with `fern-strict` as the strict cause.
 Where another registered class is diagnosed first, the log records that actual
 class. The population run uses a preserved build of the restored detector so
 assertion-witness rebuilds cannot change its executable during measurement.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-github-mini-ordered.log`](evaluation-logs/fern-github-mini-ordered.log)
+- [`evaluation-logs/fern-github-mini-reordered.log`](evaluation-logs/fern-github-mini-reordered.log)

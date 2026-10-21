@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /storage:
+    get:
+      operationId: getStorage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtherStore'
+components:
+  schemas:
+    BaseStore:
+      type: object
+      properties:
+        key_id:
+          type: string
+        bucket:
+          type: string
+    VendorStore:
+      allOf:
+      - $ref: '#/components/schemas/BaseStore'
+      - type: object
+        properties:
+          endpoint:
+            type: string
+        required:
+        - key_id
+        - endpoint
+    OtherStore:
+      allOf:
+      - $ref: '#/components/schemas/VendorStore'
+      - type: object
+        properties:
+          path_style:
+            type: boolean

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-unexpected-property: GET /purchase_invoices/{guid} components/schemas/PurchaseInvoice/properties/payment_means collides with PurchaseInvoicePaymentMeans (fern-strict refusal)

@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 31 errors
+[sdk] 30 errors
     [error]
         path: agent.yml -> service -> endpoints -> getConfig
         issue: Endpoint requires auth, but no auth is defined.
@@ -44,12 +45,6 @@ Warnings for generators.yml:
     [error]
         path: metrics.yml -> service -> endpoints -> getMetrics
         issue: Endpoint requires auth, but no auth is defined.
-
-    [error]
-        path: metrics.yml -> service -> endpoints -> getMetrics
-        issue: Multiple request properties have the name host. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "host"
-  - Query Parameter "host"
 
     [error]
         path: notifications.yml -> service -> endpoints -> testNotification
@@ -127,4 +122,4 @@ Warnings for generators.yml:
         path: settings.yml -> service -> endpoints -> updateSettings
         issue: Endpoint requires auth, but no auth is defined.
 
-Found 31 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 30 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: components/securitySchemes/bearerAuth: ../../core/v1beta1/openapi.yaml#/components/securitySchemes/bearerAuth (fern-strict refusal)

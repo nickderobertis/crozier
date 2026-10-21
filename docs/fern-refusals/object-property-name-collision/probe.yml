@@ -3,28 +3,81 @@ info:
   title: probe
   version: 1.0.0
 paths:
-  /files:
+  /hostnames:
     get:
-      operationId: getFile
+      operationId: listHostnames
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileConflict'
+                allOf:
+                - $ref: '#/components/schemas/CollectionResponse'
+                - $ref: '#/components/schemas/CommonFailure'
 components:
   schemas:
-    FileConflict:
+    Messages:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: integer
+          message:
+            type: string
+        required:
+        - code
+        - message
+    Common:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/Messages'
+        result:
+          type: object
+        success:
+          type: boolean
+      required:
+      - success
+      - errors
+      - result
+    ApiCollection:
       type: object
       allOf:
-      - $ref: '#/components/schemas/FileMini'
+      - $ref: '#/components/schemas/Common'
       - properties:
-          sha1:
-            type: string
-    FileMini:
+          result:
+            type: array
+            nullable: true
+            items: {}
+    CollectionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiCollection'
+      - properties:
+          result:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hostname'
+    CommonFailure:
       type: object
-      nullable: true
       properties:
-        sha1:
+        errors:
+          allOf:
+          - $ref: '#/components/schemas/Messages'
+        result:
+          type: object
+          nullable: true
+          enum:
+          - null
+        success:
+          type: boolean
+      required:
+      - success
+      - errors
+      - result
+    Hostname:
+      type: object
+      properties:
+        id:
           type: string

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//authn-azure/{service_id}/{account}/{login}/authenticate/post/responses/200: #/paths/~1authn~1%7Baccount%7D~1%7Blogin%7D~1authenticate/post/responses/200 (fern-strict refusal)

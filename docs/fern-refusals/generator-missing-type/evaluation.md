@@ -1,5 +1,13 @@
 # generator-missing-type: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 13 probe and 16 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 1 document at this pair, as at Fern CLI 5.67.1. crozier's release build refuses it under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: An inline header enum with a `default` generates (`two-values-default`, `optional-default`, `singleton-default` controls; AgenticDriver's `Accept-Optional-Events`), and crozier no longer refuses one; without a default it is still refused (`optional-two-values` probe). The shapes the older naming filed as controls but Fern refuses are probes.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.
 Measurements use CPython 3.12.3, mypy 1.13.0 and the generated
 `pyproject.toml` configuration with its declared dependencies.

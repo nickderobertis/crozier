@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 459 errors
+[sdk] 458 errors
     [error]
         path: advancedParameters.yml -> service -> endpoints -> get-databases-postgresql-config -> examples[0] -> response
         issue: Expected example to be an integer. Example is: 41.5
@@ -1837,10 +1838,4 @@ Warnings for generators.yml:
         path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/ips -> get -> description
         issue: Endpoint description for GET /{apiVersion}/vpcs/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
 
-    [error]
-        path: users.yml -> service -> endpoints -> put-user
-        issue: Multiple request properties have the name username. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "username"
-  - Body property: <Request Body> -> username
-
-Found 459 errors and 34 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 458 errors and 34 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

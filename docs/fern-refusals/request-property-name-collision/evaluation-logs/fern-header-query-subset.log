@@ -1,0 +1,18 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> getSchedule
+        issue: Multiple request properties have the name namespace. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "X-Namespace"
+  - Query Parameter "namespace"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listSchedules
+        issue: Multiple request properties have the name namespace. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "X-Namespace"
+  - Query Parameter "namespace"
+
+Found 2 errors and 0 warnings in <n> seconds.

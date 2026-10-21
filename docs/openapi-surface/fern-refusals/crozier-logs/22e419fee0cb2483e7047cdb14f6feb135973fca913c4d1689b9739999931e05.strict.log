@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: type-name-not-letter-led: webhook reports.spendAnalysis.generate.successful reference "#/webhooks/reports.spendAnalysis.generate.successful/post/requestBody/content/application~1json/schema/definitions/ReportGenerationPayload" forms an empty object type name; use a component schema reference (fern-strict: Fern refuses this document)

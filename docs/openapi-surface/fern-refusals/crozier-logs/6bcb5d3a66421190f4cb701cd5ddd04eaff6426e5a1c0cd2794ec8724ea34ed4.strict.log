@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /discovery/status/ components/schemas/Domain/properties/verification_method collides with DomainVerificationMethod (fern-strict refusal)

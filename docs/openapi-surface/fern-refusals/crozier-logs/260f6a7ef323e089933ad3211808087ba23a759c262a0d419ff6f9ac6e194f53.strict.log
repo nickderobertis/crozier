@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: request-property-camelcase-collision: POST /objects/restsearch parameters "includeEventUuid" and "include_event_uuid" normalize to the same identifier; give them distinct names (fern-strict: Fern refuses this document)

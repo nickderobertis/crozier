@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: request-property-camelcase-collision: GET /phone/sites/{siteId}/dial_by_name_directory/extensions parameters "siteId" and "site_id" normalize to the same identifier; give them distinct names (fern-strict: Fern refuses this document)

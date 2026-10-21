@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: duplicate-path-parameter: route /api/collections/{namespace}/{slug}/items/{slug} repeats path parameter "slug"; give each path position a distinct name (fern-strict: Fern refuses this document)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/InternalGbpBeneficiaryInfoResponseDto/allOf extends #/components/schemas/InternalBeneficiaryInfoResponseDto (fern-strict refusal)

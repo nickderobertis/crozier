@@ -1,0 +1,61 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 14 errors
+    [error]
+        path: internal.yml -> service -> endpoints -> deleteInternalSandboxInstancesId
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> deleteInternalSandboxInstancesIdDeadlinesKind
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> deleteInternalSandboxInstancesIdDeadlinesKind
+        issue: Path parameter is unreferenced in endpoint: kind.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> getInternalSandboxInstancesId
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> getInternalSandboxInstancesIdMetadata
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> getInternalSandboxInstancesIdOperationEvents
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> patchInternalSandboxInstancesId
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> postInternalIntegrationConnectionsConnectionIdCredentialCacheInvalidate
+        issue: Path parameter is unreferenced in endpoint: connectionId.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> postInternalSandboxInstancesIdReconcile
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> postInternalSandboxInstancesIdResume
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> postInternalSandboxInstancesIdRuntimeLifecycleEvents
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> postInternalSandboxInstancesIdStop
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> putInternalSandboxInstancesIdDeadlinesKind
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: internal.yml -> service -> endpoints -> putInternalSandboxInstancesIdDeadlinesKind
+        issue: Path parameter is unreferenced in endpoint: kind.
+
+Found 14 errors and 0 warnings in <n> seconds.

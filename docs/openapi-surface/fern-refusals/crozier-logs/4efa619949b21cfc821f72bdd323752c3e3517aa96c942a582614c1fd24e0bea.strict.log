@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: components/securitySchemes/testExternalSecurityRef: ./external.yaml#/components/securitySchemes/ExternalAuth (fern-strict refusal)

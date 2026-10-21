@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-schema-reference: paths//api/v1/capabilities/get/responses/200/content/application/json/schema/properties/snapshot_id reference #/components/schemas/CapabilityDiscoveryResponse/$defs/digest (fern-strict refusal)

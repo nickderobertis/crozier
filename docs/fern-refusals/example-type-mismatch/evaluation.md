@@ -1,5 +1,13 @@
 # example-type-mismatch: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 25 probe and 15 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 201 documents at this pair (331 at Fern CLI 5.67.1). crozier's release build refuses 201 of the 201 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: `empty-body-named-examples` (two named request examples beside a `204` and an empty-object `2XX`, GitHub's `convertMemberToOutsideCollaborator`) now generates; it is a control, and crozier's detector for it is gone. A `date` example written as a plain YAML timestamp generates (`unquoted-date-example` control): Fern's YAML parser reads it as a timestamp, not a string, and only the quoted form is refused; crozier now skips a value its source writes plain, which two population documents do. A non-object example on an object error response is refused only while every operation declaring that status code declares the same body (`error-response-string-example`, `-two-string-examples` and `-one-of-two-string-examples` probes); a sibling with no body or another schema leaves Fern's one error type for the code validating none (`error-response-bodiless-sibling` and `-other-schema-sibling` controls; Jira's `403`s), and crozier follows that.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was
 made to qualify this class. Checks use CPython 3.12, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -131,3 +139,9 @@ That control's tree is the tree of the same header declared `type: string`
 the probe. The [class journey failed with only this predicate
 disabled](evaluation-logs/header-array-e2e-induced-red.log), generating 39 files
 from `header-array-integer-items-probe.yml`.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-header-array.log`](evaluation-logs/fern-header-array.log)

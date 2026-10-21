@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /conversations:
+    post:
+      operationId: startConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationRequest'
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    ConversationBase:
+      type: object
+      properties:
+        inputs:
+          type: string
+        stream:
+          type: boolean
+          nullable: true
+    ConversationRequest:
+      allOf:
+      - $ref: '#/components/schemas/ConversationBase'
+      - type: object
+        properties:
+          stream:
+            type: boolean
+            default: false

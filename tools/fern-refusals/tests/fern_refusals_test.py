@@ -28,9 +28,12 @@ import json
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from types import ModuleType
@@ -45,6 +48,23 @@ CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmat
 # The certified Fern pair, from its one declaration.
 CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
+# `dispositions.tsv`'s columns, as `reduce` writes them.
+DISPOSITIONS_HEADER = (
+    "document",
+    "crozier_class",
+    "disposition",
+    "representative",
+    "reduction",
+    "reduced_digest",
+    "check_exit",
+    "generate_exit",
+    "classes",
+    "log",
+)
+# The first line of every log `measure` and `confirm` write, naming the pair.
+PAIR_LINE = (
+    f"fern-refusals: Fern CLI {CERTIFIED['cliVersion']}, fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}\n"
+)
 
 
 def run(
@@ -64,7 +84,9 @@ def run(
 # `fern check` and `fern generate` as the FERN_STUB_* variables say, writing
 # FERN_STUB_GENERATE_FILES files under `--output`, and appends what it was run
 # with (its arguments, the workspace's pinned CLI and generator versions, and
-# the environment `fern_run` sets) to FERN_STUB_CALLS.
+# the environment `fern_run` sets) to FERN_STUB_CALLS. With FERN_STUB_HANG it
+# starts a child and never ends, writing both process ids to that file; with
+# FERN_STUB_HANG_STAGE too, only that stage hangs.
 FERN_STUB = """\
 import json, os, sys
 from pathlib import Path
@@ -77,6 +99,13 @@ if calls:
                                  "generators": Path("generators.yml").read_text(),
                                  "spec": Path("openapi/openapi.yml").read_text(),
                                  "node_options": os.environ.get("NODE_OPTIONS")}) + "\\n")
+hang = os.environ.get("FERN_STUB_HANG")
+if hang and os.environ.get("FERN_STUB_HANG_STAGE", stage) == stage:
+    # A run that never ends, as Fern's `npx` tree does: a child of its own, then a wait.
+    import subprocess, time
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"])
+    Path(hang).write_text(f"{os.getpid()} {child.pid}", encoding="utf-8")
+    time.sleep(600)
 prefix = "FERN_STUB_" + stage.upper()
 print(os.environ.get(prefix + "_OUTPUT", ""))
 if stage == "generate":
@@ -132,7 +161,7 @@ class CommittedTables(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
             registry.mkdir()
-            for hand_written in ("classes.tsv", "findings.tsv", "documents.tsv"):
+            for hand_written in ("classes.tsv", "findings.tsv", "documents.tsv", "dispositions.tsv"):
                 shutil.copy(REGISTRY / hand_written, registry / hand_written)
             result = run("build", registry=registry)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -812,6 +841,43 @@ class FernRuns(unittest.TestCase):
             result.stderr,
         )
 
+    def test_a_run_past_its_timeout_is_ended_with_every_process_it_started(self) -> None:
+        pids = self.root / "fern-pids"
+        result = self.script("probe", self.CLASS, "--timeout", "3", hang=str(pids))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("(check exit timeout, generate exit timeout)", result.stderr)
+        for pid in map(int, pids.read_text(encoding="utf-8").split()):
+            # Ended and reaped, or at most a zombie of an exited parent: never still running.
+            with self.subTest(pid=pid), contextlib.suppress(ProcessLookupError):
+                os.kill(pid, 0)
+                state = Path(f"/proc/{pid}/stat")
+                if state.exists():
+                    self.assertIn(state.read_text().split(") ", 1)[1][0], "ZX", f"process {pid} still runs")
+                else:
+                    self.fail(f"process {pid} still runs")
+
+    def test_a_terminated_run_ends_the_fern_session_it_started(self) -> None:
+        pids = self.root / "fern-pids"
+        env = dict(self.env, FERN_STUB_HANG=str(pids))
+        script = self.root / "tools" / "fern-refusals" / "fern-refusals.py"
+        with subprocess.Popen(
+            [sys.executable, str(script), "probe", self.CLASS], env=env, cwd=self.root, stderr=subprocess.PIPE
+        ) as run:
+            deadline = time.monotonic() + 60
+            while not pids.exists() and time.monotonic() < deadline:
+                time.sleep(0.1)
+            run.terminate()
+            run.wait(timeout=30)
+        self.assertEqual(run.returncode, 128 + signal.SIGTERM)
+        started = list(map(int, pids.read_text(encoding="utf-8").split()))
+        time.sleep(0.5)
+        for pid in started:
+            with self.subTest(pid=pid), contextlib.suppress(ProcessLookupError):
+                os.kill(pid, 0)
+                state = Path(f"/proc/{pid}/stat")
+                if not state.exists() or state.read_text().split(") ", 1)[1][0] not in "ZX":
+                    self.fail(f"process {pid} still runs")
+
     def test_without_fern_on_path_the_setup_recipe_is_named(self) -> None:
         self.env["PATH"] = str(self.root / "no-fern")
         result = self.script("probe", self.CLASS)
@@ -906,27 +972,1025 @@ class FernRuns(unittest.TestCase):
         self.assertEqual("fern-refusals: 0 confirmation(s) taken, 1 on record\n", again.stdout)
         self.assertEqual(len(self.calls_made()), 1)
 
-    def test_confirm_reuses_a_generation_measure_took(self) -> None:
+    def test_confirm_reuses_a_generation_measure_took_at_the_pair(self) -> None:
         digest = self.carrying_document()
         log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
-        (self.evidence / "measurements.jsonl").write_text(
-            json.dumps(
-                {
-                    "key": digest,
-                    "digest": digest,
-                    "check_exit": "0",
-                    "generate_exit": "1",
-                    "generate_files": "0",
-                    "generate_log": log,
-                }
-            )
-            + "\n",
-            encoding="utf-8",
-        )
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(PAIR_LINE + f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        measured = {
+            "key": digest,
+            "digest": digest,
+            "check_exit": "0",
+            "generate_exit": "1",
+            "generate_files": "0",
+            "generate_log": log,
+        }
+        pair = {"fern_cli": CERTIFIED["cliVersion"], "fern_python_sdk": CERTIFIED["generatorVersion"]}
+        (self.evidence / "measurements.jsonl").write_text(json.dumps(dict(measured, **pair)) + "\n", encoding="utf-8")
         result = self.script("confirm")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.calls_made(), [])
         self.assertEqual(rows(self.evidence / "confirmations.tsv")[1], [self.CLASS, digest, "acme", "1", "0", log])
+        # A generation an older pair took is no confirmation: `confirm` runs Fern again.
+        (self.evidence / "confirmations.tsv").unlink()
+        (self.evidence / "measurements.jsonl").write_text(json.dumps(measured) + "\n", encoding="utf-8")
+        result = self.script("confirm", generate_exit="1")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
+
+    def test_confirm_retakes_a_confirmation_another_pair_took(self) -> None:
+        digest = self.carrying_document()
+        log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        write_rows(
+            self.evidence / "confirmations.tsv",
+            [
+                ["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"],
+                [self.CLASS, digest, "acme", "1", "0", log],
+            ],
+        )
+        result = self.script("confirm", generate_exit="1", generate_output=f"[error] {phrase(self.class_row[4])}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
+        self.assertTrue((self.root / log).read_text(encoding="utf-8").startswith(PAIR_LINE))
+
+    def test_confirm_drops_a_confirmation_of_a_document_that_no_longer_carries_the_class(self) -> None:
+        carrying = self.carrying_document()
+        log = f"docs/openapi-surface/fern-refusals/logs/{carrying}.generate.log"
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(PAIR_LINE + f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        # Taken at the pair, but of a document a later measurement no longer files under the class.
+        gone = "0" * 64
+        header = ["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"]
+        write_rows(self.evidence / "confirmations.tsv", [header, [self.CLASS, gone, "other", "1", "0", log]])
+        result = self.script("confirm", generate_exit="1", generate_output=f"[error] {phrase(self.class_row[4])}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
+        self.assertEqual(
+            rows(self.evidence / "confirmations.tsv"), [header, [self.CLASS, carrying, "acme", "1", "0", log]]
+        )
+
+    def shape(self, name: str, marker: str) -> Path:
+        """A shape file in the scratch class directory: the class probe's bytes plus `marker`."""
+        path = self.registry / self.CLASS / name
+        path.write_text((REGISTRY / self.CLASS / "probe.yml").read_text(encoding="utf-8") + f"# {marker}\n")
+        return path
+
+    def shape_rows(self) -> dict[str, dict[str, str]]:
+        table = rows(self.evidence / "shapes.tsv")
+        return {row[1]: dict(zip(table[0], row, strict=True)) for row in table[1:]}
+
+    def shape_problems(self) -> list[str]:
+        """`check`'s verdict on the scratch shapes, from the REAL script loaded at the scratch root."""
+        spec = importlib.util.spec_from_file_location(
+            "fern_refusals_scratch", self.root / "tools" / "fern-refusals" / "fern-refusals.py"
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        problems: list[str] = module.shape_problems()
+        return problems
+
+    def test_shapes_records_a_refused_probe_and_a_generated_control_and_keeps_each_at_the_pair(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        result = self.script("shapes", self.CLASS, check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 1 on record\n", result.stdout)
+        alpha = self.shape_rows()["alpha-probe.yml"]
+        log = f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha.log"
+        self.assertEqual(
+            [alpha[key] for key in ("role", "check_exit", "generate_exit", "classes", "verdict", "log")],
+            ["probe", "1", "—", self.CLASS, "refused", log],
+        )
+        written = (self.root / log).read_text(encoding="utf-8")
+        self.assertTrue(written.startswith(PAIR_LINE + "check exit: 1\n"), written)
+        self.assertIn(said, written)
+        # The check named the class, which stops the generation: it was not run.
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check"])
+        # A near miss Fern generates from; the probe, measured at the pair over these bytes, is kept.
+        self.shape("beta-control.yml", "beta")
+        result = self.script("shapes", generate_files="3")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 2 on record\n", result.stdout)
+        beta = self.shape_rows()["beta-control.yml"]
+        self.assertEqual(
+            [beta[key] for key in ("role", "check_exit", "generate_exit", "generate_files", "classes", "verdict")],
+            ["control", "0", "0", "3", "—", "generates"],
+        )
+        self.assertIn("generate exit: 0\nfiles: 3\n", (self.root / beta["log"]).read_text(encoding="utf-8"))
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check", "check", "generate"])
+        self.assertEqual(self.shape_problems(), [])
+
+    def test_check_names_a_probe_fern_generates_from_and_a_log_another_pair_took(self) -> None:
+        probe = self.shape("alpha-probe.yml", "alpha")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                "docs/openapi-surface/fern-refusals/shapes.tsv is missing; run `tools/fern-refusals/fern-refusals.py shapes`"
+            ],
+        )
+        result = self.script("shapes", generate_files="2")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.shape_rows()["alpha-probe.yml"]["verdict"], "generates")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: Fern generates from the probe; make it a "
+                "control and narrow crozier's detector to match"
+            ],
+        )
+        # A log an older pair took says nothing of this one: `check` names it and `shapes` takes it again.
+        log = self.root / self.shape_rows()["alpha-probe.yml"]["log"]
+        older = "Fern CLI 5.67.1, python-sdk 5.20.0"  # certified-pair: stand-in (a pair before the certified one)
+        log.write_text(f"{older}\ncheck exit: 1\n", encoding="utf-8")
+        self.assertIn("is not one `shapes` wrote at Fern CLI", self.shape_problems()[0])
+        said = phrase(self.class_row[4])
+        result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 1 on record\n", result.stdout)
+        self.assertEqual(self.shape_problems(), [])
+        # Other bytes than were measured are unmeasured, and so is a control Fern refuses.
+        probe.write_text(probe.read_text(encoding="utf-8") + "# edited\n", encoding="utf-8")
+        probe.rename(probe.with_name("alpha-control.yml"))
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-control.yml: not measured over these bytes; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`",
+                f"docs/openapi-surface/fern-refusals/shapes.tsv names alpha-probe.yml of {self.CLASS}, which is "
+                "not committed; rerun `shapes`",
+            ],
+        )
+        result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(list(self.shape_rows()), ["alpha-control.yml"])
+        calls = len(self.calls_made())
+        # Renamed back to a probe over the same bytes, it keeps the measurement it has.
+        probe.with_name("alpha-control.yml").rename(probe)
+        result = self.script("shapes")
+        self.assertEqual("fern-refusals: 0 shape(s) measured, 1 on record\n", result.stdout)
+        self.assertEqual(len(self.calls_made()), calls)
+        self.assertEqual(self.shape_rows()["alpha-probe.yml"]["role"], "probe")
+        self.assertEqual(self.shape_problems(), [])
+        probe.rename(probe.with_name("alpha-control.yml"))
+        result = self.script("shapes")
+        self.assertEqual(list(self.shape_rows()), ["alpha-control.yml"])
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-control.yml: Fern refuses the control with {self.CLASS}; "
+                "make it a probe of the class that names it"
+            ],
+        )
+
+    def test_a_name_both_roles_share_keeps_a_log_per_role(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "probe")
+        self.shape("alpha-control.yml", "control")
+        self.assertEqual(self.script("shapes", check_exit="1", check_output=f"issue: {said}").returncode, 0)
+        logs = {name: row["log"] for name, row in self.shape_rows().items()}
+        self.assertEqual(
+            logs,
+            {
+                "alpha-control.yml": f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha-control.log",
+                "alpha-probe.yml": f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha-probe.log",
+            },
+        )
+        for log in logs.values():
+            self.assertIn(said, (self.root / log).read_text(encoding="utf-8"))
+
+    def test_check_names_a_row_its_log_does_not_derive(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        self.assertEqual(self.script("shapes", check_exit="1", check_output=f"issue: {said}").returncode, 0)
+        self.assertEqual(self.shape_problems(), [])
+        table = rows(self.evidence / "shapes.tsv")
+        table[1][table[0].index("check_exit")] = "0"
+        write_rows(self.evidence / "shapes.tsv", table)
+        log = f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha.log"
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: shapes.tsv disagrees with its log {log}; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`"
+            ],
+        )
+        # `shapes` re-derives the row from its log, with no Fern run.
+        calls = len(self.calls_made())
+        self.assertEqual(self.script("shapes").returncode, 0)
+        self.assertEqual(len(self.calls_made()), calls)
+        self.assertEqual(self.shape_problems(), [])
+        # A log whose exit is no exit status is no measurement at all.
+        written = (self.root / log).read_text(encoding="utf-8")
+        (self.root / log).write_text(written.replace("check exit: 1\n", "check exit: maybe\n"), encoding="utf-8")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: its log {log} is not one `shapes` wrote at Fern "
+                f"CLI {CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`"
+            ],
+        )
+
+    def test_shapes_measures_only_the_named_class_and_again_runs_fern_anew(self) -> None:
+        other = "named-type-default"
+        classes = rows(REGISTRY / "classes.tsv")
+        write_rows(
+            self.registry / "classes.tsv",
+            [classes[0], *sorted([self.class_row, next(row for row in classes[1:] if row[0] == other)])],
+        )
+        (self.registry / other).mkdir()
+        shutil.copy(REGISTRY / other / "probe.yml", self.registry / other / "beta-control.yml")
+        self.shape("alpha-control.yml", "alpha")
+        self.assertEqual(self.script("shapes", generate_files="2").returncode, 0)
+        before = self.shape_rows()
+        self.assertEqual(sorted(before), ["alpha-control.yml", "beta-control.yml"])
+        calls = len(self.calls_made())
+        # Named, one class is measured again from scratch; the other's row is untouched.
+        result = self.script("shapes", self.CLASS, "--again", generate_files="3")
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 2 on record\n", result.stdout)
+        after = self.shape_rows()
+        self.assertEqual([call["argv"][0] for call in self.calls_made()[calls:]], ["check", "generate"])
+        self.assertEqual(after["alpha-control.yml"]["generate_files"], "3")
+        self.assertEqual(after["beta-control.yml"], before["beta-control.yml"])
+
+    def test_a_shape_past_the_bound_is_unmeasured_never_a_verdict(self) -> None:
+        self.shape("alpha-control.yml", "alpha")
+        result = self.script("shapes", "--timeout", "3", hang=str(self.root / "fern-pids"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        alpha = self.shape_rows()["alpha-control.yml"]
+        self.assertEqual(
+            [alpha[key] for key in ("check_exit", "generate_exit", "verdict")], ["timeout", "—", "unmeasured"]
+        )
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check"])
+        self.assertEqual(self.shape_problems(), [])
+
+    def test_a_shape_whose_generation_runs_past_the_bound_is_unmeasured(self) -> None:
+        self.shape("alpha-control.yml", "alpha")
+        result = self.script(
+            "shapes", "--timeout", "3", hang=str(self.root / "fern-pids"), hang_stage="generate", generate_files="3"
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        alpha = self.shape_rows()["alpha-control.yml"]
+        self.assertEqual(
+            [alpha[key] for key in ("check_exit", "generate_exit", "generate_files", "verdict")],
+            ["0", "timeout", "0", "unmeasured"],
+        )
+        # The check finished and named no class, so the generation ran, and was ended.
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check", "generate"])
+        self.assertEqual(self.shape_problems(), [])
+
+    def test_a_shape_recorded_twice_is_refused_rather_than_one_row_kept(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        result = self.script("shapes", self.CLASS, check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.shape_problems(), [])
+        # A second, contradictory row for the same shape: neither is believed.
+        table = rows(self.evidence / "shapes.tsv")
+        twice = [*table[1][:8], "generates", *table[1][9:]]
+        write_rows(self.evidence / "shapes.tsv", [*table, twice])
+        refusal = f"records alpha-probe.yml of {self.CLASS} twice; delete both rows and rerun `shapes`"
+        # `check`'s shape verdict refuses the table...
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit):
+            self.shape_problems()
+        self.assertIn(refusal, stderr.getvalue())
+        # ...and so does `shapes`, which measures nothing over it.
+        result = self.script("shapes", self.CLASS)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(refusal, result.stderr)
+        self.assertEqual(len(rows(self.evidence / "shapes.tsv")), 3, "a refused table was rewritten anyway")
+
+    def test_shapes_refuses_a_class_the_registry_does_not_name(self) -> None:
+        result = self.script("shapes", "no-such-class")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("no classes.tsv row for no-such-class; add the row first", result.stderr)
+
+
+# What `measure` loads by repository path besides the script: the witness-search
+# GitHub acquirer its fetcher runs (with the modules that pulls in), the census
+# reader and region keys, and the pin reader the census imports.
+MEASURE_LOADS = (
+    *SCRIPT_LOADS,
+    "tools/witness-search/witness-search-github.py",
+    "tools/witness-search/witness-search-github-index.py",
+    "tools/witness-search/witness_screen.py",
+    "tools/witness-search/rate_limit_guard.py",
+    "tools/witness-search/witness-search-redo.py",
+    "tools/surface-census/openapi-surface-census.py",
+    "tools/surface-census/witness-search-region-keys.py",
+    "tools/corpus/corpus_remote_ref_pins.py",
+)
+
+
+@unittest.skipIf(os.name == "nt", "the stand-in `fern` and `crozier` are POSIX shell scripts")
+class MeasuredAtThePair(unittest.TestCase):
+    """`measure` takes every Fern verdict at the certified pair. It runs the REAL
+    script from a scratch checkout over committed records of two kinds — screens
+    whose `fern check` log the screen took, and `measurements.jsonl` rows — one
+    of each taken at an older pair and one at the current pair, with a stand-in
+    `fern` (`FERN_STUB`) and a stand-in `crozier` that count their runs. What was
+    taken at the older pair is measured afresh; what was taken at the current
+    pair is reused, and no Fern runs over it."""
+
+    CLASS = "type-name-collision"
+    OLD = "CLI 5.67.1 with fernapi/fern-python-sdk:5.20.0"  # certified-pair: stand-in (a screen's older pair)
+    CURRENT = f"CLI {CERTIFIED['cliVersion']} with fernapi/fern-python-sdk:{CERTIFIED['generatorVersion']}"
+
+    def setUp(self) -> None:
+        self.scratch = tempfile.TemporaryDirectory()
+        self.root = root = Path(self.scratch.name)
+        shutil.copytree(REPO / "scripts", root / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
+        for relative in MEASURE_LOADS:
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / relative, root / relative)
+        (root / "tests" / "fixtures").mkdir(parents=True)
+        (root / "tests" / "fixtures" / "CORPUS.md").write_text("", encoding="utf-8")
+        surface = root / "docs" / "openapi-surface"
+        self.evidence = surface / "fern-refusals"
+        self.evidence.mkdir(parents=True)
+        (self.evidence / "dropped-sources.tsv").write_text(
+            "name\tcorpus_line\tsource\tlocator\trevision\tsha256\tevidence\treason\n", encoding="utf-8"
+        )
+        for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            with gzip.open(
+                surface / "golden-reach-witnesses" / source / "enumeration.tsv.gz", "wt", encoding="utf-8"
+            ) as handle:
+                handle.write("walk\tdocument\trevision\tsha256\n")
+        for source in ("github-code-search", "sourcegraph"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            (surface / "golden-reach-witnesses" / source / "candidates.jsonl").write_text("", encoding="utf-8")
+        registry = root / "docs" / "fern-refusals"
+        registry.mkdir()
+        classes = rows(REGISTRY / "classes.tsv")
+        self.class_row = next(row for row in classes[1:] if row[0] == self.CLASS)
+        write_rows(registry / "classes.tsv", [classes[0], self.class_row])
+        write_rows(registry / "findings.tsv", rows(REGISTRY / "findings.tsv")[:1])
+        # Four documents, each its own bytes, supplied by digest from `--root`.
+        (root / "documents").mkdir()
+        probe = (REGISTRY / self.CLASS / "probe.yml").read_bytes()
+        self.documents = {}
+        for name in ("screened-old", "screened-current", "measured-old", "measured-current"):
+            data = probe + f"\n# {name}\n".encode()
+            (root / "documents" / f"{name}.yml").write_bytes(data)
+            self.documents[name] = hashlib.sha256(data).hexdigest()
+        # Two screens whose check logs refuse the document with the class's phrase.
+        screens = surface / "scratch"
+        screens.mkdir()
+        said = f"issue: {phrase(self.class_row[4])}\n"
+        records = []
+        for name, pair in (("screened-old", self.OLD), ("screened-current", self.CURRENT)):
+            (screens / f"{name}-check.log").write_text(said, encoding="utf-8")
+            records.append(
+                {
+                    "fern": f"failed: `fern check` exit 1 at {pair}",
+                    "source": "scratch",
+                    "repository": "scratch/apis",
+                    "commit": "0" * 40,
+                    "path": f"{name}.yml",
+                    "sha256": self.documents[name],
+                    "fern_logs": [f"{name}-check.log"],
+                }
+            )
+        # Two more screens with no log of their own, measured already: one at an
+        # older pair (no pair recorded), one at the current pair.
+        logs = self.evidence / "logs"
+        logs.mkdir()
+        measured = []
+        for name, pair in (("measured-old", None), ("measured-current", CERTIFIED)):
+            digest = self.documents[name]
+            log = logs / f"{digest}.check.log"
+            log.write_text((PAIR_LINE if pair else "") + said, encoding="utf-8")
+            records.append(
+                {
+                    "fern": "failed: `fern check` refused it",
+                    "source": "scratch",
+                    "repository": "scratch/apis",
+                    "commit": "0" * 40,
+                    "path": f"{name}.yml",
+                    "sha256": digest,
+                }
+            )
+            strict = self.evidence / "crozier-logs" / f"{digest}.strict.log"
+            strict.parent.mkdir(exist_ok=True)
+            strict.write_text(self.stand_in_log(), encoding="utf-8")
+            row = {
+                "key": digest,
+                "digest": digest,
+                "unretrievable": "",
+                "check_exit": "1",
+                "check_log": log.relative_to(root).as_posix(),
+                "crozier_exit": "1",
+                "crozier_files": "0",
+                "crozier_strict_exit": "1",
+                "crozier_strict_log": strict.relative_to(root).as_posix(),
+            }
+            if pair:
+                row.update(fern_cli=pair["cliVersion"], fern_python_sdk=pair["generatorVersion"])
+            measured.append(row)
+        (screens / "screens.jsonl").write_text("".join(json.dumps(record) + "\n" for record in records), "utf-8")
+        self.measurements = self.evidence / "measurements.jsonl"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured), encoding="utf-8")
+        # A stand-in crozier that refuses every document with the class's
+        # diagnostic, as the real one prints it, and counts its runs.
+        self.crozier_calls = root / "crozier-calls"
+        crozier = root / "target" / "release" / "crozier"
+        crozier.parent.mkdir(parents=True)
+        crozier.write_text(
+            "#!/bin/sh\n"
+            f'echo "$*" >> {shlex.quote(str(self.crozier_calls))}\n'
+            'while [ $# -gt 0 ]; do case "$1" in --spec) spec=$2;; --output) output=$2;; esac; shift; done\n'
+            f'printf %s "{self.refusal("$spec")}" >&2\n'
+            'printf "wrote nothing into %s\\n" "$output" >&2\n'
+            "exit 1\n",
+            "utf-8",
+        )
+        crozier.chmod(0o755)
+        self.calls = root / "fern-calls.jsonl"
+        self.env = {key: value for key, value in os.environ.items() if not key.startswith(("CROZIER", "FERN_STUB"))}
+        self.env.update(
+            PATH=f"{stub_fern(root / 'bin')}{os.pathsep}{self.env.get('PATH', '')}",
+            FERN_STUB_CALLS=str(self.calls),
+            FERN_STUB_CHECK_EXIT="1",
+            FERN_STUB_CHECK_OUTPUT=said.strip(),
+        )
+
+    def tearDown(self) -> None:
+        self.scratch.cleanup()
+
+    def refusal(self, document: str) -> str:
+        """What crozier's `--fern-strict` run prints refusing `document` with the class."""
+        return f"crozier: invalid OpenAPI document {document}: {self.CLASS}: type Widget (fern-strict refusal)\n"
+
+    def stand_in_log(self) -> str:
+        """The strict log `measure` commits from the stand-in crozier's stderr: both scratch paths made generic."""
+        return self.refusal("<document>") + "wrote nothing into <output>\n"
+
+    def script(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
+            capture_output=True,
+            text=True,
+            env=self.env,
+            cwd=self.root,
+        )
+
+    def measure(self, *args: str) -> dict[str, dict[str, str]]:
+        result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"), *args)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
+
+    def checked(self) -> list[str]:
+        """The documents `fern check` ran over, by name."""
+        if not self.calls.exists():
+            return []
+        names = {self.documents[name]: name for name in self.documents}
+        return [
+            names[hashlib.sha256(call["spec"].encode()).hexdigest()]
+            for call in map(json.loads, self.calls.read_text(encoding="utf-8").splitlines())
+            if call["argv"][0] == "check"
+        ]
+
+    def test_a_verdict_taken_at_an_older_pair_is_measured_afresh_and_one_at_the_pair_reused(self) -> None:
+        measured = self.measure()
+        # Fern ran exactly over the two documents whose verdicts an older pair took.
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-old"])
+        pair = (CERTIFIED["cliVersion"], CERTIFIED["generatorVersion"])
+        for name, row in ((name, measured[digest]) for name, digest in self.documents.items()):
+            with self.subTest(document=name):
+                self.assertEqual((row["fern_cli"], row["fern_python_sdk"]), pair)
+                self.assertEqual(row["check_exit"], "1")
+        # The fresh logs are written at the pair, and say so on their first line.
+        for name in ("screened-old", "measured-old"):
+            digest = self.documents[name]
+            log = f"docs/openapi-surface/fern-refusals/logs/{digest}.check.log"
+            self.assertEqual(measured[digest]["check_log"], log)
+            first = (self.root / log).read_text(encoding="utf-8").splitlines()[0]
+            self.assertEqual(first, f"fern-refusals: Fern CLI {pair[0]}, fernapi/fern-python-sdk {pair[1]}", name)
+        # The screen taken at the pair keeps its own log; Fern never ran over it.
+        current = self.documents["screened-current"]
+        self.assertEqual(measured[current]["check_log"], "docs/openapi-surface/scratch/screened-current-check.log")
+        # crozier ran only where no verdict was on record — the two screened documents — and only
+        # its `--fern-strict` run, the verdict the registry reads; no default-mode generation.
+        runs = self.crozier_calls.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(runs), 2, runs)
+        self.assertTrue(all("--fern-strict" in run for run in runs), runs)
+        for name in ("screened-old", "screened-current"):
+            row = measured[self.documents[name]]
+            self.assertEqual((row["crozier_strict_exit"], row["crozier_exit"], row["crozier_files"]), ("1", "", ""))
+        # Everything is now at the pair, so a second run measures nothing.
+        self.calls.unlink()
+        self.assertEqual(self.measure(), measured)
+        self.assertEqual(self.checked(), [])
+
+    def test_crozier_s_strict_diagnostic_is_committed_and_holds_each_refused_record(self) -> None:
+        measured = self.measure()
+        # Each strict run's stderr is committed beside Fern's logs, the scratch
+        # path of the document made generic, and the record names it.
+        for name, digest in self.documents.items():
+            with self.subTest(document=name):
+                log = f"docs/openapi-surface/fern-refusals/crozier-logs/{digest}.strict.log"
+                self.assertEqual(measured[digest]["crozier_strict_log"], log)
+                self.assertEqual((self.root / log).read_text(encoding="utf-8"), self.stand_in_log())
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        [row] = rows(self.root / "docs" / "fern-refusals" / "classes.tsv")[1:]
+        self.assertEqual(row[8], "4/4")
+
+        # A refusal at the parser, before any class detector, is no refusal by the class.
+        stopped = self.documents["measured-current"]
+        log = self.root / measured[stopped]["crozier_strict_log"]
+        parser = "crozier: could not parse OpenAPI document <document>: alias replay limit exceeded\n"
+        log.write_text(parser, encoding="utf-8")
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0, built.stdout)
+        self.assertIn(f"{stopped}: crozier --fern-strict stops at `{parser.strip()}`", built.stderr)
+        self.assertIn(f"not with a diagnostic of its classes {self.CLASS}", built.stderr)
+
+        # Nor is a refusal by a class the document does not carry.
+        log.write_text(self.refusal("<document>").replace(self.CLASS, "type-name-not-letter-led"), encoding="utf-8")
+        self.assertIn(f"{stopped}: crozier --fern-strict stops at", self.script("build").stderr)
+
+        # A recorded exit the log does not bear out is named too.
+        log.write_text("", encoding="utf-8")
+        self.assertIn(f"{stopped}: crozier_strict_exit 1 disagrees with", self.script("build").stderr)
+
+        # A record whose log is gone is taken again, with no Fern run.
+        log.unlink()
+        self.calls.unlink()
+        self.crozier_calls.unlink()
+        self.measure()
+        self.assertEqual(len(self.crozier_calls.read_text(encoding="utf-8").splitlines()), 1)
+        self.assertFalse(self.calls.exists(), "Fern ran again over a verdict already at the pair")
+        self.assertEqual(self.script("build").returncode, 0)
+
+    def test_crozier_runs_in_lanes_of_its_own_beside_one_fern_lane(self) -> None:
+        # A stand-in crozier that holds each run open long enough for lanes to overlap.
+        spans = self.root / "crozier-spans"
+        (self.root / "target" / "release" / "crozier").write_text(
+            "#!/bin/sh\n"
+            f'echo "start $(date +%s.%N)" >> {shlex.quote(str(spans))}\n'
+            "sleep 0.5\n"
+            f'echo "end $(date +%s.%N)" >> {shlex.quote(str(spans))}\n'
+            "exit 1\n",
+            encoding="utf-8",
+        )
+
+        def widest(lanes: str) -> int:
+            spans.unlink(missing_ok=True)
+            self.measure("--crozier-jobs", lanes, "--crozier-again")
+            open_runs, most = 0, 0
+            events = sorted(
+                (float(at), kind) for kind, at in (line.split() for line in spans.read_text("utf-8").splitlines())
+            )
+            for _at, kind in events:
+                open_runs += 1 if kind == "start" else -1
+                most = max(most, open_runs)
+            self.assertEqual(sum(kind == "start" for _at, kind in events), len(self.documents))
+            return most
+
+        # Fern keeps its one `--jobs` lane while crozier takes `--crozier-jobs` of its own.
+        self.assertEqual(widest("2"), 2)
+        self.assertEqual(widest("1"), 1)
+
+    def test_a_check_past_the_time_bound_is_recorded_unmeasured_and_not_generated(self) -> None:
+        self.env["FERN_STUB_HANG"] = str(self.root / "fern-pids")
+        measured = self.measure("--timeout", "2")
+        for name in ("screened-old", "measured-old"):
+            with self.subTest(document=name):
+                row = measured[self.documents[name]]
+                self.assertEqual((row["check_exit"], row["generate_exit"]), ("timeout", ""))
+        # Only the two checks ran: a check that never finished is not followed by a generation.
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-old"])
+        self.assertEqual(len(self.calls.read_text(encoding="utf-8").splitlines()), 2)
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertEqual("fern-refusals: 2 refused, 0 generated, 2 unretrievable\n", built.stdout)
+        # The class counts, and how many of them crozier's strict run refuses, come from the same rows.
+        [row] = rows(self.root / "docs" / "fern-refusals" / "classes.tsv")[1:]
+        self.assertEqual((row[5], row[8]), ("2", "2/2"))
+        unretrievable = rows(self.root / "docs" / "fern-refusals" / "unretrievable.tsv")[1:]
+        self.assertEqual(
+            sorted((row[4], row[5]) for row in unretrievable),
+            sorted(
+                (
+                    self.documents[name],
+                    f"unmeasured: `fern check` ran past `measure`'s time bound at Fern CLI "
+                    f"{CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}",
+                )
+                for name in ("screened-old", "measured-old")
+            ),
+        )
+
+    def test_a_generation_past_the_time_bound_is_recorded_unmeasured(self) -> None:
+        self.env.update(
+            FERN_STUB_CHECK_EXIT="0",
+            FERN_STUB_CHECK_OUTPUT="",
+            FERN_STUB_HANG=str(self.root / "fern-pids"),
+            FERN_STUB_HANG_STAGE="generate",
+        )
+        measured = self.measure("--timeout", "2")
+        for name in ("screened-old", "measured-old"):
+            with self.subTest(document=name):
+                row = measured[self.documents[name]]
+                self.assertEqual((row["check_exit"], row["generate_exit"]), ("0", "timeout"))
+        # Each check named no class, so each was followed by a generation that never finished.
+        stages = [json.loads(line)["argv"][0] for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(stages, ["check", "generate", "check", "generate"])
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertEqual("fern-refusals: 2 refused, 0 generated, 2 unretrievable\n", built.stdout)
+        unretrievable = rows(self.root / "docs" / "fern-refusals" / "unretrievable.tsv")[1:]
+        self.assertEqual(
+            sorted((row[4], row[5]) for row in unretrievable),
+            sorted(
+                (
+                    self.documents[name],
+                    f"unmeasured: `fern generate` ran past `measure`'s time bound at Fern CLI "
+                    f"{CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}",
+                )
+                for name in ("screened-old", "measured-old")
+            ),
+        )
+
+    def rewrite_measurement(self, name: str, **fields: str) -> None:
+        """The measurements.jsonl row of document `name`, with `fields` replaced."""
+        digest = self.documents[name]
+        table = [json.loads(line) for line in self.measurements.read_text(encoding="utf-8").splitlines()]
+        for row in table:
+            if row["key"] == digest:
+                row.update(fields)
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in table), encoding="utf-8")
+
+    def test_a_record_of_other_bytes_is_measured_afresh(self) -> None:
+        self.measure()
+        self.calls.unlink()
+        # The record says it measured other bytes than the document now holds.
+        self.rewrite_measurement("measured-current", digest="f" * 64)
+        measured = self.measure()
+        self.assertEqual(self.checked(), ["measured-current"])
+        row = measured[self.documents["measured-current"]]
+        self.assertEqual(row["digest"], self.documents["measured-current"])
+        self.assertTrue((self.root / row["check_log"]).read_text(encoding="utf-8").startswith(PAIR_LINE))
+
+    def test_an_unretrievable_record_another_pair_took_is_fetched_again(self) -> None:
+        self.measure()
+        self.calls.unlink()
+        reason = "fetch failed: the host was down"
+        self.rewrite_measurement("measured-old", unretrievable=reason, fern_cli="5.67.1", fern_python_sdk="5.20.0")
+        self.rewrite_measurement("measured-current", unretrievable=reason)
+        measured = self.measure()
+        # The older pair's failed fetch is tried again and measured; this pair's is kept as it stands.
+        self.assertEqual(self.checked(), ["measured-old"])
+        self.assertEqual(measured[self.documents["measured-old"]]["unretrievable"], "")
+        self.assertEqual(measured[self.documents["measured-current"]]["unretrievable"], reason)
+
+    def test_crozier_again_retakes_only_the_strict_verdict(self) -> None:
+        self.measure()
+        self.crozier_calls.unlink()
+        self.calls.unlink()
+        self.measure("--crozier-again")
+        runs = self.crozier_calls.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(runs), 4, runs)
+        self.assertTrue(all("--fern-strict" in run for run in runs), runs)
+        self.assertFalse(self.calls.exists(), "Fern ran again over verdicts already at the pair")
+
+    def add_classes(self, *names: str) -> dict[str, list[str]]:
+        """The registry's rows for `names`, added to the scratch class's."""
+        classes = rows(REGISTRY / "classes.tsv")
+        others = {row[0]: row for row in classes[1:] if row[0] in names}
+        table = [classes[0], *sorted([self.class_row, *others.values()])]
+        write_rows(self.root / "docs" / "fern-refusals" / "classes.tsv", table)
+        return others
+
+    def add_document(self, name: str, data: bytes) -> str:
+        """A population document Fern's check refuses with the scratch class, supplied by `--root`; its digest."""
+        digest = hashlib.sha256(data).hexdigest()
+        (self.root / "documents" / name).write_bytes(data)
+        screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
+        record = {
+            "fern": "failed: `fern check` refused it",
+            "source": "scratch",
+            "repository": "scratch/apis",
+            "commit": "0" * 40,
+            "path": name,
+            "sha256": digest,
+        }
+        screens.write_text(screens.read_text(encoding="utf-8") + json.dumps(record) + "\n", encoding="utf-8")
+        return digest
+
+    def dispose(self, digest: str, **cells: str) -> None:
+        """`dispositions.tsv` holding one row, for `digest`."""
+        row = dict.fromkeys(DISPOSITIONS_HEADER, "—")
+        row.update(document=digest, **cells)
+        table = [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
+        write_rows(self.root / "docs" / "fern-refusals" / "dispositions.tsv", table)
+
+    def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
+        registry = self.root / "docs" / "fern-refusals"
+        # Two more classes: one only `fern generate` reports, one its check does.
+        others = self.add_classes("generator-lint-failure", "object-extends-non-object")
+        # A JSON document Fern refuses with the scratch class, its own representative.
+        document = {"openapi": "3.0.3", "info": {"title": "t", "version": "1"}, "paths": {}, "x-note": "reduce me"}
+        digest = self.add_document("json-current.json", json.dumps(document).encode())
+        measured = self.measure()
+        strict = self.root / measured[digest]["crozier_strict_log"]
+
+        def built() -> subprocess.CompletedProcess[str]:
+            return self.script("build")
+
+        def refused_with(cls: str) -> None:
+            strict.write_text(self.refusal("<document>").replace(self.CLASS, cls), encoding="utf-8")
+
+        def dispose(**cells: str) -> None:
+            self.dispose(digest, **cells)
+
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A check-stage class Fern's log does not carry fails the build until disposed.
+        refused_with("object-extends-non-object")
+        result = built()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", result.stderr)
+        self.assertIn("dispositions.tsv", result.stderr)
+        # Reduced until the scratch class is gone, Fern reports crozier's class: masked.
+        dispose(
+            crozier_class="object-extends-non-object", disposition="masked", representative=digest, reduction="/x-note"
+        )
+        objects = others["object-extends-non-object"][4]
+        self.env.update(FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(objects)}", FERN_STUB_CHECK_EXIT="1")
+        self.calls.unlink()
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        [row] = [
+            dict(zip(DISPOSITIONS_HEADER, cells, strict=True)) for cells in rows(registry / "dispositions.tsv")[1:]
+        ]
+        without = {key: value for key, value in document.items() if key != "x-note"}
+        reduced_digest = hashlib.sha256((json.dumps(without) + "\n").encode()).hexdigest()
+        self.assertEqual(
+            (row["disposition"], row["reduced_digest"], row["check_exit"], row["generate_exit"], row["classes"]),
+            ("masked", reduced_digest, "1", "—", "object-extends-non-object"),
+        )
+        # Fern ran once, over the reduced bytes, and the log names its inputs, then the pair.
+        [call] = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual((call["argv"], json.loads(call["spec"])), (["check"], without))
+        provenance, pair = (self.root / row["log"]).read_text(encoding="utf-8").splitlines(keepends=True)[:2]
+        self.assertEqual((provenance, pair), (f"fern-refusals: reduction of {digest}: /x-note\n", PAIR_LINE))
+        # Reduced again without --again, the recorded run is reused and Fern does not run.
+        self.calls.unlink()
+        reused = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reused.returncode, 0, reused.stdout + reused.stderr)
+        self.assertIn("0 reduction(s) measured", reused.stdout)
+        self.assertFalse(self.calls.exists(), "Fern ran over a reduction already on record")
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A second row whose other reduction yields the same bytes cannot share that
+        # one log: `check` names the pair, and `reduce` refuses before any Fern run.
+        kept = [row[key] for key in DISPOSITIONS_HEADER]
+        alias = dict(row, crozier_class="generator-lint-failure", reduction="/*-openapi,info,paths")
+        write_rows(
+            registry / "dispositions.tsv",
+            [list(DISPOSITIONS_HEADER), [alias[key] for key in DISPOSITIONS_HEADER], kept],
+        )
+        shared = (
+            f"reduced document {reduced_digest} comes from representative {digest} reduced by "
+            f"'/*-openapi,info,paths' and from {digest} reduced by '/x-note'"
+        )
+        self.assertIn(shared, self.script("check").stderr)
+        refused = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(refused.returncode, 1, refused.stdout + refused.stderr)
+        self.assertIn(shared, refused.stderr)
+        self.assertFalse(self.calls.exists(), "Fern ran over a reduction whose provenance is shared")
+        write_rows(registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), kept])
+        # A row its log does not derive is named by `check`.
+        edited = dict(row, disposition="reported-other")
+        write_rows(
+            registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), [edited[key] for key in DISPOSITIONS_HEADER]]
+        )
+        self.assertIn(f"dispositions.tsv {digest}: the row disagrees with its log", self.script("check").stderr)
+        # A reduction's log no row names is named too.
+        stray = self.evidence / "reductions" / f"{'0' * 64}.log"
+        stray.write_text(PAIR_LINE, encoding="utf-8")
+        self.assertIn(
+            f"{stray.relative_to(self.root).as_posix()}: no dispositions.tsv row", self.script("check").stderr
+        )
+        stray.unlink()
+        # Fern generating from the reduction shows crozier's detector over-broad: refused.
+        self.env.update(FERN_STUB_CHECK_OUTPUT="", FERN_STUB_CHECK_EXIT="0", FERN_STUB_GENERATE_FILES="3")
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(rows(registry / "dispositions.tsv")[1][2], "over-broad")
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        # Fern naming another class there instead is recorded as reported, and vouches.
+        self.env.update(
+            FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(self.class_row[4])}",
+            FERN_STUB_CHECK_EXIT="1",
+            FERN_STUB_GENERATE_FILES="0",
+        )
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][8]), ("reported-other", self.CLASS))
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A row whose inputs are not the ones its log was taken from is named.
+        table[1][4] = "/info"
+        write_rows(registry / "dispositions.tsv", table)
+        self.assertIn(f"dispositions.tsv {digest}: its log", self.script("check").stderr)
+        self.assertIn("was taken from representative", self.script("check").stderr)
+        table[1][4] = "/x-note"
+        write_rows(registry / "dispositions.tsv", table)
+        # A reduction Fern does not finish within the bound is unmeasured, and vouches for nothing.
+        self.env["FERN_STUB_HANG"] = str(self.root / "fern-pids")
+        reduced = self.script("reduce", "--again", "--timeout", "2", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][6], table[1][8]), ("unmeasured", "timeout", "—"))
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        # So is one whose check names nothing and whose generation does not finish.
+        self.env.update(FERN_STUB_CHECK_OUTPUT="", FERN_STUB_CHECK_EXIT="0", FERN_STUB_HANG_STAGE="generate")
+        reduced = self.script("reduce", "--again", "--timeout", "2", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][6], table[1][7], table[1][8]), ("unmeasured", "0", "timeout", "—"))
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        del self.env["FERN_STUB_HANG"], self.env["FERN_STUB_HANG_STAGE"]
+        # A class only `fern generate` reports, on a document Fern's check stopped, agrees by rule.
+        refused_with("generator-lint-failure")
+        dispose(crozier_class="generator-lint-failure", disposition="generate-stage")
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # That rule is for a generate-stage class alone.
+        dispose(crozier_class="object-extends-non-object", disposition="generate-stage")
+        self.assertIn(f"dispositions.tsv {digest}: with no representative", self.script("check").stderr)
+        # `build` holds a disposition before letting it vouch for a refusal.
+        refused_with("object-extends-non-object")
+        result = built()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"dispositions.tsv {digest}: with no representative", result.stderr)
+        dispose(crozier_class="object-extends-non-object", disposition="agreed")
+        self.assertIn(f"dispositions.tsv {digest}: disposition 'agreed' is not one of", built().stderr)
+        dispose(crozier_class="object-extends-non-object", disposition="masked", reduced_digest="../../escape")
+        self.assertIn(f"dispositions.tsv {digest}: reduced_digest '../../escape' is not a SHA-256", built().stderr)
+        # Two rows sharing one reduction take one Fern run between them, and one log.
+        other = self.documents["measured-current"]
+        shared = [digest, "object-extends-non-object", "masked", digest, "/x-note", "—", "—", "—", "—", "—"]
+        table = [list(DISPOSITIONS_HEADER), *sorted([shared, [other, *shared[1:]]])]
+        write_rows(registry / "dispositions.tsv", table)
+        self.env.update(FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(objects)}", FERN_STUB_CHECK_EXIT="1")
+        self.calls.unlink(missing_ok=True)
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(len(self.calls.read_text(encoding="utf-8").splitlines()), 1)
+        self.assertIn("1 reduction(s) measured, 2 disposition(s)", reduced.stdout)
+        self.assertEqual(len({row[9] for row in rows(registry / "dispositions.tsv")[1:]}), 1)
+
+    def test_reduce_keeps_a_yaml_representative_yaml_and_refuses_a_pointer_that_names_nothing(self) -> None:
+        self.add_classes("object-extends-non-object")
+        source = (
+            "openapi: 3.0.3\n"
+            "info: {title: t, version: '1'}\n"
+            "paths:\n"
+            "  /kept: {get: {responses: {'204': {description: ok}}}}\n"
+            "  /dropped: {get: {responses: {'204': {description: ok}}}}\n"
+            "tags: [{name: first}, {name: second}]\n"
+            "components:\n"
+            "  schemas:\n"
+            "    Flag:\n"
+            "      type: object\n"
+            "      properties:\n"
+            "        on: {type: boolean, default: yes}\n"
+            "        when: {type: string, format: date, example: 2006-01-02T15:04:05Z}\n"
+            "        op: {type: string, enum: [=, '~']}\n"
+        )
+        digest = self.add_document("yaml-current.yml", source.encode())
+        self.measure()
+        documents = str(self.root / "documents")
+
+        def reduced_by(reduction: str) -> subprocess.CompletedProcess[str]:
+            self.dispose(
+                digest,
+                crozier_class="object-extends-non-object",
+                disposition="masked",
+                representative=digest,
+                reduction=reduction,
+            )
+            self.calls.unlink(missing_ok=True)
+            return self.script("reduce", "--root", documents)
+
+        # A keep-set, a list item, an enum member and a mapping member, in turn.
+        result = reduced_by("/paths/*-~1kept;/tags/0;/components/schemas/Flag/properties/op/enum/1")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        [call] = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        spec = call["spec"]
+        # Still YAML: `on` and `yes` stay the strings Fern's YAML 1.2 reads, the
+        # timestamp stays plain, and `=` stays a string.
+        self.assertFalse(spec.lstrip().startswith("{"), spec)
+        self.assertIn("'on':", spec)
+        self.assertIn("default: 'yes'", spec)
+        self.assertIn("example: 2006-01-02 15:04:05+00:00\n", spec)
+        self.assertIn("- '='\n", spec)
+        for gone in ("/dropped", "first", "'~'"):
+            self.assertNotIn(gone, spec)
+        self.assertIn("/kept", spec)
+        # A pointer naming nothing fails, naming itself, before any Fern run.
+        for pointer in (
+            "/tags/2",
+            "/tags/-1",
+            "/tags/01",
+            "/paths/~1absent/get",
+            "/paths/*-~1absent",
+            "tags",
+            "/paths/~2kept",
+            "/paths/~",
+        ):
+            with self.subTest(pointer=pointer):
+                result = reduced_by(pointer)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(pointer, result.stderr)
+                self.assertFalse(self.calls.exists(), "Fern ran over a reduction that names nothing")
+        # Without PyYAML a YAML representative cannot be reduced: say how to get it.
+        withheld = self.root / "no-yaml" / "yaml"
+        withheld.mkdir(parents=True)
+        (withheld / "__init__.py").write_text("raise ImportError('PyYAML withheld')\n", encoding="utf-8")
+        self.env["PYTHONPATH"] = str(withheld.parent)
+        result = reduced_by("/tags/0")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reducing a YAML document needs PyYAML", result.stderr)
+
+    def test_a_document_fern_generates_from_is_one_crozier_generates(self) -> None:
+        # Fern's check and generation both pass over every document, and the
+        # screen taken at the pair names no class either.
+        self.env.update(FERN_STUB_CHECK_EXIT="0", FERN_STUB_CHECK_OUTPUT="", FERN_STUB_GENERATE_FILES="3")
+        (self.root / "docs" / "openapi-surface" / "scratch" / "screened-current-check.log").write_text("", "utf-8")
+        self.measure("--again")
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0)
+        self.assertIn("Fern generates it, but crozier --fern-strict stops at `crozier: invalid", built.stderr)
+        # A crozier that generates them too holds.
+        (self.root / "target" / "release" / "crozier").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        self.measure("--crozier-again")
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stderr)
+        self.assertEqual(built.stdout, "fern-refusals: 0 refused, 4 generated, 0 unretrievable\n")
+        # A generated document's strict log gone is no measurement to hold it to.
+        log = self.root / "docs" / "openapi-surface" / "fern-refusals" / "crozier-logs"
+        gone = log / f"{self.documents['measured-old']}.strict.log"
+        gone.unlink()
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0)
+        self.assertIn(f"{self.documents['measured-old']}: its crozier log", built.stderr)
+        self.assertIn("is missing", built.stderr)
+
+    def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
+        screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
+        records = [json.loads(line) for line in screens.read_text(encoding="utf-8").splitlines()]
+        other = "fern-python-sdk:5.20.0"  # certified-pair: stand-in (a generator other than the certified one)
+        records[1]["fern"] = f"failed: `fern check` exit 1 at CLI {CERTIFIED['cliVersion']}, {other}"
+        screens.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+        self.measure()
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-current", "screened-old"])
+
+
+# A run that never ends on its own, on any platform: it starts a child that
+# inherits its pipes and beats a heartbeat file, then waits.
+HANGING_TREE = """\
+import subprocess, sys, time
+beat = sys.argv[1]
+child = subprocess.Popen([sys.executable, "-c", (
+    "import sys, time\\n"
+    "while True:\\n"
+    "    open(sys.argv[1], 'a').write('.'); time.sleep(0.1)\\n"
+), beat])
+time.sleep(600)
+"""
+
+
+class FernRunTree(unittest.TestCase):
+    """`fern_run` ends a run past its bound with every process it started, on every platform."""
+
+    def test_a_run_past_its_bound_returns_with_its_descendants_ended(self) -> None:
+        module = load_script("fern_refusals_run_tree")
+        with tempfile.TemporaryDirectory() as scratch:
+            beat = Path(scratch) / "beat"
+            results: list[tuple[str, str]] = []
+            run = threading.Thread(
+                target=lambda: results.append(
+                    module.fern_run([sys.executable, "-c", HANGING_TREE, str(beat)], Path(scratch), 3)
+                ),
+                daemon=True,
+            )
+            run.start()
+            run.join(60)
+            # The descendant held the run's pipes; returning at all shows it was ended.
+            self.assertFalse(run.is_alive(), "fern_run never returned: a descendant kept its pipes open")
+            self.assertEqual(results, [("timeout", "")])
+            self.assertTrue(beat.exists(), "the descendant never started, so nothing was proven")
+            # No heartbeat after the run returned: the descendant is gone.
+            time.sleep(0.5)
+            last = beat.stat().st_size
+            time.sleep(1)
+            self.assertEqual(beat.stat().st_size, last)
 
 
 class DiagnosticExtraction(unittest.TestCase):
@@ -952,6 +2016,16 @@ class DiagnosticExtraction(unittest.TestCase):
             ["Response must be an object in order to return property next as a response."],
             self.module.diagnostics(log),
         )
+
+    def test_the_generators_type_error_over_a_value_is_its_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: python-sdk ✓ All checks passed",
+                "[api]: python-sdk fernapi/fern-python-sdk Cannot use 'in' operator to search for 'wireValue' in 1",
+                "[api]: python-sdk fernapi/fern-python-sdk Failed.",
+            ]
+        )
+        self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
 
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(

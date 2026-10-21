@@ -1,5 +1,13 @@
 # heap-exhausted: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 2 probe and 5 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 2 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses both under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: A union recursing through a component's `$defs` is followed as a schema of its own and generates (`defs-json-value` control; AgenticDriver's `$defs/__schema0`), and crozier no longer refuses it. `single-child` and `recursive-union-allof` are probes: Fern refuses them, through `generated-file-name-too-long`, as this evaluation records. A cycle that grows by one reference a turn is refused by Fern through `generated-file-name-too-long` (the `single-child` and `recursive-union-allof` probes; Kibana's zod schema reduced to itself), and crozier now names that class for it; two or more growing references stay `heap-exhausted`. A single referenced `allOf` member with no fields of its own is an alias, not an extension, so it grows nothing (`nullable-union-alias` control; Helicone's nullable `CustomerSource`). The check is decided once per document over the reference graph's strongly connected components.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.
 Measurements use CPython 3.12.3, mypy 1.13.0 and each generated
 `pyproject.toml` with its declared dependencies.

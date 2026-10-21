@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//document/{id}/delete/parameters/0: #/paths/~1document~1%7Bid%7D/get/parameters/0 (fern-strict refusal)

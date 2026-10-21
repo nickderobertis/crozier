@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//architectures/{architecture_name}/get/responses/401: #/paths/~1architectures/get/responses/401 (fern-strict refusal)

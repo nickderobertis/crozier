@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [sdk] 274 errors
@@ -12,6 +13,30 @@ Warnings for generators.yml:
     [error]
         path: __package__.yml -> types -> ListClientsResponse
         issue: ListClientsResponse is already declared in fastEdgeResellerClients.yml
+
+    [error]
+        path: __package__.yml -> types -> S3OtherConfig
+        issue: Object has multiple properties named "access_key_id":
+  - S3OtherConfig -> access_key_id
+  - S3OtherConfig -> (extends) BaseS3Config -> access_key_id
+
+    [error]
+        path: __package__.yml -> types -> S3OtherConfig
+        issue: Object has multiple properties named "secret_access_key":
+  - S3OtherConfig -> secret_access_key
+  - S3OtherConfig -> (extends) BaseS3Config -> secret_access_key
+
+    [error]
+        path: __package__.yml -> types -> S3OtherConfig
+        issue: Object has multiple properties named "bucket_name":
+  - S3OtherConfig -> bucket_name
+  - S3OtherConfig -> (extends) BaseS3Config -> bucket_name
+
+    [error]
+        path: __package__.yml -> types -> S3OtherConfig
+        issue: Object has multiple properties named "region":
+  - S3OtherConfig -> region
+  - S3OtherConfig -> (extends) BaseS3Config -> region
 
     [error]
         path: account.yml -> service -> endpoints -> iamChangePassword
@@ -262,11 +287,11 @@ Warnings for generators.yml:
         issue: Service requires auth, but no auth is defined.
 
     [error]
-        path: everywhereInferenceApps.yml -> service -> endpoints -> InferenceApplicationDeployment.get -> examples[0] -> response
+        path: everywhereInferenceApps.yml -> service -> endpoints -> inferenceApplicationDeploymentGet -> examples[0] -> response
         issue: Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
 
     [error]
-        path: everywhereInferenceApps.yml -> service -> endpoints -> InferenceApplicationDeploymentsCollection.get -> examples[0] -> response
+        path: everywhereInferenceApps.yml -> service -> endpoints -> inferenceApplicationDeploymentsCollectionGet -> examples[0] -> response
         issue: Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
 
     [error]
@@ -686,15 +711,15 @@ Warnings for generators.yml:
         issue: Service requires auth, but no auth is defined.
 
     [error]
-        path: managedPostgreSql.yml -> service -> endpoints -> DBAASPorstresLimitsHandler.post -> examples[0] -> request
+        path: managedPostgreSql.yml -> service -> endpoints -> dbaasPorstresLimitsHandlerPost -> examples[0] -> request
         issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
 
     [error]
-        path: managedPostgreSql.yml -> service -> endpoints -> PGClustersViewSet.post -> examples[0] -> request
+        path: managedPostgreSql.yml -> service -> endpoints -> pgClustersViewSetPost -> examples[0] -> request
         issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
 
     [error]
-        path: managedPostgreSql.yml -> service -> endpoints -> PGClusterViewSet.get -> examples[0] -> response
+        path: managedPostgreSql.yml -> service -> endpoints -> pgClusterViewSetGet -> examples[0] -> response
         issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
 
     [error]
@@ -924,30 +949,6 @@ Warnings for generators.yml:
     [error]
         path: streams.yml -> service
         issue: Service requires auth, but no auth is defined.
-
-    [error]
-        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles -> request -> body
-        issue: Object has multiple properties named "name":
-  - <Inlined Request> -> name
-  - <Inlined Request> -> (extends) root.SubtitleBase -> name
-
-    [error]
-        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles -> request -> body
-        issue: Object has multiple properties named "vtt":
-  - <Inlined Request> -> vtt
-  - <Inlined Request> -> (extends) root.SubtitleBase -> vtt
-
-    [error]
-        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles
-        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Body property: <Request Body> -> name
-  - Body property: <Request Body> -> (extends) root.SubtitleBase -> name
-
-    [error]
-        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles
-        issue: Multiple request properties have the name vtt. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Body property: <Request Body> -> vtt
-  - Body property: <Request Body> -> (extends) root.SubtitleBase -> vtt
 
     [error]
         path: subtitles.yml -> service

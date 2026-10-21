@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 43 errors
+[sdk] 48 errors
     [error]
         path: __package__.yml -> types -> CreateInboundIpRequest -> properties -> ani_number_format -> type
         issue: Default value 'E.164-national' is not a valid enum value
@@ -70,6 +71,48 @@ Warnings for generators.yml:
         issue: Default value 'e164' is not a valid enum value
 
     [error]
+        path: __package__.yml -> types -> NetworkCreate
+        issue: Object has multiple properties named "record_type":
+  - NetworkCreate -> record_type
+  - NetworkCreate -> (extends) Record -> record_type
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "network_id":
+  - VirtualCrossConnectCombined -> network_id
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> (extends) Interface -> network_id
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "region_code":
+  - VirtualCrossConnectCombined -> region_code
+  - VirtualCrossConnectCombined -> (extends) RegionIn -> region_code
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "cloud_provider":
+  - VirtualCrossConnectCombined -> cloud_provider
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> cloud_provider
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "cloud_provider_region":
+  - VirtualCrossConnectCombined -> cloud_provider_region
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> cloud_provider_region
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "bgp_asn":
+  - VirtualCrossConnectCombined -> bgp_asn
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> bgp_asn
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "primary_cloud_account_id":
+  - VirtualCrossConnectCombined -> primary_cloud_account_id
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> primary_cloud_account_id
+
+    [error]
         path: __package__.yml -> types -> VirtualCrossConnectCombined
         issue: Object has multiple properties named "primary_cloud_ip":
   - VirtualCrossConnectCombined -> primary_cloud_ip
@@ -94,16 +137,10 @@ Warnings for generators.yml:
   - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> secondary_enabled
 
     [error]
-        path: __package__.yml -> types -> VirtualCrossConnectCombined
-        issue: Object has multiple properties named "region_code":
-  - VirtualCrossConnectCombined -> region_code
-  - VirtualCrossConnectCombined -> (extends) RegionIn -> region_code
-
-    [error]
-        path: addresses.yml -> service -> endpoints -> acceptAddressSuggestions
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
+        path: __package__.yml -> types -> VirtualCrossConnectCreate
+        issue: Object has multiple properties named "record_type":
+  - VirtualCrossConnectCreate -> record_type
+  - VirtualCrossConnectCreate -> (extends) Record -> record_type
 
     [error]
         path: addresses.yml -> service -> endpoints -> ValidateAddress -> examples[0] -> response
@@ -116,12 +153,6 @@ Warnings for generators.yml:
     [error]
         path: brands.yml -> types -> GetBrandsRequestSort
         issue: Default value '-createdAt' is not a valid enum value
-
-    [error]
-        path: callCommands.yml -> service -> endpoints -> BridgeCall
-        issue: Multiple request properties have the name call_control_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "call_control_id"
-  - Body property: <Request Body> -> call_control_id
 
     [error]
         path: campaign.yml -> service -> endpoints -> GetCampaigns -> request -> query-parameters -> sort -> type
@@ -195,4 +226,4 @@ Warnings for generators.yml:
         path: usageReportsBeta.yml -> service -> endpoints -> GetUsageReport
         issue: GetUsageReportRequest is already declared in mdrUsageReports.yml
 
-Found 43 errors and 395 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 48 errors and 395 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

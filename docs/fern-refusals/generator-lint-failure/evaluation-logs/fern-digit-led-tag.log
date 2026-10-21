@@ -1,0 +1,109 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+All checks passed
+
+generate exit: 1
+files: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          Output mode: downloadFiles
+                                          Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+                                          b"fern/output/src/fern/_3ds_decision_rule/client.py:10:7: SyntaxError: Expected an identifier\n   |\n 8 | from ..core.client_wrapper import AsyncClientWrapper\n 9 | from .raw_client import AsyncRaw3DsDecisionRuleClient\n10 | class 3DsDecisionRuleClient:\n   |       ^\n11 |     def __init__(self, *, client_wrapper: SyncClientWrapper):\n12 |         self._raw_client = Raw3DsDecisionRuleClient(client_wrapper=client_wrapper)\n   |\n\nfern/output/src/fern/_3ds_decision_rule/client.py:10:8: SyntaxError: Simple statements must be separated by newlines or semicolons\n   |\n 8 | from ..core.client_wrapper import AsyncClientWrapper\n 9 | from .raw_client import AsyncRaw3DsDecisionRuleClient\n10 | class 3DsDecisionRuleClient:\n   |        ^\n11 |     def __init__(self, *, client_wrapper: SyncClientWrapper):\n12 |         self._raw_client = Raw3DsDecisionRuleClient(client_wrapper=client_wrapper)\n   |\n\nfern/output/src/fern/_3ds_decision_rule/client.py:10:29: SyntaxError: Expected an expression\n   |\n 8 | from ..core.client_wrapper import AsyncClientWrapper\n 9 | from .raw_client import AsyncRaw3DsDecisionRuleClient\n10 | class 3DsDecisionRuleClient:\n   |                             ^\n11 |     def __init__(self, *, client_wrapper: SyncClientWrapper):\n12 |         self._raw_client = Raw3DsDecisionRuleClient(client_wrapper=client_wrapper)\n   |\n\nfern/output/src/fern/_3ds_decision_rule/client.py:11:1: SyntaxError: Unexpected indentation\n   |\n 9 | from .raw_client import AsyncRaw3DsDecisionRuleClient\n10 | class 3DsDecisionRuleClient:\n11 |     def __init__(self, *, client_wrapper: SyncClientWrapper):\n   | ^\n12 |         self._raw_client = Raw3DsDecisionRuleClient(client_wrapper=client_wrapper)\n   |\n\nfern/output/src/fern/_3ds_decision_rule/client.py:48:1: SyntaxError: Expected a statement\n   |\n46 |         _response = self._raw_client.list_rules(request_options=request_options)\n47 |         return _response.data\n48 | class Async3DsDecisionRuleClient:\n   | ^\n49 |     def __init__(self, *, client_wrapper: AsyncClientWrapper):\n50 |         self._raw_client = AsyncRaw3DsDecisionRuleClient(client_wrapper=client_wrapper)\n   |\n\nfern/output/src/fern/client.py:12:44: SyntaxError: Expected one or more symbol names after import\n   |\n10 | import typing\n11 | if typing.TYPE_CHECKING:\n12 |     from ._3ds_decision_rule.client import 3DsDecisionRuleClient\n   |                                            ^\n13 |     from ._3ds_decision_rule.client import Async3DsDecisionRuleClient\n14 | class FernApi:\n   |\n\nfern/output/src/fern/client.py:12:45: SyntaxError: Simple statements must be separated by newlines or semicolons\n   |\n10 | import typing\n11 | if typing.TYPE_CHECKING:\n12 |     from ._3ds_decision_rule.client import 3DsDecisionRuleClient\n   |                                             ^\n13 |     from ._3ds_decision_rule.client import Async3DsDecisionRuleClient\n14 | class FernApi:\n   |\n\nfern/output/src/fern/client.py:60:52: SyntaxError: Expected ':', found name\n   |\n58 |         self._client_wrapper = SyncClientWrapper(base_url=base_url, headers=headers, httpx_client=httpx_client if httpx_client is not \xe2\x80\xa6\n59 |         , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max\xe2\x80\xa6\n60 |         self.__3ds_decision_rule: typing.Optional[3DsDecisionRuleClient] = None\n   |                                                    ^\n61 |     \n62 |     @property\n   |\n\nfern/output/src/fern/client.py:65:52: SyntaxError: Expected one or more symbol names after import\n   |\n63 |     def _3ds_decision_rule(self):\n64 |         if self.__3ds_decision_rule is None:\n65 |             from ._3ds_decision_rule.client import 3DsDecisionRuleClient # noqa: E402\n   |                                                    ^\n66 |             self.__3ds_decision_rule = 3DsDecisionRuleClient(client_wrapper=self._client_wrapper)\n67 |         return self.__3ds_decision_rule\n   |\n\nfern/output/src/fern/client.py:65:53: SyntaxError: Simple statements must be separated by newlines or semicolons\n   |\n63 |     def _3ds_decision_rule(self):\n64 |         if self.__3ds_decision_rule is None:\n65 |             from ._3ds_decision_rule.client import 3DsDecisionRuleClient # noqa: E402\n   |                                                     ^\n66 |             self.__3ds_decision_rule = 3DsDecisionRuleClient(client_wrapper=self._client_wrapper)\n67 |         return self.__3ds_decision_rule\n   |\n\nfern/output/src/fern/client.py:66:41: SyntaxError: Simple statements must be separated by newlines or semicolons\n   |\n64 |         if self.__3ds_decision_rule is None:\n65 |             from ._3ds_decision_rule.client import 3DsDecisionRuleClient # noqa: E402\n66 |             self.__3ds_decision_rule = 3DsDecisionRuleClient(client_wrapper=self._client_wrapper)\n   |                                         ^\n67 |         return self.__3ds_decision_rule\n68 | def _make_default_async_client(\n   |\n\nFound 17 errors (6 fixed, 11 remaining).\n"
+                                          b''
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "/src/fern_python/cli/publisher.py", line 108, in _run_command
+                                              completed_command = subprocess.run(
+                                                  command,
+                                              ...<4 lines>...
+                                                  env=env,
+                                              )
+                                            File "/usr/local/lib/python3.13/subprocess.py", line 577, in run
+                                              raise CalledProcessError(retcode, process.args,
+                                                                       output=stdout, stderr=stderr)
+                                          subprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.
+                                          
+                                          During handling of the above exception, another exception occurred:
+                                          
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
+                                              publisher.run_ruff_check_fix("/fern/output", cwd="/")
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix
+                                              self._run_command(
+                                              ~~~~~~~~~~~~~~~~~^
+                                                  command=command,
+                                                  ^^^^^^^^^^^^^^^^
+                                                  safe_command=" ".join(command),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  cwd=cwd,
+                                                  ^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/publisher.py", line 131, in _run_command
+                                              raise Exception("Failed to run command", safe_command)
+                                          Exception: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

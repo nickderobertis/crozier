@@ -1,5 +1,11 @@
 # undefined-component-reference: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 1 probe and 1 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 3 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 3 of the 3 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was
 made to qualify this class. Checks use CPython 3.12.3, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -46,14 +52,12 @@ parameter-use checks so its class is not masked.
 
 A [hand-written isolated probe](named-example-probe.yml) and its
 [direct-example control](named-example-control.yml) establish the boundary.
-The [pinned Fern check/generation log](evaluation-logs/fern-named-example.log)
-prints the undefined diagnostic and writes a false-success empty SDK for the
-probe; the control passes and writes 31 Python files. Its extra
-[Contract A record](named-example-fern-refusal.txt) records that measured result.
-That record, its log and the two baseline logs below are **historical evidence
-of the earlier pair** (Fern CLI 5.67.1 with fern-python-sdk 5.20.0), kept as the
-record of that run: the extra probe was not re-run at the certified pair, whose
-measurement of this class is the class's own [record](fern-refusal.txt).
+The [probe's Fern check/generation log](evaluation-logs/fern-named-example-probe.log),
+taken at Fern CLI 5.163.1 with fern-python-sdk 5.41.3 (`shapes.tsv`), prints the
+undefined diagnostic and writes a false-success SDK of 35 files; the
+[control's](evaluation-logs/fern-named-example-control.log) generates. Its extra [Contract A record](named-example-fern-refusal.txt)
+records that measured result at the same pair. The two baseline logs below are
+crozier's output and are not Fern's.
 
 Crozier's [baseline output on the extra probe](evaluation-logs/named-example-baseline.log)
 imports and has **zero mypy errors**. Its [wire journey](evaluation-logs/named-example-baseline.wire.log)
@@ -85,3 +89,9 @@ The CLI journey now covers that missing target as well as the nested target;
 [disabling only the missing-target branch made it fail](evaluation-logs/missing-example-e2e-induced-red.log)
 with 38 generated files. Restoring the branch refuses both modes, and the
 existing direct-example control proves recovery.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-missing-example.log`](evaluation-logs/fern-missing-example.log)

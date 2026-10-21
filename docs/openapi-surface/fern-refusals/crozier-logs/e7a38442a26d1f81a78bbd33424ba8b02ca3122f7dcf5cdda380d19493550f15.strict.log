@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /static/credential-options components/schemas/CredentialProvider/properties/type collides with CredentialProviderType (fern-strict refusal)

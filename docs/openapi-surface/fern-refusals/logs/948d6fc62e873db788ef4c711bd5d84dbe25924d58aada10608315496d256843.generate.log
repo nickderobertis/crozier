@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -7,7 +8,7 @@ Warnings for generators.yml:
 [api]: python-sdk #/components/parameters/CartIDParam is undefined 
                   CliError: #/components/parameters/CartIDParam is undefined
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
 [api]: python-sdk fernapi/fern-python-sdk Finished.

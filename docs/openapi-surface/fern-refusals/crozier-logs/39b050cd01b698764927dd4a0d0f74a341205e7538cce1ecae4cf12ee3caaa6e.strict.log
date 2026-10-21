@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: GET /received_documents/{guid}/{format} parameter syntax (fern-strict refusal)

@@ -33,11 +33,13 @@ enum Class {
     ExtensionReferenceCycle,
     UnresolvedSchemaReference,
     HeapExhausted,
+    GeneratedFileNameTooLong,
     DefaultNotEnumValue,
     GeneratorLintFailure,
     TypeNotDefined,
     MissingDiscriminantProperty,
     DuplicateExampleName,
+    ExampleSummaryNotString,
     ExampleMissingRequiredQueryParameter,
     ExampleTypeMismatch,
     ExampleNotEnumValue,
@@ -67,11 +69,13 @@ impl Class {
             Self::ExtensionReferenceCycle => "extension-reference-cycle",
             Self::UnresolvedSchemaReference => "unresolved-schema-reference",
             Self::HeapExhausted => "heap-exhausted",
+            Self::GeneratedFileNameTooLong => "generated-file-name-too-long",
             Self::DefaultNotEnumValue => "default-not-enum-value",
             Self::GeneratorLintFailure => "generator-lint-failure",
             Self::TypeNotDefined => "type-not-defined",
             Self::MissingDiscriminantProperty => "missing-discriminant-property",
             Self::DuplicateExampleName => "duplicate-example-name",
+            Self::ExampleSummaryNotString => "example-summary-not-string",
             Self::ExampleMissingRequiredQueryParameter => {
                 "example-missing-required-query-parameter"
             }
@@ -186,6 +190,52 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                 }
             }
         }
+        // A success response Fern builds a type from follows its response
+        // component's own `$ref`, which must stay among the response
+        // components: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a
+        // `204` aliasing `#/x-fragment/base` through `components/responses`
+        // fails to resolve (`response-fragment` probe), where a `default`
+        // response aliasing it generates (`response-fragment-default` control;
+        // the Groupe PSA golden).
+        for item in paths.values() {
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                for (code, response) in operation
+                    .get("responses")
+                    .and_then(serde_json::Value::as_object)
+                    .into_iter()
+                    .flatten()
+                {
+                    let Some(name) = code
+                        .starts_with('2')
+                        .then(|| response.get("$ref").and_then(serde_json::Value::as_str))
+                        .flatten()
+                        .and_then(|reference| reference.strip_prefix("#/components/responses/"))
+                    else {
+                        continue;
+                    };
+                    if let Some(component) =
+                        yaml_pointer(&root, &format!("/components/responses/{name}"))
+                            .filter(|component| component.get("$ref").is_some())
+                    {
+                        check_reference_objects(
+                            component,
+                            &root,
+                            path,
+                            strict,
+                            &format!("components/responses/{name}"),
+                        )?;
+                    }
+                }
+            }
+        }
     }
     // Resolve missing Reference Objects before checking their parameter uses.
     if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
@@ -248,7 +298,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     check_discriminant_examples(&root, path, strict)?;
     check_example_names(&root, path, strict)?;
     check_example_query_parameters(&root, path, strict)?;
-    if let Some((class, element)) = examples::first_violation(&root) {
+    if let Some((class, element)) = examples::first_violation_in(&root, &text) {
         return refusal(path, strict, class, &element);
     }
     Ok(())
@@ -283,12 +333,13 @@ fn extension_reference_cycle(
         }
         return cycle;
     }
+    // Fern follows an extension's reference through its object members only: a
+    // reference under an array (Stripe's `x-expansionResources: {oneOf: [...]}`)
+    // never overflows its stack (the `*-oneof-link-control` and
+    // `expandable-field-control` shapes).
     match node {
         serde_json::Value::Object(values) => values
             .values()
-            .any(|value| extension_reference_cycle(value, root, state)),
-        serde_json::Value::Array(values) => values
-            .iter()
             .any(|value| extension_reference_cycle(value, root, state)),
         _ => false,
     }
@@ -371,6 +422,7 @@ struct SchemaContext<'a> {
     names: indexmap::IndexMap<String, bool>,
     default_names: indexmap::IndexMap<String, bool>,
     missing_header_types: std::collections::HashSet<String>,
+    expanding: std::cell::OnceCell<ExpandingCycles>,
 }
 
 fn schema_declaration_names(
@@ -546,6 +598,16 @@ fn check_object_extension(
     ) {
         return Ok(());
     }
+    // One referenced member and no fields of its own is an alias of that
+    // member, whatever `type` or `nullable` sits beside it: measured at Fern CLI
+    // 5.163.1, `typed-scalar-alias` and `typed-nullable-scalar-alias` generate.
+    let own_fields = schema
+        .get("properties")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|properties| !properties.is_empty());
+    if children.len() == 1 && references.len() == 1 && !own_fields {
+        return Ok(());
+    }
     let object = primary == Some("object")
         || schema
             .get("properties")
@@ -578,37 +640,7 @@ fn check_object_extension(
             .and_then(|name| context.names.get(name))
             .copied()
             .unwrap_or_else(|| schema_is_model(target, context.root, &mut Vec::new()));
-        // An explicitly object-typed union can contribute an object shape to a
-        // child with its own fields. Untyped and scalar unions remain refused.
-        let object_union = schema
-            .get("properties")
-            .and_then(serde_json::Value::as_object)
-            .is_some_and(|properties| !properties.is_empty())
-            && schema_type(target)
-                .as_ref()
-                .and_then(crate::openapi::TypeField::primary)
-                == Some("object")
-            && target
-                .get("properties")
-                .and_then(serde_json::Value::as_object)
-                .is_none_or(serde_json::Map::is_empty)
-            && target
-                .get("oneOf")
-                .and_then(serde_json::Value::as_array)
-                .is_some_and(|variants| {
-                    variants.len() >= 2
-                        && variants.iter().all(|variant| {
-                            variant
-                                .get("$ref")
-                                .and_then(serde_json::Value::as_str)
-                                .and_then(|reference| reference.strip_prefix('#'))
-                                .and_then(|pointer| yaml_pointer(context.root, pointer))
-                                .is_some_and(|member| {
-                                    schema_is_model(member, context.root, &mut Vec::new())
-                                })
-                        })
-                });
-        if !model && !object_union {
+        if !model && !object_union_base(target) {
             return refusal(
                 context.path,
                 context.strict,
@@ -618,6 +650,27 @@ fn check_object_extension(
         }
     }
     Ok(())
+}
+
+/// Whether `target` is a union: Fern extends any `oneOf` or `anyOf` base,
+/// measured at Fern CLI 5.163.1 by the `union-base`, `nested-union-base`,
+/// `conditional-base`, `untyped-ref-union-base`, `anyof-ref-union-base`,
+/// `scalar-member-union-base` and `ordered-renamed-union` controls, whatever
+/// its members. A base itself typed scalar or array stays refused.
+fn object_union_base(target: &serde_json::Value) -> bool {
+    let scalar = matches!(
+        schema_type(target)
+            .as_ref()
+            .and_then(crate::openapi::TypeField::primary),
+        Some("string" | "number" | "integer" | "boolean" | "array" | "null")
+    );
+    !scalar
+        && ["oneOf", "anyOf"].iter().any(|key| {
+            target
+                .get(key)
+                .and_then(serde_json::Value::as_array)
+                .is_some_and(|members| !members.is_empty())
+        })
 }
 
 fn named_default_unsupported(schema: &serde_json::Value, root: &serde_json::Value) -> bool {
@@ -669,11 +722,27 @@ fn check_named_type_defaults(
             }
             let name = crate::naming::child_class_name(parent, key);
             let child_element = format!("{element}/properties/{key}");
-            let enumeration = child
-                .get("enum")
-                .and_then(serde_json::Value::as_array)
-                .is_some_and(|values| !values.is_empty())
-                || child.get("const").is_some();
+            // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a boolean
+            // `enum` or `const` is no enum declaration, and generates
+            // (`boolean-enum-collision` and `const-boolean-collision` shapes;
+            // Mistral's `stream`), where a string `const` is refused as a
+            // string `enum` is (`const-string-collision`).
+            let boolean = child.get("type").and_then(serde_json::Value::as_str) == Some("boolean")
+                || child
+                    .get("const")
+                    .is_some_and(serde_json::Value::is_boolean)
+                || child
+                    .get("enum")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|values| {
+                        !values.is_empty() && values.iter().all(serde_json::Value::is_boolean)
+                    });
+            let enumeration = !boolean
+                && (child
+                    .get("enum")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|values| !values.is_empty())
+                    || child.get("const").is_some());
             if child.get("default").is_some_and(|value| !value.is_null())
                 && enumeration
                 && context.default_names.get(&name).copied().unwrap_or(false)
@@ -782,6 +851,7 @@ fn check_document_schemas(root: &serde_json::Value, path: &Path, strict: bool) -
         }),
         default_names: schema_declaration_names(root, true, named_default_unsupported),
         missing_header_types: missing_header_types(root),
+        expanding: std::cell::OnceCell::new(),
     };
     if let Some(schemas) = root
         .get("components")
@@ -1147,6 +1217,11 @@ fn check_bound_schemas(
                         })
                         && !ignored_reference_node(value)
                         && value.get("$ref").is_none()
+                        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3:
+                        // a header enum with a default generates (the
+                        // `*-default` shapes; AgenticDriver's
+                        // `Accept-Optional-Events`).
+                        && value.get("default").is_none()
                         && value
                             .get("type")
                             .is_none_or(|kind| kind.as_str() == Some("string"))
@@ -1195,6 +1270,24 @@ fn check_bound_schemas(
     Ok(())
 }
 
+/// Whether `schema` admits `null`: a `null` type, `nullable: true`, or a
+/// `oneOf`/`anyOf` member that does.
+fn admits_null(schema: &serde_json::Value) -> bool {
+    let typed_null = match schema.get("type") {
+        Some(serde_json::Value::String(kind)) => kind == "null",
+        Some(serde_json::Value::Array(kinds)) => kinds.iter().any(|kind| kind == "null"),
+        _ => false,
+    };
+    typed_null
+        || schema.get("nullable") == Some(&serde_json::Value::Bool(true))
+        || ["oneOf", "anyOf"].iter().any(|key| {
+            schema
+                .get(key)
+                .and_then(serde_json::Value::as_array)
+                .is_some_and(|members| members.iter().any(admits_null))
+        })
+}
+
 fn check_schema_resolution(
     schema: &serde_json::Value,
     context: &SchemaContext<'_>,
@@ -1234,10 +1327,16 @@ fn check_schema_resolution(
         // `358-undeclared-head-properties-required` and
         // `356-defs-required-property` authored probes).
         let walked = reference.contains("properties");
+        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a definition
+        // that admits `null` leaves its required property nullable, which Fern
+        // never resolves, so it generates (`defs-nullable-target` shape;
+        // AgenticDriver's `$defs/__schema0`). A definition that does not is
+        // still refused (`deep-defs-field`).
+        let nullable_definition = unsupported_definition && target.is_some_and(admits_null);
         if required
             && !walked
             && schema_reference.is_some()
-            && (target.is_none() || unsupported_definition)
+            && (target.is_none() || (unsupported_definition && !nullable_definition))
         {
             return refusal(
                 context.path,
@@ -1294,26 +1393,146 @@ fn check_schema_resolution(
     Ok(())
 }
 
-fn expanding_union_cycle(
+/// The references from which a cycle that grows on every turn is reachable.
+///
+/// A turn grows where one of its references points partway into a component
+/// (anywhere but its `$defs`), or extends a union base through `allOf`. Fern
+/// expands such a cycle without end: measured at Fern CLI 5.163.1, one growing
+/// reference names each turn's type after the last until a file name is too
+/// long (`single-child` and `recursive-union-allof` probes, Kibana's zod
+/// schema), while two or more branch the expansion and exhaust its heap (the
+/// class probe, Wiremock's and virtual-tools' documents). The answer is
+/// computed once per document over the reference graph's strongly connected
+/// components, so a densely recursive description (Stripe's) stays linear.
+#[derive(Default)]
+struct ExpandingCycles {
+    /// References reaching a cycle with two or more growing references.
+    branching: std::collections::HashSet<String>,
+    /// References reaching a cycle with one growing reference.
+    lengthening: std::collections::HashSet<String>,
+}
+
+/// A reference a schema reaches without following another, and whether that
+/// step grows a cycle through it.
+struct ReferenceStep {
+    reference: String,
+    grows: bool,
+}
+
+impl ExpandingCycles {
+    fn of(root: &serde_json::Value) -> Self {
+        let mut edges: indexmap::IndexMap<String, Vec<ReferenceStep>> = indexmap::IndexMap::new();
+        // Every reference the document writes is a node, wherever a union
+        // that reaches it sits.
+        let mut queue = Vec::new();
+        every_reference(root, &mut queue);
+        while let Some(reference) = queue.pop() {
+            if edges.contains_key(&reference) {
+                continue;
+            }
+            let mut steps = Vec::new();
+            if let Some(target) = reference
+                .strip_prefix('#')
+                .and_then(|pointer| yaml_pointer(root, pointer))
+            {
+                reference_steps(target, root, false, &mut steps);
+            }
+            queue.extend(steps.iter().map(|step| step.reference.clone()));
+            edges.insert(reference, steps);
+        }
+        let components = strongly_connected(&edges);
+        let mut component_of = std::collections::HashMap::new();
+        for (index, members) in components.iter().enumerate() {
+            for member in members {
+                component_of.insert(member.as_str(), index);
+            }
+        }
+        // Tarjan's order lists every component after the ones it reaches.
+        let mut branches = vec![false; components.len()];
+        let mut lengthens = vec![false; components.len()];
+        for (index, members) in components.iter().enumerate() {
+            let mut growing = 0;
+            for member in members {
+                for step in &edges[member] {
+                    let next = component_of[step.reference.as_str()];
+                    if next == index {
+                        growing += usize::from(step.grows);
+                    } else {
+                        branches[index] |= branches[next];
+                        lengthens[index] |= lengthens[next];
+                    }
+                }
+            }
+            branches[index] |= growing >= 2;
+            lengthens[index] |= growing == 1;
+        }
+        let members_where = |flags: &[bool]| -> std::collections::HashSet<String> {
+            components
+                .iter()
+                .zip(flags)
+                .filter(|(_, flag)| **flag)
+                .flat_map(|(members, _)| members.iter().cloned())
+                .collect()
+        };
+        Self {
+            branching: members_where(&branches),
+            lengthening: members_where(&lengthens),
+        }
+    }
+}
+
+/// Every `$ref` string anywhere under `node`.
+fn every_reference(node: &serde_json::Value, found: &mut Vec<String>) {
+    match node {
+        serde_json::Value::Object(values) => {
+            if let Some(reference) = values.get("$ref").and_then(serde_json::Value::as_str) {
+                found.push(reference.to_owned());
+            }
+            for value in values.values() {
+                every_reference(value, found);
+            }
+        }
+        serde_json::Value::Array(values) => {
+            for value in values {
+                every_reference(value, found);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Every reference `schema` reaches through its properties, items, map values
+/// and `allOf`/`oneOf`/`anyOf` members, without following one.
+fn reference_steps(
     schema: &serde_json::Value,
     root: &serde_json::Value,
     extends: bool,
-    expansions: usize,
-    active: &mut std::collections::HashMap<String, usize>,
-) -> bool {
+    steps: &mut Vec<ReferenceStep>,
+) {
     if ignored_reference_node(schema) {
-        return false;
+        return;
     }
     if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
-        let Some(pointer) = reference.strip_prefix('#') else {
-            return false;
+        let Some(target) = reference
+            .strip_prefix('#')
+            .and_then(|pointer| yaml_pointer(root, pointer))
+        else {
+            return;
         };
-        let Some(target) = yaml_pointer(root, pointer) else {
-            return false;
-        };
+        if ignored_reference_node(target) {
+            return;
+        }
+        // A pointer into a component's `$defs` names a schema of its own, which
+        // Fern follows as it does a component: measured at Fern CLI 5.163.1 /
+        // fern-python-sdk 5.41.3, a JSON-value union recursing through
+        // `$defs/__value` generates (`defs-json-value` shape).
         let partial = reference
             .strip_prefix("#/components/schemas/")
-            .is_some_and(|suffix| suffix.split('/').count() > 1);
+            .is_some_and(|suffix| {
+                let mut segments = suffix.split('/');
+                segments.next();
+                segments.next().is_some_and(|segment| segment != "$defs")
+            });
         let union_base = extends
             && ["oneOf", "anyOf"].iter().any(|key| {
                 target
@@ -1322,44 +1541,132 @@ fn expanding_union_cycle(
                     .is_some_and(|variants| variants.len() > 1)
             })
             && !schema_is_model(target, root, &mut Vec::new());
-        let expansions = expansions + usize::from(partial || union_base);
-        if let Some(previous) = active.get(reference) {
-            return expansions > *previous;
-        }
-        active.insert(reference.to_owned(), expansions);
-        let cycle = expanding_union_cycle(target, root, false, expansions, active);
-        active.remove(reference);
-        return cycle;
+        steps.push(ReferenceStep {
+            reference: reference.to_owned(),
+            grows: partial || union_base,
+        });
+        return;
     }
     if let Some(properties) = schema
         .get("properties")
         .and_then(serde_json::Value::as_object)
     {
-        if properties
-            .values()
-            .any(|property| expanding_union_cycle(property, root, false, expansions, active))
-        {
-            return true;
+        for property in properties.values() {
+            reference_steps(property, root, false, steps);
         }
     }
     for key in ["items", "additionalProperties"] {
         if let Some(child) = schema.get(key) {
-            if expanding_union_cycle(child, root, false, expansions, active) {
-                return true;
-            }
+            reference_steps(child, root, false, steps);
         }
     }
+    // One referenced `allOf` member and no fields of its own is an alias of
+    // that member, not an extension of it: measured at Fern CLI 5.163.1,
+    // Helicone's nullable `allOf: [CustomerSource]` generates
+    // (`nullable-union-alias` control).
+    let own_fields = schema
+        .get("properties")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|properties| !properties.is_empty());
     for key in ["allOf", "oneOf", "anyOf"] {
         if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
-            if children
-                .iter()
-                .any(|child| expanding_union_cycle(child, root, key == "allOf", expansions, active))
-            {
-                return true;
+            let extends = key == "allOf" && (children.len() > 1 || own_fields);
+            for child in children {
+                reference_steps(child, root, extends, steps);
             }
         }
     }
-    false
+}
+
+/// The strongly connected components of `edges` (Tarjan's, iterative), each
+/// listed after every component it reaches.
+fn strongly_connected(edges: &indexmap::IndexMap<String, Vec<ReferenceStep>>) -> Vec<Vec<String>> {
+    let count = edges.len();
+    let next: Vec<Vec<usize>> = edges
+        .values()
+        .map(|steps| {
+            steps
+                .iter()
+                .map(|step| edges.get_index_of(&step.reference).unwrap_or(usize::MAX))
+                .filter(|index| *index != usize::MAX)
+                .collect()
+        })
+        .collect();
+    let mut index = vec![usize::MAX; count];
+    let mut low = vec![0; count];
+    let mut on_stack = vec![false; count];
+    let mut stack = Vec::new();
+    let mut components = Vec::new();
+    let mut counter = 0;
+    for start in 0..count {
+        if index[start] != usize::MAX {
+            continue;
+        }
+        let mut frames = vec![(start, 0)];
+        index[start] = counter;
+        low[start] = counter;
+        counter += 1;
+        stack.push(start);
+        on_stack[start] = true;
+        while let Some(&mut (node, ref mut edge)) = frames.last_mut() {
+            if let Some(&target) = next[node].get(*edge) {
+                *edge += 1;
+                if index[target] == usize::MAX {
+                    index[target] = counter;
+                    low[target] = counter;
+                    counter += 1;
+                    stack.push(target);
+                    on_stack[target] = true;
+                    frames.push((target, 0));
+                } else if on_stack[target] {
+                    low[node] = low[node].min(index[target]);
+                }
+                continue;
+            }
+            frames.pop();
+            if let Some(&(parent, _)) = frames.last() {
+                low[parent] = low[parent].min(low[node]);
+            }
+            if low[node] == index[node] {
+                let mut members = Vec::new();
+                while let Some(member) = stack.pop() {
+                    on_stack[member] = false;
+                    members.push(
+                        edges
+                            .get_index(member)
+                            .map(|(key, _)| key.clone())
+                            .unwrap_or_default(),
+                    );
+                    if member == node {
+                        break;
+                    }
+                }
+                components.push(members);
+            }
+        }
+    }
+    components
+}
+
+/// The class Fern refuses `schema` with when a cycle that grows on every turn
+/// is reachable from it: `heap-exhausted` where one branches, else
+/// `generated-file-name-too-long`.
+fn expanding_union_cycle(schema: &serde_json::Value, context: &SchemaContext<'_>) -> Option<Class> {
+    let cycles = context
+        .expanding
+        .get_or_init(|| ExpandingCycles::of(context.root));
+    let mut steps = Vec::new();
+    reference_steps(schema, context.root, false, &mut steps);
+    let reaches = |set: &std::collections::HashSet<String>| {
+        steps.iter().any(|step| set.contains(&step.reference))
+    };
+    if reaches(&cycles.branching) {
+        Some(Class::HeapExhausted)
+    } else if reaches(&cycles.lengthening) {
+        Some(Class::GeneratedFileNameTooLong)
+    } else {
+        None
+    }
 }
 
 fn check_schema(
@@ -1392,14 +1699,10 @@ fn check_schema(
             .get(key)
             .and_then(serde_json::Value::as_array)
             .is_some_and(|variants| variants.len() > 1)
-    }) && expanding_union_cycle(
-        schema,
-        context.root,
-        false,
-        0,
-        &mut std::collections::HashMap::new(),
-    ) {
-        return refusal(context.path, context.strict, Class::HeapExhausted, element);
+    }) {
+        if let Some(class) = expanding_union_cycle(schema, context) {
+            return refusal(context.path, context.strict, class, element);
+        }
     }
     check_object_extension(schema, context, element)?;
     if let Some(default) = schema
@@ -1458,8 +1761,12 @@ fn check_schema(
         }
     }
     // Fern renders a string enum with no non-null member as an enum class whose
-    // `visit` method has no body, which its own `ruff check` cannot parse.
-    if schema.get("type").and_then(serde_json::Value::as_str) == Some("string")
+    // `visit` method has no body, which its own `ruff check` cannot parse; an
+    // untyped one too, measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    // (`untyped-null-only-enum` probe; tunarr's `userId`).
+    if schema
+        .get("type")
+        .is_none_or(|kind| kind.as_str() == Some("string"))
         && schema
             .get("enum")
             .and_then(serde_json::Value::as_array)
@@ -1944,6 +2251,27 @@ pub fn check_sdk(
             );
         }
     }
+    // A syntax error: a sub-client class named from a tag led by a digit
+    // (Hyperswitch's `3DS Decision Rule` → `class 3dsDecisionRuleClient`), which
+    // Fern's own `ruff check` fails on at Fern CLI 5.163.1.
+    if let Some(module) = ir
+        .endpoint_modules
+        .iter()
+        .flat_map(|module| module.split('/'))
+        .find(|segment| {
+            crate::naming::to_pascal_case(segment).starts_with(|first: char| first.is_ascii_digit())
+        })
+    {
+        return refusal(
+            path,
+            strict,
+            class,
+            &format!(
+                "sub-client {module} class {}Client",
+                crate::naming::to_pascal_case(module)
+            ),
+        );
+    }
     for endpoint in ir.endpoints.iter().filter(|endpoint| endpoint.emittable) {
         let route = format!("{} {}", endpoint.http_method, endpoint.path);
         // F811: a root-client method and a sub-client property of one name.
@@ -2326,6 +2654,35 @@ fn check_example_names(root: &serde_json::Value, path: &Path, strict: bool) -> R
             }
         }
     }
+    // fern-python-sdk 5.41.3 crashes on a request example named by a summary
+    // that is no string (`Cannot use 'in' operator to search for 'wireValue'
+    // in 1`), after a clean `fern check`: measured at Fern CLI 5.163.1 (the
+    // class's probe, and `duplicate-example-name`'s `number-vs-string-summary`
+    // shape). OpenAPI declares `summary` a string, so the document is at fault.
+    for (method, route, operation) in imported_operations(root) {
+        if operation
+            .get("x-fern-examples")
+            .and_then(serde_json::Value::as_array)
+            .is_some_and(|examples| !examples.is_empty())
+        {
+            continue;
+        }
+        let Some(examples) =
+            request_examples(root, operation).and_then(serde_json::Value::as_object)
+        else {
+            continue;
+        };
+        for (key, example) in examples {
+            if let Some(name) = example_name(root, key, example).filter(|name| !name.is_string()) {
+                let element = format!(
+                    "{} {route} request example {key} summary {}",
+                    method.to_ascii_uppercase(),
+                    name_label(&name)
+                );
+                return refusal(path, strict, Class::ExampleSummaryNotString, &element);
+            }
+        }
+    }
     Ok(())
 }
 
@@ -2555,6 +2912,371 @@ mod tests {
         )
         .unwrap();
         promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
+    }
+
+    /// The extension element `cyclic_extension` refuses among `schemas`, or `None`.
+    fn extension_cycle(schemas: serde_json::Value) -> Option<String> {
+        let root = serde_json::json!({"components": {"schemas": schemas}});
+        cyclic_extension(&root, &root, "", &mut ExtensionCycles::default(), false)
+    }
+
+    #[test]
+    fn an_extension_reaching_its_reference_through_an_array_is_no_cycle() {
+        let node = serde_json::json!({"$ref": "#/components/schemas/Node"});
+        // Stripe's expandable field: a string-or-object union whose
+        // `x-expansionResources` lists the object it expands to.
+        let expandable = serde_json::json!({"Node": {"type": "object", "properties": {"parent": {
+            "anyOf": [{"type": "string"}, node],
+            "x-expansionResources": {"oneOf": [node]},
+        }}}});
+        assert_eq!(extension_cycle(expandable), None);
+        let root = serde_json::json!({"Node": {
+            "type": "object",
+            "x-link": {"oneOf": [node]},
+            "properties": {"id": {"type": "string"}},
+        }});
+        assert_eq!(extension_cycle(root), None);
+        // Through an object member the same field still cycles, union or not.
+        let member = serde_json::json!({"Node": {"type": "object", "properties": {"parent": {
+            "anyOf": [{"type": "string"}, node],
+            "x-link": {"target": node},
+        }}}});
+        assert_eq!(
+            extension_cycle(member).as_deref(),
+            Some("components/schemas/Node/properties/parent/x-link")
+        );
+    }
+
+    /// `check_document_schemas`'s verdict on `schemas`, as the refusal line it prints.
+    fn schema_refusal(schemas: serde_json::Value) -> Option<String> {
+        let root = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "t", "version": "1"},
+            "paths": {},
+            "components": {"schemas": schemas},
+        });
+        check_document_schemas(&root, Path::new("api.yml"), false)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_named_default_refuses_string_enums_and_consts_but_not_booleans() {
+        // `ticket.type`'s inline schema is named `TicketType`, as `ticket_type` is.
+        let collision = |property: serde_json::Value| {
+            schema_refusal(serde_json::json!({
+                "ticket": {"type": "object", "properties": {"type": property}},
+                "ticket_type": {"type": "object", "properties": {"id": {"type": "string"}}},
+            }))
+        };
+        for refused in [
+            serde_json::json!({"type": "string", "enum": ["ticket"], "default": "ticket"}),
+            serde_json::json!({"type": "string", "const": "ticket", "default": "ticket"}),
+        ] {
+            let error = collision(refused.clone()).unwrap_or_default();
+            assert!(
+                error.contains(
+                    "named-type-default: components/schemas/ticket/properties/type/default"
+                ),
+                "{refused}: {error}"
+            );
+        }
+        for generated in [
+            serde_json::json!({"type": "boolean", "const": false, "default": false}),
+            serde_json::json!({"type": "boolean", "enum": [false], "default": false}),
+            serde_json::json!({"const": true, "default": true}),
+            serde_json::json!({"type": "string", "enum": ["ticket"]}),
+        ] {
+            assert_eq!(collision(generated.clone()), None, "{generated}");
+        }
+    }
+
+    #[test]
+    fn a_union_recursing_through_component_defs_is_no_expanding_cycle() {
+        let json_value = serde_json::json!({
+            "anyOf": [
+                {"type": "string"},
+                {"type": "null"},
+                {"type": "array", "items": {"$ref": "#/components/schemas/Call/$defs/value"}},
+                {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Call/$defs/value"}},
+            ]
+        });
+        assert_eq!(
+            schema_refusal(serde_json::json!({"Call": {
+                "type": "object",
+                "properties": {"arguments": {"$ref": "#/components/schemas/Call/$defs/value"}},
+                "$defs": {"value": json_value},
+            }})),
+            None
+        );
+        // The same union reached through a property pointer still expands, one
+        // longer name a turn.
+        let error = schema_refusal(serde_json::json!({"Tool": {
+            "type": "object",
+            "properties": {"composition": {"anyOf": [
+                {"type": "object", "properties": {
+                    "child": {"$ref": "#/components/schemas/Tool/properties/composition"},
+                }},
+                {"type": "string"},
+            ]}},
+        }}))
+        .unwrap_or_default();
+        assert!(
+            error.contains(
+                "generated-file-name-too-long: components/schemas/Tool/properties/composition"
+            ),
+            "{error}"
+        );
+    }
+
+    /// `count` components, each with a property per component that is either a
+    /// string or a reference to it: every component reaches every other, so a
+    /// search over each path between them never finishes.
+    fn densely_recursive(count: usize) -> serde_json::Value {
+        let mut schemas = serde_json::Map::new();
+        for index in 0..count {
+            let properties: serde_json::Map<String, serde_json::Value> = (0..count)
+                .map(|other| {
+                    let reference = format!("#/components/schemas/S{other}");
+                    (
+                        format!("p{other}"),
+                        serde_json::json!({"anyOf": [{"type": "string"}, {"$ref": reference}]}),
+                    )
+                })
+                .collect();
+            schemas.insert(
+                format!("S{index}"),
+                serde_json::json!({"type": "object", "properties": properties}),
+            );
+        }
+        serde_json::Value::Object(schemas)
+    }
+
+    #[test]
+    fn an_object_extends_a_union_of_objects_or_aliases_one_member_but_no_scalar() {
+        let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/object-extends-non-object");
+        let mut shapes: Vec<String> = std::fs::read_dir(&class)
+            .unwrap()
+            .filter_map(|entry| entry.ok()?.file_name().into_string().ok())
+            .filter(|name| {
+                name == "probe.yml" || name.contains("-probe.") || name.contains("-control.")
+            })
+            .collect();
+        shapes.sort();
+        for measured in [
+            "union-base-control.yml",
+            "nested-union-base-control.yml",
+            "untyped-ref-union-base-control.yml",
+            "anyof-ref-union-base-control.yml",
+            "scalar-member-union-base-control.yml",
+            "conditional-base-control.yml",
+            "typed-scalar-alias-control.yml",
+            "typed-nullable-scalar-alias-control.yml",
+        ] {
+            assert!(shapes.iter().any(|shape| shape == measured), "{measured}");
+        }
+        for shape in shapes {
+            let error = registry_shape_refusal(&format!("object-extends-non-object/{shape}"));
+            let refused = error
+                .as_deref()
+                .is_some_and(|error| error.contains("object-extends-non-object: "));
+            assert_eq!(refused, !shape.contains("-control."), "{shape}: {error:?}");
+        }
+    }
+
+    /// `check_sdk`'s refusal over `spec`, or `None`.
+    fn sdk_refusal(spec: &str) -> Option<String> {
+        let mut doc: OpenApi = crate::yaml::from_str(spec).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        check_sdk(&mut doc, &ir, &config, Path::new("openapi.yml"), true)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_sub_client_led_by_a_digit_is_a_lint_failure() {
+        let spec = |tag: &str| {
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Api, version: '1'}}\npaths:\n  /rules:\n    get:\n      \
+                 tags: ['{tag}']\n      operationId: listRules\n      responses: {{'204': {{description: OK}}}}\n"
+            )
+        };
+        let error = sdk_refusal(&spec("3DS Decision Rule")).unwrap_or_default();
+        assert!(
+            error.contains(
+                "generator-lint-failure: sub-client _3ds_decision_rule class 3DsDecisionRuleClient"
+            ),
+            "{error}"
+        );
+        assert_eq!(sdk_refusal(&spec("Decision Rule 3DS")), None);
+    }
+
+    #[test]
+    fn a_densely_recursive_union_document_is_decided_once() {
+        // Stripe's expandable fields: every object reaches every other through a
+        // string-or-object union, with no turn that grows.
+        assert_eq!(schema_refusal(densely_recursive(40)), None);
+        // One pointer partway into a component makes a turn through it grow,
+        // lengthening each turn's name; a second branches the expansion.
+        let mut schemas = densely_recursive(40);
+        schemas["S7"]["properties"]["deep"] =
+            serde_json::json!({"$ref": "#/components/schemas/S3/properties/p7"});
+        let error = schema_refusal(schemas.clone()).unwrap_or_default();
+        assert!(error.contains("generated-file-name-too-long: "), "{error}");
+        schemas["S9"]["properties"]["deep"] =
+            serde_json::json!({"$ref": "#/components/schemas/S5/properties/p9"});
+        let error = schema_refusal(schemas).unwrap_or_default();
+        assert!(error.contains("heap-exhausted: "), "{error}");
+    }
+
+    #[test]
+    fn a_cycle_grows_through_a_partial_pointer_or_an_extended_union_base() {
+        // The class each shape's Fern measurement names, or `None` for a control.
+        for (shape, class) in [
+            ("probe.yml", Some("heap-exhausted")),
+            (
+                "single-child-probe.yml",
+                Some("generated-file-name-too-long"),
+            ),
+            (
+                "recursive-union-allof-probe.json",
+                Some("generated-file-name-too-long"),
+            ),
+            ("defs-json-value-control.yml", None),
+            ("named-binary-recursion-control.json", None),
+            ("named-object-recursion-control.yml", None),
+            ("nonrecursive-union-control.yml", None),
+            ("nullable-union-alias-control.yml", None),
+        ] {
+            let error = registry_shape_refusal(&format!("heap-exhausted/{shape}"));
+            match class {
+                Some(class) => assert!(
+                    error
+                        .as_deref()
+                        .is_some_and(|error| error.contains(&format!("{class}: "))),
+                    "{shape}: {error:?}"
+                ),
+                None => assert_eq!(error, None, "{shape}"),
+            }
+        }
+    }
+
+    /// `check_structure_file`'s and `check_document`'s refusal over a committed
+    /// registry shape, or `None` when it passes both.
+    fn registry_shape_refusal(shape: &str) -> Option<String> {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals")
+            .join(shape);
+        let root: serde_json::Value =
+            crate::yaml::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        check_structure_file(&path, false)
+            .and_then(|()| check_document_schemas(&root, &path, false))
+            .and_then(|()| check_example_names(&root, &path, false))
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_required_reference_to_a_nullable_definition_is_resolved() {
+        for control in [
+            "defs-nullable-target-control.yml",
+            "definitions-nullable-target-control.yml",
+        ] {
+            assert_eq!(
+                registry_shape_refusal(&format!("unresolved-schema-reference/{control}")),
+                None,
+                "{control}"
+            );
+        }
+        let error = registry_shape_refusal("unresolved-schema-reference/deep-defs-field-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains("unresolved-schema-reference: paths//contacts/post/requestBody"),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn a_success_response_follows_its_response_components_reference() {
+        let error = registry_shape_refusal("unresolved-reference/response-fragment-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains("unresolved-reference: components/responses/Empty: #/x-fragment/base"),
+            "{error}"
+        );
+        assert_eq!(
+            registry_shape_refusal("unresolved-reference/response-fragment-default-control.yml"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_non_string_request_example_summary_is_refused_after_duplicate_names() {
+        let error =
+            registry_shape_refusal("example-summary-not-string/probe.yml").unwrap_or_default();
+        assert!(
+            error.contains(
+                "example-summary-not-string: POST /notes request example first summary 1"
+            ),
+            "{error}"
+        );
+        assert_eq!(
+            registry_shape_refusal("example-summary-not-string/string-summary-control.yml"),
+            None
+        );
+        // Two numeric summaries that match are the duplicate Fern's check reports first.
+        let error = registry_shape_refusal("duplicate-example-name/numeric-summaries-probe.yml")
+            .unwrap_or_default();
+        assert!(error.contains("duplicate-example-name"), "{error}");
+    }
+
+    #[test]
+    fn a_string_or_untyped_enum_with_no_non_null_value_is_a_lint_failure() {
+        for probe in [
+            "inline-null-only-enum-probe.yml",
+            "untyped-null-only-enum-probe.yml",
+        ] {
+            let error = registry_shape_refusal(&format!("generator-lint-failure/{probe}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains("generator-lint-failure")
+                    && error.contains("enum has no non-null value"),
+                "{probe}: {error}"
+            );
+        }
+        assert_eq!(
+            registry_shape_refusal("generator-lint-failure/null-and-value-enum-control.yml"),
+            None
+        );
+    }
+
+    #[test]
+    fn an_inline_header_enum_with_a_default_is_declared() {
+        for control in [
+            "two-values-default-control.yml",
+            "optional-default-control.yml",
+            "singleton-default-control.yml",
+        ] {
+            assert_eq!(
+                registry_shape_refusal(&format!("generator-missing-type/{control}")),
+                None,
+                "{control}"
+            );
+        }
+        let error = registry_shape_refusal("generator-missing-type/optional-two-values-probe.yml")
+            .unwrap_or_default();
+        assert!(error.contains("generator-missing-type"), "{error}");
     }
 
     #[test]

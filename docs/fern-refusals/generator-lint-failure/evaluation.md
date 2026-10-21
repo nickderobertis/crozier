@@ -1,5 +1,13 @@
 # generator-lint-failure: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 18 probe and 11 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 11 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 11 of the 11 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: `server-unbound-placeholder` generates at this pair (fern-python-sdk 5.41.3 formats the server template through a variable) and is a control; crozier already generated it. A tag led by a digit names a sub-client class that is no Python identifier, which Fern's `ruff check` fails (Hyperswitch's `3DS Decision Rule`; the `digit-led-tag` probe, whose `Decision Rule 3DS` control generates); crozier refuses it with this class instead of failing in its own formatting.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was made
 to qualify this class. Checks use CPython 3.12.3, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -39,7 +47,7 @@ IR, which names those elements as Fern does:
 | an operationId repeating its tag, beside another operation of that tag | [F811](evaluation-logs/fern-tag-suffix-collision.log) | [probe](tag-suffix-collision-probe.yml) | — (see below) |
 | a method named from a summary with no ASCII word | [syntax error](evaluation-logs/fern-untitled-summary.log) | [probe](untitled-summary-probe.yml) | [ASCII summary](ascii-summary-control.yml) ([log](evaluation-logs/fern-ascii-summary.log)) |
 | a default-server variable that is no Python keyword argument | [hyphen](evaluation-logs/fern-server-hyphen.log), [dot](evaluation-logs/fern-server-dot.log), [keyword](evaluation-logs/fern-server-keyword.log) | [hyphen](server-hyphen-probe.yml), [dot](server-dot-probe.yml), [keyword](server-keyword-probe.yml) | [identifier](server-identifier-control.yml) ([log](evaluation-logs/fern-server-identifier.log)); [hyphen on a non-default server](server-secondary-hyphen-control.yml) ([log](evaluation-logs/fern-server-secondary-hyphen.log)) |
-| a default-server placeholder with no declared variable, beside one that has a variable | [F524](evaluation-logs/fern-server-unbound-placeholder.log) | [probe](server-unbound-placeholder-probe.yml) | [placeholder with no variables at all](server-placeholder-without-variables-control.yml) ([log](evaluation-logs/fern-server-placeholder-without-variables.log)) |
+| a default-server placeholder with no declared variable, beside one that has a variable | [F524](evaluation-logs/fern-server-unbound-placeholder.log) | [probe](server-unbound-placeholder-control.yml) | [placeholder with no variables at all](server-placeholder-without-variables-control.yml) ([log](evaluation-logs/fern-server-placeholder-without-variables.log)) |
 | a model property whose Python name is empty (`/`) | [syntax error](evaluation-logs/fern-slash-property.log) | [probe](slash-property-probe.yml) | [`/data`](slash-prefixed-property-control.yml) ([log](evaluation-logs/fern-slash-prefixed-property.log)) |
 | a `type: string` enum with no non-null value | [empty](evaluation-logs/fern-empty-enum.log), [nullable null](evaluation-logs/fern-null-only-enum.log), [null](evaluation-logs/fern-null-enum-not-nullable.log), [inline union branch](evaluation-logs/fern-inline-null-only-enum.log) | [empty](empty-enum-probe.yml), [nullable](null-only-enum-probe.yml), [null](null-enum-not-nullable-probe.yml), [inline](inline-null-only-enum-probe.yml) | [null beside a value](null-and-value-enum-control.yml) ([log](evaluation-logs/fern-null-and-value-enum.log)) |
 
@@ -114,3 +122,15 @@ the operation, the header and the argument, and never renames one. The
 `x-crozier-idempotency-headers` spelling refuses the same way and wins over a
 conflicting `x-fern-*` list. The independently authored Parcel Courier Desk
 complete golden remains the adjacent valid idempotency control.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-discriminant-collision.log`](evaluation-logs/fern-discriminant-collision.log)
+- [`evaluation-logs/fern-tag-suffix-single.log`](evaluation-logs/fern-tag-suffix-single.log)
+- [`evaluation-logs/global-header-empty-name.generate.log`](evaluation-logs/global-header-empty-name.generate.log)
+- [`evaluation-logs/global-header-punctuation-name.generate.log`](evaluation-logs/global-header-punctuation-name.generate.log)
+- [`evaluation-logs/idempotency-header-empty-name.generate.log`](evaluation-logs/idempotency-header-empty-name.generate.log)
+- [`evaluation-logs/idempotency-header-parameter-collision.generate.log`](evaluation-logs/idempotency-header-parameter-collision.generate.log)
+- [`evaluation-logs/idempotency-header-shared-name.generate.log`](evaluation-logs/idempotency-header-shared-name.generate.log)

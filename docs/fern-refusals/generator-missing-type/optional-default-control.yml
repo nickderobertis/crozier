@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      parameters:
+        - name: Accept-Optional-Events
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: ["true", "false"]
+            default: "false"
+      responses:
+        "204":
+          description: No Content

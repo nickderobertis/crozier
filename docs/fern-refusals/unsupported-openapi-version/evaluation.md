@@ -1,5 +1,11 @@
 # unsupported-openapi-version: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 20 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 20 of the 20 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No emitted SDK was
 repaired to change the result of this evaluation.
 

@@ -1,0 +1,14 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> errors -> ForbiddenError -> type
+        issue: Expected example to be an object. Example is: "\"Only admins can read the banner.\""
+
+    [error]
+        path: __package__.yml -> errors -> ForbiddenError -> type
+        issue: Expected example to be an object. Example is: "\"Only admins can read the settings.\""
+
+Found 2 errors and 0 warnings in <n> seconds.

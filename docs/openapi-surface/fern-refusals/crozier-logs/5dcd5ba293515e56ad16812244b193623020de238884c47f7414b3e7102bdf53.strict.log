@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: default-not-valid-for-type: paths//api/Posts/Keys/{indexKind}/{indexKey}/get/parameters/3/count/schema default String("") (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: default-not-valid-for-type: paths//amz/amazon-search-by-keyword/get/parameters/3/numberOfProducts/schema default String("20") (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: request-property-camelcase-collision: GET /requests/{id}/events parameters "id" and "id" in different locations declare the same request name "id"; give them distinct names (fern-strict: Fern refuses this document)

@@ -25,11 +25,16 @@ Subcommands, in the order a refresh runs them:
     appending one line per document to ``measurements.jsonl``. Needs network,
     Docker, ``fern`` and ``target/release/crozier``.
 ``build``
-    Rewrite ``documents.tsv``, ``unretrievable.tsv`` and ``classes.tsv``'s
-    ``documents`` column from the committed inputs alone (offline).
+    Rewrite ``documents.tsv``, ``generated.tsv``, ``unretrievable.tsv`` and
+    ``classes.tsv``'s ``documents`` and ``population_strict`` columns from the
+    committed inputs alone (offline).
+``shapes``
+    Run Fern at the pin over every class's committed ``*-probe``/``*-control``
+    shape, one at a time, writing each log and ``shapes.tsv``.
 ``check``
-    Fail when a committed table differs from what ``build`` writes, or when its
-    header or cross references drift from the registry contract (offline).
+    Fail when a committed table differs from what ``build`` writes, when its
+    header or cross references drift from the registry contract, or when a
+    committed shape's verdict at the pin is not its role's (offline).
 
 Every class a document carries is found by matching each diagnostic in its Fern
 log against ``classes.tsv``'s ``diagnostic`` templates, where ``<…>`` stands for
@@ -40,7 +45,9 @@ new phrase becomes a class deliberately rather than silently.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
+import datetime
 import gzip
 import hashlib
 import importlib.util
@@ -48,19 +55,29 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import threading
 import urllib.parse
 import urllib.request
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, NamedTuple, NoReturn, TypedDict
+from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, get_args
 
 REPO = Path(__file__).resolve().parents[2]
+# A `classes.tsv` class id or a `findings.tsv` finding name, as Fern's logs are classified into them.
+ClassId: TypeAlias = str
+# The lower-hex SHA-256 of a document's (or a reduced document's) exact bytes: its identity.
+Digest: TypeAlias = str
+# A parsed OpenAPI document's node, as `json` or PyYAML's safe loader builds it:
+# YAML admits non-string mapping keys and plain timestamps, so both are here.
+DocumentNode: TypeAlias = (
+    "dict[object, DocumentNode] | list[DocumentNode] | str | int | float | bool | datetime.date | None"
+)
 # The tests point this at a scratch copy to show `check` failing on drift.
 REGISTRY = Path(os.environ.get("CROZIER_FERN_REFUSALS_REGISTRY") or REPO / "docs" / "fern-refusals")
 EVIDENCE = REPO / "docs" / "openapi-surface" / "fern-refusals"
@@ -96,6 +113,66 @@ DOCUMENTS_HEADER = (
 UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "reason")
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
 CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
+SHAPES_HEADER = (
+    "class",
+    "shape",
+    "role",
+    "digest",
+    "check_exit",
+    "generate_exit",
+    "generate_files",
+    "classes",
+    "verdict",
+    "log",
+)
+# A `shapes.tsv` row as the table spells it, one cell per SHAPES_HEADER column
+# (the functional form, since `class` is a keyword).
+ShapeCells = TypedDict(
+    "ShapeCells",
+    {
+        "class": ClassId,
+        "shape": str,
+        "role": str,
+        "digest": Digest,
+        "check_exit": str,
+        "generate_exit": str,
+        "generate_files": str,
+        "classes": str,
+        "verdict": str,
+        "log": str,
+    },
+)
+# A class's measured shape beside its probe: `<name>-probe.yml` is one Fern
+# refuses with the class, `<name>-control.yml` a near miss Fern generates from.
+SHAPE = re.compile(r"(?P<name>.+)-(?P<role>probe|control)\.(?:yml|yaml|json)")
+# A refused document crozier's strict run refuses with a class its Fern log does
+# not carry, and why that agrees with Fern: a `generate-stage` class Fern's check
+# stopped it before reaching, or a check-stage class Fern reports once the
+# representative document is reduced (`reduction`, JSON pointers deleted) until
+# its own classes are gone (`masked`), or the other class or check-only finding
+# Fern reports there instead (`reported-other`). A reduction Fern's check accepts
+# shows crozier's detector `over-broad`, which crozier is narrowed to match.
+# `reduce` measures each reduction into `log`; `classes` holds the classes and
+# findings it names.
+DISPOSITIONS_HEADER = (
+    "document",
+    "crozier_class",
+    "disposition",
+    "representative",
+    "reduction",
+    "reduced_digest",
+    "check_exit",
+    "generate_exit",
+    "classes",
+    "log",
+)
+# What a reduction's Fern run shows about crozier's class, and what needs none.
+Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other", "unmeasured"]
+DISPOSITIONS: tuple[Disposition, ...] = get_args(Disposition)
+# The recorded dispositions that hold a refusal by crozier's class: not
+# `over-broad`, which crozier is narrowed to match, nor `unmeasured`, a
+# reduction Fern did not finish within `reduce`'s bound.
+AGREEING: tuple[Disposition, ...] = ("generate-stage", "masked", "reported-other")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
@@ -110,6 +187,13 @@ MEASUREMENT_FIELDS = (
     "crozier_exit",
     "crozier_files",
     "crozier_strict_exit",
+    # What crozier's `--fern-strict` run printed: the diagnostic that names the
+    # class its refusal is held to.
+    "crozier_strict_log",
+    # The Fern CLI and fern-python-sdk versions the Fern fields were taken at;
+    # empty on a record taken before the pair was recorded.
+    "fern_cli",
+    "fern_python_sdk",
 )
 # What a measured value may be, when it is not empty (not yet taken): an exit
 # is the run's status (negative when a signal ended it) or `timeout`.
@@ -153,6 +237,9 @@ def _certified_pair(path: Path) -> CertifiedPair:
 
 _PAIR = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
 FERN_CLI, FERN_PYTHON_SDK = _PAIR.cli, _PAIR.sdk
+# The first line of every log `measure` and `confirm` write, so the log itself
+# names the pair it was taken at.
+PAIR_LINE = f"fern-refusals: Fern CLI {FERN_CLI}, fernapi/fern-python-sdk {FERN_PYTHON_SDK}\n"
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.
@@ -227,7 +314,7 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     return [dict(zip(header, row, strict=False)) for row in rows[1:]]
 
 
-def tsv_text(header: tuple[str, ...], rows: Iterable[dict[str, str]]) -> str:
+def tsv_text(header: tuple[str, ...], rows: Iterable[Mapping[str, object]]) -> str:
     lines = ["\t".join(header)]
     for row in rows:
         cells = [str(row[column]) for column in header]
@@ -545,13 +632,77 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
     env = dict(
         os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true", NODE_OPTIONS=NODE_HEAP
     )
-    try:
-        run = subprocess.run(
-            command, cwd=workspace, env=env, capture_output=True, text=True, errors="replace", timeout=timeout
-        )
-    except subprocess.TimeoutExpired:
-        return "timeout", ""
-    return str(run.returncode), run.stdout + run.stderr
+    if STOPPING.is_set():
+        # Terminated: a worker thread's next stage must not start a Fern run
+        # nothing would end.
+        raise SystemExit(128 + signal.SIGTERM)
+    # Fern runs the pinned CLI through `npx`, a tree of processes: a run that
+    # outlives `timeout` is ended as a whole, not just the `fern` it started.
+    with subprocess.Popen(
+        command,
+        cwd=workspace,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        errors="replace",
+        start_new_session=os.name == "posix",
+    ) as run:
+        RUNNING.add(run)
+        if STOPPING.is_set():
+            # Started while `terminated` was ending the others.
+            end_tree(run)
+        try:
+            stdout, stderr = run.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            end_tree(run)
+            run.communicate()
+            return "timeout", ""
+        finally:
+            RUNNING.discard(run)
+    return str(run.returncode), stdout + stderr
+
+
+# The Fern runs in flight. Each leads a session of its own, so a signal to the
+# script's process group never reaches them: `terminated` ends them itself.
+RUNNING: set[subprocess.Popen[str]] = set()
+# Set once the script is terminated, so no further Fern run starts.
+STOPPING = threading.Event()
+
+
+def terminated(signum: int, _frame: object) -> NoReturn:
+    """End every Fern run in flight, and refuse any further one, then exit as the signal asked."""
+    STOPPING.set()
+    for run in list(RUNNING):
+        end_tree(run)
+    raise SystemExit(128 + signum)
+
+
+def end_tree(run: subprocess.Popen[str]) -> None:
+    """Kill a run and every process it started: the session it leads on POSIX,
+    its process tree on Windows, where a descendant left alive would hold the
+    run's pipes open and `communicate` would never return."""
+    killpg = getattr(os, "killpg", None)
+    if killpg is not None:
+        with contextlib.suppress(ProcessLookupError):
+            killpg(run.pid, 9)
+    elif os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(run.pid)], capture_output=True, check=False)
+    run.kill()
+
+
+def at_pair(row: dict[str, str]) -> bool:
+    """Whether a measurement's Fern fields were taken at the certified pair."""
+    return (row.get("fern_cli"), row.get("fern_python_sdk")) == (FERN_CLI, FERN_PYTHON_SDK)
+
+
+def logged_at_pair(path: str) -> bool:
+    """Whether a committed log `measure` or `confirm` wrote names the certified pair."""
+    log = REPO / path
+    if not path or not log.is_file():
+        return False
+    with log.open(encoding="utf-8", errors="replace") as handle:
+        return handle.readline() == PAIR_LINE
 
 
 def fern_check(document: Path, digest: str, timeout: int) -> dict[str, str]:
@@ -562,8 +713,8 @@ def fern_check(document: Path, digest: str, timeout: int) -> dict[str, str]:
         status, output = fern_run(["fern", "check"], workspace, timeout)
     path = EVIDENCE / "logs" / f"{digest}.check.log"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(scrub(output), encoding="utf-8")
-    return {"check_exit": status, "check_log": rel(path)}
+    path.write_text(PAIR_LINE + scrub(output), encoding="utf-8")
+    return {"check_exit": status, "check_log": rel(path), "fern_cli": FERN_CLI, "fern_python_sdk": FERN_PYTHON_SDK}
 
 
 def fern_generate(document: Path, digest: str, timeout: int) -> dict[str, str]:
@@ -581,7 +732,7 @@ def fern_generate(document: Path, digest: str, timeout: int) -> dict[str, str]:
         files = sum(1 for path in preview.rglob("*") if path.is_file()) if preview.is_dir() else 0
     path = EVIDENCE / "logs" / f"{digest}.generate.log"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(scrub(output), encoding="utf-8")
+    path.write_text(PAIR_LINE + scrub(output), encoding="utf-8")
     return {"generate_exit": status, "generate_files": str(files), "generate_log": rel(path)}
 
 
@@ -598,15 +749,29 @@ def scrub(log: str) -> str:
     return log
 
 
-EXIT = re.compile(r"check(?: exits?| exit) (\d+)")
+# `check exit 1`, or as a screen spells it, `` `fern check` exit 1 ``.
+EXIT = re.compile(r"check`? exits? (\d+)")
+# How a screen's verdict names the Fern it ran: `CLI 5.67.1`, `fern-python-sdk:5.20.0`.
+SCREENED_CLI = re.compile(r"\bCLI v?(\d+\.\d+\.\d+)")
+SCREENED_SDK = re.compile(r"fern-python-sdk[: @]v?(\d+\.\d+\.\d+)")
+
+
+def screened_at_pair(verdict: str) -> bool:
+    """Whether a screen's verdict names the certified CLI, and no generator but the certified one."""
+    clis = set(SCREENED_CLI.findall(verdict))
+    sdks = set(SCREENED_SDK.findall(verdict))
+    return clis == {FERN_CLI} and sdks <= {FERN_PYTHON_SDK}
 
 
 def committed_check(entry: Entry) -> dict[str, str] | None:
-    """A committed screen's `fern check` log, when its record states the exit."""
-    exits = EXIT.findall(entry.get("verdict", ""))
+    """A committed screen's `fern check` log, when its record states the exit and
+    names the certified pair as the Fern it ran: a log another Fern took says
+    nothing about what this one does."""
+    verdict = entry.get("verdict", "")
+    exits = EXIT.findall(verdict)
     log = next((path for path in entry.get("logs", []) if path.endswith("-check.log")), None)
-    if log and exits:
-        return {"check_exit": exits[0], "check_log": log}
+    if log and exits and screened_at_pair(verdict):
+        return {"check_exit": exits[0], "check_log": log, "fern_cli": FERN_CLI, "fern_python_sdk": FERN_PYTHON_SDK}
     return None
 
 
@@ -659,14 +824,60 @@ def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: s
     return str(run.returncode), str(files)
 
 
-def crozier_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
-    status, files = crozier_run(binary, document, timeout, CACHE / "crozier-logs" / f"{digest}.default.log")
-    return {"crozier_exit": status, "crozier_files": files}
-
-
 def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
-    log = CACHE / "crozier-logs" / f"{digest}.strict.log"
-    return {"crozier_strict_exit": crozier_run(binary, document, timeout, log, "--fern-strict")[0]}
+    """crozier's `--fern-strict` verdict, its stderr committed beside Fern's logs
+    with the scratch paths of the document and of the SDK it wrote made generic."""
+    log = EVIDENCE / "crozier-logs" / f"{digest}.strict.log"
+    status = crozier_run(binary, document, timeout, log, "--fern-strict")[0]
+    text = log.read_text(encoding="utf-8").replace(str(document), "<document>")
+    log.write_text(re.sub(r"\S*fern-refusals-crozier-[^/\s]+/sdk", "<output>", text), encoding="utf-8")
+    return {"crozier_strict_exit": status, "crozier_strict_log": rel(log)}
+
+
+# How crozier reports a refusal class: `crozier: invalid OpenAPI document <path>: <class>: <element>…`.
+STRICT_REFUSAL = re.compile(r"^crozier: invalid OpenAPI document .*?: (?P<cls>[a-z][a-z0-9]*(?:-[a-z0-9]+)+): ", re.M)
+
+
+class StrictRefusal(NamedTuple):
+    """What crozier's `--fern-strict` run printed: the class it refused with
+    (empty when none did) and its first error line (empty when it generated)."""
+
+    cls: ClassId
+    error: str
+
+
+def strict_refusal(log: str) -> StrictRefusal:
+    error = next((line for line in log.splitlines() if line.startswith("crozier: ")), "")
+    found = STRICT_REFUSAL.match(error)
+    return StrictRefusal(found["cls"] if found else "", error)
+
+
+def strict_problems(
+    digest: str, names: list[str], exit_status: str, log: str, disposed: list[DispositionRow] | None = None
+) -> list[str]:
+    """A refused record held to the diagnostic crozier printed: its strict exit
+    agrees with the log, and the refusal is by one of the classes it carries, or
+    by a class `dispositions.tsv` shows agrees with Fern for this document."""
+    if not (REPO / log).is_file():
+        return [f"{digest}: its crozier log {log} is missing; retake it with `measure --crozier-again`"]
+    refusal = strict_refusal(read_log(log))
+    printed, error = refusal.cls, refusal.error
+    if exit_status == "timeout":
+        return [
+            f"{digest}: crozier --fern-strict ran past `measure`'s time bound ({log}); retake it with a longer --timeout"
+        ]
+    if exit_status != ("1" if error else "0"):
+        return [f"{digest}: crozier_strict_exit {exit_status} disagrees with {log}; retake it with `measure`"]
+    if printed in names:
+        return []
+    if any(row["crozier_class"] == printed and row["disposition"] in AGREEING for row in disposed or []):
+        return []
+    said = f"stops at `{error}`" if error else "generates it"
+    return [
+        f"{digest}: crozier --fern-strict {said} ({log}), not with a diagnostic of its classes "
+        f"{', '.join(names)}; repair crozier so the class detector refuses it, then `measure --crozier-again`, "
+        "or record why it agrees with Fern in docs/fern-refusals/dispositions.tsv and run `reduce`"
+    ]
 
 
 def read_measurements() -> dict[str, dict[str, str]]:
@@ -717,22 +928,26 @@ def check_blocks(row: dict[str, str]) -> bool:
 
 
 def missing_measurements(row: dict[str, str]) -> set[str]:
-    """Which of `check`, `generate`, `crozier` and `crozier-strict` a retrievable
-    document still needs."""
+    """Which of `fetch`, `check`, `generate` and `crozier-strict` a document
+    still needs. Every Fern field is taken at the certified pair: a
+    record another pair took, or a fetch that failed while another pair was
+    certified, is taken again."""
     if row.get("unretrievable"):
-        return set()
+        return set() if at_pair(row) else {"fetch"}
     missing = set()
     log = row.get("check_log")
-    if not row.get("check_exit") or (log and ran_out_below_the_heap(read_log(log))):
+    if not row.get("check_exit") or not at_pair(row) or (log and ran_out_below_the_heap(read_log(log))):
         # A run that ran out of Node's default heap reported the host, not Fern:
         # take it again. One that exhausts `NODE_HEAP` is Fern's own verdict.
         missing.add("check")
-    elif not row.get("generate_files") and not check_blocks(row):
+    elif row["check_exit"] != "timeout" and not row.get("generate_files") and not check_blocks(row):
         missing.add("generate")
-    if not row.get("crozier_exit"):
-        missing.add("crozier")
-    if not row.get("crozier_strict_exit"):
-        # `build` needs it only for a document carrying an evaluated class.
+    # crozier's verdict is its `--fern-strict` run, which refuses before it
+    # generates anything; nothing reads a default-mode run's exit or file count,
+    # so `measure` takes none (`crozier_exit` and `crozier_files` stay as an
+    # earlier tree recorded them).
+    log = row.get("crozier_strict_log")
+    if not row.get("crozier_strict_exit") or not log or not (REPO / log).is_file():
         missing.add("crozier-strict")
     return missing
 
@@ -745,7 +960,12 @@ def measure(args: argparse.Namespace) -> int:
     todo = [
         entry
         for entry in population()
-        if entry["key"] not in done or missing_measurements(done[entry["key"]]) or args.again
+        if entry["key"] not in done
+        or missing_measurements(done[entry["key"]])
+        or args.again
+        or (args.crozier_again and not done[entry["key"]]["unretrievable"])
+        # A record of other bytes than the committed records name says nothing of these.
+        or (entry["digest"] and done[entry["key"]]["digest"] not in ("", entry["digest"]))
     ]
     if args.limit:
         todo = todo[: args.limit]
@@ -753,28 +973,46 @@ def measure(args: argparse.Namespace) -> int:
     documents = CACHE / "documents"
     documents.mkdir(parents=True, exist_ok=True)
 
+    # Fern runs one lane `--jobs` wide whatever else runs beside it; crozier's
+    # own runs take `--crozier-jobs` lanes of their own.
+    crozier_jobs = args.crozier_jobs or args.jobs
+    fern_lane = threading.BoundedSemaphore(args.jobs)
+    crozier_lane = threading.BoundedSemaphore(crozier_jobs)
+
     def one(entry: Entry, data: bytes) -> dict[str, str]:
         digest = hashlib.sha256(data).hexdigest()
         path = documents / f"{digest}{suffix_of(entry['locator'])}"
         path.write_bytes(data)
         row: dict[str, str] = {} if args.again else dict(done.get(entry["key"], {}))
+        if row.get("digest") not in ("", None, digest):
+            # Other bytes than the record measured: nothing it holds describes these.
+            row = {}
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = (
-            missing_measurements(row)
-            if row.get("check_exit") or row.get("crozier_exit")
-            else {"check", "crozier", "crozier-strict"}
+            missing_measurements(row) - {"fetch"}
+            if row.get("check_exit") or row.get("crozier_strict_exit")
+            else {"check", "crozier-strict"}
         )
+        if args.crozier_again:
+            needed.add("crozier-strict")
         if "check" in needed:
-            committed = None if row.get("check_exit") else committed_check(entry)
-            row.update(committed or fern_check(path, digest, args.timeout))
-            if not row.get("generate_files") and not check_blocks(row):
+            # The record's Fern fields are another pair's, or none: retake them all.
+            for field in ("check_exit", "check_log", "generate_exit", "generate_files", "generate_log"):
+                row[field] = ""
+            committed = committed_check(entry)
+            if committed is None:
+                with fern_lane:
+                    committed = fern_check(path, digest, args.timeout)
+            row.update(committed)
+            if row["check_exit"] != "timeout" and not check_blocks(row):
+                # A check that never finished says nothing a generation could add to.
                 needed.add("generate")
         if "generate" in needed:
-            row.update(fern_generate(path, digest, args.timeout))
-        if "crozier" in needed:
-            row.update(crozier_measure(binary, path, digest, args.timeout))
+            with fern_lane:
+                row.update(fern_generate(path, digest, args.timeout))
         if "crozier-strict" in needed:
-            row.update(crozier_strict_measure(binary, path, digest, args.timeout))
+            with crozier_lane:
+                row.update(crozier_strict_measure(binary, path, digest, args.timeout))
         return row
 
     lock = threading.Lock()
@@ -786,12 +1024,20 @@ def measure(args: argparse.Namespace) -> int:
 
     # Fetches share one paced lane, so they run in this thread, one at a time;
     # Fern and crozier fan out behind them.
-    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+    with ThreadPoolExecutor(max_workers=max(args.jobs, crozier_jobs)) as pool:
         futures = []
         for entry in todo:
             data, reason = fetcher.get(entry)
             if data is None:
-                record({"key": entry["key"], "digest": entry["digest"], "unretrievable": reason})
+                record(
+                    {
+                        "key": entry["key"],
+                        "digest": entry["digest"],
+                        "unretrievable": reason,
+                        "fern_cli": FERN_CLI,
+                        "fern_python_sdk": FERN_PYTHON_SDK,
+                    }
+                )
                 continue
             futures.append(pool.submit(one, entry, data))
             futures[-1].add_done_callback(lambda future: record(future.result()))
@@ -847,7 +1093,8 @@ def diagnostics(log: str) -> list[str]:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
             r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack"
-            r"|Response must be an object in order to return property |.* is undefined$|\w*(Error|Exception)\b.*:",
+            r"|Response must be an object in order to return property |.* is undefined$|\w*(Error|Exception)\b.*:"
+            r"|Cannot use 'in' operator ",
             api.group(1),
         ):
             message = api.group(1)
@@ -980,6 +1227,22 @@ def verdict(
     )
 
 
+def unmeasured(result: dict[str, str]) -> str:
+    """Why Fern gave no verdict on a fetched document: a stage that ran past
+    `measure`'s `--timeout` is recorded, not waited on, so one document cannot
+    hold the population."""
+    stage = next(
+        (stage for stage in ("check", "generate") if result[f"{stage}_exit"] == "timeout"),
+        "",
+    )
+    if not stage:
+        return ""
+    return (
+        f"unmeasured: `fern {stage}` ran past `measure`'s time bound at Fern CLI {result['fern_cli']} "
+        f"with fernapi/fern-python-sdk {result['fern_python_sdk']}"
+    )
+
+
 def tables() -> tuple[dict[str, str], list[str]]:
     """Every table `build` writes, by file name, and every problem that stops it."""
     problems: list[str] = []
@@ -988,6 +1251,9 @@ def tables() -> tuple[dict[str, str], list[str]]:
     patterns = class_patterns(classes)
     near = finding_patterns(findings)
     measured = read_measurements()
+    disposed: dict[str, list[DispositionRow]] = {}
+    for row in read_dispositions():
+        disposed.setdefault(row["document"], []).append(row)
     documents: dict[str, dict[str, str]] = {}
     generated: dict[str, dict[str, str]] = {}
     unretrievable: list[dict[str, str]] = []
@@ -1008,14 +1274,15 @@ def tables() -> tuple[dict[str, str], list[str]]:
             "revision": entry["revision"] or EMPTY,
             "recorded_by": records,
         }
-        if result["unretrievable"]:
+        reason = result["unretrievable"] or unmeasured(result)
+        if reason:
             # A record that never located its document is named by the record itself.
             unretrievable.append(
                 dict(
                     identity,
                     locator=entry["locator"] or entry["key"],
-                    digest=entry["digest"] or EMPTY,
-                    reason=result["unretrievable"],
+                    digest=result["digest"] or entry["digest"] or EMPTY,
+                    reason=reason,
                 )
             )
             continue
@@ -1038,6 +1305,20 @@ def tables() -> tuple[dict[str, str], list[str]]:
             kept["recorded_by"] = ";".join(sorted(set(kept["recorded_by"].split(";")) | set(entry["records"])))
             continue
         if refusal is None:
+            # A document Fern generates from is one crozier's strict run generates.
+            if not result["crozier_strict_exit"] or not result["crozier_strict_log"]:
+                problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
+            elif not (REPO / result["crozier_strict_log"]).is_file():
+                problems.append(
+                    f"{digest}: its crozier log {result['crozier_strict_log']} is missing; "
+                    "retake it with `measure --crozier-again`"
+                )
+            elif result["crozier_strict_exit"] != "0":
+                error = strict_refusal(read_log(result["crozier_strict_log"])).error
+                problems.append(
+                    f"{digest}: Fern generates it, but crozier --fern-strict stops at `{error}` "
+                    f"({result['crozier_strict_log']}); narrow crozier to generate it, then `measure --crozier-again`"
+                )
             generated[digest] = dict(
                 identity,
                 digest=digest,
@@ -1056,19 +1337,28 @@ def tables() -> tuple[dict[str, str], list[str]]:
         strict = EMPTY
         if evaluated.intersection(names):
             strict = result["crozier_strict_exit"]
-            if not strict:
+            if not strict or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
                 continue
+            problems += strict_problems(digest, names, strict, result["crozier_strict_log"], disposed.get(digest, []))
         documents[digest] = dict(
             identity,
             digest=digest,
             **refusal,
-            crozier_exit=result["crozier_exit"],
-            crozier_files=result["crozier_files"],
+            crozier_exit=result["crozier_exit"] or EMPTY,
+            crozier_files=result["crozier_files"] or EMPTY,
             crozier_strict_exit=strict,
         )
+    # A disposition vouches for a refusal above only if it holds.
+    problems += disposition_problems(documents)
     for row in classes:
         row["documents"] = str(counts[row["class"]])
+        if row["status"] != "unevaluated":
+            # Of the documents carrying an evaluated class, how many crozier's
+            # `--fern-strict` run refuses.
+            carrying = [doc for doc in documents.values() if row["class"] in doc["classes"].split(",")]
+            refused = sum(1 for doc in carrying if doc["crozier_strict_exit"] == "1")
+            row["population_strict"] = f"{refused}/{len(carrying)}"
     return (
         {
             "documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),
@@ -1180,10 +1470,17 @@ def confirm(args: argparse.Namespace) -> int:
     """
     documents = read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
-    measured = {row["digest"]: row for row in read_measurements().values() if row["digest"]}
+    measured = {row["digest"]: row for row in read_measurements().values() if row["digest"] and at_pair(row)}
     cached = {path.stem: path for path in (CACHE / "documents").glob("*") if path.is_file()}
     path = confirmations_path()
-    kept = read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else []
+    carried = {(name, doc["digest"]) for doc in documents for name in doc["classes"].split(",")}
+    # A confirmation another pair took confirms nothing about this one, and one
+    # of a document that no longer carries the class confirms nothing about it.
+    kept = [
+        row
+        for row in (read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else [])
+        if logged_at_pair(row["generate_log"]) and (row["class"], row["digest"]) in carried
+    ]
     plan: list[tuple[str, dict[str, str]]] = []
     for row in classes:
         name = row["class"]
@@ -1257,6 +1554,11 @@ def confirmation_problems() -> list[str]:
             )
         elif not (REPO / row["generate_log"]).is_file():
             problems.append(f"confirmations.tsv {row['digest']}: its log {row['generate_log']} is not committed")
+        elif not logged_at_pair(row["generate_log"]):
+            problems.append(
+                f"confirmations.tsv {row['class']} {row['digest']}: its log {row['generate_log']} was not taken at "
+                f"Fern CLI {FERN_CLI} with fernapi/fern-python-sdk {FERN_PYTHON_SDK}; rerun `confirm`"
+            )
         elif row["generate_exit"] == "timeout":
             problems.append(
                 f"{row['class']}: the generation of {row['digest']} timed out, which confirms "
@@ -1292,26 +1594,27 @@ def check(_args: argparse.Namespace) -> int:
             problems.append(f"docs/fern-refusals/{name}: the header must be exactly {chr(9).join(header)!r}")
     if problems:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
-    problems = cross_reference_problems() + confirmation_problems()
-    if problems:
-        fail(
-            "\n  ".join(
-                [
-                    "the registry's tables disagree with each other "
-                    "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
-                    *problems,
-                ]
-            )
-        )
-    written, problems = tables()
+    # Both stages are reported together: a template that drifts shows in the
+    # tables and in every disposition it derives alike.
+    agreement = cross_reference_problems() + confirmation_problems() + shape_problems() + stray_reduction_logs()
+    written, inputs = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
-            problems.append(
+            inputs.append(
                 f"docs/fern-refusals/{name} differs from what `build` writes; "
                 "run `tools/fern-refusals/fern-refusals.py build` and commit the result"
             )
-    if problems:
-        fail("\n  ".join(["the registry drifted from its inputs:", *problems]))
+    sections = []
+    if agreement:
+        sections += [
+            "the registry's tables disagree with each other "
+            "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
+            *agreement,
+        ]
+    if inputs:
+        sections += ["the registry drifted from its inputs:", *inputs]
+    if sections:
+        fail("\n  ".join(sections))
     return 0
 
 
@@ -1389,6 +1692,9 @@ def probe(args: argparse.Namespace) -> int:
             try:
                 results.update([future.result()])
             except SystemExit:
+                if STOPPING.is_set():
+                    # The signal's exit, not this probe's failure.
+                    raise
                 problems.append(name)
     for row in classes:
         row.update(results.get(row["class"], {}))
@@ -1461,6 +1767,729 @@ def finding(args: argparse.Namespace) -> int:
     return 0
 
 
+def shapes_path() -> Path:
+    return EVIDENCE / "shapes.tsv"
+
+
+ShapeRole = Literal["probe", "control"]
+ShapeVerdict = Literal["refused", "generates", "unmeasured"]
+# A Fern stage's outcome: its exit status, or `timeout` when it ran past the bound.
+StageExit = int | Literal["timeout"]
+
+
+def stage_exit(text: str) -> StageExit | None:
+    """`text` as a stage's outcome, or `None` when it is neither an exit status nor `timeout`."""
+    if text == "timeout":
+        return "timeout"
+    return int(text) if _EXIT[0].fullmatch(text) else None
+
+
+class Shape(NamedTuple):
+    """A class's committed probe or control shape."""
+
+    cls: ClassId
+    path: Path
+    role: ShapeRole
+
+
+class Generation(NamedTuple):
+    """A `fern generate` over a shape: its outcome, the files it wrote and its output."""
+
+    exit: StageExit
+    files: int
+    log: str
+
+
+class ShapeRun(NamedTuple):
+    """What Fern did over a shape: its check, and its generation unless the check
+    named a class or ran past the bound."""
+
+    check_exit: StageExit
+    check_log: str
+    generation: Generation | None
+
+
+class ShapeRow(NamedTuple):
+    """A shape's `shapes.tsv` row, typed; `cells` is the row as the table spells it."""
+
+    shape: Shape
+    digest: Digest
+    run: ShapeRun
+    classes: list[ClassId]
+    verdict: ShapeVerdict
+    log: Path
+
+    def cells(self) -> ShapeCells:
+        generation = self.run.generation
+        return {
+            "class": self.shape.cls,
+            "shape": self.shape.path.name,
+            "role": self.shape.role,
+            "digest": self.digest,
+            "check_exit": str(self.run.check_exit),
+            "generate_exit": str(generation.exit) if generation else EMPTY,
+            "generate_files": str(generation.files) if generation else EMPTY,
+            "classes": ",".join(self.classes) or EMPTY,
+            "verdict": self.verdict,
+            "log": rel(self.log),
+        }
+
+
+def class_shapes(classes: list[dict[str, str]]) -> list[Shape]:
+    """Every measured shape a class directory commits."""
+    found = []
+    for row in classes:
+        directory = REGISTRY / row["class"]
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.iterdir()):
+            match = SHAPE.fullmatch(path.name)
+            if match and path.is_file():
+                found.append(Shape(row["class"], path, "probe" if match["role"] == "probe" else "control"))
+    return found
+
+
+def shape_log(shape: Shape) -> Path:
+    """Where a shape's Fern log lives: `evaluation-logs/fern-<name>.log` beside it,
+    or `fern-<name>-<role>.log` when the class commits both roles of one name."""
+    match = SHAPE.fullmatch(shape.path.name)
+    assert match is not None
+    name = match["name"]
+    other = "control" if shape.role == "probe" else "probe"
+    shared = any((shape.path.parent / f"{name}-{other}.{suffix}").is_file() for suffix in ("yml", "yaml", "json"))
+    return shape.path.parent / "evaluation-logs" / (f"fern-{name}-{shape.role}.log" if shared else f"fern-{name}.log")
+
+
+def shape_log_text(run: ShapeRun) -> str:
+    """A shape's log: the pair, the check's exit and output, then the generation's when it ran."""
+    text = PAIR_LINE + f"check exit: {run.check_exit}\n" + run.check_log
+    if run.generation:
+        text += f"\ngenerate exit: {run.generation.exit}\nfiles: {run.generation.files}\n" + run.generation.log
+    return text
+
+
+SHAPE_LOG = re.compile(
+    r"check exit: (?P<check_exit>\S+)\n(?P<check_log>.*?)"
+    r"(?:\ngenerate exit: (?P<generate_exit>\S+)\nfiles: (?P<generate_files>\S+)\n(?P<generate_log>.*))?",
+    re.DOTALL,
+)
+
+
+def read_shape_log(text: str) -> ShapeRun | None:
+    """The run a shape's log records, or `None` when it is not one `shapes` wrote
+    at the pair: each exit an exit status or `timeout`, the file count a count."""
+    if not text.startswith(PAIR_LINE):
+        return None
+    match = SHAPE_LOG.fullmatch(text[len(PAIR_LINE) :])
+    check = stage_exit(match["check_exit"]) if match else None
+    if match is None or check is None:
+        return None
+    if match["generate_exit"] is None:
+        return ShapeRun(check, match["check_log"], None)
+    generate = stage_exit(match["generate_exit"])
+    if generate is None or not _COUNT[0].fullmatch(match["generate_files"]):
+        return None
+    return ShapeRun(
+        check, match["check_log"], Generation(generate, int(match["generate_files"]), match["generate_log"])
+    )
+
+
+def shape_row(shape: Shape, digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]) -> ShapeRow:
+    """A shape's row, derived from its run alone: the classes Fern's logs name, and
+    whether it `refused` the shape, `generates` from it, or left it `unmeasured`
+    past the time bound — by the rule `verdict` holds a real document to."""
+    log = shape_log(shape)
+    generation = run.generation
+    if run.check_exit == "timeout" or (generation and generation.exit == "timeout"):
+        return ShapeRow(shape, digest, run, [], "unmeasured", log)
+    check_classes = classify(diagnostics(run.check_log), patterns, near)[0]
+    if check_classes and run.check_exit != 0:
+        return ShapeRow(shape, digest, run, check_classes, "refused", log)
+    generate_classes = classify(diagnostics(generation.log if generation else ""), patterns, near)[0]
+    if generation is None or generation.exit != 0 or generation.files == 0 or generate_classes:
+        return ShapeRow(shape, digest, run, check_classes or generate_classes, "refused", log)
+    return ShapeRow(shape, digest, run, [], "generates", log)
+
+
+def fern_shape(shape: Shape, timeout: int, patterns: list[Template], near: list[Template]) -> ShapeRun:
+    """`fern check` over a shape, then `fern generate` unless the check named a class, each output scrubbed."""
+    return fern_document(shape.path, timeout, patterns, near)
+
+
+def fern_document(document: Path, timeout: int, patterns: list[Template], near: list[Template]) -> ShapeRun:
+    """`fern check` over a document, then `fern generate` unless the check named a class, each output scrubbed."""
+    with tempfile.TemporaryDirectory(prefix="fern-refusals-shape-") as scratch:
+        workspace = Path(scratch) / "fern"
+        fern_workspace(document, workspace)
+        status, output = fern_run(["fern", "check"], workspace, timeout)
+        check_exit, check_log = stage_exit(status), scrub(output)
+        assert check_exit is not None, status
+        blocked = check_exit != 0 and classify(diagnostics(check_log), patterns, near)[0]
+        if check_exit == "timeout" or blocked:
+            return ShapeRun(check_exit, check_log, None)
+        preview = Path(scratch) / "preview"
+        status, output = fern_run(
+            ["fern", "generate", "--group", "python-sdk", "--local", "--preview", "--output", str(preview), "--force"],
+            workspace,
+            timeout,
+        )
+        generate_exit = stage_exit(status)
+        assert generate_exit is not None, status
+        files = sum(1 for file in preview.rglob("*") if file.is_file()) if preview.is_dir() else 0
+    return ShapeRun(check_exit, check_log, Generation(generate_exit, files, scrub(output)))
+
+
+def shapes(args: argparse.Namespace) -> int:
+    """Measure Fern on every committed probe and control shape of the named classes (all by default).
+
+    `fern check`, then `fern generate` unless the check names a class, each
+    shape's log written to `evaluation-logs/fern-<name>.log` (its first line
+    naming the pair) and its verdict to `shapes.tsv`, which `check` holds to
+    each shape's role: a probe Fern refuses, a control it generates from. A
+    shape already measured at the pair over the same bytes is kept; the table
+    is written after every shape, so a stopped run resumes.
+    """
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    names = {row["class"] for row in classes}
+    missing = [name for name in args.cls if name not in names]
+    if missing:
+        fail(f"no classes.tsv row for {', '.join(missing)}; add the row first")
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    every = class_shapes(classes)
+    path = shapes_path()
+    on_record = shape_records(path) if path.is_file() else {}
+    current = {(shape.cls, shape.path.name) for shape in every}
+    table = {key: row for key, row in on_record.items() if key in current}
+    taken = 0
+    for shape in every:
+        if args.cls and shape.cls not in args.cls:
+            continue
+        digest = hashlib.sha256(shape.path.read_bytes()).hexdigest()
+        log = shape_log(shape)
+        # A shape renamed between probe and control keeps its bytes and its log,
+        # so the measurement it already has is its own.
+        kept = table.get((shape.cls, shape.path.name)) or next(
+            (
+                row
+                for row in on_record.values()
+                if row["class"] == shape.cls and row["digest"] == digest and row["log"] == rel(log)
+            ),
+            None,
+        )
+        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        if not args.again and kept and kept["digest"] == digest and kept["log"] == rel(log) and recorded:
+            row = shape_row(shape, digest, recorded, patterns, near).cells()
+            if row != kept:
+                table[(shape.cls, shape.path.name)] = row
+                write_shapes(path, table)
+            continue
+        run = fern_shape(shape, args.timeout, patterns, near)
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(shape_log_text(run), encoding="utf-8")
+        table[(shape.cls, shape.path.name)] = shape_row(shape, digest, run, patterns, near).cells()
+        write_shapes(path, table)
+        taken += 1
+    write_shapes(path, table)
+    print(f"fern-refusals: {taken} shape(s) measured, {len(table)} on record")
+    return 0
+
+
+def shape_records(path: Path) -> dict[tuple[ClassId, str], ShapeCells]:
+    """`shapes.tsv`'s rows by class and shape; a shape recorded twice is refused,
+    never one of its measurements silently kept."""
+    records: dict[tuple[ClassId, str], ShapeCells] = {}
+    for row in read_tsv(path, SHAPES_HEADER):
+        key = (row["class"], row["shape"])
+        if key in records:
+            fail(f"{rel(path)} records {row['shape']} of {row['class']} twice; delete both rows and rerun `shapes`")
+        records[key] = ShapeCells(
+            {
+                "class": row["class"],
+                "shape": row["shape"],
+                "role": row["role"],
+                "digest": row["digest"],
+                "check_exit": row["check_exit"],
+                "generate_exit": row["generate_exit"],
+                "generate_files": row["generate_files"],
+                "classes": row["classes"],
+                "verdict": row["verdict"],
+                "log": row["log"],
+            }
+        )
+    return records
+
+
+def write_shapes(path: Path, table: dict[tuple[ClassId, str], ShapeCells]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
+
+
+def shape_problems() -> list[str]:
+    """Every committed shape is measured at the pair over its own bytes, its
+    `shapes.tsv` row is what its log derives, and Fern's verdict is its role's:
+    a probe refused (its class's phrase or another's, as its evaluation
+    explains), a control generated."""
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    every = class_shapes(classes)
+    path = shapes_path()
+    if not path.is_file():
+        return [f"{rel(path)} is missing; run `tools/fern-refusals/fern-refusals.py shapes`"] if every else []
+    on_record = shape_records(path)
+    problems = []
+    for shape in every:
+        row = on_record.pop((shape.cls, shape.path.name), None)
+        again = f"run `tools/fern-refusals/fern-refusals.py shapes {shape.cls}`"
+        digest = hashlib.sha256(shape.path.read_bytes()).hexdigest()
+        if row is None or row["digest"] != digest or row["role"] != shape.role:
+            problems.append(f"{rel(shape.path)}: not measured over these bytes; {again}")
+            continue
+        log = REPO / row["log"]
+        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        if recorded is None:
+            problems.append(
+                f"{rel(shape.path)}: its log {row['log']} is not one `shapes` wrote at Fern CLI {FERN_CLI} with "
+                f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
+            )
+        elif (
+            dict(shape_row(shape, digest, recorded, patterns, near).cells(), log=row["log"]) != row
+            or Path(row["log"]).name != shape_log(shape).name
+        ):
+            problems.append(f"{rel(shape.path)}: shapes.tsv disagrees with its log {row['log']}; {again}")
+        elif row["verdict"] == "unmeasured":
+            continue
+        elif shape.role == "probe" and row["verdict"] != "refused":
+            problems.append(
+                f"{rel(shape.path)}: Fern generates from the probe; make it a control and narrow crozier's "
+                "detector to match"
+            )
+        elif shape.role == "control" and row["verdict"] != "generates":
+            problems.append(
+                f"{rel(shape.path)}: Fern refuses the control with {row['classes']}; make it a probe of the class "
+                "that names it"
+            )
+    problems += [
+        f"{rel(path)} names {shape} of {name}, which is not committed; rerun `shapes`"
+        for name, shape in sorted(on_record)
+    ]
+    return problems
+
+
+def dispositions_path() -> Path:
+    return REGISTRY / "dispositions.tsv"
+
+
+class DispositionRow(TypedDict):
+    """A `dispositions.tsv` row, its outcomes parsed; `None` and `[]` are `—`."""
+
+    document: Digest
+    crozier_class: ClassId
+    disposition: Disposition
+    representative: Digest
+    reduction: str
+    reduced_digest: Digest
+    check_exit: StageExit | None
+    generate_exit: StageExit | None
+    classes: list[ClassId]
+    log: str
+
+
+def is_disposition(text: str) -> TypeGuard[Disposition]:
+    return text in DISPOSITIONS
+
+
+def disposition_row(cells: dict[str, str]) -> DispositionRow:
+    """A row read from the table, every cell checked against what it may hold."""
+    name = f"dispositions.tsv {cells['document']}"
+    for field in ("document", "representative", "reduced_digest"):
+        if not (DIGEST.fullmatch(cells[field]) or (field != "document" and cells[field] == EMPTY)):
+            fail(f"{name}: {field} {cells[field]!r} is not a SHA-256 digest{'' if field == 'document' else ' or `—`'}")
+    disposition = cells["disposition"]
+    if not is_disposition(disposition):
+        fail(f"{name}: disposition {disposition!r} is not one of {', '.join(DISPOSITIONS)}; restore it from git")
+
+    def outcome(field: str) -> StageExit | None:
+        text = cells[field]
+        if text == EMPTY:
+            return None
+        parsed = stage_exit(text)
+        if parsed is None:
+            fail(f"{name}: {field} {text!r} is not an exit status, `timeout` or `—`; rerun `reduce`")
+        return parsed
+
+    return DispositionRow(
+        document=cells["document"],
+        crozier_class=cells["crozier_class"],
+        disposition=disposition,
+        representative=cells["representative"],
+        reduction=cells["reduction"],
+        reduced_digest=cells["reduced_digest"],
+        check_exit=outcome("check_exit"),
+        generate_exit=outcome("generate_exit"),
+        classes=[] if cells["classes"] == EMPTY else cells["classes"].split(","),
+        log=cells["log"],
+    )
+
+
+def disposition_text(row: DispositionRow) -> dict[str, str]:
+    """A row as the table spells it."""
+    return {
+        "document": row["document"],
+        "crozier_class": row["crozier_class"],
+        "disposition": row["disposition"],
+        "representative": row["representative"],
+        "reduction": row["reduction"],
+        "reduced_digest": row["reduced_digest"],
+        "check_exit": EMPTY if row["check_exit"] is None else str(row["check_exit"]),
+        "generate_exit": EMPTY if row["generate_exit"] is None else str(row["generate_exit"]),
+        "classes": ",".join(row["classes"]) or EMPTY,
+        "log": row["log"],
+    }
+
+
+def read_dispositions() -> list[DispositionRow]:
+    path = dispositions_path()
+    return [disposition_row(cells) for cells in read_tsv(path, DISPOSITIONS_HEADER)] if path.is_file() else []
+
+
+def write_dispositions(rows: list[DispositionRow]) -> None:
+    ordered = sorted(rows, key=lambda row: (row["crozier_class"], row["document"]))
+    text = tsv_text(DISPOSITIONS_HEADER, [disposition_text(row) for row in ordered])
+    dispositions_path().write_text(text, encoding="utf-8")
+
+
+class Pointer(NamedTuple):
+    """One JSON pointer of a reduction: as written, and its unescaped tokens."""
+
+    written: str
+    tokens: list[str]
+
+
+def reduction_pointers(reduction: str) -> list[Pointer]:
+    """A reduction's `;`-separated JSON pointers; fails on one that is not a
+    pointer. `—` deletes nothing: the representative as it stands. A last token
+    `*-a,b` names every member of its parent but `a` and `b`."""
+    pointers: list[Pointer] = []
+    for pointer in [] if reduction == EMPTY else reduction.split(";"):
+        raw = pointer[1:].split("/")
+        if not pointer.startswith("/") or not all(ESCAPED.fullmatch(token) for token in raw):
+            fail(
+                f"dispositions.tsv reduction {pointer!r} is not a JSON pointer; write each as `/a/b`, "
+                "`;`-separated, with `~` only as `~0` and `/` as `~1`"
+            )
+        tokens = [token.replace("~1", "/").replace("~0", "~") for token in raw]
+        pointers.append(Pointer(pointer, tokens))
+    return pointers
+
+
+# A document's or reduction's identity: the lower-hex SHA-256 of its bytes.
+DIGEST = re.compile(r"[0-9a-f]{64}")
+# A JSON pointer token as written: `~` only in its escapes `~0` and `~1` (RFC 6901).
+ESCAPED = re.compile(r"(?:[^~]|~[01])*")
+# A JSON pointer token naming a list member: a non-negative index, no sign, no leading zero.
+INDEX = re.compile(r"0|[1-9][0-9]*")
+
+
+def pointed(node: DocumentNode, pointer: Pointer) -> DocumentNode:
+    """The node a pointer's leading tokens name: the parent of what it deletes."""
+    for token in pointer.tokens[:-1]:
+        match node:
+            case dict() if token in node:
+                node = node[token]
+            case list() if INDEX.fullmatch(token) and int(token) < len(node):
+                node = node[int(token)]
+            case _:
+                fail(f"dispositions.tsv reduction {pointer.written} names no node of the representative")
+    return node
+
+
+def delete(document: DocumentNode, pointer: Pointer) -> None:
+    """Delete what one pointer names: a member, a list item, or, for `*-a,b`,
+    every member of its parent but those it keeps."""
+    last = pointer.tokens[-1]
+    match pointed(document, pointer):
+        case dict() as parent if last.startswith("*-"):
+            kept = {key for key in last[2:].split(",") if key}
+            if not kept <= parent.keys():
+                fail(f"dispositions.tsv reduction {pointer.written} keeps a member the representative lacks")
+            for key in [key for key in parent if key not in kept]:
+                del parent[key]
+        case dict() as parent if last in parent:
+            del parent[last]
+        case list() as parent if INDEX.fullmatch(last) and int(last) < len(parent):
+            del parent[int(last)]
+        case _:
+            fail(f"dispositions.tsv reduction {pointer.written} names no node of the representative")
+
+
+def yaml_module() -> Any:
+    """PyYAML. The tool also runs under the host's `python3`
+    (`just fern-refusals-measure`), so it is imported only where a YAML
+    representative is reduced. Typed `Any`: PyYAML ships no type information
+    and the workspace pins no stubs for it, so a module type would describe
+    nothing the checker could hold its loader and dumper calls to."""
+    try:
+        import yaml
+    except ImportError:
+        fail("reducing a YAML document needs PyYAML; run `reduce` under the workspace's `uv run`, which installs it")
+    return yaml
+
+
+def load_yaml(text: str) -> DocumentNode:
+    """`text` read as Fern's YAML 1.2 parser reads it where PyYAML's 1.1 would
+    not: `true` and `false` alone are booleans, never `on` or `yes`, and the `=`
+    value tag Jira's description writes is a string."""
+    yaml = yaml_module()
+
+    class Loader(yaml.SafeLoader):
+        pass
+
+    boolean = "tag:yaml.org,2002:bool"
+    Loader.yaml_implicit_resolvers = {
+        first: [(tag, pattern) for tag, pattern in resolvers if tag != boolean]
+        for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    Loader.add_implicit_resolver(boolean, re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+    Loader.add_constructor("tag:yaml.org,2002:value", lambda loader, node: loader.construct_scalar(node))
+    return yaml.load(text, Loader=Loader)
+
+
+def reduced(data: bytes, suffix: str, reduction: str) -> bytes:
+    """The document `data` with each node the reduction points at deleted, in
+    its own format: a YAML one stays YAML, so a plain timestamp stays plain."""
+    text = data.decode("utf-8")
+    json_document = suffix == ".json"
+    document = json.loads(text) if json_document else load_yaml(text)
+    for pointer in reduction_pointers(reduction):
+        delete(document, pointer)
+    if json_document:
+        return (json.dumps(document, ensure_ascii=False) + "\n").encode("utf-8")
+    return yaml_module().safe_dump(document, sort_keys=False, allow_unicode=True, width=1 << 30).encode("utf-8")
+
+
+def reduction_log(reduced_digest: str) -> Path:
+    return EVIDENCE / "reductions" / f"{reduced_digest}.log"
+
+
+class Reduction(NamedTuple):
+    """A `dispositions.tsv` row's reduction, derived before Fern runs over it."""
+
+    index: int
+    inputs: tuple[Digest, str]
+    text: bytes
+    digest: Digest
+
+
+class ReductionLog(NamedTuple):
+    """A reduction's log: the representative and reduction it was taken from, and Fern's run."""
+
+    representative: Digest
+    reduction: str
+    run: ShapeRun
+
+
+# A reduction log's first line, naming its inputs; the shape log's text follows.
+REDUCTION_LINE = re.compile(r"fern-refusals: reduction of (?P<representative>[0-9a-f]{64}): (?P<reduction>[^\n]+)\n")
+
+
+def reduction_log_text(representative: str, reduction: str, run: ShapeRun) -> str:
+    return f"fern-refusals: reduction of {representative}: {reduction}\n" + shape_log_text(run)
+
+
+def read_reduction_log(text: str) -> ReductionLog | None:
+    """The inputs and run a reduction log records, or `None` when it is not one `reduce` wrote at the pair."""
+    named = REDUCTION_LINE.match(text)
+    run = read_shape_log(text[named.end() :]) if named else None
+    if named is None or run is None:
+        return None
+    return ReductionLog(named["representative"], named["reduction"], run)
+
+
+class ReductionVerdict(NamedTuple):
+    """What a reduction's run shows about crozier's class, and the classes and findings Fern named."""
+
+    disposition: Disposition
+    named: list[ClassId]
+
+
+def disposition_of(
+    crozier_class: str, run: ShapeRun, patterns: list[Template], near: list[Template]
+) -> ReductionVerdict:
+    """`masked` where Fern names crozier's class, `reported-other` where its
+    check names another class or a check-only finding, `over-broad` where its
+    check names neither, and `unmeasured` where a stage ran past the bound."""
+    if run.check_exit == "timeout" or (run.generation and run.generation.exit == "timeout"):
+        return ReductionVerdict("unmeasured", [])
+    named: set[str] = set()
+    checked: set[str] = set()
+    for stage, log in (("check", run.check_log), ("generate", run.generation.log if run.generation else "")):
+        carried, found, _unmatched = classify(diagnostics(log), patterns, near)
+        named |= {*carried, *found}
+        if stage == "check" and run.check_exit != 0:
+            checked = {*carried, *found}
+    if crozier_class in named:
+        return ReductionVerdict("masked", sorted(named))
+    return ReductionVerdict("reported-other" if checked else "over-broad", sorted(named))
+
+
+def disposition_cells(
+    row: DispositionRow, reduced_digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
+) -> DispositionRow:
+    verdict = disposition_of(row["crozier_class"], run, patterns, near)
+    return DispositionRow(
+        document=row["document"],
+        crozier_class=row["crozier_class"],
+        disposition=verdict.disposition,
+        representative=row["representative"],
+        reduction=row["reduction"],
+        reduced_digest=reduced_digest,
+        check_exit=run.check_exit,
+        generate_exit=run.generation.exit if run.generation else None,
+        classes=verdict.named,
+        log=rel(reduction_log(reduced_digest)),
+    )
+
+
+def reduce(args: argparse.Namespace) -> int:
+    """Measure Fern, one run at a time, on each `dispositions.tsv` row's reduced
+    representative, writing its log and the row's derived cells. A reduction
+    already measured at the pair over the same bytes is kept."""
+    rows = read_dispositions()
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    entries = {entry["digest"]: entry for entry in population() if entry["digest"]}
+    measured = read_measurements()
+    for entry in population():
+        digest = measured.get(entry["key"], {}).get("digest")
+        if digest:
+            entries.setdefault(digest, entry)
+    fetcher: Fetcher | None = None
+    # Every row's reduced bytes first: one log per reduced document names the
+    # one input pair it came from, so a pair sharing it is refused before Fern runs.
+    reductions: list[Reduction] = []
+    provenance: dict[Digest, tuple[Digest, str]] = {}
+    for index, row in enumerate(rows):
+        if row["representative"] == EMPTY:
+            continue
+        entry = entries.get(row["representative"])
+        if entry is None:
+            fail(f"dispositions.tsv: representative {row['representative']} is no population document")
+        fetcher = fetcher or Fetcher([REPO / ".local", *args.root])
+        located: Entry = {**entry, "digest": row["representative"]}
+        data, reason = fetcher.get(located)
+        if data is None:
+            fail(f"cannot read representative {row['representative']}: {reason}")
+        inputs = (row["representative"], row["reduction"])
+        text = reduced(data, suffix_of(entry["locator"]), row["reduction"])
+        digest = hashlib.sha256(text).hexdigest()
+        if provenance.setdefault(digest, inputs) != inputs:
+            fail(shared_reduction(digest, provenance[digest], inputs))
+        reductions.append(Reduction(index, inputs, text, digest))
+    runs: dict[str, ShapeRun] = {}
+    taken = 0
+    for index, inputs, text, digest in reductions:
+        row = rows[index]
+        log = reduction_log(digest)
+        found = read_reduction_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        # A log of these bytes from other inputs names other provenance: take it again.
+        recorded = found.run if found and (found.representative, found.reduction) == inputs else None
+        run = runs.get(digest) or (None if args.again else recorded)
+        if run is None:
+            with tempfile.TemporaryDirectory(prefix="fern-refusals-reduced-") as scratch:
+                document = Path(scratch) / "openapi.json"
+                document.write_bytes(text)
+                run = fern_document(document, args.timeout, patterns, near)
+            log.parent.mkdir(parents=True, exist_ok=True)
+            log.write_text(reduction_log_text(*inputs, run), encoding="utf-8")
+            taken += 1
+        runs[digest] = run
+        rows[index] = disposition_cells(row, digest, run, patterns, near)
+        write_dispositions(rows)
+    write_dispositions(rows)
+    print(f"fern-refusals: {taken} reduction(s) measured, {len(rows)} disposition(s) on record")
+    return 0
+
+
+def shared_reduction(digest: Digest, first: tuple[Digest, str], second: tuple[Digest, str]) -> str:
+    """Why two rows' inputs cannot share one reduced document: its one log names one pair."""
+    return (
+        f"dispositions.tsv: reduced document {digest} comes from representative {first[0]} reduced by "
+        f"{first[1]!r} and from {second[0]} reduced by {second[1]!r}; give the rows one representative and "
+        "reduction, or reduce one of them further"
+    )
+
+
+def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> list[str]:
+    """Every `dispositions.tsv` row against the registry and its own log: its
+    document is refused (one of `documents`, by default `documents.tsv`'s), its
+    class is one the document does not carry, a `generate-stage` row is one by
+    the classes' stages, and every other row is what its reduction's log at the
+    pair derives."""
+    path = dispositions_path()
+    if not path.is_file():
+        return []
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    stages = {row["class"]: row["fern_stage"] for row in classes}
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    if documents is None:
+        documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
+    rows = read_dispositions()
+    problems = []
+    if [(row["crozier_class"], row["document"]) for row in rows] != sorted(
+        {(row["crozier_class"], row["document"]) for row in rows}
+    ):
+        problems.append("dispositions.tsv: rows are sorted by crozier_class then document, no pair twice")
+    again = "run `tools/fern-refusals/fern-refusals.py reduce`"
+    provenance: dict[Digest, tuple[Digest, str]] = {}
+    for row in rows:
+        if row["representative"] != EMPTY and row["reduced_digest"] != EMPTY:
+            inputs = (row["representative"], row["reduction"])
+            first = provenance.setdefault(row["reduced_digest"], inputs)
+            if first != inputs:
+                problems.append(shared_reduction(row["reduced_digest"], first, inputs))
+    for row in rows:
+        name = f"dispositions.tsv {row['document']}"
+        document = documents.get(row["document"])
+        if document is None:
+            problems.append(f"{name}: no documents.tsv row; drop the disposition")
+            continue
+        if row["crozier_class"] not in stages or row["crozier_class"] in document["classes"].split(","):
+            problems.append(f"{name}: {row['crozier_class']} is no class, or one the document carries")
+            continue
+        if row["representative"] == EMPTY:
+            stage = stages[row["crozier_class"]] == "generate" and document["fern_stage"] == "check"
+            text = disposition_text(row)
+            blank = all(text[field] == EMPTY for field in DISPOSITIONS_HEADER[4:])
+            if row["disposition"] != "generate-stage" or not stage or not blank:
+                problems.append(
+                    f"{name}: with no representative, a disposition is `generate-stage`, for a class only "
+                    "`fern generate` reports on a document Fern's check stopped, every other cell `—`"
+                )
+            continue
+        log = REPO / row["log"]
+        recorded = read_reduction_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        if recorded is None or log != reduction_log(row["reduced_digest"]):
+            problems.append(
+                f"{name}: its log {row['log']} is not one `reduce` wrote at Fern CLI {FERN_CLI} with "
+                f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
+            )
+        elif (recorded.representative, recorded.reduction) != (row["representative"], row["reduction"]):
+            problems.append(
+                f"{name}: its log {row['log']} was taken from representative {recorded.representative} reduced by "
+                f"{recorded.reduction!r}, not the row's; {again}"
+            )
+        elif disposition_cells(row, row["reduced_digest"], recorded.run, patterns, near) != row:
+            problems.append(f"{name}: the row disagrees with its log {row['log']}; {again}")
+    return problems
+
+
+def stray_reduction_logs() -> list[str]:
+    """Every reduction log no `dispositions.tsv` row names."""
+    named = {row["log"] for row in read_dispositions()}
+    stray = sorted(rel(log) for log in (EVIDENCE / "reductions").glob("*.log") if rel(log) not in named)
+    return [f"{log}: no dispositions.tsv row names this reduction; delete it" for log in stray]
+
+
 def positive(text: str) -> int:
     """A worker count or a timeout: an integer of at least one."""
     value = int(text)
@@ -1479,14 +2508,21 @@ def nonnegative(text: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    signal.signal(signal.SIGTERM, terminated)
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("select", help="print the selected population").set_defaults(run=select)
     m = sub.add_parser("measure", help="fetch, run Fern and crozier, record measurements.jsonl")
-    m.add_argument("--jobs", type=positive, default=6)
+    m.add_argument("--jobs", type=positive, default=6, help="how many Fern runs at once")
+    m.add_argument("--crozier-jobs", type=positive, default=0, help="how many crozier runs at once (default: --jobs)")
     m.add_argument("--timeout", type=positive, default=3600)
     m.add_argument("--limit", type=nonnegative, default=0)
     m.add_argument("--again", action="store_true", help="re-measure documents already on record")
+    m.add_argument(
+        "--crozier-again",
+        action="store_true",
+        help="retake crozier's --fern-strict verdict on every retrievable document (after crozier changes)",
+    )
     m.add_argument(
         "--root",
         type=Path,
@@ -1505,11 +2541,21 @@ def main(argv: list[str] | None = None) -> int:
     f.add_argument("--jobs", type=positive, default=6)
     f.add_argument("--timeout", type=positive, default=900)
     f.set_defaults(run=finding)
+    s = sub.add_parser("shapes", help="measure Fern on classes' probe and control shapes into shapes.tsv")
+    s.add_argument("cls", nargs="*", metavar="CLASS", help="the classes whose shapes to measure (default: every one)")
+    s.add_argument("--again", action="store_true", help="re-measure shapes already on record at the pair")
+    s.add_argument("--timeout", type=positive, default=1800)
+    s.set_defaults(run=shapes)
     c = sub.add_parser("confirm", help="sample each class's real documents through fern generate")
     c.add_argument("--per-class", type=nonnegative, default=3)
     c.add_argument("--jobs", type=positive, default=6)
     c.add_argument("--timeout", type=positive, default=3600)
     c.set_defaults(run=confirm)
+    r = sub.add_parser("reduce", help="measure Fern on each disposition's reduced representative")
+    r.add_argument("--again", action="store_true", help="re-measure reductions already on record at the pair")
+    r.add_argument("--timeout", type=positive, default=1800)
+    r.add_argument("--root", type=Path, action="append", default=[], help="a directory supplying documents by digest")
+    r.set_defaults(run=reduce)
     sub.add_parser("build", help="rewrite the tables from the committed inputs").set_defaults(run=build)
     sub.add_parser("check", help="fail when the tables drift from the inputs").set_defaults(run=check)
     args = parser.parse_args(argv)

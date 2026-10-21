@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: type-not-defined: components/schemas/ProcedureWriteDto/properties/events/items/oneOf/0 (fern-strict refusal)

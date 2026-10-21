@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -6,12 +7,6 @@ Warnings for generators.yml:
 [api]: python-sdk GET /rest/api/3/configuration/timetracking: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
 [api]: python-sdk PUT /rest/api/3/issue/{issueIdOrKey}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
 [api]: python-sdk POST /rest/api/3/jql/function/computation: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
-[api]: python-sdk issueWorklogs.yml -> service -> endpoints -> bulkMoveWorklogs
-                  issueWorklogs.yml
-                  [error] Multiple request properties have the name issueIdOrKey. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "issueIdOrKey"
-                    - Body property: <Request Body> -> issueIdOrKey
-                  
 [api]: python-sdk issues.yml -> service -> endpoints -> exportArchivedIssues -> examples[0] -> request
                   issues.yml
                   [error] Unexpected property "archivedDate"
@@ -23,12 +18,6 @@ Warnings for generators.yml:
 [api]: python-sdk prioritySchemes.yml -> service -> endpoints -> getPrioritySchemes -> request -> query-parameters -> orderBy -> type
                   prioritySchemes.yml
                   [error] Default value '+name' is not a valid enum value
-                  
-[api]: python-sdk jiraSettings.yml -> service -> endpoints -> setApplicationProperty
-                  jiraSettings.yml
-                  [error] Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "id"
-                    - Body property: <Request Body> -> id
                   
 [api]: python-sdk issueBulkOperations.yml -> service -> endpoints -> submitBulkMove -> examples[0] -> request
                   issueBulkOperations.yml
@@ -49,6 +38,6 @@ Warnings for generators.yml:
                   __package__.yml
                   [error] ProjectFeatureState is already declared in projectFeatures.yml
                   
-[api]: python-sdk Found 12 errors and 95 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Found 10 errors and 95 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.

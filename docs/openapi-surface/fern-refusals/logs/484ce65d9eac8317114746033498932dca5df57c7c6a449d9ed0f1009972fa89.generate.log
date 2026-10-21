@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -306,12 +307,6 @@ Warnings for generators.yml:
                     - 2.7
                     - 2.8
                     - 2.9
-                  
-[api]: python-sdk companies.yml -> service -> endpoints -> attachContactToACompany
-                  companies.yml
-                  [error] Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "id"
-                    - Body property: <Request Body> -> id
                   
 [api]: python-sdk conversations.yml -> service -> endpoints -> attachContactToConversation -> examples[0] -> headers
                   conversations.yml
@@ -1248,3 +1243,1797 @@ Warnings for generators.yml:
                     - 2.8
                     - 2.9
                   
+[api]: python-sdk articles.yml -> service -> endpoints -> deleteArticle -> examples[0] -> headers
+                  articles.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> deleteCollection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk companies.yml -> service -> endpoints -> deleteCompany -> examples[0] -> headers
+                  companies.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> deleteNewsItem -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> deleteSection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> deleteTag -> examples[0] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk companies.yml -> service -> endpoints -> detachContactFromACompany -> examples[0] -> headers
+                  companies.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[1] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[2] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[3] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk subscriptionTypes.yml -> service -> endpoints -> detachSubscriptionTypeToContact -> examples[0] -> headers
+                  subscriptionTypes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> detachTagFromContact -> examples[0] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[0] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[1] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[2] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> findTag -> examples[0] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> getTicket -> examples[0] -> headers
+                  tickets.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> getTicket -> examples[0] -> response
+                  tickets.yml
+                  [error] Expected example to be an object. Example is: "ticket"
+                  
+[api]: python-sdk ticketTypes.yml -> service -> endpoints -> getTicketType -> examples[0] -> headers
+                  ticketTypes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> identifyAdmin -> examples[0] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk dataAttributes.yml -> service -> endpoints -> lisDataAttributes -> examples[0] -> headers
+                  dataAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> listActivityLogs -> examples[0] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> listAdmins -> examples[0] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> listAllCollections -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk companies.yml -> service -> endpoints -> listAllCompanies -> examples[0] -> headers
+                  companies.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> listAllSections -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk articles.yml -> service -> endpoints -> listArticles -> examples[0] -> headers
+                  articles.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> listCompaniesForAContact -> examples[0] -> headers
+                  contacts.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> listConversations -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> listHelpCenters -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> listLiveNewsfeedItems -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> listNewsItems -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> listNewsfeeds -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk notes.yml -> service -> endpoints -> listNotes -> examples[0] -> headers
+                  notes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk segments.yml -> service -> endpoints -> listSegments -> examples[0] -> headers
+                  segments.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> listSegmentsForAContact -> examples[0] -> headers
+                  contacts.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk subscriptionTypes.yml -> service -> endpoints -> listSubscriptionTypes -> examples[0] -> headers
+                  subscriptionTypes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> listSubscriptionsForAContact -> examples[0] -> headers
+                  contacts.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tags.yml -> service -> endpoints -> listTags -> examples[0] -> headers
+                  tags.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> listTagsForAContact -> examples[0] -> headers
+                  contacts.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk teams.yml -> service -> endpoints -> listTeams -> examples[0] -> headers
+                  teams.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk ticketTypes.yml -> service -> endpoints -> listTicketTypes -> examples[0] -> headers
+                  ticketTypes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> manageConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> manageConversation -> examples[1] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> manageConversation -> examples[2] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> manageConversation -> examples[3] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> manageConversation -> examples[4] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> redactConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> redactConversation -> examples[1] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> replyConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> replyConversation -> examples[1] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> replyConversation -> examples[2] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> replyConversation -> examples[3] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> replyTicket -> examples[0] -> headers
+                  tickets.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> retrieveAdmin -> examples[0] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk articles.yml -> service -> endpoints -> retrieveArticle -> examples[0] -> headers
+                  articles.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> retrieveCollection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk companies.yml -> service -> endpoints -> retrieveCompany -> examples[0] -> headers
+                  companies.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> retrieveConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> retrieveHelpCenter -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> retrieveNewsItem -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> retrieveNewsfeed -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk notes.yml -> service -> endpoints -> retrieveNote -> examples[0] -> headers
+                  notes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> retrieveSection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk segments.yml -> service -> endpoints -> retrieveSegment -> examples[0] -> headers
+                  segments.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk teams.yml -> service -> endpoints -> retrieveTeam -> examples[0] -> headers
+                  teams.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk visitors.yml -> service -> endpoints -> retrieveVisitorWithUserId -> examples[0] -> headers
+                  visitors.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk companies.yml -> service -> endpoints -> scrollOverAllCompanies -> examples[0] -> headers
+                  companies.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> searchConversations -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> setAwayAdmin -> examples[0] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> setAwayAdmin -> examples[1] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk admins.yml -> service -> endpoints -> setAwayAdmin -> examples[2] -> headers
+                  admins.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk articles.yml -> service -> endpoints -> updateArticle -> examples[0] -> headers
+                  articles.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk articles.yml -> service -> endpoints -> updateArticle -> examples[1] -> headers
+                  articles.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> updateCollection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> updateCollection -> examples[1] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> updateConversation -> examples[0] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk conversations.yml -> service -> endpoints -> updateConversation -> examples[1] -> headers
+                  conversations.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[0] -> headers
+                  dataAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[1] -> headers
+                  dataAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[2] -> headers
+                  dataAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[3] -> headers
+                  dataAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> updateNewsItem -> examples[0] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk news.yml -> service -> endpoints -> updateNewsItem -> examples[1] -> headers
+                  news.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> updateSection -> examples[0] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk helpCenter.yml -> service -> endpoints -> updateSection -> examples[1] -> headers
+                  helpCenter.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[0] -> headers
+                  tickets.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[0] -> response
+                  tickets.yml
+                  [error] Expected example to be an object. Example is: "ticket"
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[1] -> headers
+                  tickets.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[1] -> response
+                  tickets.yml
+                  [error] Expected example to be an object. Example is: "ticket"
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[2] -> headers
+                  tickets.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk tickets.yml -> service -> endpoints -> updateTicket -> examples[2] -> response
+                  tickets.yml
+                  [error] Expected example to be an object. Example is: "ticket"
+                  
+[api]: python-sdk ticketTypes.yml -> service -> endpoints -> updateTicketType -> examples[0] -> headers
+                  ticketTypes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk ticketTypeAttributes.yml -> service -> endpoints -> updateTicketTypeAttribute -> examples[0] -> headers
+                  ticketTypeAttributes.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk visitors.yml -> service -> endpoints -> updateVisitor -> examples[0] -> headers
+                  visitors.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk visitors.yml -> service -> endpoints -> updateVisitor -> examples[1] -> headers
+                  visitors.yml
+                  [error] "Intercom-Version" is not a valid example for this enum. Enum values are:
+                    - 1.0
+                    - 1.1
+                    - 1.2
+                    - 1.3
+                    - 1.4
+                    - 2.0
+                    - 2.1
+                    - 2.2
+                    - 2.3
+                    - 2.4
+                    - 2.5
+                    - 2.6
+                    - 2.7
+                    - 2.8
+                    - 2.9
+                  
+[api]: python-sdk __package__.yml -> types -> SingleFilterSearchRequestOperator
+                  __package__.yml
+                  [error] Enum name  for value ~ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk tickets.yml -> types -> Ticket -> properties -> type -> type
+                  tickets.yml
+                  [error] Default values are not supported for the named type
+                  
+[api]: python-sdk Found 165 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

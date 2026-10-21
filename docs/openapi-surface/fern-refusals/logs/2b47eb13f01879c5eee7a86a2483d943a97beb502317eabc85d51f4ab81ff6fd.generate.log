@@ -1,10 +1,11 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           Failed to format Cannot parse: 3:9
@@ -41,7 +42,7 @@ Warnings for generators.yml:
                                           ParseError: bad input
                                           Output mode: downloadFiles
                                           Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
-                                          b'fern/output/src/fern/client.py:75:53: SyntaxError: Expected a parameter name\n   |\n73 | \xe2\x80\xa6     if api_version is not None:\n74 | \xe2\x80\xa6         _api_version = api_version if api_version is not None else "v1"\n75 | \xe2\x80\xa6         base_url = "./api/{api-version}".format(api-version=_api_version)\n   |                                                   ^\n76 | \xe2\x80\xa6     self._client_wrapper = SyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), token=token, header\xe2\x80\xa6\n77 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_s\xe2\x80\xa6\n   |\n\nfern/output/src/fern/client.py:165:53: SyntaxError: Expected a parameter name\n    |\n163 | \xe2\x80\xa6     if api_version is not None:\n164 | \xe2\x80\xa6         _api_version = api_version if api_version is not None else "v1"\n165 | \xe2\x80\xa6         base_url = "./api/{api-version}".format(api-version=_api_version)\n    |                                                   ^\n166 | \xe2\x80\xa6     self._client_wrapper = AsyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), token=token, head\xe2\x80\xa6\n167 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_\xe2\x80\xa6\n    |\n\nFound 21 errors (19 fixed, 2 remaining).\n'
+                                          b'fern/output/src/fern/client.py:82:49: SyntaxError: Expected a parameter name\n   |\n80 | \xe2\x80\xa6         )\n81 | \xe2\x80\xa6         if base_url is None:\n82 | \xe2\x80\xa6             base_url = _url_template.format(api-version=_api_version)\n   |                                               ^\n83 | \xe2\x80\xa6     self._client_wrapper = SyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), token=token, header\xe2\x80\xa6\n84 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_s\xe2\x80\xa6\n   |\n\nfern/output/src/fern/client.py:179:49: SyntaxError: Expected a parameter name\n    |\n177 | \xe2\x80\xa6         )\n178 | \xe2\x80\xa6         if base_url is None:\n179 | \xe2\x80\xa6             base_url = _url_template.format(api-version=_api_version)\n    |                                               ^\n180 | \xe2\x80\xa6     self._client_wrapper = AsyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), token=token, head\xe2\x80\xa6\n181 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_\xe2\x80\xa6\n    |\n\nFound 21 errors (19 fixed, 2 remaining).\n'
                                           b''
                                           /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
                                           * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
@@ -112,7 +113,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/cli/abstract_generator.py", line 225, in generate_project
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
                                               publisher.run_ruff_check_fix("/fern/output", cwd="/")
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
                                             File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix

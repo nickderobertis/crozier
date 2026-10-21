@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: endpoint-auth-undefined: POST /notify security/mtls (fern-strict refusal)

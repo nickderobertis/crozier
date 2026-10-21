@@ -1,0 +1,71 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk coupons.yml -> service -> endpoints -> GetCoupon -> examples[0] -> response
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> GetCouponCollection -> examples[0] -> response
+                  coupons.yml
+                  [error] Example is missing required property "response.body.0.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk kycDocuments.yml -> service -> endpoints -> PatchKycRequest -> examples[0] -> request
+                  kycDocuments.yml
+                  [error] Example is missing required property "request.customerId"
+                  
+[api]: python-sdk kycDocuments.yml -> service -> endpoints -> PatchKycRequest
+                  kycDocuments.yml
+                  [error] Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "id"
+                    - Body property: <Request Body> -> (extends) root.KycRequest -> (extends) CommonKycRequest -> id
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> request
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> response
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> PostCouponExpiration -> examples[0] -> response
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> request
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> response
+                  coupons.yml
+                  [error] Example is missing required property "response.body.discount.value"
+                  [error] Unexpected property "amount"
+                  [error] Unexpected property "currency"
+                  
+[api]: python-sdk __package__.yml -> types -> ProductTaxCategoryId
+                  __package__.yml
+                  [error] Enum value 99999 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 20010 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 40030 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 51020 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 51010 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 31000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 30070 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk Found 30 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

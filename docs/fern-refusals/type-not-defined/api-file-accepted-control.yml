@@ -61,8 +61,6 @@ paths:
           description: R
         "599":
           description: R
-        "4XX":
-          description: R
         "default":
           description: R
   /string:

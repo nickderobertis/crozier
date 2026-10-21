@@ -1,6 +1,8 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 212 errors
+[api]: Discriminated union "ActiveConsumerOffersByRestaurantOffersItem (ActiveConsumerOffersByRestaurant > offers > Item)" lists "#/components/schemas/ActiveConsumerOffer" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[sdk] 210 errors
     [error]
         path: __package__.yml -> errors -> NotImplementedError -> type
         issue: Unexpected property "errors"
@@ -60,12 +62,6 @@ Warnings for generators.yml:
     [error]
         path: __package__.yml -> types -> UpdateOrderTimeRequest
         issue: UpdateOrderTimeRequest is already declared in publiclyAccessible.yml
-
-    [error]
-        path: consumerQueries.yml -> service -> endpoints -> updateLateOrderCompensationRequestWithRestaurantResponse
-        issue: Multiple request properties have the name orderId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "orderId"
-  - Body property: <Request Body> -> orderId
 
     [error]
         path: orderWebhooks.yml -> service -> endpoints -> orderReadyForPreparationAsync -> examples[0] -> request
@@ -376,12 +372,6 @@ Warnings for generators.yml:
         issue: Unexpected property "serviceTypes"
 
     [error]
-        path: restaurants.yml -> service -> endpoints -> putMenuForIngestion
-        issue: Multiple request properties have the name restaurantId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "restaurantId"
-  - Body property: <Request Body> -> (extends) root.MenuBase -> restaurantId
-
-    [error]
         path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
         issue: Unexpected property "Badges"
 
@@ -853,4 +843,4 @@ Warnings for generators.yml:
         path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
         issue: Unexpected property "Tags"
 
-Found 212 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 210 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

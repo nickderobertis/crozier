@@ -1,5 +1,13 @@
 # named-type-default: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 3 probe and 16 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 10 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 10 of the 10 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: A boolean `enum` or `const` with a default generates (`boolean-enum-collision`, `const-boolean-collision` controls; Mistral's `stream`), and crozier no longer counts one; a string `const` is refused as a string `enum` is (`const-string-collision` probe). `union-declaration` and `multiple-values-collision` are probes.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.
 Measurements use CPython 3.12.3, mypy 1.13.0 and the generated
 `pyproject.toml` configuration with its declared dependencies.

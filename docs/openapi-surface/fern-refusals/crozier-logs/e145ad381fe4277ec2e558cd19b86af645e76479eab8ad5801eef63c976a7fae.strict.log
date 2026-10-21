@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: generator-lint-failure: components/schemas/cwl-InitialWorkDirListing/oneOf/1/items/oneOf/0 enum has no non-null value (fern-strict refusal)

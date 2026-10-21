@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-missing-required-property: GET /v3/company/{realmId}/query components/schemas/TaxCode collides with Tax_Code (fern-strict refusal)

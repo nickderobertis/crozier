@@ -12,9 +12,12 @@ for transport and refusal behaviour alone.
 
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import email.utils
+import hashlib
 import http.server
+import io
 import itertools
 import json
 import os
@@ -65,6 +68,9 @@ class Fixture:
         self.scripted: dict[str, list[tuple[int, dict[str, str]]]] = {}
         self.header_override: dict[str, dict[str, str]] = {}
         self.rate_limit_body: bytes | None = None
+        # Units a guarded call spends, per path: another holder's spend folded
+        # into this one call, to author a fast burn.
+        self.charge: dict[str, int] = {}
         for name in ("core", "search", "code_search", "graphql"):
             self.set(name, limit=100, used=0, reset_in=3600)
 
@@ -111,7 +117,7 @@ class Fixture:
                 if scripted:
                     status, headers = scripted.pop(0)
                 else:
-                    self.buckets[bucket]["used"] += 1
+                    self.buckets[bucket]["used"] += self.charge.get(path, 1)
                     figures = self.buckets[bucket]
                     headers = {
                         "x-ratelimit-limit": str(figures["limit"]),
@@ -253,30 +259,129 @@ class GitHubCapTests(GuardTestCase):
         self.assertEqual(len(calls), 1)
         self.assertGreaterEqual(calls[0].at, reset)
         waits = self.kinds(guard, "wait")
-        self.assertEqual([w["cause"] for w in waits], ["cap"])
+        self.assertEqual([w["cause"] for w in waits], ["floor"])
         self.assertEqual(waits[0]["bucket"], "code_search")
         self.assertEqual(waits[0]["reading"]["used"], 7)
         self.assertGreater(waits[0]["duration_s"], 0)
         probes = self.kinds(guard, "probe")
         self.assertEqual([p["admitted"] for p in probes], [False, True])
 
-    def test_69_of_100_admits_cost_1_and_waits_on_cost_2(self) -> None:
-        self.fixture.set("search", limit=100, used=69, reset_in=3600)
+    def test_59_of_100_admits_cost_1_at_the_40_percent_floor_and_waits_on_cost_2(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=3600)
         guard = self.guard()
         guard.acquire("search", cost=1)
         with urllib.request.urlopen(f"{self.url}/search/repositories", timeout=10) as response:
             guard.record(response)
-        self.assertEqual(guard.waits(), [])
+        self.assertEqual(guard.waits(), [])  # exactly 40 of 100 remain after it: admitted, no probe logged
 
-        self.fixture.set("search", limit=100, used=69, reset_in=1.2)
+        # One unit more and 39 would remain. A fresh window holds one reading, so
+        # no burn rate is measurable and the call waits for the reset.
+        self.fixture.set("search", limit=100, used=59, reset_in=1.2)
         reset = self.fixture.buckets["search"]["reset"]
         admitted_at, _ = self.call(guard, "search", "/search/repositories", cost=2)
         self.assertGreaterEqual(admitted_at, reset)
         refusing = self.kinds(guard, "wait")[0]
-        self.assertEqual((refusing["cause"], refusing["cost"], refusing["reading"]["used"]), ("cap", 2, 69))
+        self.assertEqual((refusing["cause"], refusing["cost"], refusing["reading"]["used"]), ("floor", 2, 59))
+        probes = self.kinds(guard, "probe")
+        self.assertEqual([p["admitted"] for p in probes], [False, True])
+        self.assertNotIn("burn", probes[0])
+        self.assertEqual(probes[1]["admitted_by"], "floor")
+
+    def test_the_floor_is_exact_for_a_limit_whose_share_is_not_a_float(self) -> None:
+        # 12 of 30 is exactly 40%; floating point would put it a hair under.
+        self.fixture.set("core", limit=30, used=17, reset_in=3600)
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(guard.waits(), [])
+
+    def test_a_slow_burn_with_reset_soon_is_admitted_below_the_floor(self) -> None:
+        self.fixture.set("core", limit=100, used=58, reset_in=3)
+        reset = self.fixture.buckets["core"]["reset"]
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents", hold=0.5)  # 41 remain after it: over the floor
+        self.assertEqual(guard.waits(), [])
+        # 59 used: a call costing 2 would leave 39, below the floor. The window's
+        # two readings show 1 unit burned in at least 0.5 s, so the 39 would
+        # last at least 19.5 s against a reset under 3 s away: the window resets
+        # first, and the call is admitted now rather than after the reset.
+        admitted_at, status = self.call(guard, "core", "/repos/o/r/contents", cost=2)
+        self.assertEqual(status, 200)
+        self.assertLess(admitted_at, reset)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual((probe["admitted"], probe["admitted_by"], probe["reading"]["used"]), (True, "burn-rate", 59))
+        self.assertGreater(probe["burn"]["projected_s"], probe["burn"]["until_reset_s"])
+        self.assertGreater(probe["burn"]["rate_per_s"], 0)
+        logged = [e for e in self.evidence_lines(guard_module.WAITS_FILE) if e["kind"] == "probe"]
+        self.assertEqual([e["admitted_by"] for e in logged], ["burn-rate"])
+
+    def test_a_fast_burn_below_the_floor_waits_for_the_reset(self) -> None:
+        self.fixture.set("core", limit=100, used=0, reset_in=2)
+        reset = self.fixture.buckets["core"]["reset"]
+        self.fixture.charge["/repos/o/r/contents"] = 60
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(guard.waits(), [])
+        # 60 burned between two readings a fraction of a second apart: the 39
+        # left after the next call would be spent long before the reset.
+        del self.fixture.charge["/repos/o/r/contents"]
+        admitted_at, status = self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(status, 200)
+        self.assertGreaterEqual(admitted_at, reset)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["floor"])
+        probes = self.kinds(guard, "probe")
+        self.assertEqual([p["admitted"] for p in probes], [False, True])
+        self.assertEqual(probes[0]["reading"]["used"], 60)
+        self.assertNotIn("admitted_by", probes[0])
+        self.assertEqual(probes[1]["admitted_by"], "floor")
+
+    def test_a_zero_burn_below_the_floor_is_admitted(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=3600)
+        self.fixture.charge["/search/repositories"] = 0
+        guard = self.guard()
+        self.call(guard, "search", "/search/repositories", hold=0.1)  # exactly 40 remain after it
+        # Two readings over a measured interval show nothing burning: the 39
+        # left after a call costing 2 never run out before the reset.
+        self.call(guard, "search", "/search/repositories", cost=2)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual((probe["admitted_by"], probe["burn"]["rate_per_s"]), ("burn-rate", 0))
+
+    def test_a_used_count_that_fell_within_the_window_is_a_zero_burn(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=5)
+        self.fixture.charge["/search/repositories"] = 0
+        guard = self.guard()
+        self.call(guard, "search", "/search/repositories", hold=0.1)  # 41 remain after it
+        # Within the same window `used` falls from 59 to 55: that is no negative
+        # rate but nothing burning, so the 39 left after a call costing 6 are
+        # admitted rather than waited out.
+        with self.fixture.lock:
+            self.fixture.buckets["search"]["used"] = 55
+        _admitted_at, status = self.call(guard, "search", "/search/repositories", cost=6)
+        self.assertEqual(status, 200)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual(
+            (probe["admitted_by"], probe["reading"]["used"], probe["burn"]["rate_per_s"]), ("burn-rate", 55, 0)
+        )
+
+    def test_the_burn_rate_never_admits_a_call_past_the_remaining_quota(self) -> None:
+        self.fixture.set("core", limit=100, used=50, reset_in=1.5)
+        reset = self.fixture.buckets["core"]["reset"]
+        self.fixture.charge["/repos/o/r/contents"] = 0
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents", hold=0.1)
+        # Nothing is burning, but a call costing 60 would take remaining to -10.
+        admitted_at, _ = self.call(guard, "core", "/repos/o/r/contents", cost=60)
+        self.assertGreaterEqual(admitted_at, reset)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["floor"])
+        self.assertFalse(self.kinds(guard, "probe")[0]["admitted"])
 
     def test_concurrent_acquisitions_are_serialized_against_the_first_reservation(self) -> None:
-        self.fixture.set("code_search", limit=100, used=69, reset_in=2)
+        # The first call burns 60 units, fast enough that the 39 left after a
+        # second would run out before the reset: no burn-rate exception for it.
+        self.fixture.set("code_search", limit=100, used=0, reset_in=3)
+        self.fixture.charge["/search/code"] = 60
         reset = self.fixture.buckets["code_search"]["reset"]
         guard = self.guard()
         admitted: list[float] = []
@@ -299,9 +404,9 @@ class GitHubCapTests(GuardTestCase):
         # The second decided on a reading already holding the first's spend.
         refusing = self.kinds(guard, "probe")[0]
         self.assertFalse(refusing["admitted"])
-        self.assertEqual(refusing["reading"]["used"], 70)
+        self.assertEqual(refusing["reading"]["used"], 60)
         reads = self.fixture.requests("/rate_limit")
-        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 70)
+        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 60)
         self.assertGreater(second_read.at, calls[0].at)
 
     def test_first_reading_of_an_over_cap_bucket_is_free_and_repeated_until_reset(self) -> None:
@@ -644,7 +749,7 @@ class EvidenceTests(GuardTestCase):
         )
         self.assertEqual(
             {(e["host"], e["kind"], e.get("cause")) for e in on_disk},
-            {("github", "probe", None), ("github", "wait", "cap"), ("postman", "wait", "spacing")},
+            {("github", "probe", None), ("github", "wait", "floor"), ("postman", "wait", "spacing")},
         )
         for entry in on_disk:
             if entry["kind"] == "wait":
@@ -653,6 +758,263 @@ class EvidenceTests(GuardTestCase):
         for path in self.evidence.iterdir():
             self.assertNotIn(SECRET, path.read_text(encoding="utf-8"))
         self.assertTrue(all(r.authorization == f"Bearer {SECRET}" for r in self.fixture.requests("/rate_limit")))
+
+
+# One process of the concurrent-cache test: a writer storing its own answer for
+# one key over and over, or a reader recording each hit's headers and body.
+CONCURRENT_CACHE_CHILD = """
+import hashlib, importlib.util, json, sys
+spec = importlib.util.spec_from_file_location("guard", sys.argv[1])
+guard = importlib.util.module_from_spec(spec)
+sys.modules["guard"] = guard
+spec.loader.exec_module(guard)
+url = "https://api.github.com/repos/o/r/contents/big"
+role, letter = sys.argv[2], sys.argv[3]
+if role == "write":
+    body = letter.encode() * 262144
+    for _ in range(40):
+        guard.cache_store("GET", url, {}, 200, {"ETag": letter}, body)
+else:
+    hits = []
+    for _ in range(400):
+        cached = guard.cache_lookup("GET", url, {})
+        if cached is not None:
+            body = cached.body()
+            hits.append([dict(cached.headers)["ETag"], cached.sha256, hashlib.sha256(body).hexdigest(), body[:1].decode()])
+    print(json.dumps(hits))
+"""
+
+
+class ResponseCacheTests(GuardTestCase):
+    """The shared GitHub response cache, driven over the loopback server's real responses."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.cache = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.cache)
+        saved = {key: os.environ.get(key) for key in (guard_module.CACHE_DIR_ENV, "XDG_CACHE_HOME", "HOME")}
+        os.environ[guard_module.CACHE_DIR_ENV] = str(self.cache)
+
+        def restore() -> None:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        self.addCleanup(restore)
+
+    def fetch(self, guard: RateLimitGuard, path: str, headers: dict[str, str]) -> tuple[int, bytes, bool]:
+        """One cache-first guarded GET as every GitHub call site makes it; returns (status, body, from_cache)."""
+        url = f"{self.url}{path}"
+        cached = guard_module.cache_lookup("GET", url, headers)
+        if cached is not None:
+            return cached.status, cached.body(), True
+        guard.acquire(GUARDED[path.split("?", 1)[0]])
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            # llmlint: ignore[async_typed_clients_at_boundaries] This reproduces the witness tooling's own call sites, which AGENTS.md keeps stdlib-only and synchronous so they run installless; an async client here would test a call shape no caller makes.
+            response = urllib.request.urlopen(request, timeout=10)
+        except urllib.error.HTTPError as refusal:
+            response = refusal
+        with response:
+            body = response.read()
+            guard.record(response)
+            guard_module.cache_store("GET", url, headers, response.status, response.headers, body)
+            return response.status or 0, body, False
+
+    def test_a_repeated_fetch_of_a_cached_key_spends_no_quota(self) -> None:
+        headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {SECRET}"}
+        guard = self.guard()
+        first = self.fetch(guard, "/repos/o/r/contents", headers)
+        spent = self.fixture.buckets["core"]["used"]
+        served = len(self.fixture.served)
+
+        # A fresh guard stands in for another node or worktree: same key, same host cache.
+        second = self.fetch(self.guard(), "/repos/o/r/contents", headers)
+
+        self.assertEqual(first[:2], second[:2])
+        self.assertEqual((first[2], second[2]), (False, True))
+        self.assertEqual(self.fixture.buckets["core"]["used"], spent)
+        self.assertEqual(len(self.fixture.served), served)  # no /rate_limit read, no call
+        self.assertEqual(len(self.evidence_lines(guard_module.CALLS_FILE)), 1)
+        for path in self.cache.rglob("*"):
+            if path.is_file():
+                self.assertNotIn(SECRET.encode(), path.read_bytes())
+
+        # Accept changes the answer, so it is another key; the credential does not.
+        self.assertFalse(self.fetch(guard, "/repos/o/r/contents", {"Accept": "application/vnd.github.raw+json"})[2])
+        self.assertTrue(self.fetch(guard, "/repos/o/r/contents", {"Accept": "application/vnd.github+json"})[2])
+
+    def test_refusals_and_transient_failures_are_not_cached(self) -> None:
+        path = "/repos/o/r/contents"
+        refused = (429, 503, 401, 407, 408)
+        self.fixture.scripted[path] = [
+            *((status, {}) for status in refused),
+            (403, {"Retry-After": "0", "x-ratelimit-remaining": "99"}),
+            (403, {"x-ratelimit-remaining": "0"}),
+        ]
+        guard_module.SECONDARY_ATTEMPT_BUDGET = 10
+        guard_module.SECONDARY_BACKOFF_BASE_S = 0.01
+        guard = self.guard()
+        statuses = [self.fetch(guard, path, {}) for _ in range(len(refused) + 2)]
+        self.assertEqual(
+            [(status, cached) for status, _, cached in statuses], [(s, False) for s in (*refused, 403, 403)]
+        )
+        self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
+        # The next ask reaches GitHub, and its answer is the one kept.
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
+
+    def test_a_tampered_or_refused_cache_entry_is_a_miss_and_asked_again(self) -> None:
+        path = "/repos/o/r/contents"
+        guard = self.guard()
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        [meta] = list(self.cache.rglob("*.json"))
+        good = json.loads(meta.read_text(encoding="utf-8"))
+        for broken in (
+            dict(good, status="200"),
+            dict(good, status=True),
+            dict(good, status=99),
+            dict(good, headers=[["Content-Type", 1]]),
+            dict(good, headers=[["Content-Type"]]),
+            dict(good, sha256="not-a-digest"),
+            dict(good, bytes=-1),
+            # A refusal no `cache_store` would keep is no answer.
+            dict(good, status=403, headers=[["x-ratelimit-remaining", "0"]]),
+            ["not", "an", "object"],
+        ):
+            with self.subTest(broken=broken):
+                meta.write_text(json.dumps(broken), encoding="utf-8")
+                served = len(self.fixture.served)
+                self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+                self.assertGreater(len(self.fixture.served), served)
+                # The live answer replaced the entry, which serves the next ask.
+                self.assertTrue(self.fetch(guard, path, {})[2])
+
+    @unittest.skipIf(os.name == "nt", "a read-only directory mode does not deny writes on Windows")
+    def test_a_cache_that_cannot_be_written_costs_the_caller_nothing(self) -> None:
+        path = "/repos/o/r/contents"
+        self.cache.chmod(0o500)
+        self.addCleanup(self.cache.chmod, 0o700)
+        guard = self.guard()
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertIn("rate_limit_guard: could not store a GitHub response in", stderr.getvalue())
+        self.assertIn(guard_module.CACHE_DIR_ENV, stderr.getvalue())
+        # Nothing was stored, so the next ask reaches GitHub again, and is kept once it can be.
+        self.cache.chmod(0o700)
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
+
+    def test_a_rate_limit_refusal_held_in_a_file_is_not_stored(self) -> None:
+        url = f"{self.url}/repos/o/r/tarball"
+        body = self.cache.parent / f"{self.cache.name}-download"
+        self.addCleanup(body.unlink, missing_ok=True)
+        body.write_bytes(b'{"message": "API rate limit exceeded for 127.0.0.1."}')
+        self.assertIsNone(guard_module.cache_store("GET", url, {}, 403, {}, body))
+        self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
+        # The same file holding an answer is kept, and served back whole.
+        body.write_bytes(b"tree archive bytes")
+        stored = guard_module.cache_store("GET", url, {}, 200, {}, body)
+        self.assertIsNotNone(stored)
+        cached = guard_module.cache_lookup("GET", url, {})
+        assert cached is not None
+        self.assertEqual((cached.status, cached.body()), (200, b"tree archive bytes"))
+
+    def test_a_body_already_published_is_not_replaced_and_a_torn_one_is(self) -> None:
+        # A reader may hold the body open, which a replace breaks on Windows, so
+        # storing the same bytes again leaves that very file in place.
+        url = "https://api.github.com/repos/o/r/contents/same"
+        stored = guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        assert stored is not None
+        before = stored.body_path.stat()
+        again = guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        assert again is not None
+        self.assertEqual(again.body_path, stored.body_path)
+        after = stored.body_path.stat()
+        self.assertEqual((after.st_ino, after.st_mtime_ns), (before.st_ino, before.st_mtime_ns))
+        # A body file whose bytes no longer match its name is published again.
+        stored.body_path.write_bytes(b"torn")
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        cached = guard_module.cache_lookup("GET", url, {})
+        assert cached is not None
+        self.assertEqual(cached.body(), b"same bytes")
+        self.assertEqual([path.name for path in self.cache.rglob(".*.tmp")], [])
+
+    def test_an_answer_that_is_not_a_success_is_cached(self) -> None:
+        self.fixture.scripted["/repos/o/r/contents"] = [(404, {"x-ratelimit-resource": "core"})]
+        guard = self.guard()
+        self.assertEqual(self.fetch(guard, "/repos/o/r/contents", {})[::2], (404, False))
+        self.assertEqual(self.fetch(guard, "/repos/o/r/contents", {})[::2], (404, True))
+
+    def test_the_key_names_method_url_and_answer_changing_headers_only(self) -> None:
+        key = guard_module.cache_key
+        base = key("GET", "https://api.github.com/x", {"Accept": "a"})
+        self.assertEqual(base, key("get", "https://api.github.com/x", {"accept": "a", "Authorization": "Bearer t"}))
+        self.assertEqual(base, key("GET", "https://api.github.com/x", {"Accept": "a", "User-Agent": "other"}))
+        self.assertNotEqual(base, key("GET", "https://api.github.com/x", {"Accept": "b"}))
+        self.assertNotEqual(base, key("GET", "https://api.github.com/y", {"Accept": "a"}))
+        self.assertNotEqual(base, key("HEAD", "https://api.github.com/x", {"Accept": "a"}))
+
+    def test_the_root_is_the_host_cache_outside_every_worktree(self) -> None:
+        root = guard_module.github_cache_root
+        del os.environ[guard_module.CACHE_DIR_ENV]
+        os.environ["XDG_CACHE_HOME"] = str(self.cache / "xdg")
+        self.assertEqual(root("https://api.github.com/x"), self.cache / "xdg" / "crozier" / "github-responses")
+        os.environ["XDG_CACHE_HOME"] = "relative/cache"  # not absolute: ignored, as the XDG spec asks
+        self.assertEqual(root("https://api.github.com/x"), Path.home() / ".cache" / "crozier" / "github-responses")
+        del os.environ["XDG_CACHE_HOME"]
+        self.assertEqual(root("https://raw.githubusercontent.com/o/r"), Path.home() / ".cache/crozier/github-responses")
+        # A loopback server stands in for GitHub only in tests: without the override it bypasses the cache.
+        self.assertIsNone(root(f"{self.url}/repos/o/r/contents"))
+        self.assertIsNone(guard_module.cache_lookup("GET", f"{self.url}/repos/o/r/contents", {}))
+        self.assertIsNone(guard_module.cache_store("GET", f"{self.url}/repos/o/r/contents", {}, 200, {}, b"x"))
+        self.assertFalse(self.cache.joinpath("xdg").exists())
+
+    def test_a_torn_or_altered_entry_is_a_miss(self) -> None:
+        url = "https://api.github.com/repos/o/r"
+        stored = guard_module.cache_store("GET", url, {}, 200, {"ETag": "x", "x-ratelimit-used": "5"}, b"body")
+        assert stored is not None
+        self.assertEqual(stored.headers, (("ETag", "x"),))  # a replayed quota figure is not a reading
+        self.assertEqual(guard_module.cache_lookup("GET", url, {}), stored)
+        stored.body_path.write_bytes(b"altered")
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        stored.body_path.unlink()
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        self.assertEqual([p.name for p in self.cache.rglob(".*.tmp")], [])
+
+    def test_concurrent_stores_of_one_key_publish_only_whole_answers(self) -> None:
+        # Two processes store different answers for one key while two read it: every
+        # hit is one writer's whole answer, its headers and its body together.
+        url = "https://api.github.com/repos/o/r/contents/big"
+        # One answer is on record before the race, so every lookup has an entry to find.
+        self.assertIsNotNone(guard_module.cache_store("GET", url, {}, 200, {"ETag": "A"}, b"A" * 262144))
+        roles = (("write", "A"), ("write", "B"), ("read", "-"), ("read", "-"))
+        children = [
+            subprocess.Popen(
+                [sys.executable, "-c", CONCURRENT_CACHE_CHILD, str(SCRIPT), role, letter],
+                stdout=subprocess.PIPE,
+                text=True,
+            )
+            for role, letter in roles
+        ]
+        outputs = [child.communicate(timeout=300)[0] for child in children]
+        self.assertEqual([child.returncode for child in children], [0, 0, 0, 0])
+        hits = [hit for output in outputs[2:] for hit in json.loads(output)]
+        self.assertTrue(hits, "no reader saw a stored answer")
+        for etag, recorded, read, first in hits:
+            self.assertEqual((read, first), (recorded, etag))
+        # Both answers were published, each under its own digest, and nothing staged is left.
+        bodies = {path.name.split(".")[1] for path in self.cache.rglob("*.body")}
+        expected = {hashlib.sha256(letter.encode() * 262144).hexdigest() for letter in "AB"}
+        self.assertEqual(bodies, expected)
+        self.assertEqual([path.name for path in self.cache.rglob(".*.tmp")], [])
+        final = guard_module.cache_lookup("GET", url, {})
+        assert final is not None
+        self.assertIn(final.sha256, expected)
 
 
 class QuotaStatusTests(GuardTestCase):
@@ -679,7 +1041,9 @@ class QuotaStatusTests(GuardTestCase):
         self.assertIn("reset 20", core)
         over = next(line for line in lines if line.strip().startswith("code_search "))
         self.assertIn("90.0%", over)
-        self.assertIn("OVER CAP", over)
+        self.assertIn("BELOW FLOOR", over)
+        self.assertNotIn("BELOW FLOOR", core)
+        self.assertIn("floor 40% remaining", lines[0])
         self.assertTrue(any(line.strip().startswith("search ") for line in lines))
         for lane in ("postman", "sourcegraph"):
             line = next(line for line in lines if line.startswith(f"{lane}:"))

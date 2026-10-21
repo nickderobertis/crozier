@@ -54,34 +54,65 @@ fn assert_refused(body: &str, class: &str, element: &str) {
     }
 }
 
-#[test]
-fn parameters_in_different_locations_with_one_request_name_are_refused() {
-    assert_refused(
-        r#"paths:
+/// Two operations, one of which carries the header: a header on too few
+/// operations stays a request property instead of being lifted to the client,
+/// the shape Fern CLI 5.163.1 refuses (the `*-subset` probes).
+const HEADER_SUBSET: &str = r#"paths:
   /items:
     get:
       operationId: listItems
       parameters:
-        - {name: id, in: query, schema: {type: string}}
-        - {name: id, in: header, schema: {type: string}}
+        - {name: QUERY, in: query, NAME schema: {type: string}}
+        - {name: HEADER, in: header, schema: {type: string}}
       responses: {'200': {description: ok}}
-"#,
+  /health:
+    get:
+      operationId: health
+      responses: {'200': {description: ok}}
+"#;
+
+fn header_subset(query: &str, rename: &str, header: &str) -> String {
+    HEADER_SUBSET
+        .replace("QUERY", query)
+        .replace("NAME ", rename)
+        .replace("HEADER", header)
+}
+
+#[test]
+fn parameters_in_different_locations_with_one_request_name_are_refused() {
+    assert_refused(
+        &header_subset("id", "", "id"),
         "request-property-camelcase-collision",
         r#"GET /items parameters "id" and "id" in different locations"#,
     );
     assert_refused(
-        r#"paths:
-  /items:
-    get:
-      operationId: listItems
-      parameters:
-        - {name: limit, in: query, x-fern-parameter-name: size, schema: {type: string}}
-        - {name: size, in: header, schema: {type: string}}
-      responses: {'200': {description: ok}}
-"#,
+        &header_subset("limit", "x-fern-parameter-name: size, ", "size"),
         "request-property-name-collision",
         r#"GET /items parameters "size" and "limit" in different locations declare the same request name "size""#,
     );
+}
+
+#[test]
+fn a_header_every_operation_carries_generates_beside_a_query_parameter_of_its_name() {
+    // A header on every operation is lifted to the client, so it claims no
+    // request name: Fern CLI 5.163.1 generates the `*-every-operation` controls.
+    for (query, rename, header) in [
+        ("id", "", "id"),
+        ("limit", "x-fern-parameter-name: size, ", "size"),
+    ] {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let body = header_subset(query, rename, header).replace(
+            "  /health:\n    get:\n      operationId: health\n      responses: {'200': {description: ok}}\n",
+            "",
+        );
+        let spec = write(dir.path(), &body);
+        for strict in [false, true] {
+            let files = render(&spec, strict).unwrap_or_else(|error| {
+                panic!("a lifted header {header:?} is refused (strict: {strict}): {error}")
+            });
+            assert!(files > 0);
+        }
+    }
 }
 
 #[test]
@@ -113,7 +144,7 @@ const INHERITED_BODY: &str = r#"paths:
             schema:
               allOf:
                 - $ref: '#/components/schemas/Base'
-                - properties: {b: {type: string, x-fern-parameter-name: a}}
+              properties: {b: {type: string, x-fern-parameter-name: a}}
       responses: {'200': {description: ok}}
 components:
   schemas:
@@ -125,8 +156,9 @@ components:
 
 #[test]
 fn an_inherited_body_collision_is_refused_when_another_field_is_malformed() {
-    // `nullable: "yes"` stops the typed load; the collision is still classified
-    // from the source document rather than reported as a parse failure.
+    // `nullable: "yes"` stops the typed load; the own property declared beside
+    // its parent's `a` is still classified from the source document rather
+    // than reported as a parse failure.
     assert_refused(
         INHERITED_BODY,
         "request-property-name-collision",

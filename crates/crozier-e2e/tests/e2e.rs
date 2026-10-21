@@ -3207,39 +3207,51 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
 }
 
 #[test]
-fn object_union_extension_keeps_nearby_refusals_and_recovers() {
+fn object_union_extension_generates_every_union_base_and_keeps_a_scalar_base_refused() {
+    // Measured at Fern CLI 5.163.1: an `allOf` over union-sample's `Signal`
+    // generates whether the union is typed, untyped, an `anyOf` or has a string
+    // member (the `*-union-base` controls); a base that is no union is refused.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("object-extends-non-object");
+    for control in [
+        "untyped-ref-union-base-control.yml",
+        "anyof-ref-union-base-control.yml",
+        "scalar-member-union-base-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
+    }
     let original =
         include_str!("../../../docs/openapi-surface/handwritten/union-sample/openapi.yml");
-    let controls = [
-        original.replace("    Signal:\n      type: object\n", "    Signal:\n"),
-        original.replace("    Signal:\n      type: object\n      oneOf:", "    Signal:\n      type: object\n      anyOf:"),
-        original.replace("    Analog:\n      type: object\n      properties:\n        voltage:\n          type: number\n", "    Analog:\n      type: string\n"),
-    ];
-    for source in controls {
-        assert_ne!(source, original);
-        let dir = tempfile::tempdir().unwrap();
-        let spec = dir.path().join("openapi.yml");
-        let out = dir.path().join("sdk");
-        std::fs::write(&spec, source).unwrap();
-        for strict in [false, true] {
-            let mut command = probe_command(&spec, &out);
-            if strict {
-                command.arg("--fern-strict");
-            }
-            command
-                .assert()
-                .failure()
-                .stderr(predicate::str::contains("object-extends-non-object"));
-            assert!(!out.exists());
+    let scalar = original.replace(
+        "    Signal:\n      type: object\n      oneOf:\n      - $ref: '#/components/schemas/Analog'\n      - $ref: '#/components/schemas/Digital'\n",
+        "    Signal:\n      type: string\n",
+    );
+    assert_ne!(scalar, original);
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let out = dir.path().join("sdk");
+    std::fs::write(&spec, scalar).unwrap();
+    for strict in [false, true] {
+        let mut command = probe_command(&spec, &out);
+        if strict {
+            command.arg("--fern-strict");
         }
-        std::fs::write(&spec, original).unwrap();
-        probe_command(&spec, &out).assert().success();
-        assert!(
-            std::fs::read_to_string(out.join("src/fern/types/sample.py"))
-                .unwrap()
-                .contains("voltage: typing.Optional[float]")
-        );
+        command
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(
+                "object-extends-non-object: components/schemas/Sample/allOf extends #/components/schemas/Signal",
+            ));
+        assert!(!out.exists());
     }
+    std::fs::write(&spec, original).unwrap();
+    probe_command(&spec, &out).assert().success();
+    assert!(
+        std::fs::read_to_string(out.join("src/fern/types/sample.py"))
+            .unwrap()
+            .contains("voltage: typing.Optional[float]")
+    );
 }
 
 #[test]
@@ -4310,7 +4322,7 @@ fn inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_t
     // classifies the same overlap rather than leaving only the parser's diagnostic.
     let mut malformed = overlap.clone();
     malformed["components"]["schemas"]["Malformed"] =
-        serde_json::json!({"type": "string", "nullable": 1});
+        serde_json::json!({"type": "string", "nullable": "sometimes"});
     std::fs::write(&spec, serde_json::to_vec_pretty(&malformed).unwrap()).unwrap();
     let out = input.path().join("sdk-malformed");
     crozier_clean_env()
@@ -19809,7 +19821,7 @@ fn nested_items_required_control_failures(
 ) -> Vec<String> {
     let control = registry
         .join("unresolved-schema-reference")
-        .join("nested-items-required-control.yml");
+        .join("nested-items-required-probe.yml");
     let mut failures = Vec::new();
     for strict in [false, true] {
         let run = match refusal_run(generator, &control, strict) {
@@ -22972,19 +22984,37 @@ fn response_parameter_reference_recovers_with_inline_response() {
     }
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a `default` response
+/// aliasing `#/x-fragment/…` through `components/responses` generates, as the
+/// Groupe PSA golden does, where a success response doing so fails to resolve.
 #[test]
-fn response_component_fragment_is_not_an_operation_reference() {
-    let control = repo_root()
+fn response_component_fragment_is_refused_only_on_a_success_response() {
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
-        .join("unresolved-reference/response-fragment-control.yml");
+        .join("unresolved-reference");
     for strict in [false, true] {
-        let run = refusal_run(&crozier, &control, strict).unwrap();
+        let run = refusal_run(
+            &crozier,
+            &class.join("response-fragment-default-control.yml"),
+            strict,
+        )
+        .unwrap();
         assert_eq!(run.code, Some(0), "{}", run.stderr);
         assert!(!run.files.is_empty());
+        let run =
+            refusal_run(&crozier, &class.join("response-fragment-probe.yml"), strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "components/responses/Empty: #/x-fragment/base",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
     }
     let dir = tempfile::tempdir().unwrap();
     let direct = dir.path().join("direct.yml");
-    let text = std::fs::read_to_string(control).unwrap();
+    let text = std::fs::read_to_string(class.join("response-fragment-probe.yml")).unwrap();
     std::fs::write(
         &direct,
         text.replace(
@@ -23103,11 +23133,11 @@ fn primitive_default_refusal_recovers_with_declared_types() {
         .join("default-not-valid-for-type");
     for case in [
         "probe.yml",
-        "number-string-control.yml",
-        "integer-fraction-control.yml",
-        "integer-boolean-control.yml",
-        "number-boolean-control.yml",
-        "unused-property-control.yml",
+        "number-string-probe.yml",
+        "integer-fraction-probe.yml",
+        "integer-boolean-probe.yml",
+        "number-boolean-probe.yml",
+        "unused-property-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23126,7 +23156,7 @@ fn primitive_default_refusal_recovers_with_declared_types() {
     )
     .unwrap();
     for label in ["shared-parameter", "referenced-parameter"] {
-        let text = std::fs::read_to_string(class.join(format!("{label}-control.yml"))).unwrap();
+        let text = std::fs::read_to_string(class.join(format!("{label}-probe.yml"))).unwrap();
         let spec = dir.path().join(format!("{label}.yml"));
         std::fs::write(&spec, &text).unwrap();
         for strict in [false, true] {
@@ -23187,7 +23217,7 @@ fn list_default_refusal_recovers_with_an_array() {
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("list-default-not-array");
-    for case in ["probe.yml", "boolean-default-control.yml"] {
+    for case in ["probe.yml", "boolean-default-probe.yml"] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
             let failures = refused_failures(
@@ -23229,11 +23259,11 @@ fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
         .join("object-extends-non-object");
     for case in [
         "probe.yml",
-        "array-base-control.yml",
-        "empty-object-base-control.yml",
-        "map-base-control.yml",
-        "two-scalar-refs-control.yml",
-        "ordered-shadowed-object-control.yml",
+        "array-base-probe.yml",
+        "empty-object-base-probe.yml",
+        "map-base-probe.yml",
+        "two-scalar-refs-probe.yml",
+        "ordered-shadowed-object-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23277,18 +23307,18 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
         .join("generator-missing-type");
     for case in [
         "probe.yml",
-        "optional-singleton-control.yml",
-        "two-values-control.yml",
-        "other-header-control.yml",
-        "accept-header-control.yml",
-        "inferred-type-control.yml",
-        "const-header-control.yml",
-        "two-operations-control.yml",
-        "three-of-four-control.yml",
-        "second-declaration-control.yml",
-        "referenced-header-control.yml",
-        "path-header-control.yml",
-        "ignored-operation-control.yml",
+        "optional-singleton-probe.yml",
+        "two-values-probe.yml",
+        "other-header-probe.yml",
+        "accept-header-probe.yml",
+        "inferred-type-probe.yml",
+        "const-header-probe.yml",
+        "two-operations-probe.yml",
+        "three-of-four-probe.yml",
+        "second-declaration-probe.yml",
+        "referenced-header-probe.yml",
+        "path-header-probe.yml",
+        "ignored-operation-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23368,8 +23398,8 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
         .join("named-type-default");
     for case in [
         "probe.yml",
-        "union-declaration-control.yml",
-        "multiple-values-collision-control.yml",
+        "union-declaration-probe.yml",
+        "multiple-values-collision-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23444,39 +23474,90 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
 }
 
 #[test]
+fn two_parents_sharing_an_inherited_property_are_refused_on_a_component_and_a_request_body() {
+    // Fern CLI 5.163.1 refuses the class probe's `allOf` of two `$ref` parents
+    // with `object-property-name-collision` wherever it stands: a named
+    // component and an inline request body as well as a response.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("object-property-name-collision");
+    for (probe, location) in [
+        (
+            "component-two-parents-probe.yml",
+            "#/components/schemas/HostnameListing property \"errors\"",
+        ),
+        (
+            "request-two-parents-probe.yml",
+            "POST /hostnames request body property \"errors\"",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
+            let failures =
+                refused_failures("object-property-name-collision", &run, location, strict);
+            assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+}
+
+#[test]
+fn digit_led_sub_client_refusal_preserves_a_tag_led_by_a_letter() {
+    // A tag led by a digit names a sub-client class that is no identifier,
+    // which Fern CLI 5.163.1's own `ruff check` fails; the same tag with the
+    // digits last generates in both modes.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("digit-led-tag-probe.yml"), strict).unwrap();
+        let failures = refused_failures(
+            "generator-lint-failure",
+            &run,
+            "sub-client _3ds_decision_rule class 3DsDecisionRuleClient",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    generates_identically_in_both_modes(&class.join("digit-trailing-tag-control.yml"));
+}
+
+#[test]
 fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("extension-reference-cycle");
     for (case, diagnostic) in [
         ("probe.yml", "schemas/Node/x-"),
-        ("other-extension-control.yml", "schemas/Node/x-"),
-        ("two-schema-cycle-control.yml", "schemas/Node/x-"),
-        ("direct-link-control.json", "schemas/Node/x-link"),
+        ("other-extension-probe.yml", "schemas/Node/x-"),
+        ("two-schema-cycle-probe.yml", "schemas/Node/x-"),
+        ("direct-link-probe.json", "schemas/Node/x-link"),
         (
-            "direct-mapped-control.json",
+            "direct-mapped-probe.json",
             "schemas/Node/x-mapped-definition",
         ),
         (
-            "nested-mapped-control.json",
+            "nested-mapped-probe.json",
             "schemas/Node/x-mapped-definition",
         ),
+        ("direct-stripe-probe.json", "schemas/Node/x-stripeProperty"),
+        ("qualified-root-probe.json", "schemas/My.Node/x-link"),
         (
-            "direct-stripe-control.json",
-            "schemas/Node/x-stripeProperty",
-        ),
-        ("qualified-root-control.json", "schemas/My.Node/x-link"),
-        (
-            "field-integer-control.json",
+            "field-integer-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
         (
-            "field-string-control.json",
+            "field-string-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
         (
-            "field-boolean-control.json",
+            "field-boolean-probe.json",
             "schemas/Node/properties/id/x-link",
+        ),
+        (
+            "union-field-link-probe.json",
+            "schemas/Node/properties/parent/x-link",
         ),
     ] {
         for strict in [false, true] {
@@ -23507,6 +23588,9 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
             "field-string-mapped-control.json",
             "qualified-field-control.json",
             "unsigned-field-control.json",
+            "field-oneof-link-control.json",
+            "root-oneof-link-control.json",
+            "expandable-field-control.json",
         ]
         .map(|case| class.join(case)),
     );
@@ -23545,15 +23629,15 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
         .join("unresolved-schema-reference");
     for case in [
         "probe.yml",
-        "deep-definitions-field-control.yml",
-        "deep-defs-field-control.yml",
-        "required-response-field-control.yml",
-        "nullable-required-field-control.yml",
-        "nullable-root-control.yml",
-        "optional-known-child-control.yml",
-        "union-first-member-control.yml",
-        "anyof-first-member-control.yml",
-        "nested-items-required-control.yml",
+        "deep-definitions-field-probe.yml",
+        "deep-defs-field-probe.yml",
+        "required-response-field-probe.yml",
+        "nullable-required-field-probe.yml",
+        "nullable-root-probe.yml",
+        "optional-known-child-probe.yml",
+        "union-first-member-probe.yml",
+        "anyof-first-member-probe.yml",
+        "nested-items-required-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23658,14 +23742,19 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
 #[test]
 fn recursive_inline_union_refusal_preserves_named_recursion() {
     let class = repo_root().join(FERN_REFUSALS_DIR).join("heap-exhausted");
-    for case in [
-        "probe.yml",
-        "single-child-control.yml",
-        "recursive-union-allof-control.json",
+    // Each probe's class is the one its Fern measurement names: one growing
+    // reference lengthens a file name past the limit, two exhaust the heap.
+    for (case, refusal) in [
+        ("probe.yml", "heap-exhausted"),
+        ("single-child-probe.yml", "generated-file-name-too-long"),
+        (
+            "recursive-union-allof-probe.json",
+            "generated-file-name-too-long",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
-            let failures = refused_failures("heap-exhausted", &run, "components/schemas", strict);
+            let failures = refused_failures(refusal, &run, "components/schemas", strict);
             assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
             assert_eq!(run.stderr.lines().count(), 1);
         }
@@ -23692,6 +23781,7 @@ fn recursive_inline_union_refusal_preserves_named_recursion() {
         "named-object-recursion-control.yml",
         "nonrecursive-union-control.yml",
         "named-binary-recursion-control.json",
+        "nullable-union-alias-control.yml",
     ] {
         let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
         let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
@@ -23733,6 +23823,75 @@ fn generates_identically_in_both_modes(spec: &Path) {
             std::fs::read(normal.target.join(file)).unwrap(),
             std::fs::read(strict.target.join(file)).unwrap()
         );
+    }
+}
+
+#[test]
+fn a_date_example_is_judged_by_its_own_yaml_style_through_aliases_and_merges() {
+    // Measured at Fern CLI 5.163.1: the class probe's quoted datetime `date`
+    // example is refused and the same text written plain generates. Each
+    // occurrence is judged by its own style, wherever an alias or a `<<` merge
+    // places it, and a plain copy elsewhere exempts no quoted one.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-type-mismatch");
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+    assert!(probe.contains(quoted));
+    let with_info = |info: &str, example: &str| {
+        probe
+            .replace(
+                "info:\n  title: probe\n",
+                &format!("info:\n{info}  title: probe\n"),
+            )
+            .replace(quoted, example)
+    };
+    let plain_copy = "  x-released: &released 2006-01-02T15:04:05+00:00\n";
+    let plain_defaults = "  x-defaults: &defaults {example: 2006-01-02T15:04:05+00:00}\n";
+    let quoted_defaults = "  x-defaults: &defaults {example: '2006-01-02T15:04:05+00:00'}\n";
+    let merged = "          <<: *defaults\n";
+    let dir = tempfile::tempdir().unwrap();
+    let write = |name: &str, text: String| {
+        assert_ne!(text, probe, "{name}");
+        let path = dir.path().join(name);
+        std::fs::write(&path, text).unwrap();
+        path
+    };
+    let element = "GET /probe response example \"2006-01-02T15:04:05+00:00\"";
+    for spec in [
+        write("plain-copy-beside.yml", with_info(plain_copy, quoted)),
+        write("quoted-merge.yml", with_info(quoted_defaults, merged)),
+        // A mapping's own quoted example overrides a merged plain one, written
+        // before or after the `<<`.
+        write(
+            "quoted-after-plain-merge.yml",
+            with_info(plain_defaults, &format!("{merged}{quoted}")),
+        ),
+        write(
+            "quoted-before-plain-merge.yml",
+            with_info(plain_defaults, &format!("{quoted}{merged}")),
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("example-type-mismatch", &run, element, strict);
+            assert!(
+                failures.is_empty(),
+                "{}: {}",
+                spec.display(),
+                failures.join("\n")
+            );
+            assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+        }
+    }
+    for spec in [
+        write(
+            "aliased.yml",
+            with_info(plain_copy, "          example: *released\n"),
+        ),
+        write("plain-merge.yml", with_info(plain_defaults, merged)),
+    ] {
+        generates_identically_in_both_modes(&spec);
     }
 }
 
@@ -23919,10 +24078,137 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
     }
 }
 
+/// Every probe and control shape the registry commits, through the real CLI.
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3 (`shapes.tsv`, which
+/// `fern-refusals.py check` holds to each role), a `-probe` is a shape Fern
+/// refuses and a `-control` one it generates from: crozier refuses each probe
+/// in both modes — exit 1, nothing written, one line naming a registry class
+/// and, only under `--fern-strict`, the strict cause — and generates each
+/// control with identical bytes in both modes.
+#[test]
+fn every_committed_shape_follows_its_measured_role_through_the_cli() {
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
+    let classes: Vec<String> = std::fs::read_to_string(registry.join("classes.tsv"))
+        .unwrap()
+        .lines()
+        .skip(1)
+        .filter_map(|row| row.split('\t').next().map(str::to_owned))
+        .collect();
+    let mut shapes = Vec::new();
+    for class in &classes {
+        let Ok(entries) = std::fs::read_dir(registry.join(class)) else {
+            continue;
+        };
+        for entry in entries {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            if ["-probe.", "-control."]
+                .iter()
+                .any(|role| name.contains(role))
+                && [".yml", ".yaml", ".json"]
+                    .iter()
+                    .any(|suffix| name.ends_with(suffix))
+            {
+                shapes.push(path);
+            }
+        }
+    }
+    shapes.sort();
+    assert!(shapes.len() > 300, "only {} shapes found", shapes.len());
+    let failures: Vec<String> = std::thread::scope(|scope| {
+        let workers: Vec<_> = shapes
+            .chunks(shapes.len().div_ceil(8))
+            .map(|chunk| {
+                let classes = &classes;
+                scope.spawn(move || {
+                    chunk
+                        .iter()
+                        .flat_map(|path| shape_role_failures(classes, path))
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+        workers
+            .into_iter()
+            .flat_map(|worker| worker.join().unwrap())
+            .collect()
+    });
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// How crozier's two runs over one committed shape depart from its role.
+fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
+    let name = path
+        .strip_prefix(repo_root())
+        .unwrap_or(path)
+        .display()
+        .to_string();
+    let runs = [false, true].map(|strict| (strict, refusal_run(&crozier, path, strict)));
+    let mut failures = Vec::new();
+    let mut generated = Vec::new();
+    for (strict, run) in runs {
+        let run = match run {
+            Ok(run) => run,
+            Err(error) => {
+                failures.push(format!("{name}: {error}"));
+                continue;
+            }
+        };
+        let mode = if strict {
+            "--fern-strict"
+        } else {
+            "default mode"
+        };
+        if name.contains("-probe.") {
+            let line = run.stderr.trim();
+            let names_class = classes
+                .iter()
+                .any(|class| line.contains(&format!("{class}: ")));
+            if run.code != Some(1)
+                || !run.files.is_empty()
+                || run.stderr.lines().count() != 1
+                || !names_class
+                || line.contains("fern-strict") != strict
+            {
+                failures.push(format!(
+                    "{name}: a probe Fern refuses must be refused in {mode} with one line naming its \
+                     class; crozier exited {}, wrote {} file(s) and printed: {line}",
+                    exit_label(run.code),
+                    run.files.len()
+                ));
+            }
+        } else if run.code != Some(0) || run.files.is_empty() {
+            failures.push(format!(
+                "{name}: a control Fern generates from must generate in {mode}; crozier exited {}: {}",
+                exit_label(run.code),
+                run.stderr.trim()
+            ));
+        } else {
+            generated.push(run);
+        }
+    }
+    if let [normal, strict] = generated.as_slice() {
+        if normal.files != strict.files {
+            failures.push(format!(
+                "{name}: --fern-strict writes other files than default mode"
+            ));
+        }
+        for file in &normal.files {
+            if std::fs::read(normal.target.join(file)).ok()
+                != std::fs::read(strict.target.join(file)).ok()
+            {
+                failures.push(format!("{name}: {file} differs under --fern-strict"));
+            }
+        }
+    }
+    failures
+}
+
 /// One example-value class's committed evidence, through the real CLI: the
 /// probe is refused in both modes with `diagnostic`, every other measured
-/// refused shape (`*-probe.yml`) is refused with the class, and every accepted
-/// near miss (`*-control.yml`) generates identical bytes in both modes.
+/// refused shape (`*-probe.yml`/`.json`) is refused with the class, and every
+/// accepted near miss (`*-control.yml`/`.json`) generates identical bytes in
+/// both modes.
 fn example_value_class_holds(id: &str, diagnostic: &str) {
     let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     for strict in [false, true] {
@@ -23934,7 +24220,11 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
     let mut cases: Vec<_> = std::fs::read_dir(&class)
         .unwrap()
         .map(|entry| entry.unwrap().file_name().into_string().unwrap())
-        .filter(|name| name.ends_with("-probe.yml") || name.ends_with("-control.yml"))
+        .filter(|name| {
+            ["-probe.yml", "-control.yml", "-probe.json", "-control.json"]
+                .iter()
+                .any(|suffix| name.ends_with(suffix))
+        })
         .collect();
     cases.sort();
     assert!(!cases.is_empty(), "{id}: no measured shapes committed");
@@ -23942,7 +24232,7 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         let spec = class.join(&case);
         let normal = refusal_run(&crozier, &spec, false).unwrap();
         let strict = refusal_run(&crozier, &spec, true).unwrap();
-        if case.ends_with("-probe.yml") {
+        if case.ends_with("-probe.yml") || case.ends_with("-probe.json") {
             for (run, strict) in [(&normal, false), (&strict, true)] {
                 let failures = refused_failures(id, run, &format!("{id}: "), strict);
                 assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
@@ -24251,7 +24541,7 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         "server-placeholder-without-variables-control.yml",
         // fern-python-sdk 5.41.3 formats the server template through a
         // variable, so the unbound placeholder no longer trips Fern's F524.
-        "server-unbound-placeholder-probe.yml",
+        "server-unbound-placeholder-control.yml",
         "slash-prefixed-property-control.yml",
         "null-and-value-enum-control.yml",
     ] {
@@ -24398,7 +24688,6 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
         "multipart-request-dupe",
         "second-json-media-type-dupe",
         "req-xml-dupe-only",
-        "number-vs-string-summary",
         "request-null-summary",
         "ref-no-summary-same-target",
         "x-fern-examples-plus-openapi-dupe",
@@ -24413,6 +24702,24 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
         "trailing-space",
     ] {
         assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+    // A numeric summary beside a string one names no duplicate, but
+    // fern-python-sdk 5.41.3 crashes on the numeric one: measured at Fern CLI
+    // 5.163.1, refused under `example-summary-not-string`.
+    for strict in [false, true] {
+        let run = refusal_run(
+            &crozier,
+            &class.join("number-vs-string-summary-probe.yml"),
+            strict,
+        )
+        .unwrap();
+        let failures = refused_failures(
+            "example-summary-not-string",
+            &run,
+            "POST /probe request example a summary 1",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
     }
 }
 
@@ -25153,9 +25460,9 @@ fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes(
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
-    let probe = std::fs::read_to_string(
-        repo_root().join("docs/fern-refusals/request-property-name-collision/probe.yml"),
-    )
+    let probe = std::fs::read_to_string(repo_root().join(
+        "docs/openapi-surface/authored-probes/549-request-property-name-collision/openapi.yml",
+    ))
     .unwrap();
     for location in ["path", "query", "header"] {
         let mut document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
@@ -25211,13 +25518,13 @@ fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes(
 fn parameters_in_different_locations_refuse_and_declared_names_recover_classification() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document = serde_json::json!({
+    let mut document = with_a_headerless_operation(serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "name", "in": "query", "schema": {"type": "string"}},
             {"name": "name", "in": "header", "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
-    });
+    }));
     for declared in [false, true] {
         if declared {
             document["paths"]["/probe"]["get"]["parameters"][1]["x-fern-parameter-name"] =
@@ -25257,6 +25564,19 @@ fn parameters_in_different_locations_refuse_and_declared_names_recover_classific
             }
         }
     }
+}
+
+/// Adds an operation carrying none of `document`'s headers, so a header on its
+/// other operation rides too few of them for Fern to lift it to the client:
+/// measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a header beside a
+/// query parameter of its name collides only then (the
+/// `request-property-name-collision` and `request-property-camelcase-collision`
+/// `*-subset` probes; on every operation, their `*-every-operation` controls).
+fn with_a_headerless_operation(mut document: serde_json::Value) -> serde_json::Value {
+    document["paths"]["/health"] = serde_json::json!({"get": {
+        "operationId": "health", "responses": {"204": {"description": "Done"}}
+    }});
+    document
 }
 
 /// Runs `crozier generate python` over `document` in both modes, asserting each
@@ -25305,7 +25625,7 @@ fn assert_generates_under_fern_strict(document: &serde_json::Value) {
 
 #[test]
 fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_collisions() {
-    let mut document = serde_json::json!({
+    let mut document = with_a_headerless_operation(serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "q", "in": "query", "x-fern-parameter-name": "filter",
@@ -25313,7 +25633,7 @@ fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_col
             {"name": "F", "in": "header", "x-crozier-parameter-name": "filter",
              "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
-    });
+    }));
     assert_name_refusal_in_both_modes(&document, "request-property-name-collision", "\"filter\"");
     document["paths"]["/probe"]["get"]["parameters"][1]["x-crozier-parameter-name"] =
         serde_json::json!("headerFilter");
@@ -25322,13 +25642,16 @@ fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_col
 
 #[test]
 fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed() {
-    let mut document = serde_json::json!({
+    let lifted = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "requestId", "in": "query", "schema": {"type": "string"}},
             {"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
     });
+    // On its one operation the header is a client field, and collides with nothing.
+    assert_generates_under_fern_strict(&lifted);
+    let mut document = with_a_headerless_operation(lifted);
     assert_name_refusal_in_both_modes(
         &document,
         "request-property-name-collision",
@@ -25338,8 +25661,12 @@ fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed(
     assert_generates_under_fern_strict(&document);
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: an inline body whose
+/// `allOf` member redeclares its parent's property generates (this class's
+/// `inline-body-member-redeclared` control), where 5.67.1 refused it; an own
+/// property beside the `allOf` still collides.
 #[test]
-fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
+fn inherited_body_properties_an_allof_member_redeclares_generate_and_own_ones_refuse() {
     let mut document = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "components": {"schemas": {
@@ -25352,14 +25679,17 @@ fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
             ]}}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
+    assert_generates_under_fern_strict(&document);
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"] = serde_json::json!({
+        "type": "object",
+        "properties": {"name": {"type": "string"}},
+        "allOf": [{"$ref": "#/components/schemas/Base"}]
+    });
     assert_name_refusal_in_both_modes(
         &document,
         "request-property-name-collision",
         "body property \"name\"",
     );
-    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
-        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
-    assert_generates_under_fern_strict(&document);
 }
 
 #[test]
@@ -25370,13 +25700,14 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "components": {"schemas": {
             "Base": {"type": "object", "properties": {"name": {"type": "string"}}},
-            "Malformed": {"type": "string", "nullable": 1}
+            "Malformed": {"type": "string", "nullable": "sometimes"}
         }},
         "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
-            "application/json": {"schema": {"allOf": [
-                {"$ref": "#/components/schemas/Base"},
-                {"type": "object", "properties": {"name": {"type": "string"}}}
-            ]}}
+            "application/json": {"schema": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "allOf": [{"$ref": "#/components/schemas/Base"}]
+            }}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
     for strict in [false, true] {
@@ -25479,7 +25810,7 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
         .unwrap()
         .remove("x-crozier-ignore");
     document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
-        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+        ["properties"] = serde_json::json!({"otherName": {"type": "string"}});
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
     crozier_clean_env()
         .args(["--no-config", "generate", "python", "--spec"])
@@ -25521,7 +25852,7 @@ fn generate_strict_with_big_integers(
 #[test]
 fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refusals() {
     let dir = tempfile::tempdir().unwrap();
-    // `Base.name` collides with the inline `name` an inheriting body redeclares,
+    // `Base.name` collides with the body's own `name` beside its `allOf`,
     // and `Base.count`'s example is an integer YAML's reader rejects.
     let mut document = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
@@ -25533,10 +25864,11 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
             "ReadOnlyName": {"type": "string", "readOnly": true}
         }},
         "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
-            "application/json": {"schema": {"allOf": [
-                {"$ref": "#/components/schemas/Base"},
-                {"type": "object", "properties": {"name": {"type": "string"}}}
-            ]}}
+            "application/json": {"schema": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "allOf": [{"$ref": "#/components/schemas/Base"}]
+            }}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
     // The oversized integer does not hide the collision from the detector.
@@ -25546,23 +25878,31 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
         stderr.contains("request-property-name-collision: POST /probe body property \"name\""),
         "{stderr}"
     );
-    // A readOnly property is never sent, so it collides with nothing in the
-    // request: declared on the property, or on the component it references.
+    // A readOnly own property is never sent, so it collides with nothing in the
+    // request: declared on the property, or on the component it references (an
+    // own readOnly field shadowing the parent's generates at Fern CLI 5.163.1:
+    // the `inline-body-readonly-own-overlap` handwritten fixture).
+    let own = |document: &mut serde_json::Value, name: serde_json::Value| {
+        document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]
+            ["schema"]["properties"]["name"] = name;
+    };
     for read_only in [
         serde_json::json!({"type": "string", "readOnly": true}),
         serde_json::json!({"$ref": "#/components/schemas/ReadOnlyName"}),
     ] {
-        document["components"]["schemas"]["Base"]["properties"]["name"] = read_only;
+        own(&mut document, read_only);
         let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
         assert_eq!(code, Some(0), "{stderr}");
         assert!(dir.path().join("sdk/pyproject.toml").is_file());
     }
     // The source-level fallback, reached when another field fails to parse,
     // skips the readOnly property too, leaving the parser's own diagnostic.
-    document["components"]["schemas"]["Base"]["properties"]["name"] =
-        serde_json::json!({"type": "string", "readOnly": true});
+    own(
+        &mut document,
+        serde_json::json!({"type": "string", "readOnly": true}),
+    );
     document["components"]["schemas"]["Malformed"] =
-        serde_json::json!({"type": "string", "nullable": 1});
+        serde_json::json!({"type": "string", "nullable": "sometimes"});
     let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
     assert_eq!(code, Some(1), "{stderr}");
     assert!(stderr.contains("expected a boolean"), "{stderr}");
@@ -25572,8 +25912,7 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
     );
     assert!(!dir.path().join("sdk").exists());
     // Without readOnly the fallback still refuses the collision.
-    document["components"]["schemas"]["Base"]["properties"]["name"] =
-        serde_json::json!({"type": "string"});
+    own(&mut document, serde_json::json!({"type": "string"}));
     let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
     assert_eq!(code, Some(1), "{stderr}");
     assert!(
@@ -25684,7 +26023,7 @@ fn nullable_inherited_property_redeclarations_generate_in_both_modes() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
-        "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
+        "../../../docs/openapi-surface/authored-probes/549-object-property-name-collision/openapi.yml"
     ))
     .unwrap();
     document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
@@ -26919,10 +27258,12 @@ print('ok')
     }
 }
 
-/// The largest committed document must reach its example refusal, rather than
-/// silently losing the structure check to the parser's default node budget.
+/// The largest committed document must reach its refusal, rather than silently
+/// losing the checks to the parser's default node budget. At Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3 its classes are enum and type names (`documents.tsv`);
+/// the example refusal 5.67.1 reported is gone.
 #[test]
-fn github_corpus_retains_its_example_refusal_with_parser_budgets() {
+fn github_corpus_retains_its_refusal_with_parser_budgets() {
     let spec = repo_root().join("tests/fixtures/corpus-sources/github.com/openapi.json");
     let temp = tempfile::tempdir().unwrap();
     for strict in [false, true] {
@@ -26938,7 +27279,9 @@ fn github_corpus_retains_its_example_refusal_with_parser_budgets() {
         let assertion = command.assert().failure().code(1);
         let stderr = String::from_utf8_lossy(&assertion.get_output().stderr);
         assert!(
-            stderr.contains("example-type-mismatch: PUT /orgs/{org}/outside_collaborators/{username} requestBody examples"),
+            stderr.contains(
+                "enum-name-unsuitable: #/components/schemas/reaction/properties/content enum value \"+1\""
+            ),
             "{stderr}"
         );
         assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");

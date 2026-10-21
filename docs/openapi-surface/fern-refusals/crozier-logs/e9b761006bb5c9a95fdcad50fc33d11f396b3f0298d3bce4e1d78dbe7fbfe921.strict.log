@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /api/v1/users components/schemas/UserRole collides with components/schemas/User/properties/role (fern-strict refusal)

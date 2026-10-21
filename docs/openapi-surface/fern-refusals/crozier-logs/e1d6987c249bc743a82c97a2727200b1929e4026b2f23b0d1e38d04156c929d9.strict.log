@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: GET /max/v1/breaches/report/{report_id} parameter id (fern-strict refusal)

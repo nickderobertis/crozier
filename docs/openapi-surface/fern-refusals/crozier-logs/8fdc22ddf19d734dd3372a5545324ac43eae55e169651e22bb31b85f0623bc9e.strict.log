@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /files/{file_id}/metadata/enterprise/securityClassification-6VMVochwUWo components/schemas/Classification/properties/$template collides with ClassificationTemplate (fern-strict refusal)

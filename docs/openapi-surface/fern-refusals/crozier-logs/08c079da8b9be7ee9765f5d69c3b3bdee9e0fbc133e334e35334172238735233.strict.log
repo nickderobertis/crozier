@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: components/securitySchemes/CustomTestSecurityScheme: nestedcomponentsref.openapi.json#/components/securitySchemes/Name (fern-strict refusal)

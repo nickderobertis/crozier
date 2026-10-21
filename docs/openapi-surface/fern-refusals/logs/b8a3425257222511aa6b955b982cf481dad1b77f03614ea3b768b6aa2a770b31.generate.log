@@ -1,17 +1,14 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Discriminated union "HyperdriveHyperdriveCaching (hyperdrive_hyperdrive-caching)" lists "#/components/schemas/hyperdrive_hyperdrive-caching-disabled" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: python-sdk Discriminated union "HyperdriveHyperdriveCaching (hyperdrive_hyperdrive-caching)" lists "#/components/schemas/hyperdrive_hyperdrive-caching-enabled" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
 [api]: python-sdk __package__.yml -> errors -> BadGatewayError -> type
                   __package__.yml
                   [error] Example is missing required property "response.body.messages"
-                  
-[api]: python-sdk organizationMembers.yml -> service -> endpoints -> Members_delete
-                  organizationMembers.yml
-                  [error] Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "member_id"
-                    - Body property: <Request Body> -> member_id
                   
 [api]: python-sdk ipAddressManagementAddressMaps.yml -> service -> endpoints -> addAnAccountMembershipToAnAddressMap
                   ipAddressManagementAddressMaps.yml
@@ -165,6 +162,21 @@ Warnings for generators.yml:
                   [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
                   [error] BuildsApiResponseErrorsItem is already declared in workers.yml
                   
+[api]: python-sdk __package__.yml -> types -> ClientRequestErrorBody
+                  __package__.yml
+                  [error] Object has multiple properties named "result":
+                    - ClientRequestErrorBody -> result
+                    - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> result
+                  [error] Object has multiple properties named "errors":
+                    - ClientRequestErrorBody -> errors
+                    - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - ClientRequestErrorBody -> messages
+                    - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - ClientRequestErrorBody -> success
+                    - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> success
+                  
 [api]: python-sdk accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
                   accountRulesets.yml
                   [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
@@ -236,6 +248,21 @@ Warnings for generators.yml:
                   [error] RealtimekitPagingResponsePaging is already declared in meetings.yml
                   [error] RealtimekitPagingResponsePaging is already declared in presets.yml
                   [error] RealtimekitPagingResponsePaging is already declared in recordings.yml
+                  
+[api]: python-sdk __package__.yml -> types -> ServerErrorBody
+                  __package__.yml
+                  [error] Object has multiple properties named "result":
+                    - ServerErrorBody -> result
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> result
+                  [error] Object has multiple properties named "errors":
+                    - ServerErrorBody -> errors
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - ServerErrorBody -> messages
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - ServerErrorBody -> success
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> success
                   
 [api]: python-sdk smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
                   smartShieldSettings.yml
@@ -350,6 +377,6 @@ Warnings for generators.yml:
                   __package__.yml
                   [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
                   
-[api]: python-sdk Found 150 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Found 157 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 27 errors
+[sdk] 24 errors
     [error]
         path: __package__.yml -> types -> MetabaseLegacyMbqlSchemaField -> extends -> MetabaseLegacyMbqlSchemaRequireBaseTypeForFieldName
         issue: Objects can only extend other objects, and MetabaseLegacyMbqlSchemaRequireBaseTypeForFieldName is not an object.
@@ -86,26 +87,8 @@ Warnings for generators.yml:
         issue: Objects can only extend other objects, and MetabaseLibSchemaUtilUniqueUuids is not an object.
 
     [error]
-        path: apiAction.yml -> service -> endpoints -> putApiActionId
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
-
-    [error]
         path: apiDatabase.yml -> service -> endpoints -> postApiDatabaseIdPermissionWorkspaceCheck
         issue: Path parameter is unreferenced in endpoint: cached.
-
-    [error]
-        path: apiEeScimV2.yml -> service -> endpoints -> putApiEeScimV2GroupsId
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
-
-    [error]
-        path: apiEeScimV2.yml -> service -> endpoints -> putApiEeScimV2UsersId
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
 
     [error]
         path: apiTable.yml -> service -> endpoints -> getApiTableCardidFks
@@ -115,4 +98,4 @@ Warnings for generators.yml:
         path: apiTable.yml -> service -> endpoints -> getApiTableCardidQueryMetadata
         issue: Path parameter is unreferenced in endpoint: id.
 
-Found 27 errors and 66 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 24 errors and 66 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

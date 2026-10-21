@@ -1,0 +1,21 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: myUser.yml -> service -> endpoints -> getUserInfo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> addUser -> examples[0] -> request
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> getUser -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> getUsers -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+Found 4 errors and 47 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /rest/api/3/project/{projectIdOrKey}/features components/schemas/ProjectFeature/properties/state collides with ProjectFeatureState (fern-strict refusal)

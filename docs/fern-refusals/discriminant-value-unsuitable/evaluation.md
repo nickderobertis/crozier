@@ -1,5 +1,11 @@
 # Unsuitable discriminant names
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 13 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 13 of the 13 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**;
 no generator repair is made.
 
@@ -36,3 +42,13 @@ All 13 retrievable population documents refuse in strict mode before any file
 is written: [population run](evidence/population-strict.log).
 
 An accepted neighboring shape is retained: [pinned Fern control](evidence/discriminant-anyof.pinned-fern.log).
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/digit.fern-check.log`](evidence/digit.fern-check.log)
+- [`evidence/discriminant-anyof.pinned-fern.log`](evidence/discriminant-anyof.pinned-fern.log)
+- [`evidence/hyphen.fern-check.log`](evidence/hyphen.fern-check.log)
+- [`evidence/underscore.fern-check.log`](evidence/underscore.fern-check.log)
+- [`evidence/valid.fern-check.log`](evidence/valid.fern-check.log)

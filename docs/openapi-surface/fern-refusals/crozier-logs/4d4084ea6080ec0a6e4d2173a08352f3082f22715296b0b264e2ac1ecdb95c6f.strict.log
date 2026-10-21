@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-unexpected-property: GET /restaurants/{tenant}/{restaurantId}/fees components/schemas/Fee collides with fee (fern-strict refusal)

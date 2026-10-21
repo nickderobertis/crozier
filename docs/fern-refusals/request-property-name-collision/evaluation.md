@@ -1,39 +1,42 @@
 # request-property-name-collision
 
-## Retiring: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+## Re-measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: refuse
 
-Fern generates from the probe: `fern check` and `fern generate` both exit 0
+Decision: **refuse**, in both modes. The shapes the class names changed; its
+refusal rule did not.
+
+Fern's importer renames a path parameter whose name a body property claims to
+`{name}PathParam`, but it reserves only the body's own properties and each
+`allOf` parent's own. The probe's path `id` sits beside an inline body that
+extends `Request`, which extends `CommonRequest` declaring `id`: the name is
+not reserved, the parameter keeps it, and both `fern check` and
+`fern generate` exit 1 with `Multiple request properties have the name id`
 ([check](../../openapi-surface/fern-refusals/probe-logs/request-property-name-collision.check.log),
 [generate](../../openapi-surface/fern-refusals/probe-logs/request-property-name-collision.generate.log)).
-Its tree is the authored-probe case
-[`549-request-property-name-collision`](../../openapi-surface/authored-probes/549-request-property-name-collision/):
-Fern's OpenAPI importer renames the path parameter `name` to `namePathParam`
-(`name_path_param` in Python, still sent at `/repos/{…}`) because the body
-property claims `name`, so no two request properties share a name.
+The same holds with the path parameter declared through `components/parameters`
+(`path-reference-inline-body`). A header collides with a query parameter of its
+name only where it rides too few operations to be lifted to the client:
+`X-Namespace` beside `namespace` on two of three operations is refused
+(`header-query-subset`), on every operation it generates
+(`header-query-every-operation`) — crozier's `ir::global_headers` decides the
+lift as Fern does. The population's eight documents at the pair (Rebilly's KYC
+requests and the Irrigator API, which are these two shapes, and Telnyx) all
+refuse under strict mode.
 
-crozier generates too, in default mode and under `--fern-strict`, and
-byte-matches Fern's tree in both (`authored_probe_measurements_match_fern`,
-`body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes`).
-The `findings.tsv` row `request-property-name-collision-generates` names this
-class's probe, which makes the class **retiring**: `fern_refusal_failures`
-holds crozier to generating the probe in both modes, and `fern-refusal.txt`
-stays as the class's last refusal record (Fern CLI 5.67.1). The `classes.tsv`
-row (whose `status` still reads `refuse`) and its `documents.tsv` references
-stay until the population is measured again at the new pair.
+crozier refuses each refused shape in both modes, naming the operation and the
+name. Generating would need a rename Fern does not make, so no Fern output is a
+reference for it. Fern generates, and crozier generates in both modes, a
+referenced body (`path-referenced-body`: the body is sent whole), a property an
+`allOf` member redeclares (`body-allof-member-redeclared`; Mistral's
+`stream`), and two parents sharing one (`body-two-parents-shared`)
+([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)). The class's
+former probe, a path `name` against a body's own `name`, is the finding
+`request-property-name-collision-generates`, authored probe
+[`549-request-property-name-collision`](../../openapi-surface/authored-probes/549-request-property-name-collision/).
+The GitHub REST descriptions, which 5.67.1 refused under this class, no longer
+carry it.
 
-Only the probe's shape is measured at the new pair. The 5.163.1 bundle still
-carries the `no-conflicting-request-wrapper-properties` rule that prints this
-class's phrase, and its importer renames only a path parameter that declares no
-name of its own (no `x-fern-parameter-name`), reserving the query parameters'
-names, the headers' declared-or-wire names and the body's property names. So
-crozier still refuses, under this class id, the shapes the rename does not
-reach: a path parameter whose declared name a body property shares, differently
-spelled parameters in different locations with one declared name, a body
-property repeated through an inherited `allOf`, and an inline body's own
-property a `$ref` parent redeclares. Re-measuring the population decides
-whether those shapes keep a class of their own.
-
-## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0
+## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0 (dated history)
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
@@ -70,3 +73,19 @@ Fern refuses an own property the parent redeclares even when the parent's is
 [read-only](../../fern-measurements/bodies-responses/inline-body-overlap-refusals/readonly-parent.fern.log)).
 The detector counts the read-only parent field for that shape alone, in both
 modes and in the source-level fallback.
+
+## Dated history
+
+No claim about Fern CLI 5.163.1 rests on these. Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/request-header.pinned-fern.log`](evidence/request-header.pinned-fern.log)
+- [`evidence/request-inline-allof-duplicates.pinned-fern.log`](evidence/request-inline-allof-duplicates.pinned-fern.log)
+- [`evidence/request-path.pinned-fern.log`](evidence/request-path.pinned-fern.log)
+- [`evidence/request-query.pinned-fern.log`](evidence/request-query.pinned-fern.log)
+- [`evidence/request-readonly-reference.pinned-fern.log`](evidence/request-readonly-reference.pinned-fern.log)
+- [`evidence/request-readonly.pinned-fern.log`](evidence/request-readonly.pinned-fern.log)
+- [`evidence/request-reference.pinned-fern.log`](evidence/request-reference.pinned-fern.log)
+- [`evidence/same-parameter-path-header.pinned-fern.log`](evidence/same-parameter-path-header.pinned-fern.log)
+- [`evidence/same-parameter-path-query.pinned-fern.log`](evidence/same-parameter-path-query.pinned-fern.log)
+- [`evidence/same-parameter-query-header.pinned-fern.log`](evidence/same-parameter-query-header.pinned-fern.log)
+- [`evidence/same-parameter-query-query.pinned-fern.log`](evidence/same-parameter-query-query.pinned-fern.log)

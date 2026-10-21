@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /charges:
+    get:
+      operationId: getCharge
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Charge'}
+components:
+  schemas:
+    Charge:
+      type: object
+      properties:
+        id: {type: string}
+        source:
+          allOf:
+            - $ref: '#/components/schemas/Source'
+          nullable: true
+    Source:
+      anyOf:
+        - $ref: '#/components/schemas/Account'
+        - $ref: '#/components/schemas/Card'
+    Account:
+      type: object
+      properties:
+        id: {type: string}
+        charge: {$ref: '#/components/schemas/Charge'}
+    Card:
+      type: object
+      properties:
+        last4: {type: string}

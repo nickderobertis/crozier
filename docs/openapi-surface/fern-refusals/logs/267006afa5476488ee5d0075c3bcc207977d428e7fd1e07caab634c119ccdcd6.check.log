@@ -1,10 +1,41 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 1 error
+[sdk] 9 errors
     [error]
-        path: apiEndpoints.yml -> service -> endpoints -> update-profile
-        issue: Multiple request properties have the name profile_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "profile_id"
-  - Body property: <Request Body> -> profile_id
+        path: __package__.yml -> errors -> ClientRequestError -> type
+        issue: Expected example to be an object. Example is: "{\n    \"error\": {\n        \"code\": \"profile_not_found\",\n        \"message\": \"Could not find any video profile with specified profile_id.\"\n    }\n}"
 
-Found 1 error and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n    \"error\": {\n        \"code\": \"invalid_api_key\",\n        \"message\": \"API key supplied with request is invalid\"\n    }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n  \"error\": {\n    \"code\": \"source_not_found\",\n    \"message\": \"Could not find any video source with specified source ID.\"\n  }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n  \"error\": {\n    \"code\": \"asset_not_found\",\n    \"message\": \"Could not find any video asset with specified asset_id.\"\n  }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n            \"error\": {\n                \"code\": \"profile_not_found\",\n                \"message\": \"Could not find any video profile with specified profile_id.\"\n            }\n        }"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n    \"error\": {\n        \"code\": \"profile_not_found\",\n        \"message\": \"Could not find any video profile with specified profile_id.\"\n    }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n    \"error\": {\n        \"code\": \"invalid_property_id\",\n        \"message\": \"You don't have access to that property, please select a property id\"\n    }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n  \"error\": {\n    \"code\": \"live_asset_not_found\",\n    \"message\": \"Could not find any live video asset with specified asset_id.\"\n  }\n}"
+
+    [error]
+        path: __package__.yml -> errors -> UnauthorizedError -> type
+        issue: Expected example to be an object. Example is: "{\n  \"error\": {\n    \"code\": \"live_source_not_found\",\n    \"message\": \"Could not find any live video source with specified source ID.\"\n  }\n}"
+
+Found 9 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

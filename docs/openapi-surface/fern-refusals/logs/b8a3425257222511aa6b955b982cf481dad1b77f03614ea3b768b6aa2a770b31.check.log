@@ -1,6 +1,9 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 151 errors
+[api]: Discriminated union "HyperdriveHyperdriveCaching (hyperdrive_hyperdrive-caching)" lists "#/components/schemas/hyperdrive_hyperdrive-caching-disabled" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: Discriminated union "HyperdriveHyperdriveCaching (hyperdrive_hyperdrive-caching)" lists "#/components/schemas/hyperdrive_hyperdrive-caching-enabled" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[sdk] 158 errors
     [error]
         path: __package__.yml -> errors -> BadGatewayError -> type
         issue: Example is missing required property "response.body.messages"
@@ -40,6 +43,30 @@ Warnings for generators.yml:
     [error]
         path: __package__.yml -> types -> BuildsApiResponseErrorsItem
         issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "result":
+  - ClientRequestErrorBody -> result
+  - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> result
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "errors":
+  - ClientRequestErrorBody -> errors
+  - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "messages":
+  - ClientRequestErrorBody -> messages
+  - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "success":
+  - ClientRequestErrorBody -> success
+  - ClientRequestErrorBody -> (extends) Web3ApiResponseCommon -> success
 
     [error]
         path: __package__.yml -> types -> D1TimeTravelRestoreResponse
@@ -94,6 +121,30 @@ Warnings for generators.yml:
     [error]
         path: __package__.yml -> types -> RealtimekitPagingResponsePaging
         issue: RealtimekitPagingResponsePaging is already declared in recordings.yml
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "result":
+  - ServerErrorBody -> result
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> result
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "errors":
+  - ServerErrorBody -> errors
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "messages":
+  - ServerErrorBody -> messages
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> ServerErrorBody
+        issue: Object has multiple properties named "success":
+  - ServerErrorBody -> success
+  - ServerErrorBody -> (extends) Web3ApiResponseCommon -> success
 
     [error]
         path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
@@ -386,12 +437,6 @@ Warnings for generators.yml:
         issue: Endpoint has duplicate path parameter: account_id.
 
     [error]
-        path: organizationMembers.yml -> service -> endpoints -> Members_delete
-        issue: Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "member_id"
-  - Body property: <Request Body> -> member_id
-
-    [error]
         path: presets.yml -> types -> RealtimekitPagingResponsePaging
         issue: RealtimekitPagingResponsePaging is already declared in meetings.yml
 
@@ -631,4 +676,4 @@ Warnings for generators.yml:
         path: zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
         issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
 
-Found 151 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 158 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

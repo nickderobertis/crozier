@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-name-unsuitable: GET /networks/{networkId}/alerts/settings response 200/properties/alerts/items/properties/filters/properties/conditions/items/properties/direction enum value "+"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

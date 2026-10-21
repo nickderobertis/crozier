@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /manage/v1/maintenance response example "2006-01-02T15:04:05+00:00" (fern-strict refusal)

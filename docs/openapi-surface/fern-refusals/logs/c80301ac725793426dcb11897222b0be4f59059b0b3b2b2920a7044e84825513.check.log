@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 409 errors
+[sdk] 406 errors
     [error]
         path: __package__.yml -> errors -> InternalServerError -> type
         issue: Example is missing required property "response.body.errors"
@@ -1586,12 +1587,6 @@ Warnings for generators.yml:
   - 2.15
   - 2.16
   - Preview
-
-    [error]
-        path: companies.yml -> service -> endpoints -> attachContactToACompany
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
 
     [error]
         path: companies.yml -> service -> endpoints -> BulkCreateCompanies -> examples[0] -> headers
@@ -8607,12 +8602,6 @@ Warnings for generators.yml:
   - Preview
 
     [error]
-        path: reportingDataExport.yml -> service -> endpoints -> downloadCompletedExportJobData
-        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "job_identifier"
-  - Query Parameter "job_identifier"
-
-    [error]
         path: reportingDataExport.yml -> service -> endpoints -> enqueueANewReportingDataExportJob -> examples[0] -> headers
         issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
   - 1.0
@@ -8692,12 +8681,6 @@ Warnings for generators.yml:
   - 2.15
   - 2.16
   - Preview
-
-    [error]
-        path: reportingDataExport.yml -> service -> endpoints -> getExportJobStatus
-        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "job_identifier"
-  - Query Parameter "job_identifier"
 
     [error]
         path: reportingDataExport.yml -> service -> endpoints -> listAvailableDatasetsAndAttributes -> examples[0] -> headers
@@ -10498,4 +10481,4 @@ Warnings for generators.yml:
   - 2.16
   - Preview
 
-Found 409 errors and 38 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 406 errors and 38 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

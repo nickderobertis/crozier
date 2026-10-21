@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /notes:
+    post:
+      operationId: createNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+            examples:
+              first:
+                summary: '1'
+                value:
+                  text: hello
+      responses:
+        '204':
+          description: No Content

@@ -1,5 +1,13 @@
 # type-not-defined: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 7 probe and 5 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 6 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 6 of the 6 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: Fern 5.163.1 names the `4XX` range as an error (`ClientRequestError`), so under tag `api` it fails as `403` does (`api-file-4xx` probe); `api-file-accepted` keeps the statuses it still skips (`427`, `432`, `460`, `520`, `599`, `default`).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was
 made to qualify this class. Checks use CPython 3.12.3, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -158,3 +166,11 @@ responses/403`) and Provoly
 (`components/schemas/ProcedureWriteDto/properties/events/items/oneOf/0`). The
 two SecurityScorecard bundles are refused first by `path-parameter-unreferenced`,
 and OGC Processes by `object-extends-non-object`.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-explicit-discriminator-control.log`](evaluation-logs/fern-explicit-discriminator-control.log)
+- [`evaluation-logs/fern-explicit-discriminator-get.log`](evaluation-logs/fern-explicit-discriminator-get.log)
+- [`evaluation-logs/fern-provoly-without-duplicate.log`](evaluation-logs/fern-provoly-without-duplicate.log)

@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 26 errors
+[sdk] 25 errors
     [error]
         path: __package__.yml -> types -> IntegrationPermissions
         issue: IntegrationPermissions is already declared in apps.yml
@@ -28,10 +29,6 @@ Warnings for generators.yml:
     [error]
         path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
         issue: Enum value 120000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
-
-    [error]
-        path: orgs.yml -> service -> endpoints -> convertMemberToOutsideCollaborator -> examples[0] -> request
-        issue: Expected example to be an object. Example is: undefined
 
     [error]
         path: reactions.yml -> types -> ReactionsCreateForCommitCommentRequestContent
@@ -105,4 +102,4 @@ Warnings for generators.yml:
         path: reactions.yml -> types -> ReactionsListForTeamDiscussionLegacyRequestContent
         issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
 
-Found 26 errors and 69 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 25 errors and 69 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

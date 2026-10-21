@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: generator-lint-failure: paths//api/channels/{id}/transcode_config/get/responses/200/content/application/json/schema/properties/vaapiDevice/anyOf/1 enum has no non-null value (fern-strict refusal)

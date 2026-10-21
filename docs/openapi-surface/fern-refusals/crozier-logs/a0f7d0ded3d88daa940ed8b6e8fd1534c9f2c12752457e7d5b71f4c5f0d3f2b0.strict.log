@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//event_orchestrations/{id}/cache_variables/{cache_variable_id}/data/put/responses/200: #/components/requestBodies/OrchestrationCacheVariableDataPutResponse (fern-strict refusal)

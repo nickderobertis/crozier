@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: generator-lint-failure: type EditoastError variants "editoast:train_schedule:ExceptionNotFound" and "editoast:train_schedule_exception:NotFound" are both EditoastError_EditoastTrainScheduleExceptionNotFound (fern-strict refusal)

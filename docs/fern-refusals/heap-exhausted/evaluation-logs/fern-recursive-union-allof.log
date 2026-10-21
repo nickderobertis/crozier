@@ -1,17 +1,18 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 All checks passed
 
 generate exit: 1
+files: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/fern-heap-recursive-union-allof/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           
@@ -70,7 +71,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/cli/abstract_generator.py", line 177, in generate_project
+                                            File "/src/fern_python/cli/abstract_generator.py", line 182, in generate_project
                                               self.run(
                                               ~~~~~~~~^
                                                   generator_exec_wrapper=generator_exec_wrapper,
@@ -80,7 +81,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 207, in run
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 210, in run
                                               PydanticModelGenerator().generate_types(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   generator_exec_wrapper=generator_exec_wrapper,
@@ -103,7 +104,7 @@ Warnings for generators.yml:
                                             File "/src/fern_python/generators/pydantic_model/pydantic_model_generator.py", line 187, in _generate_type
                                               project.write_source_file(source_file=source_file, filepath=filepath)
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                            File "/src/fern_python/codegen/project.py", line 217, in write_source_file
+                                            File "/src/fern_python/codegen/project.py", line 231, in write_source_file
                                               source_file.write_to_file(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   filepath=self.get_source_file_filepath(
@@ -114,12 +115,12 @@ Warnings for generators.yml:
                                                   ^
                                               )
                                               ^
-                                            File "/src/fern_python/codegen/source_file.py", line 171, in write_to_file
+                                            File "/src/fern_python/codegen/source_file.py", line 173, in write_to_file
                                               writer.write_to_file(filepath=filepath)
                                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
                                             File "/src/fern_python/codegen/writer_impl.py", line 131, in write_to_file
                                               with open(filepath, "w") as file:
                                                    ~~~~^^^^^^^^^^^^^^^
-                                          OSError: [Errno 36] File name too long: '/fern/output/src/fern/types/matcher_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one.py'
+                                          OSError: [Errno 36] File name too long: '/fern/output/src/fern/types/matcher_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches_one_matches.py'
 [api]: python-sdk fernapi/fern-python-sdk Failed.
 [api]: python-sdk Failed.

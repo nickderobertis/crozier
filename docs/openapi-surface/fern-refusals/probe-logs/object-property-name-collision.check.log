@@ -1,3 +1,22 @@
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-All checks passed
+[sdk] 3 errors
+    [error]
+        path: __package__.yml -> types -> ListHostnamesResponse
+        issue: Object has multiple properties named "result":
+  - ListHostnamesResponse -> result
+  - ListHostnamesResponse -> (extends) ApiCollection -> result
+
+    [error]
+        path: __package__.yml -> types -> ListHostnamesResponse
+        issue: Object has multiple properties named "errors":
+  - ListHostnamesResponse -> errors
+  - ListHostnamesResponse -> (extends) ApiCollection -> errors
+
+    [error]
+        path: __package__.yml -> types -> ListHostnamesResponse
+        issue: Object has multiple properties named "success":
+  - ListHostnamesResponse -> success
+  - ListHostnamesResponse -> (extends) ApiCollection -> success
+
+Found 3 errors and 0 warnings in <n> seconds.

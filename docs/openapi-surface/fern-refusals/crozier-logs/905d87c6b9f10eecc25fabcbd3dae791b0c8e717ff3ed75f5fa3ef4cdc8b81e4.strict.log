@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: generated-file-name-too-long: #/components/schemas/presentation_submission has a recursive inline property reference whose generated filename grows without bound; use a named component reference (fern-strict: Fern refuses this document)

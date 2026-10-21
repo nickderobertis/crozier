@@ -40,11 +40,14 @@ from typing import Any, Literal
 # path, so its directory is not otherwise on sys.path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from rate_limit_guard import (
+    CACHE_HITS_FILE,
     CALLS_FILE,
     REFUSAL_STATUSES,
     WAITS_FILE,
     RateLimitGuard,
     SecondaryLimit,
+    cache_lookup,
+    cache_store,
     checked_service_url,
     github_api_url,
 )
@@ -534,6 +537,13 @@ class Acquirer:
         else:
             headers["Accept"] = "text/event-stream"
         request = urllib.request.Request(url, headers=headers)
+        if host == "github":
+            # The shared response cache answers before any pacing or admission:
+            # a hit makes no call and spends no quota (rate_limit_guard.py).
+            cached = cache_lookup("GET", url, headers)
+            if cached is not None:
+                self.write(CACHE_HITS_FILE, {"host": host, "bucket": bucket, **cached.ledger()})
+                return cached.status, cached.body(), cached.message()
         self.wait_for_index_pacing(host, bucket)
         guard.acquire(bucket, cost=1)
         try:
@@ -546,6 +556,8 @@ class Acquirer:
             guard.record(error)
             raise
         guard.record(response)
+        if host == "github":
+            cache_store("GET", url, headers, response.status, response.headers, body)
         # typeshed types HTTPError.status as int | None and its headers as Message; urllib's HTTPError always
         # carries the int code and the response's http.client.HTTPMessage, as a successful response does.
         return response.status, body, response.headers  # ty: ignore[invalid-return-type]
@@ -1336,6 +1348,12 @@ class Acquirer:
 
     def raw_github_get(self, url: str, key: str, subject: str) -> tuple[int, bytes]:
         """The manager-authorized exact-commit raw route has its own paced lane."""
+        user_agent = {"User-Agent": "crozier-witness-search"}
+        cached = cache_lookup("GET", url, user_agent)
+        if cached is not None:
+            # Answered by the shared response cache: no pacing and no call.
+            self.write(CACHE_HITS_FILE, {"lane": "raw", "key": key, "subject": subject, "url": url, **cached.ledger()})
+            return cached.status, cached.body()
         refusals = 0
         incomplete_reads = 0
         while True:
@@ -1343,8 +1361,9 @@ class Acquirer:
                 duration = self.raw_last_request + RAW_SPACING_S - time.monotonic()
                 if duration > 0:
                     self._raw_wait(duration, "spacing", key, subject)
-            request = urllib.request.Request(url, headers={"User-Agent": "crozier-witness-search"})
+            request = urllib.request.Request(url, headers=user_agent)
             try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the raw lane is paced one request at a time, which an async client would not speed up.
                 response = urllib.request.urlopen(request, timeout=90)
             except urllib.error.HTTPError as error:
                 response = error
@@ -1394,6 +1413,7 @@ class Acquirer:
                 },
             )
             if status not in (429, 503):
+                cache_store("GET", url, user_agent, status, response.headers, data)
                 # typeshed types HTTPError.status as int | None; urllib's HTTPError always carries the int code.
                 return status, data  # ty: ignore[invalid-return-type]
             refusals += 1

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: GET /internal/sandbox/instances/:id/metadata parameter id (fern-strict refusal)

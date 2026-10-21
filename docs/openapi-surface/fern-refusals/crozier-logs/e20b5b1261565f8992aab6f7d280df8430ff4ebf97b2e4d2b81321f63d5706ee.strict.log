@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-value-unnameable: #/components/schemas/ShipmentExtra/properties/preferred_delivery_timeframe enum value "10001200"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

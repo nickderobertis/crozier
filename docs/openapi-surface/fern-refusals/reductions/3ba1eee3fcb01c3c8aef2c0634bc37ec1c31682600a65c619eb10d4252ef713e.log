@@ -1,0 +1,20 @@
+fern-refusals: reduction of 05f7fa886e550420856339c3db42c77648a2afe3d06041661aebe377abf59c61: /paths/~1v1~1customers~1{customer}~1subscriptions/get;/paths/~1v1~1customers~1{customer}~1subscriptions/post;/paths/~1v1~1customers~1{customer}~1subscriptions~1{subscription_exposed_id}/delete;/paths/~1v1~1customers~1{customer}~1subscriptions~1{subscription_exposed_id}/get;/paths/~1v1~1customers~1{customer}~1subscriptions~1{subscription_exposed_id}/post;/paths/~1v1~1files/post;/paths/~1v1~1financial_connections~1accounts/get;/paths/~1v1~1financial_connections~1accounts~1{account}/get;/paths/~1v1~1financial_connections~1accounts~1{account}~1disconnect/post;/paths/~1v1~1financial_connections~1accounts~1{account}~1refresh/post;/paths/~1v1~1financial_connections~1accounts~1{account}~1subscribe/post;/paths/~1v1~1financial_connections~1accounts~1{account}~1unsubscribe/post;/paths/~1v1~1linked_accounts/get;/paths/~1v1~1linked_accounts~1{account}/get;/paths/~1v1~1linked_accounts~1{account}~1disconnect/post;/paths/~1v1~1linked_accounts~1{account}~1refresh/post;/paths/~1v1~1subscriptions/get;/paths/~1v1~1subscriptions/post;/paths/~1v1~1subscriptions~1search/get;/paths/~1v1~1subscriptions~1{subscription_exposed_id}/delete;/paths/~1v1~1subscriptions~1{subscription_exposed_id}/get;/paths/~1v1~1subscriptions~1{subscription_exposed_id}/post;/paths/~1v1~1subscriptions~1{subscription}~1resume/post
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+Found 0 errors and 18 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+
+generate exit: 0
+files: 7978
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Found 0 errors and 18 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

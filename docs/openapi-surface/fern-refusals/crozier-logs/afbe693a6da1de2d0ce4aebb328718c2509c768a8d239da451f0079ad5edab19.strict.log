@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: POST /v1/apps/{app_id}/memberships parameter app_category_membership_id (fern-strict refusal)

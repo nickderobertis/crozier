@@ -1,8 +1,11 @@
 # Fern refusal registry
 
-The classes of input Fern (CLI 5.67.1, `fernapi/fern-python-sdk` 5.20.0)
-refuses, crashes on, or falsely reports success over, and what crozier does with
-each. crozier's default is to generate wherever its output is valid and useful;
+The classes of input Fern (CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, the
+certified pair `assets/scaffolding/metadata.json` declares) refuses, crashes on,
+or falsely reports success over, and what crozier does with each. The whole
+population, every class's probe and committed shapes, and each class's
+confirmations are measured at that pair.
+crozier's default is to generate wherever its output is valid and useful;
 `fern-strict` refuses as Fern does. This directory is the one statement of which inputs that covers. The gate
 (`crates/crozier-e2e/tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and
 nothing but the steps below writes it.
@@ -30,31 +33,70 @@ caused it.
   `documents.tsv` rows carry it), `status` (`unevaluated`, `generate` or
   `refuse`), `crozier_diagnostic` (the literal substring crozier's refusal line
   must contain; `—` while `unevaluated`), `population_strict`
-  (`<refused>/<total>` over the retrievable documents carrying the class; `—`
-  while `unevaluated`).
+  (`<refused>/<total>` over the retrievable documents carrying the class,
+  each refused with the diagnostic of one of its classes; `—` while
+  `unevaluated`). `build` writes `documents` and `population_strict`.
 - [`documents.tsv`](documents.tsv) — one row per distinct refused document,
   sorted by `digest` (lower-hex SHA-256 of its exact bytes): `source`,
   `locator`, `revision` (immutable), `recorded_by` (the committed records naming
   the refusal, `;`-separated), `fern_stage`, `fern_exit`, `fern_log` (the
   committed log holding Fern's complete diagnostic list), `classes`
   (`,`-separated, never empty), `crozier_exit`, `crozier_files` (crozier's
-  release build, default mode), `crozier_strict_exit` (the same build under
-  `--fern-strict`; `—` until one of the document's classes is evaluated). All
-  three come from `measurements.jsonl`, which `just fern-refusals-measure`
-  fills, so `build` reproduces them.
+  release build, default mode, as an earlier tree recorded it; `—` where none
+  did), `crozier_strict_exit` (the release build under `--fern-strict`; `—`
+  until one of the document's classes is evaluated). That run's stderr is
+  committed under
+  [`../openapi-surface/fern-refusals/crozier-logs/`](../openapi-surface/fern-refusals/crozier-logs/)
+  and named by the document's `measurements.jsonl` record, and `build` fails
+  unless its exit agrees with that log and its refusal line names one of the
+  document's own classes: a refusal at the parser, or by a class Fern does not
+  report, is no refusal by the class. All three come from
+  `measurements.jsonl`, which `just fern-refusals-measure` fills, so `build`
+  reproduces them. `measure` takes only the strict verdict: crozier refuses
+  before it generates, so that run is quick, while a default-mode run writes
+  the whole SDK (up to tens of thousands of files and many minutes on the
+  largest documents), and no classification, table or gate reads its exit or
+  file count — the gate reads `classes` and `crozier_strict_exit` alone.
 - [`unretrievable.tsv`](unretrievable.tsv) — a selected document whose bytes
-  could not be read again, with its revision and the reason.
+  could not be read again, or whose Fern run never finished inside `measure`'s
+  bound (`unmeasured: …`), with its revision and the reason.
 - [`generated.tsv`](generated.tsv) — a selected document whose `fern check`
   failed but whose `fern generate` at the pin still writes an SDK, with its log
   and the check-only phrases it printed. Fern produces output for these, so
   crozier is expected to byte-match them, not refuse them: this is a candidate
   list the witness-registration work may screen, and nothing here registers one.
+- [`dispositions.tsv`](dispositions.tsv) — every refused document crozier's
+  strict run refuses with a class its Fern log does not carry, and why that
+  agrees with Fern, sorted by `crozier_class` then `document`:
+  `generate-stage` (a class only `fern generate` reports, on a document Fern's
+  check stopped before generating), or the Fern verdict on a `representative`
+  reduced (`reduction`: `;`-separated JSON pointers deleted, `*-a,b` keeping
+  only `a` and `b`, `—` none) until its own classes are gone: `masked` (Fern
+  then names crozier's class), `reported-other` (another class, or a check-only
+  finding), or `over-broad` (Fern's check accepts it; crozier's detector is
+  narrowed to match, so the row is history and the document is refused by
+  another class). `reduce` measures each reduction at the pin, one Fern run at
+  a time, into
+  [`../openapi-surface/fern-refusals/reductions/`](../openapi-surface/fern-refusals/reductions/)
+  and the row's `reduced_digest`, `check_exit`, `generate_exit`, `classes` and
+  `log`, which `check` holds to that log.
 - [`findings.tsv`](findings.tsv) — shapes measured and found **not** to be
   refusals, each with its probe under
   [`../openapi-surface/fern-refusals/findings/`](../openapi-surface/fern-refusals/findings/):
   `check-only` phrases `fern check` refuses while `fern generate` writes an SDK
-  past them, and `generates` shapes neither stage objects to.
+  past them, and `generates` shapes neither stage objects to. crozier departs
+  from one on purpose: `parameter-normalization-collision`'s shape (parameters
+  in two locations normalizing to one name) is refused in both modes as
+  `request-property-camelcase-collision`, under the ruling that such a name
+  collision is a Fern defect crozier does not copy, since Fern writes past it
+  into Python its own message calls broken.
 - `<class>/probe.yml` — a minimal hand-written document isolating the class.
+- `<class>/*-probe.yml` and `<class>/*-control.yml` — the class's other
+  measured shapes: a `-probe` is one Fern refuses, a `-control` a near miss it
+  generates from. `shapes` measures each at the pin into
+  `evaluation-logs/fern-<name>.log` and
+  [`shapes.tsv`](../openapi-surface/fern-refusals/shapes.tsv), and `check`
+  fails when a shape's verdict is not its role's or its log is another pair's.
 - `<class>/fern-refusal.txt` — Fern's measured outcome on the probe in Contract
   A's five fields (`fern_cli_version`, `fern_python_sdk_version`,
   `generate_exit`, `diagnostic`, `output_tree`). A false success records
@@ -131,22 +173,37 @@ tools/fern-refusals/fern-refusals.py select            # the population, offline
 just fern-refusals-measure                 # rebuild the release binary, then measure: fetch, run Fern and crozier (network, Docker)
 tools/fern-refusals/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
 tools/fern-refusals/fern-refusals.py confirm           # sample each class's real documents through fern generate
+tools/fern-refusals/fern-refusals.py shapes            # measure every class's probe and control shapes (Fern, one at a time)
+tools/fern-refusals/fern-refusals.py reduce            # measure each dispositions.tsv reduction (Fern, one at a time)
 tools/fern-refusals/fern-refusals.py check             # offline drift check; tools/fern-refusals/tests/fern_refusals_test.py runs it
 ```
 
-`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane,
-reuses a committed screen's `fern check` log where its record states the exit,
-and otherwise runs `fern check` — then `fern generate` unless the check named a
-class — in a scratch workspace outside any checkout, writing each log to
+`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane
+(answered from its shared GitHub response cache where the request was made
+before), and takes every Fern verdict at the certified pair
+`assets/scaffolding/metadata.json` declares. It reuses a committed screen's
+`fern check` log only where the screen's record states the exit and names that
+pair's CLI (and no other generator), and keeps a `measurements.jsonl` record
+only where its `fern_cli` and `fern_python_sdk` are that pair; everything else
+gets a fresh `fern check` — then `fern generate` unless the check named a class
+— in a scratch workspace outside any checkout, writing each log to
 [`../openapi-surface/fern-refusals/logs/`](../openapi-surface/fern-refusals/logs/)
-and the result to `measurements.jsonl` beside it. Fern runs with a 16 GB Node
+(its first line naming the pair) and the result to `measurements.jsonl` beside
+it. A fetch that failed under another pair is tried again. Fern runs `--jobs`
+at a time and crozier `--crozier-jobs`, and a Fern run past `--timeout` is
+ended with every process it started; its document gets no generation and is
+listed in `unretrievable.tsv` as unmeasured, with the stage that ran past the
+bound. Fern runs with a 16 GB Node
 heap: at the default 4 GB the largest documents (the GitHub REST descriptions)
-report the host's memory rather than Fern's diagnostics. Every
-`documents.tsv` row's `crozier_exit` and `crozier_files` were last re-measured
-by the release build after `main`'s `layout` setting merged, each run bounded at
+report the host's memory rather than Fern's diagnostics. The
+`crozier_exit` and `crozier_files` on record were last taken by the release
+build after `main`'s `layout` setting merged, each run bounded at
 45 minutes and none reaching it: [`crozier-timings.tsv`](../openapi-surface/fern-refusals/crozier-timings.tsv)
 keeps each document's size, outcome and wall-clock seconds from that run, taken
-with up to eighteen measurement runs at once on a shared, loaded host. `build` classifies
+with up to eighteen measurement runs at once on a shared, loaded host; `measure`
+no longer takes them. `measure --crozier-again` retakes every document's
+strict verdict and its log after crozier changes, and a record without its log
+is retaken by a plain `measure`. `build` classifies
 every diagnostic in a document's logs against `classes.tsv`'s and
 `findings.tsv`'s templates; one that matches no single template fails the
 build, so a new phrase becomes a class or a finding on purpose.
@@ -160,8 +217,59 @@ refuses. Both keep Fern's logs under
 
 ## What the measurement settled
 
-- **GitHub's duplicate request names** are `request-property-name-collision`:
-  a path parameter and a body property both called `name`.
+- **Every refused document is refused by a class detector.** All 737 refused
+  documents are refused under `--fern-strict` with a class diagnostic (each
+  one's `crozier-logs/` record): 721 with a class their Fern log carries, and
+  16 with one [`dispositions.tsv`](dispositions.tsv) shows agrees with Fern
+  (11 generate-stage, one masked, four where Fern names another class or a
+  check-only finding at the same element). None stops at the parser any more.
+  Twenty GitHub Enterprise Server descriptions passed the parser's default
+  bounds, so crozier once stopped before any class ran: `068ff58b…` replays
+  about 1.8 million YAML alias events, and nineteen share a schema by more
+  than ten aliases per anchor. The replay bound is now one event per
+  byte of the document (never below a million) and the alias/anchor ratio
+  pre-scan is off, while an alias-expansion bomb is still refused
+  (`src/yaml.rs`). A Mistral description Fern generates from writes
+  `nullable: 1`, which crozier now reads by its truth (`src/openapi.rs`), so
+  all 13 documents in `generated.tsv` generate in crozier's strict mode too;
+  `build` holds both halves.
+- **Reducing the representatives narrowed eight rules in five classes.** Where crozier
+  refused a document with a class Fern did not report, a representative was
+  reduced until Fern's own classes were gone. In 25 of those documents Fern's
+  check then accepted it, and each detector now follows a committed shape
+  measured at the pin: an extension's reference reached through an array
+  (`extension-reference-cycle`), an `allOf` over any union or a
+  one-member alias (`object-extends-non-object`), a cycle that grows by one
+  reference a turn, which Fern refuses as `generated-file-name-too-long`
+  rather than `heap-exhausted`, and a one-member `allOf` alias that grows
+  nothing (`heap-exhausted`), a plain YAML timestamp and an error example
+  whose status code has more than one body (`example-type-mismatch`), and an
+  unresolved legacy `#/definitions/` reference (`type-name-not-letter-led`).
+  A tag led by a digit names a sub-client that is no identifier and is now
+  `generator-lint-failure`, as Fern's `ruff check` fails it. Each class's
+  `evaluation.md` names its shapes. The expanding-union check also
+  enumerated every path through the reference graph, which ran unbounded on
+  Stripe's descriptions once the cycle check no longer refused them first; it
+  is now decided once per document.
+
+- **GitHub's duplicate request names no longer collide.** None of the 276
+  GitHub REST descriptions in the population carries
+  `request-property-name-collision` at the pin: Fern's importer renames a path
+  parameter a body property shares to `{name}PathParam` (the finding
+  `request-property-name-collision-generates`). It reserves only the body's own
+  properties and its `allOf` parents' own, so a path `id` beside an inline body
+  whose grandparent declares `id` keeps its name and is refused (the class's
+  probe; Rebilly's KYC requests). A header collides with a query parameter of
+  its name (`X-Namespace` with `namespace`) only where it rides too few
+  operations for Fern to lift it to the client, as crozier's `global_headers`
+  decides (`header-query-*` shapes).
+- **A redeclared property is mostly generated.** An object or request body
+  redeclaring a property of its one `allOf` parent, or two parents sharing one,
+  generates (`object-property-name-collision-generates`; Mistral's
+  conversations). `object-property-name-collision` remains for an `allOf` of
+  two `$ref` parents that share a property one of them inherits (the class's
+  probe; Cloudflare's error bodies), and `request-property-name-collision` for
+  an inline body's own property beside a parent's.
 - **`appng-rest-api`** does not fail after a passing check at the pin: its
   `fern check` exits 1 with `Service requires auth, but no auth is defined.`,
   because its only security scheme is an `apiKey` in a cookie, which Fern does
@@ -172,10 +280,9 @@ refuses. Both keep Fern's logs under
   way (`enum-value-unnameable`, e.g. `10080`) or names with a leading digit
   (`enum-name-unsuitable`, e.g. `#0094FF` → `0094Ff`).
 - **A security scheme `$ref` into another document** is `unresolved-reference`,
-  a false success: `fern check` and `fern generate` exit 0 over a document Fern
-  never parsed. With the referenced document placed beside the probe,
-  `fern check` resolves it and passes, so the class is a reference Fern cannot
-  follow, not the scheme. `fern generate` then keeps the referenced scheme's
+  a false success: `fern generate` exits 0 over a document Fern never parsed,
+  printing `Failed to resolve ./components.yaml#/components/securitySchemes/…`.
+  Where the referenced document is present Fern keeps the referenced scheme's
   credential, and crozier resolves it the same way: corpus row 309
   (`huatuo-node-tree`) is a real tree whose `BearerAuth` names
   `../components.yaml`, and its golden byte-matches (issue #351).
@@ -187,7 +294,14 @@ refuses. Both keep Fern's logs under
   `generated-file-name-too-long`. The `Failed to format …` lines printed before
   a lint failure only say which snippet did not parse; they were never seen
   without the failure they precede. `heap-exhausted` is Fern's check running
-  out of a 16 GB heap on a document a few hundred kilobytes long.
+  out of a 16 GB heap on a document of 120 to 150 kilobytes (both of its
+  documents); a union recursing through a component's `$defs` is followed as a
+  schema of its own and generates (`defs-json-value` shape).
+- **Shapes Fern stopped refusing.** A required property beside an `allOf`
+  member referenced into a component's own `definitions` (NSwag's
+  `KitchenSink`) is no `example-unexpected-property`; a boolean `enum` or
+  `const` with a default is no `named-type-default`, where a string `const` is.
+  Each is a control of its class, and crozier generates it.
 - **Contract A's refusal rows** (`header-array`, `header-object`,
   `nonascii-operationId`, `ref-pointer-unnamed-segment` in
   [`../openapi-surface/probe-expected/MANIFEST.tsv`](../openapi-surface/probe-expected/MANIFEST.tsv))

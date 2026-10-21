@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 210 errors
+[sdk] 209 errors
     [error]
         path: __package__.yml -> types -> CreateTicketRequest
         issue: CreateTicketRequest is already declared in tickets.yml
@@ -656,12 +657,6 @@ Warnings for generators.yml:
   - 2.11
   - 2.12
   - 2.13
-
-    [error]
-        path: companies.yml -> service -> endpoints -> attachContactToACompany
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Body property: <Request Body> -> id
 
     [error]
         path: companies.yml -> service -> endpoints -> createOrUpdateCompany -> examples[0] -> headers
@@ -4567,4 +4562,4 @@ Warnings for generators.yml:
   - 2.12
   - 2.13
 
-Found 210 errors and 14 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 209 errors and 14 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
