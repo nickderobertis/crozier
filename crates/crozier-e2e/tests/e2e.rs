@@ -23861,6 +23861,16 @@ fn a_date_example_is_judged_by_its_own_yaml_style_through_aliases_and_merges() {
     for spec in [
         write("plain-copy-beside.yml", with_info(plain_copy, quoted)),
         write("quoted-merge.yml", with_info(quoted_defaults, merged)),
+        // A mapping's own quoted example overrides a merged plain one, written
+        // before or after the `<<`.
+        write(
+            "quoted-after-plain-merge.yml",
+            with_info(plain_defaults, &format!("{merged}{quoted}")),
+        ),
+        write(
+            "quoted-before-plain-merge.yml",
+            with_info(plain_defaults, &format!("{quoted}{merged}")),
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &spec, strict).unwrap();

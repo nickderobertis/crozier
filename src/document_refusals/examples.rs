@@ -101,14 +101,39 @@ fn plain_timestamps(root: &Value, text: &str) -> HashSet<*const Value> {
         .collect()
 }
 
-/// Where [`plain_timestamp_paths`] stands in a collection: a mapping awaiting
-/// its next key, a mapping awaiting the value of the key just read (`None` for a
-/// key with no path of its own: an alias or a collection), or a sequence at its
-/// next index.
+/// Where [`plain_timestamp_paths`] stands in a collection: a mapping (see
+/// [`Entry`] and [`Merges`]) or a sequence at its next index.
 enum Frame {
-    MapKey,
-    MapValue(Option<String>),
+    Map(Entry, Merges),
     Seq(usize),
+}
+
+/// A mapping awaiting its next key, or the value of the key just read (`None`
+/// for a key with no path of its own: an alias or a collection).
+enum Entry {
+    Key,
+    Value(Option<String>),
+}
+
+/// What a mapping's `<<` sources would supply, held until the mapping closes:
+/// YAML merge precedence gives its own keys, wherever written, priority over
+/// every source, and an earlier source priority over a later one.
+#[derive(Default)]
+struct Merges {
+    /// The keys the mapping writes itself.
+    own: HashSet<String>,
+    /// The keys some `<<` source has supplied, the first source's winning.
+    supplied: HashSet<String>,
+    /// The plain timestamps those sources place, relative to the mapping.
+    plain: Vec<Vec<String>>,
+}
+
+/// What an anchor names: the plain timestamps under it, relative to it, and,
+/// for a mapping, its keys, which a `<<` of it supplies.
+#[derive(Clone, Default)]
+struct Anchored {
+    plain: Vec<Vec<String>>,
+    keys: Vec<String>,
 }
 
 /// An anchored collection being read: what its anchor will hold once it closes.
@@ -134,9 +159,7 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
     });
     let mut frames: Vec<Frame> = Vec::new();
     let mut found: Vec<Vec<String>> = Vec::new();
-    // The plain timestamps under each anchor, relative to the anchored node.
-    let mut anchors: std::collections::HashMap<usize, Vec<Vec<String>>> =
-        std::collections::HashMap::new();
+    let mut anchors: std::collections::HashMap<usize, Anchored> = std::collections::HashMap::new();
     let mut recording: Vec<Recording> = Vec::new();
     // Depth inside a collection used as a mapping key, whose content has no path.
     let mut in_key = 0usize;
@@ -145,9 +168,9 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
         frames
             .iter()
             .map(|frame| match frame {
-                Frame::MapValue(key) => key.clone(),
+                Frame::Map(Entry::Value(key), _) => key.clone(),
                 Frame::Seq(index) => Some(index.to_string()),
-                Frame::MapKey => None,
+                Frame::Map(Entry::Key, _) => None,
             })
             .collect()
     };
@@ -161,17 +184,21 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
     };
     // The key just read (`None`: one with no path); its value comes next.
     let keyed = |frames: &mut Vec<Frame>, key: Option<String>| {
-        if let Some(frame) = frames.last_mut() {
-            *frame = Frame::MapValue(key);
+        if let Some(Frame::Map(entry, merges)) = frames.last_mut() {
+            if let Some(own) = key.as_deref().filter(|key| *key != "<<") {
+                merges.own.insert(own.to_owned());
+            }
+            *entry = Entry::Value(key);
         }
     };
     // A value is complete: the next node is its mapping's next key, or its
     // sequence's next item.
     let advance = |frames: &mut Vec<Frame>| match frames.last_mut() {
-        Some(frame @ Frame::MapValue(_)) => *frame = Frame::MapKey,
+        Some(Frame::Map(entry, _)) => *entry = Entry::Key,
         Some(Frame::Seq(index)) => *index += 1,
-        Some(Frame::MapKey) | None => {}
+        None => {}
     };
+    let merging = |frame: Option<&Frame>| matches!(frame, Some(Frame::Map(Entry::Value(Some(key)), _)) if key == "<<");
     let mut parser = Parser::new_from_str(text);
     while let Some(Ok((event, _span))) = parser.next_event() {
         if in_key > 0 {
@@ -187,7 +214,7 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
             }
             continue;
         }
-        let at_key = matches!(frames.last(), Some(Frame::MapKey));
+        let at_key = matches!(frames.last(), Some(Frame::Map(Entry::Key, _)));
         match event {
             Event::DocumentEnd => break,
             Event::Scalar(value, _, _, _) if at_key => keyed(&mut frames, Some(value.into_owned())),
@@ -197,7 +224,14 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                 let plain =
                     style == ScalarStyle::Plain && timestamp.is_match(&value).unwrap_or(false);
                 if anchor != 0 {
-                    anchors.insert(anchor, if plain { vec![Vec::new()] } else { Vec::new() });
+                    let plain = if plain { vec![Vec::new()] } else { Vec::new() };
+                    anchors.insert(
+                        anchor,
+                        Anchored {
+                            plain,
+                            keys: Vec::new(),
+                        },
+                    );
                 }
                 if plain {
                     if let Some(path) = path_of(&frames) {
@@ -207,23 +241,39 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                 advance(&mut frames);
             }
             Event::Alias(anchor) => {
-                // A `<<` merge (one alias, or a sequence of them) places the
-                // anchored mapping's members beside the merging mapping's own.
-                let merged = |frame: Option<&Frame>| matches!(frame, Some(Frame::MapValue(Some(key))) if key == "<<");
+                let held = anchors.get(&anchor).cloned().unwrap_or_default();
                 let depth = frames.len();
-                let base = if merged(frames.last()) {
-                    path_of(&frames[..depth - 1])
+                // A `<<` source (one alias, or a sequence of them): its keys
+                // wait on the merging mapping, which decides them once it closes.
+                let target = if merging(frames.last()) {
+                    Some(depth - 1)
                 } else if matches!(frames.last(), Some(Frame::Seq(_)))
                     && depth >= 2
-                    && merged(frames.get(depth - 2))
+                    && merging(frames.get(depth - 2))
                 {
-                    path_of(&frames[..depth - 2])
+                    Some(depth - 2)
                 } else {
-                    path_of(&frames)
+                    None
                 };
-                if let (Some(base), Some(held)) = (base, anchors.get(&anchor).cloned()) {
-                    for relative in held {
-                        record([base.clone(), relative].concat(), &mut recording);
+                match target.map(|index| &mut frames[index]) {
+                    Some(Frame::Map(_, merges)) => {
+                        for key in held.keys {
+                            if merges.supplied.insert(key.clone()) {
+                                merges.plain.extend(
+                                    held.plain
+                                        .iter()
+                                        .filter(|relative| relative.first() == Some(&key))
+                                        .cloned(),
+                                );
+                            }
+                        }
+                    }
+                    _ => {
+                        if let Some(base) = path_of(&frames) {
+                            for relative in held.plain {
+                                record([base.clone(), relative].concat(), &mut recording);
+                            }
+                        }
                     }
                 }
                 advance(&mut frames);
@@ -240,15 +290,38 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                     }
                 }
                 frames.push(if matches!(event, Event::MappingStart(..)) {
-                    Frame::MapKey
+                    Frame::Map(Entry::Key, Merges::default())
                 } else {
                     Frame::Seq(0)
                 });
             }
             Event::MappingEnd | Event::SequenceEnd => {
-                frames.pop();
+                let depth = frames.len();
+                let mapping = path_of(&frames[..depth - 1]);
+                let mut keys = Vec::new();
+                if let Some(Frame::Map(_, merges)) = frames.pop() {
+                    // A merged key the mapping writes itself is its own value.
+                    if let Some(mapping) = mapping {
+                        for relative in merges.plain {
+                            if relative
+                                .first()
+                                .is_some_and(|key| !merges.own.contains(key))
+                            {
+                                record([mapping.clone(), relative].concat(), &mut recording);
+                            }
+                        }
+                    }
+                    keys = merges.own.union(&merges.supplied).cloned().collect();
+                }
                 while let Some(open) = recording.pop_if(|open| open.depth == frames.len()) {
-                    anchors.insert(open.anchor, open.held);
+                    let keys = keys.clone();
+                    anchors.insert(
+                        open.anchor,
+                        Anchored {
+                            plain: open.held,
+                            keys,
+                        },
+                    );
                 }
                 advance(&mut frames);
             }
@@ -1706,6 +1779,65 @@ mod tests {
             first_violation_in(&yaml(&unquoted), &unquoted).map(|(_, detail)| detail),
             None
         );
+    }
+
+    #[test]
+    fn a_quoted_example_overriding_a_merged_plain_one_is_still_refused() {
+        // YAML merge precedence: a mapping's own key wins over every `<<`
+        // source, wherever it is written, so the occurrence that lands is the
+        // explicit quoted example and Fern rejects it.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+        let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+        assert!(probe.contains(quoted));
+        let with_defaults = probe.replace(
+            "info:\n  title: probe\n",
+            "info:\n  x-defaults: &defaults {example: 2006-01-02T15:04:05+00:00}\n  title: probe\n",
+        );
+        let merge = "          <<: *defaults\n";
+        for (placement, text) in [
+            (
+                "after <<",
+                with_defaults.replace(quoted, &format!("{merge}{quoted}")),
+            ),
+            (
+                "before <<",
+                with_defaults.replace(quoted, &format!("{quoted}{merge}")),
+            ),
+        ] {
+            assert_ne!(text, with_defaults, "{placement}");
+            let root = yaml(&text);
+            let example = &root["components"]["schemas"]["Thing"]["properties"]["born"]["example"];
+            assert_eq!(example, "2006-01-02T15:04:05+00:00", "{placement}");
+            assert!(
+                !plain_timestamps(&root, &text).contains(&std::ptr::from_ref(example)),
+                "{placement}: the explicit quoted example was exempted"
+            );
+            assert_eq!(
+                first_violation_in(&root, &text).map(|(class, detail)| (class.id(), detail)),
+                Some((
+                    "example-type-mismatch",
+                    "GET /probe response example \"2006-01-02T15:04:05+00:00\"".to_owned()
+                )),
+                "{placement}"
+            );
+        }
+    }
+
+    #[test]
+    fn of_two_merge_sources_the_first_supplies_a_key_both_hold() {
+        let text = "quoted: &quoted {at: '2001-02-03T04:05:06Z'}\n\
+                    plain: &plain {at: 2001-02-03T04:05:06Z, other: 2001-02-03T04:05:07Z}\n\
+                    quoted_first:\n  <<: [*quoted, *plain]\n\
+                    plain_first:\n  <<: [*plain, *quoted]\n";
+        let root = yaml(text);
+        let plain = plain_timestamps(&root, text);
+        let at = |path: &str| plain.contains(&std::ptr::from_ref(root.pointer(path).unwrap()));
+        assert!(!at("/quoted_first/at"));
+        assert!(at("/quoted_first/other"));
+        assert!(at("/plain_first/at"));
+        assert!(at("/plain_first/other"));
     }
 
     #[test]
