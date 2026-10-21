@@ -317,10 +317,11 @@ class Drift(unittest.TestCase):
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming("no single class or finding matches")
 
-    def test_the_strict_exit_is_built_only_for_an_evaluated_class(self) -> None:
+    def test_the_strict_exit_is_built_for_evaluated_classes_and_generating_exceptions(self) -> None:
         table = rows(self.registry / "classes.tsv")
         evaluated = {row[0] for row in table[1:] if row[6] != "unevaluated"}
         committed = rows(REGISTRY / "documents.tsv")[1:]
+        exceptions = {row[0] for row in rows(REGISTRY / "dispositions.tsv")[1:] if row[2] == "fern-limitation"}
         # The evaluated class whose withdrawal leaves the most documents with no evaluated class.
         withdrawn = max(
             sorted(evaluated), key=lambda name: sum(set(row[8].split(",")) & evaluated == {name} for row in committed)
@@ -336,7 +337,7 @@ class Drift(unittest.TestCase):
         for before in committed:
             after = built[before[0]][11]
             with self.subTest(digest=before[0]):
-                if set(before[8].split(",")) & evaluated:
+                if set(before[8].split(",")) & evaluated or before[0] in exceptions:
                     self.assertEqual(after, before[11])
                 else:
                     self.assertEqual(after, "—")
