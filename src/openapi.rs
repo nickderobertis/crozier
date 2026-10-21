@@ -2486,7 +2486,8 @@ impl DocumentBooleanVisitor {
     }
 
     /// Refuse a value that is no boolean in the words the document's reader
-    /// refuses it with when it reads a plain boolean.
+    /// refuses it with when it reads a plain boolean (held to that reader by
+    /// `a_refused_boolean_reads_as_the_readers_plain_boolean_refusal`).
     fn refuse<E: serde::de::Error>(&self, unexpected: serde::de::Unexpected<'_>) -> E {
         if Self::yaml::<E>() {
             E::custom("invalid boolean (strict mode expects true/false)")
@@ -5065,6 +5066,44 @@ mod tests {
         }
         let error = yaml("additionalProperties: 2\n").unwrap_err();
         assert!(error.contains("did not match any variant"), "{error}");
+    }
+
+    /// The shared rule refuses a non-boolean in each reader's own words: the
+    /// same message, at the same place, as that reader's plain `bool` read of
+    /// the same text, so a change in either reader's wording fails here.
+    #[test]
+    fn a_refused_boolean_reads_as_the_readers_plain_boolean_refusal() {
+        #[derive(Debug, Deserialize)]
+        struct Plain {
+            #[allow(dead_code)]
+            flag: bool,
+        }
+        #[derive(Debug, Deserialize)]
+        struct Shared {
+            #[allow(dead_code)]
+            #[serde(deserialize_with = "de_present_boolean")]
+            flag: bool,
+        }
+        for value in ["2", "-1", "1.0", "'1'", "yes", "~", "[1]", "{a: 1}"] {
+            let text = format!("other: x\nflag: {value}\n");
+            assert_eq!(
+                crate::yaml::from_str::<Shared>(&text).unwrap_err(),
+                crate::yaml::from_str::<Plain>(&text).unwrap_err(),
+                "YAML {value}"
+            );
+        }
+        for value in ["2", "-1", "1.0", "\"1\"", "\"true\"", "null"] {
+            let text = format!("{{\"other\": \"x\",\n\"flag\": {value}}}");
+            assert_eq!(
+                serde_json::from_str::<Shared>(&text)
+                    .unwrap_err()
+                    .to_string(),
+                serde_json::from_str::<Plain>(&text)
+                    .unwrap_err()
+                    .to_string(),
+                "JSON {value}"
+            );
+        }
     }
 
     #[test]
