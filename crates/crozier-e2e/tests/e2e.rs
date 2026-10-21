@@ -23474,6 +23474,34 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
 }
 
 #[test]
+fn two_parents_sharing_an_inherited_property_are_refused_on_a_component_and_a_request_body() {
+    // Fern CLI 5.163.1 refuses the class probe's `allOf` of two `$ref` parents
+    // with `object-property-name-collision` wherever it stands: a named
+    // component and an inline request body as well as a response.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("object-property-name-collision");
+    for (probe, location) in [
+        (
+            "component-two-parents-probe.yml",
+            "#/components/schemas/HostnameListing property \"errors\"",
+        ),
+        (
+            "request-two-parents-probe.yml",
+            "POST /hostnames request body property \"errors\"",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
+            let failures =
+                refused_failures("object-property-name-collision", &run, location, strict);
+            assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+}
+
+#[test]
 fn digit_led_sub_client_refusal_preserves_a_tag_led_by_a_letter() {
     // A tag led by a digit names a sub-client class that is no identifier,
     // which Fern CLI 5.163.1's own `ruff check` fails; the same tag with the

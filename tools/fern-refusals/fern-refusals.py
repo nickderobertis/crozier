@@ -2173,7 +2173,9 @@ def delete(document: Any, pointer: Pointer) -> None:
 def yaml_module() -> Any:
     """PyYAML. The tool also runs under the host's `python3`
     (`just fern-refusals-measure`), so it is imported only where a YAML
-    representative is reduced."""
+    representative is reduced. Typed `Any`: PyYAML ships no type information
+    and the workspace pins no stubs for it, so a module type would describe
+    nothing the checker could hold its loader and dumper calls to."""
     try:
         import yaml
     except ImportError:

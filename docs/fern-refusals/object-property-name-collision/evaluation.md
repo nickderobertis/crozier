@@ -19,7 +19,12 @@ every one of them carries another class too; all nine refuse under strict mode
 
 crozier refuses the probe and the
 [`error-response-two-parents`](error-response-two-parents-probe.yml) shape in
-both modes, naming the response and the property. A generated SDK would have to
+both modes, naming the response and the property. Fern refuses the same parents
+on a named component and on an inline request body too
+([`component-two-parents`](component-two-parents-probe.yml),
+[`request-two-parents`](request-two-parents-probe.yml), the latter also as
+`request-property-name-collision`), and crozier refuses each naming the
+component or the request body. A generated SDK would have to
 pick one of the two declarations for the flattened field, which no Fern output
 shows, so there is no reference to match and the refusal stands. Fern generates,
 and crozier generates byte for byte in both modes, the near misses
