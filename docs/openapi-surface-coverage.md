@@ -2140,22 +2140,16 @@ column is a defect count, and neither 465 nor 542 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
-**What the `gap` count means.** 22 is the number of OpenAPI shapes no committed
+**What the `gap` count means.** 20 is the number of OpenAPI shapes no committed
 golden's source declares and no hand-written fixture covers, so no byte
-comparison touches them. `just check` is green over all 22 either way, and it
+comparison touches them. The gate is green over all 20 either way, and it
 is not a defect count. 14 of them (`UNREACHABLE`) have no position in a
-generated Python SDK at all, each proved so by a committed differential pair
-that crozier is byte-compared against, and saying so is their settlement. The
-other 8 are the `FIXTURE` gaps the naming and example case tables brought
-inside the census: no registered golden source declares any of them, no witness
-search has been run for any of them, and each stands only as a row of
+generated Python SDK, each proved so by a committed differential pair
+that crozier is byte-compared against. The other 6 need byte-match proof; their current
+search evidence and outstanding candidates are recorded in
 [Unproven features, named](#unproven-features-named), ranked in
-[the ranked backlog](#the-ranked-fixture-backlog). The eleven branches of
-`src/ir.rs` the earlier instrument passes named that no registered source
-declares are `handwritten`, each byte-matched on a
-[hand-written fixture](openapi-surface/handwritten/AGENTS.md) its failed search
-admitted; the paragraphs of [the ranked backlog](#the-ranked-fixture-backlog)
-tell how every earlier row left this count.
+[the ranked backlog](#the-ranked-fixture-backlog).
+
 
 ### Reconciliation
 

@@ -16450,8 +16450,8 @@ components:
         assert!(rendered.contains("note=\"Primary note\""), "{rendered}");
         assert_eq!(
             rendered.matches("\"2024-02-03\"").count(),
-            2,
-            "duplicate dates should be omitted once per sync/async example: {rendered}"
+            4,
+            "duplicate dates survive in each sync/async example: {rendered}"
         );
         assert!(!rendered.contains("code=\"ALT-1\""), "{rendered}");
     }

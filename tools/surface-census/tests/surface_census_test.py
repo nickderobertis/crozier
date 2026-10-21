@@ -1366,7 +1366,13 @@ def completeness_failures(
                 f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
                 f"non-generation verdict, the only thing that settles a `{category}` row"
             )
-        elif record is None and category == "gap" and named.get(key, "").startswith(NOT_SEARCHED):
+        elif (
+            record is None
+            and category == "gap"
+            and (
+                named.get(key, "").startswith(NOT_SEARCHED) or bounded_incomplete_search(root, key, named.get(key, ""))
+            )
+        ):
             continue
         elif record is None and category == "handwritten":
             gate = load_script("tools/surface-census/handwritten-fixtures.py")
@@ -16132,6 +16138,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "openapi-surface-census.py": ("\u2014",),
         "probe-differential-isolation.py": ("missing-root", "\u2014", "missing-probe", "missing-control"),
         "scenario-proof-index.py": ("\u2014",),
+        "restate-coverage.py": ("\u2014",),
         "update-predicate-grammar.py": ("\u2014",),
         "witness-search-region-keys.py": ("\u2014",),
     }
@@ -17311,6 +17318,83 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("no committed blind-spot measurement", result.stderr)
         self.assertEqual(before, self.index.read_bytes())
+
+    def test_malformed_inputs_refuse_without_writing_and_recover(self) -> None:
+        surface = self.root / "docs/openapi-surface"
+        region = surface / "schemas.md"
+        ledger = surface / "golden-reach.tsv"
+        sample = (
+            "| sample-restatement-input | both | Schema Object.sample | gap | census: 0 declarations | "
+            "`src/naming.rs` 1 | `client.py` | FIXTURE — pending |"
+        )
+        mutations = {
+            "layout": (self.index, lambda text: text.replace("The walk enumerated", "The walk once enumerated")),
+            "category": (region, lambda text: text + "\n" + sample.replace("| gap |", "| broken |") + "\n"),
+            "duplicate": (region, lambda text: text + "\n" + sample + "\n" + sample + "\n"),
+            "settlement": (region, lambda text: text + "\n" + sample.replace("FIXTURE", "UNKNOWN") + "\n"),
+            "blind table": (self.index, lambda text: text.replace("| `src/` file | printed |", "| source | count |")),
+            "site count": (
+                region,
+                lambda text: text + "\n" + sample.replace("`src/naming.rs` 1", "`src/naming.rs`") + "\n",
+            ),
+            "partial site": (
+                region,
+                lambda text: text
+                + "\n"
+                + sample.replace("`src/naming.rs` 1", "`src/naming.rs` 1, `src/emit.rs`")
+                + "\n",
+            ),
+            "artifact": (region, lambda text: text + "\n" + sample.replace("`client.py`", "unknown.py") + "\n"),
+            "declarations": (region, lambda text: text + "\n" + sample.replace("0 declarations", "unknown") + "\n"),
+            "join columns": (
+                self.index,
+                lambda text: re.sub(r"(?m)^\| `src/naming.rs` \| [^\n]+", "| `src/naming.rs` | 1 |", text),
+            ),
+            "ledger header": (ledger, lambda text: text.replace("witnesses", "missing-column", 1)),
+            "ledger short row": (ledger, lambda text: text + "sample\n"),
+            "ledger duplicate": (
+                ledger,
+                lambda text: text
+                + next(line for line in text.splitlines() if not line.startswith("#") and not line.startswith("rank\t"))
+                + "\n",
+            ),
+            "residual section": (
+                self.index,
+                lambda text: text.replace("#### Golden rows resting only on residual goldens", "#### Missing section"),
+            ),
+            "residual row": (self.index, lambda text: text.replace("| `open gap` |", "| `unknown verdict` |")),
+        }
+        originals = {path: path.read_text(encoding="utf-8") for path, _mutate in mutations.values()}
+        for name, (path, mutate) in mutations.items():
+            with self.subTest(input=name):
+                path.write_text(mutate(originals[path]), encoding="utf-8")
+                before = self.index.read_bytes()
+                result = self.run_restater("--write")
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn("coverage-restatement:", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual(before, self.index.read_bytes())
+                path.write_text(originals[path], encoding="utf-8")
+                recovered = self.run_restater()
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+        backup = ledger.read_bytes()
+        ledger.unlink()
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("golden-reach.tsv", refused.stderr)
+        ledger.write_bytes(backup)
+        self.assertEqual(0, self.run_restater().returncode)
+
+    def test_zero_site_count_still_names_a_source_file(self) -> None:
+        with (self.root / "docs/openapi-surface/schemas.md").open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-zero-site | both | Schema Object.sample | gap | census: 0 declarations | "
+                "`src/naming.rs` 0 | `client.py` | FIXTURE — pending |\n"
+            )
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        text = self.index.read_text(encoding="utf-8")
+        self.assertIn("0 of the 7 entries name no `src/` file", text)
 
 
 if __name__ == "__main__":

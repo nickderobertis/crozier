@@ -1,20 +1,75 @@
 #!/usr/bin/env python3
-"""Restate category totals and the FIXTURE ranking without re-measuring coverage."""
+"""Restate category totals and the FIXTURE ranking without re-measuring coverage.
+
+Exit status: 0 on success, 1 on drift or input/write failure, 2 on usage errors.
+"""
 
 from __future__ import annotations
 
 import argparse
 import csv
 import importlib.util
+import io
 import re
 import sys
 import textwrap
 from collections import Counter
+from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
+from typing import NamedTuple
 
 REPO = Path(__file__).resolve().parents[2]
-SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
+
+
+class Settlement(StrEnum):
+    FIXTURE = "FIXTURE"
+    PROBE = "PROBE"
+    UNREACHABLE = "UNREACHABLE"
+
+
+SETTLEMENTS = tuple(Settlement)
+
+
+class CategoryRow(NamedTuple):
+    region: str
+    key: str
+    category: str
+    evidence: str
+    sites: str
+    artifacts: str
+    settlement: str
+
+
+class Totals(NamedTuple):
+    total: int
+    golden: int
+    limitations: int
+    handwritten: int
+    gap: int
+    fixture: int
+    probe: int
+    unreachable: int
+
+
+class Score(NamedTuple):
+    sites: int
+    blind: int
+    artifacts: int
+    witnesses: int
+
+
+class Ranked(NamedTuple):
+    order: tuple[int, int, int, int, str]
+    row: str
+    score: Score
+    has_file: bool
+
+
+class Reach(NamedTuple):
+    witnesses: str
+
+
 ARTIFACTS = ("types/", "client.py", "raw_client.py", "errors/", "reference.md", "core/")
 SOURCE = r"src/(?:[a-z_]+/)*[a-z_]+\.rs"
 
@@ -43,31 +98,39 @@ def restate(root: Path) -> str:
     index = root / "docs/openapi-surface-coverage.md"
     text = index.read_text(encoding="utf-8")
     parser = reader()
-    entries: dict[str, tuple[str, list[str]]] = {}
-    counts: dict[str, list[int]] = {}
+    entries: dict[str, CategoryRow] = {}
+    counts: dict[str, Totals] = {}
     gaps: dict[str, list[str]] = {name: [] for name in SETTLEMENTS}
     for name in parser.region_files(index):
         region = Path(name).stem
-        rows = parser.region_rows((index.parent / "openapi-surface" / name).read_text(encoding="utf-8"))
+        region_text = (index.parent / "openapi-surface" / name).read_text(encoding="utf-8")
+        candidates = [
+            line
+            for line in region_text.splitlines()
+            if re.match(r"^\| [^|]+ \| (?:both|3\.[01](?:\.x)?|OAS[^|]*) \|", line)
+        ]
+        rows = parser.region_rows(region_text)
+        if len(candidates) != len(rows):
+            raise ValueError(f"{name}: malformed category row")
         categories = Counter(row[3].strip("`") for row in rows)
         settlements: Counter[str] = Counter()
         for cells in rows:
             key = cells[0].strip("`")
             if key in entries:
                 raise ValueError(f"duplicate category row: {key}")
-            entries[key] = (region, cells)
+            entries[key] = CategoryRow(region, key, cells[3].strip("`"), cells[4], cells[5], cells[6], cells[7])
             if cells[3].strip("`") == "gap":
                 settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
                 if settlement not in gaps:
                     raise ValueError(f"{key}: unknown settlement {settlement}")
                 gaps[settlement].append(key)
                 settlements[settlement] += 1
-        counts[region] = [
+        counts[region] = Totals(
             len(rows),
             *[categories[c] for c in parser.CATEGORIES],
             *[settlements[s] for s in SETTLEMENTS],
-        ]
-    totals = [sum(column) for column in zip(*counts.values(), strict=True)]
+        )
+    totals = Totals(*(sum(column) for column in zip(*counts.values(), strict=True)))
     for region, numbers in counts.items():
         text = substitute(
             text,
@@ -90,52 +153,60 @@ def restate(root: Path) -> str:
     blind = {match[0]: int(match[1]) for match in re.findall(rf"^\| `({SOURCE})` \| (\d+) \|", join, re.M)}
     if not blind:
         raise ValueError("the committed blind-spot table is missing")
-    ranked = []
+    ranked: list[Ranked] = []
     pointing: Counter[str] = Counter()
     for key in gaps["FIXTURE"]:
-        region, cells = entries[key]
-        sites = [(path, int(n)) for path, n in re.findall(rf"({SOURCE})`?(?!:\d)[^0-9A-Za-z]{{0,14}}(\d+)", cells[5])]
-        if not sites and not cells[5].lstrip("`").startswith("none"):
+        entry = entries[key]
+        region = entry.region
+        sites = [
+            (path, int(n)) for path, n in re.findall(rf"({SOURCE})`?(?!:\d)[^0-9A-Za-z]{{0,14}}(\d+)", entry.sites)
+        ]
+        if sorted(path for path, _count in sites) != sorted(re.findall(SOURCE, entry.sites.partition(" — ")[0])):
+            raise ValueError(f"{key}: crozier sites has an unmeasured source file")
+        if not sites and not entry.sites.lstrip("`").startswith("none"):
             raise ValueError(f"{key}: crozier sites has no measured count")
         missing = [path for path, _n in sites if path not in blind]
         if missing:
             raise ValueError(f"{key}: no committed blind-spot measurement for {missing}")
-        artifacts = [name for name in ARTIFACTS if re.search(r"(?<![\w])" + re.escape(name), cells[6])]
+        artifacts = [name for name in ARTIFACTS if re.search(r"(?<![\w])" + re.escape(name), entry.artifacts)]
         if not artifacts:
             raise ValueError(f"{key}: artifact cell names none of {ARTIFACTS}")
-        witness = re.search(r":\s*(\d+) declarations", cells[4])
+        witness = re.search(r":\s*(\d+) declarations", entry.evidence)
         if witness is None:
             raise ValueError(f"{key}: evidence has no measured declaration count")
-        score = (sum(n for _p, n in sites), sum(blind[p] for p, _n in sites), len(artifacts), int(witness[1]))
+        score = Score(sum(n for _p, n in sites), sum(blind[p] for p, _n in sites), len(artifacts), int(witness[1]))
         pointing.update({path for path, _n in sites})
         own = ", ".join(f"`{path}` {n}" for path, n in sites) or "none"
         reach = ", ".join(f"`{path}` {blind[path]}" for path, _n in sites) or "none"
         row = (
-            f"[`{key}`](openapi-surface/{region}.md) | `{region}` | **{score[0]}** ({own}) | "
-            f"**{score[1]}** ({reach}) | **{score[2]}** ({', '.join(artifacts)}) | **{score[3]}** |"
+            f"[`{key}`](openapi-surface/{region}.md) | `{region}` | **{score.sites}** ({own}) | "
+            f"**{score.blind}** ({reach}) | **{score.artifacts}** ({', '.join(artifacts)}) | **{score.witnesses}** |"
         )
-        ranked.append(((score[0], -score[1], -score[2], -score[3], key), row, score))
+        ranked.append(
+            Ranked((score.sites, -score.blind, -score.artifacts, -score.witnesses, key), row, score, bool(sites))
+        )
     ranked.sort()
     table = "| # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |\n|---|---|---|---|---|---|---|\n"
-    table += "\n".join(f"| {rank} | {row}" for rank, (_order, row, _score) in enumerate(ranked, 1))
+    table += "\n".join(f"| {rank} | {row}" for rank, (_order, row, _score, _has_file) in enumerate(ranked, 1))
     text = substitute(
         text,
         r"^\| # \| key \| region \| 1\. crozier sites[^\n]*\n\|---[^\n]*\n(?:\|[^\n]*\n)*",
         table.rstrip("\n") + "\n",
     )
     text = re.sub(r"All \d+ `FIXTURE` gaps", f"All {fixture} `FIXTURE` gaps", text)
-    zero_witness = sum(score[3] == 0 for _order, _row, score in ranked)
+    zero_witness = sum(score.witnesses == 0 for _order, _row, score, _has_file in ranked)
     text = re.sub(
         r"(?:\d+ of the \d+ score zero|no ranked witnesses remain)",
         f"{zero_witness} of the {fixture} score zero" if fixture else "no ranked witnesses remain",
         text,
     )
-    no_file = sum(score[0] == 0 for _order, _row, score in ranked)
+    no_file = sum(not entry.has_file for entry in ranked)
+    no_blind = sum(entry.score.blind == 0 for entry in ranked)
     text = re.sub(r"\d+ of the \d+ entries name no", f"{no_file} of the {fixture} entries name no", text)
     text = re.sub(
-        r"\d+ of the \d+ ranked entries reach no", f"{no_file} of the {fixture} ranked entries reach no", text
+        r"\d+ of the \d+ ranked entries reach no", f"{no_blind} of the {fixture} ranked entries reach no", text
     )
-    values = sorted(score[1] for _order, _row, score in ranked)
+    values = sorted(score.blind for _order, _row, score, _has_file in ranked)
     median = (values[(len(values) - 1) // 2] + values[len(values) // 2]) // 2 if values else None
     if median is None:
         narrative = "The ranked backlog is empty.\n"
@@ -144,7 +215,7 @@ def restate(root: Path) -> str:
         narrative = (
             f"**The median blind-spot count of this list is {median}** — {named}. "
             f"{no_file} of the {fixture} entries name no `src/` file at all. "
-            f"{no_file} of the {fixture} ranked entries reach no blind region. "
+            f"{no_blind} of the {fixture} ranked entries reach no blind region. "
             "The table follows the five criteria above.\n"
         )
     text = substitute(
@@ -162,6 +233,8 @@ def restate(root: Path) -> str:
         match = re.match(rf"^\| `({SOURCE})` \|", line)
         if in_join and match:
             cells = line.split("|")
+            if len(cells) != 7:
+                raise ValueError(f"{match[1]}: truncated blind-spot table row")
             cells[4] = f" {pointing[match[1]]} (ranked `FIXTURE` gaps) " if pointing[match[1]] else " none "
             cells[5] = re.sub(
                 r"(?:Seven|\d+) (?:named example|ranked feature) gaps point here;",
@@ -182,14 +255,29 @@ def restate(root: Path) -> str:
     )
     # Only feature totals change here. Arm measurements remain golden-reach's.
     surface = index.parent / "openapi-surface"
+    ledger: dict[str, Reach] = {}
     with (surface / "golden-reach.tsv").open(encoding="utf-8", newline="") as handle:
-        ledger = {
-            row["key"]: row
-            for row in csv.DictReader((line for line in handle if not line.startswith("#")), delimiter="\t")
-        }
-    residual_section = text.partition("#### Golden rows resting only on residual goldens")[2].split("\n#", 1)[0]
+        records = csv.DictReader((line for line in handle if not line.startswith("#")), delimiter="\t")
+        if not records.fieldnames or "key" not in records.fieldnames or "witnesses" not in records.fieldnames:
+            raise ValueError("golden-reach.tsv: missing key/witnesses header")
+        for row in records:
+            if None in row or any(value is None for value in row.values()) or not row["key"]:
+                raise ValueError("golden-reach.tsv: incomplete record")
+            if row["key"] in ledger:
+                raise ValueError(f"golden-reach.tsv: duplicate key {row['key']}")
+            ledger[row["key"]] = Reach(row["witnesses"])
+    heading = "#### Golden rows resting only on residual goldens"
+    if heading not in text:
+        raise ValueError("missing residual-golden section")
+    residual_section = text.partition(heading)[2].split("\n#", 1)[0]
+    residual_rows = [line for line in residual_section.splitlines() if line.startswith("| `")]
+    if any(
+        len(line.split("|")) != 6 or not re.search(r"\| `(?:open gap|proven|split)` \|$", line)
+        for line in residual_rows
+    ):
+        raise ValueError("malformed residual-golden row")
     residual = set(re.findall(r"^\| `([^`]+)` \|[^\n]*\| `open gap` \|$", residual_section, re.M))
-    no_witness = sum(c[3].strip("`") == "golden" and not ledger[k]["witnesses"] for k, (_r, c) in entries.items())
+    no_witness = sum(entry.category == "golden" and not ledger[key].witnesses for key, entry in entries.items())
     real = golden - len(residual) - no_witness
     proof = limitations + unreachable
     unproven = fixture + len(residual) + no_witness
@@ -198,6 +286,7 @@ def restate(root: Path) -> str:
         r"The walk enumerates \d+ features\. By category,.*?`gap`\.",
         f"The walk enumerates {total} features. By category, {golden} are `golden`, {limitations}\n`limitations`, {handwritten} `handwritten` and {gap} `gap`.",
     )
+    text = re.sub(r"those \d+\nsplit four ways", f"those {total}\nsplit four ways", text)
     text = re.sub(r"\*\*\d+ carry byte-match evidence", f"**{real} carry byte-match evidence", text)
     text = re.sub(r"\*\*\d+ carry a committed Fern", f"**{proof} carry a committed Fern", text)
     text = re.sub(r"\*\*\d+ rest on a hand-written fixture", f"**{handwritten} rest on a hand-written fixture", text)
@@ -223,6 +312,20 @@ def restate(root: Path) -> str:
     text = substitute(
         text, r"^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\.$", f"{real} + {proof} + {handwritten} + {unproven} = {total}."
     )
+    text = substitute(
+        text,
+        r"(\*\*What the `gap` count means\.\*\*).*?(?=\n### Reconciliation)",
+        f"**What the `gap` count means.** {gap} is the number of OpenAPI shapes no committed\n"
+        "golden's source declares and no hand-written fixture covers, so no byte\n"
+        f"comparison touches them. The gate is green over all {gap} either way, and it\n"
+        f"is not a defect count. {unreachable} of them (`UNREACHABLE`) have no position in a\n"
+        "generated Python SDK, each proved so by a committed differential pair\n"
+        "that crozier is byte-compared against. The other "
+        f"{gap - unreachable} need byte-match proof; their current\n"
+        "search evidence and outstanding candidates are recorded in\n"
+        "[Unproven features, named](#unproven-features-named), ranked in\n"
+        "[the ranked backlog](#the-ranked-fixture-backlog).\n\n",
+    )
     return text
 
 
@@ -245,4 +348,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     sys.exit(main())
