@@ -4986,7 +4986,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_numeric_nullable_reads_by_its_truth_and_a_string_is_refused() {
+    fn a_one_or_zero_nullable_reads_as_a_boolean_and_any_other_value_is_refused() {
         let nullable = |value: &str| {
             crate::yaml::from_str::<Schema>(&format!("type: string\nnullable: {value}\n"))
                 .map(|schema| schema.nullable)
@@ -4995,11 +4995,13 @@ mod tests {
         assert_eq!(nullable("0"), Ok(Some(false)));
         assert_eq!(nullable("true"), Ok(Some(true)));
         assert_eq!(nullable("~"), Ok(None));
-        let error = nullable("'yes'").unwrap_err();
-        assert!(
-            error.contains("invalid boolean (strict mode expects true/false)"),
-            "{error}"
-        );
+        for other in ["'yes'", "2", "0.5"] {
+            let error = nullable(other).unwrap_err();
+            assert!(
+                error.contains("invalid boolean (strict mode expects true/false)"),
+                "{other}: {error}"
+            );
+        }
         let error = serde_json::from_str::<Schema>(r#"{"type": "string", "nullable": "yes"}"#)
             .unwrap_err()
             .to_string();
