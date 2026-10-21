@@ -17668,8 +17668,26 @@ class CombinationListTests(unittest.TestCase):
         for key, (_region, cells) in sorted(combination_rows(REPO).items()):
             if cells[3].strip("`") == "golden":
                 with self.subTest(key=key):
-                    self.assertTrue(cells[5].startswith(reach.PENDING_REACH), f"{key} names no reach state")
-                    self.assertNotIn(key, golden)
+                    if cells[5].startswith(reach.PENDING_REACH):
+                        self.assertNotIn(key, golden)
+                    else:
+                        self.assertIn(key, golden)
+        key, (region, cells) = next(
+            (key, row) for key, row in sorted(combination_rows(REPO).items()) if row.cells[3].strip("`") == "golden"
+        )
+        relative = Path("docs") / "openapi-surface" / f"{region}.md"
+        current = next(
+            line
+            for line in (self.root / relative).read_text(encoding="utf-8").splitlines()
+            if line.startswith((f"| {key} |", f"| `{key}` |"))
+        )
+        for cell, included in ((reach.PENDING_REACH, False), ("reach: measured test case", True)):
+            changed = [*cells]
+            changed[5] = cell
+            replacement = "| " + " | ".join(changed) + " |"
+            self.edit(relative, current, replacement)
+            current = replacement
+            self.assertEqual(included, key in reach.golden_rows(self.root / "docs" / "openapi-surface"))
 
 
 class RequestBodyReadingTests(unittest.TestCase):
