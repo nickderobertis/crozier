@@ -1694,6 +1694,13 @@ class MeasuredAtThePair(unittest.TestCase):
         # That rule is for a generate-stage class alone.
         dispose(crozier_class="object-extends-non-object", disposition="generate-stage")
         self.assertIn(f"dispositions.tsv {digest}: with no representative", self.script("check").stderr)
+        # `build` holds a disposition before letting it vouch for a refusal.
+        refused_with("object-extends-non-object")
+        result = built()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"dispositions.tsv {digest}: with no representative", result.stderr)
+        dispose(crozier_class="object-extends-non-object", disposition="agreed")
+        self.assertIn(f"dispositions.tsv {digest}: disposition 'agreed' is not one of", built().stderr)
 
     def test_reduce_keeps_a_yaml_representative_yaml_and_refuses_a_pointer_that_names_nothing(self) -> None:
         self.add_classes("object-extends-non-object")

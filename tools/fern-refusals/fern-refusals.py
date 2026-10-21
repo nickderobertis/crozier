@@ -1305,6 +1305,8 @@ def tables() -> tuple[dict[str, str], list[str]]:
             crozier_files=result["crozier_files"] or EMPTY,
             crozier_strict_exit=strict,
         )
+    # A disposition vouches for a refusal above only if it holds.
+    problems += disposition_problems(documents)
     for row in classes:
         row["documents"] = str(counts[row["class"]])
         if row["status"] != "unevaluated":
@@ -1550,7 +1552,7 @@ def check(_args: argparse.Namespace) -> int:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
     # Both stages are reported together: a template that drifts shows in the
     # tables and in every disposition it derives alike.
-    agreement = cross_reference_problems() + confirmation_problems() + shape_problems() + disposition_problems()
+    agreement = cross_reference_problems() + confirmation_problems() + shape_problems() + stray_reduction_logs()
     written, inputs = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
@@ -2243,18 +2245,20 @@ def reduce(args: argparse.Namespace) -> int:
     return 0
 
 
-def disposition_problems() -> list[str]:
+def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> list[str]:
     """Every `dispositions.tsv` row against the registry and its own log: its
-    document is refused, its class is one the document does not carry, a
-    `generate-stage` row is one by the classes' stages, and every other row is
-    what its reduction's log at the pair derives."""
+    document is refused (one of `documents`, by default `documents.tsv`'s), its
+    class is one the document does not carry, a `generate-stage` row is one by
+    the classes' stages, and every other row is what its reduction's log at the
+    pair derives."""
     path = dispositions_path()
     if not path.is_file():
         return []
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
     stages = {row["class"]: row["fern_stage"] for row in classes}
     patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
-    documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
+    if documents is None:
+        documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
     rows = read_dispositions()
     problems = []
     if [(row["crozier_class"], row["document"]) for row in rows] != sorted(
@@ -2292,10 +2296,14 @@ def disposition_problems() -> list[str]:
             )
         elif disposition_cells(row, row["reduced_digest"], recorded, patterns, near) != row:
             problems.append(f"{name}: the row disagrees with its log {row['log']}; {again}")
-    named = {row["log"] for row in rows}
-    stray = sorted(rel(log) for log in (EVIDENCE / "reductions").glob("*.log") if rel(log) not in named)
-    problems += [f"{log}: no dispositions.tsv row names this reduction; delete it" for log in stray]
     return problems
+
+
+def stray_reduction_logs() -> list[str]:
+    """Every reduction log no `dispositions.tsv` row names."""
+    named = {row["log"] for row in read_dispositions()}
+    stray = sorted(rel(log) for log in (EVIDENCE / "reductions").glob("*.log") if rel(log) not in named)
+    return [f"{log}: no dispositions.tsv row names this reduction; delete it" for log in stray]
 
 
 def positive(text: str) -> int:
