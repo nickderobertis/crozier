@@ -96,6 +96,7 @@ components:
       required: [id, name]
       additionalProperties: true
       x-is-beta: true
+      xml: { name: item }
       properties:
         id:
           type: string
@@ -398,10 +399,13 @@ fn a_yaml_boolean_keeps_the_spellings_it_read_before() {
         false,
     )
     .expect("`true` generates");
-    for spelling in ["True", "TRUE", "'true'"] {
+    // A quoted spelling is a string to the source-tree reads (the XML flags),
+    // as it was before, so it stands at one typed field only.
+    for (spelling, site) in [("True", ""), ("TRUE", ""), ("'true'", "nullable")] {
         let spec = dir.path().join("spelled.yaml");
         let text = std::fs::read_to_string(dir.path().join("boolean.yaml")).expect("read");
-        std::fs::write(&spec, text.replace(": true\n", &format!(": {spelling}\n"))).expect("write");
+        let spelled = text.replace(&format!("{site}: true\n"), &format!("{site}: {spelling}\n"));
+        std::fs::write(&spec, spelled).expect("write");
         assert!(
             std::fs::read_to_string(&spec)
                 .unwrap()
@@ -426,7 +430,12 @@ fn any_other_value_in_a_boolean_place_is_refused() {
             (json!(1.0), "floating point `1.0`", YAML_REFUSAL),
             (json!(-1), "integer `-1`", YAML_REFUSAL),
             (json!([1]), "sequence", "expected string scalar"),
+            (json!({"a": 1}), "map", "expected string scalar"),
         ] {
+            if value.is_object() && *name == "additionalProperties" {
+                // A mapping there is a value schema.
+                continue;
+            }
             for (format, strict) in cases() {
                 let dir = tempfile::tempdir().expect("tempdir");
                 let spec = write(dir.path(), "boolean", &document(&[name], &value), format);
@@ -447,6 +456,64 @@ fn any_other_value_in_a_boolean_place_is_refused() {
                 );
             }
         }
+    }
+}
+
+#[test]
+fn xml_flags_written_as_one_reach_the_xml_model() {
+    // `Item` is an XML model, so its `id` attribute and wrapped `labels` change
+    // what it emits: `1` there generates what `true` does, not what `false` does.
+    let flags = ["xml attribute", "xml wrapped"];
+    let dir = tempfile::tempdir().expect("tempdir");
+    let tree = |stem: &str, value: Value| {
+        generate(
+            &write(dir.path(), stem, &document(&flags, &value), Format::Yaml),
+            false,
+        )
+        .unwrap_or_else(|error| panic!("{stem}: {error}"))
+    };
+    let (one, flagged, unflagged) = (
+        tree("one", json!(1)),
+        tree("true", json!(true)),
+        tree("false", json!(false)),
+    );
+    let model = "src/flags/types/item.py";
+    assert!(
+        one[model] == flagged[model],
+        "`1` emits another {model} than `true`"
+    );
+    assert!(
+        one[model] != unflagged[model],
+        "the XML flags do not reach {model}"
+    );
+}
+
+#[test]
+fn an_explicit_null_generates_what_the_absent_key_does() {
+    let names: Vec<&str> = READ_SITES.iter().map(|(name, _)| *name).collect();
+    let mut absent = document(&[], &Value::Null);
+    for name in &names {
+        let pointer = SITES.iter().find(|(site, _)| site == name).expect("site").1;
+        let (parent, key) = pointer.rsplit_once('/').expect("pointer has a parent");
+        absent
+            .pointer_mut(parent)
+            .and_then(Value::as_object_mut)
+            .expect("site's parent is an object")
+            .remove(key);
+    }
+    for format in [Format::Yaml, Format::Json] {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let expected = generate(&write(dir.path(), "absent", &absent, format), false)
+            .unwrap_or_else(|error| panic!("{format:?} absent: {error}"));
+        let generated = generate(
+            &write(dir.path(), "null", &document(&names, &Value::Null), format),
+            false,
+        )
+        .unwrap_or_else(|error| panic!("{format:?} null: {error}"));
+        assert!(
+            generated == expected,
+            "{format:?}: `null` generates other bytes than no key"
+        );
     }
 }
 
