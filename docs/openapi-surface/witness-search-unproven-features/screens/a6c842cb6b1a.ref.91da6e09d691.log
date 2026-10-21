@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/unity-sds/unity-sps-ogc-processes-api/abd13abee49e833683e800e723e964ae69149936/app/openapi.yaml
+HTTP 200
+108304 bytes, sha256 a6c842cb6b1ae570b43a4dd2c64c7564c0eccfba2125fb34de05b3ecb34c3db5
+pinned sha256 (none)
+outcome: passed: 108304 bytes read at the immutable commit abd13abee49e833683e800e723e964ae69149936, sha256 a6c842cb6b1ae570b43a4dd2c64c7564c0eccfba2125fb34de05b3ecb34c3db5

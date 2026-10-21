@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/pangeacyber/pangea-go/e4847c0695808095dc0988809aafb97425e5e1df/dev/specs/audit.openapi.json
+HTTP 200
+114928 bytes, sha256 68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6
+pinned sha256 (none)
+outcome: passed: 114928 bytes read at the immutable commit e4847c0695808095dc0988809aafb97425e5e1df, sha256 68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6

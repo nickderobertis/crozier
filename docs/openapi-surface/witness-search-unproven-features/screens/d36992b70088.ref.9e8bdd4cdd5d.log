@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/pavelzbornik/whisperX-FastAPI/6bd9cd63da754976953b4ec31e91e1745860d188/app/docs/openapi.yaml
+HTTP 200
+85736 bytes, sha256 d36992b700881bd78dda068aa88ad3dbaf33155e39138b76277e730b541bbbf2
+pinned sha256 (none)
+outcome: passed: 85736 bytes read at the immutable commit 6bd9cd63da754976953b4ec31e91e1745860d188, sha256 d36992b700881bd78dda068aa88ad3dbaf33155e39138b76277e730b541bbbf2

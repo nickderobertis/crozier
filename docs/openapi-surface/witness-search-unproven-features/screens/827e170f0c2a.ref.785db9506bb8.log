@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jentic/jentic-public-apis/1700c576aa658b5dc3bd06cb376cc959d84e12f8/apis/openapi/codat.io/sync-for-expenses/prealpha/openapi.json
+HTTP 200
+84122 bytes, sha256 827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679
+pinned sha256 (none)
+outcome: passed: 84122 bytes read at the immutable commit 1700c576aa658b5dc3bd06cb376cc959d84e12f8, sha256 827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679

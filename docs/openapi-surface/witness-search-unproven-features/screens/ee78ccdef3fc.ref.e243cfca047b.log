@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/OpenWebconcept/plugin-openagenda-base/d0985739c049df5b616e3736910d714600fce4e5/openapi/openapi.yaml
+HTTP 200
+35939 bytes, sha256 ee78ccdef3fc205525bc5ca5768364c328d087e860e9067328c8339f4775f8f8
+pinned sha256 (none)
+outcome: passed: 35939 bytes read at the immutable commit d0985739c049df5b616e3736910d714600fce4e5, sha256 ee78ccdef3fc205525bc5ca5768364c328d087e860e9067328c8339f4775f8f8

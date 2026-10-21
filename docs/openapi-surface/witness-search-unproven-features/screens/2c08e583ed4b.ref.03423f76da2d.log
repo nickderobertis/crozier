@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/corrently.io/2.0.0/openapi.yaml
+HTTP 200
+42611 bytes, sha256 2c08e583ed4b1644fcfe3d66e1d1eba2bf8e98ca1691ef9463cf1efb64fc663a
+pinned sha256 (none)
+outcome: passed: 42611 bytes read at the immutable commit f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49, sha256 2c08e583ed4b1644fcfe3d66e1d1eba2bf8e98ca1691ef9463cf1efb64fc663a

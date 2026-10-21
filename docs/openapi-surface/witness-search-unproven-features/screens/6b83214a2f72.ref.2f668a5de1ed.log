@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/docs/api-v2-reference/openapi.yml
+HTTP 200
+218270 bytes, sha256 6b83214a2f72ea3fc49df82eb135ddf6d7963723295edea2c4feef526e502d61
+pinned sha256 (none)
+outcome: passed: 218270 bytes read at the immutable commit bfe7933cb2882c99f2196aa6a46edd104cd7fbb8, sha256 6b83214a2f72ea3fc49df82eb135ddf6d7963723295edea2c4feef526e502d61

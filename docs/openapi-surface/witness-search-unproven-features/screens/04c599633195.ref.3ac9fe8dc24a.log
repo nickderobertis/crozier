@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/SURFnet/eduhub-validator/fb1296c3a430e1d7e820ea256e0aeabf7ab852ff/profiles/eduxchange.openapi.json
+HTTP 200
+154950 bytes, sha256 04c59963319582d821df777a3d472b6e04dd21e40de1a67f273da396dd67d3d1
+pinned sha256 (none)
+outcome: passed: 154950 bytes read at the immutable commit fb1296c3a430e1d7e820ea256e0aeabf7ab852ff, sha256 04c59963319582d821df777a3d472b6e04dd21e40de1a67f273da396dd67d3d1

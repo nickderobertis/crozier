@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/bytedance/SandboxFusion/469de0845cb7d665bc68044d541aa3aa28c5b30a/docs/src/openapi.json
+HTTP 200
+16803 bytes, sha256 0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2
+pinned sha256 (none)
+outcome: passed: 16803 bytes read at the immutable commit 469de0845cb7d665bc68044d541aa3aa28c5b30a, sha256 0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/bbox-services/bbox/ec8f16ec70cfa9cacc444c883ea3701f9457bde4/bbox-map-server/src/openapi.yaml
+HTTP 200
+87625 bytes, sha256 7080ec0fad9bc587173b374b74624878c62bf13510e3e3b88e06a744ec30cfa7
+pinned sha256 (none)
+outcome: passed: 87625 bytes read at the immutable commit ec8f16ec70cfa9cacc444c883ea3701f9457bde4, sha256 7080ec0fad9bc587173b374b74624878c62bf13510e3e3b88e06a744ec30cfa7

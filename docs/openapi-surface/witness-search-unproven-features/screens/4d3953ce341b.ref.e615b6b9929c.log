@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/avraamisvi/geoxidated/a4e92cc858e88cf81178cba16bc6405a52592c22/openapi.yaml
+HTTP 200
+37221 bytes, sha256 4d3953ce341be5bcae7b1d816fbd799d94c9e92b439ea3424a5a59603fd2db79
+pinned sha256 (none)
+outcome: passed: 37221 bytes read at the immutable commit a4e92cc858e88cf81178cba16bc6405a52592c22, sha256 4d3953ce341be5bcae7b1d816fbd799d94c9e92b439ea3424a5a59603fd2db79

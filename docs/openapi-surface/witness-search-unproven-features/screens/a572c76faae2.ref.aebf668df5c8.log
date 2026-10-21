@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/daydreamer-json/pixiv-ajax-api-docs/561cb0d070a580f1ebf0e24acedc7d507ed11fe8/openapi/openapi.yml
+HTTP 200
+92067 bytes, sha256 a572c76faae2ea02756d083c7bd6a25568cea931cb04dfb3228b4f0390e3b507
+pinned sha256 (none)
+outcome: passed: 92067 bytes read at the immutable commit 561cb0d070a580f1ebf0e24acedc7d507ed11fe8, sha256 a572c76faae2ea02756d083c7bd6a25568cea931cb04dfb3228b4f0390e3b507

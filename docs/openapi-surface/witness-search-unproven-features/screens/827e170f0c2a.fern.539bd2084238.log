@@ -1,0 +1,52 @@
+--- fern check (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Sync for Expenses API
+::error title=[api]%3A::Failed to parse openapi document Sync for Expenses API
+[api]: Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0 
+       CliError: Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0
+           at k4t.resolveParameterReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143162)
+           at qLr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)
+           at lde (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)
+           at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)
+           at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+           at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+           at Array.forEach (<anonymous>)
+           at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+           at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+           at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+::error title=[api]%3A::Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0 %0ACliError: Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0%0A    at k4t.resolveParameterReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143162)%0A    at qLr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)%0A    at lde (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)%0A    at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+All checks passed
+
+--- fern generate (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Sync for Expenses API
+::error title=[api]%3A python-sdk::Failed to parse openapi document Sync for Expenses API
+[api]: python-sdk Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0 
+                  CliError: Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0
+                      at k4t.resolveParameterReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143162)
+                      at qLr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)
+                      at lde (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)
+                      at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)
+                      at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+                      at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+                      at Array.forEach (<anonymous>)
+                      at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+                      at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+                      at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+::error title=[api]%3A python-sdk::Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0 %0ACliError: Failed to resolve #/paths/~1companies~1{companyId}~1sync~1expenses~1syncs/parameters/0%0A    at k4t.resolveParameterReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143162)%0A    at qLr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)%0A    at lde (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)%0A    at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-1020797-IZcZVwV2XwUf
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+

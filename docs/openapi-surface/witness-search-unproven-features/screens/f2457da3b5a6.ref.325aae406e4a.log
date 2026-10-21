@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/crate-works/ro-crate-api/ce22c51856f181084e7b6d34d8e8d3a1ef85d978/openapi.yaml
+HTTP 200
+134821 bytes, sha256 f2457da3b5a646665ac66bbc812695532ca606fd8b9cb3f9286728990442882e
+pinned sha256 (none)
+outcome: passed: 134821 bytes read at the immutable commit ce22c51856f181084e7b6d34d8e8d3a1ef85d978, sha256 f2457da3b5a646665ac66bbc812695532ca606fd8b9cb3f9286728990442882e

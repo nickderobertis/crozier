@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/epilot-dev/terraform-provider-epilot-entitymapping/6f2251aaad04831929d43198d74e14f1d8473b71/openapi.yml
+HTTP 200
+31320 bytes, sha256 a9731e438cb986f95241e813e79f2580dd153703eb4aa52f6d44d8d655adc315
+pinned sha256 (none)
+outcome: passed: 31320 bytes read at the immutable commit 6f2251aaad04831929d43198d74e14f1d8473b71, sha256 a9731e438cb986f95241e813e79f2580dd153703eb4aa52f6d44d8d655adc315

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json
+HTTP 200
+3390 bytes, sha256 81952b8f9ad97f1e0aa92a8d329eeb47ab6e0f9694cd75d720937ff773aff4ef
+pinned sha256 (none)
+outcome: passed: 3390 bytes read at the immutable commit e56b713d272d627a18ba14d3eea992231c550146, sha256 81952b8f9ad97f1e0aa92a8d329eeb47ab6e0f9694cd75d720937ff773aff4ef

@@ -1,0 +1,17 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: '' -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 404
+GET LICENSE.txt: HTTP 200
+licence file LICENSE.txt -> AGPL
+--- LICENSE.txt (first 30 non-blank lines) ---
+Source code in this repository is covered by (i) a triple license under the "GNU
+Affero General Public License v3.0 only", "the Server Side Public License, v 1",
+and the "Elastic License 2.0", or (ii) an "Apache License 2.0" compatible
+license or (iii) solely under the "Elastic License 2.0", in each case, as noted
+in the applicable header. The default throughout the repository is a triple
+license under the "GNU Affero General Public License v3.0 only", "the Server
+Side Public License, v 1", and the "Elastic License 2.0", unless the header
+specifies another license. Code that is licensed solely under the "Elastic
+License 2.0" is found only in the x-pack folder.
+outcome: passed: no info.license, LICENSE.txt at the pinned commit reads as AGPL, which the corpus rule admits

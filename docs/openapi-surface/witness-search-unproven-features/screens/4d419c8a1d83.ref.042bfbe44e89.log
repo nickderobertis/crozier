@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/medizininformatik-initiative/dataportal-backend/cafb8aa33d47717c311c1ff438df73a2acf17e94/docs/public/openapi.yaml
+HTTP 200
+71404 bytes, sha256 4d419c8a1d83b54d8d71ea0640f9e07012b0e1572da98f7191b261bf8479692f
+pinned sha256 (none)
+outcome: passed: 71404 bytes read at the immutable commit cafb8aa33d47717c311c1ff438df73a2acf17e94, sha256 4d419c8a1d83b54d8d71ea0640f9e07012b0e1572da98f7191b261bf8479692f

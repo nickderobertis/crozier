@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/wbcsd/tr/88b8860aa73bb91221ff1e6a83edc631bb9ebfc3/2025/data-exchange-protocol-20250310/openapi.yaml
+HTTP 200
+79291 bytes, sha256 2064edf286766f93530cc571606ad68ead9654d27e98cf39108fb1644e25308b
+pinned sha256 (none)
+outcome: passed: 79291 bytes read at the immutable commit 88b8860aa73bb91221ff1e6a83edc631bb9ebfc3, sha256 2064edf286766f93530cc571606ad68ead9654d27e98cf39108fb1644e25308b

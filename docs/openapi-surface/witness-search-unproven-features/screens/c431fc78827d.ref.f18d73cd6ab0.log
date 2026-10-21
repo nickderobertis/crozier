@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/ar-io/ar-io-node/dffceb30cc1b409e3d1781cdcdd050beb404a505/docs/openapi.yaml
+HTTP 200
+163680 bytes, sha256 c431fc78827d3b5578f24193f575db5c7ebfeb871ee9e06e5f0326b6ed350c52
+pinned sha256 (none)
+outcome: passed: 163680 bytes read at the immutable commit dffceb30cc1b409e3d1781cdcdd050beb404a505, sha256 c431fc78827d3b5578f24193f575db5c7ebfeb871ee9e06e5f0326b6ed350c52

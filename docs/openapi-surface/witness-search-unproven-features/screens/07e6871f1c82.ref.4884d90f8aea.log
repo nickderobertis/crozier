@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/Kucoin/kucoin-universal-sdk/c2f39bdb8b7d5f31cfb3fd532f9baf2f09fd8f12/spec/rest/api/openapi-broker-apibroker.json
+HTTP 200
+4965 bytes, sha256 07e6871f1c8270fb787ef3c359ef6c6c4cec1fb2144677e521728a2c8f38503e
+pinned sha256 (none)
+outcome: passed: 4965 bytes read at the immutable commit c2f39bdb8b7d5f31cfb3fd532f9baf2f09fd8f12, sha256 07e6871f1c8270fb787ef3c359ef6c6c4cec1fb2144677e521728a2c8f38503e

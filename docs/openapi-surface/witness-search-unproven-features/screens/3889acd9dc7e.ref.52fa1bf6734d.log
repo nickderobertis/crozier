@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/TenforwardAB/go53/a7e1ea6affc1502fc548a352bf7ea23e471781ef/docs/api/openapi.yaml
+HTTP 200
+82028 bytes, sha256 3889acd9dc7e35e8e489c662c9d3a8ac143ed156e3e0cd228b59d290068ff116
+pinned sha256 (none)
+outcome: passed: 82028 bytes read at the immutable commit a7e1ea6affc1502fc548a352bf7ea23e471781ef, sha256 3889acd9dc7e35e8e489c662c9d3a8ac143ed156e3e0cd228b59d290068ff116

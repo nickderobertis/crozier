@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/KORTxyz/ogcapi-gpkg/94b48d9400e77bc6db147a358d176707f6548e1d/src/openapi.yaml
+HTTP 200
+72431 bytes, sha256 7aa3e80e307f90e9c95b404bacb8e78bb4e63ff5d1aa6dd379d658be990a380c
+pinned sha256 (none)
+outcome: passed: 72431 bytes read at the immutable commit 94b48d9400e77bc6db147a358d176707f6548e1d, sha256 7aa3e80e307f90e9c95b404bacb8e78bb4e63ff5d1aa6dd379d658be990a380c

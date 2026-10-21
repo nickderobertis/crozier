@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/INESCTEC/rec-sizing-rest-api/4b15074008fce884c1c84b700335d13aa5cbdd73/docs/openapi.json
+HTTP 200
+61125 bytes, sha256 d295b84cd46f9045e6bf1088d67d46ffa6925961f80ca92f324772f585103fed
+pinned sha256 (none)
+outcome: passed: 61125 bytes read at the immutable commit 4b15074008fce884c1c84b700335d13aa5cbdd73, sha256 d295b84cd46f9045e6bf1088d67d46ffa6925961f80ca92f324772f585103fed

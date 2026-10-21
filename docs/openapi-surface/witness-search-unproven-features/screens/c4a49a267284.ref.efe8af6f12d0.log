@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/SyriusOrbit/syrius-orbit-contracts/f528a5e7a4dafa98f99c1575ef9e6b17d256b727/fleet-management/openapi.yaml
+HTTP 200
+141526 bytes, sha256 c4a49a267284a1d91795755176382e3383430dd6b52901fed1d5c8c2f2b5b28b
+pinned sha256 (none)
+outcome: passed: 141526 bytes read at the immutable commit f528a5e7a4dafa98f99c1575ef9e6b17d256b727, sha256 c4a49a267284a1d91795755176382e3383430dd6b52901fed1d5c8c2f2b5b28b

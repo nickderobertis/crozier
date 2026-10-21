@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/thebluealliance.com/3.8.2/openapi.yaml
+HTTP 200
+179395 bytes, sha256 79af868df416fb1454d288d85fb41d3941a5ee8338b1532218e29e9f3b59ba6d
+pinned sha256 (none)
+outcome: passed: 179395 bytes read at the immutable commit f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49, sha256 79af868df416fb1454d288d85fb41d3941a5ee8338b1532218e29e9f3b59ba6d

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/decentralized-identity/universal-registrar/10b14db81cf3913eb84b0b7a8df66eab08bf870e/openapi/openapi.yaml
+HTTP 200
+41436 bytes, sha256 5d30e5fe0710109cb5a0df1f7524a4f1d22e3fb2b3348a1ec16c18235e3156fa
+pinned sha256 (none)
+outcome: passed: 41436 bytes read at the immutable commit 10b14db81cf3913eb84b0b7a8df66eab08bf870e, sha256 5d30e5fe0710109cb5a0df1f7524a4f1d22e3fb2b3348a1ec16c18235e3156fa

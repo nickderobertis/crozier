@@ -1,0 +1,53 @@
+--- fern check (exit 1) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 11 errors
+    [error]
+        path: admin.yml -> service -> endpoints -> a0f8c38e3990a39487d1ec7537e15528
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: discovery.yml -> service -> endpoints -> 412af4d7f3875f97a085f3344f7a8008
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: history.yml -> service -> endpoints -> dcd26bb79cabf9e2276ff7d6cbe0a2ef
+        issue: Path parameter is unreferenced in endpoint: column.
+
+    [error]
+        path: history.yml -> service -> endpoints -> dcd26bb79cabf9e2276ff7d6cbe0a2ef
+        issue: Path parameter is unreferenced in endpoint: direction.
+
+    [error]
+        path: history.yml -> service -> endpoints -> dcd26bb79cabf9e2276ff7d6cbe0a2ef
+        issue: Path parameter is unreferenced in endpoint: filter.
+
+    [error]
+        path: infrastructure.yml -> service -> endpoints -> 79ffb4d0b9ca92eb36b88481a23098ec
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: monitoringPoller.yml -> service -> endpoints -> 22c4a377c3ecc831fedf400bbdec6d29
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: monitors.yml -> service -> endpoints -> 60a22e152c02502cecd0a6077730f0fd
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: poller.yml -> service -> endpoints -> 8016243bd9ee53af6e45340a70b39625
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: renderGraph.yml -> service -> endpoints -> 95c038db17fd7c589ac4f0ede5ed7687
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: reporting.yml -> service -> endpoints -> e52e657b9ed1f62c0b15c549e5aa2986
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 11 errors and 0 warnings in 0.003 seconds.
+::error::Found 11 errors and 0 warnings in 0.003 seconds.
+

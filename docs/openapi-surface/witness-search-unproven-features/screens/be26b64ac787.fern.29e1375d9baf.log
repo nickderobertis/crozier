@@ -1,0 +1,28 @@
+--- fern check (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: DELETE /api/v1/uploads/{filename}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+::warning title=[api]%3A::DELETE /api/v1/uploads/{filename}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+Found 0 errors and 11 warnings in 0.016 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning::Found 0 errors and 11 warnings in 0.016 seconds. Run fern check --warnings to print out the warnings not shown.
+
+--- fern generate (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/be26b64ac787db03d3d881b89caf902e077f6c4b82856b222a6f27f2ce060ce1/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk DELETE /api/v1/uploads/{filename}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+::warning title=[api]%3A python-sdk::DELETE /api/v1/uploads/{filename}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk Found 0 errors and 11 warnings in 1.382 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning title=[api]%3A python-sdk::Found 0 errors and 11 warnings in 1.382 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-802039-QWreGJ9NULfn
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/be26b64ac787db03d3d881b89caf902e077f6c4b82856b222a6f27f2ce060ce1/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+

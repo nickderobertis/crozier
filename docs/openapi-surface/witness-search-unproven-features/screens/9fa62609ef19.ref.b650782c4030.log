@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/52North/connected-systems-pygeoapi/6ad75aa7fbfc76517c8a24c21446471845007855/connected-systems-api/default-openapi.yml
+HTTP 200
+188366 bytes, sha256 9fa62609ef197df6e73d5f5ba2f78ced03ca6a25c3619dc9bb8ecae50d8cd8c0
+pinned sha256 (none)
+outcome: passed: 188366 bytes read at the immutable commit 6ad75aa7fbfc76517c8a24c21446471845007855, sha256 9fa62609ef197df6e73d5f5ba2f78ced03ca6a25c3619dc9bb8ecae50d8cd8c0

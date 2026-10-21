@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/hzi-braunschweig/pia-system/3eaeb975711199c380b582a78a4dc281aaf0e3fe/docs/openapi.yaml
+HTTP 200
+47919 bytes, sha256 bd3a0d20e6c238da6ee2811922495727639337f180f867701dc849c0a87ba3c5
+pinned sha256 (none)
+outcome: passed: 47919 bytes read at the immutable commit 3eaeb975711199c380b582a78a4dc281aaf0e3fe, sha256 bd3a0d20e6c238da6ee2811922495727639337f180f867701dc849c0a87ba3c5

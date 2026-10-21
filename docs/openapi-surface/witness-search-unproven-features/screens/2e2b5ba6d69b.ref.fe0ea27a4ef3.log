@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/lightsparkdev/umaaas-api/1092c0a9bf6ce2fe5cc61f0cdb7e63583046a016/openapi.yaml
+HTTP 200
+163124 bytes, sha256 2e2b5ba6d69b27fc52ad61e02a00cc467d6d3c16597910483a39c99074703984
+pinned sha256 (none)
+outcome: passed: 163124 bytes read at the immutable commit 1092c0a9bf6ce2fe5cc61f0cdb7e63583046a016, sha256 2e2b5ba6d69b27fc52ad61e02a00cc467d6d3c16597910483a39c99074703984

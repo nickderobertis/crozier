@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/citec-spbu/Transport/b8967600f4ea7e3d85908a910bc5a8d57cc06809/openapi.yaml
+HTTP 200
+14985 bytes, sha256 b68bb9c2d80c402aee96f26ed8443a636d135bd717f952511e49405bc346be6d
+pinned sha256 (none)
+outcome: passed: 14985 bytes read at the immutable commit b8967600f4ea7e3d85908a910bc5a8d57cc06809, sha256 b68bb9c2d80c402aee96f26ed8443a636d135bd717f952511e49405bc346be6d

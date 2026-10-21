@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/geoserver/geoserver/e5096dda80eea70d21167f01b08e543019852a7e/src/community/ogcapi/ogcapi-3d-geovolumes/src/main/resources/org/geoserver/ogcapi/v1/geovolumes/openapi.yaml
+HTTP 200
+26179 bytes, sha256 670a4e1f9552c9b05e1884d9881683d84ea316dab0bcb9d2599bf57e2b2e1c5f
+pinned sha256 (none)
+outcome: passed: 26179 bytes read at the immutable commit e5096dda80eea70d21167f01b08e543019852a7e, sha256 670a4e1f9552c9b05e1884d9881683d84ea316dab0bcb9d2599bf57e2b2e1c5f

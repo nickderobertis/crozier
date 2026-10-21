@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/lukevella/rallly/b52400838e59ba47ccc1d45ca4faf55d66ac82aa/apps/docs/api-reference/openapi.json
+HTTP 200
+75564 bytes, sha256 37f55211dd4fd7d919ac8dd988e0da8a182df1ad105e8db4648de3bc424aafcd
+pinned sha256 (none)
+outcome: passed: 75564 bytes read at the immutable commit b52400838e59ba47ccc1d45ca4faf55d66ac82aa, sha256 37f55211dd4fd7d919ac8dd988e0da8a182df1ad105e8db4648de3bc424aafcd

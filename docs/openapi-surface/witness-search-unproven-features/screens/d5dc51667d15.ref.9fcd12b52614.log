@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/open5gs/open5gs/eae00c996af29e4c36a831f4f535a034eb21a976/lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS28572_PlanManagement.yaml
+HTTP 200
+91936 bytes, sha256 d5dc51667d156feebe9d730545e7d396a27a74de1d5a35d68f97e01d954f31af
+pinned sha256 (none)
+outcome: passed: 91936 bytes read at the immutable commit eae00c996af29e4c36a831f4f535a034eb21a976, sha256 d5dc51667d156feebe9d730545e7d396a27a74de1d5a35d68f97e01d954f31af

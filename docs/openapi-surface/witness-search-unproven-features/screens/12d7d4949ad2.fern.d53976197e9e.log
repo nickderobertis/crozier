@@ -1,0 +1,147 @@
+--- fern check (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+Found 0 errors and 10 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning::Found 0 errors and 10 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
+
+--- fern generate (exit 1) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/12d7d4949ad2a113e8cc75652359d010b21bc2d954512b711b04b16cb72b8666/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Found 0 errors and 10 warnings in 1.726 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning title=[api]%3A python-sdk::Found 0 errors and 10 warnings in 1.726 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-248370-vREItAgvZq0V
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Output mode: downloadFiles
+                                          Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+                                          b'fern/output/src/fern/node/client.py:135:301: SyntaxError: Duplicate keyword argument "id"\n    |\n133 | \xe2\x80\xa6\n134 | \xe2\x80\xa6\n135 | \xe2\x80\xa6max_runners, key=key, name=name, description=description, id=id, id=id, request_options=request_options)\n    |                                                                   ^\n136 | \xe2\x80\xa6\n    |\n\nfern/output/src/fern/node/client.py:328:307: SyntaxError: Duplicate keyword argument "id"\n    |\n326 | \xe2\x80\xa6\n327 | \xe2\x80\xa6\n328 | \xe2\x80\xa6max_runners, key=key, name=name, description=description, id=id, id=id, request_options=request_options)\n    |                                                                   ^\n329 | \xe2\x80\xa6\n    |\n\nfern/output/src/fern/node/raw_client.py:159:17: F601 Dictionary key literal `"_id"` repeated\n    |\n157 |                 "description": description,\n158 |                 "_id": id,\n159 |                 "_id": id,\n    |                 ^^^^^ F601\n160 |             }\n161 |             ,\n    |\n    = help: Remove repeated key literal `"_id"`\n\nfern/output/src/fern/node/raw_client.py:430:17: F601 Dictionary key literal `"_id"` repeated\n    |\n428 |                 "description": description,\n429 |                 "_id": id,\n430 |                 "_id": id,\n    |                 ^^^^^ F601\n431 |             }\n432 |             ,\n    |\n    = help: Remove repeated key literal `"_id"`\n\nFound 137 errors (133 fixed, 4 remaining).\nNo fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).\n'
+                                          b''
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "/src/fern_python/cli/publisher.py", line 108, in _run_command
+                                              completed_command = subprocess.run(
+                                                  command,
+                                              ...<4 lines>...
+                                                  env=env,
+                                              )
+                                            File "/usr/local/lib/python3.13/subprocess.py", line 577, in run
+                                              raise CalledProcessError(retcode, process.args,
+                                                                       output=stdout, stderr=stderr)
+                                          subprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.
+                                          
+                                          During handling of the above exception, another exception occurred:
+                                          
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
+                                              publisher.run_ruff_check_fix("/fern/output", cwd="/")
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix
+                                              self._run_command(
+                                              ~~~~~~~~~~~~~~~~~^
+                                                  command=command,
+                                                  ^^^^^^^^^^^^^^^^
+                                                  safe_command=" ".join(command),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  cwd=cwd,
+                                                  ^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/publisher.py", line 131, in _run_command
+                                              raise Exception("Failed to run command", safe_command)
+                                          Exception: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+::error title=[api]%3A python-sdk fernapi/fern-python-sdk::Container execution failed: Container exited with code 1.%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AOutput mode: downloadFiles%0AFailed to run command: ruff check --fix --no-cache --ignore E741 /fern/output%0Ab'fern/output/src/fern/node/client.py:135:301: SyntaxError: Duplicate keyword argument "id"\n    |\n133 | \xe2\x80\xa6\n134 | \xe2\x80\xa6\n135 | \xe2\x80\xa6max_runners, key=key, name=name, description=description, id=id, id=id, request_options=request_options)\n    |                                                                   ^\n136 | \xe2\x80\xa6\n    |\n\nfern/output/src/fern/node/client.py:328:307: SyntaxError: Duplicate keyword argument "id"\n    |\n326 | \xe2\x80\xa6\n327 | \xe2\x80\xa6\n328 | \xe2\x80\xa6max_runners, key=key, name=name, description=description, id=id, id=id, request_options=request_options)\n    |                                                                   ^\n329 | \xe2\x80\xa6\n    |\n\nfern/output/src/fern/node/raw_client.py:159:17: F601 Dictionary key literal `"_id"` repeated\n    |\n157 |                 "description": description,\n158 |                 "_id": id,\n159 |                 "_id": id,\n    |                 ^^^^^ F601\n160 |             }\n161 |             ,\n    |\n    = help: Remove repeated key literal `"_id"`\n\nfern/output/src/fern/node/raw_client.py:430:17: F601 Dictionary key literal `"_id"` repeated\n    |\n428 |                 "description": description,\n429 |                 "_id": id,\n430 |                 "_id": id,\n    |                 ^^^^^ F601\n431 |             }\n432 |             ,\n    |\n    = help: Remove repeated key literal `"_id"`\n\nFound 137 errors (133 fixed, 4 remaining).\nNo fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).\n'%0Ab''%0A/usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:%0A* 'allow_population_by_field_name' has been renamed to 'validate_by_name'%0A* 'smart_union' has been removed%0A  warnings.warn(message, UserWarning)%0A/usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:%0A* 'allow_population_by_field_name' has been renamed to 'validate_by_name'%0A  warnings.warn(message, UserWarning)%0ATraceback (most recent call last):%0A  File "/src/fern_python/cli/publisher.py", line 108, in _run_command%0A    completed_command = subprocess.run(%0A        command,%0A    ...<4 lines>...%0A        env=env,%0A    )%0A  File "/usr/local/lib/python3.13/subprocess.py", line 577, in run%0A    raise CalledProcessError(retcode, process.args,%0A                             output=stdout, stderr=stderr)%0Asubprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.%0A%0ADuring handling of the above exception, another exception occurred:%0A%0ATraceback (most recent call last):%0A  File "<frozen runpy>", line 203, in _run_module_as_main%0A  File "<frozen runpy>", line 88, in _run_code%0A  File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>%0A    typer.run(main)%0A    ~~~~~~~~~^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run%0A    app()%0A    ~~~^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__%0A    raise e%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__%0A    return get_command(self)(*args, **kwargs)%0A           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__%0A    return self.main(*args, **kwargs)%0A           ~~~~~~~~~^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main%0A    return _main(%0A        self,%0A    ...<5 lines>...%0A        **extra,%0A    )%0A  File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main%0A    rv = self.invoke(ctx)%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke%0A    return ctx.invoke(self.callback, **ctx.params)%0A           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke%0A    return callback(*args, **kwargs)%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper%0A    return callback(**use_params)  # type: ignore%0A  File "/src/fern_python/generators/sdk/cli.py", line 9, in main%0A    cli.run()%0A    ~~~~~~~^^%0A  File "/src/fern_python/cli/generator_cli.py", line 60, in run%0A    raise e%0A  File "/src/fern_python/cli/generator_cli.py", line 44, in run%0A    self.abstract_generator.generate_project(%0A    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^%0A        generator_exec_wrapper=generator_exec_wrapper,%0A        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A        ir=ir,%0A        ^^^^^^%0A        generator_config=config,%0A        ^^^^^^^^^^^^^^^^^^^^^^^^%0A    )%0A    ^%0A  File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project%0A    publisher.run_ruff_check_fix("/fern/output", cwd="/")%0A    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^%0A  File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix%0A    self._run_command(%0A    ~~~~~~~~~~~~~~~~~^%0A        command=command,%0A        ^^^^^^^^^^^^^^^^%0A        safe_command=" ".join(command),%0A        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A        cwd=cwd,%0A        ^^^^^^^^%0A    )%0A    ^%0A  File "/src/fern_python/cli/publisher.py", line 131, in _run_command%0A    raise Exception("Failed to run command", safe_command)%0AException: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.
+

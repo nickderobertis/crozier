@@ -1,0 +1,57 @@
+--- fern check (exit 1) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 12 errors
+    [error]
+        path: scopeInternal.yml -> service -> endpoints -> querierV1QuerierServiceAnalyzeQuery -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopeInternal.yml -> service -> endpoints -> querierV1QuerierServiceGetProfileStats -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceDiff -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceLabelNames -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceLabelValues -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceProfileTypes -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSelectHeatmap -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSelectMergeProfile -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSelectMergeSpanProfile -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSelectMergeStacktraces -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSelectSeries -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+    [error]
+        path: scopePublic.yml -> service -> endpoints -> querierV1QuerierServiceSeries -> examples[0] -> headers
+        issue: Expected example to be a double. Example is: "Connect-Timeout-Ms"
+
+Found 12 errors and 0 warnings in 0.007 seconds.
+::error::Found 12 errors and 0 warnings in 0.007 seconds.
+

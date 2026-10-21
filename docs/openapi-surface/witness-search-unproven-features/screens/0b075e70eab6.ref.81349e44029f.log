@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/opengeospatial/ogcapi-maps/e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe/openapi/ogcapi-maps-1.bundled.json
+HTTP 200
+142569 bytes, sha256 0b075e70eab691389aff5ac133deb2a60e6c01aefcb951d3db0dca059f95ae2f
+pinned sha256 (none)
+outcome: passed: 142569 bytes read at the immutable commit e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe, sha256 0b075e70eab691389aff5ac133deb2a60e6c01aefcb951d3db0dca059f95ae2f

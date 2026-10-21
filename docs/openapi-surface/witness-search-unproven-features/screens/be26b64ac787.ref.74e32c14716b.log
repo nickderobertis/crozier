@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/filip-herceg/ReViewPoint/d5548cf7df86c55d2b776386217fbb5a30a6ee67/openapi.json
+HTTP 200
+139258 bytes, sha256 be26b64ac787db03d3d881b89caf902e077f6c4b82856b222a6f27f2ce060ce1
+pinned sha256 (none)
+outcome: passed: 139258 bytes read at the immutable commit d5548cf7df86c55d2b776386217fbb5a30a6ee67, sha256 be26b64ac787db03d3d881b89caf902e077f6c4b82856b222a6f27f2ce060ce1

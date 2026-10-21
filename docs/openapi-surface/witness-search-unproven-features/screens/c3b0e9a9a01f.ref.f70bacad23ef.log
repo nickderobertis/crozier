@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/NVIDIA-AI-Blueprints/ai-model-distillation-for-financial-data/6422dad23dbad2072a9b1407354803307676f1a1/openapi.json
+HTTP 200
+30753 bytes, sha256 c3b0e9a9a01f9a659f90267ecc34ec8e2713ae3c9ec65560cdaad98d4cbb4d9a
+pinned sha256 (none)
+outcome: passed: 30753 bytes read at the immutable commit 6422dad23dbad2072a9b1407354803307676f1a1, sha256 c3b0e9a9a01f9a659f90267ecc34ec8e2713ae3c9ec65560cdaad98d4cbb4d9a

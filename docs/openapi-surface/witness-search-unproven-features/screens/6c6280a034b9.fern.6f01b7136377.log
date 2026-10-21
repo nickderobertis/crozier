@@ -1,0 +1,52 @@
+--- fern check (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document OGC API
+::error title=[api]%3A::Failed to parse openapi document OGC API
+[api]: Failed to resolve #/components/schemas/collections 
+       CliError: Failed to resolve #/components/schemas/collections
+           at k4t.resolveResponseReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:144014)
+           at zyd (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:133705)
+           at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132440)
+           at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+           at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+           at Array.forEach (<anonymous>)
+           at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+           at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+           at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+           at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+::error title=[api]%3A::Failed to resolve #/components/schemas/collections %0ACliError: Failed to resolve #/components/schemas/collections%0A    at k4t.resolveResponseReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:144014)%0A    at zyd (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:133705)%0A    at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132440)%0A    at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)%0A    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+All checks passed
+
+--- fern generate (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/6c6280a034b9c3e650a443a5f258d1afc7c282bc51666cfc3c40d5d074e9118c/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document OGC API
+::error title=[api]%3A python-sdk::Failed to parse openapi document OGC API
+[api]: python-sdk Failed to resolve #/components/schemas/collections 
+                  CliError: Failed to resolve #/components/schemas/collections
+                      at k4t.resolveResponseReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:144014)
+                      at zyd (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:133705)
+                      at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132440)
+                      at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+                      at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+                      at Array.forEach (<anonymous>)
+                      at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+                      at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+                      at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+                      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+::error title=[api]%3A python-sdk::Failed to resolve #/components/schemas/collections %0ACliError: Failed to resolve #/components/schemas/collections%0A    at k4t.resolveResponseReference (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:144014)%0A    at zyd (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:133705)%0A    at pxo (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132440)%0A    at Hzc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at ~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (~/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)%0A    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-1162452-PVQGxV29z2Bq
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/6c6280a034b9c3e650a443a5f258d1afc7c282bc51666cfc3c40d5d074e9118c/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+

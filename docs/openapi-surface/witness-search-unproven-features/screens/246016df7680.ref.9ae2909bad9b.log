@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/speakeasy-sdks/speakeasytryout/27688717b491131b64c8f6fead988db943750171/openapi.yaml
+HTTP 200
+6299 bytes, sha256 246016df7680bd2f4ff2be2ed592a1c8acbf9a7f8dde77bac4a46a64ffce20c8
+pinned sha256 (none)
+outcome: passed: 6299 bytes read at the immutable commit 27688717b491131b64c8f6fead988db943750171, sha256 246016df7680bd2f4ff2be2ed592a1c8acbf9a7f8dde77bac4a46a64ffce20c8

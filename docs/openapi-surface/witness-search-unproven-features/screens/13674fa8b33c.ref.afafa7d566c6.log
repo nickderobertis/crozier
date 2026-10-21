@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/aistairc/mf-api/6db441f39a3e0b042f9b60c72305660af0e0c0a1/example-openapi.yml
+HTTP 200
+82270 bytes, sha256 13674fa8b33ce44119fca55a5b848e6821ab2b53ae1f76f470670c6c186626dd
+pinned sha256 (none)
+outcome: passed: 82270 bytes read at the immutable commit 6db441f39a3e0b042f9b60c72305660af0e0c0a1, sha256 13674fa8b33ce44119fca55a5b848e6821ab2b53ae1f76f470670c6c186626dd

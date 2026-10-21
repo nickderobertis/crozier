@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/ogcincubator/developer-website-v3/d123c2c2df80940a8af30f9dd2a45c382a7ecff7/api/dggs/openapi.yaml
+HTTP 200
+80239 bytes, sha256 9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382
+pinned sha256 (none)
+outcome: passed: 80239 bytes read at the immutable commit d123c2c2df80940a8af30f9dd2a45c382a7ecff7, sha256 9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382
