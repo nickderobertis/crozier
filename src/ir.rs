@@ -15557,7 +15557,7 @@ fn property_xml(property: &Schema, schemas: Option<&IndexMap<String, Schema>>) -
         .or_else(|| resolved.xml_object());
     let flag = |key: &str| {
         xml.and_then(|xml| xml.get(key))
-            .and_then(serde_json::Value::as_bool)
+            .and_then(crate::openapi::document_boolean)
             .unwrap_or(false)
     };
     let text = property.xml_text().or_else(|| resolved.xml_text()) == Some(true);

@@ -68,6 +68,10 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+/// A boolean the document writes as `1` or `0`, in both formats and modes.
+#[path = "e2e/document_booleans.rs"]
+mod document_booleans;
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
