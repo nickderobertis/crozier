@@ -920,7 +920,10 @@ impl<'a> Doc<'a> {
     /// measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, `fern check` and
     /// `fern generate` refuse it with `Expected example to be an object`
     /// (`error-*-string-example` probes; Gumlet's JSON-in-a-string `401`
-    /// examples). An object example there generates.
+    /// examples). An object example there generates, and so does any example
+    /// once another operation declares the code with no body or another schema
+    /// (`error-response-*-sibling` controls; Jira's `403`s): Fern's one error
+    /// type for the code then validates none.
     fn non_object_error_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         operation
             .op
@@ -937,6 +940,9 @@ impl<'a> Doc<'a> {
                 if !(is_type(schema, "object")
                     || (schema.get("type").is_none() && schema.get("properties").is_some()))
                     || has_composition(schema)
+                    || !self
+                        .error_body_schemas(code)
+                        .all(|body| body.is_some_and(|body| std::ptr::eq(body, schema)))
                 {
                     return None;
                 }
@@ -962,6 +968,21 @@ impl<'a> Doc<'a> {
                         )
                     })
             })
+    }
+
+    /// The JSON body schema of every operation's response for one error status
+    /// code, `None` where that response declares none.
+    fn error_body_schemas(&self, code: &str) -> impl Iterator<Item = Option<&'a Value>> + '_ {
+        let code = code.to_owned();
+        self.operations().into_iter().filter_map(move |operation| {
+            let responses = operation.op.get("responses")?.as_object()?;
+            let response = responses.iter().find(|(key, _)| key.as_str() == code)?.1;
+            Some(
+                json_media(self.resolve(response)?.get("content"))
+                    .and_then(|media| media.get("schema"))
+                    .and_then(|schema| self.resolve(schema)),
+            )
+        })
     }
 
     /// Every JSON body schema the document declares for one error status code.
@@ -1416,6 +1437,29 @@ mod tests {
 
     fn yaml(text: &str) -> Value {
         crate::yaml::from_str(text).unwrap()
+    }
+
+    #[test]
+    fn an_error_example_is_judged_only_where_its_code_has_one_body_throughout() {
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            let text = std::fs::read_to_string(class.join(shape)).unwrap();
+            first_violation_in(&yaml(&text), &text).map(|(class, _)| class.id())
+        };
+        for probe in [
+            "error-response-string-example-probe.yml",
+            "error-response-two-string-examples-probe.yml",
+            "error-response-one-of-two-string-examples-probe.yml",
+        ] {
+            assert_eq!(verdict(probe), Some("example-type-mismatch"), "{probe}");
+        }
+        for control in [
+            "error-response-bodiless-sibling-control.yml",
+            "error-response-other-schema-sibling-control.yml",
+        ] {
+            assert_eq!(verdict(control), None, "{control}");
+        }
     }
 
     #[test]

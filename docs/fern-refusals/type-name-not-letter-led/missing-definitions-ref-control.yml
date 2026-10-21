@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /managers:
+    get:
+      operationId: listManagers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Manager'}
+components:
+  schemas:
+    Manager:
+      type: object
+      properties:
+        contacts:
+          type: array
+          items:
+            type: object
+            $ref: '#/definitions/Contact'

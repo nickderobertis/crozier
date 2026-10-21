@@ -1336,7 +1336,12 @@ fn source_reference_names(
         return Ok(());
     }
     if let Some(reference) = node["$ref"].as_str() {
-        if reference.starts_with("#/definitions/") || reference.starts_with("#/webhooks/") {
+        // Only a reference that resolves: measured at Fern CLI 5.163.1, one into a
+        // document with no such `definitions` member generates
+        // (`missing-definitions-ref` control; Gestor's `#/definitions/Contacto`).
+        if (reference.starts_with("#/definitions/") || reference.starts_with("#/webhooks/"))
+            && source_pointer_target(source, reference).is_some()
+        {
             let target = source_target(source, node);
             if target["type"].as_str() == Some("object") || target["properties"].is_object() {
                 return Err(refusal(path, Class::TypeNameNotLetterLed, format!("{location} reference {reference:?} forms an empty object type name; use a component schema reference")));
@@ -1392,6 +1397,27 @@ fn property_reference_cycle(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_legacy_definitions_reference_is_refused_only_where_it_resolves() {
+        let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/type-name-not-letter-led");
+        let verdict = |shape: &str| {
+            let path = class.join(shape);
+            let source: serde_json::Value =
+                crate::yaml::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+            let manager = &source["components"]["schemas"]["Manager"];
+            source_reference_names(&source, manager, "#/components/schemas/Manager", &path)
+                .err()
+                .map(|error| error.to_string())
+        };
+        let error = verdict("legacy-definitions-ref-probe.yml").unwrap_or_default();
+        assert!(
+            error.contains("type-name-not-letter-led: #/components/schemas/Manager reference \"#/definitions/Contact\""),
+            "{error}"
+        );
+        assert_eq!(verdict("missing-definitions-ref-control.yml"), None);
+    }
 
     #[test]
     fn multipart_existing_request_component_is_not_a_second_declaration() {
