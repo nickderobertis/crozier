@@ -1686,7 +1686,7 @@ pub struct Schema {
     #[serde(rename = "x-is-beta", default)]
     pub is_beta: Option<bool>,
     /// OpenAPI 3.0 nullability.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_nullable")]
     pub nullable: Option<bool>,
     /// Nullability inherited from the reference target, distinct from ignored siblings.
     #[serde(skip)]
@@ -2415,6 +2415,23 @@ where
         | serde_json::Value::Object(_) => RequiredNames::Unlisted,
         _ => RequiredNames::default(),
     })
+}
+
+/// Deserialize `nullable` as Fern reads it: a boolean, or a number by its
+/// truth (`nullable: 1` in a Mistral description's `APIError.code`, which Fern CLI
+/// 5.163.1 generates from), never a parse failure over the whole document.
+fn de_nullable<'de, D>(deserializer: D) -> std::result::Result<Option<bool>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    match serde_json::Value::deserialize(deserializer)? {
+        serde_json::Value::Bool(value) => Ok(Some(value)),
+        serde_json::Value::Number(number) => Ok(Some(number.as_f64() != Some(0.0))),
+        serde_json::Value::Null => Ok(None),
+        other => Err(serde::de::Error::custom(format!(
+            "nullable must be a boolean, not {other}"
+        ))),
+    }
 }
 
 /// Deserialize a Schema Object's `examples` from either spelling: JSON Schema's
@@ -4832,6 +4849,20 @@ pub(crate) fn collect_schema_refs(schema: &Schema, out: &mut std::collections::B
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_numeric_nullable_reads_by_its_truth_and_a_string_is_refused() {
+        let nullable = |value: &str| {
+            crate::yaml::from_str::<Schema>(&format!("type: string\nnullable: {value}\n"))
+                .map(|schema| schema.nullable)
+        };
+        assert_eq!(nullable("1"), Ok(Some(true)));
+        assert_eq!(nullable("0"), Ok(Some(false)));
+        assert_eq!(nullable("true"), Ok(Some(true)));
+        assert_eq!(nullable("~"), Ok(None));
+        let error = nullable("'yes'").unwrap_err();
+        assert!(error.contains("nullable must be a boolean"), "{error}");
+    }
 
     /// `FERN_ERROR_NAMES` is the importer's spelling of the error names, kept
     /// apart from `ir::error_class_name` because the importer writes acronyms
