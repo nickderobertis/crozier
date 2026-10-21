@@ -853,7 +853,7 @@ class NamedCombination(NamedTuple):
 
 
 def combination_list(root: Path) -> tuple[list[SelectedCombination], list[str]]:
-    """`combinations.md`'s `## Selected` rows as dicts, and what is wrong with its two tables.
+    """`combinations.md`'s `## Selected` rows as SelectedCombination instances, plus table errors.
 
     The list restates the census's `COMBINATIONS`; this is the one parse of it the
     drift test and the enumeration rule read.
