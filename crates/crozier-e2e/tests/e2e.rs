@@ -68,9 +68,11 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// A boolean the document writes as `1` or `0`, in both formats and modes.
 #[path = "e2e/document_booleans.rs"]
 mod document_booleans;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.

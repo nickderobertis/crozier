@@ -372,6 +372,7 @@ fn cases() -> impl Iterator<Item = (Format, bool)> {
         .flat_map(|format| [false, true].map(|strict| (format, strict)))
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn one_and_zero_generate_what_true_and_false_generate() {
     let names: Vec<&str> = SITES.iter().map(|(name, _)| *name).collect();
@@ -733,3 +734,4 @@ fn every_refusal_probe_reaches_the_same_strict_verdict_with_one_and_zero() {
     );
     assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
