@@ -3918,6 +3918,9 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         # The feature combinations `combinations.md` selects, over the same sources.
+        # These constants pin source_args()'s window; an empty entry is not a
+        # claim about all registered sources. Positive counts are checked by
+        # RankedBacklogTests.test_every_conjunction_rows_evidence_is_the_census_own_output.
         "parameter.in=query&parameter.schema>schema.oneOf": {},
         "parameter.in=query&parameter.schema>schema.anyOf": {},
         "parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued": {
@@ -17652,7 +17655,7 @@ class CombinationListTests(unittest.TestCase):
         self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
 
     def test_a_golden_combination_row_waits_for_measurement_only_while_its_cell_says_so(self) -> None:
-        """Manager's bound: pending is a combination row's state, named in its cell, and nothing else's."""
+        """Only combination rows explicitly marked pending may omit reach measurements."""
         reach = load_script("tools/surface-census/golden-reach.py")
         golden = reach.golden_rows(REPO / "docs" / "openapi-surface")
         surface = REPO / "docs" / "openapi-surface"

@@ -2637,13 +2637,8 @@ MEMBER_ONLY_PREDICATES = {
 }
 
 
-# The request-body family: an Operation Object's readings of its own request body,
-# member-only for the reason the pointer-walk family above is. A media type is a
-# *key* of `content`, which the walk reads as a name, and a body property sharing a
-# parameter's name is a comparison across one operation's subtrees, so neither is a
-# member any other node can say; and alone each would be a single feature the
-# region files already enumerate. Why the selected combinations need them is
-# `docs/openapi-surface-coverage.md`'s member-only section.
+# Operation-local request-body readings are conjunction members; their definitions
+# are in docs/openapi-surface-coverage.md's selector grammar.
 REQUEST_BODY_MEMBER_PREDICATES = {
     "operation.requestBody:json-media": (
         "one per Operation Object whose request body offers a JSON media type — "
