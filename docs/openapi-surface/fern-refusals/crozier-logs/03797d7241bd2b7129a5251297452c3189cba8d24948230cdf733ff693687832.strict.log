@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/AnchorId/oneOf/0/allOf extends #/components/schemas/PdfAnchorId (fern-strict refusal)
+crozier: invalid OpenAPI document <document>: request-property-camelcase-collision: POST /documents/{document_id}/copy parameters "version_id" and "versionId" normalize to the same identifier; give them distinct names (fern-strict: Fern refuses this document)

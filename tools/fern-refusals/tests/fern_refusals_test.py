@@ -1337,7 +1337,7 @@ class MeasuredAtThePair(unittest.TestCase):
             )
             strict = self.evidence / "crozier-logs" / f"{digest}.strict.log"
             strict.parent.mkdir(exist_ok=True)
-            strict.write_text(self.refusal("<document>"), encoding="utf-8")
+            strict.write_text(self.stand_in_log(), encoding="utf-8")
             row = {
                 "key": digest,
                 "digest": digest,
@@ -1363,8 +1363,9 @@ class MeasuredAtThePair(unittest.TestCase):
         crozier.write_text(
             "#!/bin/sh\n"
             f'echo "$*" >> {shlex.quote(str(self.crozier_calls))}\n'
-            'while [ $# -gt 0 ]; do [ "$1" = --spec ] && spec=$2; shift; done\n'
+            'while [ $# -gt 0 ]; do case "$1" in --spec) spec=$2;; --output) output=$2;; esac; shift; done\n'
             f'printf %s "{self.refusal("$spec")}" >&2\n'
+            'printf "wrote nothing into %s\\n" "$output" >&2\n'
             "exit 1\n",
             "utf-8",
         )
@@ -1384,6 +1385,10 @@ class MeasuredAtThePair(unittest.TestCase):
     def refusal(self, document: str) -> str:
         """What crozier's `--fern-strict` run prints refusing `document` with the class."""
         return f"crozier: invalid OpenAPI document {document}: {self.CLASS}: type Widget (fern-strict refusal)\n"
+
+    def stand_in_log(self) -> str:
+        """The strict log `measure` commits from the stand-in crozier's stderr: both scratch paths made generic."""
+        return self.refusal("<document>") + "wrote nothing into <output>\n"
 
     def script(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -1450,7 +1455,7 @@ class MeasuredAtThePair(unittest.TestCase):
             with self.subTest(document=name):
                 log = f"docs/openapi-surface/fern-refusals/crozier-logs/{digest}.strict.log"
                 self.assertEqual(measured[digest]["crozier_strict_log"], log)
-                self.assertEqual((self.root / log).read_text(encoding="utf-8"), self.refusal("<document>"))
+                self.assertEqual((self.root / log).read_text(encoding="utf-8"), self.stand_in_log())
         built = self.script("build")
         self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
         [row] = rows(self.root / "docs" / "fern-refusals" / "classes.tsv")[1:]
@@ -1678,6 +1683,22 @@ class MeasuredAtThePair(unittest.TestCase):
         # That rule is for a generate-stage class alone.
         dispose(crozier_class="object-extends-non-object", disposition="generate-stage")
         self.assertIn(f"dispositions.tsv {digest}: with no representative", self.script("check").stderr)
+
+    def test_a_document_fern_generates_from_is_one_crozier_generates(self) -> None:
+        # Fern's check and generation both pass over every document, and the
+        # screen taken at the pair names no class either.
+        self.env.update(FERN_STUB_CHECK_EXIT="0", FERN_STUB_CHECK_OUTPUT="", FERN_STUB_GENERATE_FILES="3")
+        (self.root / "docs" / "openapi-surface" / "scratch" / "screened-current-check.log").write_text("", "utf-8")
+        self.measure("--again")
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0)
+        self.assertIn("Fern generates it, but crozier --fern-strict stops at `crozier: invalid", built.stderr)
+        # A crozier that generates them too holds.
+        (self.root / "target" / "release" / "crozier").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        self.measure("--crozier-again")
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stderr)
+        self.assertEqual(built.stdout, "fern-refusals: 0 refused, 4 generated, 0 unretrievable\n")
 
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"

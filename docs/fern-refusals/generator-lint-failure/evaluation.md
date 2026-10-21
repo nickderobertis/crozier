@@ -4,7 +4,7 @@
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 17 probe and 10 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 11 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 11 of the 11 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
 
-What moved: `server-unbound-placeholder` generates at this pair (fern-python-sdk 5.41.3 formats the server template through a variable) and is a control; crozier already generated it.
+What moved: `server-unbound-placeholder` generates at this pair (fern-python-sdk 5.41.3 formats the server template through a variable) and is a control; crozier already generated it. A tag led by a digit names a sub-client class that is no Python identifier, which Fern's `ruff check` fails (Hyperswitch's `3DS Decision Rule`); crozier refuses it with this class instead of failing in its own formatting.
 
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 

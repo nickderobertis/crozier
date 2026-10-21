@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: extension-reference-cycle: components/schemas/application_fee/properties/balance_transaction/x-expansionResources (fern-strict refusal)
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /v1/financial_connections/accounts components/schemas/financial_connections.account/properties/ownership collides with financial_connections.account_ownership (fern-strict refusal)

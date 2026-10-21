@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/Operation/oneOf/0/allOf extends #/components/schemas/InfraObject (fern-strict refusal)
+crozier: invalid OpenAPI document <document>: generator-lint-failure: type EditoastError variants "editoast:train_schedule:ExceptionNotFound" and "editoast:train_schedule_exception:NotFound" are both EditoastError_EditoastTrainScheduleExceptionNotFound (fern-strict refusal)

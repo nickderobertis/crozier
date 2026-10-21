@@ -793,10 +793,11 @@ def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: s
 
 def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
     """crozier's `--fern-strict` verdict, its stderr committed beside Fern's logs
-    with the scratch path of the document made generic."""
+    with the scratch paths of the document and of the SDK it wrote made generic."""
     log = EVIDENCE / "crozier-logs" / f"{digest}.strict.log"
     status = crozier_run(binary, document, timeout, log, "--fern-strict")[0]
-    log.write_text(log.read_text(encoding="utf-8").replace(str(document), "<document>"), encoding="utf-8")
+    text = log.read_text(encoding="utf-8").replace(str(document), "<document>")
+    log.write_text(re.sub(r"\S*fern-refusals-crozier-[^/\s]+/sdk", "<output>", text), encoding="utf-8")
     return {"crozier_strict_exit": status, "crozier_strict_log": rel(log)}
 
 
@@ -813,7 +814,7 @@ def strict_refusal(log: str) -> tuple[str, str]:
 
 
 def strict_problems(
-    digest: str, names: list[str], exit_status: str, log: str, disposed: dict[str, str] | None = None
+    digest: str, names: list[str], exit_status: str, log: str, disposed: list[dict[str, str]] | None = None
 ) -> list[str]:
     """A refused record held to the diagnostic crozier printed: its strict exit
     agrees with the log, and the refusal is by one of the classes it carries, or
@@ -829,7 +830,7 @@ def strict_problems(
         return [f"{digest}: crozier_strict_exit {exit_status} disagrees with {log}; retake it with `measure`"]
     if printed in names:
         return []
-    if disposed and disposed["crozier_class"] == printed and disposed["disposition"] in AGREEING:
+    if any(row["crozier_class"] == printed and row["disposition"] in AGREEING for row in disposed or []):
         return []
     said = f"stops at `{error}`" if error else "generates it"
     return [
@@ -1210,7 +1211,9 @@ def tables() -> tuple[dict[str, str], list[str]]:
     patterns = class_patterns(classes)
     near = finding_patterns(findings)
     measured = read_measurements()
-    disposed = {row["document"]: row for row in read_dispositions()}
+    disposed: dict[str, list[dict[str, str]]] = {}
+    for row in read_dispositions():
+        disposed.setdefault(row["document"], []).append(row)
     documents: dict[str, dict[str, str]] = {}
     generated: dict[str, dict[str, str]] = {}
     unretrievable: list[dict[str, str]] = []
@@ -1262,6 +1265,15 @@ def tables() -> tuple[dict[str, str], list[str]]:
             kept["recorded_by"] = ";".join(sorted(set(kept["recorded_by"].split(";")) | set(entry["records"])))
             continue
         if refusal is None:
+            # A document Fern generates from is one crozier's strict run generates.
+            if not result["crozier_strict_exit"] or not result["crozier_strict_log"]:
+                problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
+            elif (REPO / result["crozier_strict_log"]).is_file() and result["crozier_strict_exit"] != "0":
+                error = strict_refusal(read_log(result["crozier_strict_log"]))[1]
+                problems.append(
+                    f"{digest}: Fern generates it, but crozier --fern-strict stops at `{error}` "
+                    f"({result['crozier_strict_log']}); narrow crozier to generate it, then `measure --crozier-again`"
+                )
             generated[digest] = dict(
                 identity,
                 digest=digest,
@@ -1283,7 +1295,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
             if not strict or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
                 continue
-            problems += strict_problems(digest, names, strict, result["crozier_strict_log"], disposed.get(digest))
+            problems += strict_problems(digest, names, strict, result["crozier_strict_log"], disposed.get(digest, []))
         documents[digest] = dict(
             identity,
             digest=digest,
@@ -2171,7 +2183,7 @@ def disposition_problems() -> list[str]:
     if [(row["crozier_class"], row["document"]) for row in rows] != sorted(
         {(row["crozier_class"], row["document"]) for row in rows}
     ):
-        problems.append("dispositions.tsv: rows are sorted by crozier_class then document, no document twice")
+        problems.append("dispositions.tsv: rows are sorted by crozier_class then document, no pair twice")
     again = "run `tools/fern-refusals/fern-refusals.py reduce`"
     for row in rows:
         name = f"dispositions.tsv {row['document']}"

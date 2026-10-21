@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: heap-exhausted: components/schemas/stripe.Stripe.ExternalAccount (fern-strict refusal)
+crozier: invalid OpenAPI document <document>: example-type-mismatch: GET /v1/admin/subscription-data components/schemas/stripe.Stripe.Subscription/properties/schedule collides with stripe.Stripe.SubscriptionSchedule (fern-strict refusal)
