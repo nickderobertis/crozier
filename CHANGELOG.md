@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.125](https://github.com/nickderobertis/crozier/compare/v0.0.124...v0.0.125) - 2026-10-21
+
+### Added
+
+- *(openapi)* read 1 and 0 as true and false wherever a document holds a boolean ([#563](https://github.com/nickderobertis/crozier/pull/563))
+
 ## [0.0.124](https://github.com/nickderobertis/crozier/compare/v0.0.123...v0.0.124) - 2026-10-21
 
 ### Fixed
