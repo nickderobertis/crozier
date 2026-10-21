@@ -9975,7 +9975,7 @@ class RankedBacklogTests(unittest.TestCase):
             cwd=REPO,
             capture_output=True,
             text=True,
-            timeout=180,
+            timeout=REGISTRY_WALK_TIMEOUT,
             encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
@@ -17880,3 +17880,64 @@ class OperationContextCompositionTests(unittest.TestCase):
             documents[name + "-control"] = control
         selector = "operation.context:success-nullable&operation.context:success-oneof"
         self.assertEqual({"nullable-flag": 1, "null-type-array": 1}, self.report_documents(selector, documents))
+
+
+class MalformedRequiredMemberTests(unittest.TestCase):
+    def test_mapping_members_are_skipped_and_required_names_are_preserved(self) -> None:
+        template = {
+            "openapi": "3.0.3",
+            "info": {"title": "Archive entries", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {
+                    "ArchiveEntry": {
+                        "type": "object",
+                        "properties": {
+                            "label": {"type": "string", "example": "plaque"},
+                            "index": {"type": "integer", "example": 7},
+                        },
+                    }
+                }
+            },
+        }
+        documents = {}
+        for name, required, body in (
+            ("malformed-component", ["label", {"unexpected": "member"}], False),
+            ("malformed-body", ["label", {"unexpected": "member"}], True),
+            ("valid-control", ["label"], False),
+            ("all-required-control", ["label", "index", {"unexpected": "member"}], False),
+        ):
+            document = json.loads(json.dumps(template))
+            document["components"]["schemas"]["ArchiveEntry"]["required"] = required
+            if body:
+                document["paths"]["/entries"] = {
+                    "post": {
+                        "requestBody": {
+                            "description": "",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArchiveEntry"}}},
+                        },
+                        "responses": {"204": {"description": "Stored"}},
+                    }
+                }
+            documents[name] = document
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                source = root / name / "openapi.json"
+                source.parent.mkdir()
+                source.write_text(json.dumps(document), encoding="utf-8")
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.properties:optional-example",
+                "--json",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(set(documents), {source["fixture"] for source in payload["sources"]})
+        self.assertEqual(
+            {"malformed-component": 1, "malformed-body": 1, "valid-control": 1},
+            {row["fixture"]: row["count"] for row in payload["rows"]},
+        )

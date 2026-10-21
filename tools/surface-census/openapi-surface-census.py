@@ -5243,13 +5243,18 @@ def example_content_predicates(node: dict[Any, Any]) -> list[str]:
     return found
 
 
+def required_property_names(schema: dict[Any, Any]) -> set[str]:
+    """Read required property names, skipping malformed members of an acquired schema."""
+    values = schema.get("required")
+    return {value for value in values if isinstance(value, str)} if isinstance(values, list) else set()
+
+
 def optional_property_example(node: dict[Any, Any]) -> bool:
     """`schema.properties:optional-example`: a property `required` omits selects an example."""
     properties = node.get("properties")
     if not isinstance(properties, dict):
         return False
-    required = node.get("required")
-    required = set(required) if isinstance(required, list) else set()
+    required = required_property_names(node)
     return any(
         name not in required and isinstance(value, dict) and selected_example_kind(value) is not None
         for name, value in properties.items()
@@ -6533,7 +6538,7 @@ class Census:
         if not isinstance(schema, dict) or depth > 16:
             return {}, set()
         properties = dict(schema["properties"]) if isinstance(schema.get("properties"), dict) else {}
-        required = set(schema["required"]) if isinstance(schema.get("required"), list) else set()
+        required = required_property_names(schema)
         for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
             more, also = self.object_members(member, depth + 1)
             for name, value in more.items():
@@ -6740,7 +6745,7 @@ class Census:
             for other in self.component_schemas.values()
         )
         own = set(inline[0]["properties"])
-        own_required = (set(inline[0].get("required") or []) | set(target.get("required") or [])) & own
+        own_required = (required_property_names(inline[0]) | required_property_names(target)) & own
         _, base_required = self.object_members(bases[0])
         return parent and bool(own_required & set(example)) and bool(base_required & set(example))
 
@@ -6950,8 +6955,7 @@ class Census:
             if isinstance(target, dict) and isinstance(target.get("$ref"), str):
                 target = self.component_target(target["$ref"])
             properties = target.get("properties") if isinstance(target, dict) else None
-            required = target.get("required") if isinstance(target, dict) else None
-            required = set(required) if isinstance(required, list) else set()
+            required = required_property_names(target) if isinstance(target, dict) else set()
             if isinstance(properties, dict) and any(name not in required for name in properties):
                 found.append("operation.requestBody:blank-description-optional-object")
         if (
