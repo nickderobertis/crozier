@@ -1,0 +1,15 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/fern-refusals-eohzcz_d/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document OGC API
+[api]: python-sdk Failed to resolve #/components/schemas/collections 
+                  CliError: Failed to resolve #/components/schemas/collections
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/tmp-2738118-yUnaewLZm6G2
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/fern-refusals-eohzcz_d/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-property-name-collision: #/components/schemas/ProgramOffering property "offeringType" is declared by two `allOf` parents and inherited by one; give the parents distinct property names (fern-strict: Fern refuses this document)

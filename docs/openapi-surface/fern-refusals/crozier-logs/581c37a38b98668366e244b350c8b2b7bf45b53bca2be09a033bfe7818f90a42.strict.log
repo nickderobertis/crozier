@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-without-leading-slash: paths/{providerId}/collections/{collectionId}/items/{featureId} (fern-strict refusal)

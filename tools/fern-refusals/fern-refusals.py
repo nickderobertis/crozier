@@ -167,12 +167,14 @@ DISPOSITIONS_HEADER = (
     "log",
 )
 # What a reduction's Fern run shows about crozier's class, and what needs none.
-Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other", "unmeasured"]
+Disposition = Literal[
+    "generate-stage", "masked", "over-broad", "reported-other", "unmeasured", "fern-limitation", "both-refuse"
+]
 DISPOSITIONS: tuple[Disposition, ...] = get_args(Disposition)
 # The recorded dispositions that hold a refusal by crozier's class: not
 # `over-broad`, which crozier is narrowed to match, nor `unmeasured`, a
 # reduction Fern did not finish within `reduce`'s bound.
-AGREEING: tuple[Disposition, ...] = ("generate-stage", "masked", "reported-other")
+AGREEING: tuple[Disposition, ...] = ("generate-stage", "masked", "reported-other", "both-refuse")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
@@ -868,6 +870,9 @@ def strict_problems(
         ]
     if exit_status != ("1" if error else "0"):
         return [f"{digest}: crozier_strict_exit {exit_status} disagrees with {log}; retake it with `measure`"]
+    limitations = [row for row in disposed or [] if row["disposition"] == "fern-limitation"]
+    if limitations and exit_status == "0":
+        return limitation_evidence_problems(limitations[0])
     if printed in names:
         return []
     if any(row["crozier_class"] == printed and row["disposition"] in AGREEING for row in disposed or []):
@@ -1335,7 +1340,9 @@ def tables() -> tuple[dict[str, str], list[str]]:
         for name in names:
             counts[name] += 1
         strict = EMPTY
-        if evaluated.intersection(names):
+        if evaluated.intersection(names) or any(
+            row["disposition"] == "fern-limitation" for row in disposed.get(digest, [])
+        ):
             strict = result["crozier_strict_exit"]
             if not strict or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
@@ -2079,6 +2086,82 @@ def dispositions_path() -> Path:
     return REGISTRY / "dispositions.tsv"
 
 
+def limitation_evidence_problems(row: DispositionRow) -> list[str]:
+    """A generating exception needs this document's successful SDK evaluation
+    and its matching entry in the new-limitations ledger. Never infer soundness
+    merely from crozier's successful generation exit.
+    """
+    digest = row["document"]
+    name = f"dispositions.tsv {digest}: fern-limitation"
+    expected = f"docs/openapi-surface/fern-refusals/limitations/{digest}.json"
+    if row["log"] != expected:
+        return [f"{name} needs SDK evidence at {expected}"]
+    try:
+        evidence = json.loads((REPO / expected).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return [f"{name} cannot read SDK evidence: {error}"]
+    stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
+    fields = {
+        "schema_version",
+        "document_sha256",
+        "fern_cli",
+        "fern_python_sdk",
+        "crozier_commit",
+        "sdk_sha256",
+        *stages,
+    }
+    if not isinstance(evidence, dict) or set(evidence) != fields:
+        return [f"{name} SDK evidence must have exactly the version-1 fields"]
+    if (
+        type(evidence["schema_version"]) is not int
+        or evidence["schema_version"] != 1
+        or evidence["document_sha256"] != digest
+        or evidence["fern_cli"] != FERN_CLI
+        or evidence["fern_python_sdk"] != FERN_PYTHON_SDK
+        or not isinstance(evidence["crozier_commit"], str)
+        or re.fullmatch(r"[0-9a-f]{40}", evidence["crozier_commit"]) is None
+        or not isinstance(evidence["sdk_sha256"], str)
+        or DIGEST.fullmatch(evidence["sdk_sha256"]) is None
+    ):
+        return [f"{name} SDK evidence has the wrong version, document, certified pair or digest"]
+    problems = []
+    for stage in stages:
+        run = evidence[stage]
+        if (
+            not isinstance(run, dict)
+            or set(run) != {"command", "exit", "output"}
+            or type(run["exit"]) is not int
+            or run["exit"] != 0
+            or not isinstance(run["command"], list)
+            or not run["command"]
+            or not all(isinstance(arg, str) and arg for arg in run["command"])
+            or not isinstance(run["output"], str)
+        ):
+            problems.append(f"{name} SDK evidence has no successful {stage} command")
+    if problems:
+        return problems
+    commands = {stage: evidence[stage]["command"] for stage in stages}
+    if (
+        "openapi_spec_validator" not in commands["validation"]
+        or "--fern-strict" not in commands["strict_generation"]
+        or "--fern-strict" in commands["default_generation"]
+        or "--wheel" not in commands["build"]
+        or "install" not in commands["installation"]
+        or not any("pkgutil.walk_packages" in arg for arg in commands["imports"])
+    ):
+        problems.append(f"{name} SDK evidence commands do not perform the required evaluation stages")
+    ledger = REPO / "docs/fern-limitations.md"
+    try:
+        section = ledger.read_text(encoding="utf-8").partition("## New limitations at the certified pair\n")[2]
+    except OSError as error:
+        return [*problems, f"{name} cannot read the new-limitations ledger: {error}"]
+    citation = f"openapi-surface/fern-refusals/limitations/{digest}.json"
+    matches = [line for line in section.splitlines() if line.startswith(f"| `{digest}` |") and f"]({citation})" in line]
+    if len(matches) != 1:
+        problems.append(f"{name} needs one matching new-limitations ledger entry linking its SDK evidence")
+    return problems
+
+
 class DispositionRow(TypedDict):
     """A `dispositions.tsv` row, its outcomes parsed; `None` and `[]` are `—`."""
 
@@ -2336,10 +2419,19 @@ def disposition_cells(
     row: DispositionRow, reduced_digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
 ) -> DispositionRow:
     verdict = disposition_of(row["crozier_class"], run, patterns, near)
+    relation: Disposition = verdict.disposition
+    if (
+        row["disposition"] == "both-refuse"
+        and verdict.disposition == "over-broad"
+        and run.check_exit == 0
+        and run.generation is not None
+        and run.generation.exit != 0
+    ):
+        relation = "both-refuse"
     return DispositionRow(
         document=row["document"],
         crozier_class=row["crozier_class"],
-        disposition=verdict.disposition,
+        disposition=relation,
         representative=row["representative"],
         reduction=row["reduction"],
         reduced_digest=reduced_digest,
@@ -2369,7 +2461,7 @@ def reduce(args: argparse.Namespace) -> int:
     reductions: list[Reduction] = []
     provenance: dict[Digest, tuple[Digest, str]] = {}
     for index, row in enumerate(rows):
-        if row["representative"] == EMPTY:
+        if row["representative"] == EMPTY or row["disposition"] == "fern-limitation":
             continue
         entry = entries.get(row["representative"])
         if entry is None:
@@ -2453,9 +2545,34 @@ def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> 
         if document is None:
             problems.append(f"{name}: no documents.tsv row; drop the disposition")
             continue
+        if row["disposition"] == "fern-limitation":
+            text = disposition_text(row)
+            if (
+                row["crozier_class"] != EMPTY
+                or row["representative"] != row["document"]
+                or any(text[field] != EMPTY for field in DISPOSITIONS_HEADER[4:9])
+                or document["crozier_exit"] != "0"
+                or document["crozier_strict_exit"] != "0"
+                or not document["crozier_files"].isdigit()
+                or int(document["crozier_files"]) == 0
+            ):
+                problems.append(
+                    f"{name}: fern-limitation requires generation in both modes, no crozier class or reduction"
+                )
+            problems += limitation_evidence_problems(row)
+            continue
         if row["crozier_class"] not in stages or row["crozier_class"] in document["classes"].split(","):
             problems.append(f"{name}: {row['crozier_class']} is no class, or one the document carries")
             continue
+        if row["disposition"] == "both-refuse" and (
+            row["crozier_class"] != "path-parameter-unreferenced"
+            or stages[row["crozier_class"]] != "check"
+            or document["fern_stage"] != "generate"
+            or document["crozier_strict_exit"] != "1"
+        ):
+            problems.append(
+                f"{name}: both-refuse requires Fern generation refusal and crozier's invalid OpenAPI path-parameter refusal"
+            )
         if row["representative"] == EMPTY:
             stage = stages[row["crozier_class"]] == "generate" and document["fern_stage"] == "check"
             text = disposition_text(row)

@@ -898,6 +898,42 @@ def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], list[st
     return found
 
 
+def refusal_population_is_decided(root: Path, name: str) -> bool:
+    """An unevaluated detector can have a fully evaluated document population.
+    Reuse the registry's evidence and strict-diagnostic validation; a missing
+    record or an SDK evaluation that no longer holds leaves the class open.
+    """
+    registry = load_script("tools/fern-refusals/fern-refusals.py")
+    registry.REPO = root
+    registry.REGISTRY = root / "docs/fern-refusals"
+    registry.EVIDENCE = root / "docs/openapi-surface/fern-refusals"
+    try:
+        classes = registry.read_tsv(registry.REGISTRY / "classes.tsv", registry.CLASSES_HEADER)
+        documents = registry.read_tsv(registry.REGISTRY / "documents.tsv", registry.DOCUMENTS_HEADER)
+        disposed = registry.read_dispositions()
+        by_digest = {row["digest"]: row for row in documents}
+        if registry.disposition_problems(by_digest):
+            return False
+        decided_classes = {row["class"] for row in classes if row["status"] != "unevaluated"}
+        carrying = [row for row in documents if name in row["classes"].split(",")]
+        if not carrying:
+            return False
+        for row in carrying:
+            names = [cls for cls in row["classes"].split(",") if cls in decided_classes]
+            log = f"docs/openapi-surface/fern-refusals/crozier-logs/{row['digest']}.strict.log"
+            if registry.strict_problems(
+                row["digest"],
+                names,
+                row["crozier_strict_exit"],
+                log,
+                [entry for entry in disposed if entry["document"] == row["digest"]],
+            ):
+                return False
+        return True
+    except (OSError, ValueError, KeyError, SystemExit):
+        return False
+
+
 def finished_state_failures(root: Path) -> list[str]:
     """What keeps the coverage report from its finished state, read off `root`'s ledgers.
 
@@ -908,7 +944,8 @@ def finished_state_failures(root: Path) -> list[str]:
     control, that only a document Fern refuses reaches it, or a row under
     `NAMED_GAPS_HEADING` — over an arm search reading `search-incomplete`, or,
     where no arm search exists, giving `not searched` as its reason; and every
-    Fern refusal class is decided, never `unevaluated`. Nothing unproven passes
+    Fern refusal class has a decided detector or an evaluated whole document
+    population. Nothing unproven passes
     unlisted.
     """
     surface = root / "docs" / "openapi-surface"
@@ -1009,7 +1046,7 @@ def finished_state_failures(root: Path) -> list[str]:
         )
     with (root / "docs" / "fern-refusals" / "classes.tsv").open(encoding="utf-8", newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-            if row["status"] == "unevaluated":
+            if row["status"] == "unevaluated" and not refusal_population_is_decided(root, row["class"]):
                 failures.append(
                     f"{row['class']}: docs/fern-refusals/classes.tsv leaves the class "
                     "`unevaluated`; decide it `generate` or `refuse`"
@@ -11476,7 +11513,13 @@ class FinishedStateGateTests(unittest.TestCase):
         surface = Path("docs") / "openapi-surface"
         copies = [*(path.relative_to(REPO) for path in (REPO / surface).glob("*.md"))]
         copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
-        copies += [Path("docs") / "fern-refusals" / "classes.tsv"]
+        copies += [path.relative_to(REPO) for path in (REPO / "docs/fern-refusals").glob("*.tsv")]
+        copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/reductions").glob("*.log")]
+        copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/limitations").glob("*.json")]
+        with (REPO / "docs/fern-refusals/documents.tsv").open(encoding="utf-8") as handle:
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+                if "object-query-type-unsupported" in row["classes"].split(","):
+                    copies.append(surface / "fern-refusals/crozier-logs" / f"{row['digest']}.strict.log")
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
@@ -11656,10 +11699,22 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
+    def add_named_feature_gap(self) -> None:
+        with (self.root / "docs/openapi-surface/schemas.md").open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-listed-feature | both | Schema Object.sample | gap | none | none | sample | FIXTURE — pending |\n"
+            )
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            NAMED_FEATURES_HEADING,
+            NAMED_FEATURES_HEADING + f"\n\n| `sample-listed-feature` | `schemas` | {NOT_SEARCHED} |\n",
+        )
+
     def test_a_fixture_gap_named_with_its_search_state_passes_and_unlisted_ones_fail(self) -> None:
         """The committed `FIXTURE` gaps stand only because the report names each one."""
+        self.add_named_feature_gap()
         named = named_gap_features(self.root)
-        self.assertIn("operation-id-digit-leading-method", named)
+        self.assertIn("sample-listed-feature", named)
         self.assertTrue(
             all(
                 reason.startswith(NOT_SEARCHED) or bounded_incomplete_search(self.root, key, reason)
@@ -11668,31 +11723,32 @@ class FinishedStateGateTests(unittest.TestCase):
         )
         self.edit(
             "docs/openapi-surface-coverage.md",
-            "| `operation-id-digit-leading-method` |",
-            "| `operation-id-digit-leading-method-retired` |",
+            "| `sample-listed-feature` |",
+            "| `sample-listed-feature-retired` |",
         )
         failures = finished_state_failures(self.root)
         self.assertIn(
-            "operation-id-digit-leading-method: a `FIXTURE` gap row with neither a registered real "
-            "witness nor a `handwritten` cover (document-paths.md)",
+            "sample-listed-feature: a `FIXTURE` gap row with neither a registered real "
+            "witness nor a `handwritten` cover (schemas.md)",
             failures,
         )
         self.assertIn(
-            "operation-id-digit-leading-method-retired: docs/openapi-surface-coverage.md names it an "
+            "sample-listed-feature-retired: docs/openapi-surface-coverage.md names it an "
             "unproven feature, but it is not a `FIXTURE` gap row lacking a witness and a cover; "
             "remove the row",
             failures,
         )
 
     def test_a_fixture_gap_named_without_the_not_searched_reason_is_refused(self) -> None:
+        self.add_named_feature_gap()
         self.edit(
             "docs/openapi-surface-coverage.md",
-            f"| `operation-id-digit-leading-method` | `document-paths` | {named_gap_features(self.root)['operation-id-digit-leading-method']}",
-            "| `operation-id-digit-leading-method` | `document-paths` | pending",
+            f"| `sample-listed-feature` | `schemas` | {named_gap_features(self.root)['sample-listed-feature']}",
+            "| `sample-listed-feature` | `schemas` | pending",
         )
         self.assertEqual(
             [
-                "operation-id-digit-leading-method: docs/openapi-surface-coverage.md names it an "
+                "sample-listed-feature: docs/openapi-surface-coverage.md names it an "
                 f"unproven feature without {NOT_SEARCHED} or a validated bounded search as its reason"
             ],
             finished_state_failures(self.root),
@@ -11728,6 +11784,27 @@ class FinishedStateGateTests(unittest.TestCase):
             ],
             finished_state_failures(self.root),
         )
+
+    def test_an_unevaluated_class_with_evaluated_documents_is_decided(self) -> None:
+        self.assertTrue(refusal_population_is_decided(self.root, "object-query-type-unsupported"))
+        self.assertEqual([], finished_state_failures(self.root))
+
+    def test_one_undecided_document_keeps_the_unevaluated_class_open(self) -> None:
+        path = self.root / "docs/fern-refusals/documents.tsv"
+        lines = path.read_text(encoding="utf-8").splitlines()
+        header = lines[0].split("\t")
+        fields = next(line.split("\t") for line in lines[1:] if "object-query-type-unsupported" in line)
+        fields[header.index("digest")] = "d" * 64
+        fields[header.index("crozier_strict_exit")] = "—"
+        path.write_text("\n".join([*lines, "\t".join(fields)]) + "\n", encoding="utf-8")
+        self.assertFalse(refusal_population_is_decided(self.root, "object-query-type-unsupported"))
+        self.assertTrue(any("object-query-type-unsupported" in error for error in finished_state_failures(self.root)))
+
+    def test_missing_sdk_evidence_keeps_the_unevaluated_class_open(self) -> None:
+        evidence = self.root / "docs/openapi-surface/fern-refusals/limitations"
+        (evidence / "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.json").unlink()
+        self.assertFalse(refusal_population_is_decided(self.root, "object-query-type-unsupported"))
+        self.assertTrue(any("object-query-type-unsupported" in error for error in finished_state_failures(self.root)))
 
 
 class CompletenessTierTests(unittest.TestCase):

@@ -1,0 +1,13 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/fern-refusals-fv8cissw/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects
+                  itemSearch.yml
+                  [error] optional<root.GeometryGeoJson> is not a valid type for a query parameter
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

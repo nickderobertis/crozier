@@ -1,0 +1,9 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: api.yml -> service -> endpoints -> e06135082c6ce70270e8bcfadc27a474 -> response -> type
+        issue: Type E06135082C6Ce70270E8Bcfadc27A474Response is not defined.
+
+Found 1 error and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

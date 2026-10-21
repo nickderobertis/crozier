@@ -4371,3 +4371,19 @@ derives the same empty name, writes it as an empty field name, and its
 generator's own `ruff check` fails. crozier also exits 1 on these two documents,
 refusing them as `generator-lint-failure` from the IR the guard runs in, so the
 guard has run first.
+
+## New limitations at the certified pair
+
+These document-level exceptions were measured at CLI 5.163.1 and Python SDK
+5.41.3. They add to the retained historical measurements above. Each linked
+evaluation validates the OpenAPI document, generates in both modes, builds and
+installs the strict SDK wheel, and imports every generated Python module.
+The example values are annotations; an example disagreeing with its schema
+does not invalidate the document. This records generation soundness, not
+byte parity or correctness of every example in the SDK.
+
+| document SHA-256 | Fern limitation and crozier outcome | strict SDK evaluation |
+|---|---|---|
+| `0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470` | camptocamp: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.json) |
+| `68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6` | pangea: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json) |
+| `7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2` | pyroscope: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.json) |

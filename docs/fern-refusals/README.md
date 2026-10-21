@@ -80,6 +80,32 @@ caused it.
   [`../openapi-surface/fern-refusals/reductions/`](../openapi-surface/fern-refusals/reductions/)
   and the row's `reduced_digest`, `check_exit`, `generate_exit`, `classes` and
   `log`, which `check` holds to that log.
+  A `fern-limitation` disposition records a different outcome: the document is
+  valid OpenAPI, Fern refuses it, and crozier generates a sound SDK in both
+  modes. Its `crozier_class` and reduction-result cells are `—`, its
+  `representative` is the document's own digest, and `log` names
+  `../openapi-surface/fern-refusals/limitations/<digest>.json`. That version-1 evidence records the document and
+  certified pair, crozier commit, strict SDK digest, and the actual commands,
+  exit statuses and output for OpenAPI validation, default and strict generation,
+  wheel build, installation and import of every generated module. Every command
+  must succeed. `build` and `check` also require the matching evidence link in
+  [the new-limitations ledger](../fern-limitations.md#new-limitations-at-the-certified-pair).
+  `reduce` leaves this evaluation intact. An `unevaluated` class may carry such
+  documents: no general crozier refusal detector is claimed for the class, while
+  the document-specific exception is evaluated. The existing `generate` class
+  status still means default generation and strict refusal.
+  The coverage finished-state gate admits that unevaluated detector only when
+  every document carrying the class passes the registry's evidence validation
+  and either has a valid `fern-limitation` disposition or actually refuses with
+  another measured class. One undecided document or missing SDK evaluation keeps
+  the class open.
+  `both-refuse` is the other stage relation: Fern refuses at generation while
+  crozier refuses at the document boundary because a declared path parameter is
+  absent from the path template (`path-parameter-unreferenced`, invalid OpenAPI).
+  Both causes and stages remain recorded. Its reduction may still measure
+  `over-broad`: Fern's check accepting that reduction is a separate fact from
+  both tools refusing the full document. The relation requires a generation
+  refusal and never accepts a document Fern generates successfully.
 - [`findings.tsv`](findings.tsv) — shapes measured and found **not** to be
   refusals, each with its probe under
   [`../openapi-surface/fern-refusals/findings/`](../openapi-surface/fern-refusals/findings/):

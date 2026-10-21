@@ -1690,6 +1690,125 @@ class MeasuredAtThePair(unittest.TestCase):
         table = [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
         write_rows(self.root / "docs" / "fern-refusals" / "dispositions.tsv", table)
 
+    def test_a_generating_fern_limitation_requires_sdk_evaluation_and_ledger_entry(self) -> None:
+        measured = self.measure()
+        digest = self.documents["measured-current"]
+        entry = measured[digest]
+        entry.update(crozier_exit="0", crozier_files="3", crozier_strict_exit="0")
+        (self.root / entry["crozier_strict_log"]).write_text("", encoding="utf-8")
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        relative = f"docs/openapi-surface/fern-refusals/limitations/{digest}.json"
+        self.dispose(digest, disposition="fern-limitation", representative=digest, log=relative)
+        evidence_path = self.root / relative
+        evidence_path.parent.mkdir()
+        stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
+        evidence: dict[str, Any] = {
+            "schema_version": 1,
+            "document_sha256": digest,
+            "fern_cli": CERTIFIED["cliVersion"],
+            "fern_python_sdk": CERTIFIED["generatorVersion"],
+            "crozier_commit": "a" * 40,
+            "sdk_sha256": "b" * 64,
+            **{stage: {"command": ["evaluation", stage], "exit": 0, "output": ""} for stage in stages},
+        }
+        for stage, args in {
+            "validation": ["python", "-m", "openapi_spec_validator", "source.yml"],
+            "strict_generation": ["crozier", "generate", "--fern-strict"],
+            "build": ["python", "-m", "build", "--wheel"],
+            "installation": ["uv", "pip", "install", "sdk.whl"],
+            "imports": ["python", "-c", "pkgutil.walk_packages(package.__path__)"],
+        }.items():
+            evidence[stage]["command"] = args
+        ledger = self.root / "docs/fern-limitations.md"
+        ledger_text = (
+            "## New limitations at the certified pair\n\n"
+            f"| `{digest}` | Valid document; Fern refuses its type name. | [SDK evidence](openapi-surface/fern-refusals/limitations/{digest}.json) |\n"
+        )
+
+        def write_evidence() -> None:
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+
+        write_evidence()
+        ledger.write_text(ledger_text, encoding="utf-8")
+        accepted = self.script("build")
+        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(rows(self.root / "docs/fern-refusals/dispositions.tsv")[1][2], "fern-limitation")
+        for stage in stages:
+            with self.subTest(stage=stage):
+                evidence[stage]["exit"] = 1
+                write_evidence()
+                failed = self.script("build")
+                self.assertNotEqual(failed.returncode, 0)
+                self.assertIn(f"no successful {stage} command", failed.stderr)
+                evidence[stage]["exit"] = 0
+        write_evidence()
+        strict_args = evidence["strict_generation"]["command"]
+        evidence["strict_generation"]["command"] = ["crozier", "generate"]
+        write_evidence()
+        self.assertIn("do not perform the required evaluation stages", self.script("build").stderr)
+        evidence["strict_generation"]["command"] = strict_args
+        write_evidence()
+        ledger.write_text("## Historical measurements\n", encoding="utf-8")
+        failed = self.script("build")
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("matching new-limitations ledger entry", failed.stderr)
+        ledger.write_text(ledger_text, encoding="utf-8")
+        evidence_path.unlink()
+        self.assertIn("cannot read SDK evidence", self.script("build").stderr)
+        write_evidence()
+        evidence["document_sha256"] = "c" * 64
+        write_evidence()
+        self.assertIn("wrong version, document, certified pair or digest", self.script("build").stderr)
+        evidence["document_sha256"] = digest
+        write_evidence()
+        entry["crozier_exit"] = "1"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.assertIn("requires generation in both modes", self.script("build").stderr)
+        entry["crozier_exit"] = "0"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.assertEqual(self.script("build").returncode, 0)
+
+    def test_both_refuse_relation_requires_a_fern_generation_refusal(self) -> None:
+        self.add_classes("generator-lint-failure", "path-parameter-unreferenced")
+        measured = self.measure()
+        digest = self.documents["measured-current"]
+        entry = measured[digest]
+        log = self.evidence / "logs" / f"{digest}.generate.log"
+        said = "Failed to run command: ruff check generated.py"
+        log.write_text(PAIR_LINE + "[error] " + said + "\n", encoding="utf-8")
+        entry.update(
+            check_exit="0", generate_exit="1", generate_files="0", generate_log=log.relative_to(self.root).as_posix()
+        )
+        (self.root / entry["check_log"]).write_text(PAIR_LINE, encoding="utf-8")
+        strict = self.root / entry["crozier_strict_log"]
+        strict.write_text(
+            "crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: PUT /readings parameter id\n",
+            encoding="utf-8",
+        )
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.dispose(
+            digest, crozier_class="path-parameter-unreferenced", disposition="both-refuse", representative=digest
+        )
+        self.env.update(
+            FERN_STUB_CHECK_EXIT="0",
+            FERN_STUB_CHECK_OUTPUT="",
+            FERN_STUB_GENERATE_EXIT="1",
+            FERN_STUB_GENERATE_OUTPUT="[error] " + said,
+        )
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        result = self.script("build")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(rows(self.root / "docs/fern-refusals/dispositions.tsv")[1][2], "both-refuse")
+        entry.update(generate_exit="0", generate_files="1")
+        log.write_text(PAIR_LINE, encoding="utf-8")
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        result = self.script("build")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Fern generates it, but crozier --fern-strict stops", result.stderr)
+
     def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
         registry = self.root / "docs" / "fern-refusals"
         # Two more classes: one only `fern generate` reports, one its check does.

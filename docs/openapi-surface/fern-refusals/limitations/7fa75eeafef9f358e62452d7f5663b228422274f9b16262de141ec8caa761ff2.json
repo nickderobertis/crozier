@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "document_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2",
+  "fern_cli": "5.163.1",
+  "fern_python_sdk": "5.41.3",
+  "crozier_commit": "c93af68f2972f6811a03478eb15cb173ed247830",
+  "validation": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "-m",
+      "openapi_spec_validator",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml"
+    ],
+    "exit": 0,
+    "output": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml: OK\n"
+  },
+  "default_generation": {
+    "command": [
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
+      "generate",
+      "python",
+      "--no-config",
+      "--spec",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml",
+      "--output",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/sdk-default",
+      "--package-name",
+      "limitation_sdk"
+    ],
+    "exit": 0,
+    "output": "generated 173 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/sdk-default\n"
+  },
+  "strict_generation": {
+    "command": [
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
+      "generate",
+      "python",
+      "--no-config",
+      "--spec",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml",
+      "--output",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/sdk",
+      "--package-name",
+      "limitation_sdk",
+      "--fern-strict"
+    ],
+    "exit": 0,
+    "output": "generated 173 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/sdk\n"
+  },
+  "build": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "-m",
+      "build",
+      "--wheel",
+      "--no-isolation",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/sdk",
+      "--outdir",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/dist"
+    ],
+    "exit": 0,
+    "output": "Successfully built limitation_sdk-0.0.0-py3-none-any.whl\n* Getting build dependencies for wheel...\n* Building wheel...\n"
+  },
+  "installation": {
+    "command": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "--no-deps",
+      "--force-reinstall",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/dist/limitation_sdk-0.0.0-py3-none-any.whl"
+    ],
+    "exit": 0,
+    "output": "Using Python 3.14.7 environment at: /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env\nResolved 1 package in 3ms\nPrepared 1 package in 76ms\nUninstalled 1 package in 10ms\nInstalled 1 package in 25ms\n - limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pyroscope/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n"
+  },
+  "imports": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "-c",
+      "import importlib,pkgutil,limitation_sdk; names=[m.name for m in pkgutil.walk_packages(limitation_sdk.__path__, limitation_sdk.__name__+'.')]; [importlib.import_module(n) for n in names]; print('Imported',len(names),'modules')"
+    ],
+    "exit": 0,
+    "output": "Imported 163 modules\n"
+  },
+  "sdk_sha256": "718206fba594e849c30f3a596f7a3bf609d33a38f924f2b33a59079f00af0a36"
+}

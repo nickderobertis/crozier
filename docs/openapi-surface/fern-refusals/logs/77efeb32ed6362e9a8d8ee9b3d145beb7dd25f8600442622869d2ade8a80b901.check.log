@@ -1,0 +1,29 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 6 errors
+    [error]
+        path: __package__.yml -> errors -> ForbiddenError -> type
+        issue: Unexpected property "status"
+
+    [error]
+        path: __package__.yml -> errors -> ForbiddenError -> type
+        issue: Unexpected property "error_type"
+
+    [error]
+        path: __package__.yml -> types -> HostEvent
+        issue: Discriminant value _event is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> HostOperatingSystem
+        issue: HostOperatingSystem is already declared in hosts.yml
+
+    [error]
+        path: __package__.yml -> types -> HostServicesItem
+        issue: HostServicesItem is already declared in hosts.yml
+
+    [error]
+        path: __package__.yml -> types -> ServiceRemovedFromHostEventServiceRemovedFromHost
+        issue: Discriminant value _reason is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 6 errors and 7 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
