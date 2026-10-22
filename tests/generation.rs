@@ -6855,7 +6855,8 @@ components:
     let client = &files["src/acme/events/client.py"];
     let raw = &files["src/acme/events/raw_client.py"];
     let reference = &files["reference.md"];
-    assert_eq!(client.matches("\"2024-02-03\"").count(), 4, "{client}");
+    // Each sync/async example has one query date and two repeated body dates.
+    assert_eq!(client.matches("\"2024-02-03\"").count(), 6, "{client}");
     assert!(
         client.contains("price=0.0") && client.contains("note=\"Primary\""),
         "{client}"
