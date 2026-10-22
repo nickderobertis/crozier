@@ -8779,8 +8779,14 @@ impl<'a> ExampleCtx<'a> {
                     "false" => "False".to_string(),
                     _ => example.to_string(),
                 },
+                // A Markdown snippet spells a declared example holding `"` the
+                // JSON way, where a docstring keeps Python's `repr`: ADME
+                // seismic's `persistable_reference` is `"{\"abcd\": …}"` in its
+                // README and `'{"abcd": …}'` in `client.py`.
                 TypeRef::Primitive(Prim::Str | Prim::Bytes)
-                    if self.reference && example.starts_with('\'') && example.ends_with('\'') =>
+                    if (self.documentation || self.reference)
+                        && example.starts_with('\'')
+                        && example.ends_with('\'') =>
                 {
                     let inner = &example[1..example.len() - 1];
                     format!("\"{}\"", inner.replace('"', "\\\""))
@@ -9085,11 +9091,19 @@ impl<'a> ExampleCtx<'a> {
         values: &serde_json::Map<String, serde_json::Value>,
     ) -> Vec<(Option<String>, Example)> {
         let documentation = self.documentation;
+        let unknown_maps: Vec<String> = fields
+            .iter()
+            .filter(|field| self.resolves_to_unknown_map(&field.type_ref))
+            .map(|field| field.wire_name.clone())
+            .collect();
         fields
             .into_iter()
             // An example value of `{}` selects nothing: Fern renders no
             // argument for an optional model field the example leaves
-            // empty (`mosip-esignet`'s `claims.id_token: {}`).
+            // empty (`mosip-esignet`'s `claims.id_token: {}`). A map to
+            // unknown values is the exception: there `{}` is Fern's
+            // `{"key": "value"}` placeholder (ADME seismic's
+            // `ExtensionProperties: {}`).
             // Nor does `null`, but in the Markdown writers, which write a
             // required nullable field's `null` as `None`; and an optional
             // field whose schema is deprecated is left out even where the
@@ -9103,7 +9117,8 @@ impl<'a> ExampleCtx<'a> {
                     || !field.deprecated
                         && value.is_some_and(|value| {
                             !value.is_null()
-                                && !value.as_object().is_some_and(serde_json::Map::is_empty)
+                                && (!value.as_object().is_some_and(serde_json::Map::is_empty)
+                                    || unknown_maps.contains(&field.wire_name))
                         })
             })
             .filter_map(
@@ -9146,8 +9161,14 @@ impl<'a> ExampleCtx<'a> {
                         // An empty array carries no example value, so Fern
                         // synthesizes one from the field name rather than
                         // rendering `[]` (`mosip-esignet`'s
-                        // `permittedAuthorizeScopes: []`).
+                        // `permittedAuthorizeScopes: []`); nor does an empty
+                        // object an unknown map is given.
                         Some(serde_json::Value::Array(items)) if items.is_empty() => {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        Some(serde_json::Value::Object(fields))
+                            if fields.is_empty() && self.resolves_to_unknown_map(&type_ref) =>
+                        {
                             self.value(&type_ref, Slot::Named(&wire_name))
                         }
                         Some(value) => {
@@ -11736,6 +11757,20 @@ fn format_documentation_example(
     let mut out = Vec::new();
     if is_async {
         out.extend_from_slice(&lines[..client_index]);
+        // After `asyncio`, the stdlib line and the tag imports follow in the
+        // order the snippet first uses them, as the sync form's do: ADME
+        // seismic's register call passes a tag-scoped model before its first
+        // `datetime`, and its async README imports that model first.
+        if !datetime_first {
+            if let Some(datetime) = out.iter().position(|line| line == "import datetime") {
+                let tags_end = out[datetime + 1..]
+                    .iter()
+                    .position(String::is_empty)
+                    .map_or(out.len(), |offset| datetime + 1 + offset);
+                let line = out.remove(datetime);
+                out.insert(tags_end - 1, line);
+            }
+        }
     } else {
         let main_start = imports
             .iter()

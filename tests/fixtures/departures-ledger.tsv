@@ -3643,6 +3643,12 @@ tests/fixtures/microcks.local/expected	src/fern/core/client_wrapper.py	38	sdk-id
 tests/fixtures/microcks.local/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/microcks.local/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/microcks.local/expected	src/fern/mock/client.py	82	multipart-object-required-file-example
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/__init__.py	82	init-type-checking-import-order
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

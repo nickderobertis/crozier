@@ -7541,6 +7541,8 @@ impl InlineHoister<'_> {
         // duplicate}]`, and Fern's `PostLinksResponse` carries every property.
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
+        let redeclared = last_redeclared_member_properties(schema);
+        let schema = redeclared.as_ref().unwrap_or(schema);
         // A `$ref` base whose properties this object restates takes the
         // component builder's path, which decides between extending the base and
         // flattening it the way Fern's parent-conflict rule does: every Zulip
@@ -7963,6 +7965,11 @@ impl InlineHoister<'_> {
         fields: &mut Vec<Field>,
     ) {
         for (prop, prop_schema) in &schema.properties {
+            // One field per property, at its first declaration's place, as
+            // [`Builder::collect_fields`] keeps it.
+            if fields.iter().any(|field| field.wire_name == *prop) {
+                continue;
+            }
             let spec_required =
                 required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
             let referenced_nullable = self
@@ -10293,6 +10300,13 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
         snake.clone()
     } else if let Some((_, suffix)) = tag_suffix {
         naming::to_snake_case(suffix)
+    } else if id.contains('-')
+        && tag.is_some_and(|tag| !fern_location_tokens(id).starts_with(&fern_location_tokens(tag)))
+    {
+        // A hyphenated id is split at its hyphens, so it leads with its tag only
+        // when its words are the tag's: ADME seismic's `sub-project-list` under
+        // `SubProject` (one word, `subproject`) keeps the whole id.
+        snake.clone()
     } else {
         snake
             .strip_prefix(&format!("{tag_snake}_"))
@@ -10557,6 +10571,16 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
             return title_from_tag(doc, tag);
         }
     }
+    // The `<tag>-<method>` group [`endpoint_module`] reads off the prefix is
+    // titled by that one word, as an undeclared dotted one is: ADME seismic's
+    // `subproject-create` under `SubProject` is `Subproject`.
+    if let Some(tag) = first_tag(op).filter(|tag| {
+        !id.contains('_')
+            && method_from_hyphenated_tag_id(id, Some(tag)).is_some()
+            && !doc.tags.iter().any(|t| t.name == *tag)
+    }) {
+        return naming::to_pascal_case(&tag.to_ascii_lowercase());
+    }
     if id.contains('_') {
         // Grouped by the operationId prefix → PascalCase; grouped by tag → verbatim.
         if group_prefix_is_tag(op, id) {
@@ -10658,6 +10682,13 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
         return snake_module(first_tag(op).expect("mismatch implies a tag"));
     }
     if let Some(tag) = first_tag(op) {
+        // A `<tag>-<method>` id is grouped by the one word its prefix spells, as
+        // the dotted form is: ADME seismic's `subproject-create` under the tag
+        // `SubProject` is `create` in the `subproject` group, beside the
+        // `sub_project` group its `sub-project-list` keeps under the same tag.
+        if method_from_hyphenated_tag_id(id, Some(tag)).is_some() {
+            return compact_module(tag);
+        }
         if let Some((prefix, _)) = operation_id_tag_prefix(id, tag) {
             return snake_module(prefix);
         }
@@ -12406,6 +12437,8 @@ impl Builder<'_> {
         };
         let inherited = merge_restated_parent_properties(schema, self.schemas);
         let schema = inherited.as_ref().unwrap_or(schema);
+        let redeclared = last_redeclared_member_properties(schema);
+        let schema = redeclared.as_ref().unwrap_or(schema);
         // `allOf` merges members: `$ref`s become base classes, inline members
         // contribute properties, and `required` applies across the whole set,
         // the `$ref` parents' own lists included (see [`all_of_required`]).
@@ -16965,6 +16998,47 @@ fn annotation_lost_description<'a>(
     let (reference, _) = described_all_of_ref(prop_schema)?;
     let target = resolve_ref_from_schemas(schemas, reference)?;
     sole_inline_all_of_element(target).map(|inner| inner.description.as_deref())
+}
+
+/// `schema` with a property two inline object `allOf` members both declare
+/// declared, at the first one's place, by the last one's schema; `None` when no
+/// member redeclares one. ADME seismic's `AbstractDataset` declares
+/// `DatasetProperties` as a bare placeholder object and the
+/// `AbstractFileCollection` after it declares the typed one, and Fern's
+/// `DatasetProperties` field is that typed model. The braintrust union branches
+/// [`Builder::add_object`] flattens merge the same way.
+fn last_redeclared_member_properties(schema: &Schema) -> Option<Schema> {
+    let members = schema.all_of.as_deref()?;
+    let object_member = |member: &Schema| {
+        member.reference.is_none() && member.one_of.is_none() && member.any_of.is_none()
+    };
+    let mut last: IndexMap<&str, &Schema> = IndexMap::new();
+    for member in members.iter().filter(|member| object_member(member)) {
+        for (key, property) in &member.properties {
+            last.insert(key.as_str(), property);
+        }
+    }
+    let mut changed = false;
+    let merged: Vec<Schema> = members
+        .iter()
+        .map(|member| {
+            let mut member = member.clone();
+            if !object_member(&member) {
+                return member;
+            }
+            for (key, property) in member.properties.iter_mut() {
+                if let Some(latest) = last.get(key.as_str()).filter(|latest| **latest != property) {
+                    *property = (*latest).clone();
+                    changed = true;
+                }
+            }
+            member
+        })
+        .collect();
+    changed.then(|| Schema {
+        all_of: Some(merged),
+        ..schema.clone()
+    })
 }
 
 /// `schema` with each inline property an inline `allOf` member restates laid

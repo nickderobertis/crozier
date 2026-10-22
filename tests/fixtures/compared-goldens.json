@@ -363,6 +363,7 @@
     "docs/fern-measurements/schema-shapes-literals/kiln-nested-reason/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-variant-trigger/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/adme-seismic-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-annotated-body/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
