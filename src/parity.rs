@@ -345,6 +345,11 @@ fn apply_regions<'a>(
                 .first()
                 .and_then(|(_, index)| *index)
                 .or_else(|| origins.iter().find_map(|(_, index)| *index))
+                .or_else(|| {
+                    lines
+                        .get(region.crozier.start)
+                        .and_then(|(_, index)| *index)
+                })
                 .unwrap_or(pair.crozier.len());
             let identity = (*id, origin, before.to_vec(), after.to_vec());
             if !seen.insert(identity) {
@@ -878,6 +883,50 @@ mod tests {
                     .unwrap();
             assert!(compared.comparison.matches());
             assert_eq!(ids(&compared.comparison), [(1, *id)]);
+        }
+    }
+
+    fn insertion_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        let Some(start) = pair.crozier.iter().position(|line| *line == "end") else {
+            return Ok(None);
+        };
+        let Some(target) = pair.fern.iter().position(|line| *line == "header") else {
+            return Ok(None);
+        };
+        Ok(Some(departures::Region {
+            crozier: start..start,
+            fern: target..target + 1,
+        }))
+    }
+
+    #[test]
+    fn reference_only_insertions_keep_the_original_anchor() {
+        for (crozier, fern, expected, rules) in [
+            (
+                "start\nend",
+                "start\nheader\nend",
+                2,
+                vec![("insert", insertion_test_region as departures::RegionRule)],
+            ),
+            (
+                "client.upload(\n    file=\"example_file\",\n)\nend",
+                "client.upload()\nheader\nend",
+                4,
+                vec![
+                    ("file", file_test_region as departures::RegionRule),
+                    ("insert", insertion_test_region),
+                ],
+            ),
+        ] {
+            let compared =
+                compare_file_using_regions(&Context::default(), "client.py", crozier, fern, &rules)
+                    .unwrap();
+            assert!(compared.comparison.matches());
+            assert!(
+                ids(&compared.comparison).contains(&(expected, "insert")),
+                "{:?}",
+                ids(&compared.comparison)
+            );
         }
     }
 

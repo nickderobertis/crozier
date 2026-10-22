@@ -11885,14 +11885,10 @@ fn compact_documentation_values(
     compact
 }
 
-/// A 3.0 root binary-schema operation without an error response has no worked
+/// A root binary-schema operation without an error response has no worked
 /// download example. A declared error supplies a valid example in both versions.
 fn root_binary_download_undocumented(ep: &Endpoint) -> bool {
-    ep.binary_response
-        && ep.module.is_empty()
-        && ep.binary_schema_response
-        && !ep.openapi_31
-        && ep.errors.is_empty()
+    ep.binary_response && ep.module.is_empty() && ep.binary_schema_response && ep.errors.is_empty()
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
@@ -16617,7 +16613,7 @@ mod tests {
     }
 
     #[test]
-    fn root_binary_ndjson_without_errors_keeps_the_version_guard() {
+    fn root_binary_ndjson_without_errors_omits_examples_in_both_versions() {
         for version in ["3.0.3", "3.1.0"] {
             let mut document = download_document("application/x-ndjson");
             document["openapi"] = serde_json::json!(version);
@@ -16631,9 +16627,8 @@ mod tests {
                 .remove("404");
             let files = loaded_files_for(document);
             let client = file(&files, "src/api/client.py");
-            assert_eq!(
-                client.contains("        Examples\n"),
-                version == "3.1.0",
+            assert!(
+                !client.contains("        Examples\n"),
                 "{version}: {client}"
             );
         }
