@@ -679,10 +679,12 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden::default(),
         );
     }
+    // llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] This inventory is the one list of compared goldens the ledger gate reconciles, and every golden is registered here; the nested-discriminator journey that compares this one is a type:e2e project, which nx.json's boundaries forbid this suite from reading.
     add(
         "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected".to_owned(),
         departures_ledger::ComparedGolden::default(),
     );
+    // llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
@@ -20849,25 +20851,8 @@ fn cached_python_env(
     requirements: &[String],
     use_uv: bool,
 ) -> Result<PathBuf, String> {
-    cached_python_env_for_python(root, prefix, requirements, use_uv, None)
-}
-
-/// Pin an interpreter where a dependency major does not support the host Python.
-fn cached_python_env_for_python(
-    root: &Path,
-    prefix: &str,
-    requirements: &[String],
-    use_uv: bool,
-    python: Option<&str>,
-) -> Result<PathBuf, String> {
-    let base = python
-        .map_or_else(
-            || python_interpreter().map(str::to_owned),
-            |version| Some(format!("python{version}")),
-        )
-        .ok_or("no python3/python on PATH")?;
-    let key =
-        sha256_hex(format!("{}\n{}", python.unwrap_or("host"), requirements.join("\n")).as_bytes());
+    let base = python_interpreter().ok_or("no python3/python on PATH")?;
+    let key = sha256_hex(requirements.join("\n").as_bytes());
     let venv = root.join(format!("{prefix}-{}", &key[..16]));
     let venv_py = venv_python(&venv);
     let ready = venv.join(".crozier-ready");
@@ -20898,9 +20883,6 @@ fn cached_python_env_for_python(
     if use_uv {
         let mut venv_cmd = std::process::Command::new("uv");
         venv_cmd.args(["venv", "--allow-existing"]).arg(&venv);
-        if let Some(python) = python {
-            venv_cmd.args(["--python", python]);
-        }
         run(venv_cmd, "uv venv")?;
         let mut install = std::process::Command::new("uv");
         install
