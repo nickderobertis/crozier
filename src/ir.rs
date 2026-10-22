@@ -2238,7 +2238,29 @@ pub struct UnionMember {
     /// union alias itself rather than an object, so Fern wraps it in a `value`
     /// field written *ahead* of the discriminant and drops the `extra` member from
     /// the wrapper's pydantic config.
-    pub wrapped: bool,
+    pub layout: UnionMemberLayout,
+}
+
+/// Whether a variant flattens its Python fields or exposes a payload constructor.
+#[derive(Debug, Clone)]
+pub enum UnionMemberLayout {
+    /// An object variant's fields are declared directly on the wrapper.
+    Flattened,
+    /// A non-object payload is held whole as `value` on Python and on the wire.
+    Wrapped,
+    /// Python retains `value`, while the inner discriminator selects a flat wire object.
+    NestedDiscriminator {
+        /// The inner discriminator's wire property.
+        property: String,
+    },
+}
+
+impl UnionMemberLayout {
+    /// Whether the public constructor takes its payload through `value`.
+    #[must_use]
+    pub fn is_wrapped(&self) -> bool {
+        !matches!(self, Self::Flattened)
+    }
 }
 
 /// How an endpoint's referenced JSON request schema is composed.
@@ -13211,7 +13233,7 @@ impl Builder<'_> {
                     ),
                     source: target_name.clone(),
                     docstring: docstring.clone(),
-                    wrapped: false,
+                    layout: crate::ir::UnionMemberLayout::Flattened,
                 });
             }
             // Properties written beside inline members are the `Base` every
@@ -13269,7 +13291,7 @@ impl Builder<'_> {
                         discriminant_index: None,
                         source: None,
                         docstring: docstring.clone(),
-                        wrapped: true,
+                        layout: crate::ir::UnionMemberLayout::Wrapped,
                     })
                     .collect(),
                 variant_targets,
@@ -13310,7 +13332,7 @@ impl Builder<'_> {
                     discriminant_index: None,
                     source: Some(merged_name.clone()),
                     docstring: docstring.clone(),
-                    wrapped: false,
+                    layout: crate::ir::UnionMemberLayout::Flattened,
                 });
                 variant_targets.push(merged_name);
                 continue;
@@ -13337,7 +13359,12 @@ impl Builder<'_> {
                     discriminant_index: None,
                     source: None,
                     docstring: docstring.clone(),
-                    wrapped: true,
+                    layout: target.discriminator.as_ref().map_or(
+                        UnionMemberLayout::Wrapped,
+                        |discriminator| UnionMemberLayout::NestedDiscriminator {
+                            property: discriminator.property_name.clone(),
+                        },
+                    ),
                 });
                 variant_targets.push(target_class);
                 continue;
@@ -13357,7 +13384,7 @@ impl Builder<'_> {
                 discriminant_index: member_discriminant_index(target, &property_name, self.schemas),
                 source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
-                wrapped: false,
+                layout: crate::ir::UnionMemberLayout::Flattened,
             });
             variant_targets.push(naming::class_name(target_key));
         }
@@ -13441,7 +13468,7 @@ impl Builder<'_> {
                     discriminant_index: None,
                     source: None,
                     docstring: None,
-                    wrapped: true,
+                    layout: crate::ir::UnionMemberLayout::Wrapped,
                 });
                 variant_targets.push(target_class);
                 continue;
@@ -13458,7 +13485,7 @@ impl Builder<'_> {
                 ),
                 source: Some(target_class.clone()),
                 docstring: docstring.clone(),
-                wrapped: false,
+                layout: crate::ir::UnionMemberLayout::Flattened,
             });
             variant_targets.push(target_class);
         }
@@ -26328,7 +26355,7 @@ mod tests {
                 _ => None,
             })
             .expect("Vessel is a discriminated union");
-        assert!(!union.members[0].wrapped);
+        assert!(!union.members[0].layout.is_wrapped());
         assert_eq!(union.members[0].fields.len(), 3);
     }
 

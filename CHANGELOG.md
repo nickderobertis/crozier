@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.126](https://github.com/nickderobertis/crozier/compare/v0.0.125...v0.0.126) - 2026-10-22
+
+### Fixed
+
+- *(parity)* prove crozier's nine unproven features and three unproven example arms ([#566](https://github.com/nickderobertis/crozier/pull/566))
+
 ## [0.0.125](https://github.com/nickderobertis/crozier/compare/v0.0.124...v0.0.125) - 2026-10-21
 
 ### Added

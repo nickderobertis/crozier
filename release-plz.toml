@@ -41,5 +41,9 @@ name = "crozier-github-action"
 release = false
 
 [[package]]
+name = "crozier-nested-discriminator-tests"
+release = false
+
+[[package]]
 name = "crozier-pool-maintenance"
 release = false

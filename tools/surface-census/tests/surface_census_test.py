@@ -16526,6 +16526,7 @@ class ParityProofIndexTests(unittest.TestCase):
             for path in [
                 REPO / "crates/crozier-e2e/tests/e2e.rs",
                 *(REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs"),
+                REPO / "tests/generation.rs",
             ]
         )
         for row in rows:

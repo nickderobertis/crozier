@@ -1709,7 +1709,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 27] = [
+pub const RULE_IDS: [&str; 28] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1726,6 +1726,7 @@ pub const RULE_IDS: [&str; 27] = [
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
     "multipart-object-required-file-example",
+    "nested-discriminator-flat-wire",
     "nullable-items-docs",
     "optional-lowered-required-query-array-example",
     "pattern-narrowed-enum-example",
@@ -1747,6 +1748,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "anyof-path-param-schema-example" => Rule {
             region: Some(declared_examples::region),
             line: Some(declared_request_string_example),
+            ..none
+        },
+        "nested-discriminator-flat-wire" => Rule {
+            region: Some(nested_discriminator_flat_wire),
             ..none
         },
         "body-query-parameter-value" => Rule {
@@ -1921,6 +1926,186 @@ fn body_entry_value(expression: &str) -> Option<(&str, &str, bool)> {
         value.find(|character: char| !character.is_ascii_alphanumeric() && character != '_')?;
     let name = &value[..end];
     (!name.is_empty() && (converted || &value[end..] == ",")).then_some((wire, name, converted))
+}
+
+/// Recognize only the measured nested wrapper's adapters and broken examples.
+/// All surrounding declarations and text must still match the reference.
+fn nested_discriminator_flat_wire(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let mut normalized: Vec<String> = pair.crozier.iter().map(|line| (*line).to_owned()).collect();
+    let mut changed = false;
+    for (name, schema) in &source.components.schemas {
+        let Some(outer) = &schema.discriminator else {
+            continue;
+        };
+        for (tag, target) in &outer.mapping {
+            let Some(inner) = target
+                .rsplit('/')
+                .next()
+                .and_then(|name| source.components.schemas.get(name))
+            else {
+                continue;
+            };
+            if inner.discriminator.is_none() {
+                continue;
+            }
+            let wrapper = format!(
+                "{}_{}",
+                crate::naming::class_name(name),
+                crate::naming::class_name(tag)
+            );
+            if pair.rel.ends_with(".py") {
+                changed |= nested_wire_adapter(
+                    &mut normalized,
+                    &wrapper,
+                    &outer.property_name,
+                    inner.discriminator.as_ref().unwrap().property_name.as_str(),
+                );
+            } else if matches!(pair.rel, "README.md" | "reference.md") {
+                changed |=
+                    nested_wire_examples(&mut normalized, &wrapper, tag, target, inner, source);
+            }
+        }
+    }
+    Ok((changed
+        && normalized
+            .iter()
+            .map(String::as_str)
+            .eq(pair.fern.iter().copied()))
+    .then_some(Region {
+        fern: 0..pair.fern.len(),
+        crozier: 0..pair.crozier.len(),
+    }))
+}
+
+/// Match the exact adapter body, leaving the original fields and config intact.
+fn nested_wire_adapter(lines: &mut Vec<String>, wrapper: &str, tag: &str, inner_tag: &str) -> bool {
+    let Some(class) = lines
+        .iter()
+        .position(|line| line == &format!("class {wrapper}(UniversalBaseModel):"))
+    else {
+        return false;
+    };
+    let end = lines[class + 1..]
+        .iter()
+        .position(|line| line.starts_with("class "))
+        .map_or(lines.len(), |index| class + 1 + index);
+    let Some(start) = (class + 1..end)
+        .find(|index| lines[*index].trim() == "@pydantic.model_validator(mode=\"before\")")
+    else {
+        return false;
+    };
+    let Some(begin) = start.checked_sub(3).filter(|begin| *begin > class) else {
+        return false;
+    };
+    let Some(last) =
+        (start..end).rfind(|index| lines[*index].trim_start().starts_with("yield from "))
+    else {
+        return false;
+    };
+    let actual: Vec<&str> = lines[begin..=last].iter().map(String::as_str).collect();
+    let expected = crate::emit::nested_discriminator_methods(
+        tag,
+        &crate::naming::model_field_name(tag),
+        inner_tag,
+    );
+    if compact_python(&actual) != compact_python(&expected.lines().collect::<Vec<_>>()) {
+        return false;
+    }
+    lines.drain(begin..=last);
+    true
+}
+
+/// The measured documentation defect uses primitive string placeholders. Admit
+/// their exact constructors and values, not arbitrary edits inside an example.
+fn nested_wire_examples(
+    lines: &mut Vec<String>,
+    wrapper: &str,
+    tag: &str,
+    target: &str,
+    inner: &crate::openapi::Schema,
+    source: &crate::openapi::OpenApi,
+) -> bool {
+    let Some(discriminator) = &inner.discriminator else {
+        return false;
+    };
+    let mut changed = false;
+    for (inner_tag, reference) in &discriminator.mapping {
+        let Some(schema) = reference
+            .rsplit('/')
+            .next()
+            .and_then(|name| source.components.schemas.get(name))
+        else {
+            continue;
+        };
+        let fields: Vec<_> = schema
+            .properties
+            .iter()
+            .filter(|(name, _)| {
+                schema.required.contains(name) && **name != discriminator.property_name
+            })
+            .collect();
+        if fields.iter().any(|(_, field)| {
+            field
+                .ty
+                .as_ref()
+                .and_then(crate::openapi::TypeField::primary)
+                != Some("string")
+                || field.example.is_some()
+        }) {
+            continue;
+        }
+        let constructor = format!(
+            "{}_{}",
+            crate::naming::class_name(target.rsplit('/').next().unwrap_or(target)),
+            crate::naming::class_name(inner_tag)
+        );
+        let mut index = 0;
+        while index + 1 < lines.len() {
+            if !lines[index].trim_end().ends_with(&format!("={wrapper}(")) {
+                index += 1;
+                continue;
+            }
+            let start = index + 1;
+            let indent = lines[start].len() - lines[start].trim_start().len();
+            let expected: Vec<String> =
+                std::iter::once(format!("{}value={constructor}(", " ".repeat(indent)))
+                    .chain(fields.iter().map(|(name, _)| {
+                        format!(
+                            "{}{}={:?},",
+                            " ".repeat(indent + 4),
+                            crate::naming::model_field_name(name),
+                            name
+                        )
+                    }))
+                    .chain(std::iter::once(format!("{})", " ".repeat(indent))))
+                    .collect();
+            let end = start + expected.len();
+            if lines.get(start..end) != Some(expected.as_slice()) {
+                index += 1;
+                continue;
+            }
+            lines.splice(
+                start..end,
+                [format!(
+                    "{}{}=,",
+                    " ".repeat(indent),
+                    crate::naming::model_field_name(tag)
+                )],
+            );
+            for line in lines
+                .iter_mut()
+                .filter(|line| line.starts_with("from ") && line.contains(" import "))
+            {
+                *line = line.replace(&format!(", {constructor}"), "");
+            }
+            changed = true;
+            index = start + 1;
+        }
+    }
+    changed
 }
 
 /// A renamed body argument shares a wire key with a query parameter. Fern uses

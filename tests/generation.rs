@@ -16173,3 +16173,178 @@ fn examples_docs_cases_render_to_their_certified_trees() {
         );
     }
 }
+
+#[test]
+fn nested_discriminator_departure_keeps_every_other_byte() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-measurements/examples/nested-discriminator-wire");
+    let reference = fern_tree(&fixture.join("fern-expected"));
+    let files: HashMap<String, String> = render_files(GenerateArgs {
+        spec: fixture.join("openapi.yml"),
+        output: PathBuf::from("unused"),
+        package_name: Some("fern".into()),
+        project_name: Some("default_package_name".into()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        fern_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+        layout: crozier::settings::Layout::Packaged,
+    })
+    .unwrap()
+    .into_iter()
+    .map(|file| (file.path.to_string_lossy().into_owned(), file.contents))
+    .collect();
+    let context = crozier::departures::Context::from_sources(
+        reference
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        files
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+    )
+    .with_source_document(crozier::openapi::load(&fixture.join("openapi.yml")).unwrap());
+    let mut generated: Vec<_> = files.keys().collect();
+    generated.sort();
+    assert_eq!(
+        generated,
+        reference.iter().map(|(rel, _)| rel).collect::<Vec<_>>()
+    );
+    for (rel, fern) in &reference {
+        let compared = crozier::parity::compare_file(&context, rel, &files[rel], fern).unwrap();
+        assert!(
+            compared.matches(),
+            "{rel}: {}",
+            compared.diff().unwrap_or_default()
+        );
+    }
+    // Comparing malformed source text is a residual, never an indexing panic.
+    let rel = "src/fern/types/pastry.py";
+    let decorator = files[rel].find("@pydantic.model_validator").unwrap();
+    let malformed = format!(
+        "class Pastry_Tart(UniversalBaseModel):\n{}",
+        &files[rel][decorator..]
+    );
+    let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+    assert!(
+        !crozier::parity::compare_file(&context, rel, &malformed, &fern.1)
+            .unwrap()
+            .matches()
+    );
+    let without_yields = files[rel]
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("yield"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(
+        !crozier::parity::compare_file(&context, rel, &without_yields, &fern.1)
+            .unwrap()
+            .matches(),
+        "nested departure hid a truncated adapter without yield statements",
+    );
+    for (rel, from, to) in [
+        (
+            "src/fern/types/pastry.py",
+            "data.pop(\"value\", {})",
+            "data.pop(\"wrong\", {})",
+        ),
+        (
+            "src/fern/types/pastry.py",
+            "value: TartOrder",
+            "payload: TartOrder",
+        ),
+        ("README.md", "fruit=\"fruit\"", "filling=\"fruit\""),
+        ("reference.md", "fruit=\"fruit\"", "fruit=\"wrong\""),
+        ("README.md", "from fern import ", "from wrong_fern import "),
+    ] {
+        let changed = files[rel].replace(from, to);
+        assert_ne!(changed, files[rel]);
+        let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+        assert!(
+            !crozier::parity::compare_file(&context, rel, &changed, &fern.1)
+                .unwrap()
+                .matches(),
+            "departure hid {from} -> {to}"
+        );
+    }
+    // A recognizer needs the document's exact nested mapping. Comparing the
+    // same generated/reference trees without that evidence must leave residuals.
+    let without_source = || {
+        crozier::departures::Context::from_sources(
+            reference
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            files
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        )
+    };
+    let source = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    let mut unnested = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    unnested
+        .components
+        .schemas
+        .get_mut("TartOrder")
+        .unwrap()
+        .discriminator = None;
+    let mut different_mapping = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    different_mapping
+        .components
+        .schemas
+        .get_mut("Pastry")
+        .unwrap()
+        .discriminator
+        .as_mut()
+        .unwrap()
+        .mapping
+        .insert("tart".into(), "#/components/schemas/Croissant".into());
+    for inapplicable in [
+        without_source(),
+        without_source().with_source_document(unnested),
+        without_source().with_source_document(different_mapping),
+    ] {
+        for rel in ["src/fern/types/pastry.py", "README.md", "reference.md"] {
+            let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+            assert!(
+                !crozier::parity::compare_file(&inapplicable, rel, &files[rel], &fern.1)
+                    .unwrap()
+                    .matches(),
+                "nested departure applied without its source mapping: {rel}",
+            );
+        }
+    }
+    let mut unsupported_field = source;
+    unsupported_field
+        .components
+        .schemas
+        .get_mut("FruitTart")
+        .unwrap()
+        .properties
+        .get_mut("fruit")
+        .unwrap()
+        .ty = Some(crozier::openapi::TypeField::Single("integer".into()));
+    let mut explicit_example = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    explicit_example
+        .components
+        .schemas
+        .get_mut("FruitTart")
+        .unwrap()
+        .properties
+        .get_mut("fruit")
+        .unwrap()
+        .example = Some(serde_json::json!("pear"));
+    for unsupported in [unsupported_field, explicit_example] {
+        let unsupported = without_source().with_source_document(unsupported);
+        for rel in ["README.md", "reference.md"] {
+            let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+            assert!(
+                !crozier::parity::compare_file(&unsupported, rel, &files[rel], &fern.1)
+                    .unwrap()
+                    .matches(),
+                "nested departure hid an unsupported example field: {rel}",
+            );
+        }
+    }
+}

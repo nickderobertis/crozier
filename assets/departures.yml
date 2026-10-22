@@ -318,6 +318,25 @@
     example bind without changing valid generated SDK behavior.
   evidence: docs/departures/evidence/multipart-object-required-file-example.md
 
+- id: nested-discriminator-flat-wire
+  kind: fern-defect
+  trigger: >-
+    A discriminated union mapping to another discriminated union, whose public
+    variant holds the inner union in value.
+  fern: >-
+    Serializes a kind/value envelope that fails the source schema, rejects the
+    schema-valid flat provider payload for missing value, and writes an empty
+    argument in the README and reference examples.
+  crozier: >-
+    Retains Fern's public classes, fields and value constructors, flattens the
+    wire payload and parses flat responses under Pydantic v1 and v2. Worked
+    examples construct the inner variant through value.
+  reason: >-
+    The certified SDK cannot exchange the payload its own OpenAPI document
+    declares. Runtime schema validation demonstrates the serialization failure
+    and the rejection of a valid provider response in both Pydantic majors.
+  evidence: docs/departures/evidence/nested-discriminator-flat-wire.md
+
 - id: nullable-items-docs
   kind: fern-defect
   trigger: >-

@@ -80,6 +80,7 @@ members = [
     "tests/corpus_match_selection",
     "tests/live_e2e",
     "tests/runtime",
+    "tests/nested-discriminator/runtime",
 ]
 
 # The tooling's quality toolchain, resolved once in uv.lock. ruff follows

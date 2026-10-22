@@ -150,7 +150,7 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
             // The combined Python coverage floor holds on the Linux and macOS
             // legs only: the suites skip their POSIX-only cases on Windows.
             "--exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}",
-            "--projects=sdk-env,runtime",
+            "--projects=sdk-env,runtime,nested-discriminator-runtime",
             "--projects=live-e2e,corpus-match,corpus-match-selection,census-fallback"
         ]
     );

@@ -1,7 +1,7 @@
 # The root is both the `crozier` package and the Cargo workspace, not a virtual
 # manifest; src/AGENTS.md says why.
 [workspace]
-members = [".", "crates/crozier-e2e", "pool-maintenance", "tools/ci", "tools/ci-journeys", "tools/github-action"]
+members = [".", "tests/nested-discriminator/golden", "crates/crozier-e2e", "pool-maintenance", "tools/ci", "tools/ci-journeys", "tools/github-action"]
 resolver = "2"
 
 [workspace.package]
@@ -24,7 +24,7 @@ tempfile = "3"
 name = "crozier"
 # Literal, not inherited: release-plz is the only version driver and bumps this
 # line; no other member is ever released.
-version = "0.0.125"
+version = "0.0.126"
 edition.workspace = true
 description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license.workspace = true
