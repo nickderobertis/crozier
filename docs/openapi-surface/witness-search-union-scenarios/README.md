@@ -133,7 +133,7 @@ that move beside the two arms the shape reached before.
 | `additional-properties-schema` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |
 | `discriminator-mapping` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
 | `discriminator-mapping` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
-| `discriminator-mapping` | `search-incomplete` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
+| `discriminator-mapping` | `search-incomplete` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
 | `oneof-sole-non-null-member` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | `nullable-single-inline-object-oneof-component` | none-registrable |
 | `oneof-discriminated-union` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | `oneof-sibling-properties-base-class` | none-registrable |
 | `items-oneof-element` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]` | `titled-inline-object-array-item-union-members-any` | none-registrable |

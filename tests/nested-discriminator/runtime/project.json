@@ -1,0 +1,103 @@
+{
+  "name": "nested-discriminator-runtime",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/nested-discriminator/runtime/run.py"
+      },
+      "inputs": [
+        "crateSource",
+        "generator",
+        "{projectRoot}/run.py",
+        "{projectRoot}/wire.py",
+        "{workspaceRoot}/docs/fern-measurements/examples/nested-discriminator-wire/openapi.yml"
+      ],
+      "cache": false,
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tests/nested-discriminator/runtime"
+      },
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ],
+      "cache": true,
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tests/nested-discriminator/runtime"
+        }
+      }
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tests/nested-discriminator/runtime"
+      },
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ],
+      "cache": true
+    },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/nested-discriminator/runtime"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs nested-discriminator-runtime"
+      },
+      "inputs": [
+        "boundaries"
+      ],
+      "cache": true
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tests/nested-discriminator/runtime"
+      },
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ],
+      "cache": true
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-certified-pair",
+        "lint-ruff",
+        "lint-boundaries"
+      ]
+    }
+  }
+}

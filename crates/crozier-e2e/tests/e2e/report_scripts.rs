@@ -236,7 +236,9 @@ fn the_ledger_is_recorded_then_merged_and_its_rows_reported() {
     let calls: Vec<_> = run.calls.lines().collect();
     assert_eq!(calls.len(), 2, "{}", run.calls);
     assert!(
-        calls[0].starts_with("nextest run --locked -p crozier-e2e --no-fail-fast"),
+        calls[0].starts_with(
+            "nextest run --locked -p crozier-e2e -p crozier-nested-discriminator-tests --no-fail-fast",
+        ),
         "{}",
         calls[0]
     );

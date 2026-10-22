@@ -67,7 +67,7 @@ archive and the pools as they stood.
 | `schema-example-empty-object` | `schema.example:empty-object` | a declarer of the selector (a Schema Object whose selected example is `{}`) on which the instrumented crozier `just handwritten-reach` builds, run over that document alone, executes `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` |
 | `schema-example-object-on-map` | `schema.example:object-on-map` | a declarer of the selector (a Schema Object writing `additionalProperties`, with no non-empty `properties`, whose selected example is an object) on which that instrumented run executes `src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]` |
 | `schema-example-outside-enum` | `schema.example:outside-enum` | a declarer of the selector (a Schema Object with a string-valued `enum` whose selected example is a string none of its members is) on which that instrumented run executes `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` |
-| `discriminator-mapping` | `schema.discriminator.mapping` | a declarer of the selector on which that instrumented run executes `src/ir.rs::Builder::discriminated_union[if union_target \{]` or `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` |
+| `discriminator-mapping` | `schema.discriminator.mapping` | a declarer of the selector on which that instrumented run executes `src/ir.rs::Builder::discriminated_union[if union_target \{]` or `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
 | `oneof-string-const-variant` | `schema.oneOf>schema.const:string-valued` | a declarer of the selector on which that instrumented run executes `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` |
 
 ### Declarers and screening
@@ -185,7 +185,7 @@ The removed arm covers were identified with
 Excluding renamed sites, four covers were removed: `discriminator-mapping`'s
 `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]`,
 `src/ir.rs::Builder::discriminated_union[if union_target \{]`,
-`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]`,
+`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
 and `oneof-string-const-variant`'s
 `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]`.
 The first already has registered golden reach; the other three remain in this

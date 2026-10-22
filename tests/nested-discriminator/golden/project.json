@@ -1,0 +1,98 @@
+{
+  "name": "nested-discriminator-golden",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:e2e",
+    "cost:expensive",
+    "lang:rust"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-nested-discriminator-tests"
+      },
+      "inputs": [
+        "crateSource",
+        "generator",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/journey.rs",
+        "{workspaceRoot}/tests/support/departures_ledger.rs",
+        "{workspaceRoot}/tests/fixtures/compared-goldens.json",
+        "{workspaceRoot}/tests/fixtures/departures-ledger.tsv",
+        "{workspaceRoot}/docs/fern-measurements/examples/nested-discriminator-wire/openapi.yml",
+        "{workspaceRoot}/docs/fern-measurements/examples/nested-discriminator-wire/fern-expected/**/*"
+      ],
+      "cache": true,
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-nested-discriminator-tests -- --check"
+      },
+      "inputs": [
+        "{projectRoot}/journey.rs"
+      ],
+      "cache": true,
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-nested-discriminator-tests"
+        }
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-nested-discriminator-tests --all-targets --all-features --locked -- -D warnings"
+      },
+      "inputs": [
+        "crateSource",
+        "generator",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/journey.rs",
+        "{workspaceRoot}/tests/support/departures_ledger.rs",
+        "{workspaceRoot}/tests/fixtures/compared-goldens.json",
+        "{workspaceRoot}/tests/fixtures/departures-ledger.tsv",
+        "boundaries",
+        "{workspaceRoot}/docs/fern-measurements/examples/nested-discriminator-wire/openapi.yml",
+        "{workspaceRoot}/docs/fern-measurements/examples/nested-discriminator-wire/fern-expected/**/*"
+      ],
+      "cache": true,
+      "dependsOn": [
+        "lint-certified-pair",
+        "lint-boundaries"
+      ]
+    },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/nested-discriminator/golden"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs nested-discriminator-golden"
+      },
+      "inputs": [
+        "boundaries"
+      ],
+      "cache": true
+    }
+  }
+}

@@ -1,8 +1,9 @@
 # Nested discriminator wire defect
 
-Pending repair; this is not an admitted hand-written cover or a byte-match proof.
-The manager separated its repair from the feature-proof work after the runtime
-measurement below. Both nested mapping arms remain unproven.
+This is the retained Fern runtime measurement for the nested-discriminator
+flat-wire departure.
+Crozier's runtime and golden journeys now exercise both mapping arms while
+preserving the public wrapper constructors.
 
 `openapi.yml` was authored from scratch. `fern-expected/` is the complete freshly
 generated, comment-stripped output of Fern CLI 5.163.1 and Python SDK 5.41.3,
@@ -15,16 +16,15 @@ The reproduction reads the canonical `openapi.yml` directly.
 payload validates against the source schema. Constructing the corresponding
 SDK variant emits an extra `value` envelope that fails that schema, while the
 SDK rejects the valid provider payload for missing `value`. Its README's
-`tart=,` example also fails Python compilation. Crozier currently shares the
-wire defect; its matching model files do not prove correct behavior.
+`tart=,` example also fails Python compilation. Crozier corrects the wire defect through the documented departure; byte-matched
+public model declarations alone would not prove correct behavior.
 
 To reproduce, change into this directory, install `./fern-expected`,
 `jsonschema==4.26.0` and `PyYAML==6.0.3` in a disposable Python environment with
 Pydantic 2.14.1, then run the command below there. It validates the positive
-control and requires all three failures. The repair must keep Fern's public
-variant classes and `.value` constructors while flattening the wire
-representation in both directions, for Pydantic v1 and v2, and repair the
-README example. No departure or coverage claim is made before that repair.
+control and requires all three failures. The repair keeps Fern's public variant classes and `.value` constructors while
+flattening the wire representation in both directions under Pydantic v1 and v2;
+the generated README constructs the inner variant using `value=`.
 
 ```sh
 python - <<'PY'
