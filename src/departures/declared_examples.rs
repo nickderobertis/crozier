@@ -5,8 +5,48 @@ use crate::openapi::example_validation::matches;
 use crate::openapi::{OpenApi, Schema};
 use serde_json::Value;
 
+#[derive(Clone, PartialEq, Eq)]
+struct PythonIdentifier(String);
+
+impl PythonIdentifier {
+    fn parse(value: &str) -> Option<Self> {
+        (super::python_identifier(value) && !crate::naming::is_python_keyword(value))
+            .then(|| Self(value.into()))
+    }
+
+    fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(PartialEq, Eq)]
+struct PythonModule(String);
+
+impl PythonModule {
+    fn parse(value: &str) -> Option<Self> {
+        let path = value.trim_start_matches('.');
+        let valid = if path.is_empty() {
+            !value.is_empty()
+        } else {
+            path.split('.')
+                .all(|part| PythonIdentifier::parse(part).is_some())
+        };
+        valid.then(|| Self(value.into()))
+    }
+
+    fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Clone, Copy)]
+enum ExampleSelection {
+    Fallback,
+    Declared,
+}
+
 struct Substitution {
-    keyword: String,
+    keyword: PythonIdentifier,
     values: crate::emit::DeclaredExampleSubstitution,
 }
 
@@ -91,10 +131,11 @@ fn substitutions(source: &OpenApi, rendering: DeclaredExampleMode) -> Vec<Substi
                     crate::emit::declared_example_substitution(&ir, &type_ref, example, rendering)
                         .filter(|values| values.fallback != values.declared)
                 {
-                    out.push(Substitution {
-                        keyword: crate::naming::model_field_name(wire),
-                        values,
-                    });
+                    if let Some(keyword) =
+                        PythonIdentifier::parse(&crate::naming::model_field_name(wire))
+                    {
+                        out.push(Substitution { keyword, values });
+                    }
                 }
             }
         });
@@ -161,8 +202,8 @@ fn expression(text: &str) -> String {
 struct Import {
     end: usize,
     prefix: String,
-    module: String,
-    names: Vec<String>,
+    module: PythonModule,
+    names: Vec<PythonIdentifier>,
 }
 
 fn import(lines: &[&str], start: usize) -> Option<Import> {
@@ -183,60 +224,70 @@ fn import(lines: &[&str], start: usize) -> Option<Import> {
         .split(',')
         .map(str::trim)
         .filter(|name| !name.is_empty())
-        .map(str::to_string)
-        .collect::<Vec<_>>();
-    if names.iter().any(|name| !super::python_identifier(name)) {
+        .map(PythonIdentifier::parse)
+        .collect::<Option<Vec<_>>>()?;
+    if names.is_empty() {
         return None;
     }
     Some(Import {
         end,
         prefix: line[..line.len() - trimmed.len()].into(),
-        module: module.into(),
+        module: PythonModule::parse(module)?,
         names,
     })
 }
 
-fn import_module(lines: &[&str], names: &std::collections::BTreeSet<String>) -> Option<String> {
+fn import_module(
+    lines: &[&str],
+    names: &std::collections::BTreeSet<String>,
+) -> Option<PythonModule> {
     if names.is_empty() {
         return None;
     }
     (0..lines.len())
         .filter_map(|index| import(lines, index))
-        .find(|item| names.iter().all(|name| item.names.contains(name)))
+        .find(|item| {
+            names
+                .iter()
+                .all(|name| item.names.iter().any(|item| item.as_str() == name))
+        })
         .map(|item| item.module)
 }
 
 fn normalize_block(
     lines: &[&str],
     substitution: &Substitution,
-    corrected: bool,
-    module: &str,
+    selection: ExampleSelection,
+    module: &PythonModule,
 ) -> Option<Vec<String>> {
     let values = &substitution.values;
-    let (value, imports) = if corrected {
-        (&values.declared, &values.declared_imports)
-    } else {
-        (&values.fallback, &values.fallback_imports)
+    let (value, imports) = match selection {
+        ExampleSelection::Declared => (&values.declared, &values.declared_imports),
+        ExampleSelection::Fallback => (&values.fallback, &values.fallback_imports),
     };
-    let wanted = expression(&format!("{}={value}", substitution.keyword));
+    let wanted = expression(&format!("{}={value}", substitution.keyword.as_str()));
     let mut out = Vec::new();
     let mut index = 0;
     let mut found = false;
     let mut found_import = imports.is_empty();
     while index < lines.len() {
-        if let Some(item) = import(lines, index).filter(|item| item.module == module) {
-            if !imports.iter().all(|name| item.names.contains(name)) {
+        if let Some(item) = import(lines, index).filter(|item| item.module == *module) {
+            if !imports
+                .iter()
+                .all(|name| item.names.iter().any(|item| item.as_str() == name))
+            {
                 return None;
             }
             let kept = item
                 .names
                 .iter()
-                .filter(|name| !imports.contains(*name))
-                .cloned()
+                .filter(|name| !imports.contains(name.as_str()))
+                .map(PythonIdentifier::as_str)
                 .collect::<Vec<_>>();
             out.push(format!(
-                "{}from {module} import {}",
+                "{}from {} import {}",
                 item.prefix,
+                module.as_str(),
                 kept.join(", ")
             ));
             found_import = true;
@@ -245,7 +296,7 @@ fn normalize_block(
         }
         if lines[index]
             .trim_start()
-            .starts_with(&format!("{}=", substitution.keyword))
+            .starts_with(&format!("{}=", substitution.keyword.as_str()))
         {
             if found {
                 return None;
@@ -258,7 +309,7 @@ fn normalize_block(
             out.push(format!(
                 "{}{}=<declared-example>",
                 " ".repeat(indent),
-                substitution.keyword
+                substitution.keyword.as_str()
             ));
             found = true;
             index = end;
@@ -304,8 +355,8 @@ pub(super) fn region(pair: &super::Pair<'_>) -> Result<Option<super::Region>, St
                 continue;
             };
             if let (Some(reference), Some(corrected)) = (
-                normalize_block(a, candidate, false, &module),
-                normalize_block(b, candidate, true, &module),
+                normalize_block(a, candidate, ExampleSelection::Fallback, &module),
+                normalize_block(b, candidate, ExampleSelection::Declared, &module),
             ) {
                 if reference == corrected {
                     return Ok(Some(super::Region { fern, crozier }));
@@ -459,6 +510,27 @@ mod tests {
                 context: &context,
             };
             assert_eq!(region(&pair).unwrap().is_some(), text == crozier);
+        }
+        for (module, root) in [
+            ("invalid-module", "Root"),
+            ("api..types", "Root"),
+            ("api", "for"),
+        ] {
+            let imported = format!("from {module} import {root}");
+            let fern = fern.replace("from api import Root", &imported);
+            let crozier = crozier.replace("from api import Root", &imported);
+            let reference = fern.lines().collect::<Vec<_>>();
+            let generated = crozier.lines().collect::<Vec<_>>();
+            let pair = super::super::Pair {
+                rel: "src/api/client.py",
+                fern: &reference,
+                crozier: &generated,
+                context: &context,
+            };
+            assert!(
+                region(&pair).unwrap().is_none(),
+                "invalid import must not qualify: {imported}"
+            );
         }
     }
 }

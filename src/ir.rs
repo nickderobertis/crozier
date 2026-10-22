@@ -6676,7 +6676,10 @@ fn resolve_request_body(
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if target.properties.declared() || target.all_of.is_some() {
-            let component_examples = media_example(doc, media).is_none();
+            let component_examples = match media_example(doc, media) {
+                Some(_) => ComponentExamplePolicy::PropertyFallbacksOnly,
+                None => ComponentExamplePolicy::Include,
+            };
             return hoist_fields_with_component_examples(&class, types, component_examples).map(
                 |mut fields| {
                     for field in &mut fields {
@@ -9330,13 +9333,19 @@ fn single_with_override(
 /// [`BodyField`]s, deciding per field whether it serializes through the convert
 /// wrapper. Returns `None` if the object is not among the built types.
 fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
-    hoist_fields_with_component_examples(class, types, true)
+    hoist_fields_with_component_examples(class, types, ComponentExamplePolicy::Include)
+}
+
+#[derive(Clone, Copy)]
+enum ComponentExamplePolicy {
+    Include,
+    PropertyFallbacksOnly,
 }
 
 fn hoist_fields_with_component_examples(
     class: &str,
     types: &[TypeDecl],
-    component_examples: bool,
+    component_examples: ComponentExamplePolicy,
 ) -> Option<Vec<BodyField>> {
     // A body naming an alias of a model flattens the model it aliases: SFTPGo's
     // `AdminTOTPConfig` is `allOf: [$ref BaseTOTPConfig]` and nothing else, so it
@@ -9514,7 +9523,7 @@ fn append_request_fields(
     types: &[TypeDecl],
     seen: &mut std::collections::HashSet<String>,
     out: &mut Vec<BodyField>,
-    component_examples: bool,
+    component_examples: ComponentExamplePolicy,
 ) {
     if !seen.insert(obj.name.clone()) {
         return;
@@ -9538,7 +9547,10 @@ fn append_request_fields(
         collision_prefix: Some(naming::field_name(request_class)),
         inline_object: false,
         example: match (&f.example_source, component_examples) {
-            (FieldExampleSource::Object { property }, false) => property.clone(),
+            (
+                FieldExampleSource::Object { property },
+                ComponentExamplePolicy::PropertyFallbacksOnly,
+            ) => property.clone(),
             _ => f.example.clone(),
         },
         media_example: false,
