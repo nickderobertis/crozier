@@ -66,6 +66,23 @@ class ResidualAttributionTests(unittest.TestCase):
                 expected = "split" if matched and unmatched else "byte-matched" if matched else "open gap"
                 self.assertEqual(expected, verdict)
 
+    def test_supplemental_null_proof_closes_only_the_approved_feature(self) -> None:
+        commands = (
+            [sys.executable, str(SCRIPT), "--key", "schema-example-null"],
+            [sys.executable, str(SCRIPT), "--key", "schema-example-null", "--real-witnesses-only"],
+        )
+        closed, original = [
+            subprocess.run(command, cwd=REPO, capture_output=True, text=True, timeout=1800, encoding="utf-8")
+            for command in commands
+        ]
+        self.assertEqual(0, closed.returncode, closed.stderr)
+        self.assertEqual("", closed.stdout)
+        self.assertEqual(0, original.returncode, original.stderr)
+        measured = json.loads(original.stdout)
+        self.assertEqual("schema-example-null", measured["key"])
+        self.assertEqual([], measured["byte_matched"])
+        self.assertEqual([], measured["unmatched"])
+
 
 class AMissingWitnessSource(unittest.TestCase):
     def test_a_case_whose_witness_has_no_committed_source_names_the_fix(self) -> None:
@@ -80,7 +97,7 @@ class AMissingWitnessSource(unittest.TestCase):
         if shutil.which("ruff") is None:
             self.fail("no ruff on PATH; install it with `just bootstrap`")
         with self.assertRaises(SystemExit) as refused, contextlib.redirect_stdout(io.StringIO()):
-            module.main()
+            module.main([])
         self.assertIn("some-row's witness no-such-witness has no committed source", str(refused.exception))
         self.assertIn("`just lint-corpus-sources` names what is missing", str(refused.exception))
 

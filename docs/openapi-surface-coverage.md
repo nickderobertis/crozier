@@ -1645,7 +1645,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 44 rows are the 27 generator categories and the 17 scenarios later
+These 45 rows are the 27 generator categories and the 18 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -1664,6 +1664,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 
 | gap | shape | classification | closing node | committed proof | comparison test | defect ids |
 |---|---|---|---|---|---|---|
+| operation-id-digit-leading-method | Digit-leading method references | Fern defect | `prove-unproven-features` | tests/fixtures/onmyshelf-api/expected | `onmyshelf_api_matches_fern_output` | `digit-leading-method-reference-identifiers` |
 | same-type-anyof-alias-name | Named component union of members with the same primitive type | Fern behaviour | `fix-unions` | docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected | `handwritten_fixtures_match_fern_goldens` | — |
 | nested-discriminated-union-in-anyof | Discriminated union nested inside an ordinary union | Fern behaviour | `fix-unions` | tests/fixtures/oal-example/expected | `oal_example_matches_fern_output` | — |
 | discriminated-union-variant-classes | Tagged member wrappers and classes | Fern behaviour | `fix-unions` | tests/fixtures/qontract-api/expected | `qontract_api_matches_fern_output` | — |

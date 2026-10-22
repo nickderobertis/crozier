@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import importlib.util
 import io
+import json
 import re
 import sys
 import textwrap
@@ -415,13 +417,308 @@ def restate(root: Path) -> str:
     return text
 
 
+class SnapshotOrigin(StrEnum):
+    VENDORED = "vendored"
+    CORPUS = "corpus"
+
+
+class SnapshotSource(NamedTuple):
+    fixture: str
+    origin: SnapshotOrigin
+
+
+class SnapshotCell(NamedTuple):
+    selector: str
+    fixture: str
+    count: int
+
+
+def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
+    """Render census cells from one native JSON walk before writing anything."""
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(payload.get("sources"), list)
+        or not isinstance(payload.get("rows"), list)
+    ):
+        raise ValueError("snapshot needs native census JSON sources and rows")
+    sources: dict[str, SnapshotSource] = {}
+    for source in payload["sources"]:
+        if (
+            not isinstance(source, dict)
+            or not isinstance(source.get("fixture"), str)
+            or not isinstance(source.get("origin"), str)
+            or source["origin"] not in {"vendored", "corpus"}
+        ):
+            raise ValueError("invalid snapshot source")
+        parsed_source = SnapshotSource(source["fixture"], SnapshotOrigin(source["origin"]))
+        if parsed_source.fixture in sources:
+            raise ValueError("duplicate snapshot source")
+        sources[parsed_source.fixture] = parsed_source
+    measured: dict[str, dict[str, int]] = {}
+    for row in payload["rows"]:
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("selector"), str)
+            or not isinstance(row.get("fixture"), str)
+            or row["fixture"] not in sources
+            or type(row.get("count")) is not int
+            or row["count"] <= 0
+        ):
+            raise ValueError("invalid snapshot census row")
+        parsed_cell = SnapshotCell(row["selector"], row["fixture"], row["count"])
+        counts = measured.setdefault(parsed_cell.selector, {})
+        if parsed_cell.fixture in counts:
+            raise ValueError("duplicate snapshot census row")
+        counts[parsed_cell.fixture] = parsed_cell.count
+    if not sources or "openapi.paths" not in measured:
+        raise ValueError("snapshot has no registered sources or paths measurement")
+    prefixes = {
+        "OpenAPI Object": "openapi",
+        "Info Object": "info",
+        "Contact Object": "info.contact",
+        "License Object": "info.license",
+        "Server Object": "server",
+        "Server Variable Object": "server.variables",
+        "Path Item Object": "pathItem",
+        "Operation Object": "operation",
+        "Tag Object": "tag",
+        "External Documentation Object": "externalDocs",
+        "Components Object": "components",
+        "Reference Object": "reference",
+    }
+    special = {
+        "operation-id-digit-leading-method": "operation.operationId:digit-leading-method",
+        "pathitem-ref": "pathItem.$ref",
+        "relative-file-ref": "pathItem.$ref:relative-file",
+        "nonascii-info-title": "info.title:non-ascii",
+        "multi-tagged-operation": "operation.tags:multiple",
+        "templated-path-segment": "openapi.paths:templated-key",
+        "several-path-template-variables": "openapi.paths:several-template-expressions",
+        "path-leading-literal-segment": "openapi.paths:leading-literal-segment",
+        "path-template-before-literal-segment": "openapi.paths:template-before-literal-segment",
+        "path-all-segments-templated": "openapi.paths:all-segments-templated",
+    }
+    methods = [f"pathItem.{method}" for method in ("get", "put", "post", "delete", "options", "head", "patch", "trace")]
+    for key, field in (("missing-operation-id", "operation.operationId"), ("untagged-operation", "operation.tags")):
+        measured[key] = {
+            name: count
+            for name in sources
+            if (
+                count := sum(measured.get(method, {}).get(name, 0) for method in methods)
+                - measured.get(field, {}).get(name, 0)
+            )
+        }
+        special[key] = key
+    paths = set(measured["openapi.paths"])
+    webhooks = set(measured.get("openapi.webhooks", {}))
+    measured["paths-absent"] = dict.fromkeys(sources.keys() - paths, 1)
+    measured["webhooks-without-paths"] = dict.fromkeys(webhooks - paths, 1)
+    ignored: Counter[str] = Counter()
+    for selector in (
+        "operation.x-fern-ignore",
+        "operation.x-crozier-ignore",
+        "schema.x-fern-ignore",
+        "schema.x-crozier-ignore",
+    ):
+        ignored.update(measured.get(selector, {}))
+    measured["x-fern-or-crozier-ignore"] = dict(ignored)
+    extension_selectors = {
+        "json-schema-dialect": "openapi.jsonSchemaDialect",
+        "webhooks": "openapi.webhooks",
+        "info-summary": "info.summary",
+        "license-identifier": "info.license.identifier",
+        "reference-description": "reference.description",
+        "paths-absent": "paths-absent",
+        "webhooks-without-paths": "webhooks-without-paths",
+        "x-fern-or-crozier-ignore": "x-fern-or-crozier-ignore",
+    }
+    outputs = {}
+    tick = chr(96)
+    pair_pattern = tick + r"([^" + tick + r"]+)" + tick + r" \((\d+)\)"
+    for name in ("document-paths.md", "oas31-extensions.md"):
+        path = root / "docs/openapi-surface" / name
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        for index, line in enumerate(lines):
+            cells = line.replace("\\|", "\x00").split("|")
+            if len(cells) != 10 or cells[4].strip() != "golden":
+                continue
+            key, location, evidence = cells[1].strip().strip(tick), cells[3].strip(), cells[5]
+            selector = special.get(key) if name == "document-paths.md" else extension_selectors.get(key)
+            if (
+                selector is None
+                and name == "document-paths.md"
+                and key
+                not in {
+                    "non-identifier-operation-id",
+                    "duplicate-operation-id",
+                    "duplicate-normalized-paths",
+                    "server-description-multiword",
+                    "operation-id-digit-leading-method",
+                }
+            ):
+                obj, field = re.sub(r" \([^)]*\)$", "", location).split(".", 1)
+                selector = prefixes[obj] + "." + field
+            if selector is not None:
+                counts = measured.get(selector, {})
+                pairs = list(re.finditer(pair_pattern, evidence))
+                if pairs:
+                    selected = counts
+                    if key in {
+                        "templated-path-segment",
+                        "several-path-template-variables",
+                        "path-leading-literal-segment",
+                        "path-template-before-literal-segment",
+                        "path-all-segments-templated",
+                    }:
+                        selected = dict(
+                            sorted(counts.items(), key=lambda item: (-item[1], item[0]))[
+                                : 8 if key in {"templated-path-segment", "several-path-template-variables"} else 5
+                            ]
+                        )
+                    listing = ", ".join(f"{tick}{fixture}{tick} ({count})" for fixture, count in selected.items())
+                    evidence = evidence[: pairs[0].start()] + listing + evidence[pairs[-1].end() :]
+                elif key == "operation-id-digit-leading-method":
+                    listing = ", ".join(f"{tick}{fixture}{tick} ({count})" for fixture, count in counts.items())
+                    evidence = f" Snapshot census {tick}{selector}{tick}: {listing}. " + evidence.lstrip()
+                elif counts:
+                    raise ValueError(f"{key}: missing census list in snapshot template")
+                evidence = re.sub(
+                    r"\d+ declaration sites across \d+ registered golden sources",
+                    f"{sum(counts.values())} declaration sites across {len(counts)} registered golden sources",
+                    evidence,
+                )
+            if name == "oas31-extensions.md" and selector is not None:
+                evidence = re.sub(
+                    r"\d+ declarations across \d+ registered golden sources",
+                    f"{sum(counts.values())} declarations across {len(counts)} registered golden sources",
+                    evidence,
+                )
+                if key == "webhooks-without-paths":
+                    evidence = re.sub(
+                        r"The other \d+ webhook declarers also declare paths",
+                        f"The other {len(webhooks & paths)} webhook declarers also declare paths",
+                        evidence,
+                    )
+                if key == "x-fern-or-crozier-ignore":
+                    only_fern_operations = not any(
+                        measured.get(name)
+                        for name in ("operation.x-crozier-ignore", "schema.x-fern-ignore", "schema.x-crozier-ignore")
+                    )
+                    description = (
+                        f"All {sum(ignored.values())} declarations are on operations under the Fern spelling"
+                        if only_fern_operations
+                        else f"The {sum(ignored.values())} declarations combine the supported ignore extensions"
+                    )
+                    evidence = re.sub(
+                        r"(?:All \d+ declarations are on operations under the Fern spelling|The \d+ declarations combine the supported ignore extensions)",
+                        description,
+                        evidence,
+                    )
+                    other_count = sum(
+                        sum(measured.get(name, {}).values())
+                        for name in ("operation.x-crozier-ignore", "schema.x-fern-ignore", "schema.x-crozier-ignore")
+                    )
+                    other_description = (
+                        "The other three selectors have zero declarations in the registered-source walk"
+                        if not other_count
+                        else f"The other three selectors carry {other_count} declarations in the registered-source walk"
+                    )
+                    evidence = re.sub(
+                        r"The other three selectors (?:have zero|carry \d+) declarations in the registered-source walk",
+                        other_description,
+                        evidence,
+                    )
+            if name == "oas31-extensions.md" and key == "paths-absent":
+                evidence = re.sub(
+                    r"Of the \d+ registered golden sources, \d+ declare paths",
+                    f"Of the {len(sources)} registered golden sources, {len(measured['openapi.paths'])} declare paths",
+                    evidence,
+                )
+            if name == "oas31-extensions.md" and key == "paths-absent":
+                evidence = re.sub(
+                    r"and the (?:three|\d+) listed here omit it",
+                    f"and the {len(counts)} listed here omit it",
+                    evidence,
+                )
+            evidence = (
+                re.sub(
+                    r"\d+ declarations across \d+ registered sources",
+                    f"{sum(counts.values())} declarations across {len(counts)} registered sources",
+                    evidence,
+                )
+                if selector is not None
+                else evidence
+            )
+            if selector is not None:
+                evidence = re.sub(r"20\d\d-\d\d-\d\d census", "Snapshot census", evidence)
+            cells[5] = evidence
+            lines[index] = "|".join(cells).replace("\x00", "\\|")
+        text = "".join(lines)
+        if name == "document-paths.md":
+            digest = hashlib.sha256(
+                json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+            ).hexdigest()
+            original = sum(source.origin == SnapshotOrigin.VENDORED for source in sources.values())
+            pattern = (
+                r"\*\*Snapshot digest:\*\* "
+                + tick
+                + r"[0-9a-f]{64}"
+                + tick
+                + r", over \*\*\d+\*\* registered golden sources \(\d+ original fixtures, \d+ corpus sources\)"
+            )
+            replacement = f"**Snapshot digest:** {tick}{digest}{tick}, over **{len(sources)}** registered golden sources ({original} original fixtures, {len(sources) - original} corpus sources)"
+            text, count = re.subn(pattern, replacement, text)
+            if count != 1:
+                raise ValueError("snapshot template needs exactly one digest")
+        if name == "document-paths.md":
+            gaps = sum(
+                1
+                for line in lines
+                if len(cells := line.replace("\\|", "\x00").split("|")) == 10 and cells[4].strip() == "gap"
+            )
+            golden_rows = sum(
+                1
+                for line in lines
+                if len(cells := line.replace("\\|", "\x00").split("|")) == 10 and cells[4].strip() == "golden"
+            )
+            ledger_keys = len(
+                dict(
+                    re.findall(
+                        r"ledger " + tick + r"([^" + tick + r"]+)" + tick + r" — ([^;|*]+?)(?= \||;| \*\*)", text
+                    )
+                )
+            )
+            text = re.sub(
+                r"document-paths evidence: ok \(\d+ census rows, \d+ ledger keys, \d+ gap rows?\)",
+                f"document-paths evidence: ok ({golden_rows} census rows, {ledger_keys} ledger keys, {gaps} gap rows)",
+                text,
+                count=1,
+            )
+            text = re.sub(r", taken on \*\*20\d\d-\d\d-\d\d\*\*\.", ", reproduced from native census JSON.", text)
+            text = text.replace("is the result of the **2026-10-08** walk", "is the result of the native census walk")
+            text = text.replace("re-transcribed whole from that", "generated whole from that")
+        outputs[path] = text
+    return outputs
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO)
     parser.add_argument("--write", action="store_true", help="write the derived tables; otherwise check for drift")
+    parser.add_argument(
+        "--snapshot-json", type=Path, help="restate document snapshot from native surface-census --json output"
+    )
     args = parser.parse_args()
     path = args.repo_root / "docs/openapi-surface-coverage.md"
     try:
+        if args.snapshot_json is not None:
+            outputs = document_snapshot(args.repo_root, json.loads(args.snapshot_json.read_text(encoding="utf-8")))
+            for target, content in outputs.items():
+                if content != target.read_text(encoding="utf-8"):
+                    if not args.write:
+                        raise ValueError("document snapshot differs; rerun with --write")
+                    target.write_text(content, encoding="utf-8", newline="\n")
+            return 0
         result = restate(args.repo_root)
         if result != path.read_text(encoding="utf-8"):
             if not args.write:

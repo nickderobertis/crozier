@@ -13133,6 +13133,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         "path-all-segments-templated",
         "nonascii-info-title",
         "server-description-multiword",
+        "operation-id-digit-leading-method",
         "pathitem-ref",
         "relative-file-ref",
     }
@@ -13271,6 +13272,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             ("pathitem-ref", "pathItem.$ref"),
             ("relative-file-ref", "pathItem.$ref:relative-file"),
             ("nonascii-info-title", "info.title:non-ascii"),
+            ("operation-id-digit-leading-method", "operation.operationId:digit-leading-method"),
         ):
             with self.subTest(key=key):
                 transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
@@ -16034,18 +16036,18 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
 class ParityProofIndexTests(unittest.TestCase):
     """The public proof index names complete goldens and every catalogued defect once."""
 
-    def test_the_proof_index_matches_the_departure_catalog_and_real_gate_tests(self) -> None:
-        index = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+    def assert_index(self, index: str) -> None:
         section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(44, len(rows))
+        self.assertTrue(rows)
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
         indexed = [name.strip() for row in rows if row[6] != "—" for name in row[6].strip("`").split(",")]
         self.assertEqual(defects, set(indexed))
+        self.assertEqual(len(defects), len(indexed), "the canonical catalog fixes the defect count")
         self.assertEqual(len(indexed), len(set(indexed)), "a defect belongs to exactly one gap")
         test_sources = "\n".join(
             path.read_text(encoding="utf-8")
@@ -16055,14 +16057,28 @@ class ParityProofIndexTests(unittest.TestCase):
             ]
         )
         for row in rows:
-            with self.subTest(gap=row[0]):
-                for proof in row[4].split(";"):
-                    tree = REPO / proof.strip()
-                    self.assertTrue(tree.is_dir(), f"missing committed proof {proof}")
-                    self.assertTrue((tree / ".fern/metadata.json").is_file(), f"incomplete SDK proof {proof}")
-                for test in row[5].strip("`").split(";"):
-                    name = test.strip().rsplit("::", 1)[-1]
-                    self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
+            for proof in row[4].split(";"):
+                tree = REPO / proof.strip()
+                self.assertTrue(tree.is_dir(), f"missing committed proof {proof}")
+                self.assertTrue((tree / ".fern/metadata.json").is_file(), f"incomplete SDK proof {proof}")
+            for test in row[5].strip("`").split(";"):
+                name = test.strip().rsplit("::", 1)[-1]
+                self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
+
+    def test_the_proof_index_matches_the_departure_catalog_and_real_gate_tests(self) -> None:
+        self.assert_index((REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8"))
+
+    def test_missing_departure_and_unrecorded_shape_are_rejected(self) -> None:
+        index = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        with self.assertRaises(AssertionError):
+            self.assert_index(index.replace("digit-leading-method-reference-identifiers", ""))
+        with self.assertRaises(AssertionError):
+            self.assert_index(
+                index.replace(
+                    "tests/fixtures/onmyshelf-api/expected", "tests/fixtures/unrecorded-proof-source/expected"
+                )
+            )
+        self.assert_index(index)
 
 
 class ResidualWitnessKeyProducerTests(unittest.TestCase):
@@ -17491,6 +17507,273 @@ class CoverageRestatementTests(unittest.TestCase):
             text=True,
             check=False,
         )
+
+    def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
+        measured = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, measured.returncode, measured.stderr)
+        payload = json.loads(measured.stdout)
+        source = self.root / "native-census.json"
+        source.write_text(measured.stdout, encoding="utf-8")
+        original = self.index.read_bytes()
+        first = self.run_restater("--snapshot-json", str(source))
+        self.assertEqual(1, first.returncode)
+        self.assertIn("snapshot differs", first.stderr)
+        written = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        snapshot = self.root / "docs/openapi-surface/document-paths.md"
+        text = snapshot.read_text(encoding="utf-8")
+        digest = hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+        ).hexdigest()
+        self.assertIn(digest, text)
+        self.assertIn("over **1** registered golden sources", text)
+        self.assertIn("69 census rows, 7 ledger keys, 0 gap rows", text)
+        self.assertIn("reproduced from native census JSON", text)
+        self.assertIn("the native census walk", text.split("\n## Scope\n", 1)[0])
+        self.assertNotIn("taken on **", text.split("**Corpus rows 2800", 1)[0])
+        actual = DocumentPathsSnapshotTests.entries(text)
+        self.assertEqual([("onmyshelf-api", "1")], DocumentPathsSnapshotTests.PAIR.findall(actual["document-info"][4]))
+        self.assertEqual(
+            [("onmyshelf-api", "2")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["operation-id-digit-leading-method"][4]),
+        )
+        self.assertIn(chr(96) + "onmyshelf-api" + chr(96) + " (1)", text)
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(source)).returncode)
+        before = snapshot.read_bytes()
+        invalid = [
+            ({**payload, "sources": [{**payload["sources"][0], "origin": []}]}, "invalid snapshot source"),
+            ({**payload, "rows": [{**payload["rows"][0], "fixture": {}}]}, "invalid snapshot census row"),
+            ({"sources": [], "rows": []}, "no registered sources"),
+            ({}, "native census JSON"),
+            ({**payload, "sources": [*payload["sources"], payload["sources"][0]]}, "duplicate snapshot source"),
+            ({**payload, "rows": [*payload["rows"], payload["rows"][0]]}, "duplicate snapshot census row"),
+            (
+                {**payload, "rows": [{"selector": "openapi.paths", "fixture": "missing-source", "count": 1}]},
+                "invalid snapshot census row",
+            ),
+        ]
+        for broken, diagnostic in invalid:
+            with self.subTest(diagnostic=diagnostic):
+                source.write_text(json.dumps(broken), encoding="utf-8")
+                refused = self.run_restater("--snapshot-json", str(source), "--write")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(diagnostic, refused.stderr)
+                self.assertEqual(before, snapshot.read_bytes())
+        source.write_text(measured.stdout, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(source), "--write").returncode)
+        self.assertEqual(original, self.index.read_bytes())
+
+    def test_snapshot_ranks_truncates_and_counts_paths_absent(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        payload = json.loads(completed.stdout)
+        witnesses = {f"ranked-source-{number:02}": 20 - number // 2 for number in range(10)}
+        for fixture in [*witnesses, "without-paths"]:
+            payload["sources"].append({"fixture": fixture, "origin": "corpus", "path": f"sources/{fixture}.json"})
+        for fixture in witnesses:
+            payload["rows"].append({"fixture": fixture, "selector": "openapi.paths", "count": 1})
+        cases = {
+            "templated-path-segment": ("openapi.paths:templated-key", 8),
+            "several-path-template-variables": ("openapi.paths:several-template-expressions", 8),
+            "path-leading-literal-segment": ("openapi.paths:leading-literal-segment", 5),
+        }
+        replacements = {"pathItem.get": 5, "pathItem.put": 4, "operation.operationId": 2, "operation.tags": 3}
+        replaced = {
+            *replacements,
+            *(f"pathItem.{method}" for method in ("post", "delete", "options", "head", "patch", "trace")),
+        }
+        payload["rows"] = [row for row in payload["rows"] if row["selector"] not in replaced]
+        payload["rows"].extend(
+            {"fixture": "onmyshelf-api", "selector": selector, "count": count}
+            for selector, count in replacements.items()
+        )
+        payload["rows"].extend(
+            [
+                {"fixture": "onmyshelf-api", "selector": "operation.x-fern-ignore", "count": 3},
+                {"fixture": "ranked-source-00", "selector": "operation.x-crozier-ignore", "count": 2},
+                {"fixture": "ranked-source-00", "selector": "schema.x-fern-ignore", "count": 1},
+                {"fixture": "onmyshelf-api", "selector": "openapi.webhooks", "count": 1},
+                {"fixture": "without-paths", "selector": "openapi.webhooks", "count": 1},
+                {"fixture": "onmyshelf-api", "selector": "info.summary", "count": 1},
+            ]
+        )
+        for selector, _limit in cases.values():
+            payload["rows"] = [row for row in payload["rows"] if row["selector"] != selector]
+            payload["rows"].extend(
+                {"fixture": fixture, "selector": selector, "count": count} for fixture, count in witnesses.items()
+            )
+        source = self.root / "ranked-native-census.json"
+        source.write_text(json.dumps(payload), encoding="utf-8")
+        result = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        rows = DocumentPathsSnapshotTests.entries(
+            (self.root / "docs/openapi-surface/document-paths.md").read_text(encoding="utf-8")
+        )
+        for key, (_selector, limit) in cases.items():
+            with self.subTest(key=key):
+                listed = DocumentPathsSnapshotTests.PAIR.findall(rows[key][4])
+                self.assertEqual(
+                    sorted(witnesses.items(), key=lambda item: (-item[1], item[0]))[:limit],
+                    [(name, int(count)) for name, count in listed],
+                )
+                self.assertIn(
+                    f"{sum(witnesses.values())} declaration sites across 10 registered golden sources", rows[key][4]
+                )
+        self.assertEqual(
+            [("onmyshelf-api", "7")], DocumentPathsSnapshotTests.PAIR.findall(rows["missing-operation-id"][4])
+        )
+        self.assertEqual(
+            [("onmyshelf-api", "6")], DocumentPathsSnapshotTests.PAIR.findall(rows["untagged-operation"][4])
+        )
+        self.assertEqual([("onmyshelf-api", "5")], DocumentPathsSnapshotTests.PAIR.findall(rows["get-operation"][4]))
+        extensions = DocumentPathsSnapshotTests.entries(
+            (self.root / "docs/openapi-surface/oas31-extensions.md").read_text(encoding="utf-8")
+        )
+        cell = next(cells for key, cells in extensions.items() if key.strip(chr(96)) == "paths-absent")[4]
+        self.assertIn("Of the 12 registered golden sources, 11 declare paths", cell)
+        self.assertIn("1 declarations across 1 registered golden sources", cell)
+        self.assertEqual([("without-paths", "1")], DocumentPathsSnapshotTests.PAIR.findall(cell))
+        self.assertIn("and the 1 listed here omit it", cell)
+        normalized = {key.strip(chr(96)): cells for key, cells in extensions.items()}
+        self.assertEqual(
+            [("without-paths", "1")], DocumentPathsSnapshotTests.PAIR.findall(normalized["webhooks-without-paths"][4])
+        )
+        self.assertIn("The other 1 webhook declarers also declare paths", normalized["webhooks-without-paths"][4])
+        self.assertIn("1 declarations across 1 registered golden sources", normalized["info-summary"][4])
+        ignore = normalized["x-fern-or-crozier-ignore"][4]
+        self.assertEqual(
+            {"onmyshelf-api": 3, "ranked-source-00": 3},
+            {name: int(count) for name, count in DocumentPathsSnapshotTests.PAIR.findall(ignore)},
+        )
+        self.assertIn("6 declarations across 2 registered golden sources", ignore)
+        self.assertIn("The 6 declarations combine the supported ignore extensions", ignore)
+        self.assertIn("The other three selectors carry 3 declarations", ignore)
+        # A later walk updates a sentence that already contains a numeric count.
+        payload["sources"].append(
+            {"fixture": "another-without-paths", "origin": "corpus", "path": "sources/absent.json"}
+        )
+        source.write_text(json.dumps(payload), encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(source), "--write").returncode)
+        updated = (self.root / "docs/openapi-surface/oas31-extensions.md").read_text(encoding="utf-8")
+        self.assertIn("and the 2 listed here omit it", updated)
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(source)).returncode)
+
+    def test_snapshot_input_and_template_failures_preserve_files_and_recover(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        source = self.root / "native-census.json"
+        source.write_text(completed.stdout, encoding="utf-8")
+        paths = [self.root / "docs/openapi-surface" / name for name in ("document-paths.md", "oas31-extensions.md")]
+        pristine = {path: path.read_bytes() for path in paths}
+        for fault in (
+            "malformed-json",
+            "missing-input",
+            "missing-template",
+            "missing-second-template",
+            "missing-list",
+            "missing-digest",
+            "duplicate-digest",
+        ):
+            with self.subTest(fault=fault):
+                source.write_text(completed.stdout, encoding="utf-8")
+                for path, content in pristine.items():
+                    path.write_bytes(content)
+                expected = fault
+                if fault == "malformed-json":
+                    source.write_text("{", encoding="utf-8")
+                    expected = "Expecting property name"
+                elif fault == "missing-input":
+                    source.unlink()
+                    expected = "No such file"
+                elif fault.startswith("missing-") and fault.endswith("template"):
+                    paths[1 if fault == "missing-second-template" else 0].unlink()
+                    expected = "No such file"
+                elif fault == "missing-list":
+                    text = paths[0].read_text(encoding="utf-8")
+                    lines = text.splitlines(keepends=True)
+                    for number, line in enumerate(lines):
+                        if line.startswith("| document-info |"):
+                            cells = line.split("|")
+                            cells[5] = " absent census list "
+                            lines[number] = "|".join(cells)
+                    paths[0].write_text("".join(lines), encoding="utf-8")
+                    expected = "missing census list"
+                else:
+                    text = paths[0].read_text(encoding="utf-8")
+                    digest_line = next(line for line in text.splitlines() if line.startswith("**Snapshot digest:**"))
+                    paths[0].write_text(
+                        text.replace(digest_line, "")
+                        if fault == "missing-digest"
+                        else text + "\n" + digest_line + "\n",
+                        encoding="utf-8",
+                    )
+                    expected = "exactly one digest"
+                before = {path: path.read_bytes() if path.exists() else None for path in paths}
+                failed = self.run_restater("--snapshot-json", str(source), "--write")
+                self.assertEqual(1, failed.returncode, failed.stderr)
+                # Windows localizes OS errors; the filename is the portable boundary diagnostic.
+                if fault in {"missing-input", "missing-template", "missing-second-template"}:
+                    expected = (
+                        source.name
+                        if fault == "missing-input"
+                        else paths[1 if fault == "missing-second-template" else 0].name
+                    )
+                self.assertIn(expected, failed.stderr)
+                self.assertEqual(before, {path: path.read_bytes() if path.exists() else None for path in paths})
+                source.write_text(completed.stdout, encoding="utf-8")
+                for path, content in pristine.items():
+                    path.write_bytes(content)
+                recovered = self.run_restater("--snapshot-json", str(source), "--write")
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    @unittest.skipUnless(os.name == "posix" and os.geteuid() != 0, "file mode denial needs a non-root POSIX user")
+    def test_snapshot_write_denial_is_actionable_and_recovers(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        source = self.root / "native-census.json"
+        source.write_text(completed.stdout, encoding="utf-8")
+        target = self.root / "docs/openapi-surface/document-paths.md"
+        before = target.read_bytes()
+        target.chmod(0o444)
+        try:
+            denied = self.run_restater("--snapshot-json", str(source), "--write")
+            self.assertEqual(1, denied.returncode)
+            self.assertIn(target.name, denied.stderr)
+            self.assertIn("repair the named input", denied.stderr)
+            self.assertEqual(before, target.read_bytes())
+        finally:
+            target.chmod(0o644)
+        recovered = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertNotEqual(before, target.read_bytes())
 
     def test_the_committed_index_is_the_restater_output(self) -> None:
         result = self.run_restater()
