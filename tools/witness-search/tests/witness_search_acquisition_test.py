@@ -1406,8 +1406,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-        self.assertEqual(len(rows), 153)
-        self.assertEqual(len({row["key"] for row in rows}), 153)
+        self.assertEqual(len({row["key"] for row in rows}), len(rows))
+        # The single features, and apart from them every combination
+        # `combinations.md` selects, tracked whatever its category.
+        combinations = [row["key"] for row in rows if row["key"].startswith("combo-")]
+        self.assertEqual(len(rows) - len(combinations), 153)
+        selected = re.findall(
+            r"^\| `(combo-[a-z0-9-]+)` \|",
+            (REPO / "docs/openapi-surface/combinations.md").read_text(encoding="utf-8"),
+            re.M,
+        )
+        self.assertEqual(sorted(selected), combinations)
         self.assertNotIn("request-body-string-map", {row["key"] for row in rows})
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],
@@ -1421,6 +1430,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             "no FIXTURE gap rows": "",
             "has no selector": "| `shape-a` | x | x | `gap` | no selector | x | x | FIXTURE |\n",
             "duplicate gap key": valid + valid,
+            "combination combo-shape has no selector": valid
+            + "| `combo-shape` | x | x | `golden` | declared by two sources | x |  |  |\n",
             "handwritten shape-b has no selector in witness-search-keys.tsv": valid
             + "| `shape-b` | x | x | `handwritten` | handwritten: shape-b-fixture; search: exhausted"
             " ([record](schemas.md#witness-search-exhaustive)) |  |  |  |\n",

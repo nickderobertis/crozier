@@ -1,0 +1,113 @@
+openapi: 3.0.3
+info:
+  title: Shared names
+  version: "1"
+paths:
+  /items/{id}:
+    put:
+      operationId: putItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: verbose
+          in: query
+          schema:
+            type: boolean
+        - name: X-Mode
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+      responses:
+        "204":
+          description: done
+  /items/{id}/tags:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: postTag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/Base"
+                - type: object
+                  properties:
+                    label:
+                      type: string
+      responses:
+        "204":
+          description: done
+  /notes:
+    post:
+      operationId: postNote
+      parameters:
+        - name: Mode
+          in: header
+          schema:
+            type: string
+        - name: session
+          in: cookie
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                session:
+                  type: string
+      responses:
+        "204":
+          description: done
+  /modes:
+    post:
+      operationId: postMode
+      parameters:
+        - name: X-Mode
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                X-Mode:
+                  type: string
+      responses:
+        "204":
+          description: done
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Base:
+      type: object
+      properties:
+        id:
+          type: string
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        verbose:
+          type: boolean

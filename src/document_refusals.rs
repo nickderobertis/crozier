@@ -6,7 +6,8 @@
 use std::path::Path;
 
 use crate::openapi::{
-    HttpAuthScheme, OpenApi, ParameterLocation, SecurityScheme, SecuritySchemeType,
+    document_boolean, HttpAuthScheme, OpenApi, ParameterLocation, SecurityScheme,
+    SecuritySchemeType,
 };
 use crate::{Error, Result};
 
@@ -1279,7 +1280,7 @@ fn admits_null(schema: &serde_json::Value) -> bool {
         _ => false,
     };
     typed_null
-        || schema.get("nullable") == Some(&serde_json::Value::Bool(true))
+        || schema.get("nullable").and_then(document_boolean) == Some(true)
         || ["oneOf", "anyOf"].iter().any(|key| {
             schema
                 .get(key)
@@ -2745,7 +2746,7 @@ fn omittable_schema(root: &serde_json::Value, schema: Option<&serde_json::Value>
         }
         _ => false,
     };
-    schema.get("nullable").and_then(serde_json::Value::as_bool) == Some(true)
+    schema.get("nullable").and_then(document_boolean) == Some(true)
         || type_is("null")
         || type_is("array")
 }
@@ -2783,10 +2784,7 @@ fn check_example_query_parameters(
                     _ => continue,
                 };
                 let missing = parameters.iter().find(|(name, parameter)| {
-                    parameter
-                        .get("required")
-                        .and_then(serde_json::Value::as_bool)
-                        == Some(true)
+                    parameter.get("required").and_then(document_boolean) == Some(true)
                         && !omittable_schema(root, parameter_schema(parameter))
                         && given.get(*name).is_none_or(serde_json::Value::is_null)
                 });

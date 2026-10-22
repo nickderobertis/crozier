@@ -689,12 +689,12 @@ pub struct Operation {
     /// `x-crozier-ignore`: exclude this operation from generation (canonical
     /// spelling). Read via [`Operation::ignored`], which also honours the
     /// `x-fern-ignore` variant per the [dual-header policy](self#fern-compatible-extensions).
-    #[serde(rename = "x-crozier-ignore", default)]
+    #[serde(rename = "x-crozier-ignore", default, deserialize_with = "de_boolean")]
     ignore_crozier: Option<bool>,
     /// `x-fern-ignore`: the Fern spelling of the ignore flag, accepted so a
     /// Fern-annotated spec drops the same operations. Superseded by
     /// `x-crozier-ignore` when both appear (see [`Operation::ignored`]).
-    #[serde(rename = "x-fern-ignore", default)]
+    #[serde(rename = "x-fern-ignore", default, deserialize_with = "de_boolean")]
     ignore_fern: Option<bool>,
     /// `x-crozier-sdk-group-name`: the sub-client this operation belongs to,
     /// overriding the tag/`operationId` grouping (canonical spelling). One name, or
@@ -1276,11 +1276,11 @@ pub struct Parameter {
     #[serde(rename = "in", default)]
     pub location: Option<ParameterLocation>,
     /// Whether the parameter is required.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_boolean")]
     pub required: Option<bool>,
     /// Whether an array parameter is exploded into repeated values. Fern treats
     /// explicit `false` on a `form` query array as a comma-separated value.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_boolean")]
     pub explode: Option<bool>,
     /// OpenAPI parameter serialization style (`form`, `spaceDelimited`, …).
     /// Query parameters default to `form` when omitted.
@@ -1307,10 +1307,10 @@ pub struct Parameter {
     #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
     /// Whether this parameter leaves the generated SDK. (crozier spelling).
-    #[serde(rename = "x-crozier-ignore", default)]
+    #[serde(rename = "x-crozier-ignore", default, deserialize_with = "de_boolean")]
     pub ignore_crozier: Option<bool>,
     /// Whether this parameter leaves the generated SDK. (fern spelling).
-    #[serde(rename = "x-fern-ignore", default)]
+    #[serde(rename = "x-fern-ignore", default, deserialize_with = "de_boolean")]
     pub ignore_fern: Option<bool>,
     /// The SDK argument name; the wire name remains unchanged. (crozier spelling).
     #[serde(rename = "x-crozier-parameter-name", default)]
@@ -1405,7 +1405,7 @@ pub struct RequestBody {
     #[serde(skip)]
     pub component_ref: bool,
     /// Whether the body is required.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_boolean")]
     pub required: Option<bool>,
     /// A human description of the body. Its mere *presence* (even empty) changes
     /// Fern's output: an undocumented JSON body emits an explicit `content-type`
@@ -1618,7 +1618,7 @@ pub struct Schema {
     pub defs: IndexMap<String, Schema>,
     /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
     /// emits a list, so generation does not change collection type for this flag.
-    #[serde(rename = "uniqueItems", default)]
+    #[serde(rename = "uniqueItems", default, deserialize_with = "de_boolean")]
     pub unique_items: Option<bool>,
     /// Schema default.
     #[serde(default)]
@@ -1683,22 +1683,23 @@ pub struct Schema {
     pub pattern: Option<String>,
     /// Legacy Square beta marker. Its importer uses constrained placeholder
     /// values in worked request examples for these schemas.
-    #[serde(rename = "x-is-beta", default)]
+    #[serde(rename = "x-is-beta", default, deserialize_with = "de_boolean")]
     pub is_beta: Option<bool>,
     /// OpenAPI 3.0 nullability.
-    #[serde(default, deserialize_with = "de_nullable")]
+    #[serde(default, deserialize_with = "de_boolean")]
     pub nullable: Option<bool>,
     /// Nullability inherited from the reference target, distinct from ignored siblings.
     #[serde(skip)]
     pub(crate) reference_nullable: bool,
     /// `deprecated: true`. Fern's worked examples leave out an optional property
-    /// whose own schema is marked deprecated. Read leniently: any value but the
-    /// boolean `true` is no mark, so a document spelling it otherwise still loads.
+    /// whose own schema is marked deprecated. Read leniently: any value but one
+    /// the document boolean rule reads as `true` is no mark, so a document spelling it
+    /// otherwise still loads.
     #[serde(default, deserialize_with = "de_deprecated")]
     pub deprecated: bool,
     /// `readOnly`: a server-populated property. Fern renders it as an optional
     /// field even when listed in `required`.
-    #[serde(rename = "readOnly", default)]
+    #[serde(rename = "readOnly", default, deserialize_with = "de_boolean")]
     pub read_only: Option<bool>,
     /// A `oneOf`/`anyOf` discriminator: the property that selects the variant and
     /// (optionally) an explicit value → `$ref` mapping.
@@ -1708,11 +1709,11 @@ pub struct Schema {
     /// spelling). Read via [`Schema::ignored`] rather than directly — that accessor
     /// applies the precedence — which also honours the `x-fern-ignore` variant per
     /// the [dual-header policy](self#fern-compatible-extensions).
-    #[serde(rename = "x-crozier-ignore", default)]
+    #[serde(rename = "x-crozier-ignore", default, deserialize_with = "de_boolean")]
     pub ignore_crozier: Option<bool>,
     /// `x-fern-ignore`: the Fern spelling of the ignore flag on a schema. Superseded
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
-    #[serde(rename = "x-fern-ignore", default)]
+    #[serde(rename = "x-fern-ignore", default, deserialize_with = "de_boolean")]
     pub ignore_fern: Option<bool>,
     /// `x-crozier-type-name`: the SDK type name a component schema declares
     /// (canonical spelling). Read via [`Schema::declared_type_name`], which also
@@ -1769,12 +1770,20 @@ pub struct Schema {
     /// union at all (canonical spelling). Read via [`Schema::discriminated`],
     /// which also honours the `x-fern-discriminated` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
-    #[serde(rename = "x-crozier-discriminated", default)]
+    #[serde(
+        rename = "x-crozier-discriminated",
+        default,
+        deserialize_with = "de_boolean"
+    )]
     pub(crate) discriminated_crozier: Option<bool>,
     /// `x-fern-discriminated`: the Fern spelling of the discriminated flag.
     /// Superseded by `x-crozier-discriminated` when both appear (see
     /// [`Schema::discriminated`]).
-    #[serde(rename = "x-fern-discriminated", default)]
+    #[serde(
+        rename = "x-fern-discriminated",
+        default,
+        deserialize_with = "de_boolean"
+    )]
     pub(crate) discriminated_fern: Option<bool>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
@@ -2272,12 +2281,13 @@ where
     deserializer.deserialize_any(MethodName)
 }
 
-/// Deserialize a schema's `deprecated` mark: `true` only for the boolean `true`.
+/// Deserialize a schema's `deprecated` mark: `true` only for a value
+/// [`document_boolean`] reads as `true`.
 fn de_deprecated<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    Ok(serde_json::Value::deserialize(deserializer)? == serde_json::Value::Bool(true))
+    Ok(document_boolean(&serde_json::Value::deserialize(deserializer)?) == Some(true))
 }
 
 /// Deserialize the document's `servers`, tolerating an explicit `null`.
@@ -2417,20 +2427,145 @@ where
     })
 }
 
-/// Deserialize `nullable` as Fern reads it: a boolean, or a number by its
-/// truth (`nullable: 1` in a Mistral description's `APIError.code`, which Fern CLI
-/// 5.163.1 generates from), never a parse failure over the whole document.
-fn de_nullable<'de, D>(deserializer: D) -> std::result::Result<Option<bool>, D::Error>
+/// A boolean the document writes, as crozier reads it: `true`/`false`, or the
+/// integer `1`/`0` standing for one (`nullable: 1` in a Mistral description's
+/// `APIError.code`, which Fern CLI 5.163.1 generates from). Any other value is no
+/// boolean. Both the typed boundary ([`de_boolean`]) and the checks that read the
+/// source tree before it read a document boolean through this one rule.
+#[must_use]
+pub(crate) fn document_boolean(value: &serde_json::Value) -> Option<bool> {
+    match value {
+        serde_json::Value::Bool(flag) => Some(*flag),
+        serde_json::Value::Number(number) => match number.as_u64() {
+            Some(1) => Some(true),
+            Some(0) => Some(false),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Deserialize an optional document boolean by [`document_boolean`]'s rule. An
+/// explicit `null` reads as the absent key.
+fn de_boolean<'de, D>(deserializer: D) -> std::result::Result<Option<bool>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    match serde_json::Value::deserialize(deserializer)? {
-        serde_json::Value::Bool(value) => Ok(Some(value)),
-        serde_json::Value::Number(number) => Ok(Some(number.as_f64() != Some(0.0))),
-        serde_json::Value::Null => Ok(None),
-        other => Err(serde::de::Error::custom(format!(
-            "invalid nullable {other}: expected a boolean"
-        ))),
+    Ok(Option::<DocumentBoolean>::deserialize(deserializer)?.map(|flag| flag.0))
+}
+
+/// Deserialize a present document boolean by [`document_boolean`]'s rule.
+fn de_present_boolean<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(DocumentBoolean::deserialize(deserializer)?.0)
+}
+
+/// A document boolean at the typed boundary; see [`document_boolean`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct DocumentBoolean(bool);
+
+impl<'de> Deserialize<'de> for DocumentBoolean {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(DocumentBooleanVisitor)
+    }
+}
+
+struct DocumentBooleanVisitor;
+
+impl DocumentBooleanVisitor {
+    /// Whether `E` is the YAML reader's error, whose strict boolean read
+    /// ([`crate::yaml::from_str`]) has its own message and accepts the
+    /// spellings `True`/`FALSE` as well as quoted ones.
+    fn yaml<E>() -> bool {
+        std::any::type_name::<E>() == std::any::type_name::<serde_saphyr::Error>()
+    }
+
+    /// Refuse a value that is no boolean in the words the document's reader
+    /// refuses it with when it reads a plain boolean (held to that reader by
+    /// `a_refused_boolean_reads_as_the_readers_plain_boolean_refusal`).
+    fn refuse<E: serde::de::Error>(&self, unexpected: serde::de::Unexpected<'_>) -> E {
+        if Self::yaml::<E>() {
+            E::custom("invalid boolean (strict mode expects true/false)")
+        } else {
+            E::invalid_type(unexpected, self)
+        }
+    }
+
+    /// Refuse a sequence or mapping as the reader refuses one where it reads a
+    /// plain boolean: the YAML reader asks for a scalar.
+    fn refuse_collection<E: serde::de::Error>(&self, unexpected: serde::de::Unexpected<'_>) -> E {
+        if Self::yaml::<E>() {
+            E::custom("expected string scalar")
+        } else {
+            E::invalid_type(unexpected, self)
+        }
+    }
+
+    /// Read an integer by [`document_boolean`]'s rule, refusing it as
+    /// `unexpected` when the rule reads no boolean.
+    fn integer<E: serde::de::Error>(
+        &self,
+        value: impl Into<serde_json::Value>,
+        unexpected: serde::de::Unexpected<'_>,
+    ) -> std::result::Result<DocumentBoolean, E> {
+        document_boolean(&value.into())
+            .map(DocumentBoolean)
+            .ok_or_else(|| self.refuse(unexpected))
+    }
+}
+
+impl<'de> Visitor<'de> for DocumentBooleanVisitor {
+    type Value = DocumentBoolean;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a boolean")
+    }
+
+    fn visit_bool<E: serde::de::Error>(self, value: bool) -> std::result::Result<Self::Value, E> {
+        Ok(DocumentBoolean(value))
+    }
+
+    fn visit_u64<E: serde::de::Error>(self, value: u64) -> std::result::Result<Self::Value, E> {
+        self.integer(value, serde::de::Unexpected::Unsigned(value))
+    }
+
+    fn visit_i64<E: serde::de::Error>(self, value: i64) -> std::result::Result<Self::Value, E> {
+        self.integer(value, serde::de::Unexpected::Signed(value))
+    }
+
+    fn visit_f64<E: serde::de::Error>(self, value: f64) -> std::result::Result<Self::Value, E> {
+        Err(self.refuse(serde::de::Unexpected::Float(value)))
+    }
+
+    fn visit_str<E: serde::de::Error>(self, value: &str) -> std::result::Result<Self::Value, E> {
+        let text = value.trim();
+        if Self::yaml::<E>() && text.eq_ignore_ascii_case("true") {
+            Ok(DocumentBoolean(true))
+        } else if Self::yaml::<E>() && text.eq_ignore_ascii_case("false") {
+            Ok(DocumentBoolean(false))
+        } else {
+            Err(self.refuse(serde::de::Unexpected::Str(value)))
+        }
+    }
+
+    fn visit_unit<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+        Err(self.refuse(serde::de::Unexpected::Unit))
+    }
+
+    fn visit_seq<A: serde::de::SeqAccess<'de>>(
+        self,
+        _: A,
+    ) -> std::result::Result<Self::Value, A::Error> {
+        Err(self.refuse_collection(serde::de::Unexpected::Seq))
+    }
+
+    fn visit_map<A: MapAccess<'de>>(self, _: A) -> std::result::Result<Self::Value, A::Error> {
+        Err(self.refuse_collection(serde::de::Unexpected::Map))
     }
 }
 
@@ -2627,8 +2762,8 @@ impl TypeField {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum AdditionalProperties {
-    /// `true`/`false`.
-    Bool(bool),
+    /// `true`/`false`, or the integer `1`/`0` standing for one.
+    Bool(#[serde(deserialize_with = "de_present_boolean")] bool),
     /// A schema describing the map's values.
     Schema(Box<Schema>),
 }
@@ -4851,7 +4986,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_numeric_nullable_reads_by_its_truth_and_a_string_is_refused() {
+    fn a_one_or_zero_nullable_reads_as_a_boolean_and_any_other_value_is_refused() {
         let nullable = |value: &str| {
             crate::yaml::from_str::<Schema>(&format!("type: string\nnullable: {value}\n"))
                 .map(|schema| schema.nullable)
@@ -4860,8 +4995,136 @@ mod tests {
         assert_eq!(nullable("0"), Ok(Some(false)));
         assert_eq!(nullable("true"), Ok(Some(true)));
         assert_eq!(nullable("~"), Ok(None));
-        let error = nullable("'yes'").unwrap_err();
+        for other in ["'yes'", "2", "0.5"] {
+            let error = nullable(other).unwrap_err();
+            assert!(
+                error.contains("invalid boolean (strict mode expects true/false)"),
+                "{other}: {error}"
+            );
+        }
+        let error = serde_json::from_str::<Schema>(r#"{"type": "string", "nullable": "yes"}"#)
+            .unwrap_err()
+            .to_string();
         assert!(error.contains("expected a boolean"), "{error}");
+    }
+
+    /// `1`/`0` stand for `true`/`false` in a boolean field, in YAML and JSON
+    /// alike, and a field read as `Option<bool>` refuses any other non-boolean
+    /// in the reader's own words for a plain boolean.
+    #[test]
+    fn boolean_fields_read_one_and_zero_and_refuse_other_values() {
+        let yaml = |text: &str| crate::yaml::from_str::<Schema>(text);
+        let json = |text: &str| serde_json::from_str::<Schema>(text).map_err(|e| e.to_string());
+        for (one, zero) in [("1", "0"), ("true", "false")] {
+            let schema = yaml(&format!(
+                "type: object\nnullable: {one}\nreadOnly: {zero}\nuniqueItems: {one}\n\
+                 deprecated: {one}\nadditionalProperties: {zero}\nx-fern-ignore: {zero}\n"
+            ))
+            .unwrap();
+            assert_eq!(schema.nullable, Some(true));
+            assert_eq!(schema.read_only, Some(false));
+            assert_eq!(schema.unique_items, Some(true));
+            assert!(schema.deprecated);
+            assert_eq!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(false))
+            );
+            assert!(!schema.ignored());
+            let parameter = serde_json::from_str::<Parameter>(&format!(
+                r#"{{"name": "id", "in": "query", "required": {one}, "explode": {zero}}}"#
+            ))
+            .unwrap();
+            assert_eq!(
+                (parameter.required, parameter.explode),
+                (Some(true), Some(false))
+            );
+        }
+        assert_eq!(yaml("nullable: ~\n").unwrap().nullable, None);
+        assert_eq!(json(r#"{"readOnly": null}"#).unwrap().read_only, None);
+        for value in ["2", "-1", "1.0", "'1'", "yes"] {
+            let error = yaml(&format!("readOnly: {value}\n")).unwrap_err();
+            assert!(
+                error
+                    .contains("line 1 column 11: invalid boolean (strict mode expects true/false)"),
+                "{value}: {error}"
+            );
+        }
+        for (value, unexpected) in [
+            ("2", "integer `2`"),
+            ("-1", "integer `-1`"),
+            ("1.0", "floating point `1.0`"),
+            (r#""1""#, r#"string "1""#),
+            ("[1]", "sequence"),
+        ] {
+            let error = json(&format!(r#"{{"uniqueItems": {value}}}"#)).unwrap_err();
+            assert!(
+                error.starts_with(&format!("invalid type: {unexpected}, expected a boolean")),
+                "{value}: {error}"
+            );
+        }
+        let error = yaml("additionalProperties: 2\n").unwrap_err();
+        assert!(error.contains("did not match any variant"), "{error}");
+    }
+
+    /// The shared rule refuses a non-boolean in each reader's own words: the
+    /// same message, at the same place, as that reader's plain `bool` read of
+    /// the same text, so a change in either reader's wording fails here.
+    #[test]
+    fn a_refused_boolean_reads_as_the_readers_plain_boolean_refusal() {
+        #[derive(Deserialize)]
+        struct Plain {
+            flag: bool,
+        }
+        #[derive(Deserialize)]
+        struct Shared {
+            #[serde(deserialize_with = "de_present_boolean")]
+            flag: bool,
+        }
+        for value in ["2", "-1", "1.0", "'1'", "yes", "~", "[1]", "{a: 1}"] {
+            let text = format!("other: x\nflag: {value}\n");
+            assert_eq!(
+                crate::yaml::from_str::<Shared>(&text).map(|read| read.flag),
+                crate::yaml::from_str::<Plain>(&text).map(|read| read.flag),
+                "YAML {value}"
+            );
+        }
+        for value in ["2", "-1", "1.0", "\"1\"", "\"true\"", "null"] {
+            let text = format!("{{\"other\": \"x\",\n\"flag\": {value}}}");
+            assert_eq!(
+                serde_json::from_str::<Shared>(&text)
+                    .map(|read| read.flag)
+                    .map_err(|error| error.to_string()),
+                serde_json::from_str::<Plain>(&text)
+                    .map(|read| read.flag)
+                    .map_err(|error| error.to_string()),
+                "JSON {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_deprecated_mark_reads_one_and_takes_any_other_value_as_no_mark() {
+        let deprecated = |value: &str| {
+            crate::yaml::from_str::<Schema>(&format!("deprecated: {value}\n"))
+                .unwrap()
+                .deprecated
+        };
+        assert!(deprecated("1"));
+        assert!(deprecated("true"));
+        for other in ["0", "2", "'yes'", "[1]"] {
+            assert!(!deprecated(other), "{other}");
+        }
+    }
+
+    #[test]
+    fn a_source_tree_boolean_reads_by_the_same_rule() {
+        let read = |text: &str| document_boolean(&serde_json::from_str(text).unwrap());
+        assert_eq!(read("true"), Some(true));
+        assert_eq!(read("1"), Some(true));
+        assert_eq!(read("0"), Some(false));
+        for other in ["2", "-1", "1.0", "\"true\"", "null", "[]"] {
+            assert_eq!(read(other), None, "{other}");
+        }
     }
 
     /// `FERN_ERROR_NAMES` is the importer's spelling of the error names, kept

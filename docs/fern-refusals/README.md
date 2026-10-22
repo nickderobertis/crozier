@@ -262,9 +262,12 @@ refuses. Both keep Fern's logs under
   byte of the document (never below a million) and the alias/anchor ratio
   pre-scan is off, while an alias-expansion bomb is still refused
   (`src/yaml.rs`). A Mistral description Fern generates from writes
-  `nullable: 1`, which crozier now reads by its truth (`src/openapi.rs`), so
-  all 13 documents in `generated.tsv` generate in crozier's strict mode too;
-  `build` holds both halves.
+  `nullable: 1`, which crozier now reads as `true` by the rule it reads every
+  document boolean with (`document_boolean` in `src/openapi.rs`: `1`/`0` are
+  `true`/`false`, any other non-boolean is refused), so all 13 documents in
+  `generated.tsv` generate in crozier's strict mode too; `build` holds both
+  halves. That document's `crozier_exit` and `crozier_files` were retaken after
+  that rule: it generates 398 files in either mode.
 - **Reducing the representatives narrowed eight rules in five classes.** Where crozier
   refused a document with a class Fern did not report, a representative was
   reduced until Fern's own classes were gone. In 25 of those documents Fern's

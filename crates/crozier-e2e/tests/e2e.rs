@@ -68,6 +68,12 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// A boolean the document writes as `1` or `0`, in both formats and modes.
+#[path = "e2e/document_booleans.rs"]
+mod document_booleans;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
@@ -23999,6 +24005,68 @@ fn a_date_example_is_judged_by_its_own_yaml_style_through_aliases_and_merges() {
         write("plain-merge.yml", with_info(plain_defaults, merged)),
     ] {
         generates_identically_in_both_modes(&spec);
+    }
+}
+
+#[test]
+fn a_plain_copy_of_a_quoted_date_example_in_an_example_or_prose_exempts_nothing() {
+    // The quoted example's own text written plain in a sibling example, a plain
+    // description, or a block-scalar description: the quoted example is still
+    // refused with the bare probe's diagnostic, and written plain it generates.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-type-mismatch");
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+    let unquoted = "          example: 2006-01-02T15:04:05+00:00\n";
+    let operation = "      operationId: probe\n";
+    assert!(probe.contains(quoted) && probe.contains(operation));
+    let sibling =
+        format!("        seen:\n          type: string\n          format: date\n{unquoted}");
+    let placements = [
+        ("example", quoted, format!("{quoted}{sibling}")),
+        (
+            "description",
+            operation,
+            format!("{operation}      description: 2006-01-02T15:04:05+00:00\n"),
+        ),
+        (
+            "block-scalar",
+            operation,
+            format!("{operation}      description: |\n        2006-01-02T15:04:05+00:00\n"),
+        ),
+    ];
+    let dir = tempfile::tempdir().unwrap();
+    let write = |name: &str, text: &str| {
+        let path = dir.path().join(name);
+        std::fs::write(&path, text).unwrap();
+        path
+    };
+    // The diagnostic with the document's own path taken out.
+    let diagnostic = |spec: &Path, strict: bool| {
+        let run = refusal_run(&crozier, spec, strict).unwrap();
+        assert_eq!(run.code, Some(1), "{}: {}", spec.display(), run.stderr);
+        run.stderr.replace(&spec.display().to_string(), "<spec>")
+    };
+    let bare = write("bare.yml", &probe);
+    let element = "GET /probe response example \"2006-01-02T15:04:05+00:00\"";
+    for (name, anchor, placed) in placements {
+        let copied = probe.replacen(anchor, &placed, 1);
+        assert_ne!(copied, probe, "{name}");
+        let refused = write(&format!("{name}-quoted.yml"), &copied);
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &refused, strict).unwrap();
+            let failures = refused_failures("example-type-mismatch", &run, element, strict);
+            assert!(failures.is_empty(), "{name}: {}", failures.join("\n"));
+            assert_eq!(
+                diagnostic(&refused, strict),
+                diagnostic(&bare, strict),
+                "{name}"
+            );
+        }
+        let plain = copied.replacen(quoted, unquoted, 1);
+        assert_ne!(plain, copied, "{name}");
+        generates_identically_in_both_modes(&write(&format!("{name}-plain.yml"), &plain));
     }
 }
 

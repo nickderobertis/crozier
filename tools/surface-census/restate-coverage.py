@@ -145,6 +145,7 @@ def restate(root: Path) -> str:
         rows = parser.region_rows(region_text)
         if len(candidates) != len(rows):
             raise ValueError(f"{name}: malformed category row")
+        rows = [row for row in rows if not row[0].strip("`").startswith(parser.COMBINATION_PREFIX)]
         categories = Counter(row[3].strip("`") for row in rows)
         settlements: Counter[str] = Counter()
         for cells in rows:
@@ -545,6 +546,8 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
             if len(cells) != 10 or cells[4].strip() != "golden":
                 continue
             key, location, evidence = cells[1].strip().strip(tick), cells[3].strip(), cells[5]
+            if key.startswith("combo-"):
+                continue
             selector = special.get(key) if name == "document-paths.md" else extension_selectors.get(key)
             if (
                 selector is None
@@ -681,12 +684,16 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
             gaps = sum(
                 1
                 for line in lines
-                if len(cells := line.replace("\\|", "\x00").split("|")) == 10 and cells[4].strip() == "gap"
+                if len(cells := line.replace("\\|", "\x00").split("|")) == 10
+                and cells[4].strip() == "gap"
+                and not cells[1].strip(" `").startswith("combo-")
             )
             golden_rows = sum(
                 1
                 for line in lines
-                if len(cells := line.replace("\\|", "\x00").split("|")) == 10 and cells[4].strip() == "golden"
+                if len(cells := line.replace("\\|", "\x00").split("|")) == 10
+                and cells[4].strip() == "golden"
+                and not cells[1].strip(" `").startswith("combo-")
             )
             ledger_keys = len(
                 dict(
