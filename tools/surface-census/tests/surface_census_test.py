@@ -3507,6 +3507,7 @@ fn following() { let other = 42; }
             114: "one-hundred-and-fourteen",
             116: "one-hundred-and-sixteen",
             118: "one-hundred-and-eighteen",
+            122: "one-hundred-and-twenty-two",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -4013,6 +4014,10 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         # The feature combinations `combinations.md` selects, over the same sources.
         # These constants pin source_args()'s window; an empty entry is not a
         # claim about all registered sources. Positive counts are checked by
@@ -4855,6 +4860,10 @@ NEGATION_SELECTORS = frozenset(
         "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
     }
 )
 
@@ -7228,6 +7237,85 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF_STRUCTS]}},
             "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         },
+        # --- prop_type_ref, cases 19a to 19d: an operation-scoped map's structured value.
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued",
+            "slug": "ptr-19a",
+            "branch": "prop_type_ref case 19a",
+            "select": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"type": "string", "enum": ["alpha", "beta"]}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Target"}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "overlap": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"type": "string", "enum": ["alpha", "beta"]}}
+                    }
+                }
+            },
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty",
+            "slug": "ptr-19b",
+            "branch": "prop_type_ref case 19b",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": STRUCT}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Target"}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": STRUCT}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "ptr-19c",
+            "branch": "prop_type_ref case 19c",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ONE_OF}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": NULLABLE_ONE_OF}}},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ONE_OF}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "ptr-19d",
+            "branch": "prop_type_ref case 19d",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ANY_OF}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": {**TWO_ANY_OF, **TWO_ONE_OF}}}},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ANY_OF}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
         {
             "selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
             "slug": "ptr-14a",
@@ -9499,14 +9587,16 @@ class RankedBacklogTests(unittest.TestCase):
             r"fixture\.\*\*.*?each of the (\d+) is still one of the (\d+) \[unreached arms\].*?"
             r"The cited records of (\d+) read `exhausted`, (\d+) read `search-incomplete` "
             r"and (\d+) read `config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
+            r"\*\*(\d+) (?:is|are) decided output-insensitive\*\*.*?"
             r"\*\*(\d+) (?:is a named gap|are named gaps)\*\*.*?"
-            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes has a decided detector or a fully evaluated document population",
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes has a decided detector or a fully evaluated document population",
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
         assert arms_stated is not None
         reached = len(arms) - len(unreached)
         named = set(named_gap_arms(REPO)) & unreached
+        decided = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)[0] & unreached
         self.assertEqual(
             [
                 categories["golden"],
@@ -9519,10 +9609,12 @@ class RankedBacklogTests(unittest.TestCase):
                 verdict_counts[SEARCH_INCOMPLETE],
                 verdict_counts[CONFIG_GATED],
                 len(refused),
+                len(decided),
                 len(named),
                 reached,
                 len(covered),
                 len(refused),
+                len(decided),
                 len(named),
                 len(arms),
                 len(classes),
@@ -9531,7 +9623,9 @@ class RankedBacklogTests(unittest.TestCase):
         )
         self.assertEqual(len(ledger_rows), categories["golden"], "the reach ledger is not every golden row")
         self.assertEqual(
-            len(unreached), len(covered) + len(refused) + len(named), "an unreached arm is unaccounted for"
+            len(unreached),
+            len(covered) + len(refused) + len(decided) + len(named),
+            "an unreached arm is unaccounted for",
         )
         self.assertEqual(
             sorted({key for key, _arm in refused}),
@@ -18636,9 +18730,13 @@ class CoverageRestatementTests(unittest.TestCase):
 
     def test_changed_narrative_inputs_refuse_without_writing(self) -> None:
         original = self.index.read_text(encoding="utf-8")
+        # An exhausted ranked backlog narrates its emptiness instead of its share.
+        ranked = ("score zero", "have zero witnesses")
+        if "score zero" not in original:
+            ranked = ("no ranked witnesses remain", "nothing remains ranked")
         for before, after in [
             ("All ", "Every "),
-            ("score zero", "have zero witnesses"),
+            ranked,
             ("split four ways", "split ways"),
             ("carry byte-match evidence", "have matching evidence"),
             ("carry a committed Fern", "have a measurement"),
