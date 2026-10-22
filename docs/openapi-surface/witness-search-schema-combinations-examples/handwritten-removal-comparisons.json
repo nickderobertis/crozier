@@ -1,0 +1,80 @@
+[
+  {
+    "key": "combo-param-example-beside-ref-schema",
+    "fixture": "harbor-parcel-requests",
+    "source_before": "docs/openapi-surface/handwritten/harbor-parcel-requests/openapi.yml",
+    "source_after": "docs/openapi-surface/witness-search-schema-combinations-examples/removal-controls/combo-param-example-beside-ref-schema.yml",
+    "removed_example_fields": 1,
+    "crozier": {
+      "before_files": 39,
+      "after_files": 39,
+      "changed": {
+        "README.md": {
+          "before": "aeaae392204e7c9fad61c04b9a9c6d78dc8f92a20456d042db4d05a851201505",
+          "after": "9c9b8886ce120a00efacdc92e79c2ff70960ee2f4f4d3bf4a6a1a00697f35f8b"
+        },
+        "reference.md": {
+          "before": "eb1e7ee75941ec173ef831df153b73a69164341f1ba28dbc89c575e2ced1e38e",
+          "after": "487d11245974f413395f932be6fa5bc0e7cae4f520277183db8765cb7f517f63"
+        },
+        "src/fern/client.py": {
+          "before": "7f2ef4041234ea9c58e737cf6a4c9c5e361c96645d10629d43ecea54337de97e",
+          "after": "9bb6b1ecca0df11113075eac46deac09c510526f5cd04a0581cd5b3d328f0862"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 39,
+      "after_files": 39,
+      "changed": {}
+    },
+    "intentional_departure": "anyof-path-param-schema-example",
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-annotated-ref-property-example",
+    "fixture": "harbor-parcel-requests",
+    "source_before": "docs/openapi-surface/handwritten/harbor-parcel-requests/openapi.yml",
+    "source_after": "docs/openapi-surface/witness-search-schema-combinations-examples/removal-controls/combo-annotated-ref-property-example.yml",
+    "removed_example_fields": 1,
+    "crozier": {
+      "before_files": 39,
+      "after_files": 39,
+      "changed": {
+        "README.md": {
+          "before": "aeaae392204e7c9fad61c04b9a9c6d78dc8f92a20456d042db4d05a851201505",
+          "after": "7b182f0c0be2769573548d8e839fe075d427377a549ce4e92e253559a69e3931"
+        },
+        "reference.md": {
+          "before": "eb1e7ee75941ec173ef831df153b73a69164341f1ba28dbc89c575e2ced1e38e",
+          "after": "9c4ef3695b16c7341f7466ab10b1a7389e9ee3f3743aa01d4f71c72b04fbcaf8"
+        },
+        "src/fern/client.py": {
+          "before": "7f2ef4041234ea9c58e737cf6a4c9c5e361c96645d10629d43ecea54337de97e",
+          "after": "a39ec420d9080125a8af36c9f044d30c416d1d562f108c2e337c30111bfe7308"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 39,
+      "after_files": 39,
+      "changed": {}
+    },
+    "intentional_departure": "anyof-path-param-schema-example",
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  }
+]

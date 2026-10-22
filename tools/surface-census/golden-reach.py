@@ -1425,7 +1425,8 @@ def scoped_report(args: argparse.Namespace, reaches: list[Reach], commit: str, t
     regions = args.repo_root / "docs/openapi-surface"
     ledger = regions / "golden-reach.tsv"
     previous = read_ledger(ledger)
-    combined = {reach.key: reach for _rank, reach in previous}
+    current_golden = golden_rows(regions)
+    combined = {reach.key: reach for _rank, reach in previous if reach.key in current_golden}
     measured = []
     for reach in reaches:
         note = f"measured at commit {commit} over {tests} scoped golden test(s)"

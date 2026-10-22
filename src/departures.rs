@@ -19,6 +19,8 @@ use std::sync::OnceLock;
 
 use serde::Deserialize;
 
+mod declared_examples;
+
 /// The catalog's source, as compiled into the binary.
 pub const CATALOG_SOURCE: &str = include_str!("../assets/departures.yml");
 
@@ -1743,6 +1745,7 @@ pub fn rule(id: &str) -> Option<Rule> {
     let none = Rule::default();
     Some(match id {
         "anyof-path-param-schema-example" => Rule {
+            region: Some(declared_examples::region),
             line: Some(anyof_path_param_schema_example),
             ..none
         },
@@ -3561,8 +3564,10 @@ fn is_path(parameter: &crate::openapi::Parameter) -> bool {
 /// `anyof-path-param-schema-example`: in a worked example, Fern's
 /// `<name>="<name>"` placeholder for a path parameter whose schema is an
 /// `anyOf`/`oneOf` composition, against crozier's `<name>=<example>` — the
-/// string the composition's own schema-level `example` declares. Every other
-/// character of the line is the same.
+/// string the composition's own schema-level `example` declares. It also keeps
+/// a required referenced query parameter's own string example and a required
+/// annotated-reference property's string example. Every other character of the
+/// line is the same.
 fn anyof_path_param_schema_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !example_file(pair.rel) {
         return false;
@@ -3578,22 +3583,110 @@ fn anyof_path_param_schema_example(pair: &Pair<'_>, fern: &str, crozier: &str) -
     let Some(source) = pair.context.source_document.as_ref() else {
         return false;
     };
-    source_operations(source).any(|(_, parameters)| {
+    let parameter_example = source_operations(source).any(|(_, parameters)| {
         parameters.iter().any(|parameter| {
             let Some(schema) = parameter.schema.as_ref() else {
                 return false;
             };
-            is_path(parameter)
-                && argument_names(&parameter.name, name)
-                && fern_value == format!("{:?}", parameter.name)
+            let composed_path = is_path(parameter)
                 && schema.reference.is_none()
-                && (schema.any_of.is_some() || schema.one_of.is_some())
-                && declared_schema_example(schema)
+                && (schema.any_of.is_some() || schema.one_of.is_some());
+            let referenced_query = is_query(parameter)
+                && parameter.required == Some(true)
+                && schema.reference.is_some()
+                && schema
+                    .ty
+                    .as_ref()
+                    .and_then(crate::openapi::TypeField::primary)
+                    == Some("string");
+            argument_names(&parameter.name, name)
+                && fern_value == format!("{:?}", parameter.name)
+                && (composed_path || referenced_query)
+                && (if referenced_query {
+                    parameter.example.as_ref()
+                } else {
+                    declared_schema_example(schema)
+                })
+                .filter(|example| example.is_string())
+                .and_then(crate::ir::example_literal)
+                .is_some_and(|literal| literal == value)
+        })
+    });
+    if parameter_example {
+        return true;
+    }
+    annotated_reference_property_example(source, name, fern_value, value)
+}
+
+/// A locally referenced unconstrained string, the measured reference-example shape.
+fn plain_string_reference(source: &crate::openapi::OpenApi, reference: &str) -> bool {
+    reference
+        .strip_prefix("#/components/schemas/")
+        .and_then(|name| source.components.schemas.get(name))
+        .is_some_and(|target| {
+            target
+                .ty
+                .as_ref()
+                .and_then(crate::openapi::TypeField::primary)
+                == Some("string")
+                && target.format.is_none()
+                && target.pattern.is_none()
+                && target.min_length.is_none()
+                && target.max_length.is_none()
+                && target.enum_values.is_none()
+                && target.const_value.is_none()
+                && target.reference.is_none()
+                && target.all_of.is_none()
+                && target.one_of.is_none()
+                && target.any_of.is_none()
+        })
+}
+
+fn annotated_reference_property_example(
+    source: &crate::openapi::OpenApi,
+    name: &str,
+    fern_value: &str,
+    value: &str,
+) -> bool {
+    let mut property_example = false;
+    visit_source_schemas(Some(source), &mut |schema| {
+        for (wire, property) in &schema.properties {
+            let Some(members) = property.all_of.as_ref() else {
+                continue;
+            };
+            let reference_count = members
+                .iter()
+                .filter(|member| member.reference.is_some())
+                .count();
+            let annotations_only = members
+                .iter()
+                .filter(|member| member.reference.is_none())
+                .all(|member| {
+                    member.description.is_some()
+                        && member.ty.is_none()
+                        && member.properties.is_empty()
+                        && member.items.is_none()
+                        && member.all_of.is_none()
+                        && member.any_of.is_none()
+                        && member.one_of.is_none()
+                });
+            property_example |= schema.required.contains(wire)
+                && argument_names(wire, name)
+                && fern_value == format!("{wire:?}")
+                && members.len() >= 2
+                && reference_count == 1
+                && members
+                    .iter()
+                    .filter_map(|member| member.reference.as_deref())
+                    .all(|reference| plain_string_reference(source, reference))
+                && annotations_only
+                && declared_schema_example(property)
                     .filter(|example| example.is_string())
                     .and_then(crate::ir::example_literal)
-                    .is_some_and(|literal| literal == value)
-        })
-    })
+                    .is_some_and(|literal| literal == value);
+        }
+    });
+    property_example
 }
 
 /// Whether an operation's successful responses answer only `text/*` content.
@@ -6104,6 +6197,51 @@ mod tests {
             fern,
             crozier
         ));
+    }
+
+    #[test]
+    fn declared_reference_examples_admit_only_source_values_and_leave_adjacent_mismatches() {
+        let context = source_context(
+            serde_json::json!({
+                "openapi": "3.1.0", "paths": {"/parcels": {"post": {
+                    "parameters": [{"name": "tracking", "in": "query", "required": true,
+                        "schema": {"$ref": "#/components/schemas/Code", "type": "string"},
+                        "example": "harbor-842"}], "responses": {}
+                }}}, "components": {"schemas": {
+                    "Code": {"type": "string"},
+                    "Parcel": {"type": "object", "required": ["category"], "properties": {
+                        "category": {"allOf": [{"$ref": "#/components/schemas/Code"},
+                            {"description": "The delivery category."}], "example": "overnight"}
+                    }}
+                }}
+            }),
+            &[],
+        );
+        let rule: LineRule = anyof_path_param_schema_example;
+        for rel in ["README.md", "reference.md", "src/fern/client.py"] {
+            for (name, example) in [("tracking", "harbor-842"), ("category", "overnight")] {
+                let fern = format!("    {name}=\"{name}\",");
+                let crozier = format!("    {name}=\"{example}\",");
+                assert!(
+                    line_holds(rule, rel, &context, &fern, &crozier),
+                    "{rel}: {name}"
+                );
+                assert!(!line_holds(
+                    rule,
+                    rel,
+                    &context,
+                    &fern,
+                    "    category=\"unexplained\","
+                ));
+                assert!(!line_holds(
+                    rule,
+                    rel,
+                    &context,
+                    "    adjacent=\"adjacent\",",
+                    "    adjacent=\"changed\","
+                ));
+            }
+        }
     }
 
     #[test]

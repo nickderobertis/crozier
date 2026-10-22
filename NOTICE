@@ -641,3 +641,8 @@ ahasend-api API specification and generated SDK golden:
     https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml
     MIT (document info.license); corpus row 3202 retains the immutable revision. Source bytes
     and the complete generated tree are vendored, with Python comments stripped.
+
+rgb-lightning-node API specification and generated SDK golden:
+    https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml
+    MIT (document info.license); corpus row 3203 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.

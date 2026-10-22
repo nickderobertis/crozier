@@ -105,6 +105,7 @@ const KINDS: &[Kind] = &[
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified literal-mode proofs must use the existing overlay golden gate and corpus-match inventory, as the task requires. Splitting the entire corpus comparison family into a narrower project edge is separately drafted follow-up work, outside these witness registrations.
             "dashy-route-api",
             "ahasend-api",
+            "rgb-lightning-node",
             "farmvibes-ai",
             "hse",
             "zulip",

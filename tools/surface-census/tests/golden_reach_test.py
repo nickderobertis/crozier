@@ -341,6 +341,32 @@ class ReportTests(unittest.TestCase):
         self.assertIn("unknown golden key", failed.stderr)
         self.assertEqual(after, path.read_text(encoding="utf-8"))
 
+    def test_scoped_report_removes_a_row_that_moved_to_handwritten(self) -> None:
+        first = self.run_report("--write")
+        self.assertEqual(first.returncode, 0, first.stderr)
+        ledger = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        before = {
+            line.split("\t")[1]: line.partition("\t")[2] for line in ledger.read_text(encoding="utf-8").splitlines()[2:]
+        }
+        region = self.repo / "docs/openapi-surface/demo.md"
+        lines = region.read_text(encoding="utf-8").splitlines()
+        region.write_text(
+            "\n".join(
+                line.replace("| golden |", "| handwritten |") if "| `flag-unread` |" in line else line for line in lines
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.assertNotIn("flag-unread", golden_reach.golden_rows(region.parent))
+        result = self.run_report("--write", "--keys", "flag-set")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        after = {
+            line.split("\t")[1]: line.partition("\t")[2] for line in ledger.read_text(encoding="utf-8").splitlines()[2:]
+        }
+        self.assertNotIn("flag-unread", after)
+        self.assertEqual(before["flag-orphan"], after["flag-orphan"])
+        self.assertIn("flag-set", after)
+
     def test_scoped_report_stdout_does_not_write_the_ledger_or_regions(self) -> None:
         self.assertEqual(self.run_report("--write").returncode, 0)
         paths = [self.repo / "docs/openapi-surface" / name for name in ("golden-reach.tsv", "demo.md")]

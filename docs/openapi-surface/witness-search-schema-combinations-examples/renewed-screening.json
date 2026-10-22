@@ -1,0 +1,803 @@
+[
+  {
+    "key": "combo-root-oas30-download",
+    "source": "apis.guru",
+    "document": "APIs/color.pizza/1.0.0/openapi.yaml",
+    "sha256": "7458e3c76178d905ba40c9710e5c83ac910366cf3d935b62f7a246a852c32975",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "apis.guru",
+    "document": "APIs/digitalocean.com/2.0/openapi.yaml",
+    "sha256": "5bd3a4800c4396372cb80d99cc82b49463e4a3f136b63d1794c19f13da37cf63",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/5bd3a4800c439637/before.json: unresolved-reference: paths//v2/1-clicks/get/responses/401/headers/ratelimit-limit: #/paths/~1v2~11-clicks/get/responses/200/headers/ratelimit-limit\n"
+  },
+  {
+    "source": "apis.guru",
+    "document": "APIs/graphhopper.com/1.0.0/openapi.yaml",
+    "sha256": "33d6a0b7c4c9d9c7f3c300efc82dd6cb905c0f316b058d87e13c8ab0c1bc82eb",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/33d6a0b7c4c9d9c7/before.json: service-auth-undefined: security/api_key\n"
+  },
+  {
+    "source": "apis.guru",
+    "document": "APIs/mist.com/0.37.7/openapi.yaml",
+    "sha256": "ca5888bce5171481c95b5d40e16e594763dfaf676cc8aed7f5dc43dceaba971d",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/ca5888bce5171481/before.json: generator-lint-failure: POST /api/v1/login root method and sub-client login\n"
+  },
+  {
+    "source": "apis.guru",
+    "document": "APIs/nexmo.com/reports/2.2.2/openapi.yaml",
+    "sha256": "dcc2a511160eddf1d4cc8e993dbaa851fe899a59cf282dcab79ffcb5b6ec0c93",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/dcc2a511160eddf1/before.json: example-type-mismatch: GET /v2/reports response example \"2018-01-01T00:00:00+00:00\"\n"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "registered",
+    "document": "corpus-sources/chat-rest-api/openapi.yaml",
+    "sha256": "72204c88430d0d7946d0864d182bc2124477843e302e5db9b40ac340dcf1a21b",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "registered",
+    "document": "corpus-sources/color.pizza/openapi.json",
+    "sha256": "43f3f7229673929e8888a859b6ccbf8502b4d23fdb30a88e3a4c15bbe3ea6560",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "registered",
+    "document": "corpus-sources/free5gc-namf-communication/openapi.yaml",
+    "sha256": "aca024baae2339ba9e5a2fd4f7c7e0726165662180cad31f8c67b4d5dee8103e",
+    "sites": 2,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "registered",
+    "document": "corpus-sources/free5gc-pdu-session/openapi.yaml",
+    "sha256": "99913b59c5d14d9863808ae797bd44f521bc94b0a8d780a288cea6e1a9ee35a0",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "registered",
+    "document": "corpus-sources/loris-dataquery/openapi.yml",
+    "sha256": "300e4e3517832f63f944f7246afed4997588a9e5c072c9d4585dd16e23ca1792",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "registered",
+    "document": "corpus-sources/nimisampo/openapi.yaml",
+    "sha256": "3d4c15a66985b5fdda563b8fddb895c2e0d2929f32c2325dc2f53068b0d38d24",
+    "sites": 2,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "registered",
+    "document": "corpus-sources/nimisampo/openapi.yaml",
+    "sha256": "3d4c15a66985b5fdda563b8fddb895c2e0d2929f32c2325dc2f53068b0d38d24",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-annotated-ref-property-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip/openapi.yaml",
+    "sha256": "486c52ec40e74e3f1bfc78534b726db9bcb3f1cf8f6fc3df4981733708fddd10",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip/openapi.yaml",
+    "sha256": "486c52ec40e74e3f1bfc78534b726db9bcb3f1cf8f6fc3df4981733708fddd10",
+    "sites": 7,
+    "changed_files": []
+  },
+  {
+    "key": "combo-annotated-ref-property-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip-jentic/openapi.json",
+    "sha256": "cffb1099324cf988418c58876f9bc69a0fb84e887923d771e61cb5a5c9895a6d",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip-jentic/openapi.json",
+    "sha256": "cffb1099324cf988418c58876f9bc69a0fb84e887923d771e61cb5a5c9895a6d",
+    "sites": 6,
+    "changed_files": []
+  },
+  {
+    "key": "combo-annotated-ref-property-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip-jentic-entry/openapi.json",
+    "sha256": "e7f6eb40cfb673e64fd5119e37697e67e62e8970b92832eb13a4ecb3185195cf",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "registered",
+    "document": "corpus-sources/zulip-jentic-entry/openapi.json",
+    "sha256": "e7f6eb40cfb673e64fd5119e37697e67e62e8970b92832eb13a4ecb3185195cf",
+    "sites": 6,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "03cc246bd08e530bb2a95de9d747d49f3c5ad6183190a8189611419431f19d38.yaml",
+    "sha256": "03cc246bd08e530bb2a95de9d747d49f3c5ad6183190a8189611419431f19d38",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "047dd545cec3a2c691b06457eb72ab0b30433ebe3d0b4946a4c0ac0f97871d7f.yaml",
+    "sha256": "047dd545cec3a2c691b06457eb72ab0b30433ebe3d0b4946a4c0ac0f97871d7f",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "07495e2696be1ee32a8d9fbf4f0fc0cd24bfd582d72d1585137dd1fb9de61481.yaml",
+    "sha256": "07495e2696be1ee32a8d9fbf4f0fc0cd24bfd582d72d1585137dd1fb9de61481",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "0aba82dae1e007ce6f00ae216817e86a4eb38327f50a518f6c771dd8f01d016c.yaml",
+    "sha256": "0aba82dae1e007ce6f00ae216817e86a4eb38327f50a518f6c771dd8f01d016c",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "github-code-search",
+    "document": "11248209cf8c3bf13cd7dd67aa96846ea926dd8341b00d60d795c0dbef1fdb49.yaml",
+    "sha256": "11248209cf8c3bf13cd7dd67aa96846ea926dd8341b00d60d795c0dbef1fdb49",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: could not resolve remote $ref `https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/cql2/standard/schema/cql2.yml#/components/schemas/booleanExpression` in <staged>/cached-sensitivity/11248209cf8c3bf1/before.json: curl failed (exit status: 6): curl: (6) Could not resolve host: raw.githubusercontent.com\n"
+  },
+  {
+    "source": "github-code-search",
+    "document": "14595e382e01cea57cfa750397df58394206606f6285385da13070aba6b1828b.yaml",
+    "sha256": "14595e382e01cea57cfa750397df58394206606f6285385da13070aba6b1828b",
+    "outcome": "crozier-preflight-failed",
+    "error": "<staged>/github-code-search/14595e382e01cea57cfa750397df58394206606f6285385da13070aba6b1828b.yaml:7126: unexpected indentation inside a block mapping"
+  },
+  {
+    "source": "github-code-search",
+    "document": "1f98f02582ab81ced6130019b9dd8f840d35dfa02bfd1920f426cfa9f2978b11.yaml",
+    "sha256": "1f98f02582ab81ced6130019b9dd8f840d35dfa02bfd1920f426cfa9f2978b11",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/1f98f02582ab81ce/before.json: service-auth-undefined: security/userAuth\n"
+  },
+  {
+    "source": "github-code-search",
+    "document": "20c7359cca6f3245c51b299a9a3c1ad3049c99c78b5b4d0edf7a4c233069bf45.yaml",
+    "sha256": "20c7359cca6f3245c51b299a9a3c1ad3049c99c78b5b4d0edf7a4c233069bf45",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/20c7359cca6f3245/before.json: service-auth-undefined: security/api_key\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "2743d6109d6541a9979b8467e1e8bf5043d211aa72564cac23091fc057237ab0.json",
+    "sha256": "2743d6109d6541a9979b8467e1e8bf5043d211aa72564cac23091fc057237ab0",
+    "sites": 4,
+    "changed_files": []
+  },
+  {
+    "source": "github-code-search",
+    "document": "29cb6946ac120acb6ebabe118c1ed6ea7843b08687a54b9701f9df669c1b3095.yaml",
+    "sha256": "29cb6946ac120acb6ebabe118c1ed6ea7843b08687a54b9701f9df669c1b3095",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/29cb6946ac120acb/before.json: undefined-component-reference: paths//tasks/get/parameters/0: #/components/parameters/total\n"
+  },
+  {
+    "source": "github-code-search",
+    "document": "2d1c2cefb98dbaf88dd5485b29bd59d4e86df666949fe1f5178ade557815efc5.yaml",
+    "sha256": "2d1c2cefb98dbaf88dd5485b29bd59d4e86df666949fe1f5178ade557815efc5",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/2d1c2cefb98dbaf8/before.json: service-auth-undefined: security/userAuth\n"
+  },
+  {
+    "source": "github-code-search",
+    "document": "2fb3295e45acb34458bca40b249ba20b39ff9d136361a27e77249211701bf446.yaml",
+    "sha256": "2fb3295e45acb34458bca40b249ba20b39ff9d136361a27e77249211701bf446",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/2fb3295e45acb344/before.json: unsupported-openapi-version: openapi 3.2.0\n"
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "3175341a1f0e5b4929ca9a66f9727115df80b5df4f855409a4f0ff926ccb02d4.yaml",
+    "sha256": "3175341a1f0e5b4929ca9a66f9727115df80b5df4f855409a4f0ff926ccb02d4",
+    "sites": 3,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "3175341a1f0e5b4929ca9a66f9727115df80b5df4f855409a4f0ff926ccb02d4.yaml",
+    "sha256": "3175341a1f0e5b4929ca9a66f9727115df80b5df4f855409a4f0ff926ccb02d4",
+    "sites": 1,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "github-code-search",
+    "document": "327ecfb958dbd719c443a6695b5e7452815a76d5f7bd9f3f858d164864269698.yaml",
+    "sha256": "327ecfb958dbd719c443a6695b5e7452815a76d5f7bd9f3f858d164864269698",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/327ecfb958dbd719/before.json: generator-lint-failure: POST /v1/index/{name}/search root method and sub-client search\n"
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "3ad3a8e4c9f83ced4ccfb82f8a27d1c993e7784240cd02b1f06c329e232edefc.json",
+    "sha256": "3ad3a8e4c9f83ced4ccfb82f8a27d1c993e7784240cd02b1f06c329e232edefc",
+    "sites": 3,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "3ad3a8e4c9f83ced4ccfb82f8a27d1c993e7784240cd02b1f06c329e232edefc.json",
+    "sha256": "3ad3a8e4c9f83ced4ccfb82f8a27d1c993e7784240cd02b1f06c329e232edefc",
+    "sites": 4,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "3b84011b16dfbb3d26514718d12cec51906b497b4b337679cf10d236b21ebab4.yaml",
+    "sha256": "3b84011b16dfbb3d26514718d12cec51906b497b4b337679cf10d236b21ebab4",
+    "sites": 4,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "3f98f35065a55920e2659e0720ada89f6738d4bb651a4104964b18c549f93026.yaml",
+    "sha256": "3f98f35065a55920e2659e0720ada89f6738d4bb651a4104964b18c549f93026",
+    "sites": 2,
+    "changed_files": [
+      "reference.md",
+      "src/fern/rgb/client.py"
+    ]
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "3ffd4f91d580027dfdb7d9001e12b42ec15de6c1445cc0ebea88c87a04e3556f.yaml",
+    "sha256": "3ffd4f91d580027dfdb7d9001e12b42ec15de6c1445cc0ebea88c87a04e3556f",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "42e4525f14062cda5c62d8d4cab7183baef02448cc67a83d606624a036941950.yaml",
+    "sha256": "42e4525f14062cda5c62d8d4cab7183baef02448cc67a83d606624a036941950",
+    "sites": 2,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "42e4525f14062cda5c62d8d4cab7183baef02448cc67a83d606624a036941950.yaml",
+    "sha256": "42e4525f14062cda5c62d8d4cab7183baef02448cc67a83d606624a036941950",
+    "sites": 1,
+    "changed_files_before_root_repair": [
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "4369e23a86d2631a528a01d57910c014ac7bcb2cb5917f5812be3ba12760c7a0.yaml",
+    "sha256": "4369e23a86d2631a528a01d57910c014ac7bcb2cb5917f5812be3ba12760c7a0",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "4b13b1df91728194b504e80b1d6169b300db7f89d7f945e863812bffc52b7f51.yaml",
+    "sha256": "4b13b1df91728194b504e80b1d6169b300db7f89d7f945e863812bffc52b7f51",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "source": "github-code-search",
+    "document": "4ff659431c74aa0959d933e61be266448bcfb6367fad745fd94b4313041ebcec.yaml",
+    "sha256": "4ff659431c74aa0959d933e61be266448bcfb6367fad745fd94b4313041ebcec",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: formatting src/fern/notifications/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/notifications/raw_client.py:119:235: Duplicate parameter \"title\"\n"
+  },
+  {
+    "source": "github-code-search",
+    "document": "5171460b72fbc6faa1c0ad8f15a6c041f65bd5bdc51fb3827a34a568d9c0ecc5.yaml",
+    "sha256": "5171460b72fbc6faa1c0ad8f15a6c041f65bd5bdc51fb3827a34a568d9c0ecc5",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/5171460b72fbc6fa/before.json: missing-discriminant-property: POST /snapshots request schema discriminator snapshotType\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "5a645d85c8c49119d3ca94ad425ea27d2b69748bb737d744cae70a6bb85c7119.yaml",
+    "sha256": "5a645d85c8c49119d3ca94ad425ea27d2b69748bb737d744cae70a6bb85c7119",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "6f90f61d759871727d4c4fb8b0d7a6c0e6e7f216e2fc4a2607ef8d61d20ef70d.yaml",
+    "sha256": "6f90f61d759871727d4c4fb8b0d7a6c0e6e7f216e2fc4a2607ef8d61d20ef70d",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "source": "github-code-search",
+    "document": "79211321295936c435fd6781a48695018d2645aa2e2d5d539626eadb3eb0c17c.yaml",
+    "sha256": "79211321295936c435fd6781a48695018d2645aa2e2d5d539626eadb3eb0c17c",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/79211321295936c4/before.json: unresolved-reference: paths//api/ids/get/responses/400: #/$defs/400\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "7e291e0fdea1c2af13c155f19205c8b80329f7ede2dfca28617592c91a978ba3.yaml",
+    "sha256": "7e291e0fdea1c2af13c155f19205c8b80329f7ede2dfca28617592c91a978ba3",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "83744bb233becb0f8a508ec07cad4a9f937cc8a3ed8e0d4b41c2e38f2b301dee.yaml",
+    "sha256": "83744bb233becb0f8a508ec07cad4a9f937cc8a3ed8e0d4b41c2e38f2b301dee",
+    "sites": 3,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "871f7691d730812295be535cc0f16fce7cacc2b779d4239d0441cdc1703a9360.yaml",
+    "sha256": "871f7691d730812295be535cc0f16fce7cacc2b779d4239d0441cdc1703a9360",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "b04b23cd257790502e212f917678dcb870f266d41d643a04af8651e180ab2738.yaml",
+    "sha256": "b04b23cd257790502e212f917678dcb870f266d41d643a04af8651e180ab2738",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "b11696b4bf059cc89e60c8d4e076ce789844e7c4e7620fcedff5e1e1fcfea95a.yaml",
+    "sha256": "b11696b4bf059cc89e60c8d4e076ce789844e7c4e7620fcedff5e1e1fcfea95a",
+    "sites": 5,
+    "changed_files_before_root_repair": [
+      "README.md",
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "b11696b4bf059cc89e60c8d4e076ce789844e7c4e7620fcedff5e1e1fcfea95a.yaml",
+    "sha256": "b11696b4bf059cc89e60c8d4e076ce789844e7c4e7620fcedff5e1e1fcfea95a",
+    "sites": 5,
+    "changed_files_before_root_repair": [
+      "README.md",
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "b5d2e55ae9d1eac3396919945855125abd5c614e160a54f8462aca95844191a1.yaml",
+    "sha256": "b5d2e55ae9d1eac3396919945855125abd5c614e160a54f8462aca95844191a1",
+    "sites": 2,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "b5d2e55ae9d1eac3396919945855125abd5c614e160a54f8462aca95844191a1.yaml",
+    "sha256": "b5d2e55ae9d1eac3396919945855125abd5c614e160a54f8462aca95844191a1",
+    "sites": 2,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "b8750c040685f0ce6747e2acbe85879cc112166ef04068b99f58a2f6cfbb8806.yaml",
+    "sha256": "b8750c040685f0ce6747e2acbe85879cc112166ef04068b99f58a2f6cfbb8806",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "github-code-search",
+    "document": "bf6b4821401bbbf3874a2235f3afd3d18e9eced718c7175111a79e3e91eb30f4.yaml",
+    "sha256": "bf6b4821401bbbf3874a2235f3afd3d18e9eced718c7175111a79e3e91eb30f4",
+    "outcome": "crozier-preflight-failed",
+    "error": "<staged>/github-code-search/bf6b4821401bbbf3874a2235f3afd3d18e9eced718c7175111a79e3e91eb30f4.yaml:7525: unexpected indentation inside a block mapping"
+  },
+  {
+    "source": "github-code-search",
+    "document": "c8d1721e94444dfbbd9eaa11308e516708bc9de676789c82599c6f3ebfd27298.yaml",
+    "sha256": "c8d1721e94444dfbbd9eaa11308e516708bc9de676789c82599c6f3ebfd27298",
+    "outcome": "crozier-preflight-failed",
+    "error": "<staged>/github-code-search/c8d1721e94444dfbbd9eaa11308e516708bc9de676789c82599c6f3ebfd27298.yaml:417: unexpected indentation inside a block mapping"
+  },
+  {
+    "source": "github-code-search",
+    "document": "c938f7ca7b85d46cef6ef2c04632b4fe6440622c6843174c38edce724d661a8e.yaml",
+    "sha256": "c938f7ca7b85d46cef6ef2c04632b4fe6440622c6843174c38edce724d661a8e",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/c938f7ca7b85d46c/before.json: unsupported-openapi-version: openapi 3.2.0\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "c95fcd6d7ff5ab1b64975a9d891def1317231e24b4114796056288cb166a526f.yaml",
+    "sha256": "c95fcd6d7ff5ab1b64975a9d891def1317231e24b4114796056288cb166a526f",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "source": "github-code-search",
+    "document": "d1695403fa6a9886924d4123e2086ee13821d3ab6f280d2fce4d162fbeb7c2e3.yaml",
+    "sha256": "d1695403fa6a9886924d4123e2086ee13821d3ab6f280d2fce4d162fbeb7c2e3",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/d1695403fa6a9886/before.json: path-parameter-unreferenced: GET /station/{station_id}/file/{id}/play parameter media_id\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "d7bceac6b15411cdcd4c3300ef7686a571c1ebd49a3700091ebe3c843667d797.json",
+    "sha256": "d7bceac6b15411cdcd4c3300ef7686a571c1ebd49a3700091ebe3c843667d797",
+    "sites": 2,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "da5ab4a4da676213595e1d92ae5d9ccf1c419e9c9836c3b9c35cc3e3383025ef.yaml",
+    "sha256": "da5ab4a4da676213595e1d92ae5d9ccf1c419e9c9836c3b9c35cc3e3383025ef",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada.yaml",
+    "sha256": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada.yaml",
+    "sha256": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada",
+    "sites": 1,
+    "changed_files_before_root_repair": [
+      "README.md",
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "source": "github-code-search",
+    "document": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada.yaml",
+    "sha256": "dfff65d679dc9ceab07a0ec4a5c80cf448d68f5ec772a8befed4e66fd2084ada",
+    "sites": 1,
+    "changed_files_before_root_repair": [
+      "README.md",
+      "reference.md",
+      "src/fern/client.py"
+    ],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "github-code-search",
+    "document": "e0a5f7abc4df5d4043fb1115cdca6b6ca45bbc549060f27896c6290b05aff976.yaml",
+    "sha256": "e0a5f7abc4df5d4043fb1115cdca6b6ca45bbc549060f27896c6290b05aff976",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/e0a5f7abc4df5d40/before.json: example-unexpected-property: GET /api/v1/cameras components/schemas/Camera/properties/config collides with CameraConfig\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "e5a0548731d8552b29e7a671e0311bb78f7ef2ba3631535b8df9d98e3df274c1.yaml",
+    "sha256": "e5a0548731d8552b29e7a671e0311bb78f7ef2ba3631535b8df9d98e3df274c1",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "eaff56a5a842a45734dadb1e28112c8759d695a6e1e655cd0753ac9ecc7b1aa3.yaml",
+    "sha256": "eaff56a5a842a45734dadb1e28112c8759d695a6e1e655cd0753ac9ecc7b1aa3",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "ecc24beb2272de002b03a877c2fb3bb0fef743b0e61b90e897c7672b86d612d9.yaml",
+    "sha256": "ecc24beb2272de002b03a877c2fb3bb0fef743b0e61b90e897c7672b86d612d9",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "source": "github-code-search",
+    "document": "f091783cb03939f1ccc6c59e6be6343b12a614b0a623fae0cfc444014d86a7cd.yaml",
+    "sha256": "f091783cb03939f1ccc6c59e6be6343b12a614b0a623fae0cfc444014d86a7cd",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/f091783cb03939f1/before.json: service-auth-undefined: security/userAuth\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "github-code-search",
+    "document": "f2457da3b5a646665ac66bbc812695532ca606fd8b9cb3f9286728990442882e.yaml",
+    "sha256": "f2457da3b5a646665ac66bbc812695532ca606fd8b9cb3f9286728990442882e",
+    "sites": 2,
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "source": "github-code-search",
+    "document": "f3cafaffc59b185fa1181c791616cb8b1aa7cee0888f4187aed7542b9b5313cb.json",
+    "sha256": "f3cafaffc59b185fa1181c791616cb8b1aa7cee0888f4187aed7542b9b5313cb",
+    "sites": 1,
+    "changed_files_before_root_repair": [],
+    "changed_files_after_root_repair": [],
+    "state": "final no-error root guard retained; declared-error examples restored"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "01141845f9c29ca74f769683332d16819dcb05a51502046bad6966a077712480.yaml",
+    "sha256": "01141845f9c29ca74f769683332d16819dcb05a51502046bad6966a077712480",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "source": "sourcegraph",
+    "document": "04586100f8c65cfb17b58c645d5f25183e16f3f8361a4fcd4c4b8f4f93c31875.yaml",
+    "sha256": "04586100f8c65cfb17b58c645d5f25183e16f3f8361a4fcd4c4b8f4f93c31875",
+    "outcome": "crozier-preflight-failed",
+    "error": "<staged>/sourcegraph/04586100f8c65cfb17b58c645d5f25183e16f3f8361a4fcd4c4b8f4f93c31875.yaml:7122: unexpected indentation inside a block mapping"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "0f69f3abbb8099e985fa9631a152112098ca4a318d6a1bfe4953de1b17729db6.yaml",
+    "sha256": "0f69f3abbb8099e985fa9631a152112098ca4a318d6a1bfe4953de1b17729db6",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: could not parse OpenAPI document <staged>/cached-sensitivity/0f69f3abbb8099e9/before.json: invalid type: integer `8443`, expected a string at line 1 column 509\n"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "132eaa29d4ff5460b88ee1960c8e7c0c96f719542ccba490515068f121a2cb43.yaml",
+    "sha256": "132eaa29d4ff5460b88ee1960c8e7c0c96f719542ccba490515068f121a2cb43",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/132eaa29d4ff5460/before.json: generator-lint-failure: components/schemas/NullEnum enum has no non-null value\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "170f81f6e0283c512f0f2b4d0cbe59f2d0918b18129660b33891734ae0f14a6a.yaml",
+    "sha256": "170f81f6e0283c512f0f2b4d0cbe59f2d0918b18129660b33891734ae0f14a6a",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "21a3bb9dc59ba7b5f0e5cb3e928428afced271c4dc9c324ac28313f994e1d185.json",
+    "sha256": "21a3bb9dc59ba7b5f0e5cb3e928428afced271c4dc9c324ac28313f994e1d185",
+    "sites": 2,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "243acd21a39894a3c2152054543ad16742f2c092757a4bec0ede3c79f63e89bb.yaml",
+    "sha256": "243acd21a39894a3c2152054543ad16742f2c092757a4bec0ede3c79f63e89bb",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "source": "sourcegraph",
+    "document": "2dd432185cb84c8516598aaef8a73c701cccc6817f40c9c8f3fb33c31408adbd.yaml",
+    "sha256": "2dd432185cb84c8516598aaef8a73c701cccc6817f40c9c8f3fb33c31408adbd",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/2dd432185cb84c85/before.json: unsupported-openapi-version: openapi 3.2.0\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "309eeaa0b3dbcdf727f00f0591b23074ee1faeac222cf06612e37aae82aa85d2.yaml",
+    "sha256": "309eeaa0b3dbcdf727f00f0591b23074ee1faeac222cf06612e37aae82aa85d2",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "source": "sourcegraph",
+    "document": "31ca4d028236d898027be5f24107690381c8a59500e32997a236e1e4f96c0c54.json",
+    "sha256": "31ca4d028236d898027be5f24107690381c8a59500e32997a236e1e4f96c0c54",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/31ca4d028236d898/before.json: type-name-collision: type ListEndpointsResponse is declared in namespaces \"\" and \"endpoints\"; give the types distinct declared names\n"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "39f858c616ced670b83ca129a788e7a4bee23d73e633c0e7c106b549785c6c7f.yaml",
+    "sha256": "39f858c616ced670b83ca129a788e7a4bee23d73e633c0e7c106b549785c6c7f",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/39f858c616ced670/before.json: named-type-default: components/schemas/ticket/properties/type/default\n"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "3a30a16fb0dc3ad26384021b2da921ca46d6fd5b1db4772ddf398594d0ba8d88.yaml",
+    "sha256": "3a30a16fb0dc3ad26384021b2da921ca46d6fd5b1db4772ddf398594d0ba8d88",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/3a30a16fb0dc3ad2/before.json: generator-lint-failure: components/schemas/NullEnum enum has no non-null value\n"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "3d9fbd0f4f19a1e242c0bbdb70b1a98baf41710b3896c5c4a2da1935c69bf9c0.yaml",
+    "sha256": "3d9fbd0f4f19a1e242c0bbdb70b1a98baf41710b3896c5c4a2da1935c69bf9c0",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/3d9fbd0f4f19a1e2/before.json: list-default-not-array: components/schemas/Eval/properties/testing_criteria default String(\"eval\")\n"
+  },
+  {
+    "source": "sourcegraph",
+    "document": "413656b4a262ac7a49ea37f30ef4d8e1a1f3785fb6d85a7aaca4c054e9299fb8.yaml",
+    "sha256": "413656b4a262ac7a49ea37f30ef4d8e1a1f3785fb6d85a7aaca4c054e9299fb8",
+    "outcome": "crozier-preflight-failed",
+    "error": "<staged>/sourcegraph/413656b4a262ac7a49ea37f30ef4d8e1a1f3785fb6d85a7aaca4c054e9299fb8.yaml:8276: unexpected indentation inside a block mapping"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "474fbb47f6588ce8e2a31bd93da5180fc72cb0fa1789083bc14d1ed808fca583.yaml",
+    "sha256": "474fbb47f6588ce8e2a31bd93da5180fc72cb0fa1789083bc14d1ed808fca583",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "476eee28d9168d71e1d4a329494be33a251d2a53fcba3ea034faa7d714fbe457.yaml",
+    "sha256": "476eee28d9168d71e1d4a329494be33a251d2a53fcba3ea034faa7d714fbe457",
+    "sites": 1,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "5cd1a16be9d07e28a236004e29c459e14a5cfa9feed2419c2eb941f1549c4cdb.yaml",
+    "sha256": "5cd1a16be9d07e28a236004e29c459e14a5cfa9feed2419c2eb941f1549c4cdb",
+    "sites": 3,
+    "changed_files": []
+  },
+  {
+    "source": "sourcegraph",
+    "document": "5e1181c4aef4eb8dabc4c0403c867fad33359c435b58f87218efa13948e8fa8b.json",
+    "sha256": "5e1181c4aef4eb8dabc4c0403c867fad33359c435b58f87218efa13948e8fa8b",
+    "outcome": "crozier-preflight-failed",
+    "error": "crozier: invalid OpenAPI document <staged>/cached-sensitivity/5e1181c4aef4eb8d/before.json: default-not-valid-for-type: components/schemas/RL.AdamWOptimizerParams/properties/beta1 default String(\"0.9\")\n"
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "61928fc497ff519dc5baef48b4431f455ab9aa51e67d77380337d00b71004831.yaml",
+    "sha256": "61928fc497ff519dc5baef48b4431f455ab9aa51e67d77380337d00b71004831",
+    "sites": 19,
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "source": "sourcegraph",
+    "document": "63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4.yaml",
+    "sha256": "63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4",
+    "sites": 1,
+    "changed_files": [
+      "reference.md",
+      "src/fern/themes/client.py"
+    ]
+  }
+]

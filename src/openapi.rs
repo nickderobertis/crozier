@@ -2,8 +2,8 @@
 //!
 //! Ordering matters for byte-exact output: object properties and component
 //! schemas are [`IndexMap`]s so their document order survives into generated
-//! field order and file order. Only the fields crozier consumes are modeled;
-//! unknown keys are ignored so real-world specs still parse.
+//! field order and file order. Unknown input stays accepted. Schema nodes
+//! retain unmodeled keywords for departure validation; generation ignores them.
 //!
 //! # Fern-compatible extensions
 //!
@@ -24,6 +24,8 @@
 //! The precedence is applied in the field accessors ([`Operation::audiences`],
 //! [`Operation::ignored`], [`Schema::ignored`]); the paired serde fields exist only
 //! to carry the two raw spellings.
+
+pub(crate) mod example_validation;
 
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
@@ -1576,6 +1578,11 @@ impl From<String> for LiteralTypeOverride {
 /// is set) or an inline schema described by the remaining fields.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Schema {
+    /// Keywords generation does not model. Departure validation abstains on
+    /// unrecognized assertions instead of silently validating a weaker schema.
+    /// Schema is input-only; this metadata is never serialized into an SDK.
+    #[serde(flatten)]
+    pub(crate) unmodeled_keywords: std::collections::BTreeMap<String, serde_json::Value>,
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,

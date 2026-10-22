@@ -2751,6 +2751,25 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
+#[test]
+fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let source = fixture.join("openapi.yml");
+    let expected = fixture.join("fern-expected");
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "{result:#}");
+    let (code, result) = compare_with_certified_reference(
+        &source,
+        &expected,
+        Some(("README.md", "label=\"glassware\"", "label=\"unexplained\"")),
+    );
+    assert_eq!(code, 3, "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!(["README.md"])
+    );
+}
+
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, JSON problem responses, and a
@@ -9432,6 +9451,7 @@ const CORPORA: &[&Corpus] = &[
     &DASHY_ROUTE_API,
     &AHASEND_API,
     &FARMVIBES_AI,
+    &RGB_LIGHTNING_NODE,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11781,7 +11801,18 @@ const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// HSE REST API — corpus row 173, the publisher's own description.
+/// RGB Lightning Node: corpus row 3203, typed request examples and a declared union example.
+const RGB_LIGHTNING_NODE: Corpus = Corpus {
+    api: "rgb-lightning-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const FARMVIBES_AI: Corpus = Corpus {
     api: "farmvibes-ai",
     package_name: "fern",
@@ -11815,6 +11846,7 @@ const DASHY_ROUTE_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// HSE REST API — corpus row 173, the publisher's own description.
 const HSE: Corpus = Corpus {
     api: "hse",
     package_name: "fern",
@@ -19619,6 +19651,38 @@ fn farmvibes_ai_matches_fern_output() {
 #[test]
 fn ahasend_api_matches_fern_output() {
     assert_committed_corpus_matches(&AHASEND_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison uses the existing corpus golden gate and inventory, as its adjacent witnesses do; splitting that shared Nx family is the recorded follow-up rather than part of this example proof.
+#[test]
+fn rgb_lightning_node_matches_fern_output() {
+    assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
+}
+
+#[test]
+fn rgb_example_departures_reject_an_adjacent_unexplained_value() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "{result:#}");
+    for (path, before, after) in [
+        (
+            "reference.md",
+            "strategy=SyncStrategy.FAST_SYNC",
+            "strategy=SyncStrategy.UNEXPLAINED",
+        ),
+        (
+            "src/fern/rgb/client.py",
+            "skip_sync=False",
+            "skip_sync=True",
+        ),
+    ] {
+        let (code, result) =
+            compare_with_certified_reference(&source, &expected, Some((path, before, after)));
+        assert_eq!(code, 3, "{result:#}");
+        assert_eq!(result["comparison"]["differing"], serde_json::json!([path]));
+    }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

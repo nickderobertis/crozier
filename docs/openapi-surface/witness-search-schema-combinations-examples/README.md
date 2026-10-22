@@ -80,9 +80,10 @@ source walk is `--documents registered=tests/fixtures`.
 The manager's renewed bar requires a removal control to change **both**
 generators' output. The initial handling-site measurements below establish
 reach, not output sensitivity. Zero-motion declarers are not witnesses.
-The source search is being extended within the same cached populations for
-those keys; paired certified-output controls for the sensitive candidates are
-still pending. The existing region classifications are not completion claims.
+The source search was extended within the same cached populations for
+those keys; paired certified-output controls establish seven real witnesses, including two
+declared-value departures.
+The remaining keys are undergoing renewed screening and authored controls. The existing region classifications are not completion claims.
 
 ## Verdicts
 
@@ -94,17 +95,87 @@ screening state; one admitted generating registered witness per key suffices.
 
 | key | outcome | declarers | selected proof |
 |---|---|---:|---|
-| `combo-allof-schema-example` | `search-incomplete` | 322 | registered `ahasend-api`; crozier output-sensitive, certified control pending |
-| `combo-annotated-ref-property-example` | `search-incomplete` | 9 | reaching only; renewed output-sensitive proof search pending |
-| `combo-anyof-schema-example` | `search-incomplete` | 169 | registered `supabase-api-v1`; scoped golden reach |
+| `combo-allof-schema-example` | `search-incomplete` | 322 | registered `ahasend-api`; paired output-sensitive control passes |
+| `combo-annotated-ref-property-example` | `search-incomplete` | 9 | hand-written `harbor-parcel-requests`; declared-value departure |
+| `combo-anyof-schema-example` | `search-incomplete` | 169 | registered `supabase-api-v1`; output-sensitive declared-value departure |
 | `combo-media-example-beside-component-example` | `search-incomplete` | 169 | registered `ahasend-api` (3202); complete golden and example attribution |
 | `combo-media-example-on-inline-allof-body` | `search-incomplete` | 57 | registered `farmvibes-ai` (3201); complete golden and example attribution |
 | `combo-media-example-on-ref-allof-body` | `search-incomplete` | 87 | registered `dashy-route-api` (3200); complete golden and example attribution |
 | `combo-media-example-on-ref-union-body` | `search-incomplete` | 27 | registered `mockserver`; scoped golden reach |
-| `combo-oneof-schema-example` | `search-incomplete` | 269 | reaching only; renewed output-sensitive proof search pending |
-| `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | reaching only; renewed output-sensitive proof search pending |
+| `combo-oneof-schema-example` | `search-incomplete` | 269 | registered `rgb-lightning-node` (3203); typed-example repairs and declared-value departure |
+| `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | hand-written `harbor-parcel-requests`; declared-value departure |
 | `combo-root-oas30-binary-schema` | `search-incomplete` | 61 | reaching only; renewed output-sensitive proof search pending |
 | `combo-root-oas30-download` | `search-incomplete` | 69 | reaching only; renewed output-sensitive proof search pending |
+
+## Paired removal controls
+
+[paired-removal-comparisons.json](paired-removal-comparisons.json) records the
+seven completed real controls: five move both generators, while Supabase and
+RGB move Crozier under evidenced declared-value departures. Each control deletes every
+`example` field matching that key through the census object-kind traversal,
+leaving the other fields unchanged; the conjunction counts zero afterwards.
+The committed original source and complete certified-pair golden are the
+before state. A fresh serial certified-pair generation supplies the after state,
+and `crozier compare` matches that entire control tree. The record retains each
+changed generated file's before/after SHA-256 in both engines, excludes the
+corpus metadata marker, and records the comparison's exit code and counts.
+
+[reaching-removal-comparisons.json](reaching-removal-comparisons.json) preserves
+the broader Crozier preflight of every declarer joined by the scoped reach
+ledger. A zero-file result is reaching but not proving. The ledger's join means
+declaration plus executed site, and does not turn these controls into witnesses.
+Zulip, Webflow and Nimisampo are expressly reaching-only for their zero-motion
+keys. AhaSend replaces Zulip for the allOf schema-example proof. Dashy's
+referenced-union removal also moves Crozier output, but the selected certified
+proof for that key is MockServer.
+
+## Renewed screening results
+
+[renewed-screening.json](renewed-screening.json) records 93 additional preflight
+outcomes: 35 generating request-side oneOf documents, 12 generating download
+controls, 12 binary-schema controls, three annotated-reference controls, and 31
+baseline failures. Seventeen distinct root documents were rendered before and
+after the final root repair; their version-removal controls move no Crozier
+file. The recorded earlier motions on several root documents belong to the
+superseded broad suppression, and are explicitly identified as earlier states.
+No preflight-only candidate is claimed to have generated with Fern.
+
+RGB Lightning Node is the selected oneOf witness. Its source is the publisher's
+`openapi.yaml` at `d4762ac3d1b3ca83f2f7b4f894e8569109dc572a`, SHA-256
+`3f98f35065a55920e2659e0720ada89f6738d4bb651a4104964b18c549f93026`.
+The complete certified baseline and removal control both compare; its declared
+`SyncKeychain` example is retained under the richer-documentation ruling.
+Typed maps of model lists, empty model-array examples and referenced
+discriminator constructors are repaired generally. The existing required-file
+example defect applies independently in the same client, with signature-binding
+evidence in its catalogue note. Guardian also generates but is not selected;
+its additional mismatch classes remain in the census and a drafted follow-up.
+
+## Renewed search and authored reference examples
+
+The renewed cached screen follows request inputs through local references,
+properties and compositions, deduplicates source bytes, and prioritizes registered
+sources and documents with a recorded redistribution grant. No typed-reference
+parameter declarer in those populations carries the sibling `type: string`
+that makes its own parameter example render. The annotated-reference search
+finds the registered Zulip variants (zero motion), response-only declarations,
+and Graphhopper variants that Crozier refuses for an undefined security scheme;
+none supplies an output-sensitive admitted witness. The bounded search remains
+`search-incomplete`.
+
+| key | renewed search outcome |
+|---|---|
+| `combo-param-example-beside-ref-schema` | `none-registrable` |
+| `combo-annotated-ref-property-example` | `none-registrable` |
+
+`harbor-parcel-requests` is authored from scratch. A required query parameter
+carries a string example beside its referenced schema; a required body property
+carries an example beside an annotated reference. Removing either changes
+Crozier's worked calls. Fern substitutes field-name placeholders in both states.
+The manager's declared-content ruling keeps the richer examples through the
+existing `anyof-path-param-schema-example` departure, extended narrowly to those
+required reference shapes. This is a hand-written proof with an evidenced
+intentional departure; it is not an output-insensitive decision.
 
 ## Attribution
 
@@ -121,17 +192,18 @@ These handoff measurements do not claim every path of the containing function
 is exhausted; the single-feature rows retain those wider handling branches.
 
 Deleting the conjunction's examples in MockServer changes `reference.md` and
-the expectation and verify clients. Deleting Supabase's `anyOf` schema examples
-changes its README, reference and environments client. Removing examples in
+the expectation and verify clients. An earlier serialized-source Crozier preflight moved Supabase's README, reference
+and environments client, but its certified control moves no generated file; it
+is recorded by the existing declared-value departure, rather than a parser or
+binary discrepancy. Its complete baseline and control both compare successfully. Removing examples in
 HSE and Zulip moves no bytes; their earlier reach evidence is the measured handling-site
-reach plus their complete byte-matched goldens, rather than a claim of
-output sensitivity.
+reach only. Neither is an output-sensitive witness.
 
 The three media-example combinations require stronger witnesses than their
 initial region entries named. D&D's inline/allOf media example occurs on the
-monster GET response; deleting it moves no file. The same experiment on every
-registered declarer of the referenced/allOf and competing-example conjunctions
-moves no file either. The request-example handoff sites are unreached by the
+monster GET response; deleting it moves no file. The same experiment on the registered declarer population at
+`a183c7c4ff597862991ad7a632aa95fc7be23cec`, before these admissions, moved no
+file for the referenced/allOf and competing-example conjunctions either. The request-example handoff sites are unreached by the
 initial D&D and NextGen witnesses. Those declarations remain in the census,
 but they are not selected as proofs of these branches.
 

@@ -5310,7 +5310,17 @@ fn may_hold_a_string(schema: &serde_json::Value) -> bool {
 /// examples, the 3.1 `examples` array included — so a map declaring only
 /// `examples` gives nothing: Sim's `V2TableRowData` does, and its golden
 /// examples `data` as `{"key": "value"}`.
-fn referenced_example_literal(target: &Schema) -> Option<String> {
+fn referenced_example_literal(
+    target: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    if target.one_of.is_some()
+        && schema_example(target).is_some_and(|example| {
+            crate::openapi::example_validation::matches(schemas, target, example, 0) == Some(false)
+        })
+    {
+        return None;
+    }
     if is_map(target) && target.example.is_none() {
         return None;
     }
@@ -7284,7 +7294,10 @@ fn hoist_inline_object(
             // `example`.
             example: schema_example_literal(prop_schema).or_else(|| {
                 let reference = prop_schema.reference.as_deref()?;
-                referenced_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
+                referenced_example_literal(
+                    resolve_ref_from_schemas(hoister.schemas?, reference)?,
+                    hoister.schemas?,
+                )
             }),
             media_example: false,
             schema_body_example: false,
@@ -8000,7 +8013,7 @@ impl InlineHoister<'_> {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                     })?;
                     let target = resolve_ref_from_schemas(self.schemas?, reference)?;
-                    referenced_example_literal(target)
+                    referenced_example_literal(target, self.schemas?)
                 }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
@@ -9258,10 +9271,10 @@ fn hoist_form_object(
                         let reference = prop_schema.reference.as_deref().or_else(|| {
                             described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                         })?;
-                        referenced_example_literal(resolve_ref_from_schemas(
+                        referenced_example_literal(
+                            resolve_ref_from_schemas(hoister.schemas?, reference)?,
                             hoister.schemas?,
-                            reference,
-                        )?)
+                        )
                     }),
                 media_example: false,
                 schema_body_example: false,
@@ -13019,12 +13032,12 @@ impl Builder<'_> {
                             .as_deref()
                             .and_then(|reference| reference.rsplit('/').next())
                             .and_then(|key| self.schemas.get(key))
-                            .and_then(referenced_example_literal)
+                            .and_then(|target| referenced_example_literal(target, self.schemas))
                     })
                     .or_else(|| {
                         sole_all_of_ref(prop_schema)
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(referenced_example_literal)
+                            .and_then(|target| referenced_example_literal(target, self.schemas))
                     })
                     .or_else(|| {
                         // An array whose element is a `$ref` to an exampled scalar
@@ -13041,7 +13054,7 @@ impl Builder<'_> {
                                     .or_else(|| sole_all_of_ref(items))
                             })
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(referenced_example_literal)?;
+                            .and_then(|target| referenced_example_literal(target, self.schemas))?;
                         Some(format!("[{item}]"))
                     }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
@@ -21644,6 +21657,27 @@ mod tests {
         assert_eq!(fields[0].wire_name, "label");
         assert_eq!(fields[0].example.as_deref(), Some("\"evening ferry\""));
         assert!(!fields[0].schema_body_example);
+    }
+
+    #[test]
+    fn referenced_union_schema_examples_reject_values_that_match_no_member() {
+        for (lookback, accepted) in [
+            (serde_json::json!(20), true),
+            (serde_json::json!("twenty"), false),
+        ] {
+            let target: crate::openapi::Schema = serde_json::from_value(serde_json::json!({
+                "oneOf": [{"type":"string","enum":["North"]},
+                    {"type":"object","required":["Window"],"properties":{
+                        "Window":{"type":"object","required":["lookback"],"properties":{
+                            "lookback":{"type":"integer"}}}}}],
+                "example":{"Window":{"lookback":lookback}}
+            }))
+            .unwrap();
+            assert_eq!(
+                super::referenced_example_literal(&target, &indexmap::IndexMap::new()).is_some(),
+                accepted
+            );
+        }
     }
 
     #[test]

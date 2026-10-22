@@ -1,0 +1,15 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "def28383c4e105fe07381211f1ceeb199ceaaa20ce3ae25e095fb27d6d779078"
+
+[[covers]]
+key = "combo-param-example-beside-ref-schema"
+search = "docs/openapi-surface/witness-search-schema-combinations-examples/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-combinations-examples/README.md"
+
+[[covers]]
+key = "combo-annotated-ref-property-example"
+search = "docs/openapi-surface/witness-search-schema-combinations-examples/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-combinations-examples/README.md"

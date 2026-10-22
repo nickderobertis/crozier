@@ -329,6 +329,7 @@ inventory=(
   dashy_route_api_matches_fern_output
   ahasend_api_matches_fern_output
   farmvibes_ai_matches_fern_output
+  rgb_lightning_node_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"
