@@ -128,7 +128,10 @@ def read_records(root: Path) -> tuple[set[tuple[str, str]], list[str]]:
                     if pair in seen:
                         raise ValueError("duplicate key and context")
                     seen.add(pair)
-                    if pair in proven:
+                    # An arm context names a handling site; any other context narrows
+                    # the feature, so a feature-level proof of the key also conflicts.
+                    feature_proven = not context.startswith("src/") and (key, "-") in proven
+                    if pair in proven or feature_proven:
                         raise ValueError("key/context is also claimed proven")
                     search = local_file(root, row["search_record"])
                     if key not in search.read_text(encoding="utf-8"):

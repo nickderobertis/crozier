@@ -19274,3 +19274,27 @@ class OutputInsensitiveTests(unittest.TestCase):
         result = self.run_reader()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("also claimed proven", result.stderr)
+
+    def test_narrow_context_of_a_proven_key_is_rejected(self):
+        self.registry.write_text(self.registry.read_text().replace("sample-key\t-\t", "sample-key\tquery-parameter\t"))
+        self.assertEqual(0, self.run_reader().returncode)
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
+
+    def test_arm_context_is_rejected_only_when_that_arm_is_proven(self):
+        arm = "src/emit.rs::sample[arm]"
+        self.registry.write_text(self.registry.read_text().replace("sample-key\t-\t", f"sample-key\t{arm}\t"))
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        self.assertEqual(0, self.run_reader().returncode, self.run_reader().stderr)
+        fixture = self.surface / "handwritten/sample"
+        fixture.mkdir(parents=True)
+        (fixture / "evidence.toml").write_text(f"[[covers]]\nkey = \"sample-key\"\narm = '{arm}'\n")
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
