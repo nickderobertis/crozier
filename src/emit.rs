@@ -1516,11 +1516,12 @@ fn forward_repair_map(
                     collect_named_refs(&field.type_ref, &mut refs);
                 }
                 let mut names = closure(refs.iter().map(String::as_str).collect());
-                if let Some(source) = member
-                    .source
-                    .as_ref()
-                    .or_else(|| union.variant_targets.get(index).filter(|_| !member.wrapped))
-                {
+                if let Some(source) = member.source.as_ref().or_else(|| {
+                    union
+                        .variant_targets
+                        .get(index)
+                        .filter(|_| !member.layout.is_wrapped())
+                }) {
                     names.remove(source);
                 }
                 let mut ordered: Vec<String> = names.iter().cloned().collect();
@@ -4926,7 +4927,11 @@ fn render_discriminated_union(
             .iter()
             .map(|f| render_field(f, &mut imports))
             .collect();
-        let tag_at = if member.wrapped { rendered.len() } else { 0 };
+        let tag_at = if member.layout.is_wrapped() {
+            rendered.len()
+        } else {
+            0
+        };
         rendered.insert(tag_at, discriminant);
         let fields: Vec<FieldView> = rendered
             .into_iter()
@@ -4935,8 +4940,15 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let member_extra = (!member.wrapped).then_some(extra);
-        let body = render_class_body(env, member.docstring.clone(), fields, member_extra)?;
+        let member_extra = (!member.layout.is_wrapped()).then_some(extra);
+        let mut body = render_class_body(env, member.docstring.clone(), fields, member_extra)?;
+        if let crate::ir::UnionMemberLayout::NestedDiscriminator { property } = &member.layout {
+            body.push_str(&nested_discriminator_methods(
+                &union.discriminant_property,
+                &discriminant_field_name(union),
+                property,
+            ));
+        }
         classes.push(format!(
             "class {}({base_class}):\n{}",
             member.class_name,
@@ -4994,6 +5006,55 @@ fn render_discriminated_union(
         imports.render(),
         classes.join("\n\n\n")
     ))
+}
+
+/// Keep the public payload constructor while adapting the schema's flat wire object.
+pub(crate) fn nested_discriminator_methods(tag: &str, field: &str, inner_tag: &str) -> String {
+    let flat_input = if inner_tag == "value" {
+        // A flat discriminator is a string; the public payload is a model or mapping.
+        "(isinstance(data.get(\"value\"), str) or \"value\" not in data)".to_owned()
+    } else {
+        format!(
+            "({} in data or \"value\" not in data)",
+            serde_json::to_string(inner_tag).expect("a string is JSON serializable")
+        )
+    };
+    let tag = serde_json::to_string(tag).expect("a string is JSON serializable");
+    format!(
+        r#"
+
+    if IS_PYDANTIC_V2:
+        @pydantic.model_validator(mode="before")
+        @classmethod
+        def _unflatten_value(cls, data: typing.Any) -> typing.Any:
+            if isinstance(data, dict) and {flat_input}:
+                return {{"value": data, {tag}: data.get({tag})}}
+            return data
+
+        @pydantic.model_serializer(mode="wrap")
+        def serialize_model(self, handler: typing.Any) -> typing.Any:
+            data = handler(self)
+            value = data.pop("value", {{}})
+            return {{**value, **data, {tag}: self.{field}}}
+    else:
+        @pydantic.root_validator(pre=True)
+        def _unflatten_value(cls, data: typing.Any) -> typing.Any:
+            if isinstance(data, dict) and {flat_input}:
+                return {{"value": data, {tag}: data.get({tag})}}
+            return data
+
+        def _iter(self, *args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+            if not kwargs.get("to_dict", False):
+                yield from super()._iter(*args, **kwargs)
+                return
+            data = dict(super()._iter(*args, **kwargs))
+            value = data.pop("value", {{}})
+            if isinstance(value, pydantic.BaseModel):
+                value = value.dict(by_alias=kwargs.get("by_alias", False))
+            yield from {{**value, **data, {tag}: self.{field}}}.items()
+"#,
+        field = field
+    )
 }
 
 /// The Python name of a discriminated union's tag field: the one its
@@ -8989,7 +9050,7 @@ impl<'a> ExampleCtx<'a> {
                 .as_deref()
                 .map(|source| naming::child_class_name(source, &union.discriminant_property))
                 .is_some_and(|enum_name| matches!(self.find(&enum_name), Some(TypeDecl::Enum(_))));
-        if member.wrapped || writes_tag || member.source.is_some() {
+        if member.layout.is_wrapped() || writes_tag || member.source.is_some() {
             return None;
         }
         let fields = member
@@ -9882,7 +9943,7 @@ impl<'a> ExampleCtx<'a> {
                 // the one argument Fern's docstring writer leaves without a
                 // trailing comma (the hand-written `kitchen-nested-mapping-target`
                 // fixture's `Course_Grill(value=SteakOrder(…))`).
-                Some(m) if m.wrapped => {
+                Some(m) if m.layout.is_wrapped() => {
                     self.record_ref(&m.class_name);
                     let payload = m.fields.first().map(|field| field.type_ref.clone());
                     let value = payload.map_or_else(
@@ -14521,7 +14582,7 @@ mod tests {
                 module: "modify_message_request_body".to_string(),
                 discriminant_property: "message_type".to_string(),
                 members: vec![UnionMember {
-                    wrapped: false,
+                    layout: crate::ir::UnionMemberLayout::Flattened,
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
                     discriminant_index: None,
@@ -15415,7 +15476,7 @@ mod tests {
             module: "shape".to_string(),
             discriminant_property: "kind".to_string(),
             members: vec![UnionMember {
-                wrapped: false,
+                layout: crate::ir::UnionMemberLayout::Flattened,
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
                 discriminant_index: None,
@@ -16187,7 +16248,7 @@ mod tests {
             module: "content".to_string(),
             discriminant_property: "type".to_string(),
             members: vec![UnionMember {
-                wrapped: false,
+                layout: crate::ir::UnionMemberLayout::Flattened,
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
                 discriminant_index: None,

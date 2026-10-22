@@ -183,7 +183,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 19 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 20 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -333,6 +333,15 @@ when the two differ.
 - **crozier writes:** The same example with that required file's placeholder in the form Fern's README uses (`image="example_image"`), preserving every other argument, the method signature, imports and request encoding.
 - **Why:** Binding the documented call to the actual generated sync or async method raises TypeError for a missing required argument. The correction makes the example bind without changing valid generated SDK behavior.
 - **Evidence:** [`docs/departures/evidence/multipart-object-required-file-example.md`](../../docs/departures/evidence/multipart-object-required-file-example.md)
+
+### `nested-discriminator-flat-wire`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A discriminated union mapping to another discriminated union, whose public variant holds the inner union in value.
+- **Fern writes:** Serializes a kind/value envelope that fails the source schema, rejects the schema-valid flat provider payload for missing value, and writes an empty argument in the README and reference examples.
+- **crozier writes:** Retains Fern's public classes, fields and value constructors, flattens the wire payload and parses flat responses under Pydantic v1 and v2. Worked examples construct the inner variant through value.
+- **Why:** The certified SDK cannot exchange the payload its own OpenAPI document declares. Runtime schema validation demonstrates the serialization failure and the rejection of a valid provider response in both Pydantic majors.
+- **Evidence:** [`docs/departures/evidence/nested-discriminator-flat-wire.md`](../../docs/departures/evidence/nested-discriminator-flat-wire.md)
 
 ### `nullable-items-docs`
 

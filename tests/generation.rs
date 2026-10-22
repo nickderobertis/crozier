@@ -16173,3 +16173,88 @@ fn examples_docs_cases_render_to_their_certified_trees() {
         );
     }
 }
+
+#[test]
+fn nested_discriminator_departure_keeps_every_other_byte() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-measurements/examples/nested-discriminator-wire");
+    let reference = fern_tree(&fixture.join("fern-expected"));
+    let files: HashMap<String, String> = render_files(GenerateArgs {
+        spec: fixture.join("openapi.yml"),
+        output: PathBuf::from("unused"),
+        package_name: Some("fern".into()),
+        project_name: Some("default_package_name".into()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        fern_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+        layout: crozier::settings::Layout::Packaged,
+    })
+    .unwrap()
+    .into_iter()
+    .map(|file| (file.path.to_string_lossy().into_owned(), file.contents))
+    .collect();
+    let context = crozier::departures::Context::from_sources(
+        reference
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        files
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+    )
+    .with_source_document(crozier::openapi::load(&fixture.join("openapi.yml")).unwrap());
+    let mut generated: Vec<_> = files.keys().collect();
+    generated.sort();
+    assert_eq!(
+        generated,
+        reference.iter().map(|(rel, _)| rel).collect::<Vec<_>>()
+    );
+    for (rel, fern) in &reference {
+        let compared = crozier::parity::compare_file(&context, rel, &files[rel], fern).unwrap();
+        assert!(
+            compared.matches(),
+            "{rel}: {}",
+            compared.diff().unwrap_or_default()
+        );
+    }
+    // Comparing malformed source text is a residual, never an indexing panic.
+    let rel = "src/fern/types/pastry.py";
+    let decorator = files[rel].find("@pydantic.model_validator").unwrap();
+    let malformed = format!(
+        "class Pastry_Tart(UniversalBaseModel):\n{}",
+        &files[rel][decorator..]
+    );
+    let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+    assert!(
+        !crozier::parity::compare_file(&context, rel, &malformed, &fern.1)
+            .unwrap()
+            .matches()
+    );
+    for (rel, from, to) in [
+        (
+            "src/fern/types/pastry.py",
+            "data.pop(\"value\", {})",
+            "data.pop(\"wrong\", {})",
+        ),
+        (
+            "src/fern/types/pastry.py",
+            "value: TartOrder",
+            "payload: TartOrder",
+        ),
+        ("README.md", "fruit=\"fruit\"", "filling=\"fruit\""),
+        ("reference.md", "fruit=\"fruit\"", "fruit=\"wrong\""),
+    ] {
+        let changed = files[rel].replace(from, to);
+        assert_ne!(changed, files[rel]);
+        let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+        assert!(
+            !crozier::parity::compare_file(&context, rel, &changed, &fern.1)
+                .unwrap()
+                .matches(),
+            "departure hid {from} -> {to}"
+        );
+    }
+}

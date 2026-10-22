@@ -679,6 +679,10 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden::default(),
         );
     }
+    add(
+        "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected".to_owned(),
+        departures_ledger::ComparedGolden::default(),
+    );
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
@@ -20845,8 +20849,25 @@ fn cached_python_env(
     requirements: &[String],
     use_uv: bool,
 ) -> Result<PathBuf, String> {
-    let base = python_interpreter().ok_or("no python3/python on PATH")?;
-    let key = sha256_hex(requirements.join("\n").as_bytes());
+    cached_python_env_for_python(root, prefix, requirements, use_uv, None)
+}
+
+/// Pin an interpreter where a dependency major does not support the host Python.
+fn cached_python_env_for_python(
+    root: &Path,
+    prefix: &str,
+    requirements: &[String],
+    use_uv: bool,
+    python: Option<&str>,
+) -> Result<PathBuf, String> {
+    let base = python
+        .map_or_else(
+            || python_interpreter().map(str::to_owned),
+            |version| Some(format!("python{version}")),
+        )
+        .ok_or("no python3/python on PATH")?;
+    let key =
+        sha256_hex(format!("{}\n{}", python.unwrap_or("host"), requirements.join("\n")).as_bytes());
     let venv = root.join(format!("{prefix}-{}", &key[..16]));
     let venv_py = venv_python(&venv);
     let ready = venv.join(".crozier-ready");
@@ -20877,6 +20898,9 @@ fn cached_python_env(
     if use_uv {
         let mut venv_cmd = std::process::Command::new("uv");
         venv_cmd.args(["venv", "--allow-existing"]).arg(&venv);
+        if let Some(python) = python {
+            venv_cmd.args(["--python", python]);
+        }
         run(venv_cmd, "uv venv")?;
         let mut install = std::process::Command::new("uv");
         install
@@ -27606,3 +27630,91 @@ fn github_corpus_retains_its_refusal_with_parser_budgets() {
         );
     }
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] sdk-env is a promoted, required CI leg on every PR; #[ignore] is the prescribed routing mechanism for its SDK journeys. The shared e2eSource input does not newly trigger this journey on unrelated affected-tier changes.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_nested_discriminators_keep_constructors_and_use_flat_wire() {
+    let root = repo_root();
+    let fixture = root.join("docs/fern-measurements/examples/nested-discriminator-wire");
+    let spec = fixture.join("openapi.yml");
+    let script = root.join("crates/crozier-e2e/tests/e2e/evidence/nested-discriminator-wire.py");
+    let variants = tempfile::tempdir().expect("nested discriminator source variants");
+    let value_spec = variants.path().join("value-discriminator.yml");
+    let source = std::fs::read_to_string(&spec).unwrap();
+    std::fs::write(
+        &value_spec,
+        source
+            .replace("propertyName: crust", "propertyName: value")
+            .replace("[kind, crust,", "[kind, value,")
+            .replace("\n        crust:", "\n        value:"),
+    )
+    .unwrap();
+    for spec in [&spec, &value_spec] {
+        for strict in [false, true] {
+            let sdk = tempfile::tempdir().expect("nested discriminator SDK");
+            let mut command = probe_command(spec, sdk.path());
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().success();
+            for major in ["1.10.26", "2.14.1"] {
+                let requirements = [
+                    format!("pydantic=={major}"),
+                    "httpx==0.28.1".into(),
+                    "typing_extensions==4.16.0".into(),
+                    "jsonschema==4.26.0".into(),
+                    "PyYAML==6.0.3".into(),
+                ];
+                let python = cached_python_env_for_python(
+                    &python_env_root(),
+                    "crozier-nested-discriminator",
+                    &requirements,
+                    uv_available(),
+                    Some("3.11"),
+                )
+                .expect("Pydantic v1/v2 SDK environment (Python 3.11 required without uv)");
+                Command::new(python)
+                    .arg(&script)
+                    .arg(sdk.path())
+                    .arg(spec)
+                    .env("PYTHONDONTWRITEBYTECODE", "1")
+                    .assert()
+                    .success()
+                    .stdout(predicate::str::contains(
+                        "flat wire, recovery and README pass",
+                    ));
+            }
+        }
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered golden comparisons share crozier-e2e’s compiled-binary harness and departure ledger. Isolating their graph edges requires splitting that shared harness, beyond this wire-format correction.
+#[test]
+fn nested_discriminator_golden_diff_is_only_the_flat_wire_departure() {
+    let root = repo_root();
+    let fixture = "docs/fern-measurements/examples/nested-discriminator-wire";
+    let spec = root.join(fixture).join("openapi.yml");
+    let golden = format!("{fixture}/fern-expected");
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .expect("nested discriminator ledger");
+    for strict in [false, true] {
+        let output = tempfile::tempdir().expect("nested discriminator golden SDK");
+        let mut command = probe_command(&spec, output.path());
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        let failures = golden_tree_failures(
+            "nested discriminator",
+            spec.to_str().unwrap(),
+            &ledger,
+            &root.join(&golden),
+            output.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
