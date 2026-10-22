@@ -1,0 +1,37 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: None -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 200
+licence file LICENSE.md -> None
+--- LICENSE.md (first 30 non-blank lines) ---
+1          Definitions.
+1.1       "Database Rights" means, to the extent any content in the Licensed Material is subject to any sui generis database right under any applicable law, the rights to extract, reuse, reproduce, and Share all or a substantial portion of the content subject to such database right.
+1.2       "Derivative" means any work or other creation that is a derivative work or otherwise derived from, based on, or including or using the Licensed Material, or any information or content thereof, in whatever form, format, or medium, now known or becoming known in the future.
+1.3       "Licensed Rights" means any copyrights (including exclusive rights of reproduction, performance, display, creation of derivative works, and distribution), and any Database Rights, in the Licensed Material anywhere in the world owned by Licensor that Licensor has the right to license.  Licensed Rights do not include (i) any intellectual property or other rights other than copyrights and Database Rights (including, without limitation, any rights in, to, or under any patent, patent application, trademark, service mark, trade dress, name, domain name, trade secret, or other intellectual property right anywhere in the world), (ii) any rights of integrity or attribution or other moral rights anywhere in the world, (iii) any rights to assert or enforce any copyrights or Database Rights against any other person, including, without limitation, in case of any infringement or violation, or to assert or collect any remedy therefor, and (iv) any copyrights or Database Rights in any subject matter other than the Licensed Material.
+1.4       "Licensor" means World Business Council for Sustainable Development.
+1.5       "Modified Version" means any copy or version of the Licensed Material that includes any alteration of, editing of, deletion from, addition or supplement to, or change or redaction of, or any variation of any content or information of, the Licensed Material, in whatever form, format, or medium, now known or becoming known in the future.
+1.6       "Non-Commercially" means without the primary intent for or directed towards commercial advantage or monetary compensation.
+1.7       "Reproduction" means an exact reproduction and copy of the Licensed Material as a whole or of any Translation released by Licensor under this License, without any alteration, edits, deletions, additions, supplements, changes, or redactions, and including, for the avoidance of doubt, this License.  A Modified Version is not a Reproduction.
+1.8       "Separate Derivative" means any Derivative that does not consist of or include a Reproduction, any Modified Version, or any Translation, or a part of a Reproduction, Modified Version, or Translation that is by itself the subject of Licensed Rights.  An example of a Separate Derivative is a software program, course, written material, or program that uses or implements the information included in the Licensed Material without including, displaying, or performing the Licensed Material, any Modified Version, or any Translation, or any portion thereof.
+1.9       "Share" means to provide, by any means or process, including by distribution of a copy, reproduction, public display, public performance, dissemination, communication, or importation, or to make available for access on a website or otherwise, to any other person as a member of the public
+1.10     "Translation" means any translation of the Licensed Material as a whole (and not only a part thereof) that into any language other than English that reasonably accurately reflects the content of the Licensed Material in such other language.
+1.11     "Use" means the practice or exercise of any of the Licensed Rights
+2         License.
+2.1       Subject to the terms and conditions of this License, Licensor hereby grants User during the Term (as defined in Section 6.1), solely under the Licensed Rights, a non-exclusive, worldwide, royalty-free, non-sublicensable, non-transferable, irrevocable license to Use the Licensed Material solely to:
+a.         reproduce, but not Share (other than as permitted under Section 2.1(c)),
+             the Licensed Material or any part thereof;
+b.         create, but not Share (other than as permitted under Section 2.1(d)), any
+             Derivative;
+c.         Share (subject to compliance with Section 3.1) any Reproduction but only
+             Non-Commercially;
+d.         Share (subject to compliance with Section 3.2) any Separate Derivative, and
+             create from such Separate Derivative any further Separate Derivatives and
+             Share such further Separate Derivatives, all whether Non-Commercially or
+             commercially.
+2.2       If User Shares a Reproduction under Section 2.1(c) to another person, User automatically grants such other person an offer from Licensor to Use such Reproduction under this License, and such other person shall be deemed to accept and be subject to this License (and be a User under this License) once such other person make any Use of the Licensed Material or any part thereof.  Other than this License, User may not impose any limitations, restrictions (technical, legal, or otherwise), payment, terms, conditions, or requirement of any kind on any such other person related to the access to or Use of such Reproduction under this License.
+2.3       User shall make any User and exercise any of the Licensed Rights solely in accordance and compliance with all applicable law, and User shall not infringe any intellectual property right of any third party and/or misappropriate any information or intellectual property of any third party.
+3         Attribution.
+3.1       If User Shares any Reproduction under Section 2.1(c), User must retain, and not change, obstruct, or obscure in such Reproduction, the following information:
+(i)         identification of Licensor as the owner or rightholder of the Licensed 
+              Rights in the Licensed Material, and the name of any creator(s) of the 
+outcome: failed: the document could not be read for its info.license

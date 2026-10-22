@@ -1707,7 +1707,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 26] = [
+pub const RULE_IDS: [&str; 27] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1715,6 +1715,7 @@ pub const RULE_IDS: [&str; 26] = [
     "collapsed-anyof-property-description",
     "constant-header-docs-arguments",
     "date-header-constructor-example",
+    "digit-leading-method-reference-identifiers",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
@@ -1752,6 +1753,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "collapsed-anyof-property-description" => Rule {
             line: Some(collapsed_anyof_property_description),
             added_at: Some(collapsed_anyof_property_description_line),
+            ..none
+        },
+        "digit-leading-method-reference-identifiers" => Rule {
+            line: Some(digit_leading_method_reference_identifiers),
             ..none
         },
         "emoji-tag-reference-identifiers" => Rule {
@@ -3932,9 +3937,125 @@ fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -
         })
 }
 
+/// Only the underscore missing from a declared, generated method's documentation.
+fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    source
+        .paths
+        .values()
+        .flat_map(|item| item.operations())
+        .any(|(_, operation)| {
+            let Some(id) = operation.operation_id.as_deref() else {
+                return false;
+            };
+            if operation.sdk_method_name().is_some()
+                || !id.starts_with(|character: char| character.is_ascii_digit())
+            {
+                return false;
+            }
+            let raw = crate::naming::to_snake_case(id);
+            let identifier = crate::naming::sanitize_identifier(&raw);
+            let generated = pair
+                .context
+                .crozier_method_returns()
+                .keys()
+                .any(|(_, method)| method == &identifier);
+            let call =
+                crozier
+                    .split_once(&format!(".{identifier}("))
+                    .is_some_and(|(head, tail)| {
+                        let receiver = head.trim_start();
+                        let receiver = receiver.strip_prefix("response = ").unwrap_or(receiver);
+                        (receiver == "client" || receiver.starts_with("client."))
+                            && receiver
+                                .chars()
+                                .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.')
+                            && format!("{head}.{raw}({tail}") == fern
+                    });
+            let heading = crozier.starts_with("<details><summary><code>client.")
+                && crozier
+                    .split_once(&format!(">{identifier}</a>"))
+                    .is_some_and(|(head, tail)| {
+                        head.contains("<a href=\"")
+                            && !head.contains("</a>")
+                            && format!("{head}>{raw}</a>{tail}") == fern
+                    });
+            generated && (call || heading)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn digit_leading_documented_methods_require_the_declared_generated_identifier() {
+        let document = serde_json::json!({"paths": {"/readings": {"get": {
+            "operationId": "7readings", "responses": {}
+        }}}});
+        let context = source_context(
+            document.clone(),
+            &[(
+                "src/fern/client.py",
+                "    def _7readings(self) -> None:\n        pass\n",
+            )],
+        );
+        let fern = "client.7readings()";
+        let crozier = "client._7readings()";
+        let rule: LineRule = digit_leading_method_reference_identifiers;
+        for rel in ["README.md", "reference.md"] {
+            assert!(line_holds(rule, rel, &context, fern, crozier));
+            assert!(!line_holds(
+                rule,
+                rel,
+                &context,
+                fern,
+                "client._7readings(changed=True)"
+            ));
+        }
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &context,
+            "client.other(name=\"client.7readings()\")",
+            "client.other(name=\"client._7readings()\")"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/client.py",
+            &context,
+            fern,
+            crozier
+        ));
+        let absent = source_context(document, &[]);
+        assert!(!line_holds(rule, "README.md", &absent, fern, crozier));
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &Context::default(),
+            fern,
+            crozier
+        ));
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &context,
+            "print(\"7readings\")",
+            "print(\"_7readings\")"
+        ));
+        assert!(line_holds(
+            rule,
+            "reference.md",
+            &context,
+            "<details><summary><code>client.<a href=\"client.py\">7readings</a>()</code></summary>",
+            "<details><summary><code>client.<a href=\"client.py\">_7readings</a>()</code></summary>"
+        ));
+    }
 
     fn pair<'a>(rel: &'a str, fern: &'a [&'a str], crozier: &'a [&'a str]) -> Pair<'a> {
         static EMPTY: OnceLock<Context> = OnceLock::new();

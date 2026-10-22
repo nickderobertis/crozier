@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/censys/censys-typescript/583629f1416dc0eaeb3db343b3ecda0d86b743a8/packages/censys-search/openapi.yml
+HTTP 200
+146659 bytes, sha256 77efeb32ed6362e9a8d8ee9b3d145beb7dd25f8600442622869d2ade8a80b901
+pinned sha256 (none)
+outcome: passed: 146659 bytes read at the immutable commit 583629f1416dc0eaeb3db343b3ecda0d86b743a8, sha256 77efeb32ed6362e9a8d8ee9b3d145beb7dd25f8600442622869d2ade8a80b901

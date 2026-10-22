@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jentic/jentic-public-apis/1700c576aa658b5dc3bd06cb376cc959d84e12f8/apis/openapi/paraspot.ai/main/1.0.0/meta/import/input-bundle.json
+HTTP 200
+74045 bytes, sha256 70eb1725d10a4f875327acfd91d556f10eea16f62ef4211f799ec039a458af89
+pinned sha256 (none)
+outcome: passed: 74045 bytes read at the immutable commit 1700c576aa658b5dc3bd06cb376cc959d84e12f8, sha256 70eb1725d10a4f875327acfd91d556f10eea16f62ef4211f799ec039a458af89

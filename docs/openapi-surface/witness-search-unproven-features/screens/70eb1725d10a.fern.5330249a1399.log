@@ -1,0 +1,22 @@
+--- fern check (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+All checks passed
+
+--- fern generate (exit 0) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/70eb1725d10a4f875327acfd91d556f10eea16f62ef4211f799ec039a458af89/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-659407-KPydhWV6h1LP
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/70eb1725d10a4f875327acfd91d556f10eea16f62ef4211f799ec039a458af89/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+

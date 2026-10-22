@@ -38,8 +38,9 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Final, Literal, NamedTuple, NewType, get_args
+from typing import Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -74,6 +75,8 @@ EVIDENCE_CELL = re.compile(
     r"search: (?P<verdict>[a-z-]+) \(\[record\]\((?P<link>[^)\s]+)\)\)$"
 )
 E2E_COVERS = REGIONS / "handwritten-e2e.toml"
+RESIDUAL_PROOFS = REGIONS / "residual-handwritten.toml"
+RESIDUAL_FIELDS = {"key", "fixture", "file", "test", "mode"}
 E2E_EVIDENCE_CELL = re.compile(
     r"^handwritten-e2e: (?P<fixture>docs/fern-measurements/[a-z0-9/-]+); "
     r"test: (?P<test>[a-z0-9_]+); evidence: \[note\]\((?P<evidence>[^)\s]+)\); "
@@ -119,6 +122,123 @@ class Fixture(NamedTuple):
     digest: str
     covers: tuple[Cover, ...]
     audiences: tuple[str, ...]
+
+
+class ResidualProof(NamedTuple):
+    key: str
+    fixture: str
+    file: str
+    test: str
+    mode: str
+
+
+def read_residual_proofs(root: Path) -> tuple[list[ResidualProof], list[str]]:
+    """Versioned supplemental proofs; ordinary fixture evidence stays unchanged."""
+    path = root / RESIDUAL_PROOFS
+    if not path.is_file():
+        return [], []
+    where = RESIDUAL_PROOFS.name
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return [], [f"{where}: cannot read supplemental proofs: {error}"]
+    if (
+        set(data) != {"version", "proofs"}
+        or type(data["version"]) is not int
+        or data["version"] != 1
+        or not isinstance(data["proofs"], list)
+    ):
+        return [], [f"{where}: expected version = 1 and proofs tables"]
+    proofs = []
+    failures = []
+    seen = set()
+    for row in data["proofs"]:
+        if (
+            not isinstance(row, dict)
+            or set(row) != RESIDUAL_FIELDS
+            or any(not isinstance(value, str) or not value for value in row.values())
+        ):
+            failures.append(f"{where}: every proof needs exactly {sorted(RESIDUAL_FIELDS)}, all nonempty strings")
+            continue
+        if (
+            not re.fullmatch(r"[a-z][a-z0-9-]*", row["key"])
+            or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["fixture"])
+            or not re.fullmatch(r"[a-z_][a-z0-9_]*", row["test"])
+            or row["mode"] not in {"absence", "motion"}
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", row["file"])
+            or any(part in {".", ".."} for part in row["file"].split("/"))
+        ):
+            failures.append(f"{where}: invalid key, fixture, file, test or proof mode for {row['key']}")
+            continue
+        if row["key"] in seen:
+            failures.append(f"{where}: duplicate proof for {row['key']}")
+            continue
+        seen.add(row["key"])
+        proofs.append(ResidualProof(*(row[field] for field in ("key", "fixture", "file", "test", "mode"))))
+    return proofs, failures
+
+
+class GoldenWitnesses(Protocol):
+    """Only the measured ledger's witness names are needed for admission."""
+
+    @property
+    def witnesses(self) -> tuple[str, ...]: ...
+
+
+def residual_proof_failures(
+    root: Path,
+    proofs: list[ResidualProof],
+    fixtures: dict[str, Fixture],
+    rows: dict[str, tuple[str, list[str]]],
+    ledger: Mapping[str, GoldenWitnesses],
+) -> list[str]:
+    """Only residual-only golden rows with a bound real-CLI journey qualify."""
+    if not proofs:
+        return []
+    engine = census()
+    try:
+        registry_path = root / engine.GOLDEN_REGISTRY
+        registrations = engine.golden_registrations(registry_path)
+        test_source = registry_path.read_text(encoding="utf-8")
+    except (OSError, ValueError) as error:
+        return [f"{RESIDUAL_PROOFS.name}: cannot read golden and proof journeys: {error}"]
+    failures = []
+    for proof in proofs:
+        where = f"{RESIDUAL_PROOFS.name} `{proof.key}`"
+        entry = ledger.get(proof.key)
+        witnesses = entry.witnesses if entry else ()
+        if (
+            proof.key not in rows
+            or rows[proof.key][1][3].strip("`") != "golden"
+            or not witnesses
+            or any(name not in registrations or not registrations[name].unmatched for name in witnesses)
+        ):
+            failures.append(f"{where}: supplemental proof requires only registered residual golden witnesses")
+        fixture = fixtures.get(proof.fixture)
+        if fixture is None or not any(cover.key == proof.key and cover.arm is None for cover in fixture.covers):
+            failures.append(f"{where}: its fixture needs the matching feature-level cover")
+        tree = root / HANDWRITTEN / proof.fixture / "fern-expected"
+        file = tree / proof.file
+        if not file.is_file() or file.is_symlink() or not file.resolve().is_relative_to(tree.resolve()):
+            failures.append(f"{where}: byte-matched proof file {proof.file} is missing or outside its certified tree")
+        test = re.search(
+            r"#\[test\]\s*fn " + re.escape(proof.test) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source
+        )
+        body = test.group(1) if test else ""
+        if not body or any(
+            token not in body
+            for token in (
+                proof.fixture,
+                proof.file,
+                "probe_command",
+                "filtered_tree_failures",
+                "assert!(failures.is_empty()",
+            )
+        ):
+            failures.append(
+                f"{where}: bind the certified file to a gated real-CLI full-tree comparison and example journey"
+            )
+    return failures
 
 
 # The census key of the shape a cover proves, shared with the region row it settles.
@@ -624,6 +744,9 @@ def gate(root: Path) -> dict[str, Any]:
             fixtures[name] = fixture
 
     rows = region_rows(root)
+    residual, found = read_residual_proofs(root)
+    failures += found
+    residual_by_key = {proof.key: proof for proof in residual}
     e2e_keys, found = e2e_cover_failures(root, rows)
     failures += found
     reach = golden_reach()
@@ -662,7 +785,10 @@ def gate(root: Path) -> dict[str, Any]:
             category = rows[cover.key][1][3].strip("`")
             if cover.arm is None:
                 feature_covers.setdefault(cover.key, []).append((name, cover))
-                if category != "handwritten":
+                supplement = residual_by_key.get(cover.key)
+                if category != "handwritten" and not (
+                    category == "golden" and supplement is not None and supplement.fixture == name
+                ):
                     failures.append(
                         f"{where}: a feature-level cover's row must read `handwritten`, and it reads "
                         f"`{category}` — reclassify the row, or make the cover arm-level"
@@ -747,6 +873,7 @@ def gate(root: Path) -> dict[str, Any]:
                 f"{key}: golden-reach-sites.tsv lists it, so a golden source declares it and it is not `handwritten`"
             )
 
+    failures += residual_proof_failures(root, residual, fixtures, rows, ledger)
     failures += isolation_failures(root, sorted(e.name for e in base.iterdir() if e.is_dir()), ledger)
     return {
         "fixtures": {

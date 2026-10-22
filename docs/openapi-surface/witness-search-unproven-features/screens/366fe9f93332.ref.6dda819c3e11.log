@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/photos-network/developers.photos.network/711d90a045b1111180c8e82d373ff0c8c672edb5/docs/plugins/openapi.yaml
+HTTP 200
+29909 bytes, sha256 366fe9f93332680af29de96a8a99dfb2e767d6fe4dfab5d61b6f55847aa76a4f
+pinned sha256 (none)
+outcome: passed: 29909 bytes read at the immutable commit 711d90a045b1111180c8e82d373ff0c8c672edb5, sha256 366fe9f93332680af29de96a8a99dfb2e767d6fe4dfab5d61b6f55847aa76a4f

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/berkut1/scpm/aaf8f2a0d95a8ae9449fe5134f46ce548918f20e/public/docs/openapi.json
+HTTP 200
+68447 bytes, sha256 964b28164f1c1eda212c827b6ef9d9c2fed2718dac3b88ce42af663623273767
+pinned sha256 (none)
+outcome: passed: 68447 bytes read at the immutable commit aaf8f2a0d95a8ae9449fe5134f46ce548918f20e, sha256 964b28164f1c1eda212c827b6ef9d9c2fed2718dac3b88ce42af663623273767

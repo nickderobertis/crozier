@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/rcheman/PlayReadingParty/0973b565ca01c462d6d5b9c5d46a58591618637a/openapi.yaml
+HTTP 200
+11126 bytes, sha256 d0ce147062498b531b11c3ba42edffce6b8bb270c3461bd969a66c5ebb8408d9
+pinned sha256 (none)
+outcome: passed: 11126 bytes read at the immutable commit 0973b565ca01c462d6d5b9c5d46a58591618637a, sha256 d0ce147062498b531b11c3ba42edffce6b8bb270c3461bd969a66c5ebb8408d9

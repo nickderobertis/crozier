@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/NemeStats/NemeStats/51e7aacc1c118f440c168e0662be8e8ceafb84a1/nemestatsopenapi3.json
+HTTP 200
+82684 bytes, sha256 639b4f14ae167a3c0515cdc49d705216ffa50146f90e96cde7244c836bbe0d46
+pinned sha256 (none)
+outcome: passed: 82684 bytes read at the immutable commit 51e7aacc1c118f440c168e0662be8e8ceafb84a1, sha256 639b4f14ae167a3c0515cdc49d705216ffa50146f90e96cde7244c836bbe0d46

@@ -47,6 +47,7 @@ pub(super) fn first_violation_in(root: &Value, text: &str) -> Option<(Class, Str
             .or_else(|| doc.read_only_shadows_required_parent(&operation))
             .or_else(|| doc.discriminant_required_by_grandparent(&operation))
             .or_else(|| doc.schema_scalar_example(&operation))
+            .or_else(|| doc.event_stream_integer_example(&operation))
             .or_else(|| doc.media_scalar_example(&operation))
             .or_else(|| doc.shadowed_union_property(&operation))
             .or_else(|| doc.fern_examples(&operation))
@@ -915,6 +916,23 @@ impl<'a> Doc<'a> {
                     )
                 })
             })
+    }
+
+    /// The measured event-stream response boundary: fractional schema examples
+    /// on integers, including optional response properties. Request properties
+    /// keep their separate required-only traversal above.
+    fn event_stream_integer_example(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        let (_, response) = self.successes(operation).into_iter().next()?;
+        let media = response.get("content")?.get("text/event-stream")?;
+        if media.get("example").is_some() || media.get("examples").is_some() {
+            return None;
+        }
+        self.reach(media.get("schema")?, false, &mut |node| {
+            let example = node.get("example")?;
+            (is_type(node, "integer") && example.is_number() && !is_integral(example))
+                .then(|| format!("response example {}", literal(example)))
+        })
+        .map(|detail| (Class::ExampleTypeMismatch, detail))
     }
 
     /// The first written media example of the first success response and of the
@@ -1930,6 +1948,53 @@ mod tests {
             verdict("error-object-example-control.json").map(|(_, text)| text),
             None
         );
+    }
+
+    #[test]
+    fn fractional_integer_response_examples_include_event_streams() {
+        let root = yaml(
+            r#"paths:
+  /readings:
+    get:
+      responses:
+        '200':
+          description: Reading events
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  ticks: {type: integer, example: 2.5}
+"#,
+        );
+        assert_eq!(
+            first_violation(&root).map(|(class, detail)| (class.id(), detail)),
+            Some((
+                "example-type-mismatch",
+                "GET /readings response example 2.5".to_owned()
+            ))
+        );
+        let mut control = root.clone();
+        control["paths"]["/readings"]["get"]["responses"]["200"]["content"]["text/event-stream"]
+            ["schema"]["properties"]["ticks"]["example"] = serde_json::json!(2);
+        assert!(first_violation(&control).is_none());
+        let request = yaml(
+            r#"paths:
+  /readings:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticks: {type: integer, example: 2.5}
+      responses:
+        '204': {description: Accepted}
+"#,
+        );
+        assert!(first_violation(&request).is_none());
     }
 
     #[test]

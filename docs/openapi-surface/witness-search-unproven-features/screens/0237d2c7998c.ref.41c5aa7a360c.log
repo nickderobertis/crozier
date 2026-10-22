@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/speakeasy-api/examples/0cae85f27d34456a7630342b4e27937f659ceada/framework-fastapi/openapi.yaml
+HTTP 200
+15594 bytes, sha256 0237d2c7998caede76d9b5f5e81e93bf354f959ac04af5b62d7c9968761b8c00
+pinned sha256 (none)
+outcome: passed: 15594 bytes read at the immutable commit 0cae85f27d34456a7630342b4e27937f659ceada, sha256 0237d2c7998caede76d9b5f5e81e93bf354f959ac04af5b62d7c9968761b8c00

@@ -1,0 +1,5 @@
+fern_cli_version: 5.163.1
+fern_python_sdk_version: 5.41.3
+generate_exit: 1
+diagnostic: optional<root.GeometryGeoJson> is not a valid type for a query parameter
+output_tree: none

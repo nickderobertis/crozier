@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/opengeospatial/T17-API-D166/b4328b9cb3775eb01f3a46b33b73597f33cff8af/features/api/openapi.yaml
+HTTP 200
+44470 bytes, sha256 ffbd86a7c53ee795a01158b18b6fd78e8c59a83bc966b7e442ed39451839cd92
+pinned sha256 (none)
+outcome: passed: 44470 bytes read at the immutable commit b4328b9cb3775eb01f3a46b33b73597f33cff8af, sha256 ffbd86a7c53ee795a01158b18b6fd78e8c59a83bc966b7e442ed39451839cd92

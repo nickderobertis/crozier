@@ -102,6 +102,9 @@ range-5XX	absent-tree	measured	docs/openapi-surface/probe-expected/range-5XX	—
 ref-pointer-undeclared-component-head	absent-tree	measured	docs/openapi-surface/probe-expected/ref-pointer-undeclared-component-head	—	58a0c5f21c875b3c555787c4432fa1af2aa5cf92f4b3ef179ce2e5e06fc29171
 ref-pointer-unnamed-segment	refusal	refuses	docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt	—	82df112d57411611dbe1d7a1f2651eaf010bb3254bb61c4558ede7004a0adf5e
 reference-summary	differential	ignores	docs/openapi-surface/probe-expected/reference-summary	reference-summary-control	26f70c1b34a9b8c9a7e7607fe51d509a88e5bbc68d9e544d0ce5e42f8e2b3e04
+schema-example-fractional-on-integer-event-stream	refusal	refuses	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream.fern-refusal.txt	—	2a0ce9f4d396e4ff6ce6075b1ec214729892302421d7ed867614cee962df334a
+schema-example-fractional-on-integer-event-stream-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream-control	—	ebae261adfe01a6a6d43050a1c0f1c1ded845f6652ab2f0c10181a1018ab00ad
+schema-example-fractional-on-integer-optional-request-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-optional-request-control	—	d4a42cea9316a20ea6bfffa358bf1ec7f9d9b266dfcc6dd0f92876e00a3a0a0c
 server-description-multiword	absent-tree	discards	docs/openapi-surface/probe-expected/server-description-multiword	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 servers-three-levels	absent-tree	discards	docs/openapi-surface/probe-expected/servers-three-levels	—	260673c2ef2063ccc6e69d6850422ddbff593df192fcb4bba1fa991c35e601de
 spaceDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/spaceDelimited-object	—	40385b2cd0f0da666d23940a1d640e04eb5c3e7a73c1a5339594057ec3c57928

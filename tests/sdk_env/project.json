@@ -22,7 +22,11 @@
         "{workspaceRoot}/docs/fern-refusals/**/*",
         "{workspaceRoot}/tests/runtime/**/*",
         "generator",
-        "default"
+        "default",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation_runtime.py",
+        "{workspaceRoot}/.ruff-version"
       ],
       "dependsOn": [
         {

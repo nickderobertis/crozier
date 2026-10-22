@@ -8779,7 +8779,10 @@ impl<'a> ExampleCtx<'a> {
             let values: Vec<serde_json::Value> = serde_json::from_value(value).ok()?;
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
-                if !self.example_is_temporal(inner) || !unique.contains(&value) {
+                if matches!(t, TypeRef::List(_))
+                    || !self.example_is_temporal(inner)
+                    || !unique.contains(&value)
+                {
                     unique.push(value);
                 }
             }
@@ -15036,9 +15039,9 @@ mod tests {
                 &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Date))),
                 r#"["2024-02-03","2024-02-03"]"#,
             )
-            .expect("documentation temporal lists remove duplicate values")
+            .expect("documentation temporal lists preserve duplicate values")
             .flat(),
-            "[datetime.date.fromisoformat(\"2024-02-03\")]"
+            "[datetime.date.fromisoformat(\"2024-02-03\"), datetime.date.fromisoformat(\"2024-02-03\")]"
         );
 
         let payload_type = TypeRef::Named("Payload".to_string());

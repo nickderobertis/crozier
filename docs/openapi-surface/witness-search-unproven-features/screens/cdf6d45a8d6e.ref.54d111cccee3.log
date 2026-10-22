@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/seismic_ddms_openapi.yaml
+HTTP 200
+355632 bytes, sha256 cdf6d45a8d6ec230dd2f2e73e14394f83cb562a1b19ab222ac63dd9f9c460ddf
+pinned sha256 (none)
+outcome: passed: 355632 bytes read at the immutable commit df39d22ed32acfe80fcdbc5b554871b2c752a39a, sha256 cdf6d45a8d6ec230dd2f2e73e14394f83cb562a1b19ab222ac63dd9f9c460ddf

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/isaacus-dev/openapi/bc3cdb9c51755fcb94425209f1ead4669bfccba6/openapi.yaml
+HTTP 200
+177505 bytes, sha256 b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40
+pinned sha256 (none)
+outcome: passed: 177505 bytes read at the immutable commit bc3cdb9c51755fcb94425209f1ead4669bfccba6, sha256 b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40

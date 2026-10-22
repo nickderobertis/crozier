@@ -42,7 +42,12 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
 # The script and the record it reads the certified pair from, as a scratch root mirrors them.
-SCRIPT_LOADS = ("tools/fern-refusals/fern-refusals.py", "assets/scaffolding/metadata.json")
+SCRIPT_LOADS = (
+    "tools/fern-refusals/fern-refusals.py",
+    "tools/fern-refusals/sdk_evaluation.py",
+    "tools/fern-refusals/sdk_evaluation_runtime.py",
+    "assets/scaffolding/metadata.json",
+)
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
 # The certified Fern pair, from its one declaration.
@@ -317,10 +322,11 @@ class Drift(unittest.TestCase):
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming("no single class or finding matches")
 
-    def test_the_strict_exit_is_built_only_for_an_evaluated_class(self) -> None:
+    def test_the_strict_exit_is_built_for_evaluated_classes_and_generating_exceptions(self) -> None:
         table = rows(self.registry / "classes.tsv")
         evaluated = {row[0] for row in table[1:] if row[6] != "unevaluated"}
         committed = rows(REGISTRY / "documents.tsv")[1:]
+        exceptions = {row[0] for row in rows(REGISTRY / "dispositions.tsv")[1:] if row[2] == "fern-limitation"}
         # The evaluated class whose withdrawal leaves the most documents with no evaluated class.
         withdrawn = max(
             sorted(evaluated), key=lambda name: sum(set(row[8].split(",")) & evaluated == {name} for row in committed)
@@ -336,7 +342,7 @@ class Drift(unittest.TestCase):
         for before in committed:
             after = built[before[0]][11]
             with self.subTest(digest=before[0]):
-                if set(before[8].split(",")) & evaluated:
+                if set(before[8].split(",")) & evaluated or before[0] in exceptions:
                     self.assertEqual(after, before[11])
                 else:
                     self.assertEqual(after, "—")
@@ -1690,6 +1696,149 @@ class MeasuredAtThePair(unittest.TestCase):
         table = [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
         write_rows(self.root / "docs" / "fern-refusals" / "dispositions.tsv", table)
 
+    def test_a_generating_fern_limitation_requires_sdk_evaluation_and_ledger_entry(self) -> None:
+        measured = self.measure()
+        digest = self.documents["measured-current"]
+        entry = measured[digest]
+        entry.update(crozier_exit="0", crozier_files="3", crozier_strict_exit="0")
+        (self.root / entry["crozier_strict_log"]).write_text("", encoding="utf-8")
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        relative = f"docs/openapi-surface/fern-refusals/limitations/{digest}.json"
+        self.dispose(digest, disposition="fern-limitation", representative=digest, log=relative)
+        evidence_path = self.root / relative
+        evidence_path.parent.mkdir()
+        stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
+        # This tests metadata admission, not SDK execution: the promoted
+        # sdk_env_native_refusal_evaluation test drives the native producer.
+        # Raw JSON is deliberately mutated to invalid field types below.
+        evidence: dict[str, Any] = json.loads(
+            (
+                REPO
+                / "docs/openapi-surface/fern-refusals/limitations/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.json"
+            ).read_text()
+        )
+        evidence["document_sha256"] = digest
+        evidence["validation"]["input_sha256"] = digest
+        evidence["validation"]["output_sha256"] = digest
+        for stage in ("default_generation", "strict_generation"):
+            evidence[stage]["input_sha256"] = digest
+        ledger = self.root / "docs/fern-limitations.md"
+        ledger_text = (
+            "## New limitations at the certified pair\n\n"
+            f"| `{digest}` | Valid document; Fern refuses its type name. | [SDK evidence](openapi-surface/fern-refusals/limitations/{digest}.json) |\n"
+        )
+
+        def write_evidence() -> None:
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+
+        write_evidence()
+        ledger.write_text(ledger_text, encoding="utf-8")
+        accepted = self.script("build")
+        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(rows(self.root / "docs/fern-refusals/dispositions.tsv")[1][2], "fern-limitation")
+        schema = self.script("sdk-evaluation-schema")
+        self.assertEqual(schema.returncode, 0, schema.stderr)
+        derived = json.loads(schema.stdout)
+        self.assertEqual(set(derived["properties"]), set(evidence))
+        self.assertEqual(set(derived["required"]), set(evidence))
+        self.assertFalse(derived["additionalProperties"])
+        self.assertEqual(derived["properties"]["schema_version"]["enum"], [2])
+        for stage in stages:
+            with self.subTest(stage=stage):
+                evidence[stage]["exit"] = 1
+                write_evidence()
+                failed = self.script("build")
+                self.assertNotEqual(failed.returncode, 0)
+                self.assertIn(f"{stage}.exit", failed.stderr)
+                evidence[stage]["exit"] = 0
+        original = evidence["build"]["input_sha256"]
+        evidence["build"]["input_sha256"] = "f" * 64
+        write_evidence()
+        self.assertIn("build input digest", self.script("build").stderr)
+        evidence["build"]["input_sha256"] = original
+        imports = evidence.pop("imports")
+        write_evidence()
+        self.assertIn("missing fields ['imports']", self.script("build").stderr)
+        evidence["imports"] = imports
+        original_command = evidence["validation"]["command"]
+        evidence["validation"]["command"] = "not-an-array"
+        write_evidence()
+        self.assertIn("validation.command: expected an array", self.script("build").stderr)
+        evidence["validation"]["command"] = original_command
+        write_evidence()
+        ledger.write_text("## Historical measurements\n", encoding="utf-8")
+        failed = self.script("build")
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("matching new-limitations ledger entry", failed.stderr)
+        ledger.write_text(ledger_text, encoding="utf-8")
+        evidence_path.unlink()
+        self.assertIn("cannot read SDK evidence", self.script("build").stderr)
+        write_evidence()
+        evidence["document_sha256"] = "c" * 64
+        write_evidence()
+        self.assertIn("wrong document or certified pair", self.script("build").stderr)
+        evidence["document_sha256"] = digest
+        write_evidence()
+        entry["crozier_exit"] = "1"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.assertIn("requires generation in both modes", self.script("build").stderr)
+        entry["crozier_exit"] = "0"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.assertEqual(self.script("build").returncode, 0)
+
+    def test_both_refuse_relation_requires_a_fern_generation_refusal(self) -> None:
+        self.add_classes("generator-lint-failure", "path-parameter-unreferenced")
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "Reading relation", "version": "1"},
+            "paths": {
+                "/readings": {
+                    "put": {
+                        "parameters": [{"in": "path", "name": "id", "required": True, "schema": {"type": "string"}}],
+                        "responses": {"200": {"description": "OK"}},
+                    }
+                }
+            },
+        }
+        digest = self.add_document("both-refuse.json", json.dumps(document).encode())
+        measured = self.measure()
+        entry = measured[digest]
+        log = self.evidence / "logs" / f"{digest}.generate.log"
+        said = "Failed to run command: ruff check generated.py"
+        log.write_text(PAIR_LINE + "[error] " + said + "\n", encoding="utf-8")
+        entry.update(
+            check_exit="0", generate_exit="1", generate_files="0", generate_log=log.relative_to(self.root).as_posix()
+        )
+        (self.root / entry["check_log"]).write_text(PAIR_LINE, encoding="utf-8")
+        strict = self.root / entry["crozier_strict_log"]
+        strict.write_text(
+            "crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: PUT /readings parameter id\n",
+            encoding="utf-8",
+        )
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        self.dispose(
+            digest, crozier_class="path-parameter-unreferenced", disposition="both-refuse", representative=digest
+        )
+        self.env.update(
+            FERN_STUB_CHECK_EXIT="0",
+            FERN_STUB_CHECK_OUTPUT="",
+            FERN_STUB_GENERATE_EXIT="1",
+            FERN_STUB_GENERATE_OUTPUT="[error] " + said,
+        )
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        result = self.script("build")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(rows(self.root / "docs/fern-refusals/dispositions.tsv")[1][2], "both-refuse")
+        entry.update(generate_exit="0", generate_files="1")
+        log.write_text(PAIR_LINE, encoding="utf-8")
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured.values()), encoding="utf-8")
+        result = self.script("build")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Fern generates it, but crozier --fern-strict stops", result.stderr)
+
     def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
         registry = self.root / "docs" / "fern-refusals"
         # Two more classes: one only `fern generate` reports, one its check does.
@@ -2082,6 +2231,317 @@ class ProbeRecording(unittest.TestCase):
                 (registry / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
             )
             self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
+
+
+@unittest.skipIf(os.name == "nt", "the package-tool and compiler doubles are POSIX shell scripts")
+class SdkEvaluationDriverTests(unittest.TestCase):
+    """The native driver sequences real child processes and installed-file inspection offline."""
+
+    def setUp(self) -> None:
+        from sdk_evaluation_doubles import install
+
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+        self.compiler, self.env = install(self.root / "bin")
+        self.source = self.root / "source.yml"
+        self.source.write_text(
+            "openapi: 3.1.0\ninfo: {title: Offline Chain, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        self.calls = self.root / "calls.txt"
+        self.env["SDK_EVAL_CALLS"] = str(self.calls)
+        # The runtime inspector runs in a genuinely separate venv. Copying the
+        # already-installed tracer there lets the tooling coverage tier see it.
+        try:
+            import coverage
+        except ImportError:
+            pass
+        else:
+            if coverage.Coverage.current() is not None:
+                self.env["SDK_EVAL_COVERAGE"] = "1"
+                self.env["COVERAGE_PROCESS_START"] = str(REPO / "pyproject.toml")
+                self.env["COVERAGE_FILE"] = str(Path(os.environ.get("COVERAGE_FILE", ".coverage")).resolve())
+
+    def evaluate(
+        self, mode: str = "", name: str = "run", destination: Path | None = None, timeout: int = 120
+    ) -> tuple[subprocess.CompletedProcess[str], Path]:
+        env = {**self.env, "SDK_EVAL_MODE": mode}
+        receipt = destination or self.root / f"{name}.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "evaluate-sdk",
+                "--document",
+                str(self.source),
+                "--crozier",
+                str(self.compiler),
+                "--work-dir",
+                str(self.root / name),
+                "--output",
+                str(receipt),
+                "--timeout",
+                str(timeout),
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=False,
+        )
+        return result, receipt
+
+    def test_driver_records_each_actual_artifact_and_import_environment_in_order(self) -> None:
+        result, receipt = self.evaluate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = json.loads(receipt.read_text())
+        self.assertEqual(
+            self.calls.read_text().splitlines(),
+            [
+                "uv:venv",
+                "uv:venv",
+                "uv:pip",
+                "validation",
+                "default_generation",
+                "strict_generation",
+                "build",
+                "uv:pip",
+                "imports",
+            ],
+        )
+        digest = hashlib.sha256(self.source.read_bytes()).hexdigest()
+        self.assertEqual(data["validation"]["input_sha256"], digest)
+        self.assertEqual(data["validation"]["output_sha256"], digest)
+        wheel = next((self.root / "run/dist").glob("*.whl"))
+        self.assertEqual(data["build"]["output_sha256"], hashlib.sha256(wheel.read_bytes()).hexdigest())
+        self.assertEqual(data["installation"]["input_sha256"], data["build"]["output_sha256"])
+        self.assertEqual(data["imports"]["input_sha256"], data["installation"]["output_sha256"])
+        self.assertEqual(data["imports"]["environment"], data["installation"]["environment"])
+        self.assertEqual(data["imports"]["modules"], ["limitation_sdk", "limitation_sdk.reading"])
+        answer = subprocess.run(
+            [sys.executable, str(SCRIPT), "check-sdk-evaluation", str(receipt), "--document", str(self.source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(answer.returncode, 0, answer.stderr)
+
+    def test_driver_refuses_failed_stages_without_replacing_a_receipt(self) -> None:
+        for stage in ("validation", "default_generation", "strict_generation", "build", "installation", "imports"):
+            with self.subTest(stage=stage):
+                name = "failed-" + stage
+                receipt = self.root / f"{name}.json"
+                receipt.write_text("prior receipt\n")
+                result, receipt = self.evaluate(stage + "-fails", name)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("failed with exit", result.stderr)
+                self.assertEqual(receipt.read_text(), "prior receipt\n")
+
+    def test_driver_refuses_missing_outputs_and_mismatching_artifact_digests(self) -> None:
+        for mode, reason in (
+            ("missing-sdk", "nonempty"),
+            ("missing-wheel", "exactly one wheel"),
+            ("mutated-tree", "building mutated"),
+            ("different-trees", "default/strict generated tree digest"),
+        ):
+            with self.subTest(mode=mode):
+                result, receipt = self.evaluate(mode, mode)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(reason, result.stderr)
+                self.assertFalse(receipt.exists())
+
+    def test_driver_protects_inputs_and_rejects_symlinks_and_invalid_runtime_provenance(self) -> None:
+        for index, target in enumerate((self.source, self.compiler)):
+            with self.subTest(overwrite=target.name):
+                before = target.read_bytes()
+                result, _receipt = self.evaluate(name=f"overwrite-{index}", destination=target)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("overwrite an input", result.stderr)
+                self.assertEqual(before, target.read_bytes())
+                self.assertFalse((self.root / f"overwrite-{index}").exists())
+        for mode, reason in (
+            ("symlink-sdk", "contains a symlink"),
+            ("outside-env", "did not come from the fresh installation"),
+            ("discovery-fails", "could not discover SDK package"),
+            ("mutating-import", "imports changed the installed distribution"),
+        ):
+            with self.subTest(mode=mode):
+                result, receipt = self.evaluate(mode, mode)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(reason, result.stderr)
+                self.assertFalse(receipt.exists())
+
+    def assert_receipt_recovery(self, receipt: Path, name: str) -> None:
+        result, _ = self.evaluate(name=name, destination=receipt)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(2, json.loads(receipt.read_text())["schema_version"])
+
+    def test_process_start_and_timeout_preserve_receipts_and_recover(self) -> None:
+        for mode in ("compiler-unexecutable", "compiler-timeout"):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"{mode}.json"
+                receipt.write_text("previous receipt\n")
+                if mode == "compiler-unexecutable":
+                    self.compiler.chmod(0o644)
+                try:
+                    result, _ = self.evaluate(mode, mode, receipt, timeout=1 if mode == "compiler-timeout" else 120)
+                finally:
+                    self.compiler.chmod(0o755)
+                self.assertEqual(1, result.returncode)
+                self.assertIn("default_generation could not run", result.stderr)
+                self.assertIn("timed out" if mode == "compiler-timeout" else "Permission denied", result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assert_receipt_recovery(receipt, mode + "-recovered")
+
+    def test_malformed_inspector_output_preserves_receipts_and_recovers(self) -> None:
+        for mode, diagnostic in (
+            ("inspector-json", "runtime inspection did not produce JSON"),
+            ("inspector-structure", "distribution_sha256"),
+        ):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"{mode}.json"
+                receipt.write_text("previous receipt\n")
+                result, _ = self.evaluate(mode, mode, receipt)
+                self.assertEqual(1, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assert_receipt_recovery(receipt, mode + "-recovered")
+
+    def test_missing_prerequisites_preserve_receipts_and_recover(self) -> None:
+        for mode, diagnostic in (
+            ("compiler", "crozier executable missing"),
+            ("work-directory", "evaluation work directory already exists"),
+            ("uv", "uv is missing from PATH"),
+        ):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"missing-{mode}.json"
+                receipt.write_text("previous receipt\n")
+                original_compiler = self.compiler
+                original_path = self.env["PATH"]
+                name = "missing-" + mode
+                match mode:
+                    case "compiler":
+                        self.compiler = self.root / "absent-compiler"
+                    case "work-directory":
+                        (self.root / name).mkdir()
+                    case "uv":
+                        self.env["PATH"] = str(self.root / "absent-tools")
+                try:
+                    result, _ = self.evaluate(name=name, destination=receipt)
+                finally:
+                    self.compiler = original_compiler
+                    self.env["PATH"] = original_path
+                self.assertEqual(1, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assertFalse(self.calls.exists(), "prerequisites must fail before starting a tool")
+                self.assert_receipt_recovery(receipt, name + "-recovered")
+                self.calls.unlink()
+
+    def test_receipt_replacement_failure_cleans_temporary_file_and_recovers(self) -> None:
+        receipt = self.root / "receipt.json"
+        receipt.mkdir()
+        previous = receipt / "previous.json"
+        previous.write_text("previous receipt\n")
+        result, _ = self.evaluate(destination=receipt)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("SDK evaluation:", result.stderr)
+        self.assertIn("receipt.json", result.stderr)
+        self.assertEqual("previous receipt\n", previous.read_text())
+        self.assertEqual([], list(self.root.glob(".sdk-evaluation-*")))
+        self.assertTrue((self.root / "run/imports.log").is_file(), "failure must happen after SDK evaluation")
+        previous.unlink()
+        receipt.rmdir()
+        self.assert_receipt_recovery(receipt, "replacement-recovered")
+        self.assertEqual([], list(self.root.glob(".sdk-evaluation-*")))
+
+    def test_receipt_integrity_rejects_each_invalid_environment_and_import_description(self) -> None:
+        result, receipt = self.evaluate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        original = receipt.read_text()
+
+        def refresh_environment(data: dict) -> None:
+            for label in ("installation", "imports"):
+                environment = data[label]["environment"]
+                data[label]["environment_sha256"] = hashlib.sha256(
+                    json.dumps(environment, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+                ).hexdigest()
+
+        for case, reason in (
+            ("environment-digest", "environment digest does not match"),
+            ("duplicates", "not unique and sorted"),
+            ("unsorted", "not unique and sorted"),
+            ("missing-sdk", "does not identify the installed SDK"),
+            ("wrong-sdk", "does not identify the installed SDK"),
+            ("missing-interpreter", "omits its interpreter"),
+            ("module-digest", "imported module list digest"),
+            ("wrong-modules", "every discovered module"),
+            ("unsorted-modules", "every discovered module"),
+            ("empty-command", "no recorded command"),
+        ):
+            with self.subTest(case=case):
+                data = json.loads(original)
+                match case:
+                    case "environment-digest":
+                        data["imports"]["environment"]["prefix"] = "changed prefix"
+                    case "duplicates" | "unsorted" | "missing-sdk" | "wrong-sdk" | "missing-interpreter":
+                        environment = data["installation"]["environment"]
+                        entries = environment["distributions"]
+                        sdk = next(item for item in entries if item["name"] == "limitation-sdk")
+                        match case:
+                            case "duplicates":
+                                entries.append(dict(sdk))
+                            case "unsorted":
+                                environment["distributions"] = [
+                                    sdk,
+                                    {"name": "aaa", "version": "1", "sha256": "a" * 64},
+                                ]
+                            case "missing-sdk":
+                                environment["distributions"] = [
+                                    item for item in entries if item["name"] != "limitation-sdk"
+                                ]
+                            case "wrong-sdk":
+                                sdk["sha256"] = "f" * 64
+                            case "missing-interpreter":
+                                environment["executable"] = ""
+                        data["imports"]["environment"] = json.loads(json.dumps(environment))
+                        refresh_environment(data)
+                    case "module-digest":
+                        data["imports"]["output_sha256"] = "f" * 64
+                    case "wrong-modules" | "unsorted-modules":
+                        data["imports"]["modules"] = (
+                            ["unrelated_package"]
+                            if case == "wrong-modules"
+                            else list(reversed(data["imports"]["modules"]))
+                        )
+                        data["imports"]["output_sha256"] = hashlib.sha256(
+                            json.dumps(data["imports"]["modules"], separators=(",", ":")).encode()
+                        ).hexdigest()
+                    case "empty-command":
+                        data["imports"]["command"] = []
+                receipt.write_text(json.dumps(data), encoding="utf-8")
+                checked = subprocess.run(
+                    [sys.executable, str(SCRIPT), "check-sdk-evaluation", str(receipt), "--document", str(self.source)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertNotEqual(checked.returncode, 0)
+                self.assertIn(reason, checked.stderr)
+        receipt.write_text(original, encoding="utf-8")
+
+
+class SdkArtifactDigestTests(unittest.TestCase):
+    def test_binary_contents_cannot_be_confused_with_another_file_boundary(self) -> None:
+        evaluator = load_script("sdk_digest_boundary").sdk_evaluator()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first, second = root / "one-file", root / "two-files"
+            first.mkdir()
+            second.mkdir()
+            (first / "a").write_bytes(b"x\0b\0y")
+            (second / "a").write_bytes(b"x")
+            (second / "b").write_bytes(b"y")
+            self.assertNotEqual(evaluator.tree_digest(first), evaluator.tree_digest(second))
 
 
 if __name__ == "__main__":

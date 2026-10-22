@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: discriminant-value-unsuitable: #/components/schemas/ServiceRemovedFromHostEvent/properties/service_removed_from_host discriminant "_reason"; use a letter-led identifier containing letters, numbers and underscores (fern-strict: Fern refuses this document)

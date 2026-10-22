@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/fmarkulin/fer-or/afa9ad1e7d12ff2ad295a33c6977a542d80d315b/openapi.json
+HTTP 200
+74177 bytes, sha256 46cfc4f66c81924cb09fb38297553b52ca036d30f12f5f5e69f74be0763585ca
+pinned sha256 (none)
+outcome: passed: 74177 bytes read at the immutable commit afa9ad1e7d12ff2ad295a33c6977a542d80d315b, sha256 46cfc4f66c81924cb09fb38297553b52ca036d30f12f5f5e69f74be0763585ca

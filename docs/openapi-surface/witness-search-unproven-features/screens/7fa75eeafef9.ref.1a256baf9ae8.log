@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/grafana/pyroscope/4803c060253d62ecebac76d34188181534b18e18/api/connect-openapi/gen/querier/v1/querier.openapi.yaml
+HTTP 200
+68753 bytes, sha256 7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2
+pinned sha256 (none)
+outcome: passed: 68753 bytes read at the immutable commit 4803c060253d62ecebac76d34188181534b18e18, sha256 7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2

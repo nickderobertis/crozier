@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/Guyverix/Vigilare-NMS-API/b0160cdec559d7fe9579230136e8e6f85590393a/openapi.json
+HTTP 200
+62864 bytes, sha256 df5fb837b407d46b5a43dfa22a22cd5d521f8fa20c74d8e49f28bed9ec1b1cbf
+pinned sha256 (none)
+outcome: passed: 62864 bytes read at the immutable commit b0160cdec559d7fe9579230136e8e6f85590393a, sha256 df5fb837b407d46b5a43dfa22a22cd5d521f8fa20c74d8e49f28bed9ec1b1cbf

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/RedHatProductSecurity/aegis-ai/105c7d292cba966cda8d30a4df9f4863d1a2b9ba/docs/openapi.yml
+HTTP 200
+28796 bytes, sha256 3619b1f51b793eab233cab0941035078a90f3fd9dd303663eac68caec0c0123d
+pinned sha256 (none)
+outcome: passed: 28796 bytes read at the immutable commit 105c7d292cba966cda8d30a4df9f4863d1a2b9ba, sha256 3619b1f51b793eab233cab0941035078a90f3fd9dd303663eac68caec0c0123d

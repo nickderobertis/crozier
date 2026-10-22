@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/georust/ogcapi/ca67cee0a05bd617ba9b2176151ee384507a4ea1/ogcapi-services/assets/openapi/openapi.yaml
+HTTP 200
+87178 bytes, sha256 6c6280a034b9c3e650a443a5f258d1afc7c282bc51666cfc3c40d5d074e9118c
+pinned sha256 (none)
+outcome: passed: 87178 bytes read at the immutable commit ca67cee0a05bd617ba9b2176151ee384507a4ea1, sha256 6c6280a034b9c3e650a443a5f258d1afc7c282bc51666cfc3c40d5d074e9118c

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/DidStateFinished/allOf extends #/components/schemas/StateFinished (fern-strict refusal)

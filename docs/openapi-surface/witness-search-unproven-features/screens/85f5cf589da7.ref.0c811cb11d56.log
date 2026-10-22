@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/geoadmin/service-wmts/9787e8c121b23b186f941eb8f81b0bda530a3348/openapi.yml
+HTTP 200
+22872 bytes, sha256 85f5cf589da74911e3115bc5fbb8aa17ee77496b4717a72b07efeab74a7cb439
+pinned sha256 (none)
+outcome: passed: 22872 bytes read at the immutable commit 9787e8c121b23b186f941eb8f81b0bda530a3348, sha256 85f5cf589da74911e3115bc5fbb8aa17ee77496b4717a72b07efeab74a7cb439

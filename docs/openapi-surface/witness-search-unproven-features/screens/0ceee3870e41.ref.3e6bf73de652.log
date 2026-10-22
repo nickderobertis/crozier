@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/camptocamp/oapi-poc/9365e94497f2c3a4798259249c2cfef6673197b9/openapi.yaml
+HTTP 200
+63557 bytes, sha256 0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470
+pinned sha256 (none)
+outcome: passed: 63557 bytes read at the immutable commit 9365e94497f2c3a4798259249c2cfef6673197b9, sha256 0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470

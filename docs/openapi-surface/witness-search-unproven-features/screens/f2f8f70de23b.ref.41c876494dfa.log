@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/clingen-data-model/clingen-gene-tracker/8011052b843871c77e3d9769707faf95777fedc1/openapi.yaml
+HTTP 200
+2524 bytes, sha256 f2f8f70de23be2451d9c971d128cda0e67dfb813cea3708802a23d619b275884
+pinned sha256 (none)
+outcome: passed: 2524 bytes read at the immutable commit 8011052b843871c77e3d9769707faf95777fedc1, sha256 f2f8f70de23be2451d9c971d128cda0e67dfb813cea3708802a23d619b275884

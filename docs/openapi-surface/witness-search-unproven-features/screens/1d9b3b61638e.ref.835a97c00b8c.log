@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/typesense/typesense-rust/8a0f3295bf78a472f841a24986f0654dc22d5efc/openapi.yml
+HTTP 200
+153825 bytes, sha256 1d9b3b61638e07832583376d2f977c9a2b8a4de878a7915b896b51074e0e5ba0
+pinned sha256 (none)
+outcome: passed: 153825 bytes read at the immutable commit 8a0f3295bf78a472f841a24986f0654dc22d5efc, sha256 1d9b3b61638e07832583376d2f977c9a2b8a4de878a7915b896b51074e0e5ba0

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/OpenBanking-Brasil/specs-pcm/2afad59de3ad6597f7addc4d2a316dd8ad293eed/openapi/openapi.yaml
+HTTP 200
+78110 bytes, sha256 63a270bcceb75e0fc6740700e5698244c5eebd8c8dc8724ed5f3854e48fa9259
+pinned sha256 (none)
+outcome: passed: 78110 bytes read at the immutable commit 2afad59de3ad6597f7addc4d2a316dd8ad293eed, sha256 63a270bcceb75e0fc6740700e5698244c5eebd8c8dc8724ed5f3854e48fa9259

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/meraki.com/0.0.0-streaming/openapi.yaml
+HTTP 200
+607222 bytes, sha256 659e1424c04d27b4795d7be77cf7800eb6d7143fbb2483a95a691812d749b10e
+pinned sha256 (none)
+outcome: passed: 607222 bytes read at the immutable commit f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49, sha256 659e1424c04d27b4795d7be77cf7800eb6d7143fbb2483a95a691812d749b10e

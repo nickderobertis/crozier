@@ -25,6 +25,7 @@ and not the offline census suite.
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import shutil
@@ -127,7 +128,29 @@ def _generate(document: Any, out: Path) -> dict[str, bytes]:
     return {path.relative_to(out).as_posix(): path.read_bytes() for path in out.rglob("*") if path.is_file()}
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--key", choices=sorted(CASES), help="measure one residual feature")
+    parser.add_argument(
+        "--real-witnesses-only",
+        action="store_true",
+        help="measure only the original real witness, including keys closed by supplemental proofs",
+    )
+    args = parser.parse_args(argv)
+    spec = importlib.util.spec_from_file_location(
+        "residual_handwritten", REPO / "tools/surface-census/handwritten-fixtures.py"
+    )
+    if spec is None or spec.loader is None:
+        sys.exit("residual-attribution: cannot load supplemental proof validator; restore it from git")
+    proofs = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = proofs
+    spec.loader.exec_module(proofs)
+    supplemental, errors = proofs.read_residual_proofs(REPO)
+    if supplemental and not args.real_witnesses_only:
+        errors += proofs.gate(REPO)["failures"]
+    if errors:
+        sys.exit("residual-attribution: " + "; ".join(errors))
+    closed = set() if args.real_witnesses_only else {proof.key for proof in supplemental}
     if not CROZIER.is_file():
         sys.exit(
             f"residual-attribution: no {CROZIER.relative_to(REPO).as_posix()}; run `just residual-attribution`, which builds it"
@@ -136,6 +159,8 @@ def main() -> int:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")
     registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
     for key, (fixture, perturb) in CASES.items():
+        if key in closed or (args.key is not None and key != args.key):
+            continue
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
         if path is None:
             sys.exit(

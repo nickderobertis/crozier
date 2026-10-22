@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/speakeasy-api/apitizing-burgers/46a4dbd30ad7c081498cf343832ab9af1f8c8c67/openapi.yaml
+HTTP 200
+15638 bytes, sha256 f1cb1283ef476ef5e41181e5ddfdc073bcbb8117a549cdcc2d7f0c482155285e
+pinned sha256 (none)
+outcome: passed: 15638 bytes read at the immutable commit 46a4dbd30ad7c081498cf343832ab9af1f8c8c67, sha256 f1cb1283ef476ef5e41181e5ddfdc073bcbb8117a549cdcc2d7f0c482155285e

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Derive the witness-search key set from the region tables at this checkout.
 
-The set is every `FIXTURE` `gap` row, plus every `handwritten` row: a hand-written
+The set is every `FIXTURE` `gap` row, plus every `handwritten` row and every residual-only golden supplement: a hand-written
 fixture is admitted only after that key's real-specification search failed, so
 the key keeps its tracked selector here, and the hand-written fixture gate reads
 it from this file (docs/openapi-surface/handwritten/AGENTS.md). Every combination
@@ -95,6 +95,16 @@ def tracked_selectors(regions: Path) -> dict[str, str]:
 def keys(regions: Path) -> list[tuple[str, str, str, str]]:
     census = census_module()
     tracked = tracked_selectors(regions)
+    path = REPO / "tools/surface-census/handwritten-fixtures.py"
+    spec = importlib.util.spec_from_file_location("witness_keys_handwritten", path)
+    assert spec and spec.loader
+    fixtures = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = fixtures
+    spec.loader.exec_module(fixtures)
+    residual, failures = fixtures.read_residual_proofs(regions.parent.parent)
+    if failures:
+        raise ValueError("; ".join(failures))
+    residual_keys = {proof.key for proof in residual}
     found: dict[str, tuple[str, str, str, str]] = {}
     for name in region_files():
         path = regions / name
@@ -111,6 +121,11 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
                         "restore that file from git, where the key's search recorded it"
                     )
                 selector = tracked[key]
+            elif category == "golden" and key in residual_keys:
+                match = re.search(r"census `([^`]+)`", cells[4])
+                if not match:
+                    raise ValueError(f"{path}: residual-only golden {key} has no census selector")
+                selector = match.group(1)
             elif key.startswith(COMBINATION_PREFIX):
                 match = re.search(r"census `([^`]+)`", line)
                 if not match:
@@ -127,6 +142,8 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
             if key in found:
                 raise ValueError(f"duplicate gap key {key}")
             found[key] = (key, selector, name, status)
+    if missing := residual_keys - found.keys():
+        raise ValueError(f"residual hand-written proofs name no golden category row: {sorted(missing)}")
     if not found:
         raise ValueError(f"no FIXTURE gap rows or handwritten rows in {regions}")
     return sorted(found.values())

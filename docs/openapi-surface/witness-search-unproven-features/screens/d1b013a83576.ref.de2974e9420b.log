@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/elastic/kibana/df0daaddccbbc61beee7e9dcfeb6f2e4925924c6/x-pack/platform/packages/shared/kbn-elastic-assistant-common/docs/openapi/serverless/elastic_assistant_api_2023_10_31.bundled.schema.yaml
+HTTP 200
+139126 bytes, sha256 d1b013a835766de2ae558e3de374654add9b81c70b546c45a3ade3e5511e33b9
+pinned sha256 (none)
+outcome: passed: 139126 bytes read at the immutable commit df0daaddccbbc61beee7e9dcfeb6f2e4925924c6, sha256 d1b013a835766de2ae558e3de374654add9b81c70b546c45a3ade3e5511e33b9

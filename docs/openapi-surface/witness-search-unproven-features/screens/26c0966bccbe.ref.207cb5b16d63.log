@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/typesense/typesense-api-spec/2e764a81d93c71c6b086a9098fd3b674dd33456f/openapi.yml
+HTTP 200
+158212 bytes, sha256 26c0966bccbe9f0b84ca235159f74ba77dccf31c93371392dddb8f82d1a864e9
+pinned sha256 (none)
+outcome: passed: 158212 bytes read at the immutable commit 2e764a81d93c71c6b086a9098fd3b674dd33456f, sha256 26c0966bccbe9f0b84ca235159f74ba77dccf31c93371392dddb8f82d1a864e9

@@ -1,0 +1,23 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: 'MIT / https://opensource.org/licenses/MIT' -> MIT
+GET LICENSE: HTTP 200
+licence file LICENSE -> MIT
+--- LICENSE (first 30 non-blank lines) ---
+MIT License
+Copyright (c) 2026 SyriusOrbit
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+outcome: passed: info.license 'MIT / https://opensource.org/licenses/MIT' reads as MIT, which the corpus rule admits

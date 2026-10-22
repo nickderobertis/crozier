@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/Jefferson49/webtrees-API/b5d7ba31c6994a721d6eec2e37212a130abb2bc5/resources/OpenApi/OpenApi.json
+HTTP 200
+101928 bytes, sha256 421399704af095580420f3bbf9b037af23e1a0f39bbe73e9eec018252f4489ba
+pinned sha256 (none)
+outcome: passed: 101928 bytes read at the immutable commit b5d7ba31c6994a721d6eec2e37212a130abb2bc5, sha256 421399704af095580420f3bbf9b037af23e1a0f39bbe73e9eec018252f4489ba

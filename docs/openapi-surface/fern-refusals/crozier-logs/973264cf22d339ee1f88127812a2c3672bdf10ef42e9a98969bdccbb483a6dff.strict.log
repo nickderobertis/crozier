@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: type-name-not-letter-led: #/components/schemas/errorResponse cannot form a letter-led type name; give it a valid declared type name (fern-strict: Fern refuses this document)

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/TanStack/ai/3e30cde8ae7f5be7be3bc9c4f30c842159fc7edf/packages/ai-worldlabs/openapi.yaml
+HTTP 200
+69619 bytes, sha256 b2d7506dd7acf278b6307d4073f08727bb61f5f518c743bf286b206cc4a378c3
+pinned sha256 (none)
+outcome: passed: 69619 bytes read at the immutable commit 3e30cde8ae7f5be7be3bc9c4f30c842159fc7edf, sha256 b2d7506dd7acf278b6307d4073f08727bb61f5f518c743bf286b206cc4a378c3

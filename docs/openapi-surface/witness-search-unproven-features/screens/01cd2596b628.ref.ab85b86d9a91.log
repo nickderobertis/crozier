@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/qoretechnologies/qore/bb13d37b122274f2c55f1e2e59e167a3e59adf60/qlib/FireworksDataProvider/fireworks-messages-openapi.yaml
+HTTP 200
+62392 bytes, sha256 01cd2596b628f6bd3ce2aed855cc46ab459cae88a06790ac427137350224a482
+pinned sha256 (none)
+outcome: passed: 62392 bytes read at the immutable commit bb13d37b122274f2c55f1e2e59e167a3e59adf60, sha256 01cd2596b628f6bd3ce2aed855cc46ab459cae88a06790ac427137350224a482

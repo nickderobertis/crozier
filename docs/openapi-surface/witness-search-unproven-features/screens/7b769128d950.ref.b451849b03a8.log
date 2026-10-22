@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/suhacb/nutrients_backend/49064aa4b44bf369e998b66c00e5c0a376eed432/storage/api-docs/openapi.json
+HTTP 200
+175961 bytes, sha256 7b769128d9508f579c749d15a21d038129ab1313d254113ee01c1ea6c7018795
+pinned sha256 (none)
+outcome: passed: 175961 bytes read at the immutable commit 49064aa4b44bf369e998b66c00e5c0a376eed432, sha256 7b769128d9508f579c749d15a21d038129ab1313d254113ee01c1ea6c7018795

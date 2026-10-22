@@ -1,0 +1,10 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: 'OGC License / http://www.opengeospatial.org/legal/' -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 404
+GET LICENSE.txt: HTTP 404
+GET LICENCE: HTTP 404
+GET LICENCE.md: HTTP 404
+GET COPYING: HTTP 404
+licence file (none) -> None
+outcome: failed: info.license 'OGC License / http://www.opengeospatial.org/legal/' names no grant the corpus rule admits

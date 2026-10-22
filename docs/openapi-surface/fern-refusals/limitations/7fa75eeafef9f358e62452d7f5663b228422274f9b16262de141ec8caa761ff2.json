@@ -1,0 +1,415 @@
+{
+  "build": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/build-environment/bin/python",
+      "-m",
+      "build",
+      "--wheel",
+      "--no-isolation",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/strict_generation",
+      "--outdir",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/dist"
+    ],
+    "exit": 0,
+    "input_sha256": "9f17bcf4eb17acac45b91cf12b8fb919631e1cf9d5dad0fd9657e955f9ab8022",
+    "output": "Successfully built limitation_sdk-0.0.0-py3-none-any.whl\n* Getting build dependencies for wheel...\n* Building wheel...\n",
+    "output_sha256": "ff75d6f8d75fc0c676b212efa1576430ca68223c0906df160f385181c029de26"
+  },
+  "crozier_binary_sha256": "8e262ca4a8219f7f28090a39d0de5fae5230c69afec1b9ae214efafa0db01b85",
+  "crozier_commit": "a2ff5f217253c64f3a69c12d17c522e7fc991d83",
+  "default_generation": {
+    "command": [
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
+      "generate",
+      "python",
+      "--no-config",
+      "--spec",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml",
+      "--output",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/default_generation",
+      "--package-name",
+      "limitation_sdk",
+      "--project-name",
+      "limitation-sdk"
+    ],
+    "exit": 0,
+    "input_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2",
+    "output": "generated 173 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/default_generation\n",
+    "output_sha256": "9f17bcf4eb17acac45b91cf12b8fb919631e1cf9d5dad0fd9657e955f9ab8022"
+  },
+  "document_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2",
+  "fern_cli": "5.163.1",
+  "fern_python_sdk": "5.41.3",
+  "imports": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment/bin/python",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/tools/fern-refusals/sdk_evaluation_runtime.py",
+      "imports",
+      "limitation-sdk",
+      "limitation_sdk"
+    ],
+    "environment": {
+      "base_prefix": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu",
+      "configuration_sha256": "9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5",
+      "distributions": [
+        {
+          "name": "annotated-types",
+          "sha256": "e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc",
+          "version": "0.8.0"
+        },
+        {
+          "name": "anyio",
+          "sha256": "8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf",
+          "version": "4.15.1"
+        },
+        {
+          "name": "certifi",
+          "sha256": "002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "h11",
+          "sha256": "0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f",
+          "version": "0.16.0"
+        },
+        {
+          "name": "httpcore",
+          "sha256": "33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httpx",
+          "sha256": "15969344ea0116638f4c07a0c51608be088dd6a99c8d40cdb8cbb32293839117",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "sha256": "4cf69e52315f6e1d1e41bd8d6115815409df3aeb07dce18889092c9c334e411d",
+          "version": "3.20"
+        },
+        {
+          "name": "limitation-sdk",
+          "sha256": "f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0",
+          "version": "0.0.0"
+        },
+        {
+          "name": "pydantic",
+          "sha256": "05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c",
+          "version": "2.14.1"
+        },
+        {
+          "name": "pydantic-core",
+          "sha256": "2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626",
+          "version": "2.50.1"
+        },
+        {
+          "name": "typing-extensions",
+          "sha256": "432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877",
+          "version": "4.16.0"
+        },
+        {
+          "name": "typing-inspection",
+          "sha256": "4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc",
+          "version": "0.4.4"
+        }
+      ],
+      "executable": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment/bin/python",
+      "executable_sha256": "241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment",
+      "python_version": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]"
+    },
+    "environment_sha256": "12b6ba8996e72df1b9d5eb48a170d457b90b57d347583658948640c22fd5f44f",
+    "exit": 0,
+    "input_sha256": "f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0",
+    "modules": [
+      "limitation_sdk",
+      "limitation_sdk._default_clients",
+      "limitation_sdk.client",
+      "limitation_sdk.core",
+      "limitation_sdk.core.api_error",
+      "limitation_sdk.core.client_wrapper",
+      "limitation_sdk.core.datetime_utils",
+      "limitation_sdk.core.enum",
+      "limitation_sdk.core.file",
+      "limitation_sdk.core.force_multipart",
+      "limitation_sdk.core.http_client",
+      "limitation_sdk.core.http_response",
+      "limitation_sdk.core.http_sse",
+      "limitation_sdk.core.http_sse._api",
+      "limitation_sdk.core.http_sse._decoders",
+      "limitation_sdk.core.http_sse._exceptions",
+      "limitation_sdk.core.http_sse._models",
+      "limitation_sdk.core.jsonable_encoder",
+      "limitation_sdk.core.logging",
+      "limitation_sdk.core.parse_error",
+      "limitation_sdk.core.pydantic_utilities",
+      "limitation_sdk.core.query_encoder",
+      "limitation_sdk.core.remove_none_from_dict",
+      "limitation_sdk.core.request_options",
+      "limitation_sdk.core.serialization",
+      "limitation_sdk.scope_internal",
+      "limitation_sdk.scope_internal.types",
+      "limitation_sdk.scope_internal.types.querier_v1analyze_query_request_end",
+      "limitation_sdk.scope_internal.types.querier_v1analyze_query_request_start",
+      "limitation_sdk.scope_public",
+      "limitation_sdk.scope_public.client",
+      "limitation_sdk.scope_public.raw_client",
+      "limitation_sdk.scope_public.types",
+      "limitation_sdk.scope_public.types.querier_v1profile_types_request_end",
+      "limitation_sdk.scope_public.types.querier_v1profile_types_request_start",
+      "limitation_sdk.scope_public.types.querier_v1select_heatmap_request_end",
+      "limitation_sdk.scope_public.types.querier_v1select_heatmap_request_limit",
+      "limitation_sdk.scope_public.types.querier_v1select_heatmap_request_start",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_end",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_max_nodes",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_start",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_end",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_max_nodes",
+      "limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_start",
+      "limitation_sdk.scope_public.types.querier_v1select_series_request_end",
+      "limitation_sdk.scope_public.types.querier_v1select_series_request_limit",
+      "limitation_sdk.scope_public.types.querier_v1select_series_request_start",
+      "limitation_sdk.scope_public.types.querier_v1series_request_end",
+      "limitation_sdk.scope_public.types.querier_v1series_request_start",
+      "limitation_sdk.scope_public.types.types_v1label_names_request_end",
+      "limitation_sdk.scope_public.types.types_v1label_names_request_start",
+      "limitation_sdk.scope_public.types.types_v1label_values_request_end",
+      "limitation_sdk.scope_public.types.types_v1label_values_request_start",
+      "limitation_sdk.types",
+      "limitation_sdk.types.connect_error",
+      "limitation_sdk.types.connect_error_code",
+      "limitation_sdk.types.connect_error_details_any",
+      "limitation_sdk.types.connect_protocol_version",
+      "limitation_sdk.types.connect_timeout_header",
+      "limitation_sdk.types.google_v1function",
+      "limitation_sdk.types.google_v1function_filename",
+      "limitation_sdk.types.google_v1function_id",
+      "limitation_sdk.types.google_v1function_name",
+      "limitation_sdk.types.google_v1function_start_line",
+      "limitation_sdk.types.google_v1function_system_name",
+      "limitation_sdk.types.google_v1label",
+      "limitation_sdk.types.google_v1label_key",
+      "limitation_sdk.types.google_v1label_num",
+      "limitation_sdk.types.google_v1label_num_unit",
+      "limitation_sdk.types.google_v1label_str",
+      "limitation_sdk.types.google_v1line",
+      "limitation_sdk.types.google_v1line_function_id",
+      "limitation_sdk.types.google_v1line_line",
+      "limitation_sdk.types.google_v1location",
+      "limitation_sdk.types.google_v1location_address",
+      "limitation_sdk.types.google_v1location_id",
+      "limitation_sdk.types.google_v1location_mapping_id",
+      "limitation_sdk.types.google_v1mapping",
+      "limitation_sdk.types.google_v1mapping_build_id",
+      "limitation_sdk.types.google_v1mapping_file_offset",
+      "limitation_sdk.types.google_v1mapping_filename",
+      "limitation_sdk.types.google_v1mapping_id",
+      "limitation_sdk.types.google_v1mapping_memory_limit",
+      "limitation_sdk.types.google_v1mapping_memory_start",
+      "limitation_sdk.types.google_v1profile",
+      "limitation_sdk.types.google_v1profile_comment_item",
+      "limitation_sdk.types.google_v1profile_default_sample_type",
+      "limitation_sdk.types.google_v1profile_drop_frames",
+      "limitation_sdk.types.google_v1profile_duration_nanos",
+      "limitation_sdk.types.google_v1profile_keep_frames",
+      "limitation_sdk.types.google_v1profile_period",
+      "limitation_sdk.types.google_v1profile_time_nanos",
+      "limitation_sdk.types.google_v1sample",
+      "limitation_sdk.types.google_v1sample_location_id_item",
+      "limitation_sdk.types.google_v1sample_value_item",
+      "limitation_sdk.types.google_v1value_type",
+      "limitation_sdk.types.google_v1value_type_type",
+      "limitation_sdk.types.google_v1value_type_unit",
+      "limitation_sdk.types.querier_v1analyze_query_response",
+      "limitation_sdk.types.querier_v1async_query_request",
+      "limitation_sdk.types.querier_v1async_query_response",
+      "limitation_sdk.types.querier_v1async_query_status",
+      "limitation_sdk.types.querier_v1async_query_type",
+      "limitation_sdk.types.querier_v1diff_response",
+      "limitation_sdk.types.querier_v1flame_graph",
+      "limitation_sdk.types.querier_v1flame_graph_diff",
+      "limitation_sdk.types.querier_v1flame_graph_diff_left_ticks",
+      "limitation_sdk.types.querier_v1flame_graph_diff_max_self",
+      "limitation_sdk.types.querier_v1flame_graph_diff_right_ticks",
+      "limitation_sdk.types.querier_v1flame_graph_diff_total",
+      "limitation_sdk.types.querier_v1flame_graph_max_self",
+      "limitation_sdk.types.querier_v1flame_graph_total",
+      "limitation_sdk.types.querier_v1heatmap_query_type",
+      "limitation_sdk.types.querier_v1level",
+      "limitation_sdk.types.querier_v1level_values_item",
+      "limitation_sdk.types.querier_v1pprof_profile",
+      "limitation_sdk.types.querier_v1profile_format",
+      "limitation_sdk.types.querier_v1profile_types_response",
+      "limitation_sdk.types.querier_v1query_impact",
+      "limitation_sdk.types.querier_v1query_impact_total_bytes_in_time_range",
+      "limitation_sdk.types.querier_v1query_impact_total_queried_series",
+      "limitation_sdk.types.querier_v1query_scope",
+      "limitation_sdk.types.querier_v1query_scope_block_count",
+      "limitation_sdk.types.querier_v1query_scope_component_count",
+      "limitation_sdk.types.querier_v1query_scope_index_bytes",
+      "limitation_sdk.types.querier_v1query_scope_profile_bytes",
+      "limitation_sdk.types.querier_v1query_scope_profile_count",
+      "limitation_sdk.types.querier_v1query_scope_sample_count",
+      "limitation_sdk.types.querier_v1query_scope_series_count",
+      "limitation_sdk.types.querier_v1query_scope_symbol_bytes",
+      "limitation_sdk.types.querier_v1select_heatmap_response",
+      "limitation_sdk.types.querier_v1select_merge_span_profile_response",
+      "limitation_sdk.types.querier_v1select_merge_stacktraces_request",
+      "limitation_sdk.types.querier_v1select_merge_stacktraces_request_end",
+      "limitation_sdk.types.querier_v1select_merge_stacktraces_request_max_nodes",
+      "limitation_sdk.types.querier_v1select_merge_stacktraces_request_start",
+      "limitation_sdk.types.querier_v1select_merge_stacktraces_response",
+      "limitation_sdk.types.querier_v1select_series_response",
+      "limitation_sdk.types.querier_v1series_response",
+      "limitation_sdk.types.types_v1exemplar",
+      "limitation_sdk.types.types_v1exemplar_timestamp",
+      "limitation_sdk.types.types_v1exemplar_type",
+      "limitation_sdk.types.types_v1exemplar_value",
+      "limitation_sdk.types.types_v1get_profile_stats_request",
+      "limitation_sdk.types.types_v1get_profile_stats_response",
+      "limitation_sdk.types.types_v1get_profile_stats_response_newest_profile_time",
+      "limitation_sdk.types.types_v1get_profile_stats_response_oldest_profile_time",
+      "limitation_sdk.types.types_v1go_pgo",
+      "limitation_sdk.types.types_v1heatmap_series",
+      "limitation_sdk.types.types_v1heatmap_slot",
+      "limitation_sdk.types.types_v1heatmap_slot_timestamp",
+      "limitation_sdk.types.types_v1label_names_response",
+      "limitation_sdk.types.types_v1label_pair",
+      "limitation_sdk.types.types_v1label_values_response",
+      "limitation_sdk.types.types_v1labels",
+      "limitation_sdk.types.types_v1location",
+      "limitation_sdk.types.types_v1point",
+      "limitation_sdk.types.types_v1point_timestamp",
+      "limitation_sdk.types.types_v1profile_annotation",
+      "limitation_sdk.types.types_v1profile_type",
+      "limitation_sdk.types.types_v1series",
+      "limitation_sdk.types.types_v1stack_trace_selector",
+      "limitation_sdk.types.types_v1time_series_aggregation_type",
+      "limitation_sdk.version"
+    ],
+    "output": "{\"distribution_sha256\": \"f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0\", \"environment\": {\"base_prefix\": \"/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu\", \"configuration_sha256\": \"9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5\", \"distributions\": [{\"name\": \"annotated-types\", \"sha256\": \"e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc\", \"version\": \"0.8.0\"}, {\"name\": \"anyio\", \"sha256\": \"8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf\", \"version\": \"4.15.1\"}, {\"name\": \"certifi\", \"sha256\": \"002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79\", \"version\": \"2026.10.19\"}, {\"name\": \"h11\", \"sha256\": \"0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f\", \"version\": \"0.16.0\"}, {\"name\": \"httpcore\", \"sha256\": \"33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595\", \"version\": \"1.0.9\"}, {\"name\": \"httpx\", \"sha256\": \"15969344ea0116638f4c07a0c51608be088dd6a99c8d40cdb8cbb32293839117\", \"version\": \"0.28.1\"}, {\"name\": \"idna\", \"sha256\": \"4cf69e52315f6e1d1e41bd8d6115815409df3aeb07dce18889092c9c334e411d\", \"version\": \"3.20\"}, {\"name\": \"limitation-sdk\", \"sha256\": \"f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0\", \"version\": \"0.0.0\"}, {\"name\": \"pydantic\", \"sha256\": \"05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c\", \"version\": \"2.14.1\"}, {\"name\": \"pydantic-core\", \"sha256\": \"2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626\", \"version\": \"2.50.1\"}, {\"name\": \"typing-extensions\", \"sha256\": \"432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877\", \"version\": \"4.16.0\"}, {\"name\": \"typing-inspection\", \"sha256\": \"4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc\", \"version\": \"0.4.4\"}], \"executable\": \"/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment/bin/python\", \"executable_sha256\": \"241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e\", \"prefix\": \"/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment\", \"python_version\": \"3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]\"}, \"environment_sha256\": \"12b6ba8996e72df1b9d5eb48a170d457b90b57d347583658948640c22fd5f44f\", \"modules\": [\"limitation_sdk\", \"limitation_sdk._default_clients\", \"limitation_sdk.client\", \"limitation_sdk.core\", \"limitation_sdk.core.api_error\", \"limitation_sdk.core.client_wrapper\", \"limitation_sdk.core.datetime_utils\", \"limitation_sdk.core.enum\", \"limitation_sdk.core.file\", \"limitation_sdk.core.force_multipart\", \"limitation_sdk.core.http_client\", \"limitation_sdk.core.http_response\", \"limitation_sdk.core.http_sse\", \"limitation_sdk.core.http_sse._api\", \"limitation_sdk.core.http_sse._decoders\", \"limitation_sdk.core.http_sse._exceptions\", \"limitation_sdk.core.http_sse._models\", \"limitation_sdk.core.jsonable_encoder\", \"limitation_sdk.core.logging\", \"limitation_sdk.core.parse_error\", \"limitation_sdk.core.pydantic_utilities\", \"limitation_sdk.core.query_encoder\", \"limitation_sdk.core.remove_none_from_dict\", \"limitation_sdk.core.request_options\", \"limitation_sdk.core.serialization\", \"limitation_sdk.scope_internal\", \"limitation_sdk.scope_internal.types\", \"limitation_sdk.scope_internal.types.querier_v1analyze_query_request_end\", \"limitation_sdk.scope_internal.types.querier_v1analyze_query_request_start\", \"limitation_sdk.scope_public\", \"limitation_sdk.scope_public.client\", \"limitation_sdk.scope_public.raw_client\", \"limitation_sdk.scope_public.types\", \"limitation_sdk.scope_public.types.querier_v1profile_types_request_end\", \"limitation_sdk.scope_public.types.querier_v1profile_types_request_start\", \"limitation_sdk.scope_public.types.querier_v1select_heatmap_request_end\", \"limitation_sdk.scope_public.types.querier_v1select_heatmap_request_limit\", \"limitation_sdk.scope_public.types.querier_v1select_heatmap_request_start\", \"limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_end\", \"limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_max_nodes\", \"limitation_sdk.scope_public.types.querier_v1select_merge_profile_request_start\", \"limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_end\", \"limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_max_nodes\", \"limitation_sdk.scope_public.types.querier_v1select_merge_span_profile_request_start\", \"limitation_sdk.scope_public.types.querier_v1select_series_request_end\", \"limitation_sdk.scope_public.types.querier_v1select_series_request_limit\", \"limitation_sdk.scope_public.types.querier_v1select_series_request_start\", \"limitation_sdk.scope_public.types.querier_v1series_request_end\", \"limitation_sdk.scope_public.types.querier_v1series_request_start\", \"limitation_sdk.scope_public.types.types_v1label_names_request_end\", \"limitation_sdk.scope_public.types.types_v1label_names_request_start\", \"limitation_sdk.scope_public.types.types_v1label_values_request_end\", \"limitation_sdk.scope_public.types.types_v1label_values_request_start\", \"limitation_sdk.types\", \"limitation_sdk.types.connect_error\", \"limitation_sdk.types.connect_error_code\", \"limitation_sdk.types.connect_error_details_any\", \"limitation_sdk.types.connect_protocol_version\", \"limitation_sdk.types.connect_timeout_header\", \"limitation_sdk.types.google_v1function\", \"limitation_sdk.types.google_v1function_filename\", \"limitation_sdk.types.google_v1function_id\", \"limitation_sdk.types.google_v1function_name\", \"limitation_sdk.types.google_v1function_start_line\", \"limitation_sdk.types.google_v1function_system_name\", \"limitation_sdk.types.google_v1label\", \"limitation_sdk.types.google_v1label_key\", \"limitation_sdk.types.google_v1label_num\", \"limitation_sdk.types.google_v1label_num_unit\", \"limitation_sdk.types.google_v1label_str\", \"limitation_sdk.types.google_v1line\", \"limitation_sdk.types.google_v1line_function_id\", \"limitation_sdk.types.google_v1line_line\", \"limitation_sdk.types.google_v1location\", \"limitation_sdk.types.google_v1location_address\", \"limitation_sdk.types.google_v1location_id\", \"limitation_sdk.types.google_v1location_mapping_id\", \"limitation_sdk.types.google_v1mapping\", \"limitation_sdk.types.google_v1mapping_build_id\", \"limitation_sdk.types.google_v1mapping_file_offset\", \"limitation_sdk.types.google_v1mapping_filename\", \"limitation_sdk.types.google_v1mapping_id\", \"limitation_sdk.types.google_v1mapping_memory_limit\", \"limitation_sdk.types.google_v1mapping_memory_start\", \"limitation_sdk.types.google_v1profile\", \"limitation_sdk.types.google_v1profile_comment_item\", \"limitation_sdk.types.google_v1profile_default_sample_type\", \"limitation_sdk.types.google_v1profile_drop_frames\", \"limitation_sdk.types.google_v1profile_duration_nanos\", \"limitation_sdk.types.google_v1profile_keep_frames\", \"limitation_sdk.types.google_v1profile_period\", \"limitation_sdk.types.google_v1profile_time_nanos\", \"limitation_sdk.types.google_v1sample\", \"limitation_sdk.types.google_v1sample_location_id_item\", \"limitation_sdk.types.google_v1sample_value_item\", \"limitation_sdk.types.google_v1value_type\", \"limitation_sdk.types.google_v1value_type_type\", \"limitation_sdk.types.google_v1value_type_unit\", \"limitation_sdk.types.querier_v1analyze_query_response\", \"limitation_sdk.types.querier_v1async_query_request\", \"limitation_sdk.types.querier_v1async_query_response\", \"limitation_sdk.types.querier_v1async_query_status\", \"limitation_sdk.types.querier_v1async_query_type\", \"limitation_sdk.types.querier_v1diff_response\", \"limitation_sdk.types.querier_v1flame_graph\", \"limitation_sdk.types.querier_v1flame_graph_diff\", \"limitation_sdk.types.querier_v1flame_graph_diff_left_ticks\", \"limitation_sdk.types.querier_v1flame_graph_diff_max_self\", \"limitation_sdk.types.querier_v1flame_graph_diff_right_ticks\", \"limitation_sdk.types.querier_v1flame_graph_diff_total\", \"limitation_sdk.types.querier_v1flame_graph_max_self\", \"limitation_sdk.types.querier_v1flame_graph_total\", \"limitation_sdk.types.querier_v1heatmap_query_type\", \"limitation_sdk.types.querier_v1level\", \"limitation_sdk.types.querier_v1level_values_item\", \"limitation_sdk.types.querier_v1pprof_profile\", \"limitation_sdk.types.querier_v1profile_format\", \"limitation_sdk.types.querier_v1profile_types_response\", \"limitation_sdk.types.querier_v1query_impact\", \"limitation_sdk.types.querier_v1query_impact_total_bytes_in_time_range\", \"limitation_sdk.types.querier_v1query_impact_total_queried_series\", \"limitation_sdk.types.querier_v1query_scope\", \"limitation_sdk.types.querier_v1query_scope_block_count\", \"limitation_sdk.types.querier_v1query_scope_component_count\", \"limitation_sdk.types.querier_v1query_scope_index_bytes\", \"limitation_sdk.types.querier_v1query_scope_profile_bytes\", \"limitation_sdk.types.querier_v1query_scope_profile_count\", \"limitation_sdk.types.querier_v1query_scope_sample_count\", \"limitation_sdk.types.querier_v1query_scope_series_count\", \"limitation_sdk.types.querier_v1query_scope_symbol_bytes\", \"limitation_sdk.types.querier_v1select_heatmap_response\", \"limitation_sdk.types.querier_v1select_merge_span_profile_response\", \"limitation_sdk.types.querier_v1select_merge_stacktraces_request\", \"limitation_sdk.types.querier_v1select_merge_stacktraces_request_end\", \"limitation_sdk.types.querier_v1select_merge_stacktraces_request_max_nodes\", \"limitation_sdk.types.querier_v1select_merge_stacktraces_request_start\", \"limitation_sdk.types.querier_v1select_merge_stacktraces_response\", \"limitation_sdk.types.querier_v1select_series_response\", \"limitation_sdk.types.querier_v1series_response\", \"limitation_sdk.types.types_v1exemplar\", \"limitation_sdk.types.types_v1exemplar_timestamp\", \"limitation_sdk.types.types_v1exemplar_type\", \"limitation_sdk.types.types_v1exemplar_value\", \"limitation_sdk.types.types_v1get_profile_stats_request\", \"limitation_sdk.types.types_v1get_profile_stats_response\", \"limitation_sdk.types.types_v1get_profile_stats_response_newest_profile_time\", \"limitation_sdk.types.types_v1get_profile_stats_response_oldest_profile_time\", \"limitation_sdk.types.types_v1go_pgo\", \"limitation_sdk.types.types_v1heatmap_series\", \"limitation_sdk.types.types_v1heatmap_slot\", \"limitation_sdk.types.types_v1heatmap_slot_timestamp\", \"limitation_sdk.types.types_v1label_names_response\", \"limitation_sdk.types.types_v1label_pair\", \"limitation_sdk.types.types_v1label_values_response\", \"limitation_sdk.types.types_v1labels\", \"limitation_sdk.types.types_v1location\", \"limitation_sdk.types.types_v1point\", \"limitation_sdk.types.types_v1point_timestamp\", \"limitation_sdk.types.types_v1profile_annotation\", \"limitation_sdk.types.types_v1profile_type\", \"limitation_sdk.types.types_v1series\", \"limitation_sdk.types.types_v1stack_trace_selector\", \"limitation_sdk.types.types_v1time_series_aggregation_type\", \"limitation_sdk.version\"], \"modules_sha256\": \"90b5852fbc169b69e2efa768fc181c6c1e95d26e2f59d4e05d45f81365e58ef1\"}\n",
+    "output_sha256": "90b5852fbc169b69e2efa768fc181c6c1e95d26e2f59d4e05d45f81365e58ef1"
+  },
+  "installation": {
+    "command": [
+      "/home/whoop/.local/bin/uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment/bin/python",
+      "pydantic==2.14.1",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/dist/limitation_sdk-0.0.0-py3-none-any.whl"
+    ],
+    "environment": {
+      "base_prefix": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu",
+      "configuration_sha256": "9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5",
+      "distributions": [
+        {
+          "name": "annotated-types",
+          "sha256": "e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc",
+          "version": "0.8.0"
+        },
+        {
+          "name": "anyio",
+          "sha256": "8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf",
+          "version": "4.15.1"
+        },
+        {
+          "name": "certifi",
+          "sha256": "002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "h11",
+          "sha256": "0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f",
+          "version": "0.16.0"
+        },
+        {
+          "name": "httpcore",
+          "sha256": "33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httpx",
+          "sha256": "15969344ea0116638f4c07a0c51608be088dd6a99c8d40cdb8cbb32293839117",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "sha256": "4cf69e52315f6e1d1e41bd8d6115815409df3aeb07dce18889092c9c334e411d",
+          "version": "3.20"
+        },
+        {
+          "name": "limitation-sdk",
+          "sha256": "f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0",
+          "version": "0.0.0"
+        },
+        {
+          "name": "pydantic",
+          "sha256": "05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c",
+          "version": "2.14.1"
+        },
+        {
+          "name": "pydantic-core",
+          "sha256": "2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626",
+          "version": "2.50.1"
+        },
+        {
+          "name": "typing-extensions",
+          "sha256": "432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877",
+          "version": "4.16.0"
+        },
+        {
+          "name": "typing-inspection",
+          "sha256": "4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc",
+          "version": "0.4.4"
+        }
+      ],
+      "executable": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment/bin/python",
+      "executable_sha256": "241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/runtime-environment",
+      "python_version": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]"
+    },
+    "environment_sha256": "12b6ba8996e72df1b9d5eb48a170d457b90b57d347583658948640c22fd5f44f",
+    "exit": 0,
+    "input_sha256": "ff75d6f8d75fc0c676b212efa1576430ca68223c0906df160f385181c029de26",
+    "output": "Using Python 3.14.7 environment at: runtime-environment\nResolved 12 packages in 11ms\nPrepared 1 package in 30ms\nInstalled 12 packages in 26ms\n + annotated-types==0.8.0\n + anyio==4.15.1\n + certifi==2026.10.19\n + h11==0.16.0\n + httpcore==1.0.9\n + httpx==0.28.1\n + idna==3.20\n + limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + pydantic==2.14.1\n + pydantic-core==2.50.1\n + typing-extensions==4.16.0\n + typing-inspection==0.4.4\n",
+    "output_sha256": "f47b550fccec88217eb8e0fef0d6c9e6227aae5bb611c32f6d605314f51d07b0"
+  },
+  "package_name": "limitation_sdk",
+  "schema_version": 2,
+  "sdk_sha256": "9f17bcf4eb17acac45b91cf12b8fb919631e1cf9d5dad0fd9657e955f9ab8022",
+  "strict_generation": {
+    "command": [
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
+      "generate",
+      "python",
+      "--no-config",
+      "--spec",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml",
+      "--output",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/strict_generation",
+      "--package-name",
+      "limitation_sdk",
+      "--project-name",
+      "limitation-sdk",
+      "--fern-strict"
+    ],
+    "exit": 0,
+    "input_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2",
+    "output": "generated 173 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/strict_generation\n",
+    "output_sha256": "9f17bcf4eb17acac45b91cf12b8fb919631e1cf9d5dad0fd9657e955f9ab8022"
+  },
+  "validation": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pyroscope-framed/build-environment/bin/python",
+      "-m",
+      "openapi_spec_validator",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml"
+    ],
+    "exit": 0,
+    "input_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2",
+    "output": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.yaml: OK\n",
+    "output_sha256": "7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2"
+  }
+}

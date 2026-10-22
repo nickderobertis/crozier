@@ -1,0 +1,129 @@
+--- fern check (exit 1) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 20 errors
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "offeringType":
+  - CourseOffering -> offeringType
+  - CourseOffering -> (extends) OfferingProperties -> offeringType
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "abbreviation":
+  - CourseOffering -> abbreviation
+  - CourseOffering -> (extends) OfferingProperties -> abbreviation
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "modeOfDelivery":
+  - CourseOffering -> modeOfDelivery
+  - CourseOffering -> (extends) OfferingProperties -> modeOfDelivery
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "maxNumberStudents":
+  - CourseOffering -> maxNumberStudents
+  - CourseOffering -> (extends) OfferingProperties -> maxNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "enrolledNumberStudents":
+  - CourseOffering -> enrolledNumberStudents
+  - CourseOffering -> (extends) OfferingProperties -> enrolledNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "pendingNumberStudents":
+  - CourseOffering -> pendingNumberStudents
+  - CourseOffering -> (extends) OfferingProperties -> pendingNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "resultValueType":
+  - CourseOffering -> resultValueType
+  - CourseOffering -> (extends) OfferingProperties -> resultValueType
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "link":
+  - CourseOffering -> link
+  - CourseOffering -> (extends) OfferingProperties -> link
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "otherCodes":
+  - CourseOffering -> otherCodes
+  - CourseOffering -> (extends) OfferingProperties -> otherCodes
+
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "ext":
+  - CourseOffering -> ext
+  - CourseOffering -> (extends) OfferingProperties -> ext
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "offeringType":
+  - ProgramOffering -> offeringType
+  - ProgramOffering -> (extends) OfferingProperties -> offeringType
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "abbreviation":
+  - ProgramOffering -> abbreviation
+  - ProgramOffering -> (extends) OfferingProperties -> abbreviation
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "modeOfDelivery":
+  - ProgramOffering -> modeOfDelivery
+  - ProgramOffering -> (extends) OfferingProperties -> modeOfDelivery
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "maxNumberStudents":
+  - ProgramOffering -> maxNumberStudents
+  - ProgramOffering -> (extends) OfferingProperties -> maxNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "enrolledNumberStudents":
+  - ProgramOffering -> enrolledNumberStudents
+  - ProgramOffering -> (extends) OfferingProperties -> enrolledNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "pendingNumberStudents":
+  - ProgramOffering -> pendingNumberStudents
+  - ProgramOffering -> (extends) OfferingProperties -> pendingNumberStudents
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "resultValueType":
+  - ProgramOffering -> resultValueType
+  - ProgramOffering -> (extends) OfferingProperties -> resultValueType
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "link":
+  - ProgramOffering -> link
+  - ProgramOffering -> (extends) OfferingProperties -> link
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "otherCodes":
+  - ProgramOffering -> otherCodes
+  - ProgramOffering -> (extends) OfferingProperties -> otherCodes
+
+    [error]
+        path: __package__.yml -> types -> ProgramOffering
+        issue: Object has multiple properties named "ext":
+  - ProgramOffering -> ext
+  - ProgramOffering -> (extends) OfferingProperties -> ext
+
+Found 20 errors and 0 warnings in 0.008 seconds.
+::error::Found 20 errors and 0 warnings in 0.008 seconds.
+

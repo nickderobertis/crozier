@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/amitvikramraj/files-api/1f1642361bfc8796d47b10532507f6be92289090/openapi.json
+HTTP 200
+22880 bytes, sha256 f08bd6920ea5c915903d84f618410d75cbda7d3db428812bdd2578093b20fdf8
+pinned sha256 (none)
+outcome: passed: 22880 bytes read at the immutable commit 1f1642361bfc8796d47b10532507f6be92289090, sha256 f08bd6920ea5c915903d84f618410d75cbda7d3db428812bdd2578093b20fdf8

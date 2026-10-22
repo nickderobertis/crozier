@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/crawlab-team/crawlab/0485310def8b4f31ea20997846a8d5e7dfc681e5/core/docs/api/openapi.yaml
+HTTP 200
+118401 bytes, sha256 12d7d4949ad2a113e8cc75652359d010b21bc2d954512b711b04b16cb72b8666
+pinned sha256 (none)
+outcome: passed: 118401 bytes read at the immutable commit 0485310def8b4f31ea20997846a8d5e7dfc681e5, sha256 12d7d4949ad2a113e8cc75652359d010b21bc2d954512b711b04b16cb72b8666

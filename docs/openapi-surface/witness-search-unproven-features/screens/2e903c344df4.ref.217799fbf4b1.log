@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/BK1031/Rincon/979edc33f094158814c09c8a87438aa9cbaa7c4d/openapi.yaml
+HTTP 200
+17392 bytes, sha256 2e903c344df4baac2fc73e2d4ffaae22983820e5b03c3ba78aeaa2e02a208489
+pinned sha256 (none)
+outcome: passed: 17392 bytes read at the immutable commit 979edc33f094158814c09c8a87438aa9cbaa7c4d, sha256 2e903c344df4baac2fc73e2d4ffaae22983820e5b03c3ba78aeaa2e02a208489

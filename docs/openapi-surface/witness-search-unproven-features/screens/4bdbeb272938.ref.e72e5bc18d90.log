@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/typesense/typesense-go/82c53eae44fca30bcf7a86d0b239b1e3e79b212d/typesense/api/generator/openapi.yml
+HTTP 200
+153166 bytes, sha256 4bdbeb272938cfb310c66bc25200e55f5f0f6f177cabf11eb58017327d32821a
+pinned sha256 (none)
+outcome: passed: 153166 bytes read at the immutable commit 82c53eae44fca30bcf7a86d0b239b1e3e79b212d, sha256 4bdbeb272938cfb310c66bc25200e55f5f0f6f177cabf11eb58017327d32821a

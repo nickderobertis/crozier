@@ -1871,3 +1871,16 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2805 | `rta-in-japan-twitter` | an empty array in the first named request example filled from the property's schema example | ✅ byte-matched after this node's repair |
+
+## Digit-leading operation identifiers
+
+The OnMyShelf API document is published in the application's own API repository,
+`onmyshelf/api`, under `inc/openapi.json`; its title names the same application
+and its routes implement borrowers in that application. This is the primary
+publisher repository, rather than an aggregation or demonstration copy. The
+pinned repository's `LICENSE.md` supplies the redistribution grant; its verified
+bytes are retained in `licenses/onmyshelf-MIT.txt`.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3000 | `onmyshelf-api` | github-raw | https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json | `e56b713d272d627a18ba14d3eea992231c550146` | MIT (publisher repository LICENSE.md) | committed | Digit-leading operationId method identifiers and hoisted response classes |

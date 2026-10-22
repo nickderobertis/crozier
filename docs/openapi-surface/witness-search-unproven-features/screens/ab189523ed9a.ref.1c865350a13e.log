@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/dcSpark/carp/61fe5f2034512cb9ef592918e6cb4e833242b16a/docs/bin/openapi.json
+HTTP 200
+104171 bytes, sha256 ab189523ed9a06272db81077566ff28c6dfc4a8f92c186277b7789fe7541b9ae
+pinned sha256 (none)
+outcome: passed: 104171 bytes read at the immutable commit 61fe5f2034512cb9ef592918e6cb4e833242b16a, sha256 ab189523ed9a06272db81077566ff28c6dfc4a8f92c186277b7789fe7541b9ae

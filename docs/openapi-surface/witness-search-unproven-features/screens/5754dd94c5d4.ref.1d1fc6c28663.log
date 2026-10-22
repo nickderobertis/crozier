@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/DiamondLightSource/blueapi/8f68c6770c9c3a979ac35a3172e035fca2cfacf4/docs/reference/openapi.yaml
+HTTP 200
+35077 bytes, sha256 5754dd94c5d4ecc6a2a5f8b925842c4d9a864cdbe30662355a92551971dcb48c
+pinned sha256 (none)
+outcome: passed: 35077 bytes read at the immutable commit 8f68c6770c9c3a979ac35a3172e035fca2cfacf4, sha256 5754dd94c5d4ecc6a2a5f8b925842c4d9a864cdbe30662355a92551971dcb48c

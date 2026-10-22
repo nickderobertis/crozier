@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/calvinmclean/automated-garden/349451e6315cacba70a1b1624708f5bc36413be1/garden-app/api/openapi.yaml
+HTTP 200
+42311 bytes, sha256 8af662543c85bfd10a9c4735af8c28626e0cca76ec020f34fa53408d8f2352d7
+pinned sha256 (none)
+outcome: passed: 42311 bytes read at the immutable commit 349451e6315cacba70a1b1624708f5bc36413be1, sha256 8af662543c85bfd10a9c4735af8c28626e0cca76ec020f34fa53408d8f2352d7

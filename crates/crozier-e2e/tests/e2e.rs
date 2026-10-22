@@ -2694,6 +2694,63 @@ fn handwritten_fixtures_match_fern_goldens() {
 }
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+#[test]
+fn residual_null_example_is_absent_from_matching_request_snippets() {
+    let (_, failures) = handwritten_documents(repo_root());
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-signal-null");
+    let spec = fixture.join("openapi.yml");
+    let failures = filtered_tree_failures(
+        "schema-example-null",
+        "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected",
+        &spec,
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let temp = tempfile::tempdir().unwrap();
+    let output = temp.path().join("sdk");
+    probe_command(&spec, &output).assert().success();
+    for tree in [fixture.join("fern-expected"), output] {
+        let text = std::fs::read_to_string(tree.join("src/fern/client.py")).unwrap();
+        for (prefix, end) in [
+            ("\n        client.submit_signal(", "\n        )"),
+            (
+                "\n            await client.submit_signal(",
+                "\n            )",
+            ),
+        ] {
+            let snippet = text
+                .split_once(prefix)
+                .unwrap()
+                .1
+                .split_once(end)
+                .unwrap()
+                .0;
+            assert!(snippet.contains("name=\"beacon\""), "{snippet}");
+            assert!(!snippet.contains("memo="), "{snippet}");
+            assert!(!snippet.contains("None"), "{snippet}");
+        }
+    }
+    let original = std::fs::read_to_string(&spec).unwrap();
+    let control = original
+        .replace("required: [name]", "required: [name, memo]")
+        .replace("type: [string, 'null']", "type: string")
+        .replace("examples: [null]", "examples: [quiet]");
+    assert_ne!(original, control);
+    let control_spec = temp.path().join("control.yml");
+    std::fs::write(&control_spec, control).unwrap();
+    let control_output = temp.path().join("control-sdk");
+    probe_command(&control_spec, &control_output)
+        .assert()
+        .success();
+    let text = std::fs::read_to_string(control_output.join("src/fern/client.py")).unwrap();
+    assert!(
+        text.contains("memo=\"quiet\""),
+        "the required non-null control must reach the worked call"
+    );
+}
+
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, JSON problem responses, and a
@@ -9371,6 +9428,7 @@ const CORPORA: &[&Corpus] = &[
     &RICE_SHOWER,
     &SUPABASE_API_V1,
     &RTA_IN_JAPAN_TWITTER,
+    &ONMYSHELF_API,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12330,6 +12388,18 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3000: the publisher's API declares digit-leading method IDs.
+const ONMYSHELF_API: Corpus = Corpus {
+    api: "onmyshelf-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
 /// whose first named request example's empty array is filled from its schema
 /// example.
@@ -13168,6 +13238,43 @@ fn supabase_api_v1_matches_fern_output() {
 #[test]
 fn rta_in_japan_twitter_matches_fern_output() {
     assert_committed_corpus_matches(&RTA_IN_JAPAN_TWITTER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+#[test]
+fn onmyshelf_api_matches_fern_output() {
+    assert_committed_corpus_matches(&ONMYSHELF_API);
+}
+
+// The reference command is a shell command, which compare deliberately refuses
+// on Windows; the corpus byte-match above remains portable.
+#[cfg(unix)]
+#[test]
+fn digit_leading_method_departure_rejects_adjacent_unexplained_bytes() {
+    let root = repo_root();
+    let expected = root.join("tests/fixtures/onmyshelf-api/expected");
+    let source = root.join("tests/fixtures/corpus-sources/onmyshelf-api/openapi.json");
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
+    );
+    let before = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(...)";
+    let after = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(changed=True)";
+    let (code, result) =
+        compare_with_certified_reference(&source, &expected, Some(("README.md", before, after)));
+    assert_eq!(
+        code, 3,
+        "unexplained adjacent argument change was normalized: {result:#}"
+    );
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!(["README.md"]),
+        "{result:#}"
+    );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
@@ -16456,8 +16563,8 @@ components:
         assert!(rendered.contains("note=\"Primary note\""), "{rendered}");
         assert_eq!(
             rendered.matches("\"2024-02-03\"").count(),
-            2,
-            "duplicate dates should be omitted once per sync/async example: {rendered}"
+            4,
+            "duplicate dates survive in each sync/async example: {rendered}"
         );
         assert!(!rendered.contains("code=\"ALT-1\""), "{rendered}");
     }
@@ -24330,6 +24437,58 @@ fn example_type_mismatch_refusal_covers_measured_shapes() {
 }
 
 #[test]
+fn fractional_integer_event_stream_refusal_recovers_with_integral_examples() {
+    let probes = repo_root().join("docs/openapi-surface/probes");
+    let source = std::fs::read_to_string(
+        probes.join("schema-example-fractional-on-integer-event-stream.yml"),
+    )
+    .unwrap();
+    let workspace = tempfile::tempdir().unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(
+            &crozier,
+            &probes.join("schema-example-fractional-on-integer-event-stream.yml"),
+            strict,
+        )
+        .unwrap();
+        let failures = refused_failures(
+            "example-type-mismatch",
+            &run,
+            "example-type-mismatch: GET /readings response example 2.5",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        for (name, media_example) in [
+            ("single", "example: {ticks: 2}"),
+            ("named", "examples: {measured: {value: {ticks: 2}}}"),
+        ] {
+            let explicit = workspace.path().join(format!("{name}.yml"));
+            let text = source.replace(
+                "              schema:",
+                &format!("              {media_example}\n              schema:"),
+            );
+            assert!(text.contains(media_example));
+            assert!(
+                text.contains("example: 2.5"),
+                "the fractional schema example must remain"
+            );
+            std::fs::write(&explicit, text).unwrap();
+            let control = refusal_run(&crozier, &explicit, strict).unwrap();
+            assert_eq!(control.code, Some(0), "{name}: {}", control.stderr);
+            assert!(!control.files.is_empty(), "{name}");
+        }
+        for name in [
+            "schema-example-fractional-on-integer-event-stream-control.yml",
+            "schema-example-fractional-on-integer-optional-request-control.yml",
+        ] {
+            let control = refusal_run(&crozier, &probes.join(name), strict).unwrap();
+            assert_eq!(control.code, Some(0), "{name}: {}", control.stderr);
+            assert!(!control.files.is_empty(), "{name}");
+        }
+    }
+}
+
+#[test]
 fn example_not_enum_value_refusal_covers_measured_shapes() {
     example_value_class_holds(
         "example-not-enum-value",
@@ -26997,6 +27156,94 @@ fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
     assert!(String::from_utf8_lossy(&absent.stderr).contains("supply the complete SDK"));
     assert!(run(&["--help"]).status.success());
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This real wheel build uses the promoted SDK-env edge. "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads" owns the family's deferred edge split.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
+    let root = repo_root();
+    let python = python_interpreter().expect("SDK evaluation needs Python");
+    let script = root.join("tools/fern-refusals/fern-refusals.py");
+    let workspace = tempfile::tempdir().unwrap();
+    let source = workspace.path().join("source.yml");
+    let specification = "openapi: 3.1.0\ninfo: {title: Harbor Chain, version: '1'}\npaths: {}\n";
+    std::fs::write(&source, specification).unwrap();
+    let receipt = workspace.path().join("evaluation.json");
+    let work = workspace.path().join("native-run");
+    let evaluate = |destination: &Path| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(["evaluate-sdk", "--document"])
+            .arg(&source)
+            .arg("--crozier")
+            .arg(crozier_bin())
+            .arg("--work-dir")
+            .arg(destination)
+            .arg("--output")
+            .arg(&receipt)
+            .output()
+            .unwrap()
+    };
+    let output = evaluate(&work);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let original = std::fs::read(&receipt).unwrap();
+    let record: serde_json::Value = serde_json::from_slice(&original).unwrap();
+    assert_eq!(record["schema_version"], 2);
+    let check = || {
+        std::process::Command::new(python)
+            .arg(&script)
+            .arg("check-sdk-evaluation")
+            .arg(&receipt)
+            .arg("--document")
+            .arg(&source)
+            .output()
+            .unwrap()
+    };
+    assert!(check().status.success());
+    let mut broken = record.clone();
+    broken["build"]["input_sha256"] = serde_json::Value::String("f".repeat(64));
+    std::fs::write(&receipt, serde_json::to_vec(&broken).unwrap()).unwrap();
+    let answer = check();
+    assert!(!answer.status.success());
+    assert!(String::from_utf8_lossy(&answer.stderr).contains("build input digest"));
+    let mut missing = record.clone();
+    missing.as_object_mut().unwrap().remove("imports");
+    std::fs::write(&receipt, serde_json::to_vec(&missing).unwrap()).unwrap();
+    let answer = check();
+    assert!(!answer.status.success());
+    assert!(String::from_utf8_lossy(&answer.stderr).contains("missing fields ['imports']"));
+    std::fs::write(&receipt, &original).unwrap();
+    std::fs::remove_file(&source).unwrap();
+    assert!(!check().status.success());
+    let absent = evaluate(&workspace.path().join("missing-input"));
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("source file missing"));
+    assert_eq!(std::fs::read(&receipt).unwrap(), original);
+    std::fs::write(&source, "not an OpenAPI document\n").unwrap();
+    let malformed = evaluate(&workspace.path().join("malformed-input"));
+    assert!(!malformed.status.success());
+    assert!(String::from_utf8_lossy(&malformed.stderr).contains("validation failed with exit"));
+    assert_eq!(std::fs::read(&receipt).unwrap(), original);
+    std::fs::write(&source, specification).unwrap();
+    let recovered = evaluate(&workspace.path().join("recovered-input"));
+    assert!(
+        recovered.status.success(),
+        "{}",
+        String::from_utf8_lossy(&recovered.stderr)
+    );
+    assert!(check().status.success());
+    assert!(work.join("dist").read_dir().unwrap().any(|entry| entry
+        .unwrap()
+        .path()
+        .extension()
+        .is_some_and(|extension| extension == "whl")));
+}
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]

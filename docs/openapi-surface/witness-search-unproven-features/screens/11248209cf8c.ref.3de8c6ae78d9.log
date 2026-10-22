@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/stac-utils/stac-server/db694c756bfd7dcf19dbf040f363d55bae6dbfd2/src/lambdas/api/openapi.yaml
+HTTP 200
+75214 bytes, sha256 11248209cf8c3bf13cd7dd67aa96846ea926dd8341b00d60d795c0dbef1fdb49
+pinned sha256 (none)
+outcome: passed: 75214 bytes read at the immutable commit db694c756bfd7dcf19dbf040f363d55bae6dbfd2, sha256 11248209cf8c3bf13cd7dd67aa96846ea926dd8341b00d60d795c0dbef1fdb49

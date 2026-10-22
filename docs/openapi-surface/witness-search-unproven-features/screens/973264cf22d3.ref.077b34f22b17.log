@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jquirossoto/node-typescript-express-ecs/358075745ec23ed16c1786934f1b11a048414484/openapi.json
+HTTP 200
+22877 bytes, sha256 973264cf22d339ee1f88127812a2c3672bdf10ef42e9a98969bdccbb483a6dff
+pinned sha256 (none)
+outcome: passed: 22877 bytes read at the immutable commit 358075745ec23ed16c1786934f1b11a048414484, sha256 973264cf22d339ee1f88127812a2c3672bdf10ef42e9a98969bdccbb483a6dff

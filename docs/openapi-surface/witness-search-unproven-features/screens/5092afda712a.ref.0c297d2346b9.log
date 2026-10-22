@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jentic/jentic-public-apis/1700c576aa658b5dc3bd06cb376cc959d84e12f8/apis/openapi/mailinabox.email/main/0.51.0/meta/import/input-bundle.json
+HTTP 200
+111442 bytes, sha256 5092afda712a693ebf7ff84783e41d6d5e268d129ba3145afda24d46471ff4f7
+pinned sha256 (none)
+outcome: passed: 111442 bytes read at the immutable commit 1700c576aa658b5dc3bd06cb376cc959d84e12f8, sha256 5092afda712a693ebf7ff84783e41d6d5e268d129ba3145afda24d46471ff4f7

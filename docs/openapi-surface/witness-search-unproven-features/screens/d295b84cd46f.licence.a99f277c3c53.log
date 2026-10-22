@@ -1,0 +1,36 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> AGPL
+--- LICENSE (first 30 non-blank lines) ---
+Copyright (C) [2023], INESC TEC 
+ENERSHARE – REC Sizing API: A REST API for sizing and planning the operation of a Renewable Energy Community (REC) or
+Citizen Energy Community (CEC) that can promote the minimization of the members’ operation cost with energy.
+This software is authored by:
+Armando Miguel Nicolau Moreno
+Pedro Miguel Ferreira Macedo
+Ricardo Emanuel Gomes Fernandes da Silva
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
+details.
+You should have received a copy of the GNU Affero General Public License along with this program.  If not, see
+<https://www.gnu.org/licenses/>.
+This program makes use and is distributed with the following libraries:
+* fastapi: (https://github.com/tiangolo/fastapi)
+* pydantic: (https://github.com/pydantic/pydantic)
+* uvicorn: (https://github.com/encode/uvicorn)
+A commercial license is also available for use in industrial projects and collaborations that do not wish to use the
+AGPL v3 license.
+To obtain the commercial license please contact the INESC TEC Technology Licensing Office (TLO) at info.sal@inesctec.pt,
+or
+Campus da Faculdade de Engenharia da Universidade do Porto 
+Rua Dr. Roberto Frias 
+4200-465 Porto 
+Portugal 
+If needed SAL (INESC TEC Technology Licensing Office - TLO) can assist with all the legal details regarding the
+licensing agreement
+________________________________________
+outcome: passed: no info.license, LICENSE at the pinned commit reads as AGPL, which the corpus rule admits

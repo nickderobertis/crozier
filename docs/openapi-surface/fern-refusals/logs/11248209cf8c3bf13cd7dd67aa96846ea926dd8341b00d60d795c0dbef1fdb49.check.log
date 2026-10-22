@@ -1,0 +1,93 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 16 errors
+    [error]
+        path: __package__.yml -> types -> ArithmeticExpressionOp
+        issue: Enum name  for value + is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BinaryComparisonPredicateOp
+        issue: Enum name  for value <> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> IntervalArrayItemOne
+        issue: Enum name  for value .. is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects
+        issue: optional<root.GeometryGeoJson> is not a valid type for a query parameter
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "bbox":
+  - <Inlined Request> -> bbox
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) BboxFilter -> bbox
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "datetime":
+  - <Inlined Request> -> datetime
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) DatetimeFilter -> datetime
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "intersects":
+  - <Inlined Request> -> intersects
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) IntersectsFilter -> intersects
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "collections":
+  - <Inlined Request> -> collections
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) CollectionsFilter -> collections
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "ids":
+  - <Inlined Request> -> ids
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) IdsFilter -> ids
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+        issue: Object has multiple properties named "limit":
+  - <Inlined Request> -> limit
+  - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) SchemasLimitFilter -> limit
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name bbox. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> bbox
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) BboxFilter -> bbox
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name datetime. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> datetime
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) DatetimeFilter -> datetime
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name intersects. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> intersects
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) IntersectsFilter -> intersects
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name collections. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> collections
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) CollectionsFilter -> collections
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name ids. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> ids
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) IdsFilter -> ids
+
+    [error]
+        path: itemSearch.yml -> service -> endpoints -> postItemSearch
+        issue: Multiple request properties have the name limit. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> limit
+  - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) SchemasLimitFilter -> limit
+
+Found 16 errors and 0 warnings in <n> seconds.

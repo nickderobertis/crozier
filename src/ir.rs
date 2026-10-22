@@ -10395,6 +10395,14 @@ pub(crate) fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &s
             naming::to_pascal_case(http_method),
             naming::to_pascal_case(&naming::sanitize_identifier(&path))
         )
+    } else if id.starts_with(|character: char| character.is_ascii_digit())
+        && endpoint_method_name(op, http_method, url)
+            .strip_prefix('_')
+            .is_some_and(|method| method.starts_with(|character: char| character.is_ascii_digit()))
+    {
+        // OnMyShelf's digit-leading operation IDs keep an underscore in the
+        // method, but their hoisted request/response classes spell out the digit.
+        naming::class_name(id)
     } else {
         naming::sanitize_identifier(&naming::to_pascal_case(id))
     }
@@ -17527,6 +17535,41 @@ fn plain_example_literal(value: &serde_json::Value) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn digit_leading_operation_context_names_hoisted_types_with_a_word() {
+        for (id, expected) in [("1readings", "OneReadings"), ("8readings", "EightReadings")] {
+            let operation: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+                "operationId": id,
+                "responses": {"200": {"description": "Readings", "content": {
+                    "application/json": {"schema": {"type": "object", "properties": {
+                        "count": {"type": "integer"}
+                    }}}
+                }}}
+            }))
+            .expect("operation deserializes");
+            assert_eq!(
+                super::endpoint_pascal_context(&operation, "get", "/readings"),
+                expected
+            );
+            assert_eq!(
+                super::request_context(&operation, "get", "/readings"),
+                format!("{expected}Request")
+            );
+        }
+        let grouped: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "1Readings.read", "tags": ["1Readings"], "responses": {}
+        }))
+        .expect("grouped operation deserializes");
+        assert_eq!(
+            super::endpoint_method_name(&grouped, "get", "/readings"),
+            "read"
+        );
+        assert_eq!(
+            super::endpoint_pascal_context(&grouped, "get", "/readings"),
+            "_1ReadingsRead"
+        );
+    }
+
     use super::{
         additional_api_key_global_headers, array_item_type_ref, auth_model, base_type_ref,
         build_endpoint, build_enum, described_all_of_ref, discriminant_strips,

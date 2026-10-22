@@ -134,6 +134,21 @@
     certified generator's own date-example form and leaves string placeholders intact.
   evidence: docs/departures/evidence/date-header-constructor-example.md
 
+- id: digit-leading-method-reference-identifiers
+  kind: fern-defect
+  trigger: >-
+    An operationId starts with an ASCII digit, and a generated method with its
+    identifier-safe underscore prefix exists: README.md and reference.md only.
+  fern: >-
+    The digit-leading method spelling without the underscore, in README calls
+    and reference headings, although the generated method has the underscore.
+  crozier: >-
+    The identifier the generated SDK defines, retaining every other byte of the line.
+  reason: >-
+    The documented call fails Python compilation with an invalid decimal literal
+    and contradicts the generated SDK method, which imports and binds correctly.
+  evidence: docs/departures/evidence/digit-leading-method-reference-identifiers.md
+
 - id: docstring-literal-dollar-escape
   kind: fern-defect
   trigger: >-

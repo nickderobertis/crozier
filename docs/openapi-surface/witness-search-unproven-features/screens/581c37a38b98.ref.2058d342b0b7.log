@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/nasa/cmr-stac/f7c6e959367ce32910c55924b5d4f46f85501413/resources/swagger.json
+HTTP 200
+62533 bytes, sha256 581c37a38b98668366e244b350c8b2b7bf45b53bca2be09a033bfe7818f90a42
+pinned sha256 (none)
+outcome: passed: 62533 bytes read at the immutable commit f7c6e959367ce32910c55924b5d4f46f85501413, sha256 581c37a38b98668366e244b350c8b2b7bf45b53bca2be09a033bfe7818f90a42

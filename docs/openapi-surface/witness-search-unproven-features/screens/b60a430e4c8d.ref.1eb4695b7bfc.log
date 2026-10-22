@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/opengeospatial/ogcapi-features/1c68987e1a5222e9a488a7b089f7246010f3e83c/core/openapi/ogcapi-features-1.yaml
+HTTP 200
+32640 bytes, sha256 b60a430e4c8d19dc1c4d5f26bbaf7ea7773f08db3e62296c33325b09396c344f
+pinned sha256 (none)
+outcome: passed: 32640 bytes read at the immutable commit 1c68987e1a5222e9a488a7b089f7246010f3e83c, sha256 b60a430e4c8d19dc1c4d5f26bbaf7ea7773f08db3e62296c33325b09396c344f

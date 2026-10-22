@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/tursodatabase/turso/64b8ef5742fc18937f9c89806c81e3f6475dc7a3/bindings/dotnet/src/Turso.Platform.Client/openapi.json
+HTTP 200
+113303 bytes, sha256 e30577e1371958aa80ee541b247c27635befb8bd4178622b78ce025ec59e5732
+pinned sha256 (none)
+outcome: passed: 113303 bytes read at the immutable commit 64b8ef5742fc18937f9c89806c81e3f6475dc7a3, sha256 e30577e1371958aa80ee541b247c27635befb8bd4178622b78ce025ec59e5732

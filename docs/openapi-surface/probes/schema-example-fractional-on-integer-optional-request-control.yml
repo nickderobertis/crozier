@@ -1,0 +1,21 @@
+openapi: 3.1.0
+info:
+  title: Tide Reading Commands
+  version: 1.0.0
+paths:
+  /readings:
+    post:
+      operationId: submitReading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticks:
+                  type: integer
+                  example: 2.5
+      responses:
+        '204':
+          description: Reading stored

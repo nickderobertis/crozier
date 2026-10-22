@@ -163,7 +163,6 @@ oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.t
 operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported
-operation-id-digit-leading-method	operation.operationId:digit-leading-method	document-paths.md	supported
 operation-id-hyphenated-tag-method	operation.operationId:hyphenated-tag-method	document-paths.md	supported
 operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
 operation-idempotent-with-root-headers	operation.x-fern-idempotent:with-root-headers	oas31-extensions.md	supported
@@ -212,6 +211,7 @@ response-status-space-suffixed	operation.responses:space-suffixed-status-key	bod
 response-without-description-blank-line	operation.responses	bodies-media.md	supported
 schema-example-array-null-element	schema.example:array-null-element	schemas.md	supported
 schema-example-fractional-on-integer	schema.example:fractional-on-integer	schemas.md	supported
+schema-example-null	schema.example=null	schemas.md	supported
 schema-example-on-ref-to-enum	schema.example:on-ref-to-enum	schemas.md	supported
 schema-example-on-ref-to-object	schema.example:on-ref-to-object	schemas.md	supported
 schema-example-on-ref-to-union	schema.example:on-ref-to-union	schemas.md	supported

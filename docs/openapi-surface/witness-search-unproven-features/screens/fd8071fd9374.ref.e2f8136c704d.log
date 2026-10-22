@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/vkazakevich/slim-vue-app/c85759ee3ad57bad47a6e7e464b5ed66b74f630e/openapi.json
+HTTP 200
+9940 bytes, sha256 fd8071fd9374b73e482ae26da28f4b8eb98d5435aa1a23d24ee444017bc780ce
+pinned sha256 (none)
+outcome: passed: 9940 bytes read at the immutable commit c85759ee3ad57bad47a6e7e464b5ed66b74f630e, sha256 fd8071fd9374b73e482ae26da28f4b8eb98d5435aa1a23d24ee444017bc780ce
