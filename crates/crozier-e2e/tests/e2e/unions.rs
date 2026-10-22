@@ -61,9 +61,14 @@ const PROBE_FIXTURES: [&str; 1] = ["museum-titled-array-items"];
 /// The fixture's document.
 fn fixture_spec(name: &str) -> PathBuf {
     if PROBE_FIXTURES.contains(&name) {
-        return repo_root().join(PROBE_DOCUMENTS_DIR).join(format!("{name}.yml"));
+        return repo_root()
+            .join(PROBE_DOCUMENTS_DIR)
+            .join(format!("{name}.yml"));
     }
-    repo_root().join(HANDWRITTEN_DIR).join(name).join("openapi.yml")
+    repo_root()
+        .join(HANDWRITTEN_DIR)
+        .join(name)
+        .join("openapi.yml")
 }
 
 /// The complete tree Fern generated from [`fixture_spec`].
@@ -71,7 +76,10 @@ fn fixture_tree(name: &str) -> PathBuf {
     if PROBE_FIXTURES.contains(&name) {
         return repo_root().join(PROBE_EXPECTED_DIR).join(name);
     }
-    repo_root().join(HANDWRITTEN_DIR).join(name).join("fern-expected")
+    repo_root()
+        .join(HANDWRITTEN_DIR)
+        .join(name)
+        .join("fern-expected")
 }
 
 /// `fixture`'s literals tree: `fern-expected/` less the files the manifest
@@ -257,13 +265,7 @@ fn respell(text: &str, stem: &str, with: impl Fn(&str, &str) -> String) -> Strin
 /// The fixture's certified tree against crozier over `spec`, Python enums.
 fn matches_golden(name: &str, spec: &Path) -> Vec<String> {
     match fern_expected_ledger(name) {
-        Ok(ledger) => tree_failures(
-            name,
-            spec,
-            &fixture_tree(name),
-            "python-enums",
-            &ledger,
-        ),
+        Ok(ledger) => tree_failures(name, spec, &fixture_tree(name), "python-enums", &ledger),
         Err(failures) => failures,
     }
 }
@@ -379,8 +381,7 @@ fn union_refusal_controls_hold_beside_the_generating_shapes() {
     }
     for name in ["telescope-renamed-discriminant", "bakery-get-body-member"] {
         for strict in [false, true] {
-            let run = refusal_run(&crozier, &fixture_spec(name), strict)
-                .expect("crozier runs");
+            let run = refusal_run(&crozier, &fixture_spec(name), strict).expect("crozier runs");
             assert_eq!(run.code, Some(0), "{name}: {}", run.stderr);
             assert!(!run.files.is_empty(), "{name} wrote nothing");
         }

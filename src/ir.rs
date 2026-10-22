@@ -25274,9 +25274,7 @@ mod tests {
             matches!(produced, TypeRef::Dict(_, value) if !matches!(*value, TypeRef::Primitive(_)))
                 && declared > 0
         };
-        let tagged = |kind: &str| {
-            serde_json::json!({ "type": "object", "properties": { "kind": { "type": "string", "enum": [kind] } } })
-        };
+        let tagged = |kind: &str| serde_json::json!({ "type": "object", "properties": { "kind": { "type": "string", "enum": [kind] } } });
         for value in [
             serde_json::json!({ "type": "string", "enum": ["alpha", "beta"] }),
             struct_schema(),

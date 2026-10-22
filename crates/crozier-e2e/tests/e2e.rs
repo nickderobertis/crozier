@@ -2759,19 +2759,29 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
                 .unwrap()
         };
         let mut without_feature = parse(&source);
-        assert!(without_feature
-            .pointer_mut(pointer)
-            .unwrap()
-            .as_object_mut()
-            .unwrap()
-            .remove(field)
-            .is_some(), "{name}: the original must declare the feature");
-        assert_eq!(without_feature, parse(&control_source), "{name}: control changes another field");
+        assert!(
+            without_feature
+                .pointer_mut(pointer)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove(field)
+                .is_some(),
+            "{name}: the original must declare the feature"
+        );
+        assert_eq!(
+            without_feature,
+            parse(&control_source),
+            "{name}: control changes another field"
+        );
         let fern_motion = changed(
             &files(&repo_root().join(golden)),
             &files(&control.join("fern-expected")),
         );
-        assert!(!fern_motion.is_empty(), "{name}: Fern's complete tree did not move");
+        assert!(
+            !fern_motion.is_empty(),
+            "{name}: Fern's complete tree did not move"
+        );
         for strict in [false, true] {
             let scratch = tempfile::tempdir().unwrap();
             let missing = scratch.path().join("openapi.yml");
