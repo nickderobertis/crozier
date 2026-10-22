@@ -14049,6 +14049,31 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's port of {path}'s {name}",
                 )
 
+    def test_an_inferred_tag_is_read_off_a_composed_members_last_alternative(self) -> None:
+        """`inferred_discriminant_property_with` maps each member through `last_composed_variant`."""
+
+        def tagged(value: str) -> dict:
+            return {
+                "type": "object",
+                "required": ["kind"],
+                "properties": {"kind": {"type": "string", "enum": [value]}},
+            }
+
+        def document(second: dict) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": "t", "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Thing": {"oneOf": [tagged("a"), second]}}},
+            }
+
+        selector = "schema.oneOf:discriminated-union"
+        nested = {"oneOf": [{"type": "string"}, tagged("b")]}
+        self.assertEqual(1, census.census_document(document(nested)).get(selector, 0))
+        # A nullable pair is no composed member, so its tag is not read through it.
+        nullable = {"oneOf": [{"type": "null"}, tagged("b")]}
+        self.assertEqual(0, census.census_document(document(nullable)).get(selector, 0))
+
     def test_the_union_ports_track_their_rust_functions(self) -> None:
         """The unrequired-tag clause and `components.schemas:same-primitive-union`.
 

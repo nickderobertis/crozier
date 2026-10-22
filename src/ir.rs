@@ -25250,6 +25250,55 @@ mod tests {
     }
 
     #[test]
+    fn prop_type_ref_lowers_a_structured_map_value_through_the_component_builder() {
+        // Cases 19a to 19d of the census case table, and the residue it names:
+        // an operation-scoped map whose `additionalProperties` value is
+        // structured, unreferenced and carries no declared type name declares
+        // its value the way a component map does.
+        let map = |value: serde_json::Value| {
+            let schemas = indexmap::IndexMap::new();
+            let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
+                root_types: &[],
+                schemas: Some(&schemas),
+                out: Vec::new(),
+            };
+            let produced = hoister.prop_type_ref(
+                "Bag",
+                "thing",
+                &schema(serde_json::json!({ "type": "object", "additionalProperties": value })),
+            );
+            (produced, hoister.out.len())
+        };
+        let declares_value = |(produced, declared): (TypeRef, usize)| {
+            matches!(produced, TypeRef::Dict(_, value) if !matches!(*value, TypeRef::Primitive(_)))
+                && declared > 0
+        };
+        let tagged = |kind: &str| {
+            serde_json::json!({ "type": "object", "properties": { "kind": { "type": "string", "enum": [kind] } } })
+        };
+        for value in [
+            serde_json::json!({ "type": "string", "enum": ["alpha", "beta"] }),
+            struct_schema(),
+            serde_json::json!({ "oneOf": [tagged("a"), tagged("b")] }),
+            serde_json::json!({ "anyOf": [{ "type": "string" }, struct_schema()] }),
+            serde_json::json!({ "type": "array", "items": struct_schema() }),
+        ] {
+            assert!(declares_value(map(value.clone())), "{value}");
+        }
+        // The residue: a referenced value, a value carrying a declared type name,
+        // a nullable pair and a plain scalar are not structured map values.
+        for value in [
+            serde_json::json!({ "$ref": "#/components/schemas/Missing" }),
+            serde_json::json!({ "x-fern-type-name": "Named", "type": "string", "enum": ["alpha"] }),
+            serde_json::json!({ "oneOf": [{ "type": "null" }, { "type": "string" }] }),
+            serde_json::json!({ "type": "string" }),
+        ] {
+            assert_eq!(map(value.clone()).1, 0, "{value}");
+        }
+    }
+
+    #[test]
     fn prop_type_ref_separates_the_branches_its_selectors_name() {
         let property = |value: serde_json::Value| {
             let schemas = indexmap::IndexMap::new();
