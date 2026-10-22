@@ -1790,8 +1790,20 @@ class MeasuredAtThePair(unittest.TestCase):
 
     def test_both_refuse_relation_requires_a_fern_generation_refusal(self) -> None:
         self.add_classes("generator-lint-failure", "path-parameter-unreferenced")
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "Reading relation", "version": "1"},
+            "paths": {
+                "/readings": {
+                    "put": {
+                        "parameters": [{"in": "path", "name": "id", "required": True, "schema": {"type": "string"}}],
+                        "responses": {"200": {"description": "OK"}},
+                    }
+                }
+            },
+        }
+        digest = self.add_document("both-refuse.json", json.dumps(document).encode())
         measured = self.measure()
-        digest = self.documents["measured-current"]
         entry = measured[digest]
         log = self.evidence / "logs" / f"{digest}.generate.log"
         said = "Failed to run command: ruff check generated.py"
@@ -2250,9 +2262,11 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 self.env["COVERAGE_PROCESS_START"] = str(REPO / "pyproject.toml")
                 self.env["COVERAGE_FILE"] = str(Path(os.environ.get("COVERAGE_FILE", ".coverage")).resolve())
 
-    def evaluate(self, mode: str = "", name: str = "run") -> tuple[subprocess.CompletedProcess[str], Path]:
+    def evaluate(
+        self, mode: str = "", name: str = "run", destination: Path | None = None
+    ) -> tuple[subprocess.CompletedProcess[str], Path]:
         env = {**self.env, "SDK_EVAL_MODE": mode}
-        receipt = self.root / f"{name}.json"
+        receipt = destination or self.root / f"{name}.json"
         result = subprocess.run(
             [
                 sys.executable,
@@ -2332,6 +2346,102 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(reason, result.stderr)
                 self.assertFalse(receipt.exists())
+
+    def test_driver_protects_inputs_and_rejects_symlinks_and_invalid_runtime_provenance(self) -> None:
+        for index, target in enumerate((self.source, self.compiler)):
+            with self.subTest(overwrite=target.name):
+                before = target.read_bytes()
+                result, _receipt = self.evaluate(name=f"overwrite-{index}", destination=target)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("overwrite an input", result.stderr)
+                self.assertEqual(before, target.read_bytes())
+                self.assertFalse((self.root / f"overwrite-{index}").exists())
+        for mode, reason in (
+            ("symlink-sdk", "contains a symlink"),
+            ("outside-env", "did not come from the fresh installation"),
+            ("discovery-fails", "could not discover SDK package"),
+            ("mutating-import", "imports changed the installed distribution"),
+        ):
+            with self.subTest(mode=mode):
+                result, receipt = self.evaluate(mode, mode)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(reason, result.stderr)
+                self.assertFalse(receipt.exists())
+
+    def test_receipt_integrity_rejects_each_invalid_environment_and_import_description(self) -> None:
+        result, receipt = self.evaluate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        original = receipt.read_text()
+
+        def refresh_environment(data: dict) -> None:
+            for label in ("installation", "imports"):
+                environment = data[label]["environment"]
+                data[label]["environment_sha256"] = hashlib.sha256(
+                    json.dumps(environment, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+                ).hexdigest()
+
+        for case, reason in (
+            ("environment-digest", "environment digest does not match"),
+            ("duplicates", "not unique and sorted"),
+            ("unsorted", "not unique and sorted"),
+            ("missing-sdk", "does not identify the installed SDK"),
+            ("wrong-sdk", "does not identify the installed SDK"),
+            ("missing-interpreter", "omits its interpreter"),
+            ("module-digest", "imported module list digest"),
+            ("wrong-modules", "every discovered module"),
+            ("unsorted-modules", "every discovered module"),
+            ("empty-command", "no recorded command"),
+        ):
+            with self.subTest(case=case):
+                data = json.loads(original)
+                match case:
+                    case "environment-digest":
+                        data["imports"]["environment"]["prefix"] = "changed prefix"
+                    case "duplicates" | "unsorted" | "missing-sdk" | "wrong-sdk" | "missing-interpreter":
+                        environment = data["installation"]["environment"]
+                        entries = environment["distributions"]
+                        sdk = next(item for item in entries if item["name"] == "limitation-sdk")
+                        match case:
+                            case "duplicates":
+                                entries.append(dict(sdk))
+                            case "unsorted":
+                                environment["distributions"] = [
+                                    sdk,
+                                    {"name": "aaa", "version": "1", "sha256": "a" * 64},
+                                ]
+                            case "missing-sdk":
+                                environment["distributions"] = [
+                                    item for item in entries if item["name"] != "limitation-sdk"
+                                ]
+                            case "wrong-sdk":
+                                sdk["sha256"] = "f" * 64
+                            case "missing-interpreter":
+                                environment["executable"] = ""
+                        data["imports"]["environment"] = json.loads(json.dumps(environment))
+                        refresh_environment(data)
+                    case "module-digest":
+                        data["imports"]["output_sha256"] = "f" * 64
+                    case "wrong-modules" | "unsorted-modules":
+                        data["imports"]["modules"] = (
+                            ["unrelated_package"]
+                            if case == "wrong-modules"
+                            else list(reversed(data["imports"]["modules"]))
+                        )
+                        data["imports"]["output_sha256"] = hashlib.sha256(
+                            json.dumps(data["imports"]["modules"], separators=(",", ":")).encode()
+                        ).hexdigest()
+                    case "empty-command":
+                        data["imports"]["command"] = []
+                receipt.write_text(json.dumps(data), encoding="utf-8")
+                checked = subprocess.run(
+                    [sys.executable, str(SCRIPT), "check-sdk-evaluation", str(receipt), "--document", str(self.source)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertNotEqual(checked.returncode, 0)
+                self.assertIn(reason, checked.stderr)
+        receipt.write_text(original, encoding="utf-8")
 
 
 class SdkArtifactDigestTests(unittest.TestCase):

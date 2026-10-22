@@ -924,8 +924,8 @@ oneof-string-const-variant	github-code-search	inkeep/chat-api-openapi-schema:ope
 oneof-string-const-variant	github-code-search	isaacus-dev/openapi:openapi.yaml@bc3cdb9c51755fcb94425209f1ead4669bfccba6 (+1 identical)	1	executes none of the arm's sites
 oneof-string-const-variant	github-code-search	iu8lmc/Decodium-4.0-Core-Shannon:docs/sstv/remote-sharing-openapi.yaml@0676060d87e5094a5835fb7db957057c651f385b	3	executes none of the arm's sites
 oneof-string-const-variant	github-code-search	jpatokal/openflights:openapi.yaml@7d1a611e070295dba776d6afb86e57d0d1aa1cef	2	executes none of the arm's sites
-oneof-string-const-variant	github-code-search	khulnasoft/RapidDocs:seed/openapi/literal/openapi.yml@5fb28dba3c6353351814c757628b64918809e329	1	executes none of the arm's sites
-oneof-string-const-variant	github-code-search	khulnasoft/RapidDocs:seed/openapi/undiscriminated-unions/openapi.yml@5fb28dba3c6353351814c757628b64918809e329	1	executes none of the arm's sites
+oneof-string-const-variant	github-code-search	opaque-v1:ffffb4ac51ab9ac3b95e57796a0b0c0a:1	1	excluded by repository provenance rule; not screened
+oneof-string-const-variant	github-code-search	opaque-v1:ffffb4ac51ab9ac3b95e57796a0b0c0a:2	1	excluded by repository provenance rule; not screened
 oneof-string-const-variant	github-code-search	lutyjj/esp32-streamline:docs/bridge-openapi.json@f50f678a3569d5c10e250cdd03e16cf1d17df16a	1	executes none of the arm's sites
 oneof-string-const-variant	github-code-search	mxsm/rocketmq-rust:rocketmq-ai/rocketmq-sre/openapi/rocketmq-sre-phase02.openapi.json@7a9f2c4bb0f02f6fb837ac003948d36551dabe95	1	executes none of the arm's sites
 oneof-string-const-variant	github-code-search	noekohq/Noeko:app/api/v1/openapi.yaml@dbc6393673ec1b06aa8a23ecdd01967fe1e94466	1	executes none of the arm's sites

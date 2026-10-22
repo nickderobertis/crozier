@@ -135,29 +135,34 @@ def schema_for(annotation: object) -> Schema:
 
 def structural_errors(value: object, schema: Schema, where: str = "SDK evidence") -> list[str]:
     kind = schema["type"]
-    if kind == "object":
-        if not isinstance(value, dict):
-            return [f"{where}: expected an object"]
-        properties = schema["properties"]
-        missing = set(schema["required"]) - value.keys()
-        extra = value.keys() - properties.keys()
-        if missing or extra:
-            return [f"{where}: missing fields {sorted(missing)}; unexpected fields {sorted(map(str, extra))}"]
-        return [
-            error
-            for key, child in properties.items()
-            for error in structural_errors(value[key], child, f"{where}.{key}")
-        ]
-    if kind == "array":
-        if not isinstance(value, list):
-            return [f"{where}: expected an array"]
-        return [
-            error
-            for index, item in enumerate(value)
-            for error in structural_errors(item, schema["items"], f"{where}[{index}]")
-        ]
-    if (kind == "integer" and type(value) is not int) or (kind == "string" and not isinstance(value, str)):
-        return [f"{where}: expected {kind}"]
+    match kind:
+        case "object":
+            if not isinstance(value, dict):
+                return [f"{where}: expected an object"]
+            properties = schema["properties"]
+            missing = set(schema["required"]) - value.keys()
+            extra = value.keys() - properties.keys()
+            if missing or extra:
+                return [f"{where}: missing fields {sorted(missing)}; unexpected fields {sorted(map(str, extra))}"]
+            return [
+                error
+                for key, child in properties.items()
+                for error in structural_errors(value[key], child, f"{where}.{key}")
+            ]
+        case "array":
+            if not isinstance(value, list):
+                return [f"{where}: expected an array"]
+            return [
+                error
+                for index, item in enumerate(value)
+                for error in structural_errors(item, schema["items"], f"{where}[{index}]")
+            ]
+        case "integer":
+            if type(value) is not int:
+                return [f"{where}: expected integer"]
+        case "string":
+            if not isinstance(value, str):
+                return [f"{where}: expected string"]
     if "enum" in schema and value not in schema["enum"]:
         return [f"{where}: expected one of {schema['enum']}"]
     if "pattern" in schema and (not isinstance(value, str) or re.fullmatch(schema["pattern"], value) is None):

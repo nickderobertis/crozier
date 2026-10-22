@@ -64,39 +64,40 @@ mode = os.environ.get('SDK_EVAL_MODE')
 real_python = os.environ['SDK_EVAL_PYTHON']
 with open(os.environ['SDK_EVAL_CALLS'], 'a') as log:
     log.write('uv:' + args[0] + '\n')
-if args[0] == 'venv':
-    target = Path(args[-1])
-    subprocess.run([real_python, '-m', 'venv', '--without-pip', str(target)], check=True)
-    interpreter = target / 'bin/python'
-    site = Path(subprocess.check_output([str(interpreter), '-c', 'import sysconfig; print(sysconfig.get_path("purelib"))'], text=True).strip())
-    if os.environ.get('SDK_EVAL_COVERAGE'):
-        # Instrument the actual child interpreter without downloading a package.
-        # This copy is test infrastructure, not a change to the SDK driver.
-        distribution = importlib.metadata.distribution('coverage')
-        for entry in distribution.files or ():
-            if entry.suffix == '.pyc':
-                continue
-            source = Path(distribution.locate_file(entry))
-            destination = site / str(entry)
-            if not destination.resolve().is_relative_to(target.resolve()):
-                raise ValueError('coverage file record escapes the environment')
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, destination)
-        (site / 'sdk-test-coverage.pth').write_text('import coverage; coverage.process_startup()\n')
-elif args[:2] == ['pip', 'install']:
-    interpreter = args[args.index('--python') + 1]
-    site = Path(subprocess.check_output([interpreter, '-c', 'import sysconfig; print(sysconfig.get_path("purelib"))'], text=True).strip())
-    if any(arg.startswith('build==') for arg in args):
-        (site / 'build.py').write_text(os.environ['SDK_EVAL_BUILDER'])
-        (site / 'openapi_spec_validator.py').write_text(os.environ['SDK_EVAL_VALIDATOR'])
-    else:
-        if mode == 'installation-fails':
-            print('installer double failed')
-            sys.exit(13)
-        with zipfile.ZipFile(args[-1]) as wheel:
-            wheel.extractall(site)
-else:
-    raise ValueError('unexpected package-tool arguments: ' + repr(args))
+match args:
+    case ['venv', *_]:
+        target = Path(args[-1])
+        subprocess.run([real_python, '-m', 'venv', '--without-pip', str(target)], check=True)
+        interpreter = target / 'bin/python'
+        site = Path(subprocess.check_output([str(interpreter), '-c', 'import sysconfig; print(sysconfig.get_path("purelib"))'], text=True).strip())
+        if os.environ.get('SDK_EVAL_COVERAGE'):
+            # Instrument the actual child interpreter without downloading a package.
+            # This copy is test infrastructure, not a change to the SDK driver.
+            distribution = importlib.metadata.distribution('coverage')
+            for entry in distribution.files or ():
+                if entry.suffix == '.pyc':
+                    continue
+                source = Path(distribution.locate_file(entry))
+                destination = site / str(entry)
+                if not destination.resolve().is_relative_to(target.resolve()):
+                    raise ValueError('coverage file record escapes the environment')
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
+            (site / 'sdk-test-coverage.pth').write_text('import coverage; coverage.process_startup()\n')
+    case ['pip', 'install', *_]:
+        interpreter = args[args.index('--python') + 1]
+        site = Path(subprocess.check_output([interpreter, '-c', 'import sysconfig; print(sysconfig.get_path("purelib"))'], text=True).strip())
+        if any(arg.startswith('build==') for arg in args):
+            (site / 'build.py').write_text(os.environ['SDK_EVAL_BUILDER'])
+            (site / 'openapi_spec_validator.py').write_text(os.environ['SDK_EVAL_VALIDATOR'])
+        else:
+            if mode == 'installation-fails':
+                print('installer double failed')
+                sys.exit(13)
+            with zipfile.ZipFile(args[-1]) as wheel:
+                wheel.extractall(site)
+    case _:
+        raise ValueError('unexpected package-tool arguments: ' + repr(args))
 """
 
 CROZIER = r"""
@@ -122,6 +123,19 @@ if mode == 'different-trees' and strict:
 (package / '__init__.py').write_text(body)
 (package / 'reading.py').write_text('VALUE = 7\n')
 (output / 'pyproject.toml').write_text('[project]\nname="limitation-sdk"\nversion="0.0.0"\n')
+if mode == 'symlink-sdk':
+    (output / 'linked.py').symlink_to(package / '__init__.py')
+if mode == 'outside-env':
+    with (package / '__init__.py').open('a') as handle:
+        handle.write("__file__ = '/outside-the-installation/sdk.py'\n")
+if mode == 'discovery-fails':
+    broken = package / 'broken'
+    broken.mkdir()
+    (broken / '__init__.py').write_text("raise ImportError('broken package')\n")
+if mode == 'mutating-import':
+    with (package / '__init__.py').open('a') as handle:
+        handle.write("Path(__file__).with_name('reading.py').write_text('VALUE = 99\\n')\n")
+
 """
 
 
