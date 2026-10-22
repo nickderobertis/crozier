@@ -65,6 +65,8 @@ DELEGATED = (
     "tests/corpus_match/",
     "tests/corpus_match_selection/",
     "tests/live_e2e/",
+    "tests/nested-discriminator/golden/",
+    "tests/nested-discriminator/runtime/",
     "tests/runtime/",
     "tests/sdk_env/",
     "tools/release-packaging/",

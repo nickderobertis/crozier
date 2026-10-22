@@ -58,6 +58,18 @@
       ],
       "cache": true
     },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/nested-discriminator/runtime"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    },
     "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
@@ -82,6 +94,7 @@
     "lint": {
       "executor": "nx:noop",
       "dependsOn": [
+        "lint-certified-pair",
         "lint-ruff",
         "lint-boundaries"
       ]
