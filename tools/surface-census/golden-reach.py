@@ -1246,7 +1246,7 @@ def render_arm_headline(text: str, ledger: list[tuple[int, Reach]], regions: Pat
         "  successful complete tree to byte-match. Their refused documents and controls\n"
         "  are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).\n"
         f"  The keys are {refused_keys}.\n"
-        f"- **{len(insensitive)} are decided output-insensitive**, with identical complete\n"
+        f"- **{len(insensitive)} {'is' if len(insensitive) == 1 else 'are'} decided output-insensitive**, with identical complete\n"
         "  before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).\n"
         f"- **{len(named)} {'is a named gap' if len(named) == 1 else 'are named gaps'}**, "
         "whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).\n\n"

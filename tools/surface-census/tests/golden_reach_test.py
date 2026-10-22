@@ -518,15 +518,31 @@ class ReportTests(unittest.TestCase):
         result = self.run_arms("--headline")
         self.assertEqual(0, result.returncode, result.stderr)
         after = index.read_bytes()
-        self.assertIn("**1 are decided output-insensitive**", after.decode())
+        self.assertIn("**1 is decided output-insensitive**", after.decode())
         self.assertIn("1 + 0 + 0 + 1 + 1 = 3.", after.decode())
         path = surface / "crozier.json"
         record = json.loads(path.read_text())
+        original = path.read_text()
         record["after"]["sdk.py"] = "b" * 64
         path.write_text(json.dumps(record))
         result = self.run_arms("--headline")
         self.assertNotEqual(0, result.returncode)
         self.assertIn("generated files differ", result.stderr)
+        self.assertEqual(after, index.read_bytes())
+        path.unlink()
+        result = self.run_arms("--headline")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("missing comparison", result.stderr)
+        self.assertEqual(after, index.read_bytes())
+        path.write_text(original)
+        cover = surface / "handwritten/flag-demo"
+        cover.mkdir(parents=True, exist_ok=True)
+        (cover / "evidence.toml").write_text(
+            "[[covers]]\nkey = \"flag-orphan\"\narm = 'src/demo.rs::unrelated'\nverdict = \"exhausted\"\n"
+        )
+        result = self.run_arms("--headline")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
         self.assertEqual(after, index.read_bytes())
 
     def test_arm_headline_measured_covers_and_conflicting_verdicts(self) -> None:

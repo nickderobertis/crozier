@@ -136,9 +136,11 @@ provenance and records scoped updates beside their rows.
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
   The keys are `enum-empty-identifier-member`, `enum-leading-digit-identifier`, `enum-leading-zero-member`, `mutually-recursive-graph`, `recursive-graph`.
-- **6 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
+- **1 is decided output-insensitive**, with identical complete
+  before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
+- **5 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-897 + 112 + 5 + 6 = 1020. Fourteen sites left the table with the two functions
+897 + 112 + 5 + 1 + 5 = 1020. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
@@ -2171,10 +2173,16 @@ witness hunks by owner: —
 
 A context is **output-insensitive in both generators** when deleting its
 feature changes neither complete generated tree at the certified pair. It is
-decided, needs no witness, and is never called proven. Record it as `ignores`
-with a Contract A differential pair; the existing differential gate generates
-both documents with crozier and compares both committed Fern trees. Other
-contexts of the key retain their own proof or refusal requirements. The
+decided, needs no witness, and is never called proven. Every such context is a
+row of [the shared table](openapi-surface/output-insensitive.tsv)
+([format](output-insensitive.md)), citing its search record and one committed
+before/after comparison per generator; the finished-state gate and the arm
+headline refuse a row whose comparisons are missing or differ, and a row whose
+key is also claimed proven. A feature context is additionally recorded as
+`ignores` with a Contract A differential pair, which the existing differential
+gate generates with crozier and compares against both committed Fern trees; an
+arm context is counted as decided in the arm headline. Other contexts of the key
+retain their own proof or refusal requirements. The
 [fractional optional request property](openapi-surface/witness-search-unproven-features/README.md#optional-fractional-request-property-attribution)
 is such a context.
 
@@ -3187,7 +3195,7 @@ why. The changes that took the arm off:
 | 67 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
 | 68 | `response-description` | `src/emit.rs::push_return_doc[=None => \{\}]` | 1 | `not searched` — no arm search has run | `buoy-depth-response` |
 | 69 | `schema-example-object-on-map` | `src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]` | 2 | `not searched` — no arm search has run | — |
-| 70 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `not searched` — no arm search has run | — |
+| 70 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `not searched` — no arm search has run | `enum-media-selection` |
 | 71 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
 | 72 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
 | 73 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |

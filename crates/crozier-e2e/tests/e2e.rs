@@ -2716,6 +2716,14 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
             "example",
         ),
         (
+            "compass-choice",
+            "docs/openapi-surface/handwritten/compass-choice/openapi.yml",
+            "docs/openapi-surface/handwritten/compass-choice/fern-expected",
+            "remaining-examples/compass-choice-control",
+            "/paths/~1choices/post/requestBody/content/application~1json/schema/properties/direction/oneOf/0",
+            "const",
+        ),
+        (
             "formbricks",
             "tests/fixtures/corpus-sources/formbricks/openapi.yml",
             "tests/fixtures/formbricks/expected",
