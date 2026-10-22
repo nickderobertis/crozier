@@ -118,7 +118,7 @@ split four ways:
 498 + 66 + 148 + 5 = 717.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 85 are `golden` and 6 are `gap`.
+([the list](openapi-surface/combinations.md)): 6 are `gap`, 83 are `golden` and 2 are `handwritten`.
 None is among the 717 features above, and each `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 

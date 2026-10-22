@@ -202,25 +202,27 @@ intentional departure; it is not an output-insensitive decision.
 
 ## Attribution
 
-The existing selected witnesses have `unmatched: &[]` in the corpus gate.
-Their named golden tests passed. The initial eight-test reach measurement at
-the source revision above was superseded by a 62-test instrumented run at
-`63c79bc0a430d622930dca3486d55d4d728b3ca2`, after the example repairs. That run
-includes the eleven combinations' witnesses and every witness of the two
-single-feature rows whose request-field site moved. All 62 golden tests passed.
-The later attribution unit test changes no production code or measured lines.
+The registered witnesses have `unmatched: &[]` in the corpus gate. The latest
+completed scoped measurement runs 63 golden tests at
+`faa953f074a474bac6033a245af34fb5ac614690`, whose production source is unchanged
+from `c77b45035`. All 63 pass, including the seven real-witness keys' declarers and
+every joined witness of the two single-feature rows whose request-field site
+moved. This supersedes the earlier 62-test measurement at
+`63c79bc0a430d622930dca3486d55d4d728b3ca2`, which preceded the later rendering
+and departure repairs. The region join retains every measured declarer; the
+paired removal controls, rather than reach alone, establish sensitivity.
 The [site table](../golden-reach-sites.tsv) records the example handoff sites;
 the [reach ledger](../golden-reach.tsv) carries the scoped run's provenance.
 These handoff measurements do not claim every path of the containing function
 is exhausted; the single-feature rows retain those wider handling branches.
 
 Deleting the conjunction's examples in MockServer changes `reference.md` and
-the expectation and verify clients. An earlier serialized-source Crozier preflight moved Supabase's README, reference
-and environments client, but its certified control moves no generated file; it
-is recorded by the existing declared-value departure, rather than a parser or
-binary discrepancy. Its complete baseline and control both compare successfully. Removing examples in
-HSE and Zulip moves no bytes; their earlier reach evidence is the measured handling-site
-reach only. Neither is an output-sensitive witness.
+the expectation and verify clients. Supabase's removal changes Crozier's README,
+reference and environments client, while the certified Fern control changes no
+generated file. The existing declared-value departure preserves the valid
+source content; both the complete baseline and removal control compare.
+Removing examples in HSE and Zulip moves no bytes. Their earlier reach evidence
+is handling-site reach only; neither is an output-sensitive witness.
 
 The three media-example combinations require stronger witnesses than their
 initial region entries named. D&D's inline/allOf media example occurs on the

@@ -132,10 +132,56 @@ def validate_reach_population(keys: set[str], features: set[str], combinations: 
             )
 
 
+COMBINATION_SENTENCE = (
+    r"\*\*Feature combinations are counted apart\.\*\* \d+ combinations are selected\s+"
+    r"\(\[the list\]\(openapi-surface/combinations\.md\)\): [^\n.]+\."
+)
+
+
+def combination_categories(root: Path) -> Counter[str]:
+    """Read combinations apart from features, using the shared category parser."""
+    parser = reader()
+    index = root / "docs/openapi-surface-coverage.md"
+    categories: Counter[str] = Counter()
+    seen: set[str] = set()
+    for name in parser.region_files(index):
+        for cells in parser.region_rows((root / "docs/openapi-surface" / name).read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            if not key.startswith(parser.COMBINATION_PREFIX):
+                continue
+            if key in seen:
+                raise ValueError(f"duplicate combination row {key}")
+            seen.add(key)
+            categories[cells[3].strip("`")] += 1
+    if not categories:
+        raise ValueError("no combination region rows")
+    return categories
+
+
+def restate_combinations(root: Path, text: str) -> str:
+    """Restate only the combination sentence; category vocabulary comes from rows."""
+    categories = combination_categories(root)
+    parts = [f"{count} are `{category}`" for category, count in sorted(categories.items())]
+    counts = ", ".join(parts[:-1]) + " and " + parts[-1] if len(parts) > 1 else parts[0]
+    return substitute(
+        text,
+        COMBINATION_SENTENCE,
+        f"**Feature combinations are counted apart.** {sum(categories.values())} combinations are selected\n"
+        f"([the list](openapi-surface/combinations.md)): {counts}.",
+    )
+
+
+def combination_headline_failures(root: Path) -> list[str]:
+    """Require the whole category/count mapping, including the total and grammar."""
+    text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+    expected = restate_combinations(root, text)
+    return [] if text == expected else ["combination headline differs from the complete region category counts"]
+
+
 def restate(root: Path) -> str:
     """Derive tables from category rows and the committed blind-spot measurement."""
     index = root / "docs/openapi-surface-coverage.md"
-    text = index.read_text(encoding="utf-8")
+    text = restate_combinations(root, index.read_text(encoding="utf-8"))
     acquired, registered, golden_sources = source_counts(root)
     text = substitute(
         text,
@@ -745,7 +791,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO)
     parser.add_argument("--write", action="store_true", help="write the derived tables; otherwise check for drift")
-    parser.add_argument(
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--combinations-only", action="store_true", help="restate only the combination sentence")
+    modes.add_argument(
         "--snapshot-json", type=Path, help="restate document snapshot from native surface-census --json output"
     )
     args = parser.parse_args()
@@ -759,7 +807,11 @@ def main() -> int:
                         raise ValueError("document snapshot differs; rerun with --write")
                     target.write_text(content, encoding="utf-8", newline="\n")
             return 0
-        result = restate(args.repo_root)
+        result = (
+            restate_combinations(args.repo_root, path.read_text(encoding="utf-8"))
+            if args.combinations_only
+            else restate(args.repo_root)
+        )
         if result != path.read_text(encoding="utf-8"):
             if not args.write:
                 raise ValueError("derived tables differ; run tools/surface-census/restate-coverage.py --write")

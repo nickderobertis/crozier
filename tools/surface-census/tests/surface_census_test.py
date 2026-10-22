@@ -17992,6 +17992,53 @@ class CoverageRestatementTests(unittest.TestCase):
             check=False,
         )
 
+    def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        written = self.run_restater("--combinations-only", "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        self.assertEqual([], restater.combination_headline_failures(self.root))
+        original = self.index.read_text(encoding="utf-8")
+        marker = "**Feature combinations are counted apart.**"
+        prefix, sentence = original.split(marker, 1)
+        sentence, suffix = sentence.split(".\n", 1)
+        counts = re.findall(r"(\d+) are `([^`]+)`", sentence)
+        self.assertGreaterEqual(len(counts), 3, "the fixture must include its handwritten combinations")
+        count, category = counts[0]
+        total = int(matched(re.search(r"(\d+) combinations", sentence)).group(1))
+        for changed in [
+            sentence.replace(f"{total} combinations", f"{total + 1} combinations"),
+            sentence + f" and {count} are `{category}`",
+            sentence.replace(f"{count} are `{category}`", f"{int(count) + 1} are `{category}`"),
+            sentence.replace(f"{count} are `{category}`", f"{count} are `invented-category`"),
+            sentence + " and 0 are `extra-category`",
+            sentence.replace(f"{count} are `{category}`, ", "", 1),
+        ]:
+            with self.subTest(sentence=changed):
+                self.index.write_text(prefix + marker + changed + ".\n" + suffix, encoding="utf-8")
+                self.assertTrue(restater.combination_headline_failures(self.root))
+                self.assertEqual(1, self.run_restater("--combinations-only").returncode)
+                repaired = self.run_restater("--combinations-only", "--write")
+                self.assertEqual(0, repaired.returncode, repaired.stderr)
+                self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        parser = restater.reader()
+        region = self.root / "docs/openapi-surface/schemas.md"
+        source = region.read_text(encoding="utf-8")
+        row = next(line for line in source.splitlines() if line.startswith("| combo-"))
+        cells = parser.region_rows(row)[0]
+        for category in parser.CATEGORIES:
+            with self.subTest(category=category):
+                replacement = row.replace(f"| {cells[3]} |", f"| {category} |", 1)
+                if category != cells[3]:
+                    self.assertNotEqual(row, replacement)
+                region.write_text(source.replace(row, replacement, 1), encoding="utf-8")
+                written = self.run_restater("--combinations-only", "--write")
+                self.assertEqual(0, written.returncode, written.stderr)
+                self.assertEqual([], restater.combination_headline_failures(self.root))
+                self.assertEqual(0, self.run_restater("--combinations-only").returncode)
+        region.write_text(source, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
     def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
         measured = subprocess.run(
             [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
@@ -18894,20 +18941,9 @@ class CombinationListTests(unittest.TestCase):
         self.assertIn("combinations.md has no '## Rejected' section", self.failures())
 
     def test_the_coverage_headline_counts_the_combinations_apart(self) -> None:
-        doc = " ".join((REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8").split())
-        stated = re.search(
-            r"\*\*Feature combinations are counted apart\.\*\* (\d+) combinations are selected .*?: "
-            r"(\d+) are `golden` and (\d+) are `gap`\.",
-            doc,
-        )
-        self.assertIsNotNone(stated, "the headline no longer counts the combinations on a line of its own")
-        assert stated is not None
-        categories = Counter(cells[3].strip("`") for _region, cells in combination_rows(REPO).values())
-        self.assertEqual(
-            [len(census.COMBINATIONS), categories["golden"], categories["gap"]],
-            [int(value) for value in stated.groups()],
-        )
-        self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        self.assertEqual([], restater.combination_headline_failures(REPO))
+
 
     def test_a_golden_combination_row_waits_for_measurement_only_while_its_cell_says_so(self) -> None:
         """Only combination rows explicitly marked pending may omit reach measurements."""
