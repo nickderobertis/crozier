@@ -1,4 +1,10 @@
-"""Generate the nested-discriminator SDK and exercise each Pydantic major."""
+"""Generate the nested-discriminator SDK and exercise each Pydantic major.
+
+Exit status: 0 when every document, mode and Pydantic major passes; 1 when a
+generation, install or wire check fails, or the fixture drifts from the
+derivation (the failing command's output is printed); 2 on a usage error or a
+missing prerequisite (the crozier binary or uv).
+"""
 
 import argparse
 import os

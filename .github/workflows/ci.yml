@@ -107,6 +107,7 @@ jobs:
 
       - name: SDK Python-environment tier
         # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This consolidated Mac lane retains the existing required SDK environment and runtime checks against public PyPI. The task requires platform parity and gate propagation; splitting this proof into another Mac job would violate the one-job scheduling bound.
+        # llmlint: ignore[live_tier_compiles_and_requires_credential] This step runs no live or credentialed tier: sdk-env, runtime and nested-discriminator-runtime generate an SDK locally and install it from public PyPI, which needs no secret, so there is no credential to require or to fail fast on.
         run: just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime
       - name: Install crozier (recommended end-user method)
         run: cargo install --path . --locked
@@ -223,6 +224,7 @@ jobs:
       - name: SDK Python-environment tier
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
+        # llmlint: ignore[live_tier_compiles_and_requires_credential] This step runs no live or credentialed tier: sdk-env, runtime and nested-discriminator-runtime generate an SDK locally and install it from public PyPI, which needs no secret, so there is no credential to require or to fail fast on.
         run: just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime
   # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
