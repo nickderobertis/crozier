@@ -2724,6 +2724,14 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
             "const",
         ),
         (
+            "panoptes",
+            "tests/fixtures/corpus-sources/panoptes/openapi.yaml",
+            "tests/fixtures/panoptes/expected",
+            "remaining-examples/panoptes-no-struct-map-value",
+            "/paths/~1datasets~1{dataset_name}~1search/post/requestBody/content/application~1json/schema/properties/facets/additionalProperties",
+            "properties",
+        ),
+        (
             "formbricks",
             "tests/fixtures/corpus-sources/formbricks/openapi.yml",
             "tests/fixtures/formbricks/expected",
@@ -9548,6 +9556,7 @@ const CORPORA: &[&Corpus] = &[
     &RTA_IN_JAPAN_TWITTER,
     &ONMYSHELF_API,
     &FORMBRICKS,
+    &PANOPTES,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12476,6 +12485,18 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3002: the publisher's request bodies map field names to inline structs.
+const PANOPTES: Corpus = Corpus {
+    api: "panoptes",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// Corpus row 3001: the publisher's response API has typed map examples.
 const FORMBRICKS: Corpus = Corpus {
     api: "formbricks",
@@ -13342,6 +13363,11 @@ fn rta_in_japan_twitter_matches_fern_output() {
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+#[test]
+fn panoptes_matches_fern_output() {
+    assert_committed_corpus_matches(&PANOPTES);
+}
+
 #[test]
 fn formbricks_matches_fern_output() {
     assert_committed_corpus_matches(&FORMBRICKS);

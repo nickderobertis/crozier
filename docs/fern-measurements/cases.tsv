@@ -158,6 +158,7 @@ remaining-examples/compass-choice-control	docs/fern-measurements/remaining-examp
 remaining-examples/enum-media-selection-control	docs/fern-measurements/remaining-examples/enum-media-selection-control/openapi.yml	python-enums	packaged	-
 remaining-examples/formbricks-no-map-example	docs/fern-measurements/remaining-examples/formbricks-no-map-example/openapi.yml	python-enums	packaged	-
 remaining-examples/lunar-null-labels-control	docs/fern-measurements/remaining-examples/lunar-null-labels-control/openapi.yml	python-enums	packaged	-
+remaining-examples/panoptes-no-struct-map-value	docs/fern-measurements/remaining-examples/panoptes-no-struct-map-value/openapi.yml	python-enums	packaged	-
 schema-shapes-literals/kiln-annotated-body	docs/fern-measurements/schema-shapes/kiln-annotated-body/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-array-mode	docs/openapi-surface/handwritten/kiln-array-mode/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-array-variants	docs/openapi-surface/handwritten/kiln-array-variants/openapi.yml	literals	packaged	-

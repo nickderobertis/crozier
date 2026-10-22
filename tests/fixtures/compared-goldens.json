@@ -1067,6 +1067,7 @@
     "tests/fixtures/paloalto-cspm-reports/expected": {},
     "tests/fixtures/paloalto-cspm-search-manager/expected": {},
     "tests/fixtures/paloalto-remote-networks/expected": {},
+    "tests/fixtures/panoptes/expected": {},
     "tests/fixtures/paypal-catalog-products/expected": {},
     "tests/fixtures/peopledatalabs/expected": {},
     "tests/fixtures/portfoliooptimizer.io/expected": {},
