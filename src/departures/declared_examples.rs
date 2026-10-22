@@ -1,13 +1,46 @@
 //! Conservative validation for declared examples retained in worked calls.
 
 use crate::openapi::example_validation::matches;
-use crate::openapi::OpenApi;
-#[cfg(test)]
+use crate::openapi::{OpenApi, Schema};
 use serde_json::Value;
 
 struct Substitution {
     keyword: String,
     values: crate::emit::DeclaredExampleSubstitution,
+}
+
+// The richer-content rule cannot justify values synthesized by the renderer.
+// Restrict it to inline scalar/object examples whose written fields are complete.
+fn renders_only_declared_values(source: &OpenApi, schema: &Schema, value: &Value) -> bool {
+    if schema.reference.is_some()
+        || schema.discriminator.is_some()
+        || schema.type_crozier.is_some()
+        || schema.type_fern.is_some()
+        || schema.ignored()
+        || value.is_null()
+        || value.is_array()
+    {
+        return false;
+    }
+    if let Some(members) = &schema.one_of {
+        return members.iter().any(|member| {
+            matches(&source.components.schemas, member, value, 0) == Some(true)
+                && renders_only_declared_values(source, member, value)
+        });
+    }
+    if schema.all_of.is_some() || schema.any_of.is_some() {
+        return false;
+    }
+    if let Some(fields) = value.as_object() {
+        return fields.len() == schema.properties.len()
+            && fields.iter().all(|(name, value)| {
+                schema
+                    .properties
+                    .get(name)
+                    .is_some_and(|property| renders_only_declared_values(source, property, value))
+            });
+    }
+    true
 }
 
 fn substitutions(source: &OpenApi, documentation: bool, reference: bool) -> Vec<Substitution> {
@@ -48,6 +81,7 @@ fn substitutions(source: &OpenApi, documentation: bool, reference: bool) -> Vec<
                     || property.example.is_some()
                     || target.one_of.is_none()
                     || matches(&source.components.schemas, target, example, 0) != Some(true)
+                    || !renders_only_declared_values(source, target, example)
                 {
                     continue;
                 }
@@ -361,6 +395,37 @@ mod tests {
                 0
             ),
             Some(false)
+        );
+        assert!(substitutions(&doc, false, false).is_empty());
+    }
+
+    #[test]
+    fn union_departures_abstain_when_rendering_would_synthesize_array_items() {
+        let mut doc = source(
+            serde_json::json!({}),
+            serde_json::json!({"Window":{"lookback":20}}),
+        );
+        let choice = doc.components.schemas.get_mut("Choice").unwrap();
+        let window = choice.one_of.as_mut().unwrap()[1]
+            .properties
+            .get_mut("Window")
+            .unwrap();
+        window.properties.insert(
+            "lookback".into(),
+            serde_json::from_value(serde_json::json!({
+                "type":"array", "items":{"type":"object", "properties":{"days":{"type":"integer"}}}
+            }))
+            .unwrap(),
+        );
+        choice.example = Some(serde_json::json!({"Window":{"lookback":[]}}));
+        assert_eq!(
+            matches(
+                &doc.components.schemas,
+                &doc.components.schemas["Choice"],
+                doc.components.schemas["Choice"].example.as_ref().unwrap(),
+                0
+            ),
+            Some(true)
         );
         assert!(substitutions(&doc, false, false).is_empty());
     }

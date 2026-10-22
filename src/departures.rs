@@ -3639,6 +3639,11 @@ fn plain_string_reference(source: &crate::openapi::OpenApi, reference: &str) -> 
                 && target.all_of.is_none()
                 && target.one_of.is_none()
                 && target.any_of.is_none()
+                && target.not_schema.is_none()
+                && !target.drops_applicator()
+                && target.unmodeled_keywords.is_empty()
+                && target.type_crozier.is_none()
+                && target.type_fern.is_none()
         })
 }
 
@@ -3682,6 +3687,14 @@ fn annotated_reference_property_example(
                 && annotations_only
                 && declared_schema_example(property)
                     .filter(|example| example.is_string())
+                    .filter(|example| {
+                        crate::openapi::example_validation::matches(
+                            &source.components.schemas,
+                            property,
+                            example,
+                            0,
+                        ) == Some(true)
+                    })
                     .and_then(crate::ir::example_literal)
                     .is_some_and(|literal| literal == value);
         }
@@ -6241,6 +6254,29 @@ mod tests {
                     "    adjacent=\"changed\","
                 ));
             }
+        }
+    }
+
+    #[test]
+    fn referenced_string_departures_abstain_on_unchecked_assertions() {
+        for assertion in [
+            serde_json::json!({"not":{"type":"string"}}),
+            serde_json::json!({"unevaluatedProperties":false}),
+        ] {
+            let mut target = serde_json::json!({"type":"string"});
+            target
+                .as_object_mut()
+                .unwrap()
+                .extend(assertion.as_object().unwrap().clone());
+            let context = source_context(
+                serde_json::json!({"openapi":"3.1.0", "paths":{},
+                "components":{"schemas":{"Code":target}}}),
+                &[],
+            );
+            assert!(!plain_string_reference(
+                context.source_document.as_ref().unwrap(),
+                "#/components/schemas/Code"
+            ));
         }
     }
 

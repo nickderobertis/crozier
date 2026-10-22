@@ -104,8 +104,31 @@ screening state; one admitted generating registered witness per key suffices.
 | `combo-media-example-on-ref-union-body` | `search-incomplete` | 27 | registered `mockserver`; scoped golden reach |
 | `combo-oneof-schema-example` | `search-incomplete` | 269 | registered `rgb-lightning-node` (3203); typed-example repairs and declared-value departure |
 | `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | hand-written `harbor-parcel-requests`; declared-value departure |
-| `combo-root-oas30-binary-schema` | `search-incomplete` | 61 | reaching only; renewed output-sensitive proof search pending |
-| `combo-root-oas30-download` | `search-incomplete` | 69 | reaching only; renewed output-sensitive proof search pending |
+| `combo-root-oas30-binary-schema` | `search-incomplete` | 61 | output-insensitive in both generators; paired real and authored controls, not proven |
+| `combo-root-oas30-download` | `search-incomplete` | 69 | output-insensitive in both generators; paired real and authored controls, not proven |
+
+## Root controls: output-insensitive
+
+The two root OpenAPI-version conjunctions are decided as output-insensitive,
+not proven. The renewed cached screen rendered seventeen distinct root documents;
+none changed Crozier output after the final repair. Nimisampo reaches both
+conjunctions but its version-removal control changes neither generator; the
+complete comparisons are [nimisampo-fern-comparison.json](nimisampo-fern-comparison.json)
+and [nimisampo-crozier-comparison.json](nimisampo-crozier-comparison.json).
+
+Two from-scratch documents also isolate the version condition. The archive
+control has a declared JSON error; the trace-archive control has no declared error
+and offers both NDJSON and octet-stream success media. Changing only the root
+version from 3.0.3 to 3.1.0 changes no generated file in either engine. Fern shows
+the archive's worked example in both versions and omits the trace-archive's in
+both. Crozier matches both complete certified trees after the root guard repair.
+The complete path/digest maps are [root-fern-comparison.json](root-fern-comparison.json),
+[root-crozier-comparison.json](root-crozier-comparison.json),
+[root-no-error-fern-comparison.json](root-no-error-fern-comparison.json) and
+[root-no-error-crozier-comparison.json](root-no-error-crozier-comparison.json).
+The paired documents live in [removal-controls/](removal-controls/).
+These controls are evidence of an output-insensitive decision, not hand-written
+fixtures claimed as witnesses.
 
 ## Paired removal controls
 

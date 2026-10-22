@@ -191,7 +191,7 @@
   {
     "key": "combo-root-oas30-download",
     "fixture": "nimisampo",
-    "selected": true,
+    "selected": false,
     "declaration_sites": 1,
     "removed_fields": 1,
     "perturbation": "replace root OpenAPI 3.0 version with 3.1.0",
@@ -200,7 +200,7 @@
   {
     "key": "combo-root-oas30-binary-schema",
     "fixture": "nimisampo",
-    "selected": true,
+    "selected": false,
     "declaration_sites": 2,
     "removed_fields": 1,
     "perturbation": "replace root OpenAPI 3.0 version with 3.1.0",
