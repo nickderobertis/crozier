@@ -67,6 +67,8 @@
         "{workspaceRoot}/crates/**/*",
         "{workspaceRoot}/tests/*",
         "{workspaceRoot}/tests/support/**/*",
+        "{workspaceRoot}/tests/nested-discriminator/golden/**/*",
+        "{workspaceRoot}/tests/nested-discriminator/runtime/**/*",
         "{workspaceRoot}/tools/ci/**/*",
         "{workspaceRoot}/tools/ci-journeys/**/*",
         "{workspaceRoot}/tools/corpus/**/*",
