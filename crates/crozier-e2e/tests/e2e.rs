@@ -27090,6 +27090,91 @@ fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
 }
 
 #[test]
+#[ignore = "SDK Python-environment tier (builds and installs a real wheel); run via `just test-sdk-env`"]
+fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
+    let root = repo_root();
+    let python = python_interpreter().expect("SDK evaluation needs Python");
+    let script = root.join("tools/fern-refusals/fern-refusals.py");
+    let workspace = tempfile::tempdir().unwrap();
+    let source = workspace.path().join("source.yml");
+    let specification = "openapi: 3.1.0\ninfo: {title: Harbor Chain, version: '1'}\npaths: {}\n";
+    std::fs::write(&source, specification).unwrap();
+    let receipt = workspace.path().join("evaluation.json");
+    let work = workspace.path().join("native-run");
+    let evaluate = |destination: &Path| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(["evaluate-sdk", "--document"])
+            .arg(&source)
+            .arg("--crozier")
+            .arg(crozier_bin())
+            .arg("--work-dir")
+            .arg(destination)
+            .arg("--output")
+            .arg(&receipt)
+            .output()
+            .unwrap()
+    };
+    let output = evaluate(&work);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let original = std::fs::read(&receipt).unwrap();
+    let record: serde_json::Value = serde_json::from_slice(&original).unwrap();
+    assert_eq!(record["schema_version"], 2);
+    let check = || {
+        std::process::Command::new(python)
+            .arg(&script)
+            .arg("check-sdk-evaluation")
+            .arg(&receipt)
+            .arg("--document")
+            .arg(&source)
+            .output()
+            .unwrap()
+    };
+    assert!(check().status.success());
+    let mut broken = record.clone();
+    broken["build"]["input_sha256"] = serde_json::Value::String("f".repeat(64));
+    std::fs::write(&receipt, serde_json::to_vec(&broken).unwrap()).unwrap();
+    let answer = check();
+    assert!(!answer.status.success());
+    assert!(String::from_utf8_lossy(&answer.stderr).contains("build input digest"));
+    let mut missing = record.clone();
+    missing.as_object_mut().unwrap().remove("imports");
+    std::fs::write(&receipt, serde_json::to_vec(&missing).unwrap()).unwrap();
+    let answer = check();
+    assert!(!answer.status.success());
+    assert!(String::from_utf8_lossy(&answer.stderr).contains("missing fields ['imports']"));
+    std::fs::write(&receipt, &original).unwrap();
+    std::fs::remove_file(&source).unwrap();
+    assert!(!check().status.success());
+    let absent = evaluate(&workspace.path().join("missing-input"));
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("source file missing"));
+    assert_eq!(std::fs::read(&receipt).unwrap(), original);
+    std::fs::write(&source, "not an OpenAPI document\n").unwrap();
+    let malformed = evaluate(&workspace.path().join("malformed-input"));
+    assert!(!malformed.status.success());
+    assert!(String::from_utf8_lossy(&malformed.stderr).contains("validation failed with exit"));
+    assert_eq!(std::fs::read(&receipt).unwrap(), original);
+    std::fs::write(&source, specification).unwrap();
+    let recovered = evaluate(&workspace.path().join("recovered-input"));
+    assert!(
+        recovered.status.success(),
+        "{}",
+        String::from_utf8_lossy(&recovered.stderr)
+    );
+    assert!(check().status.success());
+    assert!(work.join("dist").read_dir().unwrap().any(|entry| entry
+        .unwrap()
+        .path()
+        .extension()
+        .is_some_and(|extension| extension == "whl")));
+}
+
+#[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {
     let root = repo_root();

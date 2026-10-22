@@ -84,11 +84,17 @@ caused it.
   valid OpenAPI, Fern refuses it, and crozier generates a sound SDK in both
   modes. Its `crozier_class` and reduction-result cells are `—`, its
   `representative` is the document's own digest, and `log` names
-  `../openapi-surface/fern-refusals/limitations/<digest>.json`. That version-1 evidence records the document and
-  certified pair, crozier commit, strict SDK digest, and the actual commands,
-  exit statuses and output for OpenAPI validation, default and strict generation,
-  wheel build, installation and import of every generated module. Every command
-  must succeed. `build` and `check` also require the matching evidence link in
+  `../openapi-surface/fern-refusals/limitations/<digest>.json`. Version 2 is produced by the native `evaluate-sdk` subcommand:
+  OpenAPI validation, default and strict crozier generation, wheel build, a fresh
+  wheel installation, and import of every discovered generated module. Each
+  stage records its input and output digest. The build consumes the strict
+  generated-tree digest, installation consumes that wheel's digest, and imports
+  consume the installed distribution's digest with the same interpreter and
+  environment manifest. Default and strict trees must agree. Commands and their
+  output are audit data; acceptance checks the artifact links, not command text.
+  The JSON Schema is derived from the `SdkEvaluation` TypedDicts and is printed
+  by `sdk-evaluation-schema`; the same derived schema validates receipts.
+  `build` and `check` also require the matching evidence link in
   [the new-limitations ledger](../fern-limitations.md#new-limitations-at-the-certified-pair).
   `reduce` leaves this evaluation intact. An `unevaluated` class may carry such
   documents: no general crozier refusal detector is claimed for the class, while
@@ -338,3 +344,24 @@ refuses. Both keep Fern's logs under
   refuses `header-array`'s shape, an optional array header Fern promotes to a
   client field, with `header-array-*-probe.yml` documents of its own (issue
   #353).
+
+## Producing an SDK evaluation
+
+`evaluate-sdk` needs a built crozier, `uv`, and package-index access. It never
+invokes Fern. Supply the exact source bytes and a new work directory; it retains
+the generated SDKs, wheel, fresh environments and command logs there. Only a
+complete successful chain atomically replaces the committed receipt.
+
+```sh
+python3 tools/fern-refusals/fern-refusals.py evaluate-sdk \
+  --document /path/to/source.yml --work-dir /path/to/new-evaluation
+python3 tools/fern-refusals/fern-refusals.py check-sdk-evaluation \
+  docs/openapi-surface/fern-refusals/limitations/SOURCE_SHA256.json \
+  --document /path/to/source.yml
+```
+
+This evaluates crozier's SDK; it does not establish that Fern refuses the
+source. A disposition still needs its separate certified-pair measurement and
+ledger entry. The promoted `sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers`
+journey runs the native producer, verifies its receipt, and rejects a broken
+artifact link and a missing stage before recovering.

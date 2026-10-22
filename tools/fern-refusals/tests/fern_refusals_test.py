@@ -42,7 +42,12 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
 # The script and the record it reads the certified pair from, as a scratch root mirrors them.
-SCRIPT_LOADS = ("tools/fern-refusals/fern-refusals.py", "assets/scaffolding/metadata.json")
+SCRIPT_LOADS = (
+    "tools/fern-refusals/fern-refusals.py",
+    "tools/fern-refusals/sdk_evaluation.py",
+    "tools/fern-refusals/sdk_evaluation_runtime.py",
+    "assets/scaffolding/metadata.json",
+)
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
 # The certified Fern pair, from its one declaration.
@@ -1703,39 +1708,20 @@ class MeasuredAtThePair(unittest.TestCase):
         evidence_path = self.root / relative
         evidence_path.parent.mkdir()
         stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
-        # Negative cases deliberately mutate nested JSON values and field types;
-        # this fixture models untrusted decoder output rather than validated SDK evidence.
-        evidence: dict[str, Any] = {
-            "schema_version": 1,
-            "document_sha256": digest,
-            "fern_cli": CERTIFIED["cliVersion"],
-            "fern_python_sdk": CERTIFIED["generatorVersion"],
-            "crozier_commit": "a" * 40,
-            "sdk_sha256": "b" * 64,
-            **{stage: {"command": ["evaluation", stage], "exit": 0, "output": ""} for stage in stages},
-        }
-        for stage, args in {
-            "validation": ["python", "-m", "openapi_spec_validator", "source.yml"],
-            "default_generation": ["crozier", "generate", "python", "--spec", "source.yml", "--output", "default-sdk"],
-            "strict_generation": [
-                "crozier",
-                "generate",
-                "python",
-                "--spec",
-                "source.yml",
-                "--output",
-                "sdk",
-                "--fern-strict",
-            ],
-            "build": ["python", "-m", "build", "--wheel"],
-            "installation": ["uv", "pip", "install", "sdk.whl"],
-            "imports": [
-                "python",
-                "-c",
-                "import importlib,pkgutil; [importlib.import_module(x.name) for x in pkgutil.walk_packages(package.__path__)]",
-            ],
-        }.items():
-            evidence[stage]["command"] = args
+        # This tests metadata admission, not SDK execution: the promoted
+        # sdk_env_native_refusal_evaluation test drives the native producer.
+        # Raw JSON is deliberately mutated to invalid field types below.
+        evidence: dict[str, Any] = json.loads(
+            (
+                REPO
+                / "docs/openapi-surface/fern-refusals/limitations/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.json"
+            ).read_text()
+        )
+        evidence["document_sha256"] = digest
+        evidence["validation"]["input_sha256"] = digest
+        evidence["validation"]["output_sha256"] = digest
+        for stage in ("default_generation", "strict_generation"):
+            evidence[stage]["input_sha256"] = digest
         ledger = self.root / "docs/fern-limitations.md"
         ledger_text = (
             "## New limitations at the certified pair\n\n"
@@ -1752,47 +1738,35 @@ class MeasuredAtThePair(unittest.TestCase):
         reduced = self.script("reduce", "--root", str(self.root / "documents"))
         self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
         self.assertEqual(rows(self.root / "docs/fern-refusals/dispositions.tsv")[1][2], "fern-limitation")
+        schema = self.script("sdk-evaluation-schema")
+        self.assertEqual(schema.returncode, 0, schema.stderr)
+        derived = json.loads(schema.stdout)
+        self.assertEqual(set(derived["properties"]), set(evidence))
+        self.assertEqual(set(derived["required"]), set(evidence))
+        self.assertFalse(derived["additionalProperties"])
+        self.assertEqual(derived["properties"]["schema_version"]["enum"], [2])
         for stage in stages:
             with self.subTest(stage=stage):
                 evidence[stage]["exit"] = 1
                 write_evidence()
                 failed = self.script("build")
                 self.assertNotEqual(failed.returncode, 0)
-                self.assertIn(f"no successful {stage} command", failed.stderr)
+                self.assertIn(f"{stage}.exit", failed.stderr)
                 evidence[stage]["exit"] = 0
+        original = evidence["build"]["input_sha256"]
+        evidence["build"]["input_sha256"] = "f" * 64
         write_evidence()
-        for stage in stages:
-            with self.subTest(unrelated_command=stage):
-                original = evidence[stage]["command"]
-                evidence[stage]["command"] = ["echo", *original]
-                write_evidence()
-                rejected = self.script("build")
-                self.assertNotEqual(rejected.returncode, 0)
-                self.assertIn("do not perform the required evaluation stages", rejected.stderr)
-                evidence[stage]["command"] = original
+        self.assertIn("build input digest", self.script("build").stderr)
+        evidence["build"]["input_sha256"] = original
+        imports = evidence.pop("imports")
         write_evidence()
-        original_validation = evidence["validation"]["command"]
-        evidence["validation"]["command"] = "python -m openapi_spec_validator source.yml"
+        self.assertIn("missing fields ['imports']", self.script("build").stderr)
+        evidence["imports"] = imports
+        original_command = evidence["validation"]["command"]
+        evidence["validation"]["command"] = "not-an-array"
         write_evidence()
-        self.assertIn("no successful validation command", self.script("build").stderr)
-        evidence["validation"]["command"] = original_validation
-        write_evidence()
-        original_import = evidence["imports"]["command"]
-        for script in [
-            "print('pkgutil.walk_packages importlib.import_module')",
-            "not valid Python!",
-            "import importlib,pkgutil",
-        ]:
-            evidence["imports"]["command"] = ["python", "-c", script]
-            write_evidence()
-            self.assertIn("do not perform the required evaluation stages", self.script("build").stderr)
-        evidence["imports"]["command"] = original_import
-        write_evidence()
-        strict_args = evidence["strict_generation"]["command"]
-        evidence["strict_generation"]["command"] = ["crozier", "generate"]
-        write_evidence()
-        self.assertIn("do not perform the required evaluation stages", self.script("build").stderr)
-        evidence["strict_generation"]["command"] = strict_args
+        self.assertIn("validation.command: expected an array", self.script("build").stderr)
+        evidence["validation"]["command"] = original_command
         write_evidence()
         ledger.write_text("## Historical measurements\n", encoding="utf-8")
         failed = self.script("build")
@@ -1804,7 +1778,7 @@ class MeasuredAtThePair(unittest.TestCase):
         write_evidence()
         evidence["document_sha256"] = "c" * 64
         write_evidence()
-        self.assertIn("wrong version, document, certified pair or digest", self.script("build").stderr)
+        self.assertIn("wrong document or certified pair", self.script("build").stderr)
         evidence["document_sha256"] = digest
         write_evidence()
         entry["crozier_exit"] = "1"
@@ -2245,6 +2219,20 @@ class ProbeRecording(unittest.TestCase):
                 (registry / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
             )
             self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
+
+
+class SdkArtifactDigestTests(unittest.TestCase):
+    def test_binary_contents_cannot_be_confused_with_another_file_boundary(self) -> None:
+        evaluator = load_script("sdk_digest_boundary").sdk_evaluator()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first, second = root / "one-file", root / "two-files"
+            first.mkdir()
+            second.mkdir()
+            (first / "a").write_bytes(b"x\0b\0y")
+            (second / "a").write_bytes(b"x")
+            (second / "b").write_bytes(b"y")
+            self.assertNotEqual(evaluator.tree_digest(first), evaluator.tree_digest(second))
 
 
 if __name__ == "__main__":

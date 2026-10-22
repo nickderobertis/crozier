@@ -1,19 +1,22 @@
 {
-  "schema_version": 1,
-  "document_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6",
-  "fern_cli": "5.163.1",
-  "fern_python_sdk": "5.41.3",
-  "crozier_commit": "c93af68f2972f6811a03478eb15cb173ed247830",
-  "validation": {
+  "build": {
     "command": [
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/build-environment/bin/python",
       "-m",
-      "openapi_spec_validator",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json"
+      "build",
+      "--wheel",
+      "--no-isolation",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/strict_generation",
+      "--outdir",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/dist"
     ],
     "exit": 0,
-    "output": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json: OK\n"
+    "input_sha256": "a777c9a60cbffb7be551c62cfe982ff08953fca2186b4b3827cc901ced66a45a",
+    "output": "Successfully built limitation_sdk-0.0.0-py3-none-any.whl\n* Getting build dependencies for wheel...\n* Building wheel...\n",
+    "output_sha256": "aaea39f07fb7fd0b2133a3af154b0d70d4dc2e9d004573e19e9f17aa164fea84"
   },
+  "crozier_binary_sha256": "8e262ca4a8219f7f28090a39d0de5fae5230c69afec1b9ae214efafa0db01b85",
+  "crozier_commit": "a2ff5f217253c64f3a69c12d17c522e7fc991d83",
   "default_generation": {
     "command": [
       "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
@@ -23,13 +26,315 @@
       "--spec",
       "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json",
       "--output",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/sdk-default",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/default_generation",
       "--package-name",
-      "limitation_sdk"
+      "limitation_sdk",
+      "--project-name",
+      "limitation-sdk"
     ],
     "exit": 0,
-    "output": "generated 129 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/sdk-default\n"
+    "input_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6",
+    "output": "generated 129 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/default_generation\n",
+    "output_sha256": "a777c9a60cbffb7be551c62cfe982ff08953fca2186b4b3827cc901ced66a45a"
   },
+  "document_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6",
+  "fern_cli": "5.163.1",
+  "fern_python_sdk": "5.41.3",
+  "imports": {
+    "command": [
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment/bin/python",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/tools/fern-refusals/sdk_evaluation_runtime.py",
+      "imports",
+      "limitation-sdk",
+      "limitation_sdk"
+    ],
+    "environment": {
+      "base_prefix": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu",
+      "configuration_sha256": "9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5",
+      "distributions": [
+        {
+          "name": "annotated-types",
+          "sha256": "e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc",
+          "version": "0.8.0"
+        },
+        {
+          "name": "anyio",
+          "sha256": "8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf",
+          "version": "4.15.1"
+        },
+        {
+          "name": "certifi",
+          "sha256": "002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "h11",
+          "sha256": "0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f",
+          "version": "0.16.0"
+        },
+        {
+          "name": "httpcore",
+          "sha256": "33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httpx",
+          "sha256": "f93a148cf2cb58b782134a920f029f7ac438196acd3b36e6d26e38b24c597cab",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "sha256": "137d7a02ab4d799831c93f803fb657269e071a989cc0e0f33ccbb2d2eb180a1b",
+          "version": "3.20"
+        },
+        {
+          "name": "limitation-sdk",
+          "sha256": "5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd",
+          "version": "0.0.0"
+        },
+        {
+          "name": "pydantic",
+          "sha256": "05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c",
+          "version": "2.14.1"
+        },
+        {
+          "name": "pydantic-core",
+          "sha256": "2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626",
+          "version": "2.50.1"
+        },
+        {
+          "name": "typing-extensions",
+          "sha256": "432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877",
+          "version": "4.16.0"
+        },
+        {
+          "name": "typing-inspection",
+          "sha256": "4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc",
+          "version": "0.4.4"
+        }
+      ],
+      "executable": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment/bin/python",
+      "executable_sha256": "241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment",
+      "python_version": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]"
+    },
+    "environment_sha256": "e76e5f02b571532893a1fc8c95cdc6411e285f0c94851280557510240f3d28e5",
+    "exit": 0,
+    "input_sha256": "5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd",
+    "modules": [
+      "limitation_sdk",
+      "limitation_sdk._default_clients",
+      "limitation_sdk.audit",
+      "limitation_sdk.audit.client",
+      "limitation_sdk.audit.raw_client",
+      "limitation_sdk.audit.types",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_create_response",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_delete_response",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_list_response",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_list_response_result",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_partition_overrides_response",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_response",
+      "limitation_sdk.audit.types.audit_post_v1beta_config_update_response",
+      "limitation_sdk.audit.types.audit_post_v1download_results_request_format",
+      "limitation_sdk.audit.types.audit_post_v1download_results_response",
+      "limitation_sdk.audit.types.audit_post_v1download_results_response_result",
+      "limitation_sdk.audit.types.audit_post_v1export_request_format",
+      "limitation_sdk.audit.types.audit_post_v1export_request_order",
+      "limitation_sdk.audit.types.audit_post_v1export_request_order_by",
+      "limitation_sdk.audit.types.audit_post_v1export_response",
+      "limitation_sdk.audit.types.audit_post_v1export_response_result",
+      "limitation_sdk.audit.types.audit_post_v1log_response",
+      "limitation_sdk.audit.types.audit_post_v1log_stream_response",
+      "limitation_sdk.audit.types.audit_post_v1log_stream_response_result",
+      "limitation_sdk.audit.types.audit_post_v1results_response",
+      "limitation_sdk.audit.types.audit_post_v1results_response_result",
+      "limitation_sdk.audit.types.audit_post_v1root_response",
+      "limitation_sdk.audit.types.audit_post_v1schema_response",
+      "limitation_sdk.audit.types.audit_post_v1search_request_order",
+      "limitation_sdk.audit.types.audit_post_v1search_request_order_by",
+      "limitation_sdk.audit.types.audit_post_v1search_request_search_restriction",
+      "limitation_sdk.audit.types.audit_post_v1search_response",
+      "limitation_sdk.audit.types.audit_post_v1search_response_result",
+      "limitation_sdk.audit.types.audit_post_v2log_async_response",
+      "limitation_sdk.audit.types.audit_post_v2log_response",
+      "limitation_sdk.audit.types.audit_post_v2log_response_result",
+      "limitation_sdk.audit.types.audit_service_config_list_filter",
+      "limitation_sdk.audit.types.audit_service_config_list_order",
+      "limitation_sdk.audit.types.audit_service_config_list_order_by",
+      "limitation_sdk.client",
+      "limitation_sdk.core",
+      "limitation_sdk.core.api_error",
+      "limitation_sdk.core.client_wrapper",
+      "limitation_sdk.core.datetime_utils",
+      "limitation_sdk.core.enum",
+      "limitation_sdk.core.file",
+      "limitation_sdk.core.force_multipart",
+      "limitation_sdk.core.http_client",
+      "limitation_sdk.core.http_response",
+      "limitation_sdk.core.http_sse",
+      "limitation_sdk.core.http_sse._api",
+      "limitation_sdk.core.http_sse._decoders",
+      "limitation_sdk.core.http_sse._exceptions",
+      "limitation_sdk.core.http_sse._models",
+      "limitation_sdk.core.jsonable_encoder",
+      "limitation_sdk.core.logging",
+      "limitation_sdk.core.parse_error",
+      "limitation_sdk.core.pydantic_utilities",
+      "limitation_sdk.core.query_encoder",
+      "limitation_sdk.core.remove_none_from_dict",
+      "limitation_sdk.core.request_options",
+      "limitation_sdk.core.serialization",
+      "limitation_sdk.environment",
+      "limitation_sdk.errors",
+      "limitation_sdk.errors.bad_request_error",
+      "limitation_sdk.types",
+      "limitation_sdk.types.accepted_response_result",
+      "limitation_sdk.types.audit_event",
+      "limitation_sdk.types.audit_event_envelope",
+      "limitation_sdk.types.audit_event_user_error",
+      "limitation_sdk.types.audit_log_request_v2",
+      "limitation_sdk.types.audit_log_response",
+      "limitation_sdk.types.audit_log_response_v2",
+      "limitation_sdk.types.audit_root",
+      "limitation_sdk.types.audit_saved_search",
+      "limitation_sdk.types.audit_saved_search_order",
+      "limitation_sdk.types.audit_schema",
+      "limitation_sdk.types.audit_schema_field",
+      "limitation_sdk.types.audit_schema_save_malformed",
+      "limitation_sdk.types.audit_schema_template",
+      "limitation_sdk.types.audit_search_result",
+      "limitation_sdk.types.audit_service_config",
+      "limitation_sdk.types.audit_service_config_cold_query_result_retention",
+      "limitation_sdk.types.audit_service_config_cold_storage",
+      "limitation_sdk.types.audit_service_config_created_at",
+      "limitation_sdk.types.audit_service_config_hot_storage",
+      "limitation_sdk.types.audit_service_config_id",
+      "limitation_sdk.types.audit_service_config_name",
+      "limitation_sdk.types.audit_service_config_partition_overrides",
+      "limitation_sdk.types.audit_service_config_query_result_retention",
+      "limitation_sdk.types.audit_service_config_redact_service_config_id",
+      "limitation_sdk.types.audit_service_config_retention",
+      "limitation_sdk.types.audit_service_config_shards",
+      "limitation_sdk.types.audit_service_config_updated_at",
+      "limitation_sdk.types.audit_service_config_v1",
+      "limitation_sdk.types.audit_service_config_v1redaction_fields_item",
+      "limitation_sdk.types.audit_service_config_v2",
+      "limitation_sdk.types.audit_service_config_v3",
+      "limitation_sdk.types.audit_service_config_v3datastore",
+      "limitation_sdk.types.audit_service_config_vault_key_id",
+      "limitation_sdk.types.audit_service_config_vault_service_config_id",
+      "limitation_sdk.types.audit_service_config_vault_sign",
+      "limitation_sdk.types.audit_service_config_warm_storage",
+      "limitation_sdk.types.audit_ui_metadata",
+      "limitation_sdk.types.audit_unpublished_root",
+      "limitation_sdk.types.bad_request_error_body",
+      "limitation_sdk.types.date_time_rel",
+      "limitation_sdk.types.duration",
+      "limitation_sdk.types.forwarding_configuration",
+      "limitation_sdk.types.forwarding_configuration_type",
+      "limitation_sdk.types.forwarding_configuration_type_one",
+      "limitation_sdk.types.forwarding_configuration_type_zero",
+      "limitation_sdk.types.pangea_response",
+      "limitation_sdk.types.pangea_response_status",
+      "limitation_sdk.types.pangea_validation_errors",
+      "limitation_sdk.types.pangea_validation_errors_result",
+      "limitation_sdk.types.pangea_validation_errors_result_errors_item",
+      "limitation_sdk.types.pangea_validation_errors_result_errors_item_code",
+      "limitation_sdk.types.return_fpe_context",
+      "limitation_sdk.version"
+    ],
+    "output": "{\"distribution_sha256\": \"5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd\", \"environment\": {\"base_prefix\": \"/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu\", \"configuration_sha256\": \"9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5\", \"distributions\": [{\"name\": \"annotated-types\", \"sha256\": \"e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc\", \"version\": \"0.8.0\"}, {\"name\": \"anyio\", \"sha256\": \"8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf\", \"version\": \"4.15.1\"}, {\"name\": \"certifi\", \"sha256\": \"002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79\", \"version\": \"2026.10.19\"}, {\"name\": \"h11\", \"sha256\": \"0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f\", \"version\": \"0.16.0\"}, {\"name\": \"httpcore\", \"sha256\": \"33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595\", \"version\": \"1.0.9\"}, {\"name\": \"httpx\", \"sha256\": \"f93a148cf2cb58b782134a920f029f7ac438196acd3b36e6d26e38b24c597cab\", \"version\": \"0.28.1\"}, {\"name\": \"idna\", \"sha256\": \"137d7a02ab4d799831c93f803fb657269e071a989cc0e0f33ccbb2d2eb180a1b\", \"version\": \"3.20\"}, {\"name\": \"limitation-sdk\", \"sha256\": \"5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd\", \"version\": \"0.0.0\"}, {\"name\": \"pydantic\", \"sha256\": \"05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c\", \"version\": \"2.14.1\"}, {\"name\": \"pydantic-core\", \"sha256\": \"2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626\", \"version\": \"2.50.1\"}, {\"name\": \"typing-extensions\", \"sha256\": \"432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877\", \"version\": \"4.16.0\"}, {\"name\": \"typing-inspection\", \"sha256\": \"4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc\", \"version\": \"0.4.4\"}], \"executable\": \"/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment/bin/python\", \"executable_sha256\": \"241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e\", \"prefix\": \"/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment\", \"python_version\": \"3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]\"}, \"environment_sha256\": \"e76e5f02b571532893a1fc8c95cdc6411e285f0c94851280557510240f3d28e5\", \"modules\": [\"limitation_sdk\", \"limitation_sdk._default_clients\", \"limitation_sdk.audit\", \"limitation_sdk.audit.client\", \"limitation_sdk.audit.raw_client\", \"limitation_sdk.audit.types\", \"limitation_sdk.audit.types.audit_post_v1beta_config_create_response\", \"limitation_sdk.audit.types.audit_post_v1beta_config_delete_response\", \"limitation_sdk.audit.types.audit_post_v1beta_config_list_response\", \"limitation_sdk.audit.types.audit_post_v1beta_config_list_response_result\", \"limitation_sdk.audit.types.audit_post_v1beta_config_partition_overrides_response\", \"limitation_sdk.audit.types.audit_post_v1beta_config_response\", \"limitation_sdk.audit.types.audit_post_v1beta_config_update_response\", \"limitation_sdk.audit.types.audit_post_v1download_results_request_format\", \"limitation_sdk.audit.types.audit_post_v1download_results_response\", \"limitation_sdk.audit.types.audit_post_v1download_results_response_result\", \"limitation_sdk.audit.types.audit_post_v1export_request_format\", \"limitation_sdk.audit.types.audit_post_v1export_request_order\", \"limitation_sdk.audit.types.audit_post_v1export_request_order_by\", \"limitation_sdk.audit.types.audit_post_v1export_response\", \"limitation_sdk.audit.types.audit_post_v1export_response_result\", \"limitation_sdk.audit.types.audit_post_v1log_response\", \"limitation_sdk.audit.types.audit_post_v1log_stream_response\", \"limitation_sdk.audit.types.audit_post_v1log_stream_response_result\", \"limitation_sdk.audit.types.audit_post_v1results_response\", \"limitation_sdk.audit.types.audit_post_v1results_response_result\", \"limitation_sdk.audit.types.audit_post_v1root_response\", \"limitation_sdk.audit.types.audit_post_v1schema_response\", \"limitation_sdk.audit.types.audit_post_v1search_request_order\", \"limitation_sdk.audit.types.audit_post_v1search_request_order_by\", \"limitation_sdk.audit.types.audit_post_v1search_request_search_restriction\", \"limitation_sdk.audit.types.audit_post_v1search_response\", \"limitation_sdk.audit.types.audit_post_v1search_response_result\", \"limitation_sdk.audit.types.audit_post_v2log_async_response\", \"limitation_sdk.audit.types.audit_post_v2log_response\", \"limitation_sdk.audit.types.audit_post_v2log_response_result\", \"limitation_sdk.audit.types.audit_service_config_list_filter\", \"limitation_sdk.audit.types.audit_service_config_list_order\", \"limitation_sdk.audit.types.audit_service_config_list_order_by\", \"limitation_sdk.client\", \"limitation_sdk.core\", \"limitation_sdk.core.api_error\", \"limitation_sdk.core.client_wrapper\", \"limitation_sdk.core.datetime_utils\", \"limitation_sdk.core.enum\", \"limitation_sdk.core.file\", \"limitation_sdk.core.force_multipart\", \"limitation_sdk.core.http_client\", \"limitation_sdk.core.http_response\", \"limitation_sdk.core.http_sse\", \"limitation_sdk.core.http_sse._api\", \"limitation_sdk.core.http_sse._decoders\", \"limitation_sdk.core.http_sse._exceptions\", \"limitation_sdk.core.http_sse._models\", \"limitation_sdk.core.jsonable_encoder\", \"limitation_sdk.core.logging\", \"limitation_sdk.core.parse_error\", \"limitation_sdk.core.pydantic_utilities\", \"limitation_sdk.core.query_encoder\", \"limitation_sdk.core.remove_none_from_dict\", \"limitation_sdk.core.request_options\", \"limitation_sdk.core.serialization\", \"limitation_sdk.environment\", \"limitation_sdk.errors\", \"limitation_sdk.errors.bad_request_error\", \"limitation_sdk.types\", \"limitation_sdk.types.accepted_response_result\", \"limitation_sdk.types.audit_event\", \"limitation_sdk.types.audit_event_envelope\", \"limitation_sdk.types.audit_event_user_error\", \"limitation_sdk.types.audit_log_request_v2\", \"limitation_sdk.types.audit_log_response\", \"limitation_sdk.types.audit_log_response_v2\", \"limitation_sdk.types.audit_root\", \"limitation_sdk.types.audit_saved_search\", \"limitation_sdk.types.audit_saved_search_order\", \"limitation_sdk.types.audit_schema\", \"limitation_sdk.types.audit_schema_field\", \"limitation_sdk.types.audit_schema_save_malformed\", \"limitation_sdk.types.audit_schema_template\", \"limitation_sdk.types.audit_search_result\", \"limitation_sdk.types.audit_service_config\", \"limitation_sdk.types.audit_service_config_cold_query_result_retention\", \"limitation_sdk.types.audit_service_config_cold_storage\", \"limitation_sdk.types.audit_service_config_created_at\", \"limitation_sdk.types.audit_service_config_hot_storage\", \"limitation_sdk.types.audit_service_config_id\", \"limitation_sdk.types.audit_service_config_name\", \"limitation_sdk.types.audit_service_config_partition_overrides\", \"limitation_sdk.types.audit_service_config_query_result_retention\", \"limitation_sdk.types.audit_service_config_redact_service_config_id\", \"limitation_sdk.types.audit_service_config_retention\", \"limitation_sdk.types.audit_service_config_shards\", \"limitation_sdk.types.audit_service_config_updated_at\", \"limitation_sdk.types.audit_service_config_v1\", \"limitation_sdk.types.audit_service_config_v1redaction_fields_item\", \"limitation_sdk.types.audit_service_config_v2\", \"limitation_sdk.types.audit_service_config_v3\", \"limitation_sdk.types.audit_service_config_v3datastore\", \"limitation_sdk.types.audit_service_config_vault_key_id\", \"limitation_sdk.types.audit_service_config_vault_service_config_id\", \"limitation_sdk.types.audit_service_config_vault_sign\", \"limitation_sdk.types.audit_service_config_warm_storage\", \"limitation_sdk.types.audit_ui_metadata\", \"limitation_sdk.types.audit_unpublished_root\", \"limitation_sdk.types.bad_request_error_body\", \"limitation_sdk.types.date_time_rel\", \"limitation_sdk.types.duration\", \"limitation_sdk.types.forwarding_configuration\", \"limitation_sdk.types.forwarding_configuration_type\", \"limitation_sdk.types.forwarding_configuration_type_one\", \"limitation_sdk.types.forwarding_configuration_type_zero\", \"limitation_sdk.types.pangea_response\", \"limitation_sdk.types.pangea_response_status\", \"limitation_sdk.types.pangea_validation_errors\", \"limitation_sdk.types.pangea_validation_errors_result\", \"limitation_sdk.types.pangea_validation_errors_result_errors_item\", \"limitation_sdk.types.pangea_validation_errors_result_errors_item_code\", \"limitation_sdk.types.return_fpe_context\", \"limitation_sdk.version\"], \"modules_sha256\": \"93b0361fa43829db30fa1d70d22fc0798a700cb0323f408957420a47d9624d4c\"}\n",
+    "output_sha256": "93b0361fa43829db30fa1d70d22fc0798a700cb0323f408957420a47d9624d4c"
+  },
+  "installation": {
+    "command": [
+      "/home/whoop/.local/bin/uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment/bin/python",
+      "pydantic==2.14.1",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/dist/limitation_sdk-0.0.0-py3-none-any.whl"
+    ],
+    "environment": {
+      "base_prefix": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu",
+      "configuration_sha256": "9dd204624451fe4a452271bd54effa0d08fff400ba4cd63e43062390b25bbac5",
+      "distributions": [
+        {
+          "name": "annotated-types",
+          "sha256": "e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc",
+          "version": "0.8.0"
+        },
+        {
+          "name": "anyio",
+          "sha256": "8c2e30fcab742b95f04d57c5b5c7873cc0172a9992f63030039494463483d9cf",
+          "version": "4.15.1"
+        },
+        {
+          "name": "certifi",
+          "sha256": "002956a14da582e72bbc0e34f34400c85a26319cc1d8f8f6b0f9ee251e095f79",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "h11",
+          "sha256": "0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f",
+          "version": "0.16.0"
+        },
+        {
+          "name": "httpcore",
+          "sha256": "33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httpx",
+          "sha256": "f93a148cf2cb58b782134a920f029f7ac438196acd3b36e6d26e38b24c597cab",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "sha256": "137d7a02ab4d799831c93f803fb657269e071a989cc0e0f33ccbb2d2eb180a1b",
+          "version": "3.20"
+        },
+        {
+          "name": "limitation-sdk",
+          "sha256": "5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd",
+          "version": "0.0.0"
+        },
+        {
+          "name": "pydantic",
+          "sha256": "05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c",
+          "version": "2.14.1"
+        },
+        {
+          "name": "pydantic-core",
+          "sha256": "2aa56dc0997550b9504aee04c845b2966dce7029d87a578f9bdc3f463adcc626",
+          "version": "2.50.1"
+        },
+        {
+          "name": "typing-extensions",
+          "sha256": "432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877",
+          "version": "4.16.0"
+        },
+        {
+          "name": "typing-inspection",
+          "sha256": "4841c1ff643916f65ce80c0a70c6b3cc744f5de9bdb5738c0f329eca11cdb8dc",
+          "version": "0.4.4"
+        }
+      ],
+      "executable": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment/bin/python",
+      "executable_sha256": "241bf774a81580bb760adf960b48df7e6b23b1de026c9c912d4ca6be1a08241e",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/runtime-environment",
+      "python_version": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]"
+    },
+    "environment_sha256": "e76e5f02b571532893a1fc8c95cdc6411e285f0c94851280557510240f3d28e5",
+    "exit": 0,
+    "input_sha256": "aaea39f07fb7fd0b2133a3af154b0d70d4dc2e9d004573e19e9f17aa164fea84",
+    "output": "Using Python 3.14.7 environment at: runtime-environment\nResolved 12 packages in 12ms\nPrepared 1 package in 28ms\nInstalled 12 packages in 38ms\n + annotated-types==0.8.0\n + anyio==4.15.1\n + certifi==2026.10.19\n + h11==0.16.0\n + httpcore==1.0.9\n + httpx==0.28.1\n + idna==3.20\n + limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + pydantic==2.14.1\n + pydantic-core==2.50.1\n + typing-extensions==4.16.0\n + typing-inspection==0.4.4\n",
+    "output_sha256": "5a885803b9779458144cf47bd00f1540c271058bcebd60ec24c94eeaa0513edd"
+  },
+  "package_name": "limitation_sdk",
+  "schema_version": 2,
+  "sdk_sha256": "a777c9a60cbffb7be551c62cfe982ff08953fca2186b4b3827cc901ced66a45a",
   "strict_generation": {
     "command": [
       "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-4dc38e3056dc/worktree/target/debug/crozier",
@@ -39,50 +344,28 @@
       "--spec",
       "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json",
       "--output",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/sdk",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/strict_generation",
       "--package-name",
       "limitation_sdk",
+      "--project-name",
+      "limitation-sdk",
       "--fern-strict"
     ],
     "exit": 0,
-    "output": "generated 129 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/sdk\n"
+    "input_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6",
+    "output": "generated 129 files into /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/strict_generation\n",
+    "output_sha256": "a777c9a60cbffb7be551c62cfe982ff08953fca2186b4b3827cc901ced66a45a"
   },
-  "build": {
+  "validation": {
     "command": [
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-evaluations/pangea-go-framed/build-environment/bin/python",
       "-m",
-      "build",
-      "--wheel",
-      "--no-isolation",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/sdk",
-      "--outdir",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/dist"
+      "openapi_spec_validator",
+      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json"
     ],
     "exit": 0,
-    "output": "Successfully built limitation_sdk-0.0.0-py3-none-any.whl\n* Getting build dependencies for wheel...\n* Building wheel...\n"
-  },
-  "installation": {
-    "command": [
-      "uv",
-      "pip",
-      "install",
-      "--python",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
-      "--no-deps",
-      "--force-reinstall",
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/dist/limitation_sdk-0.0.0-py3-none-any.whl"
-    ],
-    "exit": 0,
-    "output": "Using Python 3.14.7 environment at: /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env\nResolved 1 package in 3ms\nPrepared 1 package in 37ms\nUninstalled 1 package in 3ms\nInstalled 1 package in 13ms\n - limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/camptocamp/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-evaluations/pangea/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n"
-  },
-  "imports": {
-    "command": [
-      "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/limitation-env/bin/python",
-      "-c",
-      "import importlib,pkgutil,limitation_sdk; names=[m.name for m in pkgutil.walk_packages(limitation_sdk.__path__, limitation_sdk.__name__+'.')]; [importlib.import_module(n) for n in names]; print('Imported',len(names),'modules')"
-    ],
-    "exit": 0,
-    "output": "Imported 119 modules\n"
-  },
-  "sdk_sha256": "97da055941fbb4017c200884dbd81c3046a69c125db5b59f2242308ef58d6d49"
+    "input_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6",
+    "output": "/home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/refusal-sources/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json: OK\n",
+    "output_sha256": "68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6"
+  }
 }

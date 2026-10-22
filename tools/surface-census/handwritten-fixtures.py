@@ -38,8 +38,9 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Final, Literal, NamedTuple, NewType, get_args
+from typing import Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -177,12 +178,19 @@ def read_residual_proofs(root: Path) -> tuple[list[ResidualProof], list[str]]:
     return proofs, failures
 
 
+class GoldenWitnesses(Protocol):
+    """Only the measured ledger's witness names are needed for admission."""
+
+    @property
+    def witnesses(self) -> tuple[str, ...]: ...
+
+
 def residual_proof_failures(
     root: Path,
     proofs: list[ResidualProof],
     fixtures: dict[str, Fixture],
     rows: dict[str, tuple[str, list[str]]],
-    ledger: dict[str, Any],
+    ledger: Mapping[str, GoldenWitnesses],
 ) -> list[str]:
     """Only residual-only golden rows with a bound real-CLI journey qualify."""
     if not proofs:

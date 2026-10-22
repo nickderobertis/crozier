@@ -45,7 +45,6 @@ new phrase becomes a class deliberately rather than silently.
 from __future__ import annotations
 
 import argparse
-import ast
 import contextlib
 import csv
 import datetime
@@ -67,7 +66,7 @@ from collections.abc import Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, cast, get_args
+from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 # A `classes.tsv` class id or a `findings.tsv` finding name, as Fern's logs are classified into them.
@@ -2087,87 +2086,28 @@ def dispositions_path() -> Path:
     return REGISTRY / "dispositions.tsv"
 
 
-class SdkStage(TypedDict):
-    command: list[str]
-    exit: int
-    output: str
+def sdk_evaluator() -> ModuleType:
+    return _load("crozier_refusal_sdk_evaluation", Path(__file__).with_name("sdk_evaluation.py"))
 
 
-class SdkEvaluation(TypedDict):
-    schema_version: Literal[1]
-    document_sha256: str
-    fern_cli: str
-    fern_python_sdk: str
-    crozier_commit: str
-    sdk_sha256: str
-    validation: SdkStage
-    default_generation: SdkStage
-    strict_generation: SdkStage
-    build: SdkStage
-    installation: SdkStage
-    imports: SdkStage
+def evaluate_sdk(args: argparse.Namespace) -> int:
+    return sdk_evaluator().evaluate(args, REPO, FERN_CLI, FERN_PYTHON_SDK)
 
 
-def sdk_evaluation_commands_match(evidence: SdkEvaluation) -> bool:
-    """Recognize the recorded executables and stages, not arbitrary token bags."""
-    validation = evidence["validation"]["command"]
-    default = evidence["default_generation"]["command"]
-    strict = evidence["strict_generation"]["command"]
-    build = evidence["build"]["command"]
-    installation = evidence["installation"]["command"]
-    imports = evidence["imports"]["command"]
+def verify_sdk(args: argparse.Namespace) -> int:
+    return sdk_evaluator().verify(args, FERN_CLI, FERN_PYTHON_SDK)
 
-    def python(command: list[str]) -> bool:
-        return re.fullmatch(r"python(?:3(?:\.\d+)?)?(?:\.exe)?", Path(command[0]).name) is not None
 
-    def option(command: list[str], flag: str) -> str | None:
-        if command.count(flag) != 1:
-            return None
-        index = command.index(flag) + 1
-        return command[index] if index < len(command) and not command[index].startswith("--") else None
-
-    if not (len(validation) == 4 and python(validation) and validation[1:3] == ["-m", "openapi_spec_validator"]):
-        return False
-    for command, is_strict in ((default, False), (strict, True)):
-        if (
-            Path(command[0]).name not in {"crozier", "crozier.exe"}
-            or command[1:3] != ["generate", "python"]
-            or option(command, "--spec") != validation[3]
-            or not option(command, "--output")
-            or command.count("--fern-strict") != int(is_strict)
-        ):
-            return False
-    if len(imports) != 3 or not python(imports) or imports[1] != "-c":
-        return False
-    try:
-        script = ast.parse(imports[2])
-    except SyntaxError:
-        return False
-    imported = {
-        alias.name
-        for node in ast.walk(script)
-        if isinstance(node, ast.Import)
-        for alias in node.names
-        if alias.asname is None
-    }
-    calls = {
-        (node.func.value.id, node.func.attr)
-        for node in ast.walk(script)
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
-    }
-    if (
-        not {"importlib", "pkgutil"} <= imported
-        or not {("pkgutil", "walk_packages"), ("importlib", "import_module")} <= calls
-    ):
-        return False
-    return (
-        python(build)
-        and build[1:3] == ["-m", "build"]
-        and "--wheel" in build
-        and Path(installation[0]).name in {"uv", "uv.exe"}
-        and installation[1:3] == ["pip", "install"]
-        and any(arg.endswith(".whl") for arg in installation[3:])
+def sdk_evaluation_schema(_args: argparse.Namespace) -> int:
+    evaluator = sdk_evaluator()
+    json.dump(
+        {"$schema": "https://json-schema.org/draft/2020-12/schema", **evaluator.schema_for(evaluator.SdkEvaluation)},
+        sys.stdout,
+        indent=2,
+        sort_keys=True,
     )
+    sys.stdout.write("\n")
+    return 0
 
 
 def limitation_evidence_problems(row: DispositionRow) -> list[str]:
@@ -2184,53 +2124,10 @@ def limitation_evidence_problems(row: DispositionRow) -> list[str]:
         evidence = json.loads((REPO / expected).read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         return [f"{name} cannot read SDK evidence: {error}"]
-    stages: tuple[
-        Literal["validation", "default_generation", "strict_generation", "build", "installation", "imports"], ...
-    ] = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
-    fields = {
-        "schema_version",
-        "document_sha256",
-        "fern_cli",
-        "fern_python_sdk",
-        "crozier_commit",
-        "sdk_sha256",
-        *stages,
-    }
-    if not isinstance(evidence, dict) or set(evidence) != fields:
-        return [f"{name} SDK evidence must have exactly the version-1 fields"]
-    if (
-        type(evidence["schema_version"]) is not int
-        or evidence["schema_version"] != 1
-        or evidence["document_sha256"] != digest
-        or evidence["fern_cli"] != FERN_CLI
-        or evidence["fern_python_sdk"] != FERN_PYTHON_SDK
-        or not isinstance(evidence["crozier_commit"], str)
-        or re.fullmatch(r"[0-9a-f]{40}", evidence["crozier_commit"]) is None
-        or not isinstance(evidence["sdk_sha256"], str)
-        or DIGEST.fullmatch(evidence["sdk_sha256"]) is None
-    ):
-        return [f"{name} SDK evidence has the wrong version, document, certified pair or digest"]
-    problems = []
-    for stage in stages:
-        run = evidence[stage]
-        if (
-            not isinstance(run, dict)
-            or set(run) != {"command", "exit", "output"}
-            or type(run["exit"]) is not int
-            or run["exit"] != 0
-            or not isinstance(run["command"], list)
-            or not run["command"]
-            or not all(isinstance(arg, str) and arg for arg in run["command"])
-            or not isinstance(run["output"], str)
-        ):
-            problems.append(f"{name} SDK evidence has no successful {stage} command")
-    if problems:
-        return problems
-    # The closed version-1 header and every stage's exact fields and value types
-    # were checked above; JSON decoding alone cannot express that narrowing.
-    validated = cast(SdkEvaluation, evidence)
-    if not sdk_evaluation_commands_match(validated):
-        problems.append(f"{name} SDK evidence commands do not perform the required evaluation stages")
+    problems = [
+        f"{name}: {problem}"
+        for problem in sdk_evaluator().validate_evaluation(evidence, digest, FERN_CLI, FERN_PYTHON_SDK)
+    ]
     ledger = REPO / "docs/fern-limitations.md"
     try:
         section = ledger.read_text(encoding="utf-8").partition("## New limitations at the certified pair\n")[2]
@@ -2710,6 +2607,24 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("select", help="print the selected population").set_defaults(run=select)
+    e = sub.add_parser(
+        "evaluate-sdk", help="produce a linked SDK evaluation with crozier, a wheel and a fresh installation"
+    )
+    e.add_argument("--document", type=Path, required=True)
+    e.add_argument("--crozier", type=Path, default=REPO / "target/debug/crozier")
+    e.add_argument(
+        "--work-dir", type=Path, required=True, help="a new directory retaining the SDK, wheel, environments and logs"
+    )
+    e.add_argument("--output", type=Path, help="evidence JSON (default: the document's limitations evidence path)")
+    e.add_argument("--timeout", type=positive, default=600, help="seconds per command")
+    e.set_defaults(run=evaluate_sdk)
+    v = sub.add_parser("check-sdk-evaluation", help="validate the versioned artifact chain against its source document")
+    v.add_argument("evidence", type=Path)
+    v.add_argument("--document", type=Path, required=True)
+    v.set_defaults(run=verify_sdk)
+    sub.add_parser(
+        "sdk-evaluation-schema", help="print the JSON Schema derived from the SDK evaluation types"
+    ).set_defaults(run=sdk_evaluation_schema)
     m = sub.add_parser("measure", help="fetch, run Fern and crozier, record measurements.jsonl")
     m.add_argument("--jobs", type=positive, default=6, help="how many Fern runs at once")
     m.add_argument("--crozier-jobs", type=positive, default=0, help="how many crozier runs at once (default: --jobs)")

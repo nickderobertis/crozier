@@ -16065,6 +16065,57 @@ class ParityProofIndexTests(unittest.TestCase):
                     self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
 
 
+class ResidualWitnessKeyProducerTests(unittest.TestCase):
+    """The selector producer propagates supplemental-proof boundary failures."""
+
+    def test_residual_inputs_are_derived_or_refused_with_recovery(self) -> None:
+        reader = load_script("tools/surface-census/witness-search-region-keys.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            regions = Path(temporary) / "docs/openapi-surface"
+            regions.mkdir(parents=True)
+            names = [*reader.region_files(), "witness-search-keys.tsv", "residual-handwritten.toml"]
+            for name in names:
+                shutil.copyfile(REPO / "docs/openapi-surface" / name, regions / name)
+
+            def run() -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [
+                        sys.executable,
+                        str(REPO / "tools/surface-census/witness-search-region-keys.py"),
+                        "--regions-dir",
+                        str(regions),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+
+            accepted = run()
+            self.assertEqual(accepted.returncode, 0, accepted.stderr)
+            self.assertEqual(accepted.stdout, (regions / "witness-search-keys.tsv").read_text())
+            registry = regions / "residual-handwritten.toml"
+            schema = regions / "schemas.md"
+            cases = [
+                (registry, "version = 1", "version = 99", "expected version = 1"),
+                (schema, "census `schema.example=null`", "no census selector", "has no census selector"),
+                (registry, 'key = "schema-example-null"', 'key = "orphan-residual-key"', "name no golden category row"),
+            ]
+            for path, before, after, reason in cases:
+                with self.subTest(reason=reason):
+                    original = path.read_text()
+                    self.assertIn(before, original)
+                    path.write_text(original.replace(before, after), encoding="utf-8")
+                    failed = run()
+                    self.assertNotEqual(failed.returncode, 0)
+                    self.assertIn(reason, failed.stderr)
+                    self.assertNotIn("Traceback", failed.stderr)
+                    self.assertEqual(original.replace(before, after), path.read_text())
+                    path.write_text(original, encoding="utf-8")
+                    recovered = run()
+                    self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                    self.assertEqual(accepted.stdout, recovered.stdout)
+
+
 class ResidualHandwrittenProofTests(unittest.TestCase):
     """Supplement admission reads real files and the same registry as the fixture gate."""
 
