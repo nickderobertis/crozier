@@ -1020,8 +1020,9 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
     )
     if not match:
         return False
-    paths = [Path(value) for value in match.groups()]
-    if any(path.is_absolute() or ".." in path.parts or "\\" in str(path) for path in paths):
+    # Links are repository-relative, regardless of the host's native separators.
+    paths = [pathlib.PurePosixPath(value.replace("\\", "/")) for value in match.groups()]
+    if any(path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive for path in paths):
         return False
     record, census_path = [root / "docs" / path for path in paths]
     if record.name != "README.md" or census_path != record.with_name("census.tsv"):
@@ -11977,6 +11978,18 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertFalse(bounded_incomplete_search(self.root, key, "a search probably happened"))
         self.edit("docs/openapi-surface-coverage.md", reason, "a search probably happened")
         self.assertTrue(any("unproven feature without" in failure for failure in finished_state_failures(self.root)))
+
+    def test_bounded_search_accepts_windows_paths_and_crlf_records(self) -> None:
+        key = "schema-example-fractional-on-integer"
+        reason = named_gap_features(self.root)[key]
+        for name in ("README.md", "census.tsv"):
+            record = self.root / "docs/openapi-surface/witness-search-unproven-features" / name
+            record.write_bytes(record.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        windows_reason = reason.replace("/", "\\")
+        self.assertTrue(bounded_incomplete_search(self.root, key, windows_reason))
+        self.edit("docs/openapi-surface-coverage.md", reason, windows_reason)
+        self.assertEqual([], finished_state_failures(self.root))
+        self.assertFalse(bounded_incomplete_search(self.root, key, windows_reason.replace("openapi-surface", "..")))
 
     def test_a_gap_combination_row_missing_from_its_named_table_is_refused(self) -> None:
         gap = sorted(key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "gap")
