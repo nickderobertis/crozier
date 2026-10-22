@@ -920,6 +920,7 @@
     "tests/fixtures/flowdapt/expected": {},
     "tests/fixtures/folio-mod-authtoken/expected": {},
     "tests/fixtures/form-bodies/expected": {},
+    "tests/fixtures/formbricks/expected": {},
     "tests/fixtures/frankfurter/expected": {},
     "tests/fixtures/free5gc-namf-communication/expected": {},
     "tests/fixtures/free5gc-pdu-session/expected": {},
