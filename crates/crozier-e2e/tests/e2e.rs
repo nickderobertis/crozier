@@ -2780,6 +2780,16 @@ fn declared_reference_example_restrictions_hold_through_compare() {
     let work = tempfile::tempdir().unwrap();
     for (name, pointer, replacement) in [
         (
+            "invalid-query-example",
+            "/components/schemas/TrackingCode/minLength",
+            serde_json::json!(100),
+        ),
+        (
+            "unsupported-query-assertion",
+            "/components/schemas/TrackingCode/pattern",
+            serde_json::json!("^harbor-"),
+        ),
+        (
             "constrained-target",
             "/components/schemas/Category/minLength",
             serde_json::json!(1),
@@ -2822,6 +2832,16 @@ fn declared_reference_example_restrictions_hold_through_compare() {
             "{name}: {result:#}"
         );
     }
+    let mut valid = original.clone();
+    valid["components"]["schemas"]["TrackingCode"]["minLength"] = serde_json::json!(1);
+    let valid_spec = work.path().join("valid-query-constraint.json");
+    std::fs::write(&valid_spec, valid.to_string()).unwrap();
+    let (code, result) =
+        compare_with_certified_reference(&valid_spec, &fixture.join("fern-expected"), None);
+    assert_eq!(
+        code, 0,
+        "a constraint admitting the source value remains eligible: {result:#}"
+    );
     let (code, result) = compare_with_certified_reference(
         &fixture.join("openapi.yml"),
         &fixture.join("fern-expected"),

@@ -3565,7 +3565,7 @@ fn is_path(parameter: &crate::openapi::Parameter) -> bool {
 /// `<name>="<name>"` placeholder for a path parameter whose schema is an
 /// `anyOf`/`oneOf` composition, against crozier's `<name>=<example>` — the
 /// string the composition's own schema-level `example` declares. It also keeps
-/// a required referenced query parameter's own string example and a required
+/// a required referenced query parameter's own valid string example and a required
 /// annotated-reference property's string example. Every other character of the
 /// line is the same.
 fn declared_request_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
@@ -3608,6 +3608,15 @@ fn declared_request_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -
                     declared_schema_example(schema)
                 })
                 .filter(|example| example.is_string())
+                .filter(|example| {
+                    !referenced_query
+                        || crate::openapi::example_validation::matches(
+                            &source.components.schemas,
+                            schema,
+                            example,
+                            0,
+                        ) == Some(true)
+                })
                 .and_then(crate::ir::example_literal)
                 .is_some_and(|literal| literal == value)
         })
@@ -6253,6 +6262,46 @@ mod tests {
                     "    adjacent=\"adjacent\",",
                     "    adjacent=\"changed\","
                 ));
+            }
+        }
+    }
+
+    #[test]
+    fn referenced_query_examples_require_established_schema_validity() {
+        for (keywords, eligible) in [
+            (serde_json::json!({}), true),
+            (serde_json::json!({"minLength":1}), true),
+            (serde_json::json!({"minLength":100}), false),
+            (serde_json::json!({"maxLength":5}), false),
+            (serde_json::json!({"pattern":"^harbor-"}), false),
+        ] {
+            let mut component = serde_json::json!({"type":"string"});
+            component
+                .as_object_mut()
+                .unwrap()
+                .extend(keywords.as_object().unwrap().clone());
+            let context = source_context(
+                serde_json::json!({
+                    "openapi":"3.1.0", "paths":{"/parcels":{"post":{
+                        "parameters":[{"name":"tracking","in":"query","required":true,
+                            "schema":{"$ref":"#/components/schemas/Code","type":"string"},
+                            "example":"harbor-842"}], "responses":{}
+                    }}}, "components":{"schemas":{"Code":component}}
+                }),
+                &[],
+            );
+            for rel in ["README.md", "reference.md", "src/fern/client.py"] {
+                assert_eq!(
+                    line_holds(
+                        declared_request_string_example,
+                        rel,
+                        &context,
+                        "    tracking=\"tracking\",",
+                        "    tracking=\"harbor-842\","
+                    ),
+                    eligible,
+                    "{rel}: {keywords}"
+                );
             }
         }
     }
