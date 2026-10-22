@@ -83,7 +83,8 @@ reach, not output sensitivity. Zero-motion declarers are not witnesses.
 The source search was extended within the same cached populations for
 those keys; paired certified-output controls establish seven real witnesses, including two
 declared-value departures.
-The remaining keys are undergoing renewed screening and authored controls. The existing region classifications are not completion claims.
+Nine keys are proven by an output-sensitive witness; the two root-version keys
+are decided output-insensitive, not proven (below).
 
 ## Verdicts
 
@@ -129,6 +130,16 @@ The complete path/digest maps are [root-fern-comparison.json](root-fern-comparis
 The paired documents live in [removal-controls/](removal-controls/).
 These controls are evidence of an output-insensitive decision, not hand-written
 fixtures claimed as witnesses.
+
+
+The strict-form records of the Nimisampo version-removal control,
+[nimisampo-version-removal-fern.json](nimisampo-version-removal-fern.json) and
+[nimisampo-version-removal-crozier.json](nimisampo-version-removal-crozier.json),
+hold complete 44-file trees whose before and after maps are identical in each
+engine. The Fern maps are the certified pair's generation of the committed
+source and of [removal-controls/nimisampo-after.yml](removal-controls/nimisampo-after.yml);
+the crozier maps were regenerated from the same two documents on the tree that
+merged base commit `0fe1f0c99`.
 
 ## Paired removal controls
 
