@@ -8456,10 +8456,17 @@ impl InlineHoister<'_> {
             }
             // Every inline object member is a model named by the variant rule,
             // including titled members with required fields (Vercel's files).
-            // A title does not replace that name.
+            // A title does not replace that name. A `type: null` member leaves the
+            // alias and makes the element optional, as it does at a component's
+            // array: the LinkedIn toolkit's `params` items are `type: [string,
+            // number, null]`, and Fern's argument is
+            // `Sequence[Optional[ToolLinkedinQuerySqlRequestParamsItem]]` over a
+            // two-member alias.
+            let dropped_null = members.iter().any(is_null_variant);
             let variants: Vec<TypeRef> = members
                 .iter()
                 .enumerate()
+                .filter(|(_, member)| !is_null_variant(member))
                 .map(|(index, member)| self.hoist_union_variant(&item_name, index, member, members))
                 .collect();
             let variants = dedupe_union_members(variants);
@@ -8472,7 +8479,15 @@ impl InlineHoister<'_> {
                 min_length: None,
                 max_length: None,
             }));
-            return Some(sequence_of(array, TypeRef::Named(item_name)));
+            let element = TypeRef::Named(item_name);
+            return Some(sequence_of(
+                array,
+                if dropped_null {
+                    optional_type_ref(element)
+                } else {
+                    element
+                },
+            ));
         }
         // An array of arrays takes one `Item` per nesting level, so the inline
         // element of `result: array of array of object` lands in
@@ -23814,6 +23829,139 @@ mod tests {
                 "/widgets"
             ),
             "search"
+        );
+    }
+
+    /// A map value or an array item whose `type` list names `null` beside two or
+    /// more types is an optional element over the hoisted alias, in a component
+    /// model and in an operation's inline body alike (measured at Fern CLI 5.163.1
+    /// with fern-python-sdk 5.41.3: Fletch's `MetricObservation.parameters` is
+    /// `Dict[str, Optional[MetricObservationParametersValue]]`, and the LinkedIn
+    /// toolkit's `params` argument `Sequence[Optional[…ParamsItem]]`).
+    #[test]
+    fn container_elements_whose_type_list_names_null_are_optional() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("api.yml");
+        std::fs::write(
+            &spec,
+            r##"openapi: 3.1.0
+info: {title: Api, version: "1"}
+paths:
+  /observations:
+    post:
+      operationId: record
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                params:
+                  type: array
+                  items: {type: [string, number, "null"]}
+                labels:
+                  type: object
+                  additionalProperties: {type: [string, boolean, "null"]}
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Observation"}
+components:
+  schemas:
+    Observation:
+      type: object
+      properties:
+        parameters:
+          type: object
+          additionalProperties: {type: [string, number, boolean, "null"]}
+        samples:
+          type: array
+          items: {type: [string, integer, "null"]}
+"##,
+        )
+        .unwrap();
+        let doc = crate::openapi::load(&spec).expect("the document loads");
+        let config = crate::config::GenerateConfig::new(
+            spec.clone(),
+            std::path::PathBuf::from("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let optional = |name: &str| {
+            Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                name.to_string(),
+            ))))
+        };
+        let str_key = || Box::new(TypeRef::Primitive(Prim::Str));
+        let model = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Observation" => Some(object),
+                _ => None,
+            })
+            .expect("the component model");
+        let field = |name: &str| {
+            &model
+                .fields
+                .iter()
+                .find(|field| field.wire_name == name)
+                .expect("the component field")
+                .type_ref
+        };
+        assert_eq!(
+            field("parameters"),
+            &TypeRef::Dict(str_key(), optional("ObservationParametersValue"))
+        );
+        assert_eq!(
+            field("samples"),
+            &TypeRef::List(optional("ObservationSamplesItem"))
+        );
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "record")
+            .expect("the operation");
+        let Some(RequestBody::Inline(body)) = &endpoint.request_body else {
+            panic!("the request body is inlined");
+        };
+        let argument = |name: &str| {
+            &body
+                .iter()
+                .find(|field| field.wire_name == name)
+                .expect("the body argument")
+                .type_ref
+        };
+        assert_eq!(
+            argument("params"),
+            &TypeRef::List(optional("RecordRequestParamsItem"))
+        );
+        assert_eq!(
+            argument("labels"),
+            &TypeRef::Dict(str_key(), optional("RecordRequestLabelsValue"))
+        );
+        // The `null` leaves each alias: no `Any` member stands in for it.
+        let alias = |name: &str| {
+            ir.types
+                .iter()
+                .find_map(|decl| match decl {
+                    TypeDecl::Alias(alias) if alias.name == name => Some(&alias.target),
+                    _ => None,
+                })
+                .expect("the hoisted alias")
+        };
+        assert_eq!(
+            alias("RecordRequestParamsItem"),
+            &TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Primitive(Prim::Float),
+            ])
         );
     }
 

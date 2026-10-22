@@ -3736,7 +3736,7 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
                 return;
             }
             let nullable = types.iter().any(|ty| ty == "null");
-            let members: Vec<Schema> = types
+            let mut members: Vec<Schema> = types
                 .iter()
                 .filter(|ty| *ty != "null")
                 .map(|ty| Schema {
@@ -3746,6 +3746,19 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
                 .collect();
             if members.len() < 2 {
                 return;
+            }
+            // The `null` is kept as a trailing `type: null` member too, so a
+            // container's element reads it the way it reads a written `null`
+            // alternative: as an optional element. Fletch's `MetricObservation
+            // .parameters` maps to `type: [string, number, boolean, null]` and
+            // Fern types it `Dict[str, Optional[MetricObservationParametersValue]]`;
+            // the LinkedIn toolkit's `params` items are `type: [string, number,
+            // null]` and Fern's argument is `Sequence[Optional[…ParamsItem]]`.
+            if nullable {
+                members.push(Schema {
+                    ty: Some(TypeField::Single("null".to_string())),
+                    ..Schema::default()
+                });
             }
             node.ty = None;
             node.any_of = Some(members);
