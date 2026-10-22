@@ -17706,6 +17706,76 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertIn("and the 2 listed here omit it", updated)
         self.assertEqual(0, self.run_restater("--snapshot-json", str(source)).returncode)
 
+    def native_snapshot_payload(self) -> dict[str, Any]:
+        measured = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, measured.returncode, measured.stderr)
+        return json.loads(measured.stdout)
+
+    def snapshot_extension_cells(self) -> dict[str, list[str]]:
+        text = (self.root / "docs/openapi-surface/oas31-extensions.md").read_text(encoding="utf-8")
+        return {key.strip(chr(96)): cells for key, cells in DocumentPathsSnapshotTests.entries(text).items()}
+
+    def test_snapshot_orders_multiple_absent_and_webhook_witnesses_alphabetically(self) -> None:
+        payload = self.native_snapshot_payload()
+        for fixture in ("zulu-missing-paths", "middle-missing-paths", "alpha-missing-paths"):
+            payload["sources"].append({"fixture": fixture, "origin": "corpus", "path": f"inputs/{fixture}.json"})
+            payload["rows"].append({"fixture": fixture, "selector": "openapi.webhooks", "count": 1})
+        source = self.root / "unordered-census.json"
+        source.write_text(json.dumps(payload), encoding="utf-8")
+        written = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        cells = self.snapshot_extension_cells()
+        expected = [("alpha-missing-paths", "1"), ("middle-missing-paths", "1"), ("zulu-missing-paths", "1")]
+        for key in ("paths-absent", "webhooks-without-paths"):
+            with self.subTest(key=key):
+                self.assertEqual(expected, DocumentPathsSnapshotTests.PAIR.findall(cells[key][4]))
+
+    def test_snapshot_populates_empty_witness_placeholders_on_a_later_walk(self) -> None:
+        payload = self.native_snapshot_payload()
+        source = self.root / "changing-census.json"
+        source.write_text(json.dumps(payload), encoding="utf-8")
+        empty = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, empty.returncode, empty.stderr)
+        empty_cells = self.snapshot_extension_cells()
+        for key in ("paths-absent", "webhooks-without-paths"):
+            with self.subTest(empty_key=key):
+                self.assertIn("golden-bearing witnesses: .", empty_cells[key][4])
+                self.assertEqual([], DocumentPathsSnapshotTests.PAIR.findall(empty_cells[key][4]))
+
+        payload["sources"].append(
+            {"fixture": "restored-declarer", "origin": "corpus", "path": "inputs/restored-declarer.json"}
+        )
+        payload["rows"].append({"fixture": "restored-declarer", "selector": "openapi.webhooks", "count": 1})
+        later = json.dumps(payload)
+        source.write_text(later, encoding="utf-8")
+        populated = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, populated.returncode, populated.stderr)
+        cells = self.snapshot_extension_cells()
+        for key in ("paths-absent", "webhooks-without-paths"):
+            with self.subTest(key=key):
+                self.assertNotIn("golden-bearing witnesses: .", cells[key][4])
+                self.assertEqual([("restored-declarer", "1")], DocumentPathsSnapshotTests.PAIR.findall(cells[key][4]))
+
+        paths = [self.root / "docs/openapi-surface" / name for name in ("document-paths.md", "oas31-extensions.md")]
+        before = {path: path.read_bytes() for path in paths}
+        payload["rows"][-1]["count"] = False
+        source.write_text(json.dumps(payload), encoding="utf-8")
+        refused = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("invalid snapshot census row", refused.stderr)
+        self.assertEqual(before, {path: path.read_bytes() for path in paths})
+        source.write_text(later, encoding="utf-8")
+        recovered = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual(before, {path: path.read_bytes() for path in paths})
+
     def test_snapshot_input_and_template_failures_preserve_files_and_recover(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
