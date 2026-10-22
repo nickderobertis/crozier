@@ -21589,6 +21589,64 @@ mod tests {
     }
 
     #[test]
+    fn inline_single_reference_composition_examples_use_the_referenced_object_path() {
+        let directory = tempfile::tempdir().unwrap();
+        let spec = directory.path().join("openapi.json");
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Harbor schedules", "version": "1"},
+            "paths": {"/schedules": {"post": {
+                "operationId": "create_schedule", "requestBody": {
+                    "required": true, "content": {"application/json": {
+                        "schema": {"allOf": [{"$ref": "#/components/schemas/Schedule"}],
+                            "title": "Schedule input", "description": "A harbor departure."},
+                        "example": {"label": "evening ferry"}
+                    }}
+                }, "responses": {"204": {"description": "Stored"}}
+            }}},
+            "components": {"schemas": {"Schedule": {
+                "type": "object", "required": ["label"],
+                "properties": {"label": {"type": "string"}},
+                "example": {"label": "morning ferry"}
+            }}}
+        });
+        std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+        let doc = crate::openapi::load(&spec).unwrap();
+        let media = &doc.paths["/schedules"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content["application/json"];
+        let schema = media.schema.as_ref().unwrap();
+        assert_eq!(
+            schema.reference.as_deref(),
+            Some("#/components/schemas/Schedule")
+        );
+        assert!(schema.all_of.is_none());
+        assert_eq!(schema.title.as_deref(), Some("Schedule input"));
+        let config = crate::config::GenerateConfig::new(
+            spec,
+            directory.path().join("out"),
+            Some("harbor".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Harbor",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("the normalized reference must flatten the component fields");
+        };
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].wire_name, "label");
+        assert_eq!(fields[0].example.as_deref(), Some("\"evening ferry\""));
+        assert!(!fields[0].schema_body_example);
+    }
+
+    #[test]
     fn media_object_example_supersedes_component_example_with_property_fallback() {
         for media in [false, true] {
             let mut document = serde_json::json!({

@@ -9420,7 +9420,12 @@ class RankedBacklogTests(unittest.TestCase):
                 handwritten += 1
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
-        unreached = {(reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit}
+        # Feature proof totals above exclude combinations. The arm headline
+        # explicitly describes the whole reach ledger, including combinations.
+        arm_ledger_rows = self.reach_ledger(combinations=True)
+        unreached = {
+            (reach.key, spec) for _rank, reach in arm_ledger_rows for spec, hit, _total in reach.sites if not hit
+        }
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         fixture = len(self.gaps("FIXTURE"))
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
@@ -9472,7 +9477,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         # The arms, split the same way: reached by a real specification, reached
         # only by a hand-written fixture, reachable only by a Fern-refused document.
-        arms = [(reach.key, spec) for _rank, reach in ledger_rows for spec, _hit, _total in reach.sites]
+        arms = [(reach.key, spec) for _rank, reach in arm_ledger_rows for spec, _hit, _total in reach.sites]
         refused = set(refused_arm_records(REPO)) & unreached
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
         REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
@@ -9507,7 +9512,7 @@ class RankedBacklogTests(unittest.TestCase):
         named = set(named_gap_arms(REPO)) & unreached
         self.assertEqual(
             [
-                categories["golden"],
+                len(arm_ledger_rows),
                 len(arms),
                 reached,
                 len(covered),

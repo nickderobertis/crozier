@@ -120,9 +120,10 @@ def source_counts(root: Path) -> tuple[int, int, int]:
 
 def validate_reach_population(keys: set[str], features: set[str], combinations: set[str]) -> None:
     """Require each measured population in full, without counting combinations as features."""
+    prefix = reader().COMBINATION_PREFIX
     for label, expected, actual in (
-        ("feature", features, {key for key in keys if not key.startswith("combo-")}),
-        ("combination", combinations, {key for key in keys if key.startswith("combo-")}),
+        ("feature", features, {key for key in keys if not key.startswith(prefix)}),
+        ("combination", combinations, {key for key in keys if key.startswith(prefix)}),
     ):
         if actual != expected:
             raise ValueError(

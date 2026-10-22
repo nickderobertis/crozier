@@ -53,7 +53,7 @@ The conjunction grammar is [the census grammar](../../openapi-surface-coverage.m
 | key | detector | meaning |
 |---|---|---|
 | `combo-allof-schema-example` | `schema.allOf&schema.example` | a Schema Object declaring both a composition and an example |
-| `combo-annotated-ref-property-example` | `schema.properties>schema.allOf:annotated-ref&schema.example` | a Schema Object with its own example and a property whose allOf is an annotated reference |
+| `combo-annotated-ref-property-example` | `schema.properties>schema.allOf:annotated-ref&schema.example` | a Schema Object with a property that writes an example beside an annotated reference (an allOf with one reference and annotation-only members) |
 | `combo-anyof-schema-example` | `schema.anyOf&schema.example` | a Schema Object declaring both anyOf alternatives and an example |
 | `combo-media-example-beside-component-example` | `mediaType.example&mediaType.schema>schema.$ref~>schema.example` | a Media Type Object with its own example and a schema reference to a component with its own example |
 | `combo-media-example-on-inline-allof-body` | `mediaType.example&mediaType.schema>schema.allOf` | a Media Type Object with its own example and an inline allOf schema |
@@ -75,6 +75,15 @@ input's SHA-256, classification and count. Join positive counts to the acquired
 manifest's full identities, as [census.tsv](census.tsv) does. The registered
 source walk is `--documents registered=tests/fixtures`.
 
+## Proof-strength amendment
+
+The manager's renewed bar requires a removal control to change **both**
+generators' output. The initial handling-site measurements below establish
+reach, not output sensitivity. Zero-motion declarers are not witnesses.
+The source search is being extended within the same cached populations for
+those keys; paired certified-output controls for the sensitive candidates are
+still pending. The existing region classifications are not completion claims.
+
 ## Verdicts
 
 Every key is `search-incomplete`: these bounded cached populations cannot
@@ -85,23 +94,27 @@ screening state; one admitted generating registered witness per key suffices.
 
 | key | outcome | declarers | selected proof |
 |---|---|---:|---|
-| `combo-allof-schema-example` | `search-incomplete` | 322 | registered `zulip`; scoped golden reach |
-| `combo-annotated-ref-property-example` | `search-incomplete` | 9 | registered `zulip`; scoped golden reach |
+| `combo-allof-schema-example` | `search-incomplete` | 322 | registered `ahasend-api`; crozier output-sensitive, certified control pending |
+| `combo-annotated-ref-property-example` | `search-incomplete` | 9 | reaching only; renewed output-sensitive proof search pending |
 | `combo-anyof-schema-example` | `search-incomplete` | 169 | registered `supabase-api-v1`; scoped golden reach |
 | `combo-media-example-beside-component-example` | `search-incomplete` | 169 | registered `ahasend-api` (3202); complete golden and example attribution |
 | `combo-media-example-on-inline-allof-body` | `search-incomplete` | 57 | registered `farmvibes-ai` (3201); complete golden and example attribution |
 | `combo-media-example-on-ref-allof-body` | `search-incomplete` | 87 | registered `dashy-route-api` (3200); complete golden and example attribution |
 | `combo-media-example-on-ref-union-body` | `search-incomplete` | 27 | registered `mockserver`; scoped golden reach |
-| `combo-oneof-schema-example` | `search-incomplete` | 269 | registered `zulip`; scoped golden reach |
-| `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | registered `hse`; scoped golden reach |
-| `combo-root-oas30-binary-schema` | `search-incomplete` | 61 | registered `nimisampo`; scoped golden reach |
-| `combo-root-oas30-download` | `search-incomplete` | 69 | registered `nimisampo`; scoped golden reach |
+| `combo-oneof-schema-example` | `search-incomplete` | 269 | reaching only; renewed output-sensitive proof search pending |
+| `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | reaching only; renewed output-sensitive proof search pending |
+| `combo-root-oas30-binary-schema` | `search-incomplete` | 61 | reaching only; renewed output-sensitive proof search pending |
+| `combo-root-oas30-download` | `search-incomplete` | 69 | reaching only; renewed output-sensitive proof search pending |
 
 ## Attribution
 
 The existing selected witnesses have `unmatched: &[]` in the corpus gate.
-Their named golden tests passed, and a separate instrumented run of the eight
-candidate golden tests measured their reach at the source revision above.
+Their named golden tests passed. The initial eight-test reach measurement at
+the source revision above was superseded by a 62-test instrumented run at
+`63c79bc0a430d622930dca3486d55d4d728b3ca2`, after the example repairs. That run
+includes the eleven combinations' witnesses and every witness of the two
+single-feature rows whose request-field site moved. All 62 golden tests passed.
+The later attribution unit test changes no production code or measured lines.
 The [site table](../golden-reach-sites.tsv) records the example handoff sites;
 the [reach ledger](../golden-reach.tsv) carries the scoped run's provenance.
 These handoff measurements do not claim every path of the containing function
@@ -110,7 +123,7 @@ is exhausted; the single-feature rows retain those wider handling branches.
 Deleting the conjunction's examples in MockServer changes `reference.md` and
 the expectation and verify clients. Deleting Supabase's `anyOf` schema examples
 changes its README, reference and environments client. Removing examples in
-HSE and Zulip moves no bytes; their proof here is the measured handling-site
+HSE and Zulip moves no bytes; their earlier reach evidence is the measured handling-site
 reach plus their complete byte-matched goldens, rather than a claim of
 output sensitivity.
 
@@ -153,3 +166,32 @@ reference trees were not edited. No new departure rule was needed.
 MockServer's literal regeneration staged its already-vendored remote-reference
 bytes with absolute local paths so the generation workspace could resolve them;
 the committed source and its immutable remote pins are unchanged.
+
+### Correcting the inline-composition attribution
+
+The first site selected for `combo-media-example-on-inline-allof-body` was the
+IR branch merging compositions whose members are all inline objects. It
+measured **0/6** regions: FarmVibes instead writes one reference inside its
+inline composition. A second attempted attribution used
+`inline_schema_pointers` (**7/35**) and the plain inline-property request branch
+(**0/63**); neither describes that request's actual lowering. The pointer
+normalizer does not expand a simple component reference here.
+
+The actual path is `normalize_request_bodies` calling
+`collapse_sole_composition_member`: FarmVibes' nonnullable wrapper, carrying
+only a title and description beside its single-reference `allOf`, becomes that
+reference. `resolve_request_body` then flattens its component fields and applies
+the media example through the same referenced-object path already proven by
+other bodies. The corrected site table measures that composition-collapse arm
+and the referenced-object handoff. These sites attribute this witness; they do
+not claim every possible multi-member composition is exhausted.
+
+The from-scratch unit test
+`inline_single_reference_composition_examples_use_the_referenced_object_path`
+drives the public loader and IR builder with the same document shape. It
+asserts the normalized reference, preserved title, flattened field and winning
+media value over a competing component example. An induced run bypassing the
+loader failed at the reference assertion (`None` versus the expected component
+reference); restoring the loader passed. Together with FarmVibes' complete
+byte-match and example-removal attribution, it ties the sites to this shape
+rather than to unrelated code the witness happens to execute.
