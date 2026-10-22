@@ -47,6 +47,8 @@ clients-extensions/vineyard-cellar-glossary-literals	docs/openapi-surface/handwr
 clients-extensions/weather-buoy-feeds	docs/fern-measurements/clients-extensions/weather-buoy-feeds/openapi.yml	python-enums	packaged	-
 examples-docs/archive-glob-rules	docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml	python-enums	packaged	-
 examples-docs/archive-glob-rules-literals	docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml	literals	packaged	-
+examples-docs/harbor-map-validation	docs/fern-measurements/examples-docs/harbor-map-validation/openapi.yml	python-enums	packaged	-
+examples-docs/harbor-map-validation-literals	docs/fern-measurements/examples-docs/harbor-map-validation/openapi.yml	literals	packaged	-
 examples-docs/marina-component-examples	docs/fern-measurements/examples-docs/marina-component-examples/openapi.yml	python-enums	packaged	-
 examples-docs/marina-component-examples-literals	docs/fern-measurements/examples-docs/marina-component-examples/openapi.yml	literals	packaged	-
 examples-docs/marina-crew-roles	docs/fern-measurements/examples-docs/marina-crew-roles/openapi.yml	python-enums	packaged	-

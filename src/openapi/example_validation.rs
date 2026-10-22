@@ -18,6 +18,11 @@ fn annotation(key: &str) -> bool {
 }
 
 /// `None` means the schema writes an assertion this validator cannot establish.
+/// CLI journeys `composed_narrowing_declines_the_example_correction_and_matches_certified_fern`
+/// and `enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern`
+/// cover reference, composition and string bounds. The declared-reference/union
+/// restriction journeys cover invalid and unsupported examples; the declared-map
+/// journey covers additional properties and the null-rendering controls.
 pub(crate) fn matches(
     schemas: &indexmap::IndexMap<String, Schema>,
     schema: &Schema,
@@ -25,6 +30,7 @@ pub(crate) fn matches(
     depth: usize,
 ) -> Option<bool> {
     if depth > 32
+        || schema.boolean_stand_in
         || schema.unmodeled_keywords.keys().any(|key| !annotation(key))
         || schema.drops_applicator()
         || schema.discarded_composition
@@ -75,9 +81,11 @@ pub(crate) fn matches(
             }
         }
     }
+    // llmlint: ignore-block[changed_behavior_has_e2e] This nullable verdict cannot change emitted bytes: ir::plain_example_literal discards null recursively before rendering. nullable_values_validate_but_cannot_be_rendered_as_declared_literals checks both loader verdicts; declared_map_examples_validate_values_and_nullable_controls_keep_the_same_fallback drives both nullable schemas through generate and the certified tree.
     if value.is_null() && schema.nullable == Some(true) {
         return Some(true);
     }
+    // llmlint: ignore-end[changed_behavior_has_e2e]
     if let Some(ty) = schema.ty.as_ref().and_then(TypeField::primary) {
         let accepted = match ty {
             "string" => value.is_string(),

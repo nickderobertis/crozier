@@ -2770,6 +2770,119 @@ fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
     );
 }
 
+#[cfg(unix)]
+#[test]
+fn declared_reference_example_restrictions_hold_through_compare() {
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
+            .unwrap();
+    let work = tempfile::tempdir().unwrap();
+    for (name, pointer, replacement) in [
+        (
+            "constrained-target",
+            "/components/schemas/Category/minLength",
+            serde_json::json!(1),
+        ),
+        (
+            "unsupported-target",
+            "/components/schemas/Category/pattern",
+            serde_json::json!(".*"),
+        ),
+        (
+            "invalid-example",
+            "/components/schemas/Parcel/properties/category/example",
+            serde_json::json!(17),
+        ),
+        (
+            "ineligible-member",
+            "/components/schemas/Parcel/properties/category/allOf/1/type",
+            serde_json::json!("string"),
+        ),
+    ] {
+        let mut document = original.clone();
+        let (parent, field) = pointer.rsplit_once('/').unwrap();
+        document
+            .pointer_mut(parent)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert(field.to_string(), replacement);
+        let spec = work.path().join(format!("{name}.json"));
+        std::fs::write(&spec, document.to_string()).unwrap();
+        let (code, result) =
+            compare_with_certified_reference(&spec, &fixture.join("fern-expected"), None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        assert!(
+            result["comparison"]["differing"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|path| path == "README.md"),
+            "{name}: {result:#}"
+        );
+    }
+    let (code, result) = compare_with_certified_reference(
+        &fixture.join("openapi.yml"),
+        &fixture.join("fern-expected"),
+        None,
+    );
+    assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
+}
+
+#[test]
+fn declared_map_examples_validate_values_and_nullable_controls_keep_the_same_fallback() {
+    let fixture = repo_root().join("docs/fern-measurements/examples-docs/harbor-map-validation");
+    let spec = fixture.join("openapi.yml");
+    for (mode, golden) in [
+        (
+            "python-enums",
+            "docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected",
+        ),
+        (
+            "literals",
+            "docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected",
+        ),
+    ] {
+        let out = tempfile::tempdir().unwrap();
+        probe_command(&spec, out.path())
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+        for (method, value) in [
+            ("record_map_accepted", "\"days\": 20"),
+            ("record_map_rejected", "\"days\": 20"),
+            ("record_closed_accepted", "days=20"),
+            ("record_closed_rejected", "days=20"),
+            ("record_null_allowed", "lookback=20"),
+            ("record_null_disallowed", "lookback=20"),
+        ] {
+            let body = client
+                .split(&format!("    def {method}("))
+                .nth(1)
+                .unwrap()
+                .split("    def ")
+                .next()
+                .unwrap();
+            assert!(body.contains(value), "{mode}/{method}: {body}");
+            assert!(
+                !body.contains("days=30") && !body.contains("\"invalid\""),
+                "{mode}/{method}: invalid source content must not be emitted: {body}"
+            );
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let failures = golden_tree_failures(
+            "declared map validation",
+            spec.to_str().unwrap(),
+            &ledger,
+            &repo_root().join(golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n"));
+    }
+}
+
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, JSON problem responses, and a
@@ -19684,6 +19797,32 @@ fn rgb_example_departures_reject_an_adjacent_unexplained_value() {
         assert_eq!(result["comparison"]["differing"], serde_json::json!([path]));
     }
 }
+#[cfg(unix)]
+#[test]
+fn declared_union_example_restrictions_hold_through_compare() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let original = std::fs::read_to_string(&source).unwrap();
+    let work = tempfile::tempdir().unwrap();
+    for (name, before, after) in [
+        ("invalid", "                  type: integer\n                  example: 20",
+            "                  type: integer\n                  maximum: 10\n                  example: 20"),
+        ("unsupported", "                  type: integer\n                  example: 20",
+            "                  type: integer\n                  maximum: 100\n                  example: 20"),
+    ] {
+        let changed = original.replace(before, after);
+        assert_ne!(changed, original, "{name} must alter the source");
+        let spec = work.path().join(format!("{name}.yaml"));
+        std::fs::write(&spec, changed).unwrap();
+        let (code, result) = compare_with_certified_reference(&spec, &expected, None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        assert!(result["comparison"]["differing"].as_array().unwrap()
+            .iter().any(|path| path == "reference.md"), "{name}: {result:#}");
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
+}
+
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]

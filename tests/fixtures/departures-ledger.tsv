@@ -314,6 +314,17 @@ docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected	src/fern/c
 docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/berths/types/__init__.py	8	init-type-checking-import-order

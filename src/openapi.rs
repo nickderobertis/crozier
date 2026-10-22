@@ -1817,7 +1817,9 @@ pub struct Schema {
     #[serde(skip)]
     pub malformed: bool,
     /// Set when a boolean stood where this schema object was expected. Not a
-    /// wire field; see [`normalize_boolean_property_objects`].
+    /// wire field; also retained on an object degraded because an immediate property
+    /// was boolean, so example validation abstains without affecting its ancestors.
+    /// See [`normalize_boolean_property_objects`].
     #[serde(skip)]
     pub(crate) boolean_stand_in: bool,
     /// Set when this node's `$ref` named a component schema the document never
@@ -3289,6 +3291,7 @@ fn normalize_boolean_property_objects(doc: &mut OpenApi) {
             {
                 *node = Schema {
                     description: node.description.take(),
+                    boolean_stand_in: true,
                     ..Schema::default()
                 };
             }
@@ -6771,12 +6774,41 @@ components:
             members[1],
             Schema {
                 description: Some("Open.".to_string()),
+                boolean_stand_in: true,
                 ..Schema::default()
             }
         );
         assert!(doc.components.schemas["Listed"]
             .properties
             .contains_key("tags"));
+    }
+
+    #[test]
+    fn boolean_property_degradation_does_not_propagate_to_ancestors() {
+        let mut doc = parse(
+            r#"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Envelope:
+      type: object
+      required: [window]
+      properties:
+        window:
+          type: object
+          properties:
+            lookback: false
+"#,
+        );
+        normalize_boolean_property_objects(&mut doc);
+        let envelope = &doc.components.schemas["Envelope"];
+        assert!(!envelope.boolean_stand_in);
+        assert_eq!(envelope.required.iter().collect::<Vec<_>>(), ["window"]);
+        assert_eq!(envelope.ty, Some(TypeField::Single("object".to_string())));
+        assert!(envelope.properties["window"].boolean_stand_in);
+        assert!(envelope.properties["window"].properties.is_empty());
     }
 
     #[test]

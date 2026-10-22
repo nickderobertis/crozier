@@ -49,6 +49,8 @@
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules-literals/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected": {},
+    "docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected": {},
+    "docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected": {},
     "docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected": {},
     "docs/fern-measurements/examples-docs/marina-component-examples/fern-expected": {},
     "docs/fern-measurements/examples-docs/marina-crew-roles/fern-expected": {},

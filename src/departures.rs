@@ -1746,7 +1746,7 @@ pub fn rule(id: &str) -> Option<Rule> {
     Some(match id {
         "anyof-path-param-schema-example" => Rule {
             region: Some(declared_examples::region),
-            line: Some(anyof_path_param_schema_example),
+            line: Some(declared_request_string_example),
             ..none
         },
         "body-query-parameter-value" => Rule {
@@ -3568,7 +3568,7 @@ fn is_path(parameter: &crate::openapi::Parameter) -> bool {
 /// a required referenced query parameter's own string example and a required
 /// annotated-reference property's string example. Every other character of the
 /// line is the same.
-fn anyof_path_param_schema_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+fn declared_request_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !example_file(pair.rel) {
         return false;
     }
@@ -3663,7 +3663,7 @@ fn annotated_reference_property_example(
                 .iter()
                 .filter(|member| member.reference.is_some())
                 .count();
-            let annotations_only = members
+            let description_members = members
                 .iter()
                 .filter(|member| member.reference.is_none())
                 .all(|member| {
@@ -3684,7 +3684,7 @@ fn annotated_reference_property_example(
                     .iter()
                     .filter_map(|member| member.reference.as_deref())
                     .all(|reference| plain_string_reference(source, reference))
-                && annotations_only
+                && description_members
                 && declared_schema_example(property)
                     .filter(|example| example.is_string())
                     .filter(|example| {
@@ -6154,7 +6154,7 @@ mod tests {
     }
 
     #[test]
-    fn anyof_path_param_schema_example_admits_only_the_declared_composition_example() {
+    fn declared_request_string_example_admits_only_the_declared_composition_example() {
         let document = |schema: serde_json::Value, location: &str| {
             serde_json::json!({"openapi": "3.0.3", "paths": {"/docks/{dock}": {"get": {
                 "parameters": [{"name": "dock", "in": location, "required": true, "schema": schema}],
@@ -6167,7 +6167,7 @@ mod tests {
         });
         let context = source_context(document(composed.clone(), "path"), &[]);
         let (fern, crozier) = ("    dock=\"dock\",", "    dock=\"northbasin\",");
-        let rule: LineRule = anyof_path_param_schema_example;
+        let rule: LineRule = declared_request_string_example;
         for rel in ["README.md", "reference.md", "src/fern/docks/client.py"] {
             assert!(line_holds(rule, rel, &context, fern, crozier), "{rel}");
         }
@@ -6230,7 +6230,7 @@ mod tests {
             }),
             &[],
         );
-        let rule: LineRule = anyof_path_param_schema_example;
+        let rule: LineRule = declared_request_string_example;
         for rel in ["README.md", "reference.md", "src/fern/client.py"] {
             for (name, example) in [("tracking", "harbor-842"), ("category", "overnight")] {
                 let fern = format!("    {name}=\"{name}\",");

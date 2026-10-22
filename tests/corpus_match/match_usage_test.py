@@ -41,6 +41,7 @@ class MatchUsage(unittest.TestCase):
                     f"corpus-match: {named} — usage: tests/corpus_match/match.sh [--strict]\n", result.stderr
                 )
 
+    # llmlint: ignore-block[shell_test_tiers_stay_split] corpus-match is already the cost:expensive, tier:promoted host-tool project; its test-offline target already drives real cargo and nextest, so this regression runs in that same host-tool tier.
     def test_strict_preflight_consumes_stdout_and_keeps_both_failures_strict(self) -> None:
         real_cargo = shutil.which("cargo")
         self.assertIsNotNone(real_cargo)
@@ -115,6 +116,8 @@ class MatchUsage(unittest.TestCase):
                         self.assertIn("did not report fern-strict true", result.stderr)
                         self.assertEqual(1, len(seen), seen)
                         self.assertFalse(inventory.exists())
+
+    # llmlint: ignore-end[shell_test_tiers_stay_split]
 
     def test_a_build_that_fails_is_named_after_cargos_own_error(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:

@@ -36,3 +36,25 @@ comparison then fails.
 | `marina-radio-parts` | [`marina-radio-parts`](marina-radio-parts/openapi.yml) | the defaults (`pydantic_config.enum_type: python_enums`; crozier's `python-enums`) | example items of an inline `oneOf` of titled objects with single-value `kind` enums constructed as the union's variants, imported in the docstring's sorted order and the Markdown writers' example order |
 | `marina-skipper-refs` | [`marina-skipper-refs`](marina-skipper-refs/openapi.yml) | the defaults (`pydantic_config.enum_type: python_enums`; crozier's `python-enums`) | the `collapsed-anyof-property-description` departure: a required property that is an `anyOf` of two strings, described on the property, on a flattened body and on a model |
 | `marina-tide-channels` | [`marina-tide-channels`](marina-tide-channels/openapi.yml) | the defaults (`pydantic_config.enum_type: python_enums`; crozier's `python-enums`) | a required query array left out of the worked call beside a required parameter exampled as the unknown placeholder, and, where it declares an array example, the `optional-lowered-required-query-array-example` departure |
+
+## Harbor validation controls
+
+The from-scratch [`harbor-map-validation` document](harbor-map-validation/openapi.yml) pairs valid and invalid
+declared examples on referenced unions. Typed map values and closed objects
+keep valid content and decline invalid content before rendering. Nested
+property examples make Fern's fallback the same valid value, so the complete
+certified tree matches without an example-value allowance. Removing either
+additional-property validation guard makes the CLI regression fail.
+
+The nullable controls both render the same worked argument, `lookback=20`.
+Their model annotations differ as the schemas require. Nullable validation
+cannot keep a null-containing literal: `ir::plain_example_literal` discards
+null and propagates that result through enclosing arrays and objects.
+The loader test establishes the different validation verdicts; the CLI test
+establishes the unchanged fallback arguments. These controls settle no
+coverage row and are not witnesses.
+
+Its complete [default tree](harbor-map-validation/fern-expected/) and
+[literal tree](harbor-map-validation-literals/fern-expected/) were generated
+serially under the shared generation lock by Fern CLI 5.163.1 and
+`fernapi/fern-python-sdk` 5.41.3. Both are gated in their registered mode.

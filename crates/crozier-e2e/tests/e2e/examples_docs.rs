@@ -34,6 +34,16 @@ const CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "harbor-map-validation",
+        "docs/fern-measurements/examples-docs/harbor-map-validation/openapi.yml",
+        &[],
+    ),
+    (
+        "harbor-map-validation-literals",
+        "docs/fern-measurements/examples-docs/harbor-map-validation/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "marina-component-examples",
         "docs/fern-measurements/examples-docs/marina-component-examples/openapi.yml",
         &[],

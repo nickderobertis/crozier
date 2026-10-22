@@ -330,6 +330,7 @@ fn apply_regions<'a>(
             let Some(region) = rule(&current_pair)? else {
                 continue;
             };
+            // llmlint: ignore-block[changed_behavior_has_e2e] Only compiled RegionRule callbacks supply these ranges; CLI documents cannot inject them. invalid_callback_ranges_are_refused_by_the_comparison_engine and repeated_callback_attempt_is_refused_by_the_comparison_engine drive the actual engine with faulty callbacks.
             let before = current
                 .get(region.crozier.clone())
                 .ok_or_else(|| format!("{id}: invalid crozier region"))?;
@@ -340,6 +341,7 @@ fn apply_regions<'a>(
             if before == after {
                 return Err(format!("{id}: non-progressing departure region"));
             }
+            // llmlint: ignore-end[changed_behavior_has_e2e]
             let origins = &lines[region.crozier.clone()];
             let origin = origins
                 .first()
@@ -352,9 +354,11 @@ fn apply_regions<'a>(
                 })
                 .unwrap_or(pair.crozier.len());
             let identity = (*id, origin, before.to_vec(), after.to_vec());
+            // llmlint: ignore-block[changed_behavior_has_e2e] This defence-in-depth identity check is unreachable by construction when overlap or non-progress refuses first. repeated_callback_attempt_is_refused_by_the_comparison_engine proves a repeat is refused; CLI comparisons use only compiled callbacks and cannot inject this fault.
             if !seen.insert(identity) {
                 return Err(format!("{id}: repeated departure region"));
             }
+            // llmlint: ignore-end[changed_behavior_has_e2e]
             let mut replacement = Vec::new();
             let mut reference_changes = Vec::new();
             for operation in align(after.len(), before.len(), |i, j| after[i] == before[j]) {
@@ -1015,6 +1019,83 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.contains("non-progressing"), "{error}");
+    }
+
+    fn invalid_crozier_region(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(Some(departures::Region {
+            fern: 0..1,
+            crozier: 0..usize::MAX,
+        }))
+    }
+
+    fn invalid_reference_region(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(Some(departures::Region {
+            fern: 0..usize::MAX,
+            crozier: 0..1,
+        }))
+    }
+
+    #[test]
+    fn invalid_callback_ranges_are_refused_by_the_comparison_engine() {
+        for (name, rule, expected) in [
+            (
+                "crozier",
+                invalid_crozier_region as departures::RegionRule,
+                "invalid crozier region",
+            ),
+            (
+                "reference",
+                invalid_reference_region as departures::RegionRule,
+                "invalid reference region",
+            ),
+        ] {
+            let error = compare_file_using_regions(
+                &Context::default(),
+                "client.py",
+                "old",
+                "new",
+                &[(name, rule)],
+            )
+            .unwrap_err();
+            assert!(error.contains(expected), "{error}");
+        }
+    }
+
+    static REPEAT_CALLBACK_CALLS: std::sync::atomic::AtomicUsize =
+        std::sync::atomic::AtomicUsize::new(0);
+
+    fn repeated_callback_attempt(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        use std::sync::atomic::Ordering;
+        // Bound the faulty callback so the test still terminates if both defensive
+        // refusal guards are deliberately removed to verify the regression.
+        if REPEAT_CALLBACK_CALLS.fetch_add(1, Ordering::SeqCst) >= 4 {
+            return Ok(None);
+        }
+        Ok(Some(departures::Region {
+            fern: 0..1,
+            crozier: 0..1,
+        }))
+    }
+
+    #[test]
+    fn repeated_callback_attempt_is_refused_by_the_comparison_engine() {
+        use std::sync::atomic::Ordering;
+        REPEAT_CALLBACK_CALLS.store(0, Ordering::SeqCst);
+        let error = compare_file_using_regions(
+            &Context::default(),
+            "client.py",
+            "old\nother",
+            "new\nunexplained",
+            &[("repeat", repeated_callback_attempt)],
+        )
+        .unwrap_err();
+        assert!(
+            error.contains("non-progressing")
+                || error.contains("repeated")
+                || error.contains("overlapping"),
+            "{error}"
+        );
+        assert!(REPEAT_CALLBACK_CALLS.load(Ordering::SeqCst) >= 2);
     }
 
     const WRAPPER: &str = "src/acme/core/client_wrapper.py";

@@ -1,0 +1,495 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Harbor map validation",
+    "version": "1"
+  },
+  "paths": {
+    "/map_accepted": {
+      "post": {
+        "operationId": "record_map_accepted",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapAcceptedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    },
+    "/map_rejected": {
+      "post": {
+        "operationId": "record_map_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapRejectedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    },
+    "/closed_accepted": {
+      "post": {
+        "operationId": "record_closed_accepted",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClosedAcceptedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    },
+    "/closed_rejected": {
+      "post": {
+        "operationId": "record_closed_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClosedRejectedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    },
+    "/null_allowed": {
+      "post": {
+        "operationId": "record_null_allowed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NullAllowedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    },
+    "/null_disallowed": {
+      "post": {
+        "operationId": "record_null_disallowed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NullDisallowedEnvelope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The window was recorded."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MapAcceptedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "example": {
+                      "days": 20
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": {
+              "days": 20
+            }
+          }
+        }
+      },
+      "MapAcceptedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/MapAcceptedChoice"
+          }
+        }
+      },
+      "MapAcceptedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/MapAcceptedPlan"
+          }
+        }
+      },
+      "MapRejectedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "example": {
+                      "days": 20
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": {
+              "days": "invalid"
+            }
+          }
+        }
+      },
+      "MapRejectedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/MapRejectedChoice"
+          }
+        }
+      },
+      "MapRejectedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/MapRejectedPlan"
+          }
+        }
+      },
+      "ClosedAcceptedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "object",
+                    "properties": {
+                      "days": {
+                        "type": "integer",
+                        "example": 20
+                      }
+                    },
+                    "required": [
+                      "days"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": {
+              "days": 20
+            }
+          }
+        }
+      },
+      "ClosedAcceptedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/ClosedAcceptedChoice"
+          }
+        }
+      },
+      "ClosedAcceptedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/ClosedAcceptedPlan"
+          }
+        }
+      },
+      "ClosedRejectedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "object",
+                    "properties": {
+                      "days": {
+                        "type": "integer",
+                        "example": 20
+                      }
+                    },
+                    "required": [
+                      "days"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": {
+              "days": 30,
+              "extra": 21
+            }
+          }
+        }
+      },
+      "ClosedRejectedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/ClosedRejectedChoice"
+          }
+        }
+      },
+      "ClosedRejectedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/ClosedRejectedPlan"
+          }
+        }
+      },
+      "NullAllowedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "integer",
+                    "nullable": true,
+                    "example": 20
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": null
+          }
+        }
+      },
+      "NullAllowedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/NullAllowedChoice"
+          }
+        }
+      },
+      "NullAllowedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/NullAllowedPlan"
+          }
+        }
+      },
+      "NullDisallowedChoice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Window"
+            ],
+            "properties": {
+              "Window": {
+                "type": "object",
+                "required": [
+                  "lookback"
+                ],
+                "properties": {
+                  "lookback": {
+                    "type": "integer",
+                    "example": 20
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "example": {
+          "Window": {
+            "lookback": null
+          }
+        }
+      },
+      "NullDisallowedPlan": {
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/NullDisallowedChoice"
+          }
+        }
+      },
+      "NullDisallowedEnvelope": {
+        "type": "object",
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/NullDisallowedPlan"
+          }
+        }
+      }
+    }
+  }
+}

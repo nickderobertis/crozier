@@ -372,7 +372,16 @@ mod tests {
     use super::*;
 
     fn source(extra: Value, example: Value) -> OpenApi {
-        let mut document = serde_json::json!({
+        let mut field = serde_json::json!({"type":"integer"});
+        field
+            .as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        source_with_field(field, example)
+    }
+
+    fn source_with_field(field: Value, example: Value) -> OpenApi {
+        let document = serde_json::json!({
             "openapi":"3.1.0", "info":{"title":"Harbor windows","version":"1"},
             "paths":{"/windows":{"post":{"operationId":"schedule", "requestBody":{
                 "content":{"application/json":{"schema":{"$ref":"#/components/schemas/Plan"}}}},
@@ -383,15 +392,9 @@ mod tests {
                 "Choice":{"oneOf":[{"type":"string","enum":["North"]},
                     {"type":"object","required":["Window"],"properties":{
                         "Window":{"type":"object","required":["lookback"],"properties":{
-                            "lookback":{"type":"integer"}}}}}],"example":example}
+                            "lookback":field}}}}],"example":example}
             }}
         });
-        let field = &mut document["components"]["schemas"]["Choice"]["oneOf"][1]["properties"]
-            ["Window"]["properties"]["lookback"];
-        field
-            .as_object_mut()
-            .unwrap()
-            .extend(extra.as_object().unwrap().clone());
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("openapi.json");
         std::fs::write(&path, document.to_string()).unwrap();
@@ -477,6 +480,34 @@ mod tests {
             ),
             Some(true)
         );
+        assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
+    }
+
+    #[test]
+    fn nullable_values_validate_but_cannot_be_rendered_as_declared_literals() {
+        let example = serde_json::json!({"Window":{"lookback":null}});
+        for (field, accepted) in [
+            (serde_json::json!({"type":"integer","nullable":true}), true),
+            (serde_json::json!({"type":"integer"}), false),
+        ] {
+            let doc = source_with_field(field, example.clone());
+            assert_eq!(
+                matches(
+                    &doc.components.schemas,
+                    &doc.components.schemas["Choice"],
+                    &example,
+                    0
+                ),
+                Some(accepted)
+            );
+            assert!(crate::ir::example_literal(&example).is_none());
+            assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
+        }
+    }
+
+    #[test]
+    fn boolean_property_schema_does_not_justify_a_declared_value_departure() {
+        let doc = source_with_field(serde_json::json!(false), serde_json::json!({"Window":{}}));
         assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
     }
 
