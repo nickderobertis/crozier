@@ -2694,6 +2694,106 @@ fn handwritten_fixtures_match_fern_goldens() {
 }
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+/// Each paired control removes only the scoped example or enum alternative.
+/// Both independent generators must change the same complete-file population.
+#[test]
+fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
+    let cases = [
+        (
+            "lunar-null-labels",
+            "docs/openapi-surface/handwritten/lunar-null-labels/openapi.yml",
+            "docs/openapi-surface/handwritten/lunar-null-labels/fern-expected",
+            "remaining-examples/lunar-null-labels-control",
+            "/paths/~1labels/post/requestBody/content/application~1json/schema/properties/labels",
+            "example",
+        ),
+        (
+            "enum-media-selection",
+            "docs/openapi-surface/handwritten/enum-media-selection/openapi.yml",
+            "docs/openapi-surface/handwritten/enum-media-selection/fern-expected",
+            "remaining-examples/enum-media-selection-control",
+            "/paths/~1probe/post/requestBody/content/application~1json",
+            "example",
+        ),
+        (
+            "formbricks",
+            "tests/fixtures/corpus-sources/formbricks/openapi.yml",
+            "tests/fixtures/formbricks/expected",
+            "remaining-examples/formbricks-no-map-example",
+            "/paths/~1management~1responses/post/requestBody/content/application~1json/schema/properties/data",
+            "example",
+        ),
+    ];
+    let files = |tree: &Path| {
+        walk_files(tree)
+            .into_iter()
+            .map(|name| {
+                let bytes = std::fs::read(tree.join(&name)).unwrap();
+                (name, bytes)
+            })
+            .collect::<std::collections::BTreeMap<_, _>>()
+    };
+    let changed = |before: &std::collections::BTreeMap<String, Vec<u8>>,
+                   after: &std::collections::BTreeMap<String, Vec<u8>>| {
+        before
+            .keys()
+            .chain(after.keys())
+            .filter(|name| before.get(*name) != after.get(*name))
+            .cloned()
+            .collect::<std::collections::BTreeSet<_>>()
+    };
+    for (name, source, golden, control, pointer, field) in cases {
+        let source = repo_root().join(source);
+        let control = repo_root().join("docs/fern-measurements").join(control);
+        let control_source = control.join("openapi.yml");
+        let parse = |path: &Path| {
+            crate::yaml::from_str::<serde_json::Value>(&std::fs::read_to_string(path).unwrap())
+                .unwrap()
+        };
+        let mut without_feature = parse(&source);
+        assert!(without_feature
+            .pointer_mut(pointer)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .remove(field)
+            .is_some(), "{name}: the original must declare the feature");
+        assert_eq!(without_feature, parse(&control_source), "{name}: control changes another field");
+        let fern_motion = changed(
+            &files(&repo_root().join(golden)),
+            &files(&control.join("fern-expected")),
+        );
+        assert!(!fern_motion.is_empty(), "{name}: Fern's complete tree did not move");
+        for strict in [false, true] {
+            let scratch = tempfile::tempdir().unwrap();
+            let missing = scratch.path().join("openapi.yml");
+            let recovered = scratch.path().join("recovered");
+            probe_command(&missing, &recovered)
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains("could not read spec"));
+            assert!(!recovered.exists(), "a missing source writes no SDK");
+            std::fs::copy(&source, &missing).unwrap();
+            let mut generated = Vec::new();
+            for document in [&missing, &control_source] {
+                let output = tempfile::tempdir().unwrap();
+                let mut command = probe_command(document, output.path());
+                command.env("CROZIER_FERN_STRICT", "false");
+                if strict {
+                    command.arg("--fern-strict");
+                }
+                command.assert().success();
+                generated.push(files(output.path()));
+            }
+            assert_eq!(
+                fern_motion,
+                changed(&generated[0], &generated[1]),
+                "{name}: strict={strict}: crozier and Fern must both react to this feature"
+            );
+        }
+    }
+}
+
 #[test]
 fn residual_null_example_is_absent_from_matching_request_snippets() {
     let (_, failures) = handwritten_documents(repo_root());
@@ -12357,6 +12457,18 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3001: the publisher's response API has typed map examples.
+const FORMBRICKS: Corpus = Corpus {
+    api: "formbricks",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// Corpus row 3000: the publisher's API declares digit-leading method IDs.
 const ONMYSHELF_API: Corpus = Corpus {
     api: "onmyshelf-api",
@@ -13211,6 +13323,11 @@ fn rta_in_japan_twitter_matches_fern_output() {
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+#[test]
+fn formbricks_matches_fern_output() {
+    assert_committed_corpus_matches(&FORMBRICKS);
+}
+
 #[test]
 fn onmyshelf_api_matches_fern_output() {
     assert_committed_corpus_matches(&ONMYSHELF_API);

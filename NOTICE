@@ -625,3 +625,9 @@ The object-query refusal document is from camptocamp/oapi-poc, openapi.yaml,
 revision 9365e94497f2c3a4798259249c2cfef6673197b9.
 Copyright 2022 swisstopo. Its redistribution terms are retained in
 licenses/camptocamp-oapi-poc.txt.
+
+Formbricks API specification and generated SDK golden:
+    https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/docs/api-v2-reference/openapi.yml
+    Copyright (c) 2024 Formbricks GmbH. The docs/ source falls under the
+    repository AGPLv3 grant, retained in licenses/formbricks-AGPL-3.0.txt.
+    Corpus row 3001 retains the unmodified source alongside the generated SDK.

@@ -92,6 +92,17 @@ def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach: {message}")
 
 
+def _output_insensitive_module():
+    spec = importlib.util.spec_from_file_location(
+        "output_insensitive", REPO / "tools/surface-census/output-insensitive.py"
+    )
+    if spec is None or spec.loader is None:
+        fail("cannot load output-insensitive.py; restore it from git")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _region_keys_module():
     spec = importlib.util.spec_from_file_location(
         "golden_reach_region_keys", REPO / "tools" / "surface-census" / "witness-search-region-keys.py"
@@ -1205,9 +1216,14 @@ def render_arm_headline(text: str, ledger: list[tuple[int, Reach]], regions: Pat
             fail("classes.tsv repeats a class; repair the registry before arms --headline")
     except OSError as error:
         fail(f"cannot read headline evidence: {error}; restore it before arms --headline")
+    decided, disposition_failures = _output_insensitive_module().read_records(regions.parent.parent)
+    if disposition_failures:
+        fail("; ".join(disposition_failures))
+    insensitive = decided & unreached
     refused = headline_arm_keys(refused_text, "## Arms only a refused document reaches", 6) & unreached
     named = headline_arm_keys(text, "#### Unproven arms, named", 3) & unreached
-    if set(covers) & refused or set(covers) & named or refused & named or set(covers) | refused | named != unreached:
+    populations = [set(covers), refused, named, insensitive]
+    if sum(map(len, populations)) != len(set().union(*populations)) or set().union(*populations) != unreached:
         fail("the headline arm populations overlap or leave an arm unaccounted for; repair their evidence first")
     sites = sum(len(reach.sites) for _rank, reach in ledger)
     reached = sites - len(unreached)
@@ -1230,11 +1246,13 @@ def render_arm_headline(text: str, ledger: list[tuple[int, Reach]], regions: Pat
         "  successful complete tree to byte-match. Their refused documents and controls\n"
         "  are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).\n"
         f"  The keys are {refused_keys}.\n"
+        f"- **{len(insensitive)} are decided output-insensitive**, with identical complete\n"
+        "  before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).\n"
         f"- **{len(named)} {'is a named gap' if len(named) == 1 else 'are named gaps'}**, "
         "whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).\n\n"
-        f"{reached} + {len(covers)} + {len(refused)} + {len(named)} = {sites}."
+        f"{reached} + {len(covers)} + {len(refused)} + {len(insensitive)} + {len(named)} = {sites}."
     )
-    pattern = r"`golden` is still not `golden`-exhausted.*?^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\."
+    pattern = r"`golden` is still not `golden`-exhausted.*?^\d+(?: \+ \d+){3,4} = \d+\."
     text, count = re.subn(pattern, lambda _match: body, text, count=1, flags=re.M | re.S)
     if count != 1:
         fail(f"{path}: missing current arm headline; restore it before arms --headline")

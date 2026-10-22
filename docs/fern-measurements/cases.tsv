@@ -142,6 +142,7 @@ parameter-lowering/base-path-lifted-required	docs/fern-measurements/parameter-lo
 parameter-lowering/base-path-lifted-unincluded	docs/fern-measurements/parameter-lowering/base-path-lifted-unincluded/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-object-literal	docs/fern-measurements/parameter-lowering/base-path-object-literal/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-string	docs/fern-measurements/parameter-lowering/base-path-string/openapi.yml	python-enums	packaged	-
+parameter-lowering/base-path-templated-string	docs/fern-measurements/parameter-lowering/base-path-templated-string/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-default-constants	docs/fern-measurements/parameter-lowering/header-default-constants/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-default-literal	docs/fern-measurements/parameter-lowering/header-default-literal/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-defaults-managed	docs/fern-measurements/parameter-lowering/header-defaults-managed/openapi.yml	python-enums	packaged	-
@@ -153,12 +154,9 @@ parameter-lowering/query-union-enum-member	docs/fern-measurements/parameter-lowe
 parameter-lowering/query-union-placement	docs/fern-measurements/parameter-lowering/query-union-placement/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-union-temporal-member	docs/fern-measurements/parameter-lowering/query-union-temporal-member/openapi.yml	python-enums	packaged	-
 parameter-lowering/single-operation-headers	docs/fern-measurements/parameter-lowering/single-operation-headers/openapi.yml	python-enums	packaged	-
-parameter-lowering/base-path-templated-string	docs/fern-measurements/parameter-lowering/base-path-templated-string/openapi.yml	python-enums	packaged	-
-schema-shapes/kiln-annotated-body	docs/fern-measurements/schema-shapes/kiln-annotated-body/openapi.yml	python-enums	packaged	-
-schema-shapes/kiln-nullable-member	docs/fern-measurements/schema-shapes/kiln-nullable-member/openapi.yml	python-enums	packaged	-
-schema-shapes/kiln-problem-response	docs/fern-measurements/schema-shapes/kiln-problem-response/openapi.yml	python-enums	packaged	-
-schema-shapes/kiln-problem-response-literals	docs/fern-measurements/schema-shapes/kiln-problem-response/openapi.yml	literals	packaged	-
-schema-shapes/query-union-array-enum-member	docs/fern-measurements/schema-shapes/query-union-array-enum-member/openapi.yml	python-enums	packaged	-
+remaining-examples/enum-media-selection-control	docs/fern-measurements/remaining-examples/enum-media-selection-control/openapi.yml	python-enums	packaged	-
+remaining-examples/formbricks-no-map-example	docs/fern-measurements/remaining-examples/formbricks-no-map-example/openapi.yml	python-enums	packaged	-
+remaining-examples/lunar-null-labels-control	docs/fern-measurements/remaining-examples/lunar-null-labels-control/openapi.yml	python-enums	packaged	-
 schema-shapes-literals/kiln-annotated-body	docs/fern-measurements/schema-shapes/kiln-annotated-body/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-array-mode	docs/openapi-surface/handwritten/kiln-array-mode/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-array-variants	docs/openapi-surface/handwritten/kiln-array-variants/openapi.yml	literals	packaged	-
@@ -166,6 +164,11 @@ schema-shapes-literals/kiln-form-mode	docs/openapi-surface/handwritten/kiln-form
 schema-shapes-literals/kiln-nested-reason	docs/openapi-surface/handwritten/kiln-nested-reason/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-nullable-member	docs/fern-measurements/schema-shapes/kiln-nullable-member/openapi.yml	literals	packaged	-
 schema-shapes-literals/kiln-variant-trigger	docs/openapi-surface/handwritten/kiln-variant-trigger/openapi.yml	literals	packaged	-
+schema-shapes/kiln-annotated-body	docs/fern-measurements/schema-shapes/kiln-annotated-body/openapi.yml	python-enums	packaged	-
+schema-shapes/kiln-nullable-member	docs/fern-measurements/schema-shapes/kiln-nullable-member/openapi.yml	python-enums	packaged	-
+schema-shapes/kiln-problem-response	docs/fern-measurements/schema-shapes/kiln-problem-response/openapi.yml	python-enums	packaged	-
+schema-shapes/kiln-problem-response-literals	docs/fern-measurements/schema-shapes/kiln-problem-response/openapi.yml	literals	packaged	-
+schema-shapes/query-union-array-enum-member	docs/fern-measurements/schema-shapes/query-union-array-enum-member/openapi.yml	python-enums	packaged	-
 union-literals/atlas-untagged-inline-discriminator	docs/openapi-surface/handwritten/atlas-untagged-inline-discriminator/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/atlas-untagged-inline-discriminator/fern-expected
 union-literals/bakery-get-body-member	docs/openapi-surface/handwritten/bakery-get-body-member/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/bakery-get-body-member/fern-expected
 union-literals/ferry-mapping-outside-schemas	docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected

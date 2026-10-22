@@ -1124,7 +1124,7 @@ def finished_state_failures(root: Path) -> list[str]:
     unlisted.
     """
     surface = root / "docs" / "openapi-surface"
-    failures = []
+    decided, failures = load_script("tools/surface-census/output-insensitive.py").read_records(root)
     ledger = load_script("tools/surface-census/golden-reach.py").read_ledger(surface / "golden-reach.tsv")
     witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
     covers = handwritten_covers(surface / "handwritten")
@@ -1137,11 +1137,13 @@ def finished_state_failures(root: Path) -> list[str]:
             key = cells[0].strip("`")
             if key.startswith(COMBINATION_PREFIX):
                 # A combination is named in its own table, apart from the features.
-                if cells[3].strip("`") == "gap":
+                if cells[3].strip("`") == "gap" and (key, "-") not in decided:
                     gap_combinations[key] = path.stem
                 continue
             settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
             if cells[3].strip("`") != "gap" or settlement != "FIXTURE":
+                continue
+            if (key, "-") in decided:
                 continue
             if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
                 open_features.add(key)
@@ -1201,7 +1203,7 @@ def finished_state_failures(root: Path) -> list[str]:
         for arm, hit, _total in reach.sites:
             if not hit:
                 unreached.add((reach.key, arm))
-            if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused:
+            if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused or (reach.key, arm) in decided:
                 continue
             if (reach.key, arm) in named:
                 reason = named[(reach.key, arm)]
@@ -1242,7 +1244,7 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"cover nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
                 f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"
             )
-    for key, arm in sorted(set(named) - unreached):
+    for key, arm in sorted((set(named) - unreached) | (set(named) & decided)):
         failures.append(
             f"{key}: docs/openapi-surface-coverage.md names `{arm}` an unproven gap, which the "
             "reach ledger records reached or does not list; remove the row"
@@ -11912,6 +11914,13 @@ class FinishedStateGateTests(unittest.TestCase):
         surface = Path("docs") / "openapi-surface"
         copies = [*(path.relative_to(REPO) for path in (REPO / surface).glob("*.md"))]
         copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
+        dispositions = REPO / surface / "output-insensitive.tsv"
+        if dispositions.exists():
+            copies += [surface / "output-insensitive.tsv", Path("assets/scaffolding/metadata.json")]
+            with dispositions.open(encoding="utf-8", newline="") as handle:
+                for row in csv.DictReader(handle, delimiter="\t"):
+                    copies += [Path(row[field]) for field in ("search_record", "fern_comparison", "crozier_comparison")]
+
         copies += [path.relative_to(REPO) for path in (REPO / "docs/fern-refusals").glob("*.tsv")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/reductions").glob("*.log")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/limitations").glob("*.json")]
@@ -11938,6 +11947,39 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
+
+    def test_output_insensitive_feature_is_decided_but_changed_comparison_is_rejected(self) -> None:
+        surface = self.root / "docs/openapi-surface"
+        pin = self.root / "assets/scaffolding/metadata.json"
+        pin.parent.mkdir(parents=True, exist_ok=True)
+        pin.write_text(json.dumps(CERTIFIED))
+        with (surface / "schemas.md").open("a") as handle:
+            handle.write("\n| sample-decided | both | schema.example | gap | none | none | sample | FIXTURE |\n")
+        (surface / "sample-decided.md").write_text("Measured sample-decided before and after.")
+        table = surface / "output-insensitive.tsv"
+        if not table.exists():
+            table.write_text("key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n")
+        with table.open("a") as handle:
+            handle.write(
+                "sample-decided\t-\tdocs/openapi-surface/sample-decided.md\t"
+                "docs/openapi-surface/sample-fern.json\tdocs/openapi-surface/sample-crozier.json\n"
+            )
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"sdk.py": "a" * 64},
+                "after": {"sdk.py": "a" * 64},
+            }
+            (surface / f"sample-{generator}.json").write_text(json.dumps(record))
+        self.assertEqual([], finished_state_failures(self.root))
+        path = surface / "sample-crozier.json"
+        record = json.loads(path.read_text())
+        record["after"]["sdk.py"] = "b" * 64
+        path.write_text(json.dumps(record))
+        self.assertTrue(any("generated files differ" in failure for failure in finished_state_failures(self.root)))
 
     def add_bounded_feature_search(self) -> BoundedFeatureSearch:
         """Add a pending search without depending on a production gap remaining open."""
@@ -19155,3 +19197,80 @@ class MalformedRequiredMemberTests(unittest.TestCase):
             {"malformed-component": 1, "malformed-body": 1, "valid-control": 1},
             {row["fixture"]: row["count"] for row in payload["rows"]},
         )
+
+
+class OutputInsensitiveTests(unittest.TestCase):
+    """Drive the disposition reader over complete comparison records on disk."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.surface = self.root / "docs/openapi-surface"
+        self.surface.mkdir(parents=True)
+        (self.root / "assets/scaffolding").mkdir(parents=True)
+        (self.root / "assets/scaffolding/metadata.json").write_text(json.dumps(CERTIFIED))
+        (self.surface / "search.md").write_text("Measured `sample-key` in its request context.\n")
+        self.registry = self.surface / "output-insensitive.tsv"
+        self.registry.write_text(
+            "key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n"
+            "sample-key\t-\tdocs/openapi-surface/search.md\t"
+            "docs/openapi-surface/fern.json\tdocs/openapi-surface/crozier.json\n"
+        )
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"sdk.py": "a" * 64},
+                "after": {"sdk.py": "a" * 64},
+            }
+            (self.surface / f"{generator}.json").write_text(json.dumps(record))
+
+    def run_reader(self):
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/output-insensitive.py"), "--root", str(self.root)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_unchanged_complete_comparisons_are_decided(self):
+        result = self.run_reader()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual("", result.stdout)
+
+    def test_missing_comparison_is_rejected(self):
+        (self.surface / "fern.json").unlink()
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("fern.json", result.stderr)
+
+    def test_generated_file_motion_is_rejected(self):
+        for generator in ("fern", "crozier"):
+            with self.subTest(generator=generator):
+                path = self.surface / f"{generator}.json"
+                original = path.read_text()
+                record = json.loads(original)
+                record["after"]["sdk.py"] = "b" * 64
+                path.write_text(json.dumps(record))
+                result = self.run_reader()
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("generated files differ", result.stderr)
+                path.write_text(original)
+
+    def test_reach_ledger_without_sites_uses_the_canonical_sentinel(self):
+        reader = load_script("tools/surface-census/golden-reach.py")
+        reach = reader.Reach("sample-key", "schemas", (), (), ())
+        (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"))
+        result = self.run_reader()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_key_claimed_proven_is_rejected(self):
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)

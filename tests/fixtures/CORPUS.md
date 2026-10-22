@@ -1884,3 +1884,5 @@ bytes are retained in `licenses/onmyshelf-MIT.txt`.
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3000 | `onmyshelf-api` | github-raw | https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json | `e56b713d272d627a18ba14d3eea992231c550146` | MIT (publisher repository LICENSE.md) | committed | Digit-leading operationId method identifiers and hoisted response classes |
+
+| 3001 | `formbricks` | github-raw | https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/docs/api-v2-reference/openapi.yml | `bfe7933cb2882c99f2196aa6a46edd104cd7fbb8` | AGPL-3.0 (publisher repository LICENSE, docs/ scope) | committed | Typed map examples and inferred nested response conditions |

@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Lunar Label Commands
+  version: 1.0.0
+paths:
+  /labels:
+    post:
+      operationId: setLabels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - labels
+              properties:
+                labels:
+                  type: array
+                  items:
+                    type: string
+                    nullable: true
+                  example:
+                  - null
+                  - moon
+      responses:
+        '204':
+          description: Labels stored
