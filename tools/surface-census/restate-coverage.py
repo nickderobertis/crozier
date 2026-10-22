@@ -77,9 +77,9 @@ ARTIFACTS = ("types/", "client.py", "raw_client.py", "errors/", "reference.md", 
 SOURCE = r"src/(?:[a-z_]+/)*[a-z_]+\.rs"
 
 
-def reader() -> ModuleType:
+def reader(filename: str = "witness-search-region-keys.py") -> ModuleType:
     """Use the region parser shared by the census and its gate."""
-    path = Path(__file__).with_name("witness-search-region-keys.py")
+    path = Path(__file__).with_name(filename)
     spec = importlib.util.spec_from_file_location("coverage_region_reader", path)
     if spec is None or spec.loader is None:
         raise ValueError(f"cannot load {path}")
@@ -118,6 +118,19 @@ def source_counts(root: Path) -> tuple[int, int, int]:
     return len(acquired), len(sources), golden
 
 
+def validate_reach_population(keys: set[str], features: set[str], combinations: set[str]) -> None:
+    """Require each measured population in full, without counting combinations as features."""
+    for label, expected, actual in (
+        ("feature", features, {key for key in keys if not key.startswith("combo-")}),
+        ("combination", combinations, {key for key in keys if key.startswith("combo-")}),
+    ):
+        if actual != expected:
+            raise ValueError(
+                f"golden-reach.tsv: {label} keys must equal the golden category population; "
+                f"missing {sorted(expected - actual)}, extra {sorted(actual - expected)}"
+            )
+
+
 def restate(root: Path) -> str:
     """Derive tables from category rows and the committed blind-spot measurement."""
     index = root / "docs/openapi-surface-coverage.md"
@@ -131,7 +144,9 @@ def restate(root: Path) -> str:
         f"the {acquired - registered}\n  others carry none and are acquisition evidence only.",
     )
     parser = reader()
+    reach_reader = reader("golden-reach.py")
     entries: dict[str, CategoryRow] = {}
+    golden_combinations: set[str] = set()
     counts: dict[str, Totals] = {}
     gaps: dict[str, list[str]] = {name: [] for name in SETTLEMENTS}
     for name in parser.region_files(index):
@@ -145,6 +160,16 @@ def restate(root: Path) -> str:
         rows = parser.region_rows(region_text)
         if len(candidates) != len(rows):
             raise ValueError(f"{name}: malformed category row")
+        for row in rows:
+            if (
+                row[0].strip("`").startswith(parser.COMBINATION_PREFIX)
+                and row[3].strip("`") == "golden"
+                and not reach_reader.pending_combination(row)
+            ):
+                key = row[0].strip("`")
+                if key in golden_combinations:
+                    raise ValueError(f"duplicate category row: {key}")
+                golden_combinations.add(key)
         rows = [row for row in rows if not row[0].strip("`").startswith(parser.COMBINATION_PREFIX)]
         categories = Counter(row[3].strip("`") for row in rows)
         settlements: Counter[str] = Counter()
@@ -299,8 +324,8 @@ def restate(root: Path) -> str:
                 raise ValueError(f"golden-reach.tsv: invalid unreached_sites for {row['key']}")
             ledger[row["key"]] = Reach("" if row["witnesses"] == "-" else row["witnesses"], int(row["unreached_sites"]))
     golden_keys = {key for key, entry in entries.items() if entry.category == "golden"}
-    if set(ledger) != golden_keys:
-        raise ValueError("golden-reach.tsv: keys must equal the golden category population")
+    validate_reach_population(set(ledger), golden_keys, golden_combinations)
+    ledger = {key: reach for key, reach in ledger.items() if key in golden_keys}
     one = [
         f"| `{key}` | `{entries[key].region}` | `{reach.witnesses}` |"
         for key, reach in ledger.items()

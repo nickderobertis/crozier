@@ -9429,6 +9429,9 @@ const CORPORA: &[&Corpus] = &[
     &SUPABASE_API_V1,
     &RTA_IN_JAPAN_TWITTER,
     &ONMYSHELF_API,
+    &DASHY_ROUTE_API,
+    &AHASEND_API,
+    &FARMVIBES_AI,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11779,6 +11782,39 @@ const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
 };
 
 /// HSE REST API — corpus row 173, the publisher's own description.
+const FARMVIBES_AI: Corpus = Corpus {
+    api: "farmvibes-ai",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+const AHASEND_API: Corpus = Corpus {
+    api: "ahasend-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+const DASHY_ROUTE_API: Corpus = Corpus {
+    api: "dashy-route-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const HSE: Corpus = Corpus {
     api: "hse",
     package_name: "fern",
@@ -19564,6 +19600,27 @@ fn ramu_shogi_matches_fern_output() {
 fn langchain_agent_protocol_matches_fern_output() {
     assert_committed_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn dashy_route_api_matches_fern_output() {
+    assert_committed_corpus_matches(&DASHY_ROUTE_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn farmvibes_ai_matches_fern_output() {
+    assert_committed_corpus_matches(&FARMVIBES_AI);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ahasend_api_matches_fern_output() {
+    assert_committed_corpus_matches(&AHASEND_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn hse_matches_fern_output() {

@@ -1884,3 +1884,16 @@ bytes are retained in `licenses/onmyshelf-MIT.txt`.
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3000 | `onmyshelf-api` | github-raw | https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json | `e56b713d272d627a18ba14d3eea992231c550146` | MIT (publisher repository LICENSE.md) | committed | Digit-leading operationId method identifiers and hoisted response classes |
+
+## Schema example combinations
+
+These specifications are published in their applications' own repositories.
+Their request examples exercise composed models and example precedence; the
+bounded search and attribution are recorded in
+[`witness-search-schema-combinations-examples`](../../docs/openapi-surface/witness-search-schema-combinations-examples/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3200 | `dashy-route-api` | github-raw | https://raw.githubusercontent.com/lissy93/dashy/6d7a394da71d083e719e32f3e365fa99fec320c2/services/endpoints/api/openapi.yml | `6d7a394da71d083e719e32f3e365fa99fec320c2` | MIT (document info.license) | committed | Request media examples on referenced composed schemas; items and sections clients |
+| 3201 | `farmvibes-ai` | github-raw | https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json | `d10670e18742d05aec50f73e4695d47978908994` | MIT (publisher LICENSE, retained in licenses/farmvibes-MIT.txt) | committed | Inline composed request body with a media example and nested free-form JSON |
+| 3202 | `ahasend-api` | github-raw | https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml | `831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4` | MIT (document info.license) | committed | Endpoint media examples supersede whole component examples without mixing their fields |

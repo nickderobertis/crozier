@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .update_api_key_request_ip_allow_list import UpdateApiKeyRequestIpAllowList
+from .update_api_key_request_label import UpdateApiKeyRequestLabel
+from .update_api_key_request_scopes import UpdateApiKeyRequestScopes
+
+UpdateApiKeyRequest = typing.Union[UpdateApiKeyRequestLabel, UpdateApiKeyRequestScopes, UpdateApiKeyRequestIpAllowList]

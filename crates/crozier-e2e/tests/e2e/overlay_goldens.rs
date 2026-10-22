@@ -102,6 +102,13 @@ const KINDS: &[Kind] = &[
             "supabase-api-v1",
             "rta-in-japan-twitter",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+            "dashy-route-api",
+            "ahasend-api",
+            "farmvibes-ai",
+            "hse",
+            "zulip",
+            "nimisampo",
+            "mockserver",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

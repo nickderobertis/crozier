@@ -2723,6 +2723,13 @@ tests/fixtures/agco-ats/expected	src/fern/core/client_wrapper.py	35	sdk-identity
 tests/fixtures/agco-ats/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/agco-ats/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/agco-ats/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected	src/fern/__init__.py	130	init-type-checking-import-order
+tests/fixtures/ahasend-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/ahasend-api/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/airbyte.local-config/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/airbyte.local-config/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/airbyte.local-config/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -3090,6 +3097,12 @@ tests/fixtures/daniweb-connect/expected	src/fern/core/client_wrapper.py	37	sdk-i
 tests/fixtures/daniweb-connect/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/daniweb-connect/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/daniweb-connect/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/dashy-route-api/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/__init__.py	155	init-type-checking-import-order
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -3276,6 +3289,13 @@ tests/fixtures/exa-gate/expected	src/fern/core/client_wrapper.py	39	sdk-identity
 tests/fixtures/exa-gate/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/exa-gate/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/exa-gate/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected	src/fern/__init__.py	21	init-type-checking-import-order
+tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/farmvibes-ai/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/fergus/expected	src/fern/__init__.py	323	init-type-checking-import-order
 tests/fixtures/fergus/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/fergus/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -3390,6 +3410,7 @@ tests/fixtures/hse/expected	src/fern/core/client_wrapper.py	35	sdk-identity-head
 tests/fixtures/hse/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/hse/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/hse/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/hse/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/http-toolkit/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/http-toolkit/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/http-toolkit/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -3679,6 +3700,7 @@ tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	35	sdk-identi
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/mockserver/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/mosip-esignet/expected	src/fern/__init__.py	265	init-type-checking-import-order
 tests/fixtures/mosip-esignet/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/mosip-esignet/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -3724,6 +3746,7 @@ tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	35	sdk-identit
 tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/nimisampo/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/npq-registration/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/npq-registration/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/npq-registration/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -4435,6 +4458,8 @@ tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	40	sdk-identity-he
 tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/zulip/expected	src/fern/users/client.py	1370	multipart-object-required-file-example
+tests/fixtures/zulip/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/zulip/expected-literals	src/fern/users/client.py	1368	multipart-object-required-file-example
 tests/fixtures/zylon-private-gpt/expected	reference.md	3	stream-reference-return-type
 tests/fixtures/zylon-private-gpt/expected	reference.md	275	stream-reference-return-type
 tests/fixtures/zylon-private-gpt/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix

@@ -625,3 +625,19 @@ The object-query refusal document is from camptocamp/oapi-poc, openapi.yaml,
 revision 9365e94497f2c3a4798259249c2cfef6673197b9.
 Copyright 2022 swisstopo. Its redistribution terms are retained in
 licenses/camptocamp-oapi-poc.txt.
+
+Dashy API specification and generated SDK golden:
+    https://raw.githubusercontent.com/lissy93/dashy/6d7a394da71d083e719e32f3e365fa99fec320c2/services/endpoints/api/openapi.yml
+    MIT, declared by the document's info.license; corpus row 3200 retains
+    the immutable revision. Source bytes and the complete generated tree are
+    vendored, with Python comments stripped as described above.
+
+farmvibes-ai API specification and generated SDK golden:
+    https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json
+    MIT (publisher LICENSE, retained in licenses/farmvibes-MIT.txt); corpus row 3201 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.
+
+ahasend-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml
+    MIT (document info.license); corpus row 3202 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.

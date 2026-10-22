@@ -4899,6 +4899,7 @@ fn render_discriminated_union(
         // FieldMetadata(alias="objectType"), pydantic.Field(alias="objectType")]`.
         let mut discriminant = render_field(
             &Field {
+                example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: union.discriminant_property.clone(),
                 py_name: discriminant_field_name(union),
                 type_ref: TypeRef::Literal(vec![member.discriminant.clone()]),
@@ -8899,29 +8900,31 @@ impl<'a> ExampleCtx<'a> {
                     });
                 }
             }
-            if let (true, TypeRef::Dict(_, inner)) = (self.reference, t) {
+            if let (true, TypeRef::Dict(_, inner)) = (self.documentation || self.reference, t) {
                 let serde_json::Value::Object(fields) = value else {
                     return None;
                 };
-                // `reference.md` writes a free-form value on one line and a
-                // typed one by its type: MockServer's HAR `log` is one line,
-                // while its WASM test's `Dict[str, List[str]]` headers wrap
-                // `["acme"]` as a list.
+                // Both Markdown writers keep each free-form map value on one
+                // line. Typed values still render through their declared type:
+                // a list of strings wraps, unlike an unknown JSON array.
                 let unknown = self.resolves_to_any(inner);
-                return Some(Example::ReferenceDict(
-                    fields
-                        .into_iter()
-                        .map(|(key, value)| {
-                            let rendered = if unknown {
-                                Example::Atom(example_from_json_as(value, false).flat())
-                            } else {
-                                self.value_from_example(inner, &value.to_string())
-                                    .unwrap_or_else(|| example_from_json_as(value, false))
-                            };
-                            (key, rendered)
-                        })
-                        .collect(),
-                ));
+                let pairs = fields
+                    .into_iter()
+                    .map(|(key, value)| {
+                        let rendered = if unknown {
+                            Example::Atom(example_from_json_as(value, false).flat())
+                        } else {
+                            self.value_from_example(inner, &value.to_string())
+                                .unwrap_or_else(|| example_from_json_as(value, false))
+                        };
+                        (key, rendered)
+                    })
+                    .collect();
+                return Some(if self.reference {
+                    Example::ReferenceDict(pairs)
+                } else {
+                    Example::DocDict(pairs)
+                });
             }
             return Some(example_from_json_as(value, !self.documentation));
         }
@@ -14376,6 +14379,7 @@ mod tests {
 
     fn model_field(name: &str, type_ref: TypeRef, required: bool) -> Field {
         Field {
+            example_source: crate::ir::FieldExampleSource::Property,
             wire_name: name.to_string(),
             py_name: name.to_string(),
             type_ref,
@@ -14794,6 +14798,45 @@ mod tests {
             example_from_json_as(quoted, false).flat(),
             r#"{"body": "{\"orders\":[]}", "note": "it's \"x\""}"#
         );
+    }
+
+    #[test]
+    fn readme_freeform_map_values_stay_flat_without_flattening_typed_lists() {
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        ctx.documentation = true;
+        let features = serde_json::json!([{"geometry": {"coordinates": [[
+            [-3.8, 50.2], [-3.7, 50.3], [-3.6, 50.4], [-3.5, 50.5], [-3.4, 50.6], [-3.8, 50.2]
+        ]]}}]);
+        let value = serde_json::json!({"type": "FeatureCollection", "features": features});
+        let map = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::Primitive(Prim::Any)),
+        );
+        let rendered = ctx
+            .value_from_example(&map, &value.to_string())
+            .unwrap()
+            .into_documentation_dicts()
+            .render(8);
+        assert!(
+            rendered.contains(&format!(
+                "\"features\": {}",
+                example_from_json_as(features, false).flat()
+            )),
+            "{rendered}"
+        );
+
+        let typed = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))),
+        );
+        let values = serde_json::json!({"markers": ["a deliberately long named marker along the ridge", "another deliberately long named marker by the river"]});
+        let rendered = ctx
+            .value_from_example(&typed, &values.to_string())
+            .unwrap()
+            .into_documentation_dicts()
+            .render(8);
+        assert!(rendered.contains("\"markers\": [\n"), "{rendered}");
     }
 
     #[test]

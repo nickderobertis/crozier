@@ -782,6 +782,12 @@
     "tests/fixtures/adyen-managed-risk-notification/expected": {},
     "tests/fixtures/adyen-report-notification/expected": {},
     "tests/fixtures/agco-ats/expected": {},
+    "tests/fixtures/ahasend-api/expected": {},
+    "tests/fixtures/ahasend-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/airbyte.local-config/expected": {},
     "tests/fixtures/alma-france/expected": {},
     "tests/fixtures/amazonaws.com-cloudformation/expected": {},
@@ -851,6 +857,12 @@
     "tests/fixtures/cyberark-conjur-api/expected": {},
     "tests/fixtures/cyclonedx-transparency-exchange/expected": {},
     "tests/fixtures/daniweb-connect/expected": {},
+    "tests/fixtures/dashy-route-api/expected": {},
+    "tests/fixtures/dashy-route-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/deepsearch-ds-v2/expected": {},
     "tests/fixtures/descope-authzcache/expected": {},
     "tests/fixtures/digit-leading-property/expected": {},
@@ -901,6 +913,12 @@
     "tests/fixtures/esp32-streamline-bridge/expected": {},
     "tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected": {},
     "tests/fixtures/exa-gate/expected": {},
+    "tests/fixtures/farmvibes-ai/expected": {},
+    "tests/fixtures/farmvibes-ai/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/fergus/expected": {},
     "tests/fixtures/fiware-context-generator/expected": {},
     "tests/fixtures/flask-example-heroku/expected": {},
@@ -938,6 +956,11 @@
     "tests/fixtures/helios-verifiable-api/expected": {},
     "tests/fixtures/helixdb-http-api/expected": {},
     "tests/fixtures/hse/expected": {},
+    "tests/fixtures/hse/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/http-toolkit/expected": {},
     "tests/fixtures/huatuo-node-tree/expected": {},
     "tests/fixtures/huatuo-node/expected": {},
@@ -1002,6 +1025,11 @@
     "tests/fixtures/missing-operation-id/expected": {},
     "tests/fixtures/mistle-control-plane/expected": {},
     "tests/fixtures/mockserver/expected": {},
+    "tests/fixtures/mockserver/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/mosip-esignet/expected": {},
     "tests/fixtures/ndw-accessibility-map/expected": {},
     "tests/fixtures/nested-core-imports/expected": {},
@@ -1010,6 +1038,11 @@
     "tests/fixtures/nexmo-messages/expected": {},
     "tests/fixtures/nextgen/expected": {},
     "tests/fixtures/nimisampo/expected": {},
+    "tests/fixtures/nimisampo/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/npq-registration/expected": {},
     "tests/fixtures/oal-example/expected": {},
     "tests/fixtures/oauth-client-credentials/expected": {},
@@ -1275,6 +1308,11 @@
     "tests/fixtures/zulip-jentic-entry/expected": {},
     "tests/fixtures/zulip-jentic/expected": {},
     "tests/fixtures/zulip/expected": {},
+    "tests/fixtures/zulip/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/zylon-private-gpt/expected": {},
     "tests/fixtures/zylon-private-gpt/expected-literals": {
       "excluded": [

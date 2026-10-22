@@ -10753,8 +10753,46 @@ class RankedBacklogTests(unittest.TestCase):
         spec.loader.exec_module(module)
         return module
 
-    def reach_ledger(self):
-        return self.golden_reach().read_ledger()
+    def reach_ledger(self, path=None, *, combinations=False):
+        module = self.golden_reach()
+        rows = module.read_ledger() if path is None else module.read_ledger(path)
+        golden = module.golden_rows(self.REGIONS)
+        load_script("tools/surface-census/restate-coverage.py").validate_reach_population(
+            {reach.key for _rank, reach in rows},
+            {key for key in golden if not key.startswith(COMBINATION_PREFIX)},
+            {key for key in golden if key.startswith(COMBINATION_PREFIX)},
+        )
+        return (
+            rows
+            if combinations
+            else [(rank, reach) for rank, reach in rows if not reach.key.startswith(COMBINATION_PREFIX)]
+        )
+
+    def test_reach_reader_rejects_missing_and_extra_features_and_combinations(self) -> None:
+        original = (self.REGIONS / "golden-reach.tsv").read_text(encoding="utf-8")
+        lines = original.splitlines(keepends=True)
+        header = next(line.rstrip().split("\t") for line in lines if line.startswith("rank\t"))
+        column = header.index("key")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "golden-reach.tsv"
+            for combination in (False, True):
+                row = next(
+                    line
+                    for line in lines
+                    if len(line.rstrip().split("\t")) == len(header)
+                    and line.split("\t")[column] != "key"
+                    and line.split("\t")[column].startswith(COMBINATION_PREFIX) == combination
+                )
+                for missing in (False, True):
+                    with self.subTest(combination=combination, missing=missing):
+                        fields = row.rstrip().split("\t")
+                        fields[column] = (COMBINATION_PREFIX if combination else "") + "unknown-reach"
+                        broken = original.replace(row, "", 1) if missing else original + "\t".join(fields) + "\n"
+                        path.write_text(broken, encoding="utf-8")
+                        with self.assertRaisesRegex(ValueError, "golden category population"):
+                            self.reach_ledger(path)
+                        path.write_text(original, encoding="utf-8")
+                        self.assertTrue(self.reach_ledger(path))
 
     def reach_table(self, heading: str, width: int) -> list[list[str]]:
         """The body rows of the first table under `heading`, header and rule dropped."""
@@ -10770,9 +10808,9 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders(self) -> None:
         """A `golden` row with no reach cell, or a stale one, is refused."""
         module = self.golden_reach()
-        rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger()}
-        for key, (region, cells) in sorted(self.entries.items()):
-            if cells[3].strip("`") != "golden":
+        rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger(combinations=True)}
+        for key, (region, cells) in sorted((self.entries | self.combination_entries).items()):
+            if cells[3].strip("`") != "golden" or module.pending_combination(cells):
                 continue
             with self.subTest(region=region, key=key):
                 self.assertTrue(
@@ -10785,8 +10823,8 @@ class RankedBacklogTests(unittest.TestCase):
     def test_the_reach_ledger_is_every_golden_row_in_ranking_order(self) -> None:
         """One ledger row per golden row, owned by the right region, in rubric order."""
         module = self.golden_reach()
-        ledger = self.reach_ledger()
-        golden = {key: region for key, (region, cells) in self.entries.items() if cells[3].strip("`") == "golden"}
+        ledger = self.reach_ledger(combinations=True)
+        golden = module.golden_rows(self.REGIONS)
         self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
         self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
         self.assertEqual(
@@ -10799,7 +10837,7 @@ class RankedBacklogTests(unittest.TestCase):
         """The site table is what the ledger measured, and each site still bounds code."""
         module = self.golden_reach()
         table = module.read_sites_table()
-        for _rank, reach in self.reach_ledger():
+        for _rank, reach in self.reach_ledger(combinations=True):
             with self.subTest(key=reach.key):
                 self.assertEqual(table[reach.key].sites, tuple(spec for spec, _h, _t in reach.sites))
         for spec in sorted({spec for row in table.values() for spec in row.sites}):
@@ -11119,7 +11157,7 @@ class RankedBacklogTests(unittest.TestCase):
         edit or a stale section fails here.
         """
         module = golden_reach_script()
-        ledger = self.reach_ledger()
+        ledger = self.reach_ledger(combinations=True)
         rows = module.arm_rows(ledger, self.REGIONS)
         self.assertEqual(
             [
@@ -18624,6 +18662,35 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
         self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
         self.assertEqual(0, self.run_restater().returncode)
+
+    def test_feature_and_combination_ledger_populations_are_checked_in_full(self) -> None:
+        path = self.root / "docs/openapi-surface/golden-reach.tsv"
+        original = path.read_text(encoding="utf-8")
+        lines = original.splitlines(keepends=True)
+        header = next(line.rstrip().split("\t") for line in lines if line.startswith("rank\t"))
+        column = header.index("key")
+        for combination in (False, True):
+            row = next(
+                line
+                for line in lines
+                if len(line.rstrip().split("\t")) == len(header)
+                and line.split("\t")[column] != "key"
+                and line.split("\t")[column].startswith(COMBINATION_PREFIX) == combination
+            )
+            for missing in (False, True):
+                with self.subTest(combination=combination, missing=missing):
+                    fields = row.rstrip().split("\t")
+                    fields[column] = (COMBINATION_PREFIX if combination else "") + "unregistered-reach"
+                    broken = original.replace(row, "", 1) if missing else original + "\t".join(fields) + "\n"
+                    path.write_text(broken, encoding="utf-8")
+                    before = self.index.read_bytes()
+                    result = self.run_restater("--write")
+                    self.assertEqual(1, result.returncode, result.stderr)
+                    self.assertIn("golden category population", result.stderr)
+                    self.assertEqual(before, self.index.read_bytes())
+                    path.write_text(original, encoding="utf-8")
+                    recovered = self.run_restater("--write")
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
 
     def test_ledger_population_must_equal_golden_categories(self) -> None:
         path = self.root / "docs/openapi-surface/golden-reach.tsv"

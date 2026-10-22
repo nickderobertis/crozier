@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .update_sub_account_request_monthly_credit import UpdateSubAccountRequestMonthlyCredit
+from .update_sub_account_request_name import UpdateSubAccountRequestName
+from .update_sub_account_request_website import UpdateSubAccountRequestWebsite
+
+UpdateSubAccountRequest = typing.Union[
+    UpdateSubAccountRequestName, UpdateSubAccountRequestWebsite, UpdateSubAccountRequestMonthlyCredit
+]

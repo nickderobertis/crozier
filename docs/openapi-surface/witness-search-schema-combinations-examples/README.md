@@ -88,9 +88,9 @@ screening state; one admitted generating registered witness per key suffices.
 | `combo-allof-schema-example` | `search-incomplete` | 322 | registered `zulip`; scoped golden reach |
 | `combo-annotated-ref-property-example` | `search-incomplete` | 9 | registered `zulip`; scoped golden reach |
 | `combo-anyof-schema-example` | `search-incomplete` | 169 | registered `supabase-api-v1`; scoped golden reach |
-| `combo-media-example-beside-component-example` | `search-incomplete` | 169 | request-side candidate screening in progress; existing response declarers do not establish the named branch |
-| `combo-media-example-on-inline-allof-body` | `search-incomplete` | 57 | request-side candidate screening in progress; existing response declarers do not establish the named branch |
-| `combo-media-example-on-ref-allof-body` | `search-incomplete` | 87 | request-side candidate screening in progress; existing response declarers do not establish the named branch |
+| `combo-media-example-beside-component-example` | `search-incomplete` | 169 | registered `ahasend-api` (3202); complete golden and example attribution |
+| `combo-media-example-on-inline-allof-body` | `search-incomplete` | 57 | registered `farmvibes-ai` (3201); complete golden and example attribution |
+| `combo-media-example-on-ref-allof-body` | `search-incomplete` | 87 | registered `dashy-route-api` (3200); complete golden and example attribution |
 | `combo-media-example-on-ref-union-body` | `search-incomplete` | 27 | registered `mockserver`; scoped golden reach |
 | `combo-oneof-schema-example` | `search-incomplete` | 269 | registered `zulip`; scoped golden reach |
 | `combo-param-example-beside-ref-schema` | `search-incomplete` | 138 | registered `hse`; scoped golden reach |
@@ -122,8 +122,34 @@ moves no file either. The request-example handoff sites are unreached by the
 initial D&D and NextGen witnesses. Those declarations remain in the census,
 but they are not selected as proofs of these branches.
 
-The request-side queue has output-sensitive crozier preflights for Dashy
-(referenced composition: README, reference, items and sections clients),
-AhaSend (competing examples: reference and sub-accounts client), and FarmVibes
-(inline composition: README, reference and workflows client). These preflights
-alone are not certified-pair proofs and do not register a new corpus row.
+Three request-side documents now supply complete certified-pair goldens:
+
+| corpus row | witness | grant location | matching example removal changes |
+|---|---|---|---|
+| 3200 | `dashy-route-api` | document `info.license` | README, reference, items and sections clients (2 sites) |
+| 3201 | `farmvibes-ai` | publisher's pinned `LICENSE`, retained at `licenses/farmvibes-MIT.txt` | README, reference and workflows client (1 site) |
+| 3202 | `ahasend-api` | document `info.license` | reference and sub-accounts client (12 sites) |
+
+The immutable publisher revisions, source digests and acquisition identities are
+in `census.tsv` and the corpus source registry. FarmVibes' grant was fetched
+through the rate-limit guard and shared cache after this bounded specification
+walk; no specification was newly fetched. The sources, NOTICE entries, complete
+goldens and gate registrations are committed. The matching tests compare every
+file, with no residual allowance, in default and strict modes. Literal-mode
+outputs are fresh certified-pair overlays for these and the existing selected
+witnesses where enums change the output.
+
+The removal experiment uses crozier on a temporary copy of each document,
+removing only the conjunction's media examples. It establishes attribution,
+not a modified reference: the unmodified source's complete Fern output is the
+comparison target. [attribution.json](attribution.json) records the changed paths.
+
+Two repairs were needed: Markdown examples preserve free-form map values
+without expanding their JSON arrays, and request media examples supersede whole
+component examples while retaining property-level fallbacks. Unit regressions
+exercise the triggering shapes and adjacent fallback cases. Existing committed
+reference trees were not edited. No new departure rule was needed.
+
+MockServer's literal regeneration staged its already-vendored remote-reference
+bytes with absolute local paths so the generation workspace could resolve them;
+the committed source and its immutable remote pins are unchanged.

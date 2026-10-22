@@ -326,6 +326,9 @@ inventory=(
   supabase_api_v1_matches_fern_output
   rta_in_japan_twitter_matches_fern_output
   onmyshelf_api_matches_fern_output
+  dashy_route_api_matches_fern_output
+  ahasend_api_matches_fern_output
+  farmvibes_ai_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"
