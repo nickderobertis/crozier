@@ -133,10 +133,25 @@ impl Ledger {
     /// every failure (each naming its row) rather than the first. Every
     /// comparison in both test binaries loads the ledger through this.
     pub fn load(root: &Path) -> Result<Self, Vec<String>> {
-        let inventory = Inventory::read(root).map_err(|error| vec![error])?;
+        Self::load_filtered(root, None)
+    }
+
+    /// Read one golden's ledger without walking any other golden's tree.
+    /// `None` retains the whole-inventory validation used by aggregate gates.
+    pub fn load_filtered(root: &Path, golden: Option<&str>) -> Result<Self, Vec<String>> {
+        let mut inventory = Inventory::read(root).map_err(|error| vec![error])?;
         let text = std::fs::read_to_string(root.join(LEDGER))
             .map_err(|error| vec![format!("{LEDGER}: cannot be read: {error}")])?;
-        let rows = parse(&text)?;
+        let mut rows = parse(&text)?;
+        if let Some(golden) = golden {
+            if !inventory.goldens.contains_key(golden) {
+                return Err(vec![format!(
+                    "{INVENTORY}: {golden} is not a registered golden"
+                )]);
+            }
+            inventory.goldens.retain(|name, _| name == golden);
+            rows.retain(|row| row.golden == golden);
+        }
         let failures = validation_failures(root, &inventory, &rows);
         if failures.is_empty() {
             Ok(Self {

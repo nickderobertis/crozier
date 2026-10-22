@@ -255,6 +255,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crozier-nested-discriminator-tests"
+version = "0.0.0"
+dependencies = [
+ "assert_cmd",
+ "crozier",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "crozier-pool-maintenance"
 version = "0.0.0"
 dependencies = [

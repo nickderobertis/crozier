@@ -679,6 +679,12 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden::default(),
         );
     }
+    // llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] This inventory is the one list of compared goldens the ledger gate reconciles, and every golden is registered here; the nested-discriminator journey that compares this one is a type:e2e project, which nx.json's boundaries forbid this suite from reading.
+    add(
+        "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected".to_owned(),
+        departures_ledger::ComparedGolden::default(),
+    );
+    // llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
