@@ -200,12 +200,20 @@ existing `anyof-path-param-schema-example` departure, extended narrowly to those
 required reference shapes. This is a hand-written proof with an evidenced
 intentional departure; it is not an output-insensitive decision.
 
+[annotated-context-screening.json](annotated-context-screening.json) records the
+four unregistered annotated-reference document hashes separately. DigitalOcean
+and OGC have no request path to the annotated property, including through local
+references, and no external input references. GraphHopper's two variants do
+have an input path; their document grant is absent and a repository grant was
+not established. Their Crozier baseline fails before generation. This records
+what was screened, without claiming a certified refusal that was not run.
+
 ## Attribution
 
 The registered witnesses have `unmatched: &[]` in the corpus gate. The latest
 completed scoped measurement runs 63 golden tests at
-`faa953f074a474bac6033a245af34fb5ac614690`, whose production source is unchanged
-from `c77b45035`. All 63 pass, including the seven real-witness keys' declarers and
+`ca5ec9b4a7fbad31237cedbb41ec54b070d75607`, after the rendering-mode,
+component-policy and identifier-validation refactors. All 63 pass, including the seven real-witness keys' declarers and
 every joined witness of the two single-feature rows whose request-field site
 moved. This supersedes the earlier 62-test measurement at
 `63c79bc0a430d622930dca3486d55d4d728b3ca2`, which preceded the later rendering
@@ -213,6 +221,12 @@ and departure repairs. The region join retains every measured declarer; the
 paired removal controls, rather than reach alone, establish sensitivity.
 The [site table](../golden-reach-sites.tsv) records the example handoff sites;
 the [reach ledger](../golden-reach.tsv) carries the scoped run's provenance.
+All nine generating removal controls were replayed at the same production
+revision: their complete change/digest maps stayed identical and each certified
+control tree still compared. The archive, trace-archive and Nimisampo version
+pairs were also replayed: each retained its complete unchanged digest maps and
+both versions compared to their certified trees.
+
 These handoff measurements do not claim every path of the containing function
 is exhausted; the single-feature rows retain those wider handling branches.
 
