@@ -5,8 +5,11 @@ and the additional arm covers removed by the certified-pair retarget. Its
 Fern measurements use CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3.
 This is an **unfinished screen**, not a claim that no real witness exists.
 A key with outstanding candidates cannot yet cite this record as
-`none-registrable`; the two zero-declarer keys are identified below. The two zero-declarer features are covered by the from-scratch
-`observatory-example-arrays` fixture; other features and arms remain open.
+`none-registrable`; the qualifying renewed searches are identified below. The
+zero-declarer features are covered by `observatory-example-arrays`.
+`onmyshelf-api` proves digit-leading methods, and `harbor-signal-null` supplies
+the weaker residual-only null proof. The remaining named features and arms
+keep their incomplete search outcomes below.
 
 ## The search
 
@@ -23,8 +26,10 @@ that time; their pinned identities are retained in the acquisition manifests.
   records, and now held in the shared GitHub response cache). Its `APIs/` tree
   holds 4,138 JSON and YAML files: 1,927 OpenAPI 3 documents, 2,163 Swagger 2
   ones and 48 that PyYAML 6.0.3's C loader cannot parse.
-- **The registered corpus.** Every OpenAPI 3 document under `tests/fixtures/`
-  (each committed corpus source and each vendored fixture `openapi.*`): 274.
+- **The registered corpus.** The recovered source tree at
+  `91311a3a8626b118586c7daf1d35d49f58905e1a` (unchanged from its retargeted parent): every
+  OpenAPI 3 document under `tests/fixtures/` (each committed corpus source and
+  each vendored fixture `openapi.*`), 274.
 - **The GitHub code-search pool.** The documents the earlier searches' GitHub
   REST code-search acquisitions left in their search cache
   (`.local/golden-reach-search/github-code-search/`), each named by its
