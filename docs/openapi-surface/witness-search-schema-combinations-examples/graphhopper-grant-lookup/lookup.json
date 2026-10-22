@@ -1,0 +1,30 @@
+[
+  {
+    "repository": "APIs-guru/openapi-directory",
+    "revision": "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
+    "url": "https://api.github.com/repos/APIs-guru/openapi-directory/license?ref=f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
+    "status": 200,
+    "license_path": "LICENSE",
+    "license_blob_sha": "0e259d42c996742e9e3cba14c677129b2c1b6311",
+    "license_detection": {
+      "key": "cc0-1.0",
+      "name": "Creative Commons Zero v1.0 Universal",
+      "spdx_id": "CC0-1.0",
+      "url": "https://api.github.com/licenses/cc0-1.0",
+      "node_id": "MDc6TGljZW5zZTY="
+    },
+    "content_sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "content_file": "APIs-guru-openapi-directory-LICENSE.txt"
+  },
+  {
+    "repository": "InoGo-Software/go-graphhopper",
+    "revision": "726f9834cf502c4dee81b657d8fa7f06f4ce32fd",
+    "url": "https://api.github.com/repos/InoGo-Software/go-graphhopper/license?ref=726f9834cf502c4dee81b657d8fa7f06f4ce32fd",
+    "status": 404,
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  }
+]

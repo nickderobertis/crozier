@@ -19,7 +19,7 @@
     },
     "external_input_refs": [],
     "scope": "Request bodies and operation/path-item parameters, following local references; external references listed separately.",
-    "screening": "Request-reachable; document grant absent and repository grant not established; Crozier baseline preflight failed. No certified generation or refusal claim."
+    "screening": "Aggregation repository grant admitted; certified pair refuses both annotation states for missing service auth and writes no SDK. See graphhopper-grant-lookup/lookup.json and graphhopper-annotation-measurement/measurement.json."
   },
   {
     "sha256": "20c7359cca6f3245c51b299a9a3c1ad3049c99c78b5b4d0edf7a4c233069bf45",
@@ -36,7 +36,7 @@
       "examples/symmetricalMatrixRequest.json"
     ],
     "scope": "Request bodies and operation/path-item parameters, following local references; external references listed separately.",
-    "screening": "Request-reachable; document grant absent and repository grant not established; Crozier baseline preflight failed. No certified generation or refusal claim."
+    "screening": "Pinned repository licence endpoint returned 404; no admissible grant found by this bounded lookup. No certified generation or refusal claim. See graphhopper-grant-lookup/lookup.json."
   },
   {
     "sha256": "9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382",

@@ -204,9 +204,14 @@ intentional departure; it is not an output-insensitive decision.
 four unregistered annotated-reference document hashes separately. DigitalOcean
 and OGC have no request path to the annotated property, including through local
 references, and no external input references. GraphHopper's two variants do
-have an input path; their document grant is absent and a repository grant was
-not established. Their Crozier baseline fails before generation. This records
-what was screened, without claiming a certified refusal that was not run.
+have an input path. The bounded [repository-grant lookup](graphhopper-grant-lookup/lookup.json)
+finds an admissible aggregation grant for the index copy; the other repository's
+pinned licence endpoint returns 404, so no grant was found there. A fresh serial
+[certified-pair measurement](graphhopper-annotation-measurement/measurement.json)
+of the admitted index copy refuses both annotation states for missing service
+auth and writes no SDK. The logs and both canonical inputs are committed beside
+the measurement. This source refusal screens a candidate; it does not classify
+the combination itself as non-generating, since its hand-written proof generates.
 
 ## Attribution
 
