@@ -26,7 +26,7 @@ receive no adapters. The README and reference construct the inner variant using
 Run the generated SDK journey with:
 
 ```sh
-just nx run sdk-env:test --args=sdk_env_nested_discriminators_keep_constructors_and_use_flat_wire
+just nx run nested-discriminator-runtime:test
 ```
 
 The journey generates from the canonical document in normal and `--fern-strict`
@@ -36,7 +36,7 @@ and a derived document whose inner discriminator itself is named `value`, the pu
 model dict/JSON output, schema validation, flat parsing, malformed-input
 rejection, sync and async HTTP request/response handling against a real loopback server with malformed-response
 recovery, and compilation and construction of both README examples. Its
-[script](../../../crates/crozier-e2e/tests/e2e/evidence/nested-discriminator-wire.py)
+[script](../../../tests/nested-discriminator/runtime/wire.py)
 also fails against the certified reference at the flat serialization assertion;
 this was checked with both majors before accepting the repaired output.
 

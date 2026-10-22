@@ -1,37 +1,46 @@
-# llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This helper belongs to sdk-env, the promoted required CI leg for generated SDK runtime journeys. Its Rust caller routes it through the prescribed ignored test; it never runs in the affected offline e2e tier.
 """Exercise the generated patisserie SDK's public constructors and wire boundary."""
 
 import ast
 import asyncio
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import importlib
 import inspect
 import json
-from pathlib import Path
 import re
 import sys
 import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from types import ModuleType
 
 import jsonschema
 import pydantic
 import yaml
 
 sdk = Path(sys.argv[1])
-document = yaml.safe_load(Path(sys.argv[2]).read_text())
 sys.path.insert(0, str(sdk / "src"))
-from fern import AsyncFernApi, FernApi, Pastry, Pastry_Tart, TartOrder_Puff, TartOrder_Shortcrust
+fern: ModuleType = importlib.import_module("fern")
+AsyncFernApi = fern.AsyncFernApi
+FernApi = fern.FernApi
+Pastry = fern.Pastry
+Pastry_Tart = fern.Pastry_Tart
+TartOrder_Puff = fern.TartOrder_Puff
+TartOrder_Shortcrust = fern.TartOrder_Shortcrust
+ParsingError = importlib.import_module("fern.core.parse_error").ParsingError
 
-from fern.core.parse_error import ParsingError
+document = yaml.safe_load(Path(sys.argv[2]).read_text())
 
 validator = jsonschema.Draft202012Validator(
     {"$ref": "#/components/schemas/Pastry", "components": document["components"]}
 )
 inner_tag = document["components"]["schemas"]["TartOrder"]["discriminator"]["propertyName"]
+assert inner_tag == sys.argv[3], "the runtime matrix must exercise distinct inner discriminators"
+for schema_name in ["FruitTart", "CreamTart"]:
+    schema = document["components"]["schemas"][schema_name]
+    assert inner_tag in schema["required"] and inner_tag in schema["properties"]
+    if inner_tag == "value":
+        assert "crust" not in schema["required"] and "crust" not in schema["properties"]
 v2 = pydantic.VERSION.startswith("2.")
-parse = (
-    pydantic.TypeAdapter(Pastry).validate_python
-    if v2
-    else lambda value: pydantic.parse_obj_as(Pastry, value)
-)
+parse = pydantic.TypeAdapter(Pastry).validate_python if v2 else lambda value: pydantic.parse_obj_as(Pastry, value)
 assert list(inspect.signature(Pastry_Tart).parameters) == ["value", "kind"]
 assert set(Pastry_Tart.model_fields if v2 else Pastry_Tart.__fields__) == {"value", "kind"}
 
@@ -46,10 +55,12 @@ cases = [
     ),
 ]
 if inner_tag != "value":
-    cases.append((
-        Pastry_Tart(value=TartOrder_Shortcrust(kind="tart", fruit="pear", value={"note": "ripe"})),
-        {"kind": "tart", inner_tag: "shortcrust", "fruit": "pear", "value": {"note": "ripe"}},
-    ))
+    cases.append(
+        (
+            Pastry_Tart(value=TartOrder_Shortcrust(kind="tart", fruit="pear", value={"note": "ripe"})),
+            {"kind": "tart", inner_tag: "shortcrust", "fruit": "pear", "value": {"note": "ripe"}},
+        )
+    )
 for value, wire in cases:
     validator.validate(wire)
     assert value.dict() == wire
@@ -88,10 +99,11 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args):
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] This loopback compatibility journey must drive the generated synchronous SDK API; AsyncFernApi has its own journey below.
 def calls(client):
     assert client.place_order(request=value) == value
     try:
@@ -101,6 +113,9 @@ def calls(client):
     else:
         raise AssertionError("invalid provider response accepted")
     assert client.place_order(request=value) == value
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 async def async_calls(base_url):
@@ -120,6 +135,7 @@ thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
 try:
     base_url = f"http://127.0.0.1:{server.server_port}"
+    # llmlint: ignore[async_typed_clients_at_boundaries] Construct and drive the synchronous SDK API under test; the next call exercises its asynchronous counterpart.
     calls(FernApi(base_url=base_url))
     asyncio.run(async_calls(base_url))
 finally:
@@ -135,9 +151,8 @@ for block in re.findall(r"```python\n(.*?)```", (sdk / "README.md").read_text(),
     tree = ast.parse(block)
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Pastry_Tart":
-            example = eval(compile(ast.Expression(node), "README constructor", "eval"), globals())
+            example = eval(compile(ast.Expression(node), "README constructor", "eval"), globals())  # noqa: S307 -- Execute constructors from the freshly generated SDK README, whose module is already imported.
             validator.validate(json.loads(example.json()))
             examples += 1
 assert examples == 2, examples
 print(f"Pydantic {pydantic.VERSION}: constructors, flat wire, recovery and README pass")
-# llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

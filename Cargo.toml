@@ -1,7 +1,7 @@
 # The root is both the `crozier` package and the Cargo workspace, not a virtual
 # manifest; src/AGENTS.md says why.
 [workspace]
-members = [".", "crates/crozier-e2e", "pool-maintenance", "tools/ci", "tools/ci-journeys", "tools/github-action"]
+members = [".", "tests/nested-discriminator/golden", "crates/crozier-e2e", "pool-maintenance", "tools/ci", "tools/ci-journeys", "tools/github-action"]
 resolver = "2"
 
 [workspace.package]

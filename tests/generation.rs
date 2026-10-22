@@ -16233,6 +16233,17 @@ fn nested_discriminator_departure_keeps_every_other_byte() {
             .unwrap()
             .matches()
     );
+    let without_yields = files[rel]
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("yield"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(
+        !crozier::parity::compare_file(&context, rel, &without_yields, &fern.1)
+            .unwrap()
+            .matches(),
+        "nested departure hid a truncated adapter without yield statements",
+    );
     for (rel, from, to) in [
         (
             "src/fern/types/pastry.py",
@@ -16246,6 +16257,7 @@ fn nested_discriminator_departure_keeps_every_other_byte() {
         ),
         ("README.md", "fruit=\"fruit\"", "filling=\"fruit\""),
         ("reference.md", "fruit=\"fruit\"", "fruit=\"wrong\""),
+        ("README.md", "from fern import ", "from wrong_fern import "),
     ] {
         let changed = files[rel].replace(from, to);
         assert_ne!(changed, files[rel]);
@@ -16256,5 +16268,83 @@ fn nested_discriminator_departure_keeps_every_other_byte() {
                 .matches(),
             "departure hid {from} -> {to}"
         );
+    }
+    // A recognizer needs the document's exact nested mapping. Comparing the
+    // same generated/reference trees without that evidence must leave residuals.
+    let without_source = || {
+        crozier::departures::Context::from_sources(
+            reference
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            files
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        )
+    };
+    let source = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    let mut unnested = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    unnested
+        .components
+        .schemas
+        .get_mut("TartOrder")
+        .unwrap()
+        .discriminator = None;
+    let mut different_mapping = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    different_mapping
+        .components
+        .schemas
+        .get_mut("Pastry")
+        .unwrap()
+        .discriminator
+        .as_mut()
+        .unwrap()
+        .mapping
+        .insert("tart".into(), "#/components/schemas/Croissant".into());
+    for inapplicable in [
+        without_source(),
+        without_source().with_source_document(unnested),
+        without_source().with_source_document(different_mapping),
+    ] {
+        for rel in ["src/fern/types/pastry.py", "README.md", "reference.md"] {
+            let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+            assert!(
+                !crozier::parity::compare_file(&inapplicable, rel, &files[rel], &fern.1)
+                    .unwrap()
+                    .matches(),
+                "nested departure applied without its source mapping: {rel}",
+            );
+        }
+    }
+    let mut unsupported_field = source;
+    unsupported_field
+        .components
+        .schemas
+        .get_mut("FruitTart")
+        .unwrap()
+        .properties
+        .get_mut("fruit")
+        .unwrap()
+        .ty = Some(crozier::openapi::TypeField::Single("integer".into()));
+    let mut explicit_example = crozier::openapi::load(&fixture.join("openapi.yml")).unwrap();
+    explicit_example
+        .components
+        .schemas
+        .get_mut("FruitTart")
+        .unwrap()
+        .properties
+        .get_mut("fruit")
+        .unwrap()
+        .example = Some(serde_json::json!("pear"));
+    for unsupported in [unsupported_field, explicit_example] {
+        let unsupported = without_source().with_source_document(unsupported);
+        for rel in ["README.md", "reference.md"] {
+            let fern = reference.iter().find(|(name, _)| name == rel).unwrap();
+            assert!(
+                !crozier::parity::compare_file(&unsupported, rel, &files[rel], &fern.1)
+                    .unwrap()
+                    .matches(),
+                "nested departure hid an unsupported example field: {rel}",
+            );
+        }
     }
 }

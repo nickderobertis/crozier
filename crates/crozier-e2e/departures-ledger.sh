@@ -22,7 +22,7 @@ records="$scratch/records" log="$scratch/log"
 mkdir "$records" || fail "cannot create $records" "point TMPDIR at a writable directory and rerun"
 
 # llmlint: ignore[changed_behavior_has_e2e] running the whole crozier-e2e suite from its own tests would recurse; crates/crozier-e2e/tests/e2e/report_scripts.rs drives this script with only `cargo` stood in.
-if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e \
+if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e -p crozier-nested-discriminator-tests \
   --no-fail-fast -E 'not test(/^departures_ledger_gate::/)' >"$log" 2>&1; then
   cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
   fail "a comparison failed while recording (above)" "fix it, then rerun just departures-ledger"

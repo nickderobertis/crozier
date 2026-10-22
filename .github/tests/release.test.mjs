@@ -48,12 +48,12 @@ test('release retains every platform/artifact; Darwin proof precedes publication
 test('Mac PR lane retains every previous Mac check sequentially and ordinary Linux/Windows scopes remain unchanged', () => {
   const jobs=workflows().find(w=>w.path.endsWith('/ci.yml')).value.jobs;
   const runs=jobs.macos.steps.filter(s=>s.run).map(s=>s.run);
-  const required=['just bootstrap','just ci-check --exclude=tag:tier:promoted','just ci-check --projects=sdk-env,runtime','cargo install --path . --locked','crozier --version'];
+  const required=['just bootstrap','just ci-check --exclude=tag:tier:promoted','just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime','cargo install --path . --locked','crozier --version'];
   let position=-1;
   for (const command of required) { const next=runs.indexOf(command); assert.ok(next>position,command); position=next; }
   assert.equal(jobs.macos.strategy,undefined);
   assert.equal(jobs.check.steps.find(s=>s.name==='Check').run,"just ci-check --exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}");
-  assert.equal(jobs['sdk-env'].steps.find(s=>s.name==='SDK Python-environment tier').run,'just ci-check --projects=sdk-env,runtime');
+  assert.equal(jobs['sdk-env'].steps.find(s=>s.name==='SDK Python-environment tier').run,'just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime');
   assert.ok(jobs.install.steps.some(s=>s.run==='cargo install --path . --locked'));
   assert.equal(jobs.package.steps.find(s=>s.name==='Verify the published crate tarball builds').run,'cargo publish --dry-run --locked');
 });
