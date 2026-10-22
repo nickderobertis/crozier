@@ -77,6 +77,7 @@ matrix-object	absent-tree	discards	docs/openapi-surface/probe-expected/matrix-ob
 max-contains	absent-tree	discards	docs/openapi-surface/probe-expected/max-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
 min-contains	absent-tree	discards	docs/openapi-surface/probe-expected/min-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
 multiple-of	absent-tree	discards	docs/openapi-surface/probe-expected/multiple-of	—	5b30ee96cd8bd64fbe827ffbd4898306e2dcf6f0a33f696bf3c8b29f2a4e0eb3
+museum-titled-array-items	absent-tree	measured	docs/openapi-surface/probe-expected/museum-titled-array-items	—	c5ec63b780b86d729a5da424b8185bdd608dadbd6bee73ca335b42ba668547a2
 nonascii-info-title	differential	ignores	docs/openapi-surface/probe-expected/nonascii-info-title	nonascii-info-title-control	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 nonascii-operationId	refusal	crashes	docs/openapi-surface/probe-expected/nonascii-operationId.fern-refusal.txt	—	df3fea1fbca05031374fd8bf9ee677e383e60870827f503612f683815925c144
 oneof-array-variant-annotated-ref-item	absent-tree	measured	docs/openapi-surface/probe-expected/oneof-array-variant-annotated-ref-item	—	e595b6b0d34334f078c5e43ab36df830d0aa72e6ce60847c1e95148bf301e55a

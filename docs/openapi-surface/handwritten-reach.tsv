@@ -5,7 +5,9 @@ blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let
 buoy-depth-response	response-description	src/emit.rs::push_return_doc[=None => \{\}]	1	1
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
+compass-choice	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]	16	16
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
+enum-media-selection	schema-example-outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	2	2
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
 event-stream-event-dispatch	media-type-event-stream	src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]	41	41
 event-stream-event-dispatch	media-type-event-stream	src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]	9	9
@@ -64,7 +66,6 @@ multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias
 multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
 multipart-nullable-array	format-binary	src/ir.rs::hoist_form_object[if nullable_binary]	1	1
 multipart-request-name	request-body-content	src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]	1	1
-museum-titled-array-items	items-oneof-element	src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]	6	6
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5

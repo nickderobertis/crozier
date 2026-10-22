@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use super::{
     departure_ledger, golden_path, golden_tree_failures, probe_artifact_digest, probe_command,
     refusal_run, refused_failures, repo_root, walk_files, GoldenLedger, HANDWRITTEN_DIR,
+    PROBE_DOCUMENTS_DIR, PROBE_EXPECTED_DIR,
 };
 
 /// Every hand-written union fixture, each with a literals overlay under
@@ -52,8 +53,25 @@ pub(super) fn compared() -> Vec<(String, Vec<String>)> {
         .collect()
 }
 
-fn fixture(name: &str) -> PathBuf {
-    repo_root().join(HANDWRITTEN_DIR).join(name)
+/// Fixtures kept as `measured` probe trees rather than hand-written fixtures:
+/// their arm left the site table when crozier stopped branching on it, so they
+/// carry no cover, but their Fern trees stay byte-gated here and by Contract A.
+const PROBE_FIXTURES: [&str; 1] = ["museum-titled-array-items"];
+
+/// The fixture's document.
+fn fixture_spec(name: &str) -> PathBuf {
+    if PROBE_FIXTURES.contains(&name) {
+        return repo_root().join(PROBE_DOCUMENTS_DIR).join(format!("{name}.yml"));
+    }
+    repo_root().join(HANDWRITTEN_DIR).join(name).join("openapi.yml")
+}
+
+/// The complete tree Fern generated from [`fixture_spec`].
+fn fixture_tree(name: &str) -> PathBuf {
+    if PROBE_FIXTURES.contains(&name) {
+        return repo_root().join(PROBE_EXPECTED_DIR).join(name);
+    }
+    repo_root().join(HANDWRITTEN_DIR).join(name).join("fern-expected")
 }
 
 /// `fixture`'s literals tree: `fern-expected/` less the files the manifest
@@ -97,7 +115,7 @@ fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String
             .and_then(|()| std::fs::copy(from.join(rel), &to).map(drop))
             .map_err(|error| format!("{name}: cannot copy {rel}: {error}"))
     };
-    let base = fixture(name).join("fern-expected");
+    let base = fixture_tree(name);
     for rel in walk_files(&base) {
         if !removed.contains(&rel.as_str()) {
             copy(&base, &rel)?;
@@ -165,7 +183,7 @@ fn tree_failures(
 
 /// The ledger rows `fixture`'s committed python-enums tree is held to.
 fn fern_expected_ledger(name: &str) -> Result<GoldenLedger, Vec<String>> {
-    departure_ledger().golden(&golden_path(&fixture(name).join("fern-expected")), &[])
+    departure_ledger().golden(&golden_path(&fixture_tree(name)), &[])
 }
 
 /// Each fixture's complete certified tree, Python enums and literals, byte-equal
@@ -175,7 +193,7 @@ fn fern_expected_ledger(name: &str) -> Result<GoldenLedger, Vec<String>> {
 fn union_shapes_match_complete_goldens_in_both_enum_modes() {
     let mut failures = Vec::new();
     for name in FIXTURES {
-        let spec = fixture(name).join("openapi.yml");
+        let spec = fixture_spec(name);
         failures.extend(matches_golden(name, &spec));
         match literals_tree(name) {
             Ok((tree, ledger)) => {
@@ -210,7 +228,7 @@ fn union_literals_overlays_are_exactly_the_fixtures() {
 /// the fixture itself, whose golden certifies only its own bytes; hold the
 /// returned directory until crozier has read the path.
 fn edited(name: &str, edit: impl Fn(&str) -> String) -> (tempfile::TempDir, PathBuf) {
-    let text = std::fs::read_to_string(fixture(name).join("openapi.yml")).expect("fixture");
+    let text = std::fs::read_to_string(fixture_spec(name)).expect("fixture");
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("openapi.yml");
     std::fs::write(&path, edit(&text)).expect("write the edited document");
@@ -242,7 +260,7 @@ fn matches_golden(name: &str, spec: &Path) -> Vec<String> {
         Ok(ledger) => tree_failures(
             name,
             spec,
-            &fixture(name).join("fern-expected"),
+            &fixture_tree(name),
             "python-enums",
             &ledger,
         ),
@@ -361,7 +379,7 @@ fn union_refusal_controls_hold_beside_the_generating_shapes() {
     }
     for name in ["telescope-renamed-discriminant", "bakery-get-body-member"] {
         for strict in [false, true] {
-            let run = refusal_run(&crozier, &fixture(name).join("openapi.yml"), strict)
+            let run = refusal_run(&crozier, &fixture_spec(name), strict)
                 .expect("crozier runs");
             assert_eq!(run.code, Some(0), "{name}: {}", run.stderr);
             assert!(!run.files.is_empty(), "{name} wrote nothing");

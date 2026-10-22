@@ -105,17 +105,17 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 | key | verdict | declaring documents | registration status |
 |---|---|---|---|
 | `discriminator-mapping` | `search-incomplete` | 899 | outstanding: screen and parity/reach review not complete |
-| `oneof-string-const-variant` | `search-incomplete` | 70 | outstanding: screen and parity/reach review not complete |
+| `oneof-string-const-variant` | `search-incomplete` | 70 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `compass-choice` fixture |
 | `operation-id-digit-leading-method` | `search-incomplete` | 97 | registered: corpus row 3000, `onmyshelf-api`; complete certified-pair SDK byte-match |
-| `schema-example-array-null-element` | `search-incomplete` | 41 | outstanding: screen and parity/reach review not complete |
-| `schema-example-empty-object` | `search-incomplete` | 171 | outstanding: screen and parity/reach review not complete |
-| `schema-example-fractional-on-integer` | `search-incomplete` | 20 | outstanding: screen and parity/reach review not complete |
+| `schema-example-array-null-element` | `search-incomplete` | 41 | no admissible real document both generates at the certified pair and moves output ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `lunar-null-labels` fixture |
+| `schema-example-empty-object` | `search-incomplete` | 171 | arm decided output-insensitive ([attribution](#empty-object-arm-attribution)); no real declarer moves output |
+| `schema-example-fractional-on-integer` | `search-incomplete` | 20 | generating context decided output-insensitive ([attribution](#optional-fractional-request-property-attribution)); other contexts refused |
 | `schema-example-null` | `search-incomplete` | 28 | cached attribution preflight complete: no qualifying byte-moving witness; admitted lower-proof `harbor-signal-null` fixture |
-| `schema-example-object-on-map` | `search-incomplete` | 636 | outstanding: screen and parity/reach review not complete |
-| `schema-example-on-ref-to-enum` | `search-incomplete` | 100 | outstanding: screen and parity/reach review not complete |
-| `schema-example-on-ref-to-object` | `search-incomplete` | 93 | outstanding: screen and parity/reach review not complete |
-| `schema-example-on-ref-to-union` | `search-incomplete` | 12 | outstanding: screen and parity/reach review not complete |
-| `schema-example-outside-enum` | `search-incomplete` | 137 | outstanding: screen and parity/reach review not complete |
+| `schema-example-object-on-map` | `search-incomplete` | 636 | registered: corpus row 3001, `formbricks`; complete certified-pair SDK byte-match, arm reach measured ([attribution](#formbricks-map-example-attribution)) |
+| `schema-example-on-ref-to-enum` | `search-incomplete` | 100 | decided output-insensitive in every measured context ([attribution](#examples-beside-a-ref-attribution)) |
+| `schema-example-on-ref-to-object` | `search-incomplete` | 93 | decided output-insensitive in every measured context ([attribution](#examples-beside-a-ref-attribution)) |
+| `schema-example-on-ref-to-union` | `search-incomplete` | 12 | decided output-insensitive in every measured context ([attribution](#examples-beside-a-ref-attribution)) |
+| `schema-example-outside-enum` | `search-incomplete` | 137 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `enum-media-selection` fixture |
 
 | `schema-example-temporal-duplicate-element` | `search-incomplete` | 0 | no declarer in the bounded populations |
 | `schema-example-union-ref-sentinel` | `search-incomplete` | 0 | no declarer in the bounded populations |
@@ -138,6 +138,9 @@ fallback only if no real witness can be registered.
 | `schema-example-temporal-duplicate-element` | `search-incomplete` | none-registrable |
 | `schema-example-union-ref-sentinel` | `search-incomplete` | none-registrable |
 | `schema-example-null` | `search-incomplete` | none-registrable |
+| `schema-example-array-null-element` | `search-incomplete` | none-registrable |
+| `schema-example-outside-enum` | `search-incomplete` | none-registrable |
+| `oneof-string-const-variant` | `search-incomplete` | none-registrable |
 
 ## Null-example attribution preflight
 
@@ -253,3 +256,111 @@ Its Contract A differential pair is registered under
 coverage row records `ignores` for this context and the existing refusal class
 for the non-optional contexts. The measurement does not settle outstanding real
 candidates in other contexts.
+
+## Examples beside a `$ref` attribution
+
+`schema-example-on-ref-to-object`, `schema-example-on-ref-to-enum` and
+`schema-example-on-ref-to-union` are decided output-insensitive in both
+generators, never proven. For each key, six locally authored before/after pairs
+place the example beside a `$ref` to `Thing` (an object), `Choice` (a string
+enum) or `Either` (a `oneOf`) in a different context, and each control removes
+only that `example`:
+
+| context | where the example sits |
+|---|---|
+| `request-body-root` | the request body schema itself (OpenAPI 3.1.0) |
+| `required-request-property` | a required request-body property (OpenAPI 3.0.3; also the Contract A differential probe) |
+| `required-request-property-openapi-3.1` | the same property in an OpenAPI 3.1.0 document |
+| `array-item-reference-sibling` | an array's `items` |
+| `required-query-parameter` | a required query parameter's schema |
+| `optional-query-parameter` | an optional query parameter's schema |
+
+Every document passed `fern check` and completed packaged generation at
+CLI 5.163.1 / fern-python-sdk 5.41.3; the logs sit beside each pair under
+`<target>-<context>-attribution/` (the 3.0.3 property pairs under
+`<target>-required-ref-property-attribution/`, the array pairs under
+`<target>-array-items-attribution/`). In all 18 pairs the complete raw Fern tree
+is identical between the two documents, and so is crozier's, generated under
+`tests/corpus_match/corpus_offline_test.py`'s `deny_network` filter with the
+current build. Each pair's two comparison records are a row of
+[the shared table](../output-insensitive.tsv).
+
+The real declarer populations (93, 100 and 12 census rows) were re-preflighted
+with crozier alone on the current build: every document it generated from moves
+no generated file when its examples beside a `$ref` are deleted. No real
+document is a witness, because no context of these keys changes output.
+
+## Empty-object arm attribution
+
+`schema-example-empty-object` is a `golden` feature; its
+`src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` arm is
+decided output-insensitive, never proven. The four real declarers the census
+records executing the arm (two Meraki versions, Open Banking PCM and ADME
+seismic) move no crozier-generated file when their empty-object examples are
+deleted, so none is an output-sensitive witness. The locally
+authored [`before.json`](empty-model-media-example-attribution/before.json)
+puts `{value: {}}` in the request media type's `example`, where `value` refers
+to an `Empty` component with no properties of its own; the
+[`after.json`](empty-model-media-example-attribution/after.json) control drops
+only that media-type example. An instrumented crozier built from this branch
+executes all 5 of the arm's regions on the original and none on the control.
+Both complete trees are identical between the two documents at the certified
+pair (38 Fern files) and in crozier. The two documents are also committed as
+`measured` probe trees (`empty-model-media-example` and
+`empty-model-media-example-no-media-control` in `../probe-expected/MANIFEST.tsv`),
+which crozier byte-matches. The comparison records are the arm's row of
+[the shared table](../output-insensitive.tsv).
+
+## Remaining bounds after the source repairs
+
+This search renews three keys with the build carrying this branch's example and
+union repairs, so no candidate is dismissed on behaviour those repairs changed.
+[`remaining-bounds.tsv`](remaining-bounds.tsv) lists every candidate it read,
+one row per distinct source digest: what crozier does with the original bytes
+(and, for an arm key, how many of the arm's regions an instrumented build of
+this branch executes on that document alone), its licence and provenance
+outcome, and its certified-pair Fern baseline where one was run. Every crozier
+run was offline under `tests/corpus_match/corpus_offline_test.py`'s
+`deny_network` filter. Every Fern run held the shared generation lock, with a
+600-second bound, retried once at 1800 seconds after a timeout. No new source
+document was fetched; licence and grant reads went through the guarded shared
+cache. [`ogc-licence-review.md`](ogc-licence-review.md) records why the OGC
+document licence is not admissible.
+
+- **`schema-example-array-null-element`** — 41 census rows, 35 distinct
+  documents. Crozier generates 12 from their original bytes, and deleting
+  their null-holding array examples moves no file (three controls are exact
+  byte-range deletions; the other nine are round-trip controls whose base tree
+  equals the original's). Crozier refuses the other 23. Of those, 14 are not
+  admissible: 12 under the OGC licence and 2 that are third-party copies of
+  another publisher's definition. Of the 9 admissible, Fern refuses 6; Fern
+  generates `georust/ogcapi`, and deleting its examples moves none of Fern's
+  files. The last two are unresolved: `52North/connected-systems-pygeoapi`'s
+  `fern check` passed neither 600 nor 1800 seconds, and
+  `brazil-data-cube/bdc-stac`'s baseline passed neither the 600-second
+  three-run screen nor an 1800-second baseline-only run. Those two remain
+  named unresolved candidates; nothing settles them.
+- **`schema-example-outside-enum`** — 137 census rows. 111 hold no type shape
+  the arm tests and 4 are registered goldens whose reach is already in the
+  ledger. Of the 22 other distinct documents, none executes the arm: crozier
+  generates 5 without reaching it and refuses 17. Of those 17, 2 are not
+  admissible (a third-party copy and a document with no grant), and Fern
+  refuses all 15 admissible ones.
+- **`oneof-string-const-variant`** — 70 census rows. 41 hold no typed
+  alternative beside the string `const`: their untyped constants merge into one
+  enum, which never enters the arm. 2 have no located source and 4 are
+  registered goldens. Of the 23 typed declarers, the only document executing
+  the arm is a synthetic test router in tRPC's own test suite, which is not
+  admissible. Of the six crozier refuses, Fern refuses AstrLink and
+  coolercontrol, three are not admissible (two synthetic emulator contracts and
+  Peridio's field-of-use grant), and 52North is unresolved as above.
+
+Within these bounded populations no admissible real document both generates
+at the certified pair and changes output for the key or arm. So each key's
+renewed outcome is `none-registrable` in the table above, and the hand-written
+fixtures `lunar-null-labels`, `enum-media-selection` and `compass-choice` are
+admitted as lower proof. Each is output-sensitive: deleting the scoped example
+or `const` from its document changes the same files in Fern's complete tree and
+in crozier's, which `remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives`
+in `crates/crozier-e2e/tests/e2e.rs` re-checks against committed controls under
+`docs/fern-measurements/remaining-examples/`.

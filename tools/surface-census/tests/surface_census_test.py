@@ -17873,6 +17873,23 @@ class NamingWireCensusTests(unittest.TestCase):
             path.unlink()
             self.assertIsNone(index.golden_source(root, golden))
 
+    def test_a_measured_probe_tree_and_its_literals_overlay_name_the_probe_document(self) -> None:
+        index = load_script("tools/surface-census/scenario-proof-index.py")
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            source = "docs/openapi-surface/probes/sample-probe.yml"
+            path = root / source
+            path.parent.mkdir(parents=True)
+            path.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            for golden in (
+                "docs/openapi-surface/probe-expected/sample-probe",
+                "docs/fern-measurements/union-literals/sample-probe/fern-expected",
+            ):
+                with self.subTest(golden=golden):
+                    self.assertEqual(index.golden_source(root, golden), source)
+            path.unlink()
+            self.assertIsNone(index.golden_source(root, "docs/openapi-surface/probe-expected/sample-probe"))
+
     def test_owned_shapes_and_adjacent_controls(self) -> None:
         census = load_census()
         cases = (
