@@ -36,7 +36,7 @@ case "${1:-}" in
     # Every corpus run reads `CROZIER_FERN_STRICT`, because none passes
     # `--no-config`; this proves crozier sees it from here before relying on it.
     export CROZIER_FERN_STRICT=true
-    cargo run --locked --quiet -- config python | grep -Eq '^  fern-strict +true +\(env\)$' || {
+    cargo run --locked --quiet -- config python | grep -E '^  fern-strict +true +\(env\)$' >/dev/null || {
       echo "corpus-match --strict: crozier config did not report fern-strict true from CROZIER_FERN_STRICT; check that no crozier.yml or CROZIER_CONFIG overrides it here" >&2
       exit 1
     }
