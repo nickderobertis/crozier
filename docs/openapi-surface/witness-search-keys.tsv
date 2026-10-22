@@ -210,7 +210,6 @@ response-contentless-200-with-created	operation.responses:contentless-two-hundre
 response-status-space-suffixed	operation.responses:space-suffixed-status-key	bodies-media.md	supported
 response-without-description-blank-line	operation.responses	bodies-media.md	supported
 schema-example-array-null-element	schema.example:array-null-element	schemas.md	supported
-schema-example-fractional-on-integer	schema.example:fractional-on-integer	schemas.md	supported
 schema-example-null	schema.example=null	schemas.md	supported
 schema-example-on-ref-to-enum	schema.example:on-ref-to-enum	schemas.md	supported
 schema-example-on-ref-to-object	schema.example:on-ref-to-object	schemas.md	supported

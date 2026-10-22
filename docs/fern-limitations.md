@@ -4387,3 +4387,15 @@ byte parity or correctness of every example in the SDK.
 | `0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470` | camptocamp: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.json) |
 | `68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6` | pangea: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/68532ae0fec4c3f1d5db0d88a3f6f77df1a5a0be439c05969aa2f18a77daffa6.json) |
 | `7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2` | pyroscope: valid OpenAPI; Fern refuses an example or type it cannot represent. Crozier generates in both modes. | [SDK evidence](openapi-surface/fern-refusals/limitations/7fa75eeafef9f358e62452d7f5663b228422274f9b16262de141ec8caa761ff2.json) |
+
+## Output-insensitive contexts at the certified pair
+
+These contexts are decided, never reported as proven: deleting the modifier
+changes no file in either generator's complete SDK. Contract A's `differential`
+gate compares both committed Fern trees, generates each document with crozier,
+and checks that the pair isolates the census selector. This disposition needs
+no output-sensitive witness. Other contexts of a key retain their own verdicts.
+
+| key | eligible real witnesses | real contexts screened here | verdict | committed Fern measurement |
+|---|---:|---:|---|---|
+| `schema-example-fractional-on-integer` | 0 | 0 | ignores | Optional request property: [before/after attribution](openapi-surface/witness-search-unproven-features/README.md#optional-fractional-request-property-attribution) at CLI 5.163.1 / Python SDK 5.41.3, with complete 36-file trees; deleting `example: 0.7` changes neither generator's output. Contract A differential trees: [`schema-example-fractional-on-integer`](openapi-surface/probe-expected/schema-example-fractional-on-integer/) and [`schema-example-fractional-on-integer-no-example-control`](openapi-surface/probe-expected/schema-example-fractional-on-integer-no-example-control/). Response, required request-property and parameter contexts remain refused by [`example-type-mismatch`](fern-refusals/example-type-mismatch/evaluation.md#what-fern-rejects-and-what-it-lets-through); the [event-stream refusal](openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream.fern-refusal.txt) is also retained. |

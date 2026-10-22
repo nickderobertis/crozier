@@ -10671,7 +10671,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     def test_the_classification_table_is_the_region_cells_own(self) -> None:
         """Six classes, each counted off the cells, adding up to the population
-        that read `limitations` before the amendment.
+        classified under the amended rule.
 
         A `gap` row cites a committed differential too when it is `UNREACHABLE`,
         and it never read `limitations`, so only a `limitations` row's proof puts
@@ -10728,7 +10728,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(list(counts.values()), stated)
         body = self.section("#### The limitations rows under the amended rule", "\n#### ")
         total = re.search(r"\| \*\*total\*\* \| \*\*(\d+)\*\*", body)
-        population = re.search(r"The (\d+) rows that read `limitations` before", body)
+        population = re.search(r"The (\d+) rows classified here", body)
         self.assertTrue(total and population, "the classification states no total")
         assert total is not None and population is not None
         self.assertEqual(sum(counts.values()), int(total.group(1)))
@@ -11933,7 +11933,8 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
-    def test_a_bounded_feature_search_names_its_candidates(self) -> None:
+    def add_bounded_feature_search(self) -> tuple[str, Path, str]:
+        """Add a pending search without depending on a production gap remaining open."""
         key = "sample-unproven"
         record = self.root / "docs/openapi-surface/sample-search"
         record.mkdir()
@@ -11957,6 +11958,10 @@ class FinishedStateGateTests(unittest.TestCase):
             NAMED_FEATURES_HEADING,
             NAMED_FEATURES_HEADING + f"\n\n| `{key}` | `schemas` | {reason} |\n",
         )
+        return key, record, reason
+
+    def test_a_bounded_feature_search_names_its_candidates(self) -> None:
+        key, record, reason = self.add_bounded_feature_search()
         self.assertEqual([], finished_state_failures(self.root))
         self.assertTrue(bounded_incomplete_search(self.root, key, reason))
         (record / "census.tsv").write_text(
@@ -11980,10 +11985,9 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertTrue(any("unproven feature without" in failure for failure in finished_state_failures(self.root)))
 
     def test_bounded_search_accepts_windows_paths_and_crlf_records(self) -> None:
-        key = "schema-example-fractional-on-integer"
-        reason = named_gap_features(self.root)[key]
+        key, directory, reason = self.add_bounded_feature_search()
         for name in ("README.md", "census.tsv"):
-            record = self.root / "docs/openapi-surface/witness-search-unproven-features" / name
+            record = directory / name
             record.write_bytes(record.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         windows_reason = reason.replace("/", "\\")
         self.assertTrue(bounded_incomplete_search(self.root, key, windows_reason))

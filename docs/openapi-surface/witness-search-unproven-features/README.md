@@ -223,3 +223,33 @@ was used for the Formbricks or Vercel reviews. The null-example proof is now the
 admitted lower-proof [harbor-signal-null fixture](../handwritten/harbor-signal-null/evidence.toml),
 with its residual-only registry; it does not turn any pending candidate into a
 real-specification proof.
+
+## Optional fractional request-property attribution
+
+The optional request-property context is generating but output-insensitive in
+this measurement. The locally authored
+[`before.json`](fractional-optional-attribution/before.json) declares optional
+`Thing.v` as `integer` with `example: 0.7`; the
+[`after.json`](fractional-optional-attribution/after.json) control removes only
+that `example`. Both pass `fern check` and complete packaged generation at
+CLI 5.163.1 / fern-python-sdk 5.41.3. The four `*.fern-*.log` files beside the
+documents retain those runs.
+
+All 36 raw Fern files are identical between the two documents. All 36 crozier
+files are also identical between them. [`trees.tsv`](fractional-optional-attribution/trees.tsv)
+records each complete tree's Contract A digest, before any normalization;
+compare each generator's two rows, not the two generators' raw digests.
+`crozier compare` additionally matches all 36 files against each document's
+Fern output in both normal mode and with `CROZIER_FERN_STRICT=true`, using the
+existing parity normalization and departure catalog. The crozier subprocesses
+ran under `tests/corpus_match/corpus_offline_test.py`'s `deny_network` filter.
+
+These documents use the existing
+[optional request-property control](../../fern-refusals/example-type-mismatch/request-optional-control.yml)
+shape, with its property changed to the integer example above.
+This context is decided as output-insensitive in both generators, never proven.
+Its Contract A differential pair is registered under
+`schema-example-fractional-on-integer` in `../probe-expected/MANIFEST.tsv`; the
+coverage row records `ignores` for this context and the existing refusal class
+for the non-optional contexts. The measurement does not settle outstanding real
+candidates in other contexts.
