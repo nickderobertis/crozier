@@ -446,6 +446,7 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
         if (
             not isinstance(source, dict)
             or not isinstance(source.get("fixture"), str)
+            or not source["fixture"]
             or not isinstance(source.get("origin"), str)
             or source["origin"] not in {"vendored", "corpus"}
         ):
@@ -459,6 +460,7 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
         if (
             not isinstance(row, dict)
             or not isinstance(row.get("selector"), str)
+            or not row["selector"]
             or not isinstance(row.get("fixture"), str)
             or row["fixture"] not in sources
             or type(row.get("count")) is not int
@@ -511,8 +513,8 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
         special[key] = key
     paths = set(measured["openapi.paths"])
     webhooks = set(measured.get("openapi.webhooks", {}))
-    measured["paths-absent"] = dict.fromkeys(sources.keys() - paths, 1)
-    measured["webhooks-without-paths"] = dict.fromkeys(webhooks - paths, 1)
+    measured["paths-absent"] = dict.fromkeys(sorted(sources.keys() - paths), 1)
+    measured["webhooks-without-paths"] = dict.fromkeys(sorted(webhooks - paths), 1)
     ignored: Counter[str] = Counter()
     for selector in (
         "operation.x-fern-ignore",
@@ -580,6 +582,11 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
                 elif key == "operation-id-digit-leading-method":
                     listing = ", ".join(f"{tick}{fixture}{tick} ({count})" for fixture, count in counts.items())
                     evidence = f" Snapshot census {tick}{selector}{tick}: {listing}. " + evidence.lstrip()
+                elif counts and "golden-bearing witnesses: ." in evidence:
+                    listing = ", ".join(f"{tick}{fixture}{tick} ({count})" for fixture, count in counts.items())
+                    evidence = evidence.replace(
+                        "golden-bearing witnesses: .", f"golden-bearing witnesses: {listing}.", 1
+                    )
                 elif counts:
                     raise ValueError(f"{key}: missing census list in snapshot template")
                 evidence = re.sub(
