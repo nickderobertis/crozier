@@ -27089,7 +27089,7 @@ fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
     assert!(run(&["--help"]).status.success());
 }
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey shares the sdk-env edge every promoted SDK-env journey uses; it drives the same compiled e2e binary by the project's standing SDK-env contract. The already-drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads" owns splitting those edges for the family; this receipt producer does not change their selection or ownership.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This real wheel build uses the promoted SDK-env edge. "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads" owns the family's deferred edge split.
 #[test]
 #[ignore = "SDK Python-environment tier (builds and installs a real wheel); run via `just test-sdk-env`"]
 fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {

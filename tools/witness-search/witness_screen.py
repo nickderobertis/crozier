@@ -97,7 +97,14 @@ REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 # The legacy witness-search ledgers this stage files screens into: every
 # `witness-search-<source>/` that carries a `screens.jsonl`, which
 # `tools/witness-search/tests/witness_screen_test.py` reconciles against the committed tree.
-LEGACY_SOURCES = ("apis.guru", "jentic", "github-code-search", "github-publisher-trees", "sourcegraph", "unproven-features")
+LEGACY_SOURCES = (
+    "apis.guru",
+    "jentic",
+    "github-code-search",
+    "github-publisher-trees",
+    "sourcegraph",
+    "unproven-features",
+)
 
 Fetch = Callable[[str, str], tuple[int, bytes]]
 

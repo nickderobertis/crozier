@@ -123,18 +123,19 @@ if mode == 'different-trees' and strict:
 (package / '__init__.py').write_text(body)
 (package / 'reading.py').write_text('VALUE = 7\n')
 (output / 'pyproject.toml').write_text('[project]\nname="limitation-sdk"\nversion="0.0.0"\n')
-if mode == 'symlink-sdk':
-    (output / 'linked.py').symlink_to(package / '__init__.py')
-if mode == 'outside-env':
-    with (package / '__init__.py').open('a') as handle:
-        handle.write("__file__ = '/outside-the-installation/sdk.py'\n")
-if mode == 'discovery-fails':
-    broken = package / 'broken'
-    broken.mkdir()
-    (broken / '__init__.py').write_text("raise ImportError('broken package')\n")
-if mode == 'mutating-import':
-    with (package / '__init__.py').open('a') as handle:
-        handle.write("Path(__file__).with_name('reading.py').write_text('VALUE = 99\\n')\n")
+match mode:
+    case 'symlink-sdk':
+        (output / 'linked.py').symlink_to(package / '__init__.py')
+    case 'outside-env':
+        with (package / '__init__.py').open('a') as handle:
+            handle.write("__file__ = '/outside-the-installation/sdk.py'\n")
+    case 'discovery-fails':
+        broken = package / 'broken'
+        broken.mkdir()
+        (broken / '__init__.py').write_text("raise ImportError('broken package')\n")
+    case 'mutating-import':
+        with (package / '__init__.py').open('a') as handle:
+            handle.write("Path(__file__).with_name('reading.py').write_text('VALUE = 99\\n')\n")
 
 """
 
