@@ -1,0 +1,209 @@
+source	document	sha256	diagnostic
+github-code-search	15web/symfony-starter-kit:backend/src-dev/Maker/Resources/openapi.yaml.twig@d26a8ff2924d7cfc7627928cef9041864d39661c	ffec978dd4f5c9b6c6b43d482a39d4076d189aeb833154457190aacda70c590b	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 9, column 3
+did not find expected key
+  in ""<byte string>"", line 44, column 12"
+github-code-search	Alanarex/demo-devsecops-api-j1:openapi.json@b3cf7fb8b8762dec11b3aa9a2f993bf69fc12496	6efbcd4496119651ba6f49961ac82ff918f51d5cd2f2cbedc564766bf1ebc12b	Expecting ',' delimiter: line 66 column 1 (char 2607)
+github-code-search	Alfian57/gin-kit:internal/cli/templates/api/openapi.yaml.tmpl@9b9931f33be5e6e7b53afda0326a4c0e29039ba0	b85fc928434d5aadd609c5c0da8c6304b44b6aa38798e8dacaff9e2d769862d5	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 3, column 3
+did not find expected key
+  in ""<byte string>"", line 3, column 23"
+github-code-search	CocoDiorr/fastapi-code-generator:fastapi_code_generator/templates/openapi.yaml.jinja2@6efcf6ed011a8e85303905170809cc855d5fab35	4365af9a19176e3fc2f7860383643116372d3cfc8d83a08993d0fd87b486d29a	Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+github-code-search	ErickGBR/Devtree:openapi.json@1b98f0a6eeac1d7143579a2db15f4881b756d3b9	3245fc518494ffffd9142abf7d7338a390ff479bd66326985f6c592a5ca1b99f	"PyYAML parse failure: while scanning for the next token
+found character that cannot start any token
+  in ""<byte string>"", line 8, column 1"
+github-code-search	Generation-i-Systems/audiobook-librarian-server:docs/backup/openapi.yaml.bak@ed1d6fab395607c08a49b0f73e8a179ea1fbb3a3	ff415ae5ce812fa5081ef2fe9828afcb6fe9be71282d279d01099bba52c31210	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 436, column 17
+did not find expected key
+  in ""<byte string>"", line 475, column 18"
+github-code-search	Generation-i-Systems/audiobook-librarian-server:docs/backup/openapi.yaml.fixed@ed1d6fab395607c08a49b0f73e8a179ea1fbb3a3; Generation-i-Systems/audiobook-librarian-server:docs/backup/openapi.yaml.temp@ed1d6fab395607c08a49b0f73e8a179ea1fbb3a3	cf29aca0b2fae133005ec5d7e567157f6f6fd8b6c0c8fe769c23697964d87172	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 319, column 7
+did not find expected key
+  in ""<byte string>"", line 457, column 7"
+github-code-search	Geomatys/examind-community:modules/web-services/cstl-web-dggs/src/main/resources/com/examind/dggs/openapi.json@357d683097aa8be1bc619527b0d6aa26775eccb3	9768a87f2928e347949e9c3a15b5fd1d6753a67890f6ba0ddd59d68bc374e749	Expecting value: line 3110 column 11 (char 114990)
+github-code-search	J-Akiru5/LikasLens:openapi.yaml@537e7dcb123da5382c18a1d6d09752b12cbaebae	6fad767f70b0a6b59ed79802bc6efb33313b7bc920c20d64d9a368c02b0cdaf6	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 1706, column 70"
+github-code-search	NachoOsella/DotFiles-V4:pi/.pi/agent/skills/docs-agent/assets/openapi.yaml.stub@cc61699247b7250092fe79a4e96f6e4fdf36d63f	ea1c6804779aff3196a0ecbadfbddf2b4ebf9c26ee72a5b83cc8bed35048032a	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 84, column 11
+did not find expected key
+  in ""<byte string>"", line 84, column 42"
+github-code-search	NishantJoshi00/finternet-schema-viewer:src/stories/openapi.json.ts@db8fa6d089a89158f8567e8e3c50b5adecb4d105; TeselaGen/json-schema-viewer:src/stories/openapi.json.ts@f9f8164e2970ceb6652fd2e147398c623bed20a2; UvA-FNWI/workflow-schema-viewer:src/stories/openapi.json.ts@f0484fba6cbc6a1bd5237226977c9cd4a0be8347; atlassian-labs/json-schema-viewer:src/stories/openapi.json.ts@6e5520376dd487e92547d9ece4cd805b75c62130	89a4ded15c09e7a231ef341692c7d1b4c126a5d1f64909ee99fb609f72e4eced	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 3, column 20"
+github-code-search	QueueM/QueueMe_base:docs/api/openapi.yaml.bak@21e2576881a4fea3387d2a8493f8ae81741182c3	0d7a4d0b19f1f15eaef5b1bf0bad1b9094bfa0e69e74b86c019efd10fa344848	"PyYAML parse failure: while scanning for the next token
+found character that cannot start any token
+  in ""<byte string>"", line 3, column 1"
+github-code-search	Semprini/pyMDG:mdg/templates/Schema/openapi.yaml.jinja@58cca2266712f725aa937942c66bbffe8f0f4e9d	bb0bf39e3ec9feef52644d382e09df4747066a47ecff47c36273ffc5c4720562	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 18, column 1
+could not find expected ':'
+  in ""<byte string>"", line 19, column 68"
+github-code-search	Sriikaran/LifeGraph-Fresh:docs/openapi.yaml.main@a0227cb03dd1ef6996234f22bd41ef6e29befd85	fb6509358009f4f16a171fe9fe0d973689776b4412d0ddaab44d7e4a9c07d2ef	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 174, column 1
+could not find expected ':'
+  in ""<byte string>"", line 175, column 24"
+github-code-search	aixigo/PREvant:api/res/openapi.yml@202391860b52f252517e3ee4c405fd08332c66d9	fe1ea997d624d50ad240e6e7e7a845a28f1afc119dabd96ea9c7b938dd0e7e0b	"PyYAML parse failure: while scanning for the next token
+found character that cannot start any token
+  in ""<byte string>"", line 109, column 18"
+github-code-search	authelia/authelia:api/openapi.yml@c60045c7c1319f48502885d6b4a3d26dfb2a03bd	3d582392eade8a879a637834999e73b49e12488f752f22bb604fa5674cbe112f	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 38, column 3
+could not find expected ':'
+  in ""<byte string>"", line 39, column 3"
+github-code-search	carlosvidal/Proxy-AI-Text-Enhancer-CI4:openapi.yaml@db999a4a31502c2a31eb3248fb1399dce27d7056	300dd51c10152fc46f0783bb3f192aaa4bbc6ba98e0017a22337ae028ca288b1	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 87, column 9
+could not find expected ':'
+  in ""<byte string>"", line 88, column 7"
+github-code-search	chialab/print2pdf-go:terraform/openapi.yml.tftpl@656aa6059d9b60c3a7d92c8aef70eecafdfc790d	508200adbb6bb902bf80e423a0b04bbf62b3244908fddd15cce7e745f9c1ed0e	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 101, column 11
+did not find expected key
+  in ""<byte string>"", line 102, column 40"
+github-code-search	cloudforet-io/api:template/openapi/openapi.json.tmpl@fcfbd42d4c65bf3b3896df90e4d2c824dc6de732	32f4bdc6a53afc25dfa21de11e4caf01e347a391e63771264255cbeace8ad902	Expecting property name enclosed in double quotes: line 12 column 4 (char 229)
+github-code-search	dcs-soni/skills:api-docs-generator/templates/openapi.yaml.template@11ccbc6c89b5053143ecdb2a0f2b4e229d281e5e	99f6797a8fdcdc971973dff99f674ad56c494f7fec23d9cede821535a91dba32	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 22, column 6
+did not find expected ',' or '}'
+  in ""<byte string>"", line 24, column 14"
+github-code-search	emissions-api/emissions-api:emissionsapi/openapi.yml@fa1c92990b44465fecb29b9881406425c72f529b	459e27a80eaedcae0f8dd40c6f5982d9a6d662003281b74f280a5c5f136abc87	"PyYAML parse failure: while constructing a mapping
+  in ""<byte string>"", line 145, column 15
+found unhashable key
+  in ""<byte string>"", line 145, column 16"
+github-code-search	endoflife-date/endoflife.date:api_v1/openapi.yml@040306d5791ab1673d298a43d5bb57c2b8564f45; endoflife-date/endoflife.date:api_v1/openapi.yml@1c2bec7d384fa7e3c5bdfe820abae92ec9b8ed3b; endoflife-date/endoflife.date:api_v1/openapi.yml@3e049e517a557a9054daffcc8442ce924d9ab3ac; endoflife-date/endoflife.date:api_v1/openapi.yml@ceca006a29e4e31b6828863d13538c7be8e423c2; endoflife-date/endoflife.date:api_v1/openapi.yml@d292bb222d806fe0ec8806235a70d3aa29a037a0; endoflife-date/endoflife.date:api_v1/openapi.yml@dbcfd06869655b5c63ba6f9957e8d95ff5117cb8	ceb9d6b37ff328ca2f924fcf0354c2170404f7e24aedb59a863590a725772c16	"PyYAML parse failure: expected a single document in the stream
+  in ""<byte string>"", line 5, column 1
+but found another document
+  in ""<byte string>"", line 7, column 1"
+github-code-search	florCecotto24/TP-PAW:openapi.yaml@a089f7a64d0e47d64b2e892cbb4d2954e6754aed	180def32e227421c2e26bbc516a63e62c3b5243932261a66d5b910ef997642f2	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 2483, column 26
+did not find expected ',' or '}'
+  in ""<byte string>"", line 2483, column 115"
+github-code-search	francknouama/go-starter:blueprints/web-api-chi/api/openapi.yaml.tmpl@513e5e4c860d7f9fabbf16bc6bd060cdae1e4351	c84febf04b9275f30ed4ba181e7f651480c211983d1143b35b965c931709fabf	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 3, column 3
+did not find expected key
+  in ""<byte string>"", line 3, column 27"
+github-code-search	francknouama/go-starter:blueprints/web-api-ddd/api/openapi.yaml.tmpl@513e5e4c860d7f9fabbf16bc6bd060cdae1e4351	c6603c95b12b0fa40133c333d1f453dc61165144039e5354765bf14343fda578	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 3, column 3
+did not find expected key
+  in ""<byte string>"", line 3, column 27"
+github-code-search	francknouama/go-starter:blueprints/web-api-echo/api/openapi.yaml.tmpl@513e5e4c860d7f9fabbf16bc6bd060cdae1e4351; francknouama/go-starter:blueprints/web-api-standard/api/openapi.yaml.tmpl@513e5e4c860d7f9fabbf16bc6bd060cdae1e4351	3d622f44c08ee6dc121202adcd787fc36a25c3aa4b13b6f23c19e78e1c6e127b	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 3, column 3
+did not find expected key
+  in ""<byte string>"", line 3, column 27"
+github-code-search	gbv/ePuSta-Server:rest-api/Epusta-1.0.x.openapi.yaml.template@dbf2b750bf057450e10af6d54d8b37699d1bf684	d200481dc5fc98e529b7141c0abfa63c113db3321f7299d24bdcc7ff2f1b96db	"PyYAML parse failure: while constructing a mapping
+  in ""<byte string>"", line 7, column 12
+found unhashable key
+  in ""<byte string>"", line 7, column 13"
+github-code-search	getbible/api:src/apps/search/openapi.json.tmpl@355570a2d718a4db8fc7e1c3a3e43129df331f35	c62ae69fbc77b1ac29f8bea8ddd370c3da0aae30e66f5b35597521920d4c180a	Expecting property name enclosed in double quotes: line 31 column 1 (char 1900)
+github-code-search	gmasson/localrouter:openapi.yaml@0e068e47dd261ae13cd05bbc1ff0145ecec45f16	1dfb0f7c1eba9eba47861d88ba402887d5bc0e3c95155ff138008139d70ca4f1	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 201, column 58"
+github-code-search	gravitee-io/gravitee-kubernetes-operator:openapi/openapi.yml@aac5d66b69d711e79cf6d6c516d2bd03d23f4c70	06d30341af7eaf3791c943ffdd8d557d3ef274c9d5b1909dbe6c476aa6f106e5	"PyYAML parse failure: while parsing a block mapping
+did not find expected key
+  in ""<byte string>"", line 50, column 13"
+github-code-search	heyayush/vihari-api-cf:src/openapi.yaml.ts@4dc1e61b4e32c2d40cb8ec0388029f7953b05090	72a60f074100f0caf7373a8fb2d7aec2e83aebefc76f6574535a259c6d3f7ddc	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 3, column 13"
+github-code-search	ideiasfactory/akm:openapi.json@ec0ba6545df7631a31895dbe8b195f2c15d2f5ea	b355e28d83e5a61d455855726fbb1655c256e9fce54ad467c30c15f082cdbefa	Expecting property name enclosed in double quotes: line 205 column 11 (char 7114)
+github-code-search	ilyas-hallak/romm-ios-app:openapi.json.save@d2989bf82686706f551928bc0f90eec4039c64d2	e09e096b560e1eed489ecf5543e1b17b76d47886e93abb808c7d5e77a5870095	Invalid control character at: line 1 column 57930 (char 57929)
+github-code-search	insight-centre/naisc:openapi.yaml@232626cb3dbecbc91f6ba67fff502d93b6c051dc	2fd5677ea5f88adfdc1a914d785b26e3d98809bc3f93ac892b1fc7cdef48e63b	"PyYAML parse failure: while parsing a block collection
+  in ""<byte string>"", line 6, column 3
+did not find expected '-' indicator
+  in ""<byte string>"", line 7, column 3"
+github-code-search	intermine/intermine_boot:openapi.json@a3dde18cb50d9b50db618e1554c7500f7b45d987	06c8551ad3c0846eaa90dd7236e8c9ab4a914188f4feddaeea98da421cc9e915	parse-failure: invalid JSON (trailing comma at 7221)
+github-code-search	jocall3/mostBadassRepo:api/openapi.json@92a73af742e831a4966f359a1429fca98cf06dca	fa4aa3d99e4967cb853cefb8f78ea1e166e22fbb433cb9c09e281e7fd0c767c2	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 1, column 70"
+github-code-search	jocall3/mostBadassRepo:openapi.yaml.txt@92a73af742e831a4966f359a1429fca98cf06dca	a25e7eecd1432db4e8e0b490ad1402902eacf0610ed92cd3c0d4854069208bf2	"PyYAML parse failure: mapping values are not allowed in this context
+  in ""<byte string>"", line 1, column 86"
+github-code-search	johnabass/claimy:openapi.yaml.gt@04097c685e86aca388b98854e03311ccfeda5c9e	a2914941b8d6832a57ba9f6d161fe37909997e5d2cfc9125070c392de2663fa2	"PyYAML parse failure: while constructing a mapping
+  in ""<byte string>"", line 57, column 22
+found unhashable key
+  in ""<byte string>"", line 57, column 23"
+github-code-search	launchpulse/airbnb-management-properties-eco-friendly:backend/openapi.yaml@a91a49588d522059e707d976d7ee9645d420c461	94b78724fd7b57a869aefa3f1b0229e6dac56cba23130a4f4a4fc4d0479f9604	"PyYAML parse failure: did not find expected <document start>
+  in ""<byte string>"", line 2, column 1"
+github-code-search	losnah-think/fulgo:public/api/openapi.json.bak@109c482a0f2d57d956fbfe6f4e33ccf21ebe349e	144167f10fa590094eb5e6e9041df001370c5bb319dcf39bbf6a28f9b364421c	Expecting ',' delimiter: line 319 column 1 (char 13366)
+github-code-search	lsst-dm/ocps-prototype:docs/api/ocps_job_manager.openapi.yaml.js@76c6d14ddebf0f9ec6f7129b17767c587fffd8e9	ab1fe54af221497cd0382de02cb7411d064c82eb7f6b95a3594aa7f6464dbe24	"PyYAML parse failure: did not find expected <document start>
+  in ""<byte string>"", line 4, column 1"
+github-code-search	lsst-dm/uws-api-server:docs/api/ocps_job_manager.openapi.yaml.js@763f609de677d432c57b0ca1a6ec26c52568d356	0e9772c370361b5c4f2e64608953ec6dbe39cfb29219a475bde41f66be5938b9	"PyYAML parse failure: did not find expected <document start>
+  in ""<byte string>"", line 4, column 1"
+github-code-search	metalagman/tgbotspec:internal/openapi/openapi.yaml.gotmpl@18403ce97e5cbbbc86ea1a03ee1bc544565d6065	3f94ddd4f5bf580fc1b97bcdbcf44a02485db218b03bb983342aa12e6d91dda8	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 17, column 1
+could not find expected ':'
+  in ""<byte string>"", line 18, column 3"
+github-code-search	mugraph-payments/mugraph:docs/openapi.yaml@55d8f2fb716f318e982f3d07a188114947667fcf	fcd86cda4e97059470f955454bba662dd5e3c48439fbf235a498f6591d9dd990	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 173, column 3
+did not find expected key
+  in ""<byte string>"", line 373, column 5"
+github-code-search	pacedotdev/oto:otohttp/templates/openapi.yaml.plush@247f45bb5d204bf620001cfbe63706b9ad4cbc56	46b45677bb67343b2a818ebcf0b6fde8b35f629a135ef320df28549861d0bc68	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 9, column 1
+could not find expected ':'
+  in ""<byte string>"", line 10, column 44"
+github-code-search	palomapiot/profiler-buddy:openapi.yaml@992bd631a571f5733ab1f9237bf892b9c0f35cd8	6c70f2a91646bcf9fc3d59d6509aa835ed1b5500d35c45cacdda4b1f77291a67	"PyYAML parse failure: did not find expected <document start>
+  in ""<byte string>"", line 1, column 3"
+github-code-search	serverless-u/AxsessGard:src/main/resources/openapi.yaml.jam@d7bee0fc4ac17e23da3c07ef6b5cb83ed6b5800a	2d919eddae3946c7fe64e86f5359ff65077176e6946ed5f30db883e57c21992e	Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+github-code-search	sophim-development/TravelAppAPI:openapi.yaml@1b3bdefface04f9131adb1ed45f238a05a616e74	6c17f71a30d8b4cc5612b538dab7e697422b99abf1278002ce8aad9ab99bde98	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 19, column 23
+did not find expected ',' or '}'
+  in ""<byte string>"", line 20, column 16"
+github-code-search	testillano/h2agent:docs/api/openapi.yaml@68bc2f295cfc8a34449ccfcd52d6f62a74f72292	ab7dd6fa8a34ea44aa3db68a3bf0a9bebff62809cbed25016c32e108548aebcf	"PyYAML parse failure: while parsing a block collection
+  in ""<byte string>"", line 1160, column 9
+did not find expected '-' indicator
+  in ""<byte string>"", line 1171, column 9"
+github-code-search	threema-ch/threema-android:domain/libthreema/threema-protocols/src/directory.openapi.yml@d44a2b53b2ea2c0bf1065bdaa96987570e5b4e6d; threema-ch/threema-ios:libthreema/threema-protocols/src/directory.openapi.yml@35b749536bbbcd221bda6298ee44ac69435f7ad8	6e1dd9139ab954e6979b9a9ac90e6bbe183395da226703e82b68fb2f13fc61f6	"PyYAML parse failure: could not determine a constructor for the tag '!merge-objects'
+  in ""<byte string>"", line 840, column 16"
+github-code-search	threema-ch/threema-android:domain/protocol/src/directory.openapi.yml@d44a2b53b2ea2c0bf1065bdaa96987570e5b4e6d; threema-ch/threema-desktop:packages/libthreema-wasm/libs/libthreema/threema-protocols/src/directory.openapi.yml@93a6615c5567f0cf8371619dc1a5e888eed1d0b6	8f8c845bfc8bf87291e3c2c7e52ab2d3f567b9143dd43525fce212bc6ca9d09e	"PyYAML parse failure: could not determine a constructor for the tag '!merge-objects'
+  in ""<byte string>"", line 834, column 16"
+github-code-search	touchardv/myhome-presence:internal/api/openapi.yaml.tmpl@1b15c3228ec537f85d5d5e50dd56f03d8969b5c9	1743dbe920fb415a4198013087fa6db4c27366205ba85de96a363b9b96a3fef2	"PyYAML parse failure: while parsing a block mapping
+  in ""<byte string>"", line 14, column 3
+did not find expected key
+  in ""<byte string>"", line 14, column 28"
+github-code-search	truongnat/emplus:docs-wiki/reference/files/api/openapi.json.md@78bd3b93d9170ca4623917ecf666c609ed74ff94	b570702a171ebb77c19708bf177efdfccd99316083ad8cfe66087401eae4d34f	"PyYAML parse failure: expected a single document in the stream
+  in ""<byte string>"", line 2, column 1
+but found another document
+  in ""<byte string>"", line 23, column 1"
+sourcegraph	github.com/MicrosoftDocs/kaizala-docs:Rest-API-docs/kaizala_api_full_swagger.json@445ce7348dc92c6f00ef9495e2e6ebfcc8d09e69	718c0f6194d2476017442fd310290748daac046a3cda93b65bd62a63fb00fb5e	Invalid control character at: line 33 column 177 (char 1442)
+sourcegraph	github.com/authelia/authelia:api/openapi.yml@6bff45d3ac0f9f1004b462854b270e98627c893d; github.com/authelia/authelia:api/openapi.yml@6fbac7e60b83a94317759ff5af4553f781970019; github.com/authelia/authelia:api/openapi.yml@c60045c7c1319f48502885d6b4a3d26dfb2a03bd	3d582392eade8a879a637834999e73b49e12488f752f22bb604fa5674cbe112f	"PyYAML parse failure: while scanning a simple key
+  in ""<byte string>"", line 38, column 3
+could not find expected ':'
+  in ""<byte string>"", line 39, column 3"
+sourcegraph	github.com/aws/aws-sam-cli:tests/functional/commands/validate/lib/models/http_api_existing_openapi.yaml@3a8d3c2d0b7e4d618e51239b3f4fa4ee405d2c4f	60fad90895ca866403fad9fa1d909f12a30ad1beb9ae872c727d48f02c0ecd8d	"PyYAML parse failure: could not determine a constructor for the tag '!Ref'
+  in ""<byte string>"", line 31, column 20"
+sourcegraph	github.com/aws/aws-sam-cli:tests/functional/commands/validate/lib/models/http_api_existing_openapi_conditions.yaml@3a8d3c2d0b7e4d618e51239b3f4fa4ee405d2c4f	531903ae56d454a95b101b30afb0eb626b2fe13ad3975c9e887e4a5441b2e5f3	"PyYAML parse failure: could not determine a constructor for the tag '!Ref'
+  in ""<byte string>"", line 21, column 20"
+sourcegraph	github.com/aws/serverless-application-model:tests/translator/input/http_api_existing_openapi.yaml@ebcce20004bff9d43149eaeda3ca8204a5a2ae14	0aa26da4673f3135001f1405ad99cb6f080ecfee81e33e4d305cfc96abaf0f42	"PyYAML parse failure: could not determine a constructor for the tag '!Ref'
+  in ""<byte string>"", line 31, column 20"
+sourcegraph	github.com/aws/serverless-application-model:tests/translator/input/http_api_existing_openapi_conditions.yaml@ebcce20004bff9d43149eaeda3ca8204a5a2ae14	a8de47466c3cd8dcd5cd28737b513faf06d181b79f08c89085cbcfab1acc85fb	"PyYAML parse failure: could not determine a constructor for the tag '!Ref'
+  in ""<byte string>"", line 21, column 20"
+sourcegraph	github.com/cryptocj520/backpack2:openapi.json@9357f93e9a80174a715c7564aedb32b9753d83ae; github.com/cryptocj520/madingspot420:openapi.json@90bf4d50566e5004af132f74763a08e51c020c59	f1d460c86e023542a5d3acd382967ac33f299396d525200eadc539818bc394ed	Expecting property name enclosed in double quotes: line 6935 column 1 (char 224175)
+sourcegraph	github.com/datastax/astra-assistants-api:source_openapi.yaml@6328c717fa9e3803b692329eb9899553aec08b2c	30781a177460b4c371cd876feff6055b481988e7c60de508961bdfc5f3ec65bf	"PyYAML parse failure: found duplicate anchor; first occurrence
+  in ""<byte string>"", line 9710, column 24
+second occurrence
+  in ""<byte string>"", line 9861, column 24"
+sourcegraph	github.com/etalab-ia/franceservices-backend:api/app/tests/mockups/openai-openapi.yaml@fbbd44f9b96d4d969d93737852a26686ddd3eae0	b7c5de667aaf9a3c6c35ba44accc60b2de5fb5b660451bb008ef48a54bda548e	"PyYAML parse failure: found duplicate anchor; first occurrence
+  in ""<byte string>"", line 9915, column 34
+second occurrence
+  in ""<byte string>"", line 10114, column 34"
+sourcegraph	github.com/liberusoftware/billing-laravel:modules/module-billing-core-api/openapi/v1/billing-core.yaml@cd5fcc21c312dc9cf5d3d944a54a9884bfa5b817	80db1d30ddd6d9bcab4e82a2e8242eebe372f434ac33706e3741f8f5256682ce	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 97, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 97, column 26"
+sourcegraph	github.com/liberusoftware/billing-laravel:modules/module-billing-domains-api/openapi/v1/billing-domains.yaml@cd5fcc21c312dc9cf5d3d944a54a9884bfa5b817	33a483cc6dd111d3d21ef647b17a918605397230517b2a288b2515a90ab5a2ce	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 105, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 105, column 26"
+sourcegraph	github.com/liberusoftware/crm-laravel:modules/crm-activities-api/openapi/v1/crm-activities.yaml@758b2fc45731a9a06416c4e502db4a7f65c6bb60	d807d09e28defc8d6d069a05f92f750e60a62d634f9e895c8fab3b2282c59992	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 17, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 17, column 26"
+sourcegraph	github.com/liberusoftware/crm-laravel:modules/crm-consent-and-preferences-api/openapi/v1/crm-consent-and-preferences.yaml@758b2fc45731a9a06416c4e502db4a7f65c6bb60	f8bb2a1361e124888241720e8a8f0eb8a6ab5a92fa537fb75e13a6eb9c44e12a	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 16, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 16, column 26"
+sourcegraph	github.com/liberusoftware/crm-laravel:modules/crm-core-api/openapi/v1/crm-core.yaml@758b2fc45731a9a06416c4e502db4a7f65c6bb60	7813a422e49cf9ad2a2b024da5fd4ef5cf3ffdc40e9ce4539953b37a19f15109	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 11, column 11
+did not find expected ',' or '}'
+  in ""<byte string>"", line 11, column 22"
+sourcegraph	github.com/liberusoftware/crm-laravel:modules/crm-data-operations-api/openapi/v1/crm-data-operations.yaml@758b2fc45731a9a06416c4e502db4a7f65c6bb60	092b5bc43512061d2f2d975c4c983e2697b8fabfc9ca76f859f3420451cb0601	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 27, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 27, column 26"
+sourcegraph	github.com/liberusoftware/crm-laravel:modules/crm-lead-capture-api/openapi/v1/crm-lead-capture.yaml@758b2fc45731a9a06416c4e502db4a7f65c6bb60	3d612390a8f3815a7b838ee9b24d860214fb5428bf01c385915c37f6e7239afe	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 49, column 15
+did not find expected ',' or '}'
+  in ""<byte string>"", line 49, column 26"
+sourcegraph	github.com/liberusoftware/real-estate-laravel:modules/real-estate-properties-api/openapi/v1/real-estate-properties.yaml@8d7119ee37f3fdd668353515d5fffff465075da5	45d1a658c87691064e6686a59766ae3089c2e9597e6699e81078421b31815786	"PyYAML parse failure: while parsing a flow mapping
+  in ""<byte string>"", line 70, column 11
+did not find expected ',' or '}'
+  in ""<byte string>"", line 70, column 27"
