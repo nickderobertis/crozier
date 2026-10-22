@@ -7283,7 +7283,18 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                 },
                 "Target": {"type": "string"},
             },
-            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": STRUCT}}}},
+            "overlap": {
+                "Root": {
+                    "properties": {
+                        "p": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "properties": {"tags": {"type": "array", "items": {"type": "string"}}}
+                            },
+                        }
+                    }
+                }
+            },
             "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
         },
         {
