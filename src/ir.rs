@@ -13188,7 +13188,7 @@ impl Builder<'_> {
                         discriminant_index: None,
                         source: None,
                         docstring: docstring.clone(),
-                        wrapped: true,
+                        layout: UnionMemberLayout::Wrapped,
                     });
                     continue;
                 }
@@ -21347,7 +21347,10 @@ mod tests {
             ["static", "hiddenField"]
         );
         let nested = &outer.members[1];
-        assert!(nested.wrapped);
+        assert!(matches!(
+            nested.layout,
+            crate::ir::UnionMemberLayout::Wrapped
+        ));
         assert_eq!(nested.fields.len(), 1);
         assert_eq!(nested.fields[0].wire_name, "value");
         assert_eq!(
