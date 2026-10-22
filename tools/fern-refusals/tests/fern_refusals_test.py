@@ -2263,7 +2263,7 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 self.env["COVERAGE_FILE"] = str(Path(os.environ.get("COVERAGE_FILE", ".coverage")).resolve())
 
     def evaluate(
-        self, mode: str = "", name: str = "run", destination: Path | None = None
+        self, mode: str = "", name: str = "run", destination: Path | None = None, timeout: int = 120
     ) -> tuple[subprocess.CompletedProcess[str], Path]:
         env = {**self.env, "SDK_EVAL_MODE": mode}
         receipt = destination or self.root / f"{name}.json"
@@ -2280,6 +2280,8 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 str(self.root / name),
                 "--output",
                 str(receipt),
+                "--timeout",
+                str(timeout),
             ],
             capture_output=True,
             text=True,
@@ -2367,6 +2369,90 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(reason, result.stderr)
                 self.assertFalse(receipt.exists())
+
+    def assert_receipt_recovery(self, receipt: Path, name: str) -> None:
+        result, _ = self.evaluate(name=name, destination=receipt)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(2, json.loads(receipt.read_text())["schema_version"])
+
+    def test_process_start_and_timeout_preserve_receipts_and_recover(self) -> None:
+        for mode in ("compiler-unexecutable", "compiler-timeout"):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"{mode}.json"
+                receipt.write_text("previous receipt\n")
+                if mode == "compiler-unexecutable":
+                    self.compiler.chmod(0o644)
+                try:
+                    result, _ = self.evaluate(mode, mode, receipt, timeout=1 if mode == "compiler-timeout" else 120)
+                finally:
+                    self.compiler.chmod(0o755)
+                self.assertEqual(1, result.returncode)
+                self.assertIn("default_generation could not run", result.stderr)
+                self.assertIn("timed out" if mode == "compiler-timeout" else "Permission denied", result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assert_receipt_recovery(receipt, mode + "-recovered")
+
+    def test_malformed_inspector_output_preserves_receipts_and_recovers(self) -> None:
+        for mode, diagnostic in (
+            ("inspector-json", "runtime inspection did not produce JSON"),
+            ("inspector-structure", "distribution_sha256"),
+        ):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"{mode}.json"
+                receipt.write_text("previous receipt\n")
+                result, _ = self.evaluate(mode, mode, receipt)
+                self.assertEqual(1, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assert_receipt_recovery(receipt, mode + "-recovered")
+
+    def test_missing_prerequisites_preserve_receipts_and_recover(self) -> None:
+        for mode, diagnostic in (
+            ("compiler", "crozier executable missing"),
+            ("work-directory", "evaluation work directory already exists"),
+            ("uv", "uv is missing from PATH"),
+        ):
+            with self.subTest(mode=mode):
+                receipt = self.root / f"missing-{mode}.json"
+                receipt.write_text("previous receipt\n")
+                original_compiler = self.compiler
+                original_path = self.env["PATH"]
+                name = "missing-" + mode
+                match mode:
+                    case "compiler":
+                        self.compiler = self.root / "absent-compiler"
+                    case "work-directory":
+                        (self.root / name).mkdir()
+                    case "uv":
+                        self.env["PATH"] = str(self.root / "absent-tools")
+                try:
+                    result, _ = self.evaluate(name=name, destination=receipt)
+                finally:
+                    self.compiler = original_compiler
+                    self.env["PATH"] = original_path
+                self.assertEqual(1, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual("previous receipt\n", receipt.read_text())
+                self.assertFalse(self.calls.exists(), "prerequisites must fail before starting a tool")
+                self.assert_receipt_recovery(receipt, name + "-recovered")
+                self.calls.unlink()
+
+    def test_receipt_replacement_failure_cleans_temporary_file_and_recovers(self) -> None:
+        receipt = self.root / "receipt.json"
+        receipt.mkdir()
+        previous = receipt / "previous.json"
+        previous.write_text("previous receipt\n")
+        result, _ = self.evaluate(destination=receipt)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("SDK evaluation:", result.stderr)
+        self.assertIn("receipt.json", result.stderr)
+        self.assertEqual("previous receipt\n", previous.read_text())
+        self.assertEqual([], list(self.root.glob(".sdk-evaluation-*")))
+        self.assertTrue((self.root / "run/imports.log").is_file(), "failure must happen after SDK evaluation")
+        previous.unlink()
+        receipt.rmdir()
+        self.assert_receipt_recovery(receipt, "replacement-recovered")
+        self.assertEqual([], list(self.root.glob(".sdk-evaluation-*")))
 
     def test_receipt_integrity_rejects_each_invalid_environment_and_import_description(self) -> None:
         result, receipt = self.evaluate()

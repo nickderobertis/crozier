@@ -70,6 +70,17 @@ match args:
         subprocess.run([real_python, '-m', 'venv', '--without-pip', str(target)], check=True)
         interpreter = target / 'bin/python'
         site = Path(subprocess.check_output([str(interpreter), '-c', 'import sysconfig; print(sysconfig.get_path("purelib"))'], text=True).strip())
+        if mode in {'inspector-json', 'inspector-structure'}:
+            original = target / 'bin/real-python'
+            interpreter.rename(original)
+            interpreter.write_text(
+                '#!/bin/sh\n'
+                'case "$1" in *sdk_evaluation_runtime.py)\n'
+                + ("printf 'not JSON\\n'" if mode == 'inspector-json' else "printf '{}\\n'")
+                + '; exit 0;; esac\n'
+                + 'exec "' + str(original) + '" "$@"\n'
+            )
+            interpreter.chmod(0o755)
         if os.environ.get('SDK_EVAL_COVERAGE'):
             # Instrument the actual child interpreter without downloading a package.
             # This copy is test infrastructure, not a change to the SDK driver.
@@ -109,6 +120,9 @@ label = 'strict_generation' if strict else 'default_generation'
 with open(os.environ['SDK_EVAL_CALLS'], 'a') as log:
     log.write(label + '\n')
 mode = os.environ.get('SDK_EVAL_MODE')
+if mode == 'compiler-timeout':
+    import time
+    time.sleep(3)
 if mode == label + '-fails':
     print('compiler double failed')
     sys.exit(17)
