@@ -3,6 +3,12 @@
 use super::{AdditionalProperties, Schema, TypeField};
 use serde_json::Value;
 
+enum CompositionKind {
+    ExactlyOne,
+    Any,
+    All,
+}
+
 fn annotation(key: &str) -> bool {
     key.starts_with("x-")
         || matches!(
@@ -49,9 +55,9 @@ pub(crate) fn matches(
         return Some(false);
     }
     for (members, kind) in [
-        (&schema.one_of, 1),
-        (&schema.any_of, 0),
-        (&schema.all_of, -1),
+        (&schema.one_of, CompositionKind::ExactlyOne),
+        (&schema.any_of, CompositionKind::Any),
+        (&schema.all_of, CompositionKind::All),
     ] {
         if let Some(members) = members {
             let answers = members
@@ -60,9 +66,9 @@ pub(crate) fn matches(
                 .collect::<Option<Vec<_>>>()?;
             let count = answers.iter().filter(|answer| **answer).count();
             let accepted = match kind {
-                1 => count == 1,
-                0 => count > 0,
-                _ => count == answers.len(),
+                CompositionKind::ExactlyOne => count == 1,
+                CompositionKind::Any => count > 0,
+                CompositionKind::All => count == answers.len(),
             };
             if !accepted {
                 return Some(false);

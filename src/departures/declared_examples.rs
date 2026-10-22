@@ -1,5 +1,6 @@
 //! Conservative validation for declared examples retained in worked calls.
 
+use crate::emit::DeclaredExampleMode;
 use crate::openapi::example_validation::matches;
 use crate::openapi::{OpenApi, Schema};
 use serde_json::Value;
@@ -43,7 +44,7 @@ fn renders_only_declared_values(source: &OpenApi, schema: &Schema, value: &Value
     true
 }
 
-fn substitutions(source: &OpenApi, documentation: bool, reference: bool) -> Vec<Substitution> {
+fn substitutions(source: &OpenApi, rendering: DeclaredExampleMode) -> Vec<Substitution> {
     let Ok(mut config) = crate::config::GenerateConfig::new(
         std::path::PathBuf::new(),
         std::path::PathBuf::new(),
@@ -86,14 +87,9 @@ fn substitutions(source: &OpenApi, documentation: bool, reference: bool) -> Vec<
                     continue;
                 }
                 let type_ref = crate::ir::TypeRef::Named(crate::naming::class_name(key));
-                if let Some(values) = crate::emit::declared_example_substitution(
-                    &ir,
-                    &type_ref,
-                    example,
-                    documentation,
-                    reference,
-                )
-                .filter(|values| values.fallback != values.declared)
+                if let Some(values) =
+                    crate::emit::declared_example_substitution(&ir, &type_ref, example, rendering)
+                        .filter(|values| values.fallback != values.declared)
                 {
                     out.push(Substitution {
                         keyword: crate::naming::model_field_name(wire),
@@ -282,11 +278,14 @@ pub(super) fn region(pair: &super::Pair<'_>) -> Result<Option<super::Region>, St
     let Some(source) = pair.context.source_document.as_ref() else {
         return Ok(None);
     };
-    let candidates = substitutions(
-        source,
-        !pair.rel.ends_with(".py"),
-        pair.rel == "reference.md",
-    );
+    let rendering = if pair.rel == "reference.md" {
+        DeclaredExampleMode::Reference
+    } else if pair.rel.ends_with(".py") {
+        DeclaredExampleMode::Docstring
+    } else {
+        DeclaredExampleMode::Readme
+    };
+    let candidates = substitutions(source, rendering);
     let before = example_blocks(pair.fern);
     let after = example_blocks(pair.crozier);
     if before.len() != after.len() {
@@ -367,7 +366,7 @@ mod tests {
                 ),
                 Some(true)
             );
-            assert!(!substitutions(&doc, false, false).is_empty());
+            assert!(!substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
         }
         for assertion in [
             serde_json::json!({"maximum":10}),
@@ -383,7 +382,7 @@ mod tests {
                 ),
                 None
             );
-            assert!(substitutions(&doc, false, false).is_empty());
+            assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
         }
         let invalid = serde_json::json!({"Window":{"lookback":"twenty"}});
         let doc = source(serde_json::json!({}), invalid.clone());
@@ -396,7 +395,7 @@ mod tests {
             ),
             Some(false)
         );
-        assert!(substitutions(&doc, false, false).is_empty());
+        assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
     }
 
     #[test]
@@ -427,7 +426,7 @@ mod tests {
             ),
             Some(true)
         );
-        assert!(substitutions(&doc, false, false).is_empty());
+        assert!(substitutions(&doc, DeclaredExampleMode::Docstring).is_empty());
     }
 
     #[test]
@@ -436,7 +435,7 @@ mod tests {
             serde_json::json!({}),
             serde_json::json!({"Window":{"lookback":20}}),
         );
-        let candidates = substitutions(&doc, false, false);
+        let candidates = substitutions(&doc, DeclaredExampleMode::Docstring);
         let candidate = &candidates[0];
         assert_eq!(candidate.values.fallback, "ChoiceZero.NORTH");
         assert_eq!(

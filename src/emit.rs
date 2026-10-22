@@ -8621,12 +8621,19 @@ pub(crate) struct DeclaredExampleSubstitution {
     pub declared_imports: BTreeSet<String>,
 }
 
+/// The three supported contexts for a declared worked example.
+#[derive(Clone, Copy)]
+pub(crate) enum DeclaredExampleMode {
+    Docstring,
+    Readme,
+    Reference,
+}
+
 pub(crate) fn declared_example_substitution(
     ir: &Ir,
     type_ref: &TypeRef,
     example: &serde_json::Value,
-    documentation: bool,
-    reference: bool,
+    mode: DeclaredExampleMode,
 ) -> Option<DeclaredExampleSubstitution> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
@@ -8645,8 +8652,8 @@ pub(crate) fn declared_example_substitution(
         client_path_parameters: &ir.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
-        documentation,
-        reference,
+        documentation: !matches!(mode, DeclaredExampleMode::Docstring),
+        reference: matches!(mode, DeclaredExampleMode::Reference),
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
         sdk_first_party: true,
