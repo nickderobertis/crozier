@@ -9435,6 +9435,7 @@ const CORPORA: &[&Corpus] = &[
     &SUPABASE_API_V1,
     &RTA_IN_JAPAN_TWITTER,
     &ONMYSHELF_API,
+    &MICROSOFT_ADME_SEISMIC,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12406,6 +12407,18 @@ const ONMYSHELF_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3001: the publisher's seismic API has a field-less status model.
+const MICROSOFT_ADME_SEISMIC: Corpus = Corpus {
+    api: "microsoft-adme-seismic",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
 /// whose first named request example's empty array is filled from its schema
 /// example.
@@ -13247,7 +13260,12 @@ fn rta_in_japan_twitter_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+#[test]
+fn microsoft_adme_seismic_matches_fern_output() {
+    assert_committed_corpus_matches(&MICROSOFT_ADME_SEISMIC);
+}
+
 #[test]
 fn onmyshelf_api_matches_fern_output() {
     assert_committed_corpus_matches(&ONMYSHELF_API);

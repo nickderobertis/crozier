@@ -625,3 +625,11 @@ The object-query refusal document is from camptocamp/oapi-poc, openapi.yaml,
 revision 9365e94497f2c3a4798259249c2cfef6673197b9.
 Copyright 2022 swisstopo. Its redistribution terms are retained in
 licenses/camptocamp-oapi-poc.txt.
+
+The seismic service OpenAPI document in corpus row 3001 is distributed by
+Microsoft in microsoft/adme-samples at revision
+df39d22ed32acfe80fcdbc5b554871b2c752a39a, rest-apis/M18/seismic_ddms_openapi.yaml.
+The document declares Apache-2.0; the publisher repository grants MIT,
+Copyright (c) Microsoft Corporation. Its repository grant is retained in
+licenses/microsoft-adme-samples.txt; the standard Apache-2.0 terms are retained
+in licenses/fern-APACHE-2.0.txt.

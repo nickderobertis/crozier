@@ -995,6 +995,7 @@
     "tests/fixtures/mermade-openapi-converter/expected": {},
     "tests/fixtures/mi-music/expected": {},
     "tests/fixtures/microcks.local/expected": {},
+    "tests/fixtures/microsoft-adme-seismic/expected": {},
     "tests/fixtures/millenium-falcon-challenge/expected": {},
     "tests/fixtures/milvus-restful-v2-3/expected": {},
     "tests/fixtures/milvus-restful-v2-4/expected": {},

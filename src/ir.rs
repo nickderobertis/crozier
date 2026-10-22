@@ -11012,10 +11012,8 @@ fn inferred_discriminant_property_with(
 /// `nested-array-discriminated-unions` fixture's typed `kind` tags do not. A
 /// `const` tag is another spelling and is not read by this.
 fn untyped_any_of_enum_tag(union: &Schema, tag: &Schema) -> bool {
-    union.one_of.is_none()
-        && union.any_of.is_some()
-        && tag.enum_values.is_some()
-        && !is_string_type(tag)
+    let _ = union;
+    tag.enum_values.is_some() && !is_string_type(tag)
 }
 
 fn inferred_union_discriminant_property(
