@@ -1703,6 +1703,8 @@ class MeasuredAtThePair(unittest.TestCase):
         evidence_path = self.root / relative
         evidence_path.parent.mkdir()
         stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
+        # Negative cases deliberately mutate nested JSON values and field types;
+        # this fixture models untrusted decoder output rather than validated SDK evidence.
         evidence: dict[str, Any] = {
             "schema_version": 1,
             "document_sha256": digest,
@@ -1714,10 +1716,24 @@ class MeasuredAtThePair(unittest.TestCase):
         }
         for stage, args in {
             "validation": ["python", "-m", "openapi_spec_validator", "source.yml"],
-            "strict_generation": ["crozier", "generate", "--fern-strict"],
+            "default_generation": ["crozier", "generate", "python", "--spec", "source.yml", "--output", "default-sdk"],
+            "strict_generation": [
+                "crozier",
+                "generate",
+                "python",
+                "--spec",
+                "source.yml",
+                "--output",
+                "sdk",
+                "--fern-strict",
+            ],
             "build": ["python", "-m", "build", "--wheel"],
             "installation": ["uv", "pip", "install", "sdk.whl"],
-            "imports": ["python", "-c", "pkgutil.walk_packages(package.__path__)"],
+            "imports": [
+                "python",
+                "-c",
+                "import importlib,pkgutil; [importlib.import_module(x.name) for x in pkgutil.walk_packages(package.__path__)]",
+            ],
         }.items():
             evidence[stage]["command"] = args
         ledger = self.root / "docs/fern-limitations.md"
@@ -1744,6 +1760,33 @@ class MeasuredAtThePair(unittest.TestCase):
                 self.assertNotEqual(failed.returncode, 0)
                 self.assertIn(f"no successful {stage} command", failed.stderr)
                 evidence[stage]["exit"] = 0
+        write_evidence()
+        for stage in stages:
+            with self.subTest(unrelated_command=stage):
+                original = evidence[stage]["command"]
+                evidence[stage]["command"] = ["echo", *original]
+                write_evidence()
+                rejected = self.script("build")
+                self.assertNotEqual(rejected.returncode, 0)
+                self.assertIn("do not perform the required evaluation stages", rejected.stderr)
+                evidence[stage]["command"] = original
+        write_evidence()
+        original_validation = evidence["validation"]["command"]
+        evidence["validation"]["command"] = "python -m openapi_spec_validator source.yml"
+        write_evidence()
+        self.assertIn("no successful validation command", self.script("build").stderr)
+        evidence["validation"]["command"] = original_validation
+        write_evidence()
+        original_import = evidence["imports"]["command"]
+        for script in [
+            "print('pkgutil.walk_packages importlib.import_module')",
+            "not valid Python!",
+            "import importlib,pkgutil",
+        ]:
+            evidence["imports"]["command"] = ["python", "-c", script]
+            write_evidence()
+            self.assertIn("do not perform the required evaluation stages", self.script("build").stderr)
+        evidence["imports"]["command"] = original_import
         write_evidence()
         strict_args = evidence["strict_generation"]["command"]
         evidence["strict_generation"]["command"] = ["crozier", "generate"]

@@ -105,7 +105,7 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 | `schema-example-array-null-element` | `search-incomplete` | 41 | outstanding: screen and parity/reach review not complete |
 | `schema-example-empty-object` | `search-incomplete` | 171 | outstanding: screen and parity/reach review not complete |
 | `schema-example-fractional-on-integer` | `search-incomplete` | 20 | outstanding: screen and parity/reach review not complete |
-| `schema-example-null` | `search-incomplete` | 28 | cached attribution preflight complete: no qualifying byte-moving witness; lower-proof fixture required |
+| `schema-example-null` | `search-incomplete` | 28 | cached attribution preflight complete: no qualifying byte-moving witness; admitted lower-proof `harbor-signal-null` fixture |
 | `schema-example-object-on-map` | `search-incomplete` | 636 | outstanding: screen and parity/reach review not complete |
 | `schema-example-on-ref-to-enum` | `search-incomplete` | 100 | outstanding: screen and parity/reach review not complete |
 | `schema-example-on-ref-to-object` | `search-incomplete` | 93 | outstanding: screen and parity/reach review not complete |
@@ -190,3 +190,31 @@ executes the certified SDK against its source schema: the SDK emits a nested
 flat response; its README example also fails compilation. This is a documented
 Fern runtime defect pending a separate crozier repair, not a byte-matched arm
 proof. Neither nested mapping arm leaves the named unproven list on this evidence.
+
+## Publisher reviews after the recovered queue
+
+These reviews apply the [corpus grant rule](../../corpus-licensing.md) to the
+pinned source paths, rather than assuming a successful generator run establishes
+redistribution rights. They supplement the 83 formal screening records; they do
+not claim the 39 outstanding queue entries were screened.
+
+| candidate | publisher provenance and grant scope | grant bytes SHA-256 | outcome |
+|---|---|---|---|
+| `microsoft/adme-samples:rest-apis/M18/seismic_ddms_openapi.yaml@df39d22ed32acfe80fcdbc5b554871b2c752a39a` | Microsoft's own organization distributes this service API document. Its document grant and [repository grant](https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/LICENSE) both permit redistribution; the latter covers the source directory. | `c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383` | admissible; complete certified-pair generation succeeds, but crozier does not byte-match; registration pending repair |
+| `formbricks/formbricks:docs/api-v2-reference/openapi.yml@bfe7933cb2882c99f2196aa6a46edd104cd7fbb8` | The publisher's own repository describes its cloud API at `app.formbricks.com/api/v2`. The [repository grant](https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/LICENSE) places this `docs/` source outside its separately licensed directories and grants redistribution. | `4df0924663a08fbc0d591f6ae39069dcabd913af382b87011055569dea177770` | admissible; recovered generation screen succeeds; complete parity and arm proof remain outstanding |
+| `APIs/vercel.com/0.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | The pinned aggregation declares `https://openapi.vercel.sh` as publisher origin and `api.vercel.com` as server. Its [aggregation grant](https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE) permits redistribution; no document-specific grant overrides it. | `a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499` | admissible pinned redistribution; complete parity and string-const arm proof remain outstanding |
+
+The seismic generation used the already acquired source digest
+`cdf6d45a8d6ec230dd2f2e73e14394f83cb562a1b19ab222ac63dd9f9c460ddf`
+and freshly produced a complete 219-file SDK at the certified pair. Its first
+comparison differs in discriminator class names, discriminator example fields,
+typed object examples and an extension-property example. This is
+**matched-pending repair**, not a registered byte-match or a
+`none-registrable` result. The empty-object arm remains named unproven.
+
+The three grants and publisher metadata were read from the shared acquisition
+cache or through the guarded cache-filling client. No new witness generation
+was used for the Formbricks or Vercel reviews. The null-example proof is now the
+admitted lower-proof [harbor-signal-null fixture](../handwritten/harbor-signal-null/evidence.toml),
+with its residual-only registry; it does not turn any pending candidate into a
+real-specification proof.

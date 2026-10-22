@@ -1498,7 +1498,9 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")
     r.add_argument("--write", action="store_true", help="write the ledger and reach cells")
-    r.add_argument("--keys", nargs="+", help="update only these golden keys, retaining other measured rows and ranks")
+    r.add_argument(
+        "--keys", nargs="+", help="update only these golden keys, retaining other measurements and recomputing ranks"
+    )
     a = sub.add_parser("arms", help="restate the coverage index's arm counts and table from committed files")
     a.add_argument("--headline", action="store_true", help="also restate its current arm and refusal headline")
     s = sub.add_parser("sites", help="resolve every declared site against src/")

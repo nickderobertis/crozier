@@ -45,6 +45,7 @@ new phrase becomes a class deliberately rather than silently.
 from __future__ import annotations
 
 import argparse
+import ast
 import contextlib
 import csv
 import datetime
@@ -66,7 +67,7 @@ from collections.abc import Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, get_args
+from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, cast, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 # A `classes.tsv` class id or a `findings.tsv` finding name, as Fern's logs are classified into them.
@@ -2086,6 +2087,89 @@ def dispositions_path() -> Path:
     return REGISTRY / "dispositions.tsv"
 
 
+class SdkStage(TypedDict):
+    command: list[str]
+    exit: int
+    output: str
+
+
+class SdkEvaluation(TypedDict):
+    schema_version: Literal[1]
+    document_sha256: str
+    fern_cli: str
+    fern_python_sdk: str
+    crozier_commit: str
+    sdk_sha256: str
+    validation: SdkStage
+    default_generation: SdkStage
+    strict_generation: SdkStage
+    build: SdkStage
+    installation: SdkStage
+    imports: SdkStage
+
+
+def sdk_evaluation_commands_match(evidence: SdkEvaluation) -> bool:
+    """Recognize the recorded executables and stages, not arbitrary token bags."""
+    validation = evidence["validation"]["command"]
+    default = evidence["default_generation"]["command"]
+    strict = evidence["strict_generation"]["command"]
+    build = evidence["build"]["command"]
+    installation = evidence["installation"]["command"]
+    imports = evidence["imports"]["command"]
+
+    def python(command: list[str]) -> bool:
+        return re.fullmatch(r"python(?:3(?:\.\d+)?)?(?:\.exe)?", Path(command[0]).name) is not None
+
+    def option(command: list[str], flag: str) -> str | None:
+        if command.count(flag) != 1:
+            return None
+        index = command.index(flag) + 1
+        return command[index] if index < len(command) and not command[index].startswith("--") else None
+
+    if not (len(validation) == 4 and python(validation) and validation[1:3] == ["-m", "openapi_spec_validator"]):
+        return False
+    for command, is_strict in ((default, False), (strict, True)):
+        if (
+            Path(command[0]).name not in {"crozier", "crozier.exe"}
+            or command[1:3] != ["generate", "python"]
+            or option(command, "--spec") != validation[3]
+            or not option(command, "--output")
+            or command.count("--fern-strict") != int(is_strict)
+        ):
+            return False
+    if len(imports) != 3 or not python(imports) or imports[1] != "-c":
+        return False
+    try:
+        script = ast.parse(imports[2])
+    except SyntaxError:
+        return False
+    imported = {
+        alias.name
+        for node in ast.walk(script)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+        if alias.asname is None
+    }
+    calls = {
+        (node.func.value.id, node.func.attr)
+        for node in ast.walk(script)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+    }
+    if (
+        not {"importlib", "pkgutil"} <= imported
+        or not {("pkgutil", "walk_packages"), ("importlib", "import_module")} <= calls
+    ):
+        return False
+    return (
+        python(build)
+        and build[1:3] == ["-m", "build"]
+        and "--wheel" in build
+        and Path(installation[0]).name in {"uv", "uv.exe"}
+        and installation[1:3] == ["pip", "install"]
+        and any(arg.endswith(".whl") for arg in installation[3:])
+    )
+
+
 def limitation_evidence_problems(row: DispositionRow) -> list[str]:
     """A generating exception needs this document's successful SDK evaluation
     and its matching entry in the new-limitations ledger. Never infer soundness
@@ -2100,7 +2184,9 @@ def limitation_evidence_problems(row: DispositionRow) -> list[str]:
         evidence = json.loads((REPO / expected).read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         return [f"{name} cannot read SDK evidence: {error}"]
-    stages = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
+    stages: tuple[
+        Literal["validation", "default_generation", "strict_generation", "build", "installation", "imports"], ...
+    ] = ("validation", "default_generation", "strict_generation", "build", "installation", "imports")
     fields = {
         "schema_version",
         "document_sha256",
@@ -2140,15 +2226,10 @@ def limitation_evidence_problems(row: DispositionRow) -> list[str]:
             problems.append(f"{name} SDK evidence has no successful {stage} command")
     if problems:
         return problems
-    commands = {stage: evidence[stage]["command"] for stage in stages}
-    if (
-        "openapi_spec_validator" not in commands["validation"]
-        or "--fern-strict" not in commands["strict_generation"]
-        or "--fern-strict" in commands["default_generation"]
-        or "--wheel" not in commands["build"]
-        or "install" not in commands["installation"]
-        or not any("pkgutil.walk_packages" in arg for arg in commands["imports"])
-    ):
+    # The closed version-1 header and every stage's exact fields and value types
+    # were checked above; JSON decoding alone cannot express that narrowing.
+    validated = cast(SdkEvaluation, evidence)
+    if not sdk_evaluation_commands_match(validated):
         problems.append(f"{name} SDK evidence commands do not perform the required evaluation stages")
     ledger = REPO / "docs/fern-limitations.md"
     try:

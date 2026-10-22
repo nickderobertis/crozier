@@ -341,6 +341,22 @@ class ReportTests(unittest.TestCase):
         self.assertIn("unknown golden key", failed.stderr)
         self.assertEqual(after, path.read_text(encoding="utf-8"))
 
+    def test_scoped_report_stdout_does_not_write_the_ledger_or_regions(self) -> None:
+        self.assertEqual(self.run_report("--write").returncode, 0)
+        paths = [self.repo / "docs/openapi-surface" / name for name in ("golden-reach.tsv", "demo.md")]
+        before = {path: path.read_bytes() for path in paths}
+        (self.measurement / "tests/demo_a_matches_fern_output.json").write_text(
+            json.dumps({"src/demo.rs": UNIVERSE}), encoding="utf-8"
+        )
+        result = self.run_report("--keys", "flag-set")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("flag-set", result.stdout)
+        self.assertIn("measured at commit 0123456789abcdef", result.stdout)
+        self.assertEqual(before, {path: path.read_bytes() for path in paths})
+        expected = result.stdout
+        self.assertEqual(self.run_report("--write", "--keys", "flag-set").returncode, 0)
+        self.assertEqual(expected, paths[0].read_text(encoding="utf-8"))
+
     def test_scoped_report_inserts_at_rubric_rank_without_changing_old_measurements(self) -> None:
         self.assertEqual(self.run_report("--write").returncode, 0)
         path = self.repo / "docs/openapi-surface/golden-reach.tsv"
@@ -437,7 +453,7 @@ class ReportTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def test_arm_headline_uses_the_ledger_regions_and_registry_and_refuses_missing_inputs(self) -> None:
+    def headline_fixture(self) -> tuple[Path, Path]:
         self.assertEqual(self.run_report("--write").returncode, 0)
         text = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
         named = (
@@ -455,6 +471,10 @@ class ReportTests(unittest.TestCase):
             "## Arms only a refused document reaches\n\n| key | arm | probe | reason | control | class |\n|---|---|---|---|---|---|\n",
             encoding="utf-8",
         )
+        return index, registry
+
+    def test_arm_headline_uses_the_ledger_regions_and_registry_and_refuses_missing_inputs(self) -> None:
+        index, registry = self.headline_fixture()
         result = self.run_arms("--headline")
         self.assertEqual(result.returncode, 0, result.stderr)
         after = index.read_text(encoding="utf-8")
@@ -468,6 +488,78 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(failed.returncode, 0)
         self.assertIn("classes.tsv", failed.stderr)
         self.assertEqual(index.read_text(encoding="utf-8"), after)
+
+    def test_arm_headline_measured_covers_and_conflicting_verdicts(self) -> None:
+        index, _registry = self.headline_fixture()
+        original = index.read_text(encoding="utf-8")
+        original = "\n".join(line for line in original.split("\n") if not line.startswith("| `flag-set` |"))
+        for verdict in ("exhausted", "search-incomplete", "config-gated"):
+            with self.subTest(verdict=verdict):
+                index.write_text(original, encoding="utf-8")
+                self.cover("measured", verdict)
+                self.measurements([], [f"measured\tflag-set\t{self.FLAG_SET_ARM}\t1\t1"])
+                result = self.run_arms("--headline")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                after = index.read_text(encoding="utf-8")
+                self.assertIn("**1 are reached only by a hand-written fixture.**", after)
+                self.assertIn("1 + 1 + 0 + 1 = 3.", after)
+                self.assertIn(f"1 read `{verdict}`", after)
+        self.cover("conflicting", "exhausted")
+        self.measurements(
+            [], [f"{fixture}\tflag-set\t{self.FLAG_SET_ARM}\t1\t1" for fixture in ("measured", "conflicting")]
+        )
+        before = index.read_bytes()
+        result = self.run_arms("--headline")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("conflicting verdicts", result.stderr)
+        self.assertEqual(before, index.read_bytes())
+
+    def test_arm_headline_refuses_malformed_class_registry_without_writing(self) -> None:
+        index, registry = self.headline_fixture()
+        original = registry.read_text(encoding="utf-8")
+        header, row = original.splitlines()
+        fields = row.split("\t")
+        status = header.split("\t").index("status")
+        invalid_status = fields.copy()
+        invalid_status[status] = "invented"
+        for invalid in (
+            "class\nname\n",
+            header + "\n" + "\t".join(fields[:-1]) + "\n",
+            header + "\n" + "\t".join(invalid_status) + "\n",
+            original + row + "\n",
+        ):
+            with self.subTest(registry=invalid):
+                registry.write_text(invalid, encoding="utf-8")
+                before = index.read_bytes()
+                result = self.run_arms("--headline")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("classes.tsv", result.stderr)
+                self.assertEqual(before, index.read_bytes())
+                registry.write_text(original, encoding="utf-8")
+                self.assertEqual(self.run_arms("--headline").returncode, 0)
+
+    def test_arm_headline_refused_partition_and_overlap_or_missing_arm(self) -> None:
+        index, _registry = self.headline_fixture()
+        original = index.read_text(encoding="utf-8")
+        limitations = self.repo / "docs/fern-limitations.md"
+        empty = limitations.read_text(encoding="utf-8")
+        refused = empty + "| `flag-orphan` | `src/demo.rs::unrelated` | probe | reason | control | class |\n"
+        named_without_orphan = "\n".join(
+            line for line in original.split("\n") if not line.startswith("| `flag-orphan` |")
+        )
+        limitations.write_text(refused, encoding="utf-8")
+        index.write_text(named_without_orphan, encoding="utf-8")
+        result = self.run_arms("--headline")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("1 + 0 + 1 + 1 = 3.", index.read_text(encoding="utf-8"))
+        for text, evidence in ((original, refused), (named_without_orphan, empty)):
+            index.write_text(text, encoding="utf-8")
+            limitations.write_text(evidence, encoding="utf-8")
+            before = index.read_bytes()
+            result = self.run_arms("--headline")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("overlap or leave an arm unaccounted", result.stderr)
+            self.assertEqual(before, index.read_bytes())
 
     def arms_index(self, text: str | None = None) -> Path:
         """The scratch coverage index: one arm-count and one arm-table section, or `text`."""

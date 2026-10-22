@@ -295,6 +295,9 @@ def restate(root: Path) -> str:
             if not row["unreached_sites"].isascii() or not row["unreached_sites"].isdigit():
                 raise ValueError(f"golden-reach.tsv: invalid unreached_sites for {row['key']}")
             ledger[row["key"]] = Reach("" if row["witnesses"] == "-" else row["witnesses"], int(row["unreached_sites"]))
+    golden_keys = {key for key, entry in entries.items() if entry.category == "golden"}
+    if set(ledger) != golden_keys:
+        raise ValueError("golden-reach.tsv: keys must equal the golden category population")
     one = [
         f"| `{key}` | `{entries[key].region}` | `{reach.witnesses}` |"
         for key, reach in ledger.items()

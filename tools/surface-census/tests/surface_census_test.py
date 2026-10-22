@@ -16087,30 +16087,31 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 target.write_bytes((REPO / relative).read_bytes())
             registry = root / paths[0]
             test = root / paths[3]
-            if mutation == "missing-file":
-                (root / paths[-1]).unlink()
-            elif mutation == "unbound-journey":
-                test.write_text(
-                    test.read_text().replace(
-                        "fn residual_null_example_is_absent_from_matching_request_snippets", "fn unrelated_journey"
+            match mutation:
+                case "missing-file":
+                    (root / paths[-1]).unlink()
+                case "unbound-journey":
+                    test.write_text(
+                        test.read_text().replace(
+                            "fn residual_null_example_is_absent_from_matching_request_snippets", "fn unrelated_journey"
+                        )
                     )
-                )
-            elif mutation == "nonresidual":
-                test.write_text(test.read_text().replace('"webflow-v2"', '"unrelated-source"'))
-            elif mutation:
-                text = registry.read_text()
-                edits = {
-                    "version": ("version = 1", "version = 2"),
-                    "mode": ('mode = "absence"', 'mode = "assumed"'),
-                    "traversal": ('file = "src/fern/client.py"', 'file = "../client.py"'),
-                    "extra-field": ("version = 1", "version = 1\nunknown = true"),
-                    "duplicate": ("version = 1", "version = 1"),
-                }
-                before, after = edits[mutation]
-                text = text.replace(before, after)
-                if mutation == "duplicate":
-                    text += "\n[[proofs]]" + text.split("[[proofs]]", 1)[1]
-                registry.write_text(text)
+                case "nonresidual":
+                    test.write_text(test.read_text().replace('"webflow-v2"', '"unrelated-source"'))
+                case value if value:
+                    text = registry.read_text()
+                    edits = {
+                        "version": ("version = 1", "version = 2"),
+                        "mode": ('mode = "absence"', 'mode = "assumed"'),
+                        "traversal": ('file = "src/fern/client.py"', 'file = "../client.py"'),
+                        "extra-field": ("version = 1", "version = 1\nunknown = true"),
+                        "duplicate": ("version = 1", "version = 1"),
+                    }
+                    before, after = edits[mutation]
+                    text = text.replace(before, after)
+                    if mutation == "duplicate":
+                        text += "\n[[proofs]]" + text.split("[[proofs]]", 1)[1]
+                    registry.write_text(text)
             proofs, errors = gate.read_residual_proofs(root)
             if errors:
                 return errors
@@ -17729,6 +17730,25 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
         self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
         self.assertEqual(0, self.run_restater().returncode)
+
+    def test_ledger_population_must_equal_golden_categories(self) -> None:
+        path = self.root / "docs/openapi-surface/golden-reach.tsv"
+        original = path.read_text(encoding="utf-8")
+        lines = original.splitlines()
+        header = lines[1].split("\t")
+        extra = lines[2].split("\t")
+        for key in ("unregistered-ledger-key", "schema-example-temporal-duplicate-element"):
+            with self.subTest(key=key):
+                extra[header.index("key")] = key
+                extra[header.index("witnesses")] = "first,second"
+                path.write_text(original + "\t".join(extra) + "\n", encoding="utf-8")
+                before = self.index.read_bytes()
+                result = self.run_restater("--write")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("golden category population", result.stderr)
+                self.assertEqual(before, self.index.read_bytes())
+                path.write_text(original, encoding="utf-8")
+                self.assertEqual(0, self.run_restater().returncode)
 
     def test_output_write_failure_reports_and_recovers(self) -> None:
         region = self.root / "docs/openapi-surface/schemas.md"
