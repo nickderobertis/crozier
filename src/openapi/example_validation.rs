@@ -18,11 +18,6 @@ fn annotation(key: &str) -> bool {
 }
 
 /// `None` means the schema writes an assertion this validator cannot establish.
-/// CLI journeys `composed_narrowing_declines_the_example_correction_and_matches_certified_fern`
-/// and `enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern`
-/// cover reference, composition and string bounds. The declared-reference/union
-/// restriction journeys cover invalid and unsupported examples; the declared-map
-/// journey covers additional properties and the null-rendering controls.
 pub(crate) fn matches(
     schemas: &indexmap::IndexMap<String, Schema>,
     schema: &Schema,

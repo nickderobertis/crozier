@@ -19823,6 +19823,178 @@ fn declared_union_example_restrictions_hold_through_compare() {
     assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
 }
 
+#[cfg(unix)]
+#[test]
+fn rgb_declared_examples_reject_synthesized_fields_and_array_items_through_compare() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let original = std::fs::read_to_string(&source).unwrap();
+    let controls = [
+        ("partial", original
+            .replacen("              required:\n                - lookback\n", "", 1)
+            .replacen("        Vanilla:\n          lookback: 20", "        Vanilla: {}", 1)),
+        ("array", original
+            .replacen("                  type: integer\n                  example: 20",
+                "                  type: array\n                  items:\n                    type: object\n                    properties:\n                      days: {type: integer}", 1)
+            .replacen("        Vanilla:\n          lookback: 20",
+                "        Vanilla:\n          lookback: []", 1)),
+    ];
+    let work = tempfile::tempdir().unwrap();
+    for (name, control) in controls {
+        assert_ne!(control, original, "{name} must change the document");
+        let spec = work.path().join(format!("{name}.yaml"));
+        std::fs::write(&spec, control).unwrap();
+        let (code, result) = compare_with_certified_reference(&spec, &expected, None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        // Other model files intentionally differ because these are source
+        // controls. Pin this worked call so those differences cannot hide an
+        // overbroad example-value allowance.
+        assert!(
+            result["comparison"]["differing"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|path| path == "reference.md"),
+            "{name}: {result:#}"
+        );
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        code, 0,
+        "the original declared example recovers: {result:#}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn rgb_declared_examples_reject_bad_imports_and_duplicate_arguments() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    for (before, after) in [
+        (
+            "from fern import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+            "from fern import FernApi, SyncOptions, SyncStrategy",
+        ),
+        (
+            "from fern import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+            "from fern..invalid import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+        ),
+        (
+            "keychain=SyncKeychainZero.COLORED,",
+            "keychain=SyncKeychainZero.COLORED,\n        keychain=SyncKeychainZero.COLORED,",
+        ),
+    ] {
+        let (code, result) = compare_with_certified_reference(
+            &source,
+            &expected,
+            Some(("reference.md", before, after)),
+        );
+        assert_eq!(code, 3, "{result:#}");
+        assert_eq!(
+            result["comparison"]["differing"],
+            serde_json::json!(["reference.md"])
+        );
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        code, 0,
+        "the unmodified import and argument block recovers: {result:#}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn compare_reports_original_lines_after_a_real_length_changing_example_departure() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let certified = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let work = tempfile::tempdir().unwrap();
+    let generated = work.path().join("generated");
+    probe_command(&source, &generated).assert().success();
+    let marker = "**options:** `SyncOptions`";
+    let generated_text = std::fs::read_to_string(generated.join("reference.md")).unwrap();
+    let original_line = generated_text
+        .lines()
+        .position(|line| line.trim_end() == marker)
+        .unwrap()
+        + 1;
+    let reference = work.path().join("reference");
+    copy_dir(&certified, &reference);
+    let reference_md = reference.join("reference.md");
+    let original_reference = std::fs::read_to_string(&reference_md).unwrap();
+    let reference_line = original_reference
+        .lines()
+        .position(|line| line.trim_end() == marker)
+        .unwrap()
+        + 1;
+    assert!(
+        original_line > reference_line,
+        "the real departures must change length before the diagnostic"
+    );
+    let config = work.path().join("crozier.yml");
+    let quoted = reference.display().to_string().replace('\'', "'\"'\"'");
+    std::fs::write(
+        &config,
+        serde_json::json!({
+            "spec": source, "package-name":"fern", "project-name":"default_package_name",
+            "reference":{"command":format!("cp -R '{quoted}'/. \"$CROZIER_REFERENCE_OUTPUT\"")}
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let run = |diff_dir: Option<&Path>| {
+        let mut command = crozier();
+        command.arg("compare").arg(&config).args(["--json", "-"]);
+        if let Some(directory) = diff_dir {
+            command.arg("--diff-dir").arg(directory);
+        }
+        let output = command.output().unwrap();
+        let report: serde_json::Value = serde_json::from_slice(&output.stdout)
+            .unwrap_or_else(|error| panic!("{error}: {output:?}"));
+        (output.status.code().unwrap(), report)
+    };
+    let (code, report) = run(None);
+    assert_eq!(code, 0, "{report:#}");
+    assert_eq!(original_reference.matches(marker).count(), 1);
+    std::fs::write(
+        &reference_md,
+        original_reference.replace(marker, "**options:** `str`"),
+    )
+    .unwrap();
+    let diffs = work.path().join("diffs");
+    let (code, report) = run(Some(&diffs));
+    assert_eq!(code, 3, "{report:#}");
+    let comparison = &report["results"][0]["comparison"];
+    assert_eq!(comparison["differing"], serde_json::json!(["reference.md"]));
+    assert!(
+        comparison["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == "reference.md"
+                && departure["id"] == "anyof-path-param-schema-example"
+                && departure["line"].as_u64().unwrap() < original_line as u64),
+        "{report:#}"
+    );
+    let files: Vec<_> = walk_files(&diffs)
+        .into_iter()
+        .filter(|file| file.ends_with(".diff"))
+        .collect();
+    assert_eq!(files.len(), 1);
+    let diff = std::fs::read_to_string(diffs.join(&files[0])).unwrap();
+    assert!(
+        diff.contains(&format!(
+            "Unexplained original crozier line(s): {original_line}\n"
+        )),
+        "{diff}"
+    );
+    std::fs::write(reference_md, original_reference).unwrap();
+    let (code, report) = run(None);
+    assert_eq!(
+        code, 0,
+        "restoring the reference clears the mismatch: {report:#}"
+    );
+}
+
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
