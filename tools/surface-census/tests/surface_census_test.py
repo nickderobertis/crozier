@@ -45,7 +45,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NamedTuple
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -803,6 +803,180 @@ NAMED_FEATURES_HEADING = "#### Unproven features, named"
 # The reason a named gap gives when no search backs it at all: its own
 # reason, apart from a search reading `search-incomplete` or `exhausted`.
 NOT_SEARCHED = "`not searched`"
+NAMED_COMBINATIONS_HEADING = "#### Unproven combinations, named"
+# A feature combination's key prefix (`docs/openapi-surface/combinations.md`): its
+# region row is counted apart from the single features.
+COMBINATION_PREFIX = "combo-"
+COMBINATIONS_LIST = Path("docs") / "openapi-surface" / "combinations.md"
+COMBINATION_COLUMNS = ("key", "selector", "region", "seam", "owner", "why")
+COMBINATION_OWNERS = {
+    "examples": "prove-schema-combinations",
+    "models-unions-refs": "prove-schema-combinations",
+    "parameters": "prove-operation-combinations",
+    "bodies-responses": "prove-operation-combinations",
+    "naming-clients": "prove-operation-combinations",
+}
+COMBINATION_REGIONS = (
+    "schemas.md",
+    "parameters.md",
+    "bodies-media.md",
+    "document-paths.md",
+    "security.md",
+    "oas31-extensions.md",
+)
+
+
+@dataclass(frozen=True)
+class SelectedCombination:
+    """One `## Selected` row of `combinations.md`, its code-spans unwrapped."""
+
+    key: str
+    selector: str
+    region: str
+    seam: str
+    owner: str
+    why: str
+
+
+class CombinationRow(NamedTuple):
+    """A combination's region row: the region file's stem and the row's eight cells."""
+
+    region: str
+    cells: list[str]
+
+
+class NamedCombination(NamedTuple):
+    """A row of the coverage report's `Unproven combinations, named` table."""
+
+    region: str
+    why: str
+
+
+def combination_list(root: Path) -> tuple[list[SelectedCombination], list[str]]:
+    """`combinations.md`'s `## Selected` rows as SelectedCombination instances, plus table errors.
+
+    The list restates the census's `COMBINATIONS`; this is the one parse of it the
+    drift test and the enumeration rule read.
+    """
+    text = (root / COMBINATIONS_LIST).read_text(encoding="utf-8")
+    failures: list[str] = []
+    sections = {}
+    for heading in ("## Selected", "## Rejected"):
+        if f"\n{heading}\n" not in text:
+            failures.append(f"combinations.md has no {heading!r} section")
+            sections[heading] = ""
+            continue
+        sections[heading] = text.split(f"\n{heading}\n", 1)[1].split("\n## ", 1)[0]
+    selected: list[SelectedCombination] = []
+    header = [line for line in sections["## Selected"].splitlines() if line.startswith("| key |")]
+    if header and tuple(cell.strip() for cell in header[0].strip().strip("|").split("|")) != COMBINATION_COLUMNS:
+        failures.append(f"combinations.md's `## Selected` columns are {header[0]!r}, not {COMBINATION_COLUMNS}")
+    for line in sections["## Selected"].splitlines():
+        cells = table_cells(line, len(COMBINATION_COLUMNS))
+        if not cells or not re.fullmatch(r"`[^`]+`", cells[0].strip()):
+            continue
+        *spans, why = (cell.strip() for cell in cells)
+        key, selector, region, seam, owner = (span.strip("`") for span in spans)
+        selected.append(SelectedCombination(key, selector, region, seam, owner, why))
+    if not selected:
+        failures.append("combinations.md's `## Selected` table has no row")
+    rejected = [
+        cells
+        for line in sections["## Rejected"].splitlines()
+        if (cells := table_cells(line, 2)) and cells[0].strip() not in ("combination", "---")
+    ]
+    if not rejected:
+        failures.append("combinations.md's `## Rejected` table has no row")
+    for cells in rejected:
+        if not cells[1].strip():
+            failures.append(f"combinations.md rejects {cells[0]!r} with no reason")
+    return selected, failures
+
+
+def combination_failures(root: Path, declared: tuple[census.Combination, ...]) -> list[str]:
+    """Where `combinations.md` parts from the census, the region rows or `witness-search-keys.tsv`."""
+    selected, failures = combination_list(root)
+    surface = root / "docs" / "openapi-surface"
+    keys = [row.key for row in selected]
+    for key in sorted({key for key in keys if keys.count(key) > 1}):
+        failures.append(f"{key}: combinations.md lists it twice")
+    listed = {row.key: (row.selector, row.region) for row in selected}
+    census_side = {combination.key: (combination.selector, combination.region) for combination in declared}
+    for key in sorted(set(listed) | set(census_side)):
+        if key not in census_side:
+            failures.append(f"{key}: combinations.md selects it, but the census declares no such combination")
+        elif key not in listed:
+            failures.append(f"{key}: the census declares it, but combinations.md does not select it")
+        elif listed[key] != census_side[key]:
+            failures.append(
+                f"{key}: combinations.md has selector and region {listed[key]}, the census {census_side[key]}"
+            )
+    for row in selected:
+        key, seam, owner = row.key, row.seam, row.owner
+        if not key.startswith(COMBINATION_PREFIX) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key):
+            failures.append(f"{key}: a combination key is lower-kebab and begins {COMBINATION_PREFIX!r}")
+        if row.region not in COMBINATION_REGIONS:
+            failures.append(f"{key}: region {row.region!r} is not one of {COMBINATION_REGIONS}")
+        if seam not in COMBINATION_OWNERS:
+            failures.append(f"{key}: seam {seam!r} is not one of {sorted(COMBINATION_OWNERS)}")
+        elif owner != COMBINATION_OWNERS[seam]:
+            failures.append(f"{key}: owner {owner!r} does not follow from seam {seam!r} ({COMBINATION_OWNERS[seam]})")
+        if not re.search(r"`src/[a-z_/]+\.rs::[A-Za-z_:]+`", row.why) and not re.search(
+            r"\*\*\d+\*\* sites in \*\*\d+\*\*", row.why
+        ):
+            failures.append(f"{key}: its `why` names neither a crozier function nor co-occurrence counts")
+    region_keys: dict[str, tuple[str, list[str]]] = {}
+    region_rows_of = load_script("tools/surface-census/witness-search-region-keys.py").region_rows
+    for name in COMBINATION_REGIONS:
+        for cells in region_rows_of((surface / name).read_text(encoding="utf-8")):
+            region_keys[cells[0].strip("`")] = (name, cells)
+    for key, (selector, region) in sorted(listed.items()):
+        if key not in region_keys:
+            failures.append(f"{key}: no region row carries it")
+            continue
+        name, cells = region_keys[key]
+        if name != region:
+            failures.append(f"{key}: its region row is in {name}, not {region}")
+        cited = re.search(r"census `([^`]+)`", cells[4])
+        if cells[3].strip("`") != "handwritten" and (cited is None or cited.group(1) != selector):
+            failures.append(f"{key}: its region row cites {cited and cited.group(1)!r}, not {selector!r}")
+    for key in sorted(k for k in region_keys if k.startswith(COMBINATION_PREFIX) and k not in listed):
+        failures.append(f"{key}: a combination region row combinations.md does not select")
+    with (surface / "witness-search-keys.tsv").open(encoding="utf-8", newline="") as handle:
+        tracked = {row["key"]: row for row in csv.DictReader(handle, dialect="excel-tab")}
+    for key, (selector, region) in sorted(listed.items()):
+        row = tracked.get(key)
+        if row is None:
+            failures.append(f"{key}: witness-search-keys.tsv has no row for it")
+        elif (row["selector"], row["region"]) != (selector, region):
+            failures.append(
+                f"{key}: witness-search-keys.tsv has {(row['selector'], row['region'])}, not {(selector, region)}"
+            )
+    return failures
+
+
+def combination_rows(root: Path) -> dict[str, CombinationRow]:
+    """`key` -> the region row of every combination in `root`'s region files."""
+    region_rows_of = load_script("tools/surface-census/witness-search-region-keys.py").region_rows
+    return {
+        cells[0].strip("`"): CombinationRow(path.stem, cells)
+        for path in sorted((root / "docs" / "openapi-surface").glob("*.md"))
+        for cells in region_rows_of(path.read_text(encoding="utf-8"))
+        if cells[0].strip("`").startswith(COMBINATION_PREFIX)
+    }
+
+
+def named_gap_combinations(root: Path) -> dict[str, NamedCombination]:
+    """`key` -> its row of the coverage report's `Unproven combinations, named` table."""
+    doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    if NAMED_COMBINATIONS_HEADING not in doc:
+        return {}
+    body = doc.split(NAMED_COMBINATIONS_HEADING, 1)[1].split("\n#", 1)[0]
+    return {
+        cells[0].strip("` "): NamedCombination(cells[1].strip("` "), cells[2].strip())
+        for line in body.splitlines()
+        if (cells := table_cells(line, 3)) and re.fullmatch(r"`[^`]+`", cells[0].strip())
+    }
 
 
 def named_gap_arms(root: Path) -> dict[tuple[str, str], str]:
@@ -880,10 +1054,17 @@ def finished_state_failures(root: Path) -> list[str]:
     witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
     covers = handwritten_covers(surface / "handwritten")
     named_features = named_gap_features(root)
+    named_combinations = named_gap_combinations(root)
     open_features = set()
+    gap_combinations: dict[str, str] = {}
     for path in sorted(surface.glob("*.md")):
         for cells in RankedBacklogTests.region_rows(path.read_text(encoding="utf-8")):
             key = cells[0].strip("`")
+            if key.startswith(COMBINATION_PREFIX):
+                # A combination is named in its own table, apart from the features.
+                if cells[3].strip("`") == "gap":
+                    gap_combinations[key] = path.stem
+                continue
             settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
             if cells[3].strip("`") != "gap" or settlement != "FIXTURE":
                 continue
@@ -904,6 +1085,27 @@ def finished_state_failures(root: Path) -> list[str]:
         failures.append(
             f"{key}: docs/openapi-surface-coverage.md names it an unproven feature, but it is "
             "not a `FIXTURE` gap row lacking a witness and a cover; remove the row"
+        )
+    for key, region in sorted(gap_combinations.items()):
+        if key not in named_combinations:
+            failures.append(
+                f"{key}: a `gap` combination row ({region}.md) missing from "
+                f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md"
+            )
+        elif named_combinations[key].region != region:
+            failures.append(
+                f"{key}: docs/openapi-surface-coverage.md names it in region "
+                f"{named_combinations[key].region!r}, but its row is in {region!r}"
+            )
+        elif not named_combinations[key].why.startswith(NOT_SEARCHED):
+            failures.append(
+                f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
+                f"without {NOT_SEARCHED} as its reason"
+            )
+    for key in sorted(set(named_combinations) - set(gap_combinations)):
+        failures.append(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination, but it is "
+            "not a `gap` combination row; remove the row"
         )
     arm_covers = {(key, arm) for _fixture, key, arm in covers if arm}
     refused = refused_arm_records(root)
@@ -2707,7 +2909,7 @@ class GrammarContractTests(unittest.TestCase):
         start = "##### The member-only readings"
         self.assertIn(start, text, "the grammar section documents no member-only reading")
         body = text.split(start, 1)[1].split("\nA shape that is a **combination**", 1)[0]
-        documented = set(re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z]+)?)`", body, re.M))
+        documented = set(re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z0-9-]+(?:=[A-Za-z]+)?)`", body, re.M))
         self.assertEqual(set(census.MEMBER_ONLY_PREDICATES), documented)
         stated = re.search(r"They are a\s+closed list of (\d+)", body)
         self.assertIsNotNone(stated, "the section no longer states how many there are")
@@ -2970,18 +3172,28 @@ class GrammarContractTests(unittest.TestCase):
                         )
 
     def test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region(self) -> None:
-        """The list is bounded by the generator's branches, not by what `&` can spell."""
+        """The list is bounded by the generator's branches, not by what `&` can spell.
+
+        A declared conjunction is read off a case of one of the six blind
+        functions, or is a `## Selected` row of `combinations.md` — a feature
+        combination the census declares in `COMBINATIONS` — and is nothing else.
+        """
         derived = {
             matched(re.fullmatch(r"`(.+)`", cells[2])).group(1)
             for rows_of in self.case_rows().values()
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
         }
+        selected_rows, failures = combination_list(REPO)
+        self.assertEqual([], failures)
+        selected = {row.selector for row in selected_rows}
         retired = set(census.RETIRED_CASE_CONJUNCTIONS)
         self.assertLessEqual(retired, set(census.CONJUNCTIONS), "a retired spelling is still declared")
         self.assertEqual(set(), retired & derived, "a retired conjunction is read off a live case")
-        self.assertEqual(set(census.CONJUNCTIONS) - retired, derived & set(census.CONJUNCTIONS))
+        self.assertEqual(set(), retired & selected, "a retired conjunction is a selected combination")
+        self.assertEqual(set(census.CONJUNCTIONS) - retired, (derived | selected) & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
+        self.assertEqual(set(), selected - set(census.CONJUNCTIONS), "a selected combination is undeclared")
 
     # ------------------------------------------------------------------
     # The case table, and what ties it to the code it is a reading of
@@ -3373,7 +3585,11 @@ fn following() { let other = 42; }
             "| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |"
         )
         self.assertIn(header, self.DOC.read_text(encoding="utf-8"))
-        regions = sorted(p.stem for p in (REPO / "docs" / "openapi-surface").glob("*.md"))
+        # `combinations.md` sits beside the region files and is the list their
+        # combination rows are selected by, not a region of its own.
+        regions = sorted(
+            p.stem for p in (REPO / "docs" / "openapi-surface").glob("*.md") if p.name != COMBINATIONS_LIST.name
+        )
         self.assertEqual(
             ["bodies-media", "document-paths", "oas31-extensions", "parameters", "schemas", "security"],
             regions,
@@ -3701,6 +3917,143 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
+        # The feature combinations `combinations.md` selects, over the same sources.
+        # These constants pin source_args()'s window; an empty entry is not a
+        # claim about all registered sources. Positive counts are checked by
+        # RankedBacklogTests.test_every_conjunction_rows_evidence_is_the_census_own_output.
+        "parameter.in=query&parameter.schema>schema.oneOf": {},
+        "parameter.in=query&parameter.schema>schema.anyOf": {},
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued": {
+            "groupe-psa": 1,
+        },
+        "parameter.in=header&parameter.schema>schema.$ref~>schema.enum:string-valued": {},
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.enum:string-valued": {},
+        "parameter.in=query&parameter.schema>schema.properties:non-empty&schema.type:primary=object": {},
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=object": {},
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued": {},
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.enum:string-valued": {},
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.pattern": {},
+        "parameter.example&parameter.schema>schema.$ref": {},
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.format=date-time": {},
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=array": {
+            "groupe-psa": 7,
+        },
+        "parameter.in=query&parameter.schema>schema.default&schema.type:primary=array": {},
+        "operation.requestBody&operation.requestBody:property-named-as-path-parameter": {
+            "crozier-property-name": 4,
+        },
+        "operation.requestBody&operation.requestBody:property-named-as-query-parameter": {},
+        "operation.requestBody&operation.requestBody:property-named-as-header-parameter": {},
+        "!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header": {},
+        "operation.parameters&operation.requestBody:multipart-form-media": {
+            "form-bodies": 1,
+        },
+        "operation.parameters&operation.requestBody:form-urlencoded-media": {
+            "bracketed-property-names": 1,
+            "crozier-property-name": 1,
+            "form-bodies": 1,
+        },
+        "operation.requestBody:json-media&operation.requestBody:multipart-form-media": {},
+        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media": {},
+        "!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf": {},
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf": {},
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.anyOf": {},
+        "requestBody.content>mediaType.schema>schema.$ref~>schema.properties>schema.readOnly": {
+            "writeonly-fields": 1,
+        },
+        "requestBody.content>mediaType.schema>schema.properties>schema.readOnly": {},
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.oneOf": {
+            "recursive-types": 1,
+        },
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.additionalProperties": {},
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.oneOf": {},
+        "mediaType.example&mediaType.schema>schema.allOf": {},
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.allOf": {},
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.example": {},
+        "schema.allOf&schema.example": {},
+        "schema.example&schema.oneOf": {},
+        "schema.anyOf&schema.example": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.example": {},
+        "schema.additionalProperties>schema.oneOf": {},
+        "schema.additionalProperties>schema.anyOf": {},
+        "schema.additionalProperties&schema.oneOf": {},
+        "schema.additionalProperties&schema.anyOf": {},
+        "schema.additionalProperties&schema.nullable": {},
+        "schema.additionalProperties>schema.nullable": {},
+        "schema.items>!schema.type&schema.nullable": {},
+        "schema.additionalProperties>schema.oneOf:discriminated-union": {},
+        "schema.additionalProperties&schema.properties:non-empty": {},
+        "schema.allOf&schema.nullable": {},
+        "schema.allOf>schema.nullable": {},
+        "schema.allOf&schema.deprecated": {
+            "groupe-psa": 1,
+        },
+        "schema.properties>schema.$ref~>schema.readOnly": {},
+        "schema.properties>schema.$ref~>schema.nullable": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable": {},
+        "schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar": {},
+        "schema.allOf>schema.oneOf": {},
+        "schema.oneOf&schema.properties:non-empty": {},
+        "schema.anyOf&schema.properties:non-empty": {},
+        "schema.allOf&schema.required": {
+            "groupe-psa": 19,
+        },
+        "schema.items>schema.oneOf>schema.title": {},
+        "schema.items>schema.anyOf>schema.title": {},
+        "schema.discriminator&schema.oneOf>!schema.$ref": {},
+        "schema.anyOf&schema.discriminator": {},
+        "operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name": {},
+        "operation.x-fern-sdk-method-name&operation.x-fern-streaming": {
+            "crozier-sdk-extensions": 1,
+        },
+        "operation.x-fern-pagination&operation.x-fern-sdk-group-name": {
+            "crozier-sdk-extensions": 1,
+        },
+        "operation.context:success-content&operation.context:success-oneof": {
+            "crozier-property-name": 1,
+            "discriminated-unions": 1,
+            "nexmo-messages": 1,
+        },
+        "operation.context:success-anyof&operation.context:success-content": {},
+        "operation.context:success-nullable&operation.context:success-oneof": {},
+        "operation.context:success-anyof&operation.context:success-nullable": {},
+        "operation.context:response-204&operation.context:success-content": {},
+        "operation.context:success-content&operation.context:success-range": {},
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-download": {},
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-binary-schema": {},
+        "operation.context:oas-three-one&operation.context:root-client&operation.context:success-content": {},
+        "operation.context:grouped-client&operation.context:oas-three-one&operation.context:success-content": {
+            "crozier-sdk-extensions": 2,
+            "malformed-property-schema": 1,
+            "servers-webhooks": 1,
+        },
+        "operation.context:success-download&operation.context:success-json": {},
+        "operation.context:success-download&operation.context:success-text": {},
+        "operation.context:success-binary-schema&operation.context:success-json": {},
+        "operation.context:errors-shared-ref&operation.responses": {"error-responses": 1},
+        "operation.context:error-multiple-media&operation.responses": {},
+        "operation.context:error-oneof&operation.responses": {"nexmo-messages": 1},
+        "operation.context:error-object&operation.responses": {},
+        "operation.context:error-status-different-schemas&operation.responses": {},
+        "operation.context:document-security-required&operation.context:security-empty": {},
+        "operation.context:document-security-required&operation.context:security-nonempty": {},
+        "operation.context:effective-oauth2&operation.context:success-ref-matches-body": {},
+        "operation.context:effective-non-oauth-required&operation.context:success-ref-matches-body": {
+            "client-class-name": 1,
+            "discriminated-unions": 1,
+            "error-responses": 1,
+            "pydantic-extra-fields": 1,
+            "writeonly-fields": 1,
+        },
+        "operation.context:effective-anonymous&operation.context:success-ref-matches-body": {},
+        "operation.context:success-content&operation.context:success-statuses-mixed-media": {},
+        "openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic": {"groupe-psa": 1},
+        "operation.context:basic-auth-scheme&operation.security": {
+            "auth-schemes": 4,
+            "basic-auth": 1,
+            "nexmo-messages": 1,
+        },
+        "operation.context:document-security-declared&operation.security": {},
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -4147,8 +4500,13 @@ class ResolvingDescentTests(unittest.TestCase):
         refuses it by name exactly as it refuses any well-formed combination
         nobody declared.
         """
-        using = [selector for selector in census.CONJUNCTIONS if census.RESOLVING_DESCENT in selector]
-        self.assertEqual(8, len(using), f"the closed list spells {len(using)} with `~>`")
+        combinations = {combination.selector for combination in census.COMBINATIONS}
+        using = [
+            selector
+            for selector in census.CONJUNCTIONS
+            if census.RESOLVING_DESCENT in selector and selector not in combinations
+        ]
+        self.assertEqual(8, len(using), f"the blind-region list spells {len(using)} with `~>`")
         self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
@@ -5023,6 +5381,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
         )
         - frozenset(ConjunctionCensusTests.PRE_EXISTING)
+        - frozenset(combination.selector for combination in census.COMBINATIONS)
         - frozenset(PREDICATES_OUTSIDE_TABLE)
         - POINTER_FORM_PREDICATES
         - ANNOTATED_REF_SELECTORS
@@ -8752,10 +9111,15 @@ class RankedBacklogTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.doc = cls.DOC.read_text(encoding="utf-8")
+        # The single features, and apart from them the feature combinations
+        # `combinations.md` selects, whose rows the feature totals never count.
         cls.entries = {}
+        cls.combination_entries = {}
         for path in sorted(cls.REGIONS.glob("*.md")):
             for cells in cls.region_rows(path.read_text(encoding="utf-8")):
-                cls.entries[cells[0].strip("`")] = (path.stem, cells)
+                key = cells[0].strip("`")
+                into = cls.combination_entries if key.startswith(COMBINATION_PREFIX) else cls.entries
+                into[key] = (path.stem, cells)
 
     # The one parse of a region file's entry rows; the witness-search tools
     # read the same function, so the ranked backlog and the searches agree.
@@ -8812,12 +9176,14 @@ class RankedBacklogTests(unittest.TestCase):
 
     def test_every_enumerated_feature_is_classified_exactly_once(self) -> None:
         """One key per feature, and no spec location owned by two regions."""
-        keys = [
+        every = [
             cells[0].strip("`")
             for path in sorted(self.REGIONS.glob("*.md"))
             for cells in self.region_rows(path.read_text(encoding="utf-8"))
         ]
-        self.assertEqual(len(keys), len(set(keys)), "a feature key appears in two rows")
+        self.assertEqual(len(every), len(set(every)), "a key appears in two rows")
+        # A combination row is counted apart: the walk's feature count is unchanged by it.
+        keys = [key for key in every if not key.startswith(COMBINATION_PREFIX)]
         stated = re.search(r"The (\d+) rows carry (\d+) distinct\s+keys", self.doc)
         self.assertIsNotNone(stated, "the reconciliation no longer states the row count")
         assert stated is not None
@@ -9419,7 +9785,7 @@ class RankedBacklogTests(unittest.TestCase):
         for selector in census.CONJUNCTIONS:
             citing = [
                 (region, cells)
-                for key, (region, cells) in self.entries.items()
+                for key, (region, cells) in {**self.entries, **self.combination_entries}.items()
                 if f"`{selector}`" in cells[4]
                 or (cells[3].strip("`") == "handwritten" and tracked.get(key) == selector)
             ]
@@ -9536,13 +9902,20 @@ class RankedBacklogTests(unittest.TestCase):
         is a measurement nobody took, and two rows for one shape are two answers."""
         rows = self.conjunction_rows()
         self.assertEqual(set(census.CONJUNCTIONS), set(rows))
+        combinations = {combination.selector: combination for combination in census.COMBINATIONS}
         for selector, (region, cells) in sorted(rows.items()):
             with self.subTest(selector=selector):
-                self.assertEqual(
-                    "schemas",
-                    region,
-                    "every conjunction anchors on a Schema Object, so the `schemas` region owns its row",
-                )
+                if selector in combinations:
+                    # A combination's row is its anchor's region's, under its own key.
+                    self.assertEqual(combinations[selector].region, f"{region}.md")
+                    self.assertEqual(combinations[selector].key, cells[0].strip("`"))
+                else:
+                    self.assertEqual(
+                        "schemas",
+                        region,
+                        "every blind-region conjunction anchors on a Schema Object, so the `schemas` region "
+                        "owns its row",
+                    )
                 self.assertIn(cells[3].strip("`"), self.CATEGORIES)
 
     def test_every_conjunction_row_names_the_branch_it_is_about(self) -> None:
@@ -9552,9 +9925,12 @@ class RankedBacklogTests(unittest.TestCase):
         names the generator function and the case, which is what tells a reader it
         is a live code path rather than a shape somebody thought of.
         """
+        combinations = {combination.selector for combination in census.COMBINATIONS}
         for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
             if cells[3].strip("`") == "handwritten":
                 continue  # its fixture's covers, not its cell, carry the evidence
+            if selector in combinations:
+                continue  # `combinations.md`'s `why` names the branches, held by the drift test
             with self.subTest(selector=selector):
                 named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
                 self.assertEqual(
@@ -9602,7 +9978,7 @@ class RankedBacklogTests(unittest.TestCase):
             cwd=REPO,
             capture_output=True,
             text=True,
-            timeout=180,
+            timeout=REGISTRY_WALK_TIMEOUT,
             encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
@@ -11440,6 +11816,39 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
+    def test_a_gap_combination_row_missing_from_its_named_table_is_refused(self) -> None:
+        gap = sorted(key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "gap")
+        self.assertTrue(gap, "the committed tree carries no gap combination row to drop")
+        key = gap[0]
+        doc = "docs/openapi-surface-coverage.md"
+        line = next(
+            line
+            for line in (self.root / doc).read_text(encoding="utf-8").splitlines()
+            if line.startswith(f"| `{key}` |")
+        )
+        self.edit(doc, line + "\n", "")
+        self.assertIn(
+            f"{key}: a `gap` combination row ({combination_rows(self.root)[key].region}.md) missing from "
+            f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_named_combination_that_is_not_a_gap_row_is_refused(self) -> None:
+        golden = sorted(
+            key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "golden"
+        )
+        key = golden[0]
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            "| key | region | why it is unproven |\n|---|---|---|\n| `combo-",
+            f"| key | region | why it is unproven |\n|---|---|---|\n| `{key}` | `schemas` | `not searched` — x |\n| `combo-",
+        )
+        self.assertIn(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination, but it is "
+            "not a `gap` combination row; remove the row",
+            finished_state_failures(self.root),
+        )
+
     def test_a_fixture_gap_row_with_no_witness_or_cover_is_refused(self) -> None:
         row = (
             "| `sample-unproven` | both | Schema Object.sample | gap | none | "
@@ -13012,7 +13421,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         golden = {source["fixture"] for source in self.payload["sources"]}
         count = 0
         for key, cells in rows.items():
-            if cells[3] != "golden" or key in self.SPECIAL:
+            # A combination row's census cell is reconciled with the conjunction rows.
+            if cells[3] != "golden" or key in self.SPECIAL or key.startswith(COMBINATION_PREFIX):
                 continue
             obj, field = re.sub(r" \([^)]*\)$", "", cells[2]).split(".", 1)
             selector = f"{self.PREFIXES[obj]}.{field}"
@@ -13103,7 +13513,9 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
     def test_every_census_cell_is_the_walks_own_and_the_counts_are_stated(self) -> None:
         census_rows = self.reconcile_census_cells()
         ledger_keys = len(dict(re.findall(r"ledger `([^`]+)` — ([^;|*]+?)(?= \||;| \*\*)", self.text)))
-        gaps = sum(1 for cells in self.rows.values() if cells[3] == "gap")
+        gaps = sum(
+            1 for key, cells in self.rows.items() if cells[3] == "gap" and not key.startswith(COMBINATION_PREFIX)
+        )
         stated = re.search(
             r"document-paths evidence: ok \((\d+) census rows, (\d+) ledger keys, (\d+) gap rows?\)",
             self.text,
@@ -17074,5 +17486,479 @@ class NamingWireCensusTests(unittest.TestCase):
                 )
 
 
+class CombinationListTests(unittest.TestCase):
+    """`combinations.md` against the census's `COMBINATIONS`, the region rows and the key set.
+
+    The census declaration is the one source of every selected key, selector and
+    region; the list restates it with the evidence. Each case below mutates a copy
+    of the committed tree one way and reads the failure the drift check names.
+    """
+
+    def setUp(self) -> None:
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        self.root = Path(directory)
+        surface = Path("docs") / "openapi-surface"
+        for relative in [COMBINATIONS_LIST, surface / "witness-search-keys.tsv"] + [
+            surface / name for name in COMBINATION_REGIONS
+        ]:
+            (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / relative, self.root / relative)
+
+    def edit(self, relative: Path, old: str, new: str) -> None:
+        path = self.root / relative
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text, f"{relative} no longer carries the text this case edits")
+        path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+
+    def failures(self) -> list[str]:
+        return combination_failures(self.root, census.COMBINATIONS)
+
+    def first(self) -> census.Combination:
+        return census.COMBINATIONS[0]
+
+    def test_the_committed_list_agrees_with_the_census_the_region_rows_and_the_key_set(self) -> None:
+        self.assertEqual([], combination_failures(REPO, census.COMBINATIONS))
+        self.assertEqual([], self.failures())
+
+    def test_every_census_combination_is_a_declared_conjunction_with_its_own_sentence(self) -> None:
+        for combination in census.COMBINATIONS:
+            with self.subTest(key=combination.key):
+                self.assertEqual(combination.counts, census.CONJUNCTIONS[combination.selector])
+                self.assertIsNone(census.selector_error(combination.selector))
+                self.assertEqual(combination.selector, census.canonical_conjunction(combination.selector))
+
+    def test_a_key_the_census_does_not_declare_is_named(self) -> None:
+        key = self.first().key
+        self.edit(COMBINATIONS_LIST, f"| `{key}` |", f"| `{key}-renamed` |")
+        failures = self.failures()
+        self.assertIn(
+            f"{key}-renamed: combinations.md selects it, but the census declares no such combination", failures
+        )
+        self.assertIn(f"{key}: the census declares it, but combinations.md does not select it", failures)
+
+    def test_a_selector_differing_from_the_census_is_named(self) -> None:
+        combination = self.first()
+        self.edit(COMBINATIONS_LIST, f"| `{combination.selector}` |", "| `schema.oneOf>schema.$ref` |")
+        self.assertIn(
+            f"{combination.key}: combinations.md has selector and region "
+            f"{('schema.oneOf>schema.$ref', combination.region)}, the census "
+            f"{(combination.selector, combination.region)}",
+            self.failures(),
+        )
+
+    def test_a_region_differing_from_the_census_is_named(self) -> None:
+        combination = self.first()
+        other = next(name for name in COMBINATION_REGIONS if name != combination.region)
+        self.edit(
+            COMBINATIONS_LIST,
+            f"| `{combination.selector}` | `{combination.region}` |",
+            f"| `{combination.selector}` | `{other}` |",
+        )
+        failures = self.failures()
+        self.assertIn(
+            f"{combination.key}: combinations.md has selector and region {(combination.selector, other)}, "
+            f"the census {(combination.selector, combination.region)}",
+            failures,
+        )
+        self.assertIn(f"{combination.key}: its region row is in {combination.region}, not {other}", failures)
+
+    def test_a_seam_outside_its_vocabulary_is_named(self) -> None:
+        combination = self.first()
+        self.edit(
+            COMBINATIONS_LIST, f"| `{combination.region}` | `parameters` |", f"| `{combination.region}` | `queries` |"
+        )
+        self.assertIn(f"{combination.key}: seam 'queries' is not one of {sorted(COMBINATION_OWNERS)}", self.failures())
+
+    def test_an_owner_outside_its_vocabulary_or_not_following_its_seam_is_named(self) -> None:
+        combination = self.first()
+        self.edit(
+            COMBINATIONS_LIST,
+            "| `parameters` | `prove-operation-combinations` |",
+            "| `parameters` | `prove-schema-combinations` |",
+        )
+        self.assertIn(
+            f"{combination.key}: owner 'prove-schema-combinations' does not follow from seam 'parameters' "
+            "(prove-operation-combinations)",
+            self.failures(),
+        )
+        self.edit(
+            COMBINATIONS_LIST,
+            "| `parameters` | `prove-schema-combinations` |",
+            "| `parameters` | `someone-else` |",
+        )
+        self.assertIn(
+            f"{combination.key}: owner 'someone-else' does not follow from seam 'parameters' "
+            "(prove-operation-combinations)",
+            self.failures(),
+        )
+
+    def test_a_region_row_citing_another_selector_is_named(self) -> None:
+        combination = self.first()
+        relative = Path("docs") / "openapi-surface" / combination.region
+        self.edit(relative, f"census `{combination.selector}`", "census `parameter.in=query`")
+        self.assertIn(
+            f"{combination.key}: its region row cites 'parameter.in=query', not {combination.selector!r}",
+            self.failures(),
+        )
+
+    def test_a_missing_region_row_is_named(self) -> None:
+        combination = self.first()
+        relative = Path("docs") / "openapi-surface" / combination.region
+        self.edit(relative, f"| {combination.key} | both |", "| combo-elsewhere | both |")
+        failures = self.failures()
+        self.assertIn(f"{combination.key}: no region row carries it", failures)
+        self.assertIn("combo-elsewhere: a combination region row combinations.md does not select", failures)
+
+    def test_a_key_set_row_differing_from_the_list_is_named(self) -> None:
+        combination = self.first()
+        relative = Path("docs") / "openapi-surface" / "witness-search-keys.tsv"
+        self.edit(relative, f"{combination.key}\t{combination.selector}\t", f"{combination.key}\tschema.oneOf\t")
+        self.assertIn(
+            f"{combination.key}: witness-search-keys.tsv has {('schema.oneOf', combination.region)}, "
+            f"not {(combination.selector, combination.region)}",
+            self.failures(),
+        )
+
+    def test_a_census_combination_the_list_omits_is_named(self) -> None:
+        extra = census.Combination("combo-only-in-census", "schemas.md", "schema.oneOf>schema.$ref", "one per x")
+        self.assertIn(
+            "combo-only-in-census: the census declares it, but combinations.md does not select it",
+            combination_failures(self.root, (*census.COMBINATIONS, extra)),
+        )
+
+    def test_a_rejected_candidate_without_a_reason_is_named(self) -> None:
+        text = (self.root / COMBINATIONS_LIST).read_text(encoding="utf-8")
+        rows = [line for line in text.split("\n## Rejected\n", 1)[1].splitlines() if line.startswith("| ")]
+        row = rows[1]  # the header is the first; the separator starts `|---`
+        self.edit(COMBINATIONS_LIST, row, f"{row.rsplit(' | ', 1)[0]} |  |")
+        self.assertTrue(any("with no reason" in failure for failure in self.failures()), self.failures())
+
+    def test_a_list_without_its_rejected_section_is_named(self) -> None:
+        self.edit(COMBINATIONS_LIST, "\n## Rejected\n", "\n## Weighed\n")
+        self.assertIn("combinations.md has no '## Rejected' section", self.failures())
+
+    def test_the_coverage_headline_counts_the_combinations_apart(self) -> None:
+        doc = " ".join((REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8").split())
+        stated = re.search(
+            r"\*\*Feature combinations are counted apart\.\*\* (\d+) combinations are selected .*?: "
+            r"(\d+) are `golden` and (\d+) are `gap`\.",
+            doc,
+        )
+        self.assertIsNotNone(stated, "the headline no longer counts the combinations on a line of its own")
+        assert stated is not None
+        categories = Counter(cells[3].strip("`") for _region, cells in combination_rows(REPO).values())
+        self.assertEqual(
+            [len(census.COMBINATIONS), categories["golden"], categories["gap"]],
+            [int(value) for value in stated.groups()],
+        )
+        self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
+
+    def test_a_golden_combination_row_waits_for_measurement_only_while_its_cell_says_so(self) -> None:
+        """Only combination rows explicitly marked pending may omit reach measurements."""
+        reach = load_script("tools/surface-census/golden-reach.py")
+        golden = reach.golden_rows(REPO / "docs" / "openapi-surface")
+        surface = REPO / "docs" / "openapi-surface"
+        for path in sorted(surface.glob("*.md")):
+            for cells in RankedBacklogTests.region_rows(path.read_text(encoding="utf-8")):
+                key = cells[0].strip("`")
+                if cells[3].strip("`") == "golden" and not key.startswith(COMBINATION_PREFIX):
+                    with self.subTest(key=key):
+                        self.assertIn(key, golden)
+        for key, (_region, cells) in sorted(combination_rows(REPO).items()):
+            if cells[3].strip("`") == "golden":
+                with self.subTest(key=key):
+                    if cells[5].startswith(reach.PENDING_REACH):
+                        self.assertNotIn(key, golden)
+                    else:
+                        self.assertIn(key, golden)
+        key, (region, cells) = next(
+            (key, row) for key, row in sorted(combination_rows(REPO).items()) if row.cells[3].strip("`") == "golden"
+        )
+        relative = Path("docs") / "openapi-surface" / f"{region}.md"
+        current = next(
+            line
+            for line in (self.root / relative).read_text(encoding="utf-8").splitlines()
+            if line.startswith((f"| {key} |", f"| `{key}` |"))
+        )
+        for cell, included in ((reach.PENDING_REACH, False), ("reach: measured test case", True)):
+            changed = [*cells]
+            changed[5] = cell
+            replacement = "| " + " | ".join(changed) + " |"
+            self.edit(relative, current, replacement)
+            current = replacement
+            self.assertEqual(included, key in reach.golden_rows(self.root / "docs" / "openapi-surface"))
+
+
+class RequestBodyReadingTests(unittest.TestCase):
+    """The request-body readings of an Operation Object, over two small committed documents.
+
+    `tools/surface-census/tests/data/request-body-readings/` writes every form the
+    readings decide: a body offering two media types, a form body, an octet-stream
+    body reached through `components.requestBodies` and one offered beside a JSON
+    subtype, a media-type key spelled in capitals with a parameter, and body
+    properties shared with a path, query, header and cookie parameter — declared on
+    the operation, on its Path Item through a `$ref`, through an `allOf`, and in a
+    different letter case. Each combination counts exactly the operations its
+    composition names.
+    """
+
+    DATA = Path(__file__).resolve().parent / "data" / "request-body-readings"
+    EXPECTED: ClassVar = {
+        "operation.requestBody&operation.requestBody:property-named-as-path-parameter": {"shared-names": 2},
+        "operation.requestBody&operation.requestBody:property-named-as-query-parameter": {"shared-names": 1},
+        "operation.requestBody&operation.requestBody:property-named-as-header-parameter": {"shared-names": 1},
+        "operation.requestBody:json-media&operation.requestBody:multipart-form-media": {"media-kinds": 1},
+        "operation.parameters&operation.requestBody:multipart-form-media": {"media-kinds": 1, "shared-names": 1},
+        "operation.parameters&operation.requestBody:form-urlencoded-media": {"media-kinds": 1},
+        "!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header": {
+            "media-kinds": 1
+        },
+        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media": {"media-kinds": 1},
+        "!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf": {
+            "media-kinds": 1
+        },
+    }
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        completed = run("--vendored-only", "--fixtures-root", str(cls.DATA), "--json")
+        assert completed.returncode == 0, completed.stderr
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
+
+    def test_the_cases_cover_every_combination_using_a_reading(self) -> None:
+        using = {
+            combination.selector
+            for combination in census.COMBINATIONS
+            if any(reading in combination.selector for reading in census.REQUEST_BODY_MEMBER_PREDICATES)
+        }
+        self.assertEqual(using, set(self.EXPECTED))
+
+    def test_each_combination_counts_the_operations_its_composition_names(self) -> None:
+        for selector, expected in self.EXPECTED.items():
+            with self.subTest(selector=selector):
+                reported = {fixture: count for (name, fixture), count in self.reported.items() if name == selector}
+                self.assertEqual(expected, reported)
+
+    def test_no_reading_is_ever_recorded_on_its_own(self) -> None:
+        recorded = sorted(name for name, _fixture in self.reported if name in census.REQUEST_BODY_MEMBER_PREDICATES)
+        self.assertEqual([], recorded)
+        self.assertLessEqual(set(census.REQUEST_BODY_MEMBER_PREDICATES), set(census.MEMBER_ONLY_PREDICATES))
+
+    def test_a_misspelled_combination_is_refused_by_name(self) -> None:
+        misspelled = "operation.requestBody&operation.requestBody:property-named-as-path-param"
+        completed = run("--vendored-only", "--fixtures-root", str(self.DATA), "--selector", misspelled)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn(repr(misspelled), completed.stderr)
+        self.assertIn("is not one of the conjunction selectors", completed.stderr)
+        self.assertIn("operation.requestBody&operation.requestBody:property-named-as-path-parameter", completed.stderr)
+
+    def test_a_reading_alone_is_refused_as_a_selector_by_name(self) -> None:
+        for reading in sorted(census.REQUEST_BODY_MEMBER_PREDICATES):
+            with self.subTest(reading=reading):
+                completed = run("--vendored-only", "--fixtures-root", str(self.DATA), "--selector", reading)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(reading), completed.stderr)
+                self.assertIn("is not one of the predicate selectors", completed.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
+
+
+class OperationContextCompositionTests(unittest.TestCase):
+    """Drive status, document and media readings through the census CLI."""
+
+    DATA = Path(__file__).resolve().parent / "data" / "operation-context"
+
+    def test_authored_documents_count_only_the_operations_the_composition_names(self) -> None:
+        declarations = {item.key.removeprefix("combo-"): item for item in census.COMBINATIONS}
+        for fixture in sorted(self.DATA.iterdir()):
+            item = declarations[fixture.name]
+            expected = 2 if fixture.name == "error-status-different-schemas" else 1
+            with self.subTest(key=item.key):
+                completed = run(
+                    "--vendored-only",
+                    "--fixtures-root",
+                    str(self.DATA),
+                    "--fixture",
+                    fixture.name,
+                    "--selector",
+                    item.selector,
+                    "--json",
+                )
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                rows = json.loads(completed.stdout)["rows"]
+                self.assertEqual(
+                    [(item.selector, fixture.name, expected)],
+                    [(row["selector"], row["fixture"], row["count"]) for row in rows],
+                )
+                # Removing the declaring operation leaves an adjacent ordinary
+                # response; it must not stand in for the missing combination.
+                document = json.loads((fixture / "openapi.json").read_text(encoding="utf-8"))
+                del document["paths"]["/target"]
+                document["paths"].pop("/peer", None)
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    source = root / fixture.name / "openapi.json"
+                    source.parent.mkdir()
+                    source.write_text(json.dumps(document), encoding="utf-8")
+                    recovery = run(
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--fixture",
+                        fixture.name,
+                        "--selector",
+                        item.selector,
+                        "--json",
+                    )
+                    self.assertEqual(0, recovery.returncode, recovery.stderr)
+                    self.assertEqual([], json.loads(recovery.stdout)["rows"])
+
+    def test_every_context_reading_is_a_member_and_a_misspelling_is_named(self) -> None:
+        self.assertLessEqual(set(census.OPERATION_CONTEXT_MEMBER_PREDICATES), set(census.MEMBER_ONLY_PREDICATES))
+        for reading in census.OPERATION_CONTEXT_MEMBER_PREDICATES:
+            with self.subTest(reading=reading):
+                misspelled = reading + "-misspelled&operation.responses"
+                completed = run("--selector", misspelled)
+                self.assertNotEqual(0, completed.returncode)
+                self.assertIn(misspelled, completed.stderr)
+
+    def test_anchor_index_preserves_nested_fields_and_negative_only_groups(self) -> None:
+        """The local-pool API keeps its counts for non-anchor objects and absence-only queries."""
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "Gallery archive", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {"Plaque": {"type": "string", "xml": {"name": "plaque", "namespace": "urn:gallery"}}}
+            },
+        }
+        nested = "schema.xml.name&schema.xml.namespace"
+        absent = "!schema.$ref&!schema.title"
+        conjunctions = {text: census.compile_conjunction(text) for text in (nested, absent)}
+        counts = census.census_document(document, conjunctions=conjunctions)
+        # Root, info, paths, components, schema and xml are six object nodes;
+        # only the xml node writes both of the nested fields.
+        self.assertEqual((1, 6), (counts.get(nested, 0), counts.get(absent, 0)))
+        document["components"]["schemas"]["Plaque"]["title"] = "Plaque"
+        counts = census.census_document(document, conjunctions=conjunctions)
+        self.assertEqual((1, 5), (counts.get(nested, 0), counts.get(absent, 0)))
+
+    def report_documents(self, selector: str, documents: dict[str, Any]) -> dict[str, int]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                source = root / name / "openapi.json"
+                source.parent.mkdir()
+                source.write_text(json.dumps(document), encoding="utf-8")
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector, "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return {row["fixture"]: row["count"] for row in json.loads(completed.stdout)["rows"]}
+
+    def test_anonymous_security_alternative_counts_and_required_control_does_not(self) -> None:
+        template = json.loads(
+            (self.DATA / "echo-body-effective-anonymous" / "openapi.json").read_text(encoding="utf-8")
+        )
+        documents = {}
+        for name, requirements in (
+            ("anonymous-alternative", [{}, {"Access": []}]),
+            ("required-control", [{"Access": []}]),
+        ):
+            document = json.loads(json.dumps(template))
+            document["paths"]["/target"]["get"]["security"] = requirements
+            documents[name] = document
+        selector = "operation.context:effective-anonymous&operation.context:success-ref-matches-body"
+        self.assertEqual({"anonymous-alternative": 1}, self.report_documents(selector, documents))
+
+    def test_nullable_flag_and_null_type_array_count_and_nonnullable_controls_do_not(self) -> None:
+        template = json.loads((self.DATA / "success-oneof-nullable" / "openapi.json").read_text(encoding="utf-8"))
+        documents = {}
+        for name, version, declaration, member in (
+            ("nullable-flag", "3.0.3", {"type": "object", "nullable": True}, {"type": "object", "nullable": True}),
+            ("null-type-array", "3.1.0", {"type": ["object", "null"]}, {"type": ["object", "null"]}),
+        ):
+            document = json.loads(json.dumps(template))
+            document["openapi"] = version
+            schema = {
+                **declaration,
+                "oneOf": [
+                    {**member, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+                    {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"]},
+                ],
+            }
+            document["paths"]["/target"]["get"]["responses"]["200"]["content"]["application/json"]["schema"] = schema
+            documents[name] = document
+            control = json.loads(json.dumps(document))
+            nonnullable = control["paths"]["/target"]["get"]["responses"]["200"]["content"]["application/json"][
+                "schema"
+            ]
+            if version.startswith("3.0"):
+                nonnullable["nullable"] = False
+            else:
+                nonnullable["type"] = ["object"]
+            documents[name + "-control"] = control
+        selector = "operation.context:success-nullable&operation.context:success-oneof"
+        self.assertEqual({"nullable-flag": 1, "null-type-array": 1}, self.report_documents(selector, documents))
+
+
+class MalformedRequiredMemberTests(unittest.TestCase):
+    def test_mapping_members_are_skipped_and_required_names_are_preserved(self) -> None:
+        template = {
+            "openapi": "3.0.3",
+            "info": {"title": "Archive entries", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {
+                    "ArchiveEntry": {
+                        "type": "object",
+                        "properties": {
+                            "label": {"type": "string", "example": "plaque"},
+                            "index": {"type": "integer", "example": 7},
+                        },
+                    }
+                }
+            },
+        }
+        documents = {}
+        for name, required, body in (
+            ("malformed-component", ["label", {"unexpected": "member"}], False),
+            ("malformed-body", ["label", {"unexpected": "member"}], True),
+            ("valid-control", ["label"], False),
+            ("all-required-control", ["label", "index", {"unexpected": "member"}], False),
+        ):
+            document = json.loads(json.dumps(template))
+            document["components"]["schemas"]["ArchiveEntry"]["required"] = required
+            if body:
+                document["paths"]["/entries"] = {
+                    "post": {
+                        "requestBody": {
+                            "description": "",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArchiveEntry"}}},
+                        },
+                        "responses": {"204": {"description": "Stored"}},
+                    }
+                }
+            documents[name] = document
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                source = root / name / "openapi.json"
+                source.parent.mkdir()
+                source.write_text(json.dumps(document), encoding="utf-8")
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.properties:optional-example",
+                "--json",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(set(documents), {source["fixture"] for source in payload["sources"]})
+        self.assertEqual(
+            {"malformed-component": 1, "malformed-body": 1, "valid-control": 1},
+            {row["fixture"]: row["count"] for row in payload["rows"]},
+        )

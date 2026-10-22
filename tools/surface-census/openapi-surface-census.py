@@ -2637,6 +2637,91 @@ MEMBER_ONLY_PREDICATES = {
 }
 
 
+# Operation-local request-body readings are conjunction members; their definitions
+# are in docs/openapi-surface-coverage.md's selector grammar.
+REQUEST_BODY_MEMBER_PREDICATES = {
+    "operation.requestBody:json-media": (
+        "one per Operation Object whose request body offers a JSON media type — "
+        "`application/json`, a `+json` or `/ndjson` suffix, or an `application/` "
+        "subtype naming `json`, the test `is_json_like_media_type` of `src/ir.rs` makes"
+    ),
+    "operation.requestBody:multipart-form-media": (
+        "one per Operation Object whose request body offers `multipart/form-data`"
+    ),
+    "operation.requestBody:form-urlencoded-media": (
+        "one per Operation Object whose request body offers `application/x-www-form-urlencoded`"
+    ),
+    "operation.requestBody:octet-stream-media": (
+        "one per Operation Object whose request body offers `application/octet-stream`"
+    ),
+    "operation.requestBody:property-named-as-path-parameter": (
+        "one per Operation Object one of whose path parameters, declared on it or on "
+        "its Path Item, has the same `name` as a property of a schema one of its "
+        "request body's media types writes, compared as written"
+    ),
+    "operation.requestBody:property-named-as-query-parameter": (
+        "one per Operation Object one of whose query parameters shares its `name` with "
+        "such a request-body property, on the same terms"
+    ),
+    "operation.requestBody:property-named-as-header-parameter": (
+        "one per Operation Object one of whose header parameters shares its `name` with "
+        "such a request-body property, on the same terms"
+    ),
+}
+MEMBER_ONLY_PREDICATES.update(REQUEST_BODY_MEMBER_PREDICATES)
+
+
+# Operation context is a conjunction member: it joins document settings, status
+# map keys and response representations at the operation that lowering reads.
+OPERATION_CONTEXT_MEMBER_PREDICATES = {
+    "operation.context:oas-three-zero": "one per Operation Object where the enclosing document declares OpenAPI 3.0",
+    "operation.context:oas-three-one": "one per Operation Object where the enclosing document declares OpenAPI 3.1",
+    "operation.context:root-client": "one per Operation Object where neither a nonempty SDK group nor a nonblank tag groups the operation",
+    "operation.context:grouped-client": "one per Operation Object where a nonempty SDK group or a nonblank tag groups the operation",
+    "operation.context:document-security-required": "one per Operation Object where the document declares a nonempty security list with no anonymous alternative",
+    "operation.context:security-empty": "one per Operation Object where the operation explicitly declares an empty security list",
+    "operation.context:security-nonempty": "one per Operation Object where the operation explicitly declares a nonempty security list",
+    "operation.context:effective-oauth2": "one per Operation Object where the effective security requirements name an OAuth2 scheme",
+    "operation.context:effective-non-oauth-required": "one per Operation Object where the effective security list requires authentication and names no OAuth2 scheme",
+    "operation.context:effective-anonymous": "one per Operation Object where the effective security list is absent, empty or contains an anonymous alternative",
+    "operation.context:success-json": "one per Operation Object where the selected success response offers application/json",
+    "operation.context:success-download": "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type",
+    "operation.context:success-text": "one per Operation Object where the selected success response offers a text media type other than event-stream",
+    "operation.context:success-binary-schema": "one per Operation Object where a selected success representation resolves to a string schema with format binary",
+    "operation.context:success-oneof": "one per Operation Object where a selected success representation resolves to a schema declaring oneOf",
+    "operation.context:success-anyof": "one per Operation Object where a selected success representation resolves to a schema declaring anyOf",
+    "operation.context:success-nullable": "one per Operation Object where a selected success representation resolves to a nullable schema or a union with a null member",
+    "operation.context:success-content": "one per Operation Object where the selected success response declares nonempty content",
+    "operation.context:response-204": "one per Operation Object where the responses map declares status 204",
+    "operation.context:success-ref-matches-body": "one per Operation Object where the application/json request schema and a selected success representation write the same reference",
+    "operation.context:errors-shared-ref": "one per Operation Object where two distinct error status keys declare bodies with the same schema reference",
+    "operation.context:error-multiple-media": "one per Operation Object where an error response declares at least two media types",
+    "operation.context:error-oneof": "one per Operation Object where an error representation resolves to a schema declaring oneOf",
+    "operation.context:error-object": "one per Operation Object where an error representation declares an inline object with properties",
+    "operation.context:error-status-different-schemas": "one per Operation Object where an error status key occurs on another operation with a differently declared schema",
+    "operation.context:success-range": "one per Operation Object where the responses map declares 2XX beside a concrete 2xx status",
+}
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:success-statuses-mixed-media"] = (
+    "one per Operation Object where two concrete success status keys declare different media-type key sequences"
+)
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:basic-auth-scheme"] = (
+    "one per Operation Object where the document declares an HTTP basic security scheme"
+)
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:document-security-declared"] = (
+    "one per Operation Object where the document writes a security array, including an empty array or anonymous alternatives"
+)
+MEMBER_ONLY_PREDICATES.update(OPERATION_CONTEXT_MEMBER_PREDICATES)
+
+# The media-type keys the four media readings above test, each against the key's
+# base type (the part before any `;` parameter), lower-cased.
+REQUEST_BODY_MEDIA_TESTS: tuple[tuple[str, Callable[[str], bool]], ...] = (
+    ("operation.requestBody:json-media", lambda base: is_json_like_media_type(base)),
+    ("operation.requestBody:multipart-form-media", lambda base: base == "multipart/form-data"),
+    ("operation.requestBody:form-urlencoded-media", lambda base: base == "application/x-www-form-urlencoded"),
+    ("operation.requestBody:octet-stream-media", lambda base: base == "application/octet-stream"),
+)
+
+
 # One compiled conjunction: per group, the members that must hold and the members
 # that must not, and the descent leaving that group.
 CompiledConjunction = tuple[tuple[tuple[frozenset[str], frozenset[str]], tuple[str, str] | None], ...]
@@ -2858,6 +2943,584 @@ CONJUNCTIONS.update(
         if case.residual is not None
     }
 )
+
+
+@dataclass(frozen=True)
+class Combination:
+    """One selected feature combination: its key, its region file, its conjunction and what it counts."""
+
+    key: str
+    region: str
+    selector: str
+    counts: str
+
+
+# The feature combinations, declared here and nowhere else: the one source of each
+# selected key, region and conjunction. `docs/openapi-surface/combinations.md`
+# restates them with the evidence that selected them, and
+# `tools/surface-census/tests/surface_census_test.py` fails when the two part.
+COMBINATIONS: tuple[Combination, ...] = (
+    Combination(
+        "combo-query-param-oneof",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.oneOf",
+        "one per Parameter Object in `query` whose schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-query-param-anyof",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.anyOf",
+        "one per Parameter Object in `query` whose schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-query-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-header-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `header` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-path-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `path` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-query-param-inline-object",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.properties:non-empty&schema.type:primary=object",
+        "one per Parameter Object in `query` whose schema is an inline `object` declaring a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-query-param-ref-object",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=object",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `object` as its primary type",
+    ),
+    Combination(
+        "combo-query-param-array-ref-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is an array over `items` that are a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-query-param-array-inline-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is an array over `items` declaring a string-valued `enum`",
+    ),
+    Combination(
+        "combo-path-param-ref-pattern",
+        "parameters.md",
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.pattern",
+        "one per Parameter Object in `path` whose schema is a Reference Object whose target declares `pattern`",
+    ),
+    Combination(
+        "combo-param-example-beside-ref-schema",
+        "parameters.md",
+        "parameter.example&parameter.schema>schema.$ref",
+        "one per Parameter Object that writes `example` and whose schema is a Reference Object",
+    ),
+    Combination(
+        "combo-query-param-ref-date-time",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.format=date-time",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `format: date-time`",
+    ),
+    Combination(
+        "combo-query-param-ref-array-alias",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=array",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `array` as its primary type",
+    ),
+    Combination(
+        "combo-query-param-array-default",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.default&schema.type:primary=array",
+        "one per Parameter Object in `query` whose schema is an array writing `default`",
+    ),
+    Combination(
+        "combo-body-property-named-as-path-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-path-parameter",
+        "one per Operation Object one of whose path parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-body-property-named-as-query-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-query-parameter",
+        "one per Operation Object one of whose query parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-body-property-named-as-header-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-header-parameter",
+        "one per Operation Object one of whose header parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-octet-stream-body-header-param",
+        "document-paths.md",
+        "!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header",
+        "one per Operation Object whose request body offers `application/octet-stream` and no JSON media type and one of whose parameters is in `header`",
+    ),
+    Combination(
+        "combo-multipart-body-with-params",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody:multipart-form-media",
+        "one per Operation Object writing `parameters` whose request body offers `multipart/form-data`",
+    ),
+    Combination(
+        "combo-form-urlencoded-body-with-params",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody:form-urlencoded-media",
+        "one per Operation Object writing `parameters` whose request body offers `application/x-www-form-urlencoded`",
+    ),
+    Combination(
+        "combo-multipart-beside-json-body",
+        "document-paths.md",
+        "operation.requestBody:json-media&operation.requestBody:multipart-form-media",
+        "one per Operation Object whose request body offers both a JSON media type and `multipart/form-data`",
+    ),
+    Combination(
+        "combo-form-urlencoded-beside-json-body",
+        "document-paths.md",
+        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media",
+        "one per Operation Object whose request body offers both a JSON media type and `application/x-www-form-urlencoded`",
+    ),
+    Combination(
+        "combo-form-urlencoded-union-body",
+        "document-paths.md",
+        "!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf",
+        "one per Operation Object whose request body offers `application/x-www-form-urlencoded` and no JSON media type, one of whose media types' schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-params-beside-inline-oneof-body",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf",
+        "one per Operation Object writing `parameters` one of whose request body's media types' schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-params-beside-inline-anyof-body",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.anyOf",
+        "one per Operation Object writing `parameters` one of whose request body's media types' schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-ref-body-read-only-property",
+        "bodies-media.md",
+        "requestBody.content>mediaType.schema>schema.$ref~>schema.properties>schema.readOnly",
+        "one per Request Body Object one of whose media types' schema is a Reference Object whose target declares a property writing `readOnly`",
+    ),
+    Combination(
+        "combo-inline-body-read-only-property",
+        "bodies-media.md",
+        "requestBody.content>mediaType.schema>schema.properties>schema.readOnly",
+        "one per Request Body Object one of whose media types' inline schema declares a property writing `readOnly`",
+    ),
+    Combination(
+        "combo-optional-ref-union-body",
+        "bodies-media.md",
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.oneOf",
+        "one per Request Body Object writing no `required` one of whose media types' schema is a Reference Object whose target declares `oneOf`",
+    ),
+    Combination(
+        "combo-optional-ref-map-body",
+        "bodies-media.md",
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.additionalProperties",
+        "one per Request Body Object writing no `required` one of whose media types' schema is a Reference Object whose target writes `additionalProperties`",
+    ),
+    Combination(
+        "combo-media-example-on-ref-union-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.oneOf",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target declares `oneOf`",
+    ),
+    Combination(
+        "combo-media-example-on-inline-allof-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.allOf",
+        "one per Media Type Object writing `example` whose schema declares `allOf`",
+    ),
+    Combination(
+        "combo-media-example-on-ref-allof-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.allOf",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target declares `allOf`",
+    ),
+    Combination(
+        "combo-media-example-beside-component-example",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.example",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target writes its own `example`",
+    ),
+    Combination(
+        "combo-allof-schema-example",
+        "schemas.md",
+        "schema.allOf&schema.example",
+        "one per Schema Object writing both `allOf` and `example`",
+    ),
+    Combination(
+        "combo-oneof-schema-example",
+        "schemas.md",
+        "schema.example&schema.oneOf",
+        "one per Schema Object writing both `example` and `oneOf`",
+    ),
+    Combination(
+        "combo-anyof-schema-example",
+        "schemas.md",
+        "schema.anyOf&schema.example",
+        "one per Schema Object writing both `anyOf` and `example`",
+    ),
+    Combination(
+        "combo-annotated-ref-property-example",
+        "schemas.md",
+        "schema.properties>schema.allOf:annotated-ref&schema.example",
+        "one per Schema Object one of whose properties is an annotated `$ref` writing its own `example`",
+    ),
+    Combination(
+        "combo-map-of-oneof",
+        "schemas.md",
+        "schema.additionalProperties>schema.oneOf",
+        "one per Schema Object whose `additionalProperties` schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-map-of-anyof",
+        "schemas.md",
+        "schema.additionalProperties>schema.anyOf",
+        "one per Schema Object whose `additionalProperties` schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-map-beside-oneof",
+        "schemas.md",
+        "schema.additionalProperties&schema.oneOf",
+        "one per Schema Object writing both `additionalProperties` and `oneOf`",
+    ),
+    Combination(
+        "combo-map-beside-anyof",
+        "schemas.md",
+        "schema.additionalProperties&schema.anyOf",
+        "one per Schema Object writing both `additionalProperties` and `anyOf`",
+    ),
+    Combination(
+        "combo-nullable-map",
+        "schemas.md",
+        "schema.additionalProperties&schema.nullable",
+        "one per Schema Object writing both `additionalProperties` and `nullable`",
+    ),
+    Combination(
+        "combo-map-of-nullable-values",
+        "schemas.md",
+        "schema.additionalProperties>schema.nullable",
+        "one per Schema Object whose `additionalProperties` schema writes `nullable`",
+    ),
+    Combination(
+        "combo-array-of-nullable-unknown-item",
+        "schemas.md",
+        "schema.items>!schema.type&schema.nullable",
+        "one per Schema Object whose `items` value writes `nullable` and no `type`",
+    ),
+    Combination(
+        "combo-map-of-discriminated-union",
+        "schemas.md",
+        "schema.additionalProperties>schema.oneOf:discriminated-union",
+        "one per Schema Object whose `additionalProperties` schema is a union `discriminated_union` builds from its `oneOf`",
+    ),
+    Combination(
+        "combo-properties-beside-additional-properties",
+        "schemas.md",
+        "schema.additionalProperties&schema.properties:non-empty",
+        "one per Schema Object writing `additionalProperties` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-allof-nullable",
+        "schemas.md",
+        "schema.allOf&schema.nullable",
+        "one per Schema Object writing both `allOf` and `nullable`",
+    ),
+    Combination(
+        "combo-allof-nullable-member",
+        "schemas.md",
+        "schema.allOf>schema.nullable",
+        "one per Schema Object one of whose `allOf` members writes `nullable`",
+    ),
+    Combination(
+        "combo-allof-deprecated",
+        "schemas.md",
+        "schema.allOf&schema.deprecated",
+        "one per Schema Object writing both `allOf` and `deprecated`",
+    ),
+    Combination(
+        "combo-property-ref-to-read-only-target",
+        "schemas.md",
+        "schema.properties>schema.$ref~>schema.readOnly",
+        "one per Schema Object one of whose properties is a Reference Object whose target writes `readOnly`",
+    ),
+    Combination(
+        "combo-property-ref-to-nullable-target",
+        "schemas.md",
+        "schema.properties>schema.$ref~>schema.nullable",
+        "one per Schema Object one of whose properties is a Reference Object whose target writes `nullable`",
+    ),
+    Combination(
+        "combo-annotated-ref-to-nullable-target",
+        "schemas.md",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable",
+        "one per Schema Object one of whose properties is an annotated `$ref` whose target writes `nullable`",
+    ),
+    Combination(
+        "combo-allof-ref-scalar-default",
+        "schemas.md",
+        "schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar",
+        "one per Schema Object writing `default` one of whose `allOf` members is a Reference Object whose target declares a scalar primary type",
+    ),
+    Combination(
+        "combo-allof-oneof-member",
+        "schemas.md",
+        "schema.allOf>schema.oneOf",
+        "one per Schema Object one of whose `allOf` members declares `oneOf`",
+    ),
+    Combination(
+        "combo-oneof-beside-properties",
+        "schemas.md",
+        "schema.oneOf&schema.properties:non-empty",
+        "one per Schema Object writing `oneOf` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-anyof-beside-properties",
+        "schemas.md",
+        "schema.anyOf&schema.properties:non-empty",
+        "one per Schema Object writing `anyOf` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-allof-with-required",
+        "schemas.md",
+        "schema.allOf&schema.required",
+        "one per Schema Object writing both `allOf` and `required`",
+    ),
+    Combination(
+        "combo-array-item-oneof-titled-member",
+        "schemas.md",
+        "schema.items>schema.oneOf>schema.title",
+        "one per Schema Object whose `items` value declares `oneOf` one of whose members writes `title`",
+    ),
+    Combination(
+        "combo-array-item-anyof-titled-member",
+        "schemas.md",
+        "schema.items>schema.anyOf>schema.title",
+        "one per Schema Object whose `items` value declares `anyOf` one of whose members writes `title`",
+    ),
+    Combination(
+        "combo-discriminated-inline-members",
+        "schemas.md",
+        "schema.discriminator&schema.oneOf>!schema.$ref",
+        "one per Schema Object writing `discriminator` one of whose `oneOf` members is not a Reference Object",
+    ),
+    Combination(
+        "combo-anyof-beside-discriminator",
+        "schemas.md",
+        "schema.anyOf&schema.discriminator",
+        "one per Schema Object writing both `anyOf` and `discriminator`",
+    ),
+    Combination(
+        "combo-tagged-group-and-method-name",
+        "document-paths.md",
+        "operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name",
+        "one per Operation Object writing `tags`, `x-fern-sdk-group-name` and `x-fern-sdk-method-name`",
+    ),
+    Combination(
+        "combo-streaming-method-name",
+        "document-paths.md",
+        "operation.x-fern-sdk-method-name&operation.x-fern-streaming",
+        "one per Operation Object writing both `x-fern-sdk-method-name` and `x-fern-streaming`",
+    ),
+    Combination(
+        "combo-paginated-grouped-operation",
+        "document-paths.md",
+        "operation.x-fern-pagination&operation.x-fern-sdk-group-name",
+        "one per Operation Object writing both `x-fern-pagination` and `x-fern-sdk-group-name`",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-success-oneof",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-oneof",
+        "one per Operation Object where the selected success response declares nonempty content and a selected success representation resolves to a schema declaring oneOf",
+    ),
+    Combination(
+        "combo-success-anyof",
+        "document-paths.md",
+        "operation.context:success-anyof&operation.context:success-content",
+        "one per Operation Object where a selected success representation resolves to a schema declaring anyOf and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-success-oneof-nullable",
+        "document-paths.md",
+        "operation.context:success-nullable&operation.context:success-oneof",
+        "one per Operation Object where a selected success representation resolves to a nullable schema or a union with a null member and a selected success representation resolves to a schema declaring oneOf",
+    ),
+    Combination(
+        "combo-success-anyof-nullable",
+        "document-paths.md",
+        "operation.context:success-anyof&operation.context:success-nullable",
+        "one per Operation Object where a selected success representation resolves to a schema declaring anyOf and a selected success representation resolves to a nullable schema or a union with a null member",
+    ),
+    Combination(
+        "combo-no-content-beside-body-response",
+        "document-paths.md",
+        "operation.context:response-204&operation.context:success-content",
+        "one per Operation Object where the responses map declares status 204 and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-range-beside-concrete-success",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-range",
+        "one per Operation Object where the selected success response declares nonempty content and the responses map declares 2XX beside a concrete 2xx status",
+    ),
+    Combination(
+        "combo-root-oas30-download",
+        "document-paths.md",
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-download",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.0 and neither a nonempty SDK group nor a nonblank tag groups the operation and the selected success response offers an octet-stream, PDF, image, audio or video media type",
+    ),
+    Combination(
+        "combo-root-oas30-binary-schema",
+        "document-paths.md",
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-binary-schema",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.0 and neither a nonempty SDK group nor a nonblank tag groups the operation and a selected success representation resolves to a string schema with format binary",
+    ),
+    Combination(
+        "combo-oas31-root-response",
+        "document-paths.md",
+        "operation.context:oas-three-one&operation.context:root-client&operation.context:success-content",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.1 and neither a nonempty SDK group nor a nonblank tag groups the operation and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-oas31-grouped-response",
+        "document-paths.md",
+        "operation.context:grouped-client&operation.context:oas-three-one&operation.context:success-content",
+        "one per Operation Object where a nonempty SDK group or a nonblank tag groups the operation and the enclosing document declares OpenAPI 3.1 and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-success-json-beside-download",
+        "document-paths.md",
+        "operation.context:success-download&operation.context:success-json",
+        "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type and the selected success response offers application/json",
+    ),
+    Combination(
+        "combo-success-text-beside-download",
+        "document-paths.md",
+        "operation.context:success-download&operation.context:success-text",
+        "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type and the selected success response offers a text media type other than event-stream",
+    ),
+    Combination(
+        "combo-success-json-beside-binary-schema",
+        "document-paths.md",
+        "operation.context:success-binary-schema&operation.context:success-json",
+        "one per Operation Object where a selected success representation resolves to a string schema with format binary and the selected success response offers application/json",
+    ),
+    Combination(
+        "combo-errors-shared-ref",
+        "document-paths.md",
+        "operation.context:errors-shared-ref&operation.responses",
+        "one per Operation Object where two distinct error status keys declare bodies with the same schema reference and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-multiple-media",
+        "document-paths.md",
+        "operation.context:error-multiple-media&operation.responses",
+        "one per Operation Object where an error response declares at least two media types and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-oneof",
+        "document-paths.md",
+        "operation.context:error-oneof&operation.responses",
+        "one per Operation Object where an error representation resolves to a schema declaring oneOf and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-object",
+        "document-paths.md",
+        "operation.context:error-object&operation.responses",
+        "one per Operation Object where an error representation declares an inline object with properties and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-status-different-schemas",
+        "document-paths.md",
+        "operation.context:error-status-different-schemas&operation.responses",
+        "one per Operation Object where an error status key occurs on another operation with a differently declared schema and the operation writes responses",
+    ),
+    Combination(
+        "combo-document-security-security-empty",
+        "document-paths.md",
+        "operation.context:document-security-required&operation.context:security-empty",
+        "one per Operation Object where the document declares a nonempty security list with no anonymous alternative and the operation explicitly declares an empty security list",
+    ),
+    Combination(
+        "combo-document-security-security-nonempty",
+        "document-paths.md",
+        "operation.context:document-security-required&operation.context:security-nonempty",
+        "one per Operation Object where the document declares a nonempty security list with no anonymous alternative and the operation explicitly declares a nonempty security list",
+    ),
+    Combination(
+        "combo-echo-body-effective-oauth2",
+        "document-paths.md",
+        "operation.context:effective-oauth2&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security requirements name an OAuth2 scheme and the application/json request schema and a selected success representation write the same reference",
+    ),
+    Combination(
+        "combo-echo-body-effective-non-oauth-required",
+        "document-paths.md",
+        "operation.context:effective-non-oauth-required&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security list requires authentication and names no OAuth2 scheme and the application/json request schema and a selected success representation write the same reference",
+    ),
+    Combination(
+        "combo-echo-body-effective-anonymous",
+        "document-paths.md",
+        "operation.context:effective-anonymous&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security list is absent, empty or contains an anonymous alternative and the application/json request schema and a selected success representation write the same reference",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-success-statuses-mixed-media",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-statuses-mixed-media",
+        "one per Operation Object where the selected success response declares nonempty content and two concrete success status keys declare different media-type key sequences",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-basic-auth-document-requirement",
+        "document-paths.md",
+        "openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic",
+        "one per OpenAPI Object writing security whose components declare an HTTP basic scheme",
+    ),
+    Combination(
+        "combo-basic-auth-operation-requirement",
+        "document-paths.md",
+        "operation.context:basic-auth-scheme&operation.security",
+        "one per Operation Object where the document declares an HTTP basic security scheme and the operation writes security",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-document-operation-security",
+        "document-paths.md",
+        "operation.context:document-security-declared&operation.security",
+        "one per Operation Object writing security where the document also writes a security array",
+    ),
+)
+
+CONJUNCTIONS.update({combination.selector: combination.counts for combination in COMBINATIONS})
 
 for _spelling in CONJUNCTIONS:
     _refusal = conjunction_error(_spelling)
@@ -4575,13 +5238,18 @@ def example_content_predicates(node: dict[Any, Any]) -> list[str]:
     return found
 
 
+def required_property_names(schema: dict[Any, Any]) -> set[str]:
+    """Read required property names, skipping malformed members of an acquired schema."""
+    values = schema.get("required")
+    return {value for value in values if isinstance(value, str)} if isinstance(values, list) else set()
+
+
 def optional_property_example(node: dict[Any, Any]) -> bool:
     """`schema.properties:optional-example`: a property `required` omits selects an example."""
     properties = node.get("properties")
     if not isinstance(properties, dict):
         return False
-    required = node.get("required")
-    required = set(required) if isinstance(required, list) else set()
+    required = required_property_names(node)
     return any(
         name not in required and isinstance(value, dict) and selected_example_kind(value) is not None
         for name, value in properties.items()
@@ -5487,6 +6155,15 @@ class Census:
         # `tools/surface-census/tests/surface_census_test.py` holds the closed list to the cases the
         # blind-region tables carry.
         self.conjunctions = COMPILED_CONJUNCTIONS if conjunctions is None else conjunctions
+        self.conjunctions_by_anchor: dict[str, list[tuple[str, CompiledConjunction]]] = defaultdict(list)
+        self.unanchored_conjunctions: list[tuple[str, CompiledConjunction]] = []
+        for selector, groups in self.conjunctions.items():
+            positive = groups[0][0][0]
+            if positive:
+                anchor = next(iter(positive)).split(".", 1)[0]
+                self.conjunctions_by_anchor[anchor].append((selector, groups))
+            else:
+                self.unanchored_conjunctions.append((selector, groups))
         # The document context, reachable from every node this census walks: the
         # document's own `components.schemas` map and the set of its keys. It is
         # the document being censused and nothing else — no fetch, no
@@ -5521,7 +6198,29 @@ class Census:
         version = document.get("openapi") if isinstance(document, dict) else None
         self.openapi_30: bool = isinstance(version, str) and version.startswith("3.0")
         self.ref_counts: Counter[str] = reference_counts(document)
+        self.root_security: Any = document.get("security") if isinstance(document, dict) else None
         self.paths: Any = document.get("paths") if isinstance(document, dict) else None
+        self.error_status_schemas: dict[str, list[Any]] = {}
+        self.differing_error_statuses: set[str] = set()
+        for item in self.paths.values() if isinstance(self.paths, dict) else []:
+            if not isinstance(item, dict):
+                continue
+            for method in _HTTP_METHODS:
+                operation = item.get(method)
+                responses = operation.get("responses") if isinstance(operation, dict) else None
+                for code, response in responses.items() if isinstance(responses, dict) else []:
+                    if not str(code).startswith(("4", "5")):
+                        continue
+                    response = self.local_component("responses", response)
+                    content = response.get("content") if isinstance(response, dict) else None
+                    if isinstance(content, dict):
+                        schemas = [media.get("schema") for media in content.values() if isinstance(media, dict)]
+                        status = str(code)
+                        if status not in self.error_status_schemas:
+                            self.error_status_schemas[status] = schemas
+                        elif schemas != self.error_status_schemas[status]:
+                            self.differing_error_statuses.add(status)
+
         # `parameter.schema:subset-header-string-default` leaves out a header an
         # apiKey scheme already writes, which promotion never takes.
         schemes = self.components.get("securitySchemes")
@@ -5537,6 +6236,7 @@ class Census:
         # per conjunction group matched against them — and a document's objects
         # live for the whole walk, so `id()` keys a stable cache.
         self.declared_cache: dict[tuple[int, str, str], list[str]] = {}
+        self.declared_set_cache: dict[tuple[int, str, str], frozenset[str]] = {}
         self.root_path = root_path.resolve() if root_path else None
         self.current_path = self.root_path
         self.tree_paths = {path.resolve() for path in tree_paths} if tree_paths else set()
@@ -5833,13 +6533,179 @@ class Census:
         if not isinstance(schema, dict) or depth > 16:
             return {}, set()
         properties = dict(schema["properties"]) if isinstance(schema.get("properties"), dict) else {}
-        required = set(schema["required"]) if isinstance(schema.get("required"), list) else set()
+        required = required_property_names(schema)
         for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
             more, also = self.object_members(member, depth + 1)
             for name, value in more.items():
                 properties.setdefault(name, value)
             required |= also
         return properties, required
+
+    def request_body_readings(self, operation: dict[Any, Any]) -> list[str]:
+        """The `REQUEST_BODY_MEMBER_PREDICATES` one Operation Object holds."""
+        found: list[str] = []
+        body = self.local_component("requestBodies", operation.get("requestBody"))
+        content = body.get("content") if isinstance(body, dict) else None
+        if not isinstance(content, dict):
+            return found
+        bases = {key.split(";", 1)[0].strip().lower() for key in content if isinstance(key, str)}
+        for reading, test in REQUEST_BODY_MEDIA_TESTS:
+            if any(test(base) for base in bases):
+                found.append(reading)
+        properties: set[str] = set()
+        for media in content.values():
+            if isinstance(media, dict):
+                members, _required = self.object_members(media.get("schema"))
+                properties |= {name for name in members if isinstance(name, str)}
+        if not properties:
+            return found
+        own = operation.get("parameters")
+        parameters = own if isinstance(own, list) else []
+        route = self.operation_routes.get(id(operation))
+        item = self.paths.get(route[1]) if route is not None and isinstance(self.paths, dict) else None
+        shared = item.get("parameters") if isinstance(item, dict) else None
+        for parameter in [*parameters, *(shared if isinstance(shared, list) else [])]:
+            parameter = self.local_component("parameters", parameter)
+            name = parameter.get("name") if isinstance(parameter, dict) else None
+            if not isinstance(name, str) or name not in properties:
+                continue
+            reading = f"operation.requestBody:property-named-as-{parameter.get('in')}-parameter"
+            if reading in REQUEST_BODY_MEMBER_PREDICATES and reading not in found:
+                found.append(reading)
+        return found
+
+    def operation_context_readings(self, operation: dict[Any, Any]) -> list[str]:
+        """Join document context and response-map readings at one operation.
+
+        Response references use the census's local component resolver; remote
+        documents are never fetched. Media alternatives stay in their response,
+        so two different statuses cannot manufacture a media co-occurrence.
+        """
+        flags: set[str] = set()
+        if self.openapi_version.startswith("3.1"):
+            flags.add("oas-three-one")
+        elif self.openapi_version.startswith("3.0"):
+            flags.add("oas-three-zero")
+        grouped = bool(sdk_group_segments(operation) or _first_tag(operation))
+        flags.add("grouped-client" if grouped else "root-client")
+        root = self.root_security
+        if isinstance(root, list):
+            flags.add("document-security-declared")
+        if isinstance(root, list) and root and all(isinstance(r, dict) and r for r in root):
+            flags.add("document-security-required")
+        schemes = self.components.get("securitySchemes")
+        for declared in schemes.values() if isinstance(schemes, dict) else []:
+            scheme = self.local_component("securitySchemes", declared)
+            if isinstance(scheme, dict) and scheme.get("type") == "http" and scheme.get("scheme") == "basic":
+                flags.add("basic-auth-scheme")
+        own = operation.get("security")
+        if isinstance(own, list):
+            flags.add("security-nonempty" if own else "security-empty")
+        effective = own if isinstance(own, list) else root
+        schemes = self.components.get("securitySchemes")
+
+        def oauth_scheme(name: Any) -> bool:
+            declared = schemes.get(name) if isinstance(schemes, dict) else None
+            scheme = self.local_component("securitySchemes", declared)
+            return isinstance(scheme, dict) and scheme.get("type") == "oauth2"
+
+        oauth = isinstance(effective, list) and any(
+            isinstance(requirement, dict) and any(oauth_scheme(name) for name in requirement)
+            for requirement in effective
+        )
+        required = (
+            isinstance(effective, list)
+            and bool(effective)
+            and all(isinstance(requirement, dict) and requirement for requirement in effective)
+        )
+        if oauth:
+            flags.add("effective-oauth2")
+        if required and not oauth:
+            flags.add("effective-non-oauth-required")
+        if not required:
+            flags.add("effective-anonymous")
+        responses = operation.get("responses")
+        entries = {str(code): value for code, value in responses.items()} if isinstance(responses, dict) else {}
+        if "204" in entries:
+            flags.add("response-204")
+        if "2XX" in entries and any(re.fullmatch(r"2[0-9]{2}", code) for code in entries):
+            flags.add("success-range")
+        success_media: list[list[Any]] = []
+        for code, value in entries.items():
+            if not re.fullmatch(r"2[0-9]{2}", code):
+                continue
+            value = self.local_component("responses", value)
+            representations = value.get("content") if isinstance(value, dict) else None
+            names = list(representations) if isinstance(representations, dict) else []
+            if names not in success_media:
+                success_media.append(names)
+        if len(success_media) > 1:
+            flags.add("success-statuses-mixed-media")
+        _, success = self.success_entry(operation)
+        content = success.get("content") if isinstance(success, dict) else None
+        if isinstance(content, dict) and content:
+            flags.add("success-content")
+            if "application/json" in content:
+                flags.add("success-json")
+            bases = [key.split(";", 1)[0].strip().lower() for key in content if isinstance(key, str)]
+            if any(
+                base in ("application/octet-stream", "application/pdf")
+                or base.startswith(("image/", "audio/", "video/"))
+                for base in bases
+            ):
+                flags.add("success-download")
+            if any(base.startswith("text/") and base != "text/event-stream" for base in bases):
+                flags.add("success-text")
+            body = self.local_component("requestBodies", operation.get("requestBody"))
+            body_content = body.get("content") if isinstance(body, dict) else None
+            body_json = body_content.get("application/json") if isinstance(body_content, dict) else None
+            body_schema = body_json.get("schema") if isinstance(body_json, dict) else None
+            body_ref = body_schema.get("$ref") if isinstance(body_schema, dict) else None
+            for media in content.values():
+                written = media.get("schema") if isinstance(media, dict) else None
+                if isinstance(body_ref, str) and isinstance(written, dict) and written.get("$ref") == body_ref:
+                    flags.add("success-ref-matches-body")
+                schema = self.resolved_schema(written)
+                if not isinstance(schema, dict):
+                    continue
+                if primary_type(schema.get("type")) == "string" and schema.get("format") == "binary":
+                    flags.add("success-binary-schema")
+                for keyword in ("oneOf", "anyOf"):
+                    members = schema.get(keyword)
+                    if isinstance(members, list):
+                        flags.add(f"success-{keyword.lower()}")
+                        if any(isinstance(member, dict) and member.get("type") == "null" for member in members):
+                            flags.add("success-nullable")
+                types = schema.get("type")
+                if schema.get("nullable") is True or (isinstance(types, list) and "null" in types):
+                    flags.add("success-nullable")
+        refs: dict[str, set[str]] = defaultdict(set)
+        for code, response in entries.items():
+            if not code.startswith(("4", "5")):
+                continue
+            response = self.local_component("responses", response)
+            media_map = response.get("content") if isinstance(response, dict) else None
+            if not isinstance(media_map, dict):
+                continue
+            if len(media_map) > 1:
+                flags.add("error-multiple-media")
+            for media in media_map.values():
+                written = media.get("schema") if isinstance(media, dict) else None
+                if isinstance(written, dict) and isinstance(written.get("$ref"), str):
+                    refs[written["$ref"]].add(code)
+                schema = self.resolved_schema(written)
+                if isinstance(schema, dict) and isinstance(schema.get("oneOf"), list):
+                    flags.add("error-oneof")
+                if isinstance(written, dict) and "$ref" not in written and isinstance(written.get("properties"), dict):
+                    flags.add("error-object")
+            schemas = [value.get("schema") for value in media_map.values() if isinstance(value, dict)]
+            if code in self.differing_error_statuses or (
+                code in self.error_status_schemas and schemas != self.error_status_schemas[code]
+            ):
+                flags.add("error-status-different-schemas")
+        if any(len(statuses) > 1 for statuses in refs.values()):
+            flags.add("errors-shared-ref")
+        return [f"operation.context:{flag}" for flag in sorted(flags)]
 
     def media_example_value(self, media: dict[Any, Any]) -> Any:
         """The example a request media type's worked call reads: `example`, else the first named one."""
@@ -5874,7 +6740,7 @@ class Census:
             for other in self.component_schemas.values()
         )
         own = set(inline[0]["properties"])
-        own_required = (set(inline[0].get("required") or []) | set(target.get("required") or [])) & own
+        own_required = (required_property_names(inline[0]) | required_property_names(target)) & own
         _, base_required = self.object_members(bases[0])
         return parent and bool(own_required & set(example)) and bool(base_required & set(example))
 
@@ -6084,8 +6950,7 @@ class Census:
             if isinstance(target, dict) and isinstance(target.get("$ref"), str):
                 target = self.component_target(target["$ref"])
             properties = target.get("properties") if isinstance(target, dict) else None
-            required = target.get("required") if isinstance(target, dict) else None
-            required = set(required) if isinstance(required, list) else set()
+            required = required_property_names(target) if isinstance(target, dict) else set()
             if isinstance(properties, dict) and any(name not in required for name in properties):
                 found.append("operation.requestBody:blank-description-optional-object")
         if (
@@ -6276,6 +7141,9 @@ class Census:
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
+        if kind_name == "operation":
+            found += self.request_body_readings(node)
+            found += self.operation_context_readings(node)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
             example_kind = selected_example_kind(node)
@@ -6325,6 +7193,14 @@ class Census:
         self.declared_cache[key] = found
         return found
 
+    def declared_set(self, node: dict[Any, Any], kind_name: str, prefix: str) -> frozenset[str]:
+        """`declared_here` as a set, kept beside it for the conjunction groups matched against it."""
+        key = (id(node), kind_name, prefix)
+        cached = self.declared_set_cache.get(key)
+        if cached is None:
+            cached = self.declared_set_cache[key] = frozenset(self.declared_here(node, kind_name, prefix))
+        return cached
+
     def walk(self, node: Any, kind_name: str, prefix: str, seen: frozenset[int]) -> None:
         if not isinstance(node, dict):
             return
@@ -6343,7 +7219,14 @@ class Census:
             if selector in MEMBER_ONLY_PREDICATES:
                 continue
             self.record(selector)
-        for selector, groups in self.conjunctions.items():
+        declared = self.declared_set(node, kind_name, prefix)
+        candidates = self.conjunctions_by_anchor.get(prefix.split(".", 1)[0], [])
+        for selector, groups in (*candidates, *self.unanchored_conjunctions):
+            # A conjunction whose leftmost group cannot hold here is skipped before
+            # its descent is tried, which is the first test `conjunction_holds`
+            # makes anyway.
+            if not groups[0][0][0] <= declared:
+                continue
             # A fresh alias guard: a conjunction's descent is its own path from
             # this node, and the ancestors `seen` already holds are not on it.
             if self.conjunction_holds(node, kind_name, prefix, groups, 0, frozenset()):
@@ -6428,7 +7311,7 @@ class Census:
         if not isinstance(node, dict) or id(node) in seen:
             return False
         (positive, negated), descend = groups[index]
-        declared = set(self.declared_here(node, kind_name, prefix))
+        declared = self.declared_set(node, kind_name, prefix)
         if not positive.issubset(declared) or negated & declared:
             return False
         if descend is None:

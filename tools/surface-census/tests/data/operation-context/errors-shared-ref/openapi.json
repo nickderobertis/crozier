@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Gallery inventory",
+    "version": "1"
+  },
+  "paths": {
+    "/target": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Stored record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fault"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cannot store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fault"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/control": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "No schema"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Fault": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Access": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "Consent": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://gallery.invalid/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  }
+}

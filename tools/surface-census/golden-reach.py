@@ -108,12 +108,26 @@ def _region_keys_module():
 region_rows = _region_keys_module().region_rows
 
 
+# A combination row (`docs/openapi-surface/combinations.md`) whose reach cell says
+# this is classified `golden` before any measurement has run over it. Only a
+# combination row may wait this way, and only while its cell says so: every other
+# `golden` row, and a combination row whose cell says anything else, still needs
+# its site-table row and its ledger row.
+COMBINATION_PREFIX = "combo-"
+PENDING_REACH = "reach: `pending measurement`"
+
+
+def pending_combination(cells: list[str]) -> bool:
+    """Whether this `golden` region row is a combination row still awaiting its first measurement."""
+    return cells[0].strip("`").startswith(COMBINATION_PREFIX) and cells[5].startswith(PENDING_REACH)
+
+
 def golden_rows(regions_dir: Path = REGIONS_DIR) -> dict[str, str]:
-    """`golden` row key -> the region file stem that owns it."""
+    """`golden` row key -> the region file stem that owns it, pending combination rows aside."""
     out = {}
     for path in sorted(regions_dir.glob("*.md")):
         for cells in region_rows(path.read_text(encoding="utf-8")):
-            if cells[3].strip("`") == "golden":
+            if cells[3].strip("`") == "golden" and not pending_combination(cells):
                 out[cells[0].strip("`")] = path.stem
     return out
 
@@ -796,7 +810,7 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
         out_lines = []
         for line in text.splitlines(keepends=True):
             cells = region_rows(line)
-            if cells and cells[0][3].strip("`") == "golden":
+            if cells and cells[0][3].strip("`") == "golden" and not pending_combination(cells[0]):
                 row = cells[0]
                 key = row[0].strip("`")
                 cell = reach_cell(by_key[key][1], by_key[key][0], regions_dir)
