@@ -2221,6 +2221,119 @@ class ProbeRecording(unittest.TestCase):
             self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
 
 
+@unittest.skipIf(os.name == "nt", "the package-tool and compiler doubles are POSIX shell scripts")
+class SdkEvaluationDriverTests(unittest.TestCase):
+    """The native driver sequences real child processes and installed-file inspection offline."""
+
+    def setUp(self) -> None:
+        from sdk_evaluation_doubles import install
+
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+        self.compiler, self.env = install(self.root / "bin")
+        self.source = self.root / "source.yml"
+        self.source.write_text(
+            "openapi: 3.1.0\ninfo: {title: Offline Chain, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        self.calls = self.root / "calls.txt"
+        self.env["SDK_EVAL_CALLS"] = str(self.calls)
+        # The runtime inspector runs in a genuinely separate venv. Copying the
+        # already-installed tracer there lets the tooling coverage tier see it.
+        try:
+            import coverage
+        except ImportError:
+            pass
+        else:
+            if coverage.Coverage.current() is not None:
+                self.env["SDK_EVAL_COVERAGE"] = "1"
+                self.env["COVERAGE_PROCESS_START"] = str(REPO / "pyproject.toml")
+                self.env["COVERAGE_FILE"] = str(Path(os.environ.get("COVERAGE_FILE", ".coverage")).resolve())
+
+    def evaluate(self, mode: str = "", name: str = "run") -> tuple[subprocess.CompletedProcess[str], Path]:
+        env = {**self.env, "SDK_EVAL_MODE": mode}
+        receipt = self.root / f"{name}.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "evaluate-sdk",
+                "--document",
+                str(self.source),
+                "--crozier",
+                str(self.compiler),
+                "--work-dir",
+                str(self.root / name),
+                "--output",
+                str(receipt),
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=False,
+        )
+        return result, receipt
+
+    def test_driver_records_each_actual_artifact_and_import_environment_in_order(self) -> None:
+        result, receipt = self.evaluate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = json.loads(receipt.read_text())
+        self.assertEqual(
+            self.calls.read_text().splitlines(),
+            [
+                "uv:venv",
+                "uv:venv",
+                "uv:pip",
+                "validation",
+                "default_generation",
+                "strict_generation",
+                "build",
+                "uv:pip",
+                "imports",
+            ],
+        )
+        digest = hashlib.sha256(self.source.read_bytes()).hexdigest()
+        self.assertEqual(data["validation"]["input_sha256"], digest)
+        self.assertEqual(data["validation"]["output_sha256"], digest)
+        wheel = next((self.root / "run/dist").glob("*.whl"))
+        self.assertEqual(data["build"]["output_sha256"], hashlib.sha256(wheel.read_bytes()).hexdigest())
+        self.assertEqual(data["installation"]["input_sha256"], data["build"]["output_sha256"])
+        self.assertEqual(data["imports"]["input_sha256"], data["installation"]["output_sha256"])
+        self.assertEqual(data["imports"]["environment"], data["installation"]["environment"])
+        self.assertEqual(data["imports"]["modules"], ["limitation_sdk", "limitation_sdk.reading"])
+        answer = subprocess.run(
+            [sys.executable, str(SCRIPT), "check-sdk-evaluation", str(receipt), "--document", str(self.source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(answer.returncode, 0, answer.stderr)
+
+    def test_driver_refuses_failed_stages_without_replacing_a_receipt(self) -> None:
+        for stage in ("validation", "default_generation", "strict_generation", "build", "installation", "imports"):
+            with self.subTest(stage=stage):
+                name = "failed-" + stage
+                receipt = self.root / f"{name}.json"
+                receipt.write_text("prior receipt\n")
+                result, receipt = self.evaluate(stage + "-fails", name)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("failed with exit", result.stderr)
+                self.assertEqual(receipt.read_text(), "prior receipt\n")
+
+    def test_driver_refuses_missing_outputs_and_mismatching_artifact_digests(self) -> None:
+        for mode, reason in (
+            ("missing-sdk", "nonempty"),
+            ("missing-wheel", "exactly one wheel"),
+            ("mutated-tree", "building mutated"),
+            ("different-trees", "default/strict generated tree digest"),
+        ):
+            with self.subTest(mode=mode):
+                result, receipt = self.evaluate(mode, mode)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(reason, result.stderr)
+                self.assertFalse(receipt.exists())
+
+
 class SdkArtifactDigestTests(unittest.TestCase):
     def test_binary_contents_cannot_be_confused_with_another_file_boundary(self) -> None:
         evaluator = load_script("sdk_digest_boundary").sdk_evaluator()
