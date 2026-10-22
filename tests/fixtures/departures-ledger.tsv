@@ -4374,11 +4374,14 @@ tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	40	sdk-id
 tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/waylay-queries/expected	src/fern/execute/raw_client.py	177	body-query-parameter-value
+tests/fixtures/webflow-v2/expected	src/fern/__init__.py	227	init-type-checking-import-order
+tests/fixtures/webflow-v2/expected	src/fern/components/types/__init__.py	9	init-type-checking-import-order
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/webflow-v2/expected	src/fern/pages/types/__init__.py	9	init-type-checking-import-order
 tests/fixtures/webflow-v2/expected	src/fern/sites/__init__.py	44	init-type-checking-import-order
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

@@ -11891,6 +11891,12 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         )
 
 
+class BoundedFeatureSearch(NamedTuple):
+    key: str
+    directory: Path
+    reason: str
+
+
 class FinishedStateGateTests(unittest.TestCase):
     """`finished_state_failures` over a copy of the committed ledgers, broken one way at a time.
 
@@ -11933,7 +11939,7 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
-    def add_bounded_feature_search(self) -> tuple[str, Path, str]:
+    def add_bounded_feature_search(self) -> BoundedFeatureSearch:
         """Add a pending search without depending on a production gap remaining open."""
         key = "sample-unproven"
         record = self.root / "docs/openapi-surface/sample-search"
@@ -11958,7 +11964,7 @@ class FinishedStateGateTests(unittest.TestCase):
             NAMED_FEATURES_HEADING,
             NAMED_FEATURES_HEADING + f"\n\n| `{key}` | `schemas` | {reason} |\n",
         )
-        return key, record, reason
+        return BoundedFeatureSearch(key=key, directory=record, reason=reason)
 
     def test_a_bounded_feature_search_names_its_candidates(self) -> None:
         key, record, reason = self.add_bounded_feature_search()

@@ -2012,9 +2012,27 @@ pub struct SingleBody {
     /// Exact content type to emit instead of `application/json` for vendor JSON
     /// media types.
     pub content_type_override: Option<String>,
-    /// A request-body example used by Fern's worked snippets. Currently populated
-    /// for wildcard binary payloads, whose schema may supply a binary placeholder.
-    pub example: Option<String>,
+    /// A request-body example used by Fern's worked snippets.
+    pub example: Option<BodyExample>,
+}
+
+/// A rendered body example, with the bare-schema context that changes rendering.
+#[derive(Debug, Clone)]
+pub enum BodyExample {
+    /// The usual rendered literal from request-body example selection.
+    Literal(String),
+    /// A bare object's complete schema example, preserving nested empty objects.
+    Schema(String),
+}
+
+impl std::ops::Deref for BodyExample {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        match self {
+            Self::Literal(value) | Self::Schema(value) => value,
+        }
+    }
 }
 
 /// A declared error (non-2xx) response, rendered as a `raise` branch keyed on the
@@ -3702,7 +3720,7 @@ fn build_endpoint(
             let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example =
-                parameter_example_value(doc, p).is_none() && array_item_example(p).is_none();
+                parameter_example_value(doc, p).is_none() && array_item_example(doc, p).is_none();
             // A synthesized sample is only taken where Fern's importer builds no
             // worked example of its own; see [`fern_imports_no_endpoint_example`].
             let omit_synthesized_example = without_declared_example
@@ -3740,6 +3758,11 @@ fn build_endpoint(
                     .and_then(|reference| resolve_ref(doc, reference))
                     .unwrap_or(schema);
                 let scalar = |schema: &Schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
                     matches!(
                         schema.ty.as_ref().and_then(|ty| ty.primary()),
                         Some("string" | "integer" | "number" | "boolean")
@@ -4833,12 +4856,20 @@ fn parameter_example_value<'a>(
 
 /// The example an *array* parameter takes from its item schema when its own
 /// schema declares none. Fern renders it as the one-element list of that value.
-fn array_item_example(parameter: &crate::openapi::Parameter) -> Option<&serde_json::Value> {
+fn array_item_example<'a>(
+    doc: &'a OpenApi,
+    parameter: &'a crate::openapi::Parameter,
+) -> Option<&'a serde_json::Value> {
     parameter
         .schema
         .as_ref()
         .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("array"))
         .and_then(|schema| schema.items.as_deref())
+        .and_then(|item| {
+            item.reference.as_deref().map_or(Some(item), |reference| {
+                resolve_ref_from_schemas(&doc.components.schemas, reference)
+            })
+        })
         .and_then(schema_example)
 }
 
@@ -4848,7 +4879,7 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
     // `{type: array, items: {example: "user.signup", ...}}` and its golden's
     // worked call passes `event_types=["user.signup"]`.
     if parameter_example_value(doc, parameter).is_none() {
-        if let Some(item) = array_item_example(parameter) {
+        if let Some(item) = array_item_example(doc, parameter) {
             return example_literal(&serde_json::Value::Array(vec![item.clone()]));
         }
     }
@@ -5227,15 +5258,26 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
 /// on `items` rather than on the array itself; Fern promotes that to a one-element
 /// list in worked examples.
 fn schema_example_literal(schema: &Schema) -> Option<String> {
+    resolved_schema_example_literal(schema, None)
+}
+
+fn resolved_schema_example_literal(
+    schema: &Schema,
+    schemas: Option<&IndexMap<String, Schema>>,
+) -> Option<String> {
     schema_example(schema)
         .and_then(|value| bounded_example_literal(value, declares_int64(schema)))
         .or_else(|| {
             let items = schema.items.as_deref()?;
-            let item = schema_example(items)?;
-            Some(format!(
-                "[{}]",
-                bounded_example_literal(item, declares_int64(items))?
-            ))
+            // Resolve before choosing the item example: a sibling example
+            // does not annotate the target, but the target's own example does.
+            let item = match items.reference.as_deref() {
+                Some(reference) => {
+                    referenced_example_literal(resolve_ref_from_schemas(schemas?, reference)?)?
+                }
+                None => bounded_example_literal(schema_example(items)?, declares_int64(items))?,
+            };
+            Some(format!("[{item}]"))
         })
 }
 
@@ -6542,7 +6584,7 @@ fn resolve_request_body(
         let example = media.example.as_ref()?;
         let mut body = single(TypeRef::Primitive(Prim::Any), true, false, false);
         if let RequestBody::Single(single) = &mut body {
-            single.example = Some(example.to_string());
+            single.example = Some(BodyExample::Literal(example.to_string()));
         }
         return Some(body);
     };
@@ -6612,7 +6654,7 @@ fn resolve_request_body(
                 (media_type == "*/*").then(|| media_type.to_string()),
             );
             if let RequestBody::Single(single) = &mut body {
-                single.example = Some("\"string\"".to_string());
+                single.example = Some(BodyExample::Literal("\"string\"".to_string()));
             }
             return Some(body);
         }
@@ -6624,7 +6666,8 @@ fn resolve_request_body(
         if target.one_of.is_some() || target.any_of.is_some() {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
-                single.example = media_example(doc, media).map(serde_json::Value::to_string);
+                single.example = (media_example(doc, media).map(serde_json::Value::to_string))
+                    .map(BodyExample::Literal);
             }
             return Some(body);
         }
@@ -6645,9 +6688,10 @@ fn resolve_request_body(
             // Supabase's `CreateSecretBody` and `BulkUpdateFunctionBody` carry
             // theirs on the schema, and Fern's snippets construct every item.
             if let RequestBody::Single(single) = &mut body {
-                single.example = media_example(doc, media)
+                single.example = (media_example(doc, media)
                     .or_else(|| schema_example(target))
-                    .and_then(example_literal);
+                    .and_then(example_literal))
+                .map(BodyExample::Literal);
             }
             return Some(body);
         }
@@ -6789,7 +6833,8 @@ fn resolve_request_body(
             (media_type == "*/*").then(|| media_type.to_string()),
         );
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(doc, media).and_then(example_literal);
+            single.example =
+                (media_example(doc, media).and_then(example_literal)).map(BodyExample::Literal);
         }
         return Some(body);
     }
@@ -6923,7 +6968,8 @@ fn resolve_request_body(
         // example in both its method docstrings and its reference usage snippet.
         if string_map {
             if let RequestBody::Single(single) = &mut body {
-                single.example = media_example(doc, media).map(serde_json::Value::to_string);
+                single.example = (media_example(doc, media).map(serde_json::Value::to_string))
+                    .map(BodyExample::Literal);
             }
         }
         return Some(body);
@@ -6963,7 +7009,8 @@ fn resolve_request_body(
         // So is an array body's: Primula Tracker's bulk lead-stage update
         // declares one item, and the golden constructs it.
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(doc, media).map(serde_json::Value::to_string);
+            single.example = (media_example(doc, media).map(serde_json::Value::to_string))
+                .map(BodyExample::Literal);
         }
         return Some(body);
     }
@@ -6996,11 +7043,14 @@ fn resolve_request_body(
             inline_container_carries_content_type(schema),
             content_type_override,
         );
-        // Its worked example is the media type's own: MockServer's `tcpChaos`
-        // body is a described bare object whose declared example the golden
-        // passes whole.
+        // A bare object's own schema example is a complete request value,
+        // as is the media type's example (which takes precedence).
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(doc, media).map(serde_json::Value::to_string);
+            single.example = media_example(doc, media)
+                .map(|value| BodyExample::Literal(value.to_string()))
+                .or_else(|| {
+                    schema_example(schema).map(|value| BodyExample::Schema(value.to_string()))
+                });
         }
         return Some(body);
     }
@@ -7029,12 +7079,13 @@ fn resolve_request_body(
             content_type_override,
         );
         if let RequestBody::Single(single) = &mut body {
-            single.example = media
+            single.example = (media
                 .example
                 .as_ref()
                 .or_else(|| schema_example(schema))
                 .and_then(example_literal)
-                .or_else(|| Some("\"string\"".to_string()));
+                .or_else(|| Some("\"string\"".to_string())))
+            .map(BodyExample::Literal);
         }
         return Some(body);
     }
@@ -7058,9 +7109,10 @@ fn resolve_request_body(
         // `{type: string, example: "<string>"}` and Fern's worked call passes
         // `request="<string>"`.
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(doc, media)
+            single.example = (media_example(doc, media)
                 .or_else(|| schema_example(schema))
-                .and_then(example_literal);
+                .and_then(example_literal))
+            .map(BodyExample::Literal);
         }
         body
     })
@@ -7260,7 +7312,7 @@ fn hoist_inline_object(
             // `createLibrary` body declares `name: {$ref: libraryName}` and Fern
             // documents `name="My Audiobooks"` off that component's own
             // `example`.
-            example: schema_example_literal(prop_schema).or_else(|| {
+            example: resolved_schema_example_literal(prop_schema, hoister.schemas).or_else(|| {
                 let reference = prop_schema.reference.as_deref()?;
                 referenced_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
             }),
@@ -7972,7 +8024,7 @@ impl InlineHoister<'_> {
                         })
                     },
                 )),
-                example: schema_example_literal(prop_schema).or_else(|| {
+                example: resolved_schema_example_literal(prop_schema, self.schemas).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                     })?;
@@ -8270,6 +8322,40 @@ impl InlineHoister<'_> {
                 return TypeRef::Named(name);
             }
         }
+        if prop_schema.reference.is_none() && is_map(prop_schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                let structured = string_enum_values(value).is_some()
+                    || is_inline_struct(value)
+                    || value
+                        .one_of
+                        .as_ref()
+                        .or(value.any_of.as_ref())
+                        .is_some_and(|members| {
+                            members
+                                .iter()
+                                .filter(|member| !is_null_variant(member))
+                                .count()
+                                > 1
+                        })
+                    || value.items.as_deref().is_some_and(is_inline_struct);
+                if value.reference.is_none() && value.declared_type_name().is_none() && structured {
+                    if let Some(schemas) = self.schemas {
+                        // Operation-scoped maps use the component builder's
+                        // value declarations and nullable-value wrappers.
+                        let mut builder = Builder {
+                            types: Vec::new(),
+                            schemas,
+                            strip_discriminant: std::collections::HashMap::new(),
+                            building_types: std::collections::HashSet::new(),
+                            copying_refs: Vec::new(),
+                        };
+                        let type_ref = builder.field_type_ref(parent, prop, prop_schema);
+                        self.out.extend(builder.types);
+                        return type_ref;
+                    }
+                }
+            }
+        }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             let item_context = naming::child_class_name(parent, prop);
             if let Some(array) = self.hoist_array_item_type(&item_context, prop_schema) {
@@ -8346,33 +8432,13 @@ impl InlineHoister<'_> {
             ) {
                 return Some(sequence_of(array, item));
             }
-            // An untitled inline object member is a model of its own, named by
-            // Fern's variant rule: Zulip's `/messages/flags/narrow` `narrow` items
-            // are an operator object or a pair of strings, and the golden declares
-            // `UpdateMessageFlagsForNarrowRequestNarrowItemNegated`. A titled one
-            // that requires nothing is named the same way, its title unread: the
-            // hand-written `museum-titled-array-items` fixture's `panels` items
-            // are two titled objects, and Fern declares
-            // `CreateExhibitRequestPanelsItemCaption` and `…ItemAlt`. A titled one
-            // requiring properties is named by its title across packages, which
-            // Webflow's residual `CreateCollectionsRequestFieldsItem` still
-            // measures, so it keeps the plain lowering.
+            // Every inline object member is a model named by the variant rule,
+            // including titled members with required fields (Vercel's files).
+            // A title does not replace that name.
             let variants: Vec<TypeRef> = members
                 .iter()
                 .enumerate()
-                .map(|(index, member)| {
-                    if member.title.is_some()
-                        && member.required.is_empty()
-                        && is_inline_object(member)
-                    {
-                        return self.hoist_union_variant(&item_name, index, member, members);
-                    }
-                    if member.title.is_none() && is_inline_object(member) {
-                        self.hoist_union_variant(&item_name, index, member, members)
-                    } else {
-                        base_type_ref(member)
-                    }
-                })
+                .map(|(index, member)| self.hoist_union_variant(&item_name, index, member, members))
                 .collect();
             let variants = dedupe_union_members(variants);
             self.out.push(TypeDecl::Alias(AliasType {
@@ -9222,7 +9288,7 @@ fn hoist_form_object(
                 // `$ref`'s annotation example, else the referenced schema's: Zulip's
                 // `anchor` annotates `Anchor` with `example: "43"`, and its
                 // `content` is a `$ref` to `RequiredContent`'s `"Hello"`.
-                example: schema_example_literal(prop_schema)
+                example: resolved_schema_example_literal(prop_schema, hoister.schemas)
                     .or_else(|| {
                         prop_schema
                             .all_of
@@ -10871,6 +10937,20 @@ fn discriminant_value(schema: &Schema) -> Option<String> {
         .or_else(|| schema_example(schema)?.as_str().map(str::to_string))
 }
 
+/// Fern names a composed alternative by its last converted member's tag,
+/// while retaining the complete inner union under that name.
+fn last_composed_variant(mut schema: &Schema) -> &Schema {
+    while is_composed_member(schema) {
+        schema = schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .and_then(|members| members.last())
+            .expect("composed member has alternatives");
+    }
+    schema
+}
+
 /// Infer the selector used by generation and by name-refusal validation.
 pub(crate) fn inferred_discriminant_property(
     schema: &Schema,
@@ -10906,6 +10986,7 @@ fn inferred_discriminant_property_with(
                 .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
                 .unwrap_or(variant)
         })
+        .map(last_composed_variant)
         .collect();
     let first = resolved.first()?;
     first.properties.keys().find_map(|property| {
@@ -11787,6 +11868,12 @@ impl Builder<'_> {
     fn add_named_shape(&mut self, name: &str, schema: &Schema) {
         let module = naming::module_name(name);
         let docstring = operation_doc(schema.description.as_deref());
+
+        if let Some(values) = untyped_const_composition_values(schema) {
+            self.types
+                .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
+            return;
+        }
 
         // An `allOf` of one `$ref` to a scalar component beside members that only
         // annotate it is that scalar, not a model inheriting it: the draft-04
@@ -12955,7 +13042,7 @@ impl Builder<'_> {
                         })
                         .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas))
                 })),
-                example: schema_example_literal(prop_schema)
+                example: resolved_schema_example_literal(prop_schema, Some(self.schemas))
                     .or_else(|| {
                         prop_schema
                             .reference
@@ -13054,7 +13141,7 @@ impl Builder<'_> {
                 } else {
                     (variant, None)
                 };
-                let value = target
+                let value = last_composed_variant(target)
                     .properties
                     .get(&property_name)
                     .and_then(discriminant_value)?;
@@ -13067,6 +13154,22 @@ impl Builder<'_> {
                 let variant_name = origin_name
                     .clone()
                     .unwrap_or_else(|| format!("{name}{}", discriminant_class_name(&value)));
+                if is_composed_member(target) {
+                    // The nested declaration keeps its alternatives. The public
+                    // outer class carries that declaration in its `value` field.
+                    self.add_named(&variant_name, target);
+                    variant_targets.push(variant_name.clone());
+                    members.push(UnionMember {
+                        class_name: format!("{name}_{}", discriminant_class_name(&value)),
+                        discriminant: value,
+                        fields: vec![wrapped_value_field(TypeRef::Named(variant_name))],
+                        discriminant_index: None,
+                        source: None,
+                        docstring: docstring.clone(),
+                        wrapped: true,
+                    });
+                    continue;
+                }
                 let mut lowered_fields = None;
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
@@ -17152,6 +17255,41 @@ fn is_unknown(schema: &Schema) -> bool {
         && schema.items.is_none()
 }
 
+/// Untyped string constants without titles or descriptions form one enum.
+/// Typed or annotated members keep their individual union declarations.
+fn untyped_const_composition_values(schema: &Schema) -> Option<Vec<String>> {
+    if schema.reference.is_some()
+        || schema.all_of.is_some()
+        || !schema.properties.is_empty()
+        || schema.additional_properties.is_some()
+    {
+        return None;
+    }
+    let members = schema
+        .one_of
+        .as_ref()
+        .filter(|members| !members.is_empty())?;
+    members
+        .iter()
+        .map(|member| {
+            if member.ty.is_some()
+                || member.title.is_some()
+                || member.description.is_some()
+                || member.reference.is_some()
+                || member.enum_values.is_some()
+                || member.one_of.is_some()
+                || member.any_of.is_some()
+                || member.all_of.is_some()
+                || !member.properties.is_empty()
+                || member.additional_properties.is_some()
+            {
+                return None;
+            }
+            member.const_value.as_ref()?.as_str().map(str::to_string)
+        })
+        .collect()
+}
+
 /// The string values of a string enum schema, if it is one. Public specs sometimes
 /// omit `type: string` on an enum whose values are all strings; Fern still treats
 /// that as a string enum.
@@ -17160,12 +17298,21 @@ fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
     let values = if let Some(values) = schema.enum_values.as_ref() {
         values
     } else {
-        const_values = vec![schema.const_value.clone()?];
+        const_values = if let Some(value) = &schema.const_value {
+            vec![value.clone()]
+        } else {
+            untyped_const_composition_values(schema)?
+                .into_iter()
+                .map(serde_json::Value::String)
+                .collect()
+        };
         &const_values
     };
     if !is_string_type(schema) {
         let omitted_type = schema.ty.is_none();
-        let all_strings = values.iter().all(serde_json::Value::is_string);
+        let all_strings = values
+            .iter()
+            .all(|value| value.is_string() || value.is_null());
         if !omitted_type || !all_strings {
             return None;
         }
@@ -17517,7 +17664,13 @@ fn plain_example_literal(value: &serde_json::Value) -> Option<String> {
             "[{}]",
             values
                 .iter()
-                .map(example_literal)
+                .map(|item| {
+                    if item.is_null() {
+                        Some("null".to_string())
+                    } else {
+                        example_literal(item)
+                    }
+                })
                 .collect::<Option<Vec<_>>>()?
                 .join(", ")
         )),
@@ -21136,6 +21289,219 @@ mod tests {
     }
 
     #[test]
+    fn inferred_inline_unions_wrap_composed_alternatives_under_their_last_tag() {
+        let tagged = |tag: &str| {
+            serde_json::json!({
+                "type": "object", "required": ["type", "value"],
+                "properties": {"type": {"type": "string", "const": tag}, "value": {"type": "string"}}
+            })
+        };
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"}, "paths": {},
+            "components": {"schemas": {"Operand": {"anyOf": [
+                tagged("static"), {"anyOf": [tagged("element"), tagged("variable"), tagged("hiddenField")]}
+            ]}}}
+        }));
+        let outer = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::DiscriminatedUnion(union) if union.name == "Operand" => Some(union),
+                _ => None,
+            })
+            .expect("outer inferred union");
+        assert_eq!(outer.discriminant_property, "type");
+        assert_eq!(
+            outer
+                .members
+                .iter()
+                .map(|member| member.discriminant.as_str())
+                .collect::<Vec<_>>(),
+            ["static", "hiddenField"]
+        );
+        let nested = &outer.members[1];
+        assert!(nested.wrapped);
+        assert_eq!(nested.fields.len(), 1);
+        assert_eq!(nested.fields[0].wire_name, "value");
+        assert_eq!(
+            nested.fields[0].type_ref,
+            TypeRef::Named("OperandHiddenField".to_string())
+        );
+        assert!(ir.types.iter().any(|decl| matches!(decl,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "OperandHiddenField" && union.members.len() == 3)));
+    }
+
+    #[test]
+    fn untyped_const_compositions_form_one_enum_but_typed_members_stay_distinct() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"}, "paths": {},
+            "components": {"schemas": {
+                "Operation": {"oneOf": [{"const": "create"}, {"const": "update"}]},
+                "Role": {"anyOf": [{"type": "string", "const": "owner"}, {"type": "string", "const": "member"}]}
+            }}
+        }));
+        let operation = ir
+            .types
+            .iter()
+            .find(|decl| decl.name() == "Operation")
+            .expect("operation");
+        assert!(
+            matches!(operation, TypeDecl::Enum(decl) if decl.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["create", "update"])
+        );
+        assert!(ir
+            .types
+            .iter()
+            .any(|decl| matches!(decl, TypeDecl::Alias(alias) if alias.name == "Role")));
+    }
+
+    #[test]
+    fn annotated_const_compositions_keep_their_named_alternatives() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"}, "paths": {},
+            "components": {"schemas": {
+                "Interpolation": {"oneOf": [
+                    {"const": "pad", "title": "pad", "description": "Use the first observed point."},
+                    {"const": "linear", "title": "linear", "description": "Interpolate linearly."}
+                ]}
+            }}
+        }));
+        assert!(ir.types.iter().any(|decl| matches!(decl,
+            TypeDecl::Alias(alias) if alias.name == "Interpolation")));
+        for name in ["InterpolationZero", "InterpolationOne"] {
+            assert!(
+                ir.types.iter().any(|decl| matches!(decl,
+                TypeDecl::Enum(value) if value.name == name)),
+                "missing {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn inline_array_union_items_hoist_string_constants() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+            "paths": {"/roles": {"get": {"operationId": "getRoles", "tags": ["roles"],
+                "responses": {"200": {"description": "Roles", "content": {"application/json": {
+                    "schema": {"type": "object", "properties": {"data": {"type": "array",
+                        "items": {"anyOf": [{"type": "string", "const": "owner"}, {"type": "string", "const": "member"}]}
+                    }}}
+                }}}}
+            }}}
+        }));
+        for name in [
+            "GetRolesResponseDataItemZero",
+            "GetRolesResponseDataItemOne",
+        ] {
+            assert!(
+                ir.tag_types
+                    .iter()
+                    .any(|tag| matches!(&tag.decl, TypeDecl::Enum(decl) if decl.name == name)),
+                "missing {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn inline_containers_hoist_nullable_maps_and_titled_array_alternatives() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+            "paths": {"/records": {"post": {
+                "operationId": "storeRecord", "tags": ["records"],
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object", "properties": {
+                        "framework": {"enum": [null, "moon", "sun"]},
+                        "options": {"type": "object", "additionalProperties": {"type": "object", "properties": {"memory": {"type": "number"}}}},
+                        "files": {"type": "array", "items": {"oneOf": [
+                            {"type": "object", "title": "InlineFile", "required": ["payload"], "properties": {"payload": {"type": "string"}}},
+                            {"type": "object", "title": "StoredFile", "required": ["digest"], "properties": {"digest": {"type": "string"}}}
+                        ]}}
+                    }
+                }}}},
+                "responses": {"200": {"description": "Stored", "content": {"application/json": {"schema": {
+                    "type": "object", "properties": {"options": {"type": ["object", "null"], "additionalProperties": {"type": "object", "properties": {"memory": {"type": "number"}}}}}
+                }}}}}
+            }}}
+        }));
+        let declarations: Vec<_> = ir
+            .types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .collect();
+        for name in [
+            "StoreRecordRequestFramework",
+            "StoreRecordRequestOptionsValue",
+            "StoreRecordResponseOptionsValue",
+            "StoreRecordRequestFilesItemPayload",
+            "StoreRecordRequestFilesItemDigest",
+        ] {
+            assert!(
+                declarations.iter().any(|decl| decl.name() == name),
+                "missing {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn inline_maps_hoist_multi_alternative_value_aliases() {
+        let map = serde_json::json!({"type": "object", "additionalProperties": {
+            "anyOf": [
+                {"type": "string"}, {"type": "number"},
+                {"type": "array", "items": {"type": "string"}},
+                {"type": "object", "additionalProperties": {"type": "string"}}
+            ]
+        }});
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Records", "version": "1"},
+            "paths": {"/records": {"post": {
+                "operationId": "createRecord", "tags": ["records"],
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"type": "object", "required": ["values"], "properties": {
+                        "values": map.clone(),
+                        "optional_values": {"type": "object", "additionalProperties": {
+                            "anyOf": [{"type": "string"}, {"type": "null"}]
+                        }}
+                    }}
+                }}},
+                "responses": {"200": {"description": "Stored", "content": {"application/json": {
+                    "schema": {"type": "object", "properties": {"values": map}}
+                }}}}
+            }}}
+        }));
+        let declarations: Vec<_> = ir
+            .types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .collect();
+        for name in [
+            "CreateRecordRequestValuesValue",
+            "CreateRecordResponseValuesValue",
+        ] {
+            let alias = declarations
+                .iter()
+                .find_map(|decl| match decl {
+                    TypeDecl::Alias(alias) if alias.name == name => Some(alias),
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("map value alias {name} was not hoisted"));
+            assert_eq!(
+                alias.target,
+                TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::Primitive(Prim::Float),
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str))
+                    )
+                ])
+            );
+        }
+        assert!(!declarations
+            .iter()
+            .any(|decl| decl.name() == "CreateRecordRequestOptionalValuesValue"));
+    }
+
+    #[test]
     fn inline_hoister_handles_enum_array_shapes_and_defensive_inputs() {
         let mut hoister = InlineHoister {
             copying_refs: Vec::new(),
@@ -23326,6 +23692,25 @@ mod tests {
             super::example_literal(&serde_json::json!({ "x": null })),
             None
         );
+    }
+
+    #[test]
+    fn array_example_literals_preserve_null_elements_but_not_standalone_null() {
+        assert_eq!(
+            super::example_literal(&serde_json::json!([null, "moon"])),
+            Some("[null, \"moon\"]".to_string())
+        );
+        assert_eq!(super::example_literal(&serde_json::Value::Null), None);
+    }
+
+    #[test]
+    fn array_item_reference_examples_do_not_override_the_referenced_schema() {
+        let array: crate::openapi::Schema = serde_json::from_value(serde_json::json!({
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Item", "example": {"label": "moon"}}
+        }))
+        .expect("array schema");
+        assert_eq!(super::schema_example_literal(&array), None);
     }
 
     #[test]
