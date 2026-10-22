@@ -8,8 +8,12 @@ A key with outstanding candidates cannot yet cite this record as
 `none-registrable`; the qualifying renewed searches are identified below. The
 zero-declarer features are covered by `observatory-example-arrays`.
 `onmyshelf-api` proves digit-leading methods, and `harbor-signal-null` supplies
-the weaker residual-only null proof. The remaining named features and arms
-keep their incomplete search outcomes below.
+the weaker residual-only null proof. `formbricks` proves the object-on-map arm.
+The fractional optional request property, the three examples beside a `$ref`
+and the empty-object arm are decided output-insensitive, not proven. After the
+[renewed bounds](#remaining-bounds-after-the-source-repairs), the array-null
+key and the outside-enum and string-const arms rest on hand-written fixtures.
+`discriminator-mapping`'s two arms keep their incomplete search outcome below.
 
 ## The search
 
@@ -122,14 +126,11 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 
 The two zero-declarer keys have `none-registrable` outcomes within these
 bounded populations. The null-example key also has that outcome after the
-bounded attribution preflight below. The other unresolved keys have no such
-conclusion yet. In
-particular, the ledger contains successful Fern and licence screens for the
-digit-leading method, array-null element, examples beside object/enum/union
-references, null example, empty-object arm, object-on-map arm and string-const
-variant arm. Those candidates take precedence over authoring a substitute.
-The residual-only hand-written rule for `schema-example-null` remains a
-fallback only if no real witness can be registered.
+bounded attribution preflight below, and the array-null, outside-enum and
+string-const keys have it after the
+[renewed bounds](#remaining-bounds-after-the-source-repairs). The
+residual-only hand-written rule for `schema-example-null` remains a fallback
+only if no real witness can be registered.
 
 ## Renewed search
 
@@ -209,8 +210,8 @@ not claim the 39 outstanding queue entries were screened.
 | candidate | publisher provenance and grant scope | grant bytes SHA-256 | outcome |
 |---|---|---|---|
 | `microsoft/adme-samples:rest-apis/M18/seismic_ddms_openapi.yaml@df39d22ed32acfe80fcdbc5b554871b2c752a39a` | Microsoft's own organization distributes this service API document. Its document grant and [repository grant](https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/LICENSE) both permit redistribution; the latter covers the source directory. | `c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383` | admissible; complete certified-pair generation succeeds, but crozier does not byte-match; registration pending repair |
-| `formbricks/formbricks:docs/api-v2-reference/openapi.yml@bfe7933cb2882c99f2196aa6a46edd104cd7fbb8` | The publisher's own repository describes its cloud API at `app.formbricks.com/api/v2`. The [repository grant](https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/LICENSE) places this `docs/` source outside its separately licensed directories and grants redistribution. | `4df0924663a08fbc0d591f6ae39069dcabd913af382b87011055569dea177770` | admissible; recovered generation screen succeeds; complete parity and arm proof remain outstanding |
-| `APIs/vercel.com/0.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | The pinned aggregation declares `https://openapi.vercel.sh` as publisher origin and `api.vercel.com` as server. Its [aggregation grant](https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE) permits redistribution; no document-specific grant overrides it. | `a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499` | admissible pinned redistribution; complete parity and string-const arm proof remain outstanding |
+| `formbricks/formbricks:docs/api-v2-reference/openapi.yml@bfe7933cb2882c99f2196aa6a46edd104cd7fbb8` | The publisher's own repository describes its cloud API at `app.formbricks.com/api/v2`. The [repository grant](https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/LICENSE) places this `docs/` source outside its separately licensed directories and grants redistribution. | `4df0924663a08fbc0d591f6ae39069dcabd913af382b87011055569dea177770` | admissible; registered as corpus row 3001 ([attribution](#formbricks-map-example-attribution)) |
+| `APIs/vercel.com/0.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | The pinned aggregation declares `https://openapi.vercel.sh` as publisher origin and `api.vercel.com` as server. Its [aggregation grant](https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE) permits redistribution; no document-specific grant overrides it. | `a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499` | admissible pinned redistribution; not a string-const witness: its `oneOf` string constants are all untyped, so they merge into one enum and never enter the arm ([bound](#remaining-bounds-after-the-source-repairs)) |
 
 The seismic generation used the already acquired source digest
 `cdf6d45a8d6ec230dd2f2e73e14394f83cb562a1b19ab222ac63dd9f9c460ddf`
@@ -364,3 +365,26 @@ or `const` from its document changes the same files in Fern's complete tree and
 in crozier's, which `remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives`
 in `crates/crozier-e2e/tests/e2e.rs` re-checks against committed controls under
 `docs/fern-measurements/remaining-examples/`.
+
+## Formbricks map-example attribution
+
+`schema-example-object-on-map`'s
+`src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]`
+arm is proven by a real specification: corpus row 3001, `formbricks`, the
+publisher's own `docs/api-v2-reference/openapi.yml` at
+`bfe7933cb2882c99f2196aa6a46edd104cd7fbb8` (source SHA-256
+`6b83214a2f72ea3fc49df82eb135ddf6d7963723295edea2c4feef526e502d61`; its grant is
+reviewed under [Publisher reviews](#publisher-reviews-after-the-recovered-queue)).
+Its scoped golden test executes both of the arm's regions
+([ledger](../golden-reach.tsv)), and crozier byte-matches its complete 418-file
+certified-pair tree in normal and strict mode.
+
+The paired control [`after.yml`](formbricks-map-attribution/after.yml) is the
+original [`before.yml`](formbricks-map-attribution/before.yml) with exactly one
+line deleted, the `example` of the management-responses request body's `data`
+map (line 787); it is committed as the measurement
+`remaining-examples/formbricks-no-map-example`. Deleting it changes the same two
+files, `reference.md` and `src/fern/management_api_responses/client.py`, in
+Fern's complete tree and in crozier's; the two comparison records sit beside the
+documents, and `remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives`
+re-checks that motion through the binary.

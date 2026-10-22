@@ -871,7 +871,9 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     match proof.kind:
         case Kind.REAL if not any(corpus_fixture(golden) in known.corpus for golden in proof.goldens):
             failures.append(f"{where}: a real proof cites a registered corpus row's golden")
-        case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, MEASUREMENTS, PROBES)) for source in proof.source):
+        case Kind.HANDWRITTEN if not any(
+            source.startswith((HANDWRITTEN, MEASUREMENTS, PROBES)) for source in proof.source
+        ):
             failures.append(f"{where}: a hand-written proof's source is a hand-written fixture")
         case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, PROBES)) for source in proof.source):
             covers = (root / E2E_COVERS).read_text(encoding="utf-8")

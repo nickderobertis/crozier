@@ -12109,8 +12109,8 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
-    NAMED_KEY = "schema-example-outside-enum"
-    NAMED_ARM = "src/emit.rs::ExampleCtx::example_matches_type_through[=Some\\(TypeDecl::Enum\\(decl\\)\\) => value]"
+    NAMED_KEY = "discriminator-mapping"
+    NAMED_ARM = "src/ir.rs::Builder::discriminated_union[if union_target \\{]"
 
     def test_the_committed_named_gap_is_an_uncovered_arm_with_an_incomplete_screen(self) -> None:
         """The bounded screen is not a proof: the uncovered arm still needs its named row."""
@@ -12181,12 +12181,15 @@ class FinishedStateGateTests(unittest.TestCase):
             encoding="utf-8",
             newline="\n",
         )
-        self.assertEqual(
-            [
-                f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
-                "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"
-            ],
-            finished_state_failures(self.root),
+        failures = finished_state_failures(self.root)
+        self.assertIn(
+            f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
+            "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap",
+            failures,
+        )
+        # The key's other named arms read the same record, so they are refused alike.
+        self.assertTrue(
+            all(failure.startswith(f"{self.NAMED_KEY}: ") and "['exhausted']" in failure for failure in failures)
         )
 
     def add_named_feature_gap(self) -> None:
@@ -16866,6 +16869,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "golden-reach.py": ("\u2014",),
         "handwritten-fixtures.py": ("\u2014",),
         "openapi-surface-census.py": ("\u2014",),
+        "output-insensitive.py": ("\u2014",),
         "probe-differential-isolation.py": ("missing-root", "\u2014", "missing-probe", "missing-control"),
         "scenario-proof-index.py": ("\u2014",),
         "restate-coverage.py": ("\u2014",),

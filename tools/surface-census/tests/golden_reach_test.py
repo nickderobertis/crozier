@@ -538,7 +538,7 @@ class ReportTests(unittest.TestCase):
         cover = surface / "handwritten/flag-demo"
         cover.mkdir(parents=True, exist_ok=True)
         (cover / "evidence.toml").write_text(
-            "[[covers]]\nkey = \"flag-orphan\"\narm = 'src/demo.rs::unrelated'\nverdict = \"exhausted\"\n"
+            '[[covers]]\nkey = "flag-orphan"\narm = \'src/demo.rs::unrelated\'\nverdict = "exhausted"\n'
         )
         result = self.run_arms("--headline")
         self.assertNotEqual(0, result.returncode)
