@@ -16520,7 +16520,8 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
             regions.mkdir(parents=True)
             names = [*reader.region_files(), "witness-search-keys.tsv", "residual-handwritten.toml"]
             for name in names:
-                shutil.copyfile(REPO / "docs/openapi-surface" / name, regions / name)
+                source = (REPO / "docs/openapi-surface" / name).read_bytes()
+                (regions / name).write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
 
             def run() -> subprocess.CompletedProcess[str]:
                 return subprocess.run(
@@ -16532,12 +16533,13 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
                     ],
                     capture_output=True,
                     text=True,
+                    encoding="utf-8",
                     check=False,
                 )
 
             accepted = run()
             self.assertEqual(accepted.returncode, 0, accepted.stderr)
-            self.assertEqual(accepted.stdout, (regions / "witness-search-keys.tsv").read_text())
+            self.assertEqual(accepted.stdout, (regions / "witness-search-keys.tsv").read_text(encoding="utf-8"))
             registry = regions / "residual-handwritten.toml"
             schema = regions / "schemas.md"
             cases = [
@@ -16547,15 +16549,16 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
             ]
             for path, before, after, reason in cases:
                 with self.subTest(reason=reason):
-                    original = path.read_text()
+                    original_bytes = path.read_bytes()
+                    original = original_bytes.decode("utf-8").replace("\r\n", "\n")
                     self.assertIn(before, original)
-                    path.write_text(original.replace(before, after), encoding="utf-8")
+                    path.write_text(original.replace(before, after), encoding="utf-8", newline="\n")
                     failed = run()
                     self.assertNotEqual(failed.returncode, 0)
                     self.assertIn(reason, failed.stderr)
                     self.assertNotIn("Traceback", failed.stderr)
-                    self.assertEqual(original.replace(before, after), path.read_text())
-                    path.write_text(original, encoding="utf-8")
+                    self.assertEqual(original.replace(before, after), path.read_text(encoding="utf-8"))
+                    path.write_bytes(original_bytes)
                     recovered = run()
                     self.assertEqual(recovered.returncode, 0, recovered.stderr)
                     self.assertEqual(accepted.stdout, recovered.stdout)
@@ -16580,7 +16583,8 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
             for relative in paths:
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes((REPO / relative).read_bytes())
+                source = (REPO / relative).read_bytes()
+                target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
             registry = root / paths[0]
             test = root / paths[3]
             match mutation:
@@ -16588,14 +16592,20 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                     (root / paths[-1]).unlink()
                 case "unbound-journey":
                     test.write_text(
-                        test.read_text().replace(
+                        test.read_text(encoding="utf-8").replace(
                             "fn residual_null_example_is_absent_from_matching_request_snippets", "fn unrelated_journey"
-                        )
+                        ),
+                        encoding="utf-8",
+                        newline="\n",
                     )
                 case "nonresidual":
-                    test.write_text(test.read_text().replace('"webflow-v2"', '"unrelated-source"'))
+                    test.write_text(
+                        test.read_text(encoding="utf-8").replace('"webflow-v2"', '"unrelated-source"'),
+                        encoding="utf-8",
+                        newline="\n",
+                    )
                 case value if value:
-                    text = registry.read_text()
+                    text = registry.read_text(encoding="utf-8")
                     edits = {
                         "version": ("version = 1", "version = 2"),
                         "mode": ('mode = "absence"', 'mode = "assumed"'),
@@ -16607,7 +16617,7 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                     text = text.replace(before, after)
                     if mutation == "duplicate":
                         text += "\n[[proofs]]" + text.split("[[proofs]]", 1)[1]
-                    registry.write_text(text)
+                    registry.write_text(text, encoding="utf-8", newline="\n")
             proofs, errors = gate.read_residual_proofs(root)
             if errors:
                 return errors
@@ -16615,7 +16625,8 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
             # The production parser supplies region cells and measured witnesses.
             keys = load_script("tools/surface-census/witness-search-region-keys.py")
             rows = {
-                cells[0].strip("`"): ("schemas", cells) for cells in keys.region_rows((root / paths[2]).read_text())
+                cells[0].strip("`"): ("schemas", cells)
+                for cells in keys.region_rows((root / paths[2]).read_text(encoding="utf-8"))
             }
             reach = load_script("tools/surface-census/golden-reach.py")
             ledger = {row.key: row for _rank, row in reach.read_ledger(root / paths[1])}
@@ -17934,6 +17945,7 @@ class CoverageRestatementTests(unittest.TestCase):
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=False,
         )
 
