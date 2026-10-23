@@ -6,6 +6,18 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.128](https://github.com/nickderobertis/crozier/compare/v0.0.127...v0.0.128) - 2026-10-23
+
+### Fixed
+
+- *(emit)* match Fern on the ADME seismic specification's union naming, examples, inline models and extensions ([#571](https://github.com/nickderobertis/crozier/pull/571))
+
+## [0.0.127](https://github.com/nickderobertis/crozier/compare/v0.0.126...v0.0.127) - 2026-10-22
+
+### Fixed
+
+- *(emit)* send and read a nested discriminated union in the flat form its schema declares ([#568](https://github.com/nickderobertis/crozier/pull/568))
+
 ## [0.0.126](https://github.com/nickderobertis/crozier/compare/v0.0.125...v0.0.126) - 2026-10-22
 
 ### Fixed

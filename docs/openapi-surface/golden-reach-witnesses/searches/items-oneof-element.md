@@ -60,10 +60,15 @@ declared sources was walked, queried or probed against it. The bounded
 [union witness search](../../witness-search-union-scenarios/README.md#witness-search) read the APIs.guru archive at
 `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` and the already-acquired GitHub
 code-search and Sourcegraph pools for the shape and found no registrable
-declarer reaching the site; the hand-written fixture
-[`museum-titled-array-items`](../../handwritten/museum-titled-array-items/) covers it at the lower level of
-proof. The verdict above stands for the earlier site. This key's lines read
-`search-incomplete` because the successor site's search is outstanding.
+declarer reaching the site. That site has since left the site table: crozier
+no longer branches on a member's `title` there, so every inline object member
+takes the same `hoist_union_variant` path the golden witnesses reach. The
+hand-written fixture that covered it, `museum-titled-array-items`, is kept as a
+`measured` probe tree
+([`probe-expected/museum-titled-array-items`](../../probe-expected/museum-titled-array-items/))
+that crozier still byte-matches, and covers no arm. The verdict above stands for
+the earlier site. This key's lines read `search-incomplete` because the
+successor site's search was outstanding when the site was removed.
 
 #### Bounded renewal
 

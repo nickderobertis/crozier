@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .survey_blocks_item_elements_item_two_type_one import SurveyBlocksItemElementsItemTwoTypeOne
+from .survey_blocks_item_elements_item_two_type_zero import SurveyBlocksItemElementsItemTwoTypeZero
+
+SurveyBlocksItemElementsItemTwoType = typing.Union[
+    SurveyBlocksItemElementsItemTwoTypeZero, SurveyBlocksItemElementsItemTwoTypeOne
+]

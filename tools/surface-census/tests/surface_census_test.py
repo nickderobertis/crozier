@@ -1124,7 +1124,7 @@ def finished_state_failures(root: Path) -> list[str]:
     unlisted.
     """
     surface = root / "docs" / "openapi-surface"
-    failures = []
+    decided, failures = load_script("tools/surface-census/output-insensitive.py").read_records(root)
     ledger = load_script("tools/surface-census/golden-reach.py").read_ledger(surface / "golden-reach.tsv")
     witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
     covers = handwritten_covers(surface / "handwritten")
@@ -1137,11 +1137,13 @@ def finished_state_failures(root: Path) -> list[str]:
             key = cells[0].strip("`")
             if key.startswith(COMBINATION_PREFIX):
                 # A combination is named in its own table, apart from the features.
-                if cells[3].strip("`") == "gap":
+                if cells[3].strip("`") == "gap" and (key, "-") not in decided:
                     gap_combinations[key] = path.stem
                 continue
             settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
             if cells[3].strip("`") != "gap" or settlement != "FIXTURE":
+                continue
+            if (key, "-") in decided:
                 continue
             if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
                 open_features.add(key)
@@ -1201,7 +1203,7 @@ def finished_state_failures(root: Path) -> list[str]:
         for arm, hit, _total in reach.sites:
             if not hit:
                 unreached.add((reach.key, arm))
-            if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused:
+            if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused or (reach.key, arm) in decided:
                 continue
             if (reach.key, arm) in named:
                 reason = named[(reach.key, arm)]
@@ -1242,7 +1244,7 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"cover nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
                 f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"
             )
-    for key, arm in sorted(set(named) - unreached):
+    for key, arm in sorted((set(named) - unreached) | (set(named) & decided)):
         failures.append(
             f"{key}: docs/openapi-surface-coverage.md names `{arm}` an unproven gap, which the "
             "reach ledger records reached or does not list; remove the row"
@@ -3505,6 +3507,7 @@ fn following() { let other = 42; }
             114: "one-hundred-and-fourteen",
             116: "one-hundred-and-sixteen",
             118: "one-hundred-and-eighteen",
+            122: "one-hundred-and-twenty-two",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -4011,6 +4014,10 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
         # The feature combinations `combinations.md` selects, over the same sources.
         # These constants pin source_args()'s window; an empty entry is not a
         # claim about all registered sources. Positive counts are checked by
@@ -4853,6 +4860,10 @@ NEGATION_SELECTORS = frozenset(
         "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
         "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
     }
 )
 
@@ -7226,6 +7237,96 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF_STRUCTS]}},
             "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         },
+        # --- prop_type_ref, cases 19a to 19d: an operation-scoped map's structured value.
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued",
+            "slug": "ptr-19a",
+            "branch": "prop_type_ref case 19a",
+            "select": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"type": "string", "enum": ["alpha", "beta"]}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Target"}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "overlap": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"type": "string", "enum": ["alpha", "beta"]}}
+                    }
+                }
+            },
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty",
+            "slug": "ptr-19b",
+            "branch": "prop_type_ref case 19b",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": STRUCT}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {
+                    "properties": {
+                        "p": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Target"}}
+                    }
+                },
+                "Target": {"type": "string"},
+            },
+            "overlap": {
+                "Root": {
+                    "properties": {
+                        "p": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "properties": {"tags": {"type": "array", "items": {"type": "string"}}}
+                            },
+                        }
+                    }
+                }
+            },
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "ptr-19c",
+            "branch": "prop_type_ref case 19c",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ONE_OF}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": NULLABLE_ONE_OF}}},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ONE_OF}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
+        {
+            "selector": "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "ptr-19d",
+            "branch": "prop_type_ref case 19d",
+            "select": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ANY_OF}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {"properties": {"p": {"type": "object", "additionalProperties": {**TWO_ANY_OF, **TWO_ONE_OF}}}},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": TWO_ANY_OF}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        },
         {
             "selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
             "slug": "ptr-14a",
@@ -9383,9 +9484,17 @@ class RankedBacklogTests(unittest.TestCase):
         golden-only witness that is not a hand-authored (vendored) feature target,
         read off the reach ledger; a committed non-generation proof is a
         non-`golden` row with a `MANIFEST.tsv` row carrying a non-generation
-        verdict; everything else is unproven. The three sum to the walk's total.
+        verdict; a `gap` row the shared table decides at `-` is decided
+        output-insensitive; everything else is unproven. They sum to the walk's total.
         """
         rows = list(self.entries.values())
+        records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
+        self.assertEqual([], failures)
+        decided = {
+            key
+            for key, (_region, cells) in self.entries.items()
+            if cells[3].strip("`") == "gap" and (key, "-") in records
+        }
         categories = {
             category: sum(1 for _region, cells in rows if cells[3].strip("`") == category)
             for category in self.CATEGORIES
@@ -9418,6 +9527,8 @@ class RankedBacklogTests(unittest.TestCase):
                 # Weaker proof than a real specification: its own count, never
                 # the byte-match one and never a non-generation proof.
                 handwritten += 1
+            elif key in decided:
+                continue
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
         # Feature proof totals above exclude combinations. The arm headline
@@ -9427,7 +9538,7 @@ class RankedBacklogTests(unittest.TestCase):
             (reach.key, spec) for _rank, reach in arm_ledger_rows for spec, hit, _total in reach.sites if not hit
         }
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
-        fixture = len(self.gaps("FIXTURE"))
+        fixture = len(self.gaps("FIXTURE") - decided)
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
         stated = re.search(
             r"enumerates (\d+) features\. By category, (\d+) are `golden`, (\d+) `limitations`, "
@@ -9437,13 +9548,14 @@ class RankedBacklogTests(unittest.TestCase):
             r"the (\d+) `limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) rest "
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
             r"the `handwritten` rows.*?They are not among the (\d+) and never count as a "
-            r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
+            r"real-specification match\. - \*\*(\d+) (?:is|are) decided output-insensitive\.\*\*.*? "
+            r"- \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
             r"rows\..*?(\d+) (?:are|is a) `golden` rows? resting only on residual goldens whose code moves no "
             r"byte-matched file.*?The other (\d+) are `golden` rows declared only by.*?"
-            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
         )
-        self.assertIsNotNone(stated, "the headline no longer states its four numbers")
+        self.assertIsNotNone(stated, "the headline no longer states its five numbers")
         assert stated is not None
         unproven = fixture + residual_gap + no_witness
         expected = [
@@ -9458,6 +9570,7 @@ class RankedBacklogTests(unittest.TestCase):
             len(self.gaps("UNREACHABLE")),
             handwritten,
             byte_match,
+            len(decided),
             unproven,
             fixture,
             residual_gap,
@@ -9465,14 +9578,17 @@ class RankedBacklogTests(unittest.TestCase):
             byte_match,
             proof,
             handwritten,
+            len(decided),
             unproven,
             len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
-        self.assertEqual(len(rows), byte_match + proof + handwritten + unproven, "the four do not partition the walk")
+        self.assertEqual(
+            len(rows), byte_match + proof + handwritten + len(decided) + unproven, "the five do not partition the walk"
+        )
         self.assertEqual(
             proof,
-            categories["limitations"] + len(self.gaps("UNREACHABLE")),
+            categories["limitations"] + len(self.gaps("UNREACHABLE") - decided),
             "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
         )
         # The arms, split the same way: reached by a real specification, reached
@@ -9502,14 +9618,16 @@ class RankedBacklogTests(unittest.TestCase):
             r"fixture\.\*\*.*?each of the (\d+) is still one of the (\d+) \[unreached arms\].*?"
             r"The cited records of (\d+) read `exhausted`, (\d+) read `search-incomplete` "
             r"and (\d+) read `config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
+            r"\*\*(\d+) (?:is|are) decided output-insensitive\*\*.*?"
             r"\*\*(\d+) (?:is a named gap|are named gaps)\*\*.*?"
-            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes has a decided detector or a fully evaluated document population",
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes has a decided detector or a fully evaluated document population",
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
         assert arms_stated is not None
         reached = len(arms) - len(unreached)
         named = set(named_gap_arms(REPO)) & unreached
+        decided = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)[0] & unreached
         self.assertEqual(
             [
                 len(arm_ledger_rows),
@@ -9522,10 +9640,12 @@ class RankedBacklogTests(unittest.TestCase):
                 verdict_counts[SEARCH_INCOMPLETE],
                 verdict_counts[CONFIG_GATED],
                 len(refused),
+                len(decided),
                 len(named),
                 reached,
                 len(covered),
                 len(refused),
+                len(decided),
                 len(named),
                 len(arms),
                 len(classes),
@@ -9534,7 +9654,9 @@ class RankedBacklogTests(unittest.TestCase):
         )
         self.assertEqual(len(ledger_rows), categories["golden"], "the reach ledger is not every golden row")
         self.assertEqual(
-            len(unreached), len(covered) + len(refused) + len(named), "an unreached arm is unaccounted for"
+            len(unreached),
+            len(covered) + len(refused) + len(decided) + len(named),
+            "an unreached arm is unaccounted for",
         )
         self.assertEqual(
             sorted({key for key, _arm in refused}),
@@ -10676,7 +10798,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     def test_the_classification_table_is_the_region_cells_own(self) -> None:
         """Six classes, each counted off the cells, adding up to the population
-        that read `limitations` before the amendment.
+        classified under the amended rule.
 
         A `gap` row cites a committed differential too when it is `UNREACHABLE`,
         and it never read `limitations`, so only a `limitations` row's proof puts
@@ -10733,7 +10855,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(list(counts.values()), stated)
         body = self.section("#### The limitations rows under the amended rule", "\n#### ")
         total = re.search(r"\| \*\*total\*\* \| \*\*(\d+)\*\*", body)
-        population = re.search(r"The (\d+) rows that read `limitations` before", body)
+        population = re.search(r"The (\d+) rows classified here", body)
         self.assertTrue(total and population, "the classification states no total")
         assert total is not None and population is not None
         self.assertEqual(sum(counts.values()), int(total.group(1)))
@@ -11934,6 +12056,12 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         )
 
 
+class BoundedFeatureSearch(NamedTuple):
+    key: str
+    directory: Path
+    reason: str
+
+
 class FinishedStateGateTests(unittest.TestCase):
     """`finished_state_failures` over a copy of the committed ledgers, broken one way at a time.
 
@@ -11949,6 +12077,13 @@ class FinishedStateGateTests(unittest.TestCase):
         surface = Path("docs") / "openapi-surface"
         copies = [*(path.relative_to(REPO) for path in (REPO / surface).glob("*.md"))]
         copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
+        dispositions = REPO / surface / "output-insensitive.tsv"
+        if dispositions.exists():
+            copies += [surface / "output-insensitive.tsv", Path("assets/scaffolding/metadata.json")]
+            with dispositions.open(encoding="utf-8", newline="") as handle:
+                for row in csv.DictReader(handle, delimiter="\t"):
+                    copies += [Path(row[field]) for field in ("search_record", "fern_comparison", "crozier_comparison")]
+
         copies += [path.relative_to(REPO) for path in (REPO / "docs/fern-refusals").glob("*.tsv")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/reductions").glob("*.log")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "fern-refusals/limitations").glob("*.json")]
@@ -11976,7 +12111,145 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
-    def test_a_bounded_feature_search_names_its_candidates(self) -> None:
+    def test_output_insensitive_feature_is_decided_but_changed_comparison_is_rejected(self) -> None:
+        surface = self.root / "docs/openapi-surface"
+        pin = self.root / "assets/scaffolding/metadata.json"
+        pin.parent.mkdir(parents=True, exist_ok=True)
+        pin.write_text(json.dumps(CERTIFIED))
+        with (surface / "schemas.md").open("a") as handle:
+            handle.write("\n| sample-decided | both | schema.example | gap | none | none | sample | FIXTURE |\n")
+        (surface / "sample-decided.md").write_text("Measured sample-decided before and after.")
+        table = surface / "output-insensitive.tsv"
+        if not table.exists():
+            table.write_text("key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n")
+        with table.open("a") as handle:
+            handle.write(
+                "sample-decided\t-\tdocs/openapi-surface/sample-decided.md\t"
+                "docs/openapi-surface/sample-fern.json\tdocs/openapi-surface/sample-crozier.json\n"
+            )
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"sdk.py": "a" * 64},
+                "after": {"sdk.py": "a" * 64},
+            }
+            (surface / f"sample-{generator}.json").write_text(json.dumps(record))
+        self.assertEqual([], finished_state_failures(self.root))
+        path = surface / "sample-crozier.json"
+        record = json.loads(path.read_text())
+        record["after"]["sdk.py"] = "b" * 64
+        path.write_text(json.dumps(record))
+        self.assertTrue(any("generated files differ" in failure for failure in finished_state_failures(self.root)))
+
+    def test_whole_key_decisions_reach_the_gate_and_the_restated_headline(self) -> None:
+        """The real finished-state gate and `restate-coverage.py` over one tree holding
+        `gap` keys the shared table decides at `-` (a `FIXTURE` row, an `UNREACHABLE`
+        row and a combination), a `gap` key it does not, and a `golden` key it also
+        decides."""
+        stage_restatement_population(self.root)
+        surface = self.root / "docs/openapi-surface"
+        index = self.root / "docs/openapi-surface-coverage.md"
+        restater = [
+            sys.executable,
+            str(REPO / "tools/surface-census/restate-coverage.py"),
+            "--repo-root",
+            str(self.root),
+        ]
+        self.assertEqual(0, subprocess.run(restater, capture_output=True, check=False).returncode)
+        stated = matched(re.search(r"^(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.$", index.read_text(), re.M))
+        real, proof, weak, decided, unproven, total = map(int, stated.groups())
+        with (surface / "schemas.md").open("a", encoding="utf-8") as handle:
+            for key in ("sample-decided", "sample-undecided"):
+                handle.write(
+                    f"\n| `{key}` | both | Schema Object.sample | `gap` | census: 0 declarations | none | "
+                    "types/ | `FIXTURE` — sample |\n"
+                )
+            handle.write(
+                "\n| `sample-unreachable` | both | Schema Object.sample | `gap` | census: 0 declarations | none | "
+                "types/ | `UNREACHABLE` — sample |\n"
+            )
+        with (surface / "document-paths.md").open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| `combo-sample-decided` | both | Combination — sample | `gap` | none | none | none | none |\n"
+            )
+        for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
+            (surface / f"{key}.md").write_text(f"Deleted `{key}`; neither tree moved.\n")
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"src/fern/client.py": "a" * 64},
+                "after": {"src/fern/client.py": "a" * 64},
+            }
+            (surface / f"sample-{generator}.json").write_text(json.dumps(record))
+        table = surface / "output-insensitive.tsv"
+        evidence = "docs/openapi-surface/sample-fern.json\tdocs/openapi-surface/sample-crozier.json\n"
+        with table.open("a", encoding="utf-8") as handle:
+            for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
+                handle.write(f"{key}\t-\tdocs/openapi-surface/{key}.md\t{evidence}")
+        combinations = matched(re.search(r"(\d+) are `golden` and (\d+) are `gap`\.", index.read_text()))
+        combination_golden, combination_gap = map(int, combinations.groups())
+
+        failures = finished_state_failures(self.root)
+        self.assertTrue(any(f.startswith("sample-undecided: a `FIXTURE` gap row") for f in failures), failures)
+        self.assertFalse([f for f in failures if "decided" in f and "undecided" not in f], failures)
+        self.assertFalse([f for f in failures if "sample-unreachable" in f], failures)
+        result = subprocess.run([*restater, "--write"], capture_output=True, text=True, check=False)
+        self.assertEqual(0, result.returncode, result.stderr)
+        text = index.read_text(encoding="utf-8")
+        flat = " ".join(text.split())
+        self.assertIn(f"- **{decided + 2} are decided output-insensitive.**", flat)
+        self.assertIn("`sample-decided`, `sample-unreachable`.", flat)
+        self.assertIn(f"- **{unproven + 1} remain unproven.**", flat)
+        # The decided `UNREACHABLE` row leaves the committed-proof count for the decided one.
+        self.assertIn(f"{real} + {proof} + {weak} + {decided + 2} + {unproven + 1} = {total + 3}.", text)
+        self.assertIn(
+            f"{combination_golden} are `golden` and {combination_gap + 1} are `gap`. "
+            "1 of the `gap` ones is decided output-insensitive",
+            flat,
+        )
+        ranked = text.partition("| # | key | region | 1. crozier sites")[2].partition("\n\n")[0]
+        self.assertIn("`sample-undecided`", ranked)
+        self.assertNotIn("`sample-decided`", ranked)
+        # Listing a decided combination as unproven is stale, and the gate says so.
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            NAMED_COMBINATIONS_HEADING,
+            NAMED_COMBINATIONS_HEADING
+            + "\n\n| `combo-sample-decided` | `document-paths` | `not searched` — sample |\n",
+        )
+        self.assertTrue(
+            any(
+                f.startswith("combo-sample-decided: docs/openapi-surface-coverage.md names it")
+                for f in finished_state_failures(self.root)
+            )
+        )
+        index.write_text(text, encoding="utf-8")
+
+        golden = next(
+            cells[0].strip("`")
+            for cells in RankedBacklogTests.region_rows((surface / "schemas.md").read_text(encoding="utf-8"))
+            if cells[3].strip("`") == "golden"
+        )
+        (surface / "sample-golden.md").write_text(f"Deleted `{golden}`; neither tree moved.\n")
+        with table.open("a", encoding="utf-8") as handle:
+            handle.write(f"{golden}\t-\tdocs/openapi-surface/sample-golden.md\t{evidence}")
+        self.assertIn(
+            f"docs/openapi-surface/output-insensitive.tsv: {golden}: key/context is also claimed proven",
+            finished_state_failures(self.root),
+        )
+        refused = subprocess.run(restater, capture_output=True, text=True, check=False)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"{golden}: key/context is also claimed proven", refused.stderr)
+        self.assertEqual(text, index.read_text(encoding="utf-8"))
+
+    def add_bounded_feature_search(self) -> BoundedFeatureSearch:
+        """Add a pending search without depending on a production gap remaining open."""
         key = "sample-unproven"
         record = self.root / "docs/openapi-surface/sample-search"
         record.mkdir()
@@ -12000,6 +12273,10 @@ class FinishedStateGateTests(unittest.TestCase):
             NAMED_FEATURES_HEADING,
             NAMED_FEATURES_HEADING + f"\n\n| `{key}` | `schemas` | {reason} |\n",
         )
+        return BoundedFeatureSearch(key=key, directory=record, reason=reason)
+
+    def test_a_bounded_feature_search_names_its_candidates(self) -> None:
+        key, record, reason = self.add_bounded_feature_search()
         self.assertEqual([], finished_state_failures(self.root))
         self.assertTrue(bounded_incomplete_search(self.root, key, reason))
         (record / "census.tsv").write_text(
@@ -12023,10 +12300,9 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertTrue(any("unproven feature without" in failure for failure in finished_state_failures(self.root)))
 
     def test_bounded_search_accepts_windows_paths_and_crlf_records(self) -> None:
-        key = "schema-example-fractional-on-integer"
-        reason = named_gap_features(self.root)[key]
+        key, directory, reason = self.add_bounded_feature_search()
         for name in ("README.md", "census.tsv"):
-            record = self.root / "docs/openapi-surface/witness-search-unproven-features" / name
+            record = directory / name
             record.write_bytes(record.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         windows_reason = reason.replace("/", "\\")
         self.assertTrue(bounded_incomplete_search(self.root, key, windows_reason))
@@ -12100,8 +12376,8 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
-    NAMED_KEY = "schema-example-outside-enum"
-    NAMED_ARM = "src/emit.rs::ExampleCtx::example_matches_type_through[=Some\\(TypeDecl::Enum\\(decl\\)\\) => value]"
+    NAMED_KEY = "discriminator-mapping"
+    NAMED_ARM = "src/ir.rs::Builder::discriminated_union[if union_target \\{]"
 
     def test_the_committed_named_gap_is_an_uncovered_arm_with_an_incomplete_screen(self) -> None:
         """The bounded screen is not a proof: the uncovered arm still needs its named row."""
@@ -12172,12 +12448,15 @@ class FinishedStateGateTests(unittest.TestCase):
             encoding="utf-8",
             newline="\n",
         )
-        self.assertEqual(
-            [
-                f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
-                "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"
-            ],
-            finished_state_failures(self.root),
+        failures = finished_state_failures(self.root)
+        self.assertIn(
+            f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
+            "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap",
+            failures,
+        )
+        # The key's other named arms read the same record, so they are refused alike.
+        self.assertTrue(
+            all(failure.startswith(f"{self.NAMED_KEY}: ") and "['exhausted']" in failure for failure in failures)
         )
 
     def add_named_feature_gap(self) -> None:
@@ -14037,6 +14316,31 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's port of {path}'s {name}",
                 )
 
+    def test_an_inferred_tag_is_read_off_a_composed_members_last_alternative(self) -> None:
+        """`inferred_discriminant_property_with` maps each member through `last_composed_variant`."""
+
+        def tagged(value: str) -> dict:
+            return {
+                "type": "object",
+                "required": ["kind"],
+                "properties": {"kind": {"type": "string", "enum": [value]}},
+            }
+
+        def document(second: dict) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": "t", "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Thing": {"oneOf": [tagged("a"), second]}}},
+            }
+
+        selector = "schema.oneOf:discriminated-union"
+        nested = {"oneOf": [{"type": "string"}, tagged("b")]}
+        self.assertEqual(1, census.census_document(document(nested)).get(selector, 0))
+        # A nullable pair is no composed member, so its tag is not read through it.
+        nullable = {"oneOf": [{"type": "null"}, tagged("b")]}
+        self.assertEqual(0, census.census_document(document(nullable)).get(selector, 0))
+
     def test_the_union_ports_track_their_rust_functions(self) -> None:
         """The unrequired-tag clause and `components.schemas:same-primitive-union`.
 
@@ -14520,6 +14824,56 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             },
             rows(completed),
         )
+
+    def test_a_hyphenated_id_strips_its_tag_only_when_its_words_are_the_tags(self) -> None:
+        """`sub-project-2-fa` under `sub-project` strips to `2_fa`; under
+        `SubProject`, whose one word `subproject` its hyphenated words do not
+        spell, it keeps its whole id, as ADME seismic's `sub-project-list` does."""
+        tagged = _operation_document({"operationId": "sub-project-2-fa", "tags": ["sub-project"]})
+        split = _operation_document({"operationId": "sub-project-2-fa", "tags": ["SubProject"]})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, body in (("tagged", tagged), ("split", split)):
+                write_json_fixture(root, name, body)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "operation.operationId:digit-leading-method",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("operation.operationId:digit-leading-method", "tagged"): 1}, rows(completed))
+
+    def test_an_untyped_enum_tag_leaves_a_one_of_undiscriminated(self) -> None:
+        """A `oneOf` whose members tag `kind` with a bare one-member `enum` is no
+        discriminated union, as an `anyOf` written the same way is not; the same
+        tags declaring `type: string` make one."""
+
+        def tagged(*kind: dict) -> dict:
+            members = [
+                {
+                    "type": "object",
+                    "properties": {"kind": {"enum": [value], **extra}, "ref": {"type": "string"}},
+                    "required": ["kind", "ref"],
+                }
+                for value, extra in zip(("Unit", "Crs"), kind, strict=True)
+            ]
+            return _root_document({"oneOf": members})
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "untyped", tagged({}, {}))
+            write_json_fixture(root, "typed", tagged({"type": "string"}, {"type": "string"}))
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.oneOf:discriminated-union",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("schema.oneOf:discriminated-union", "typed"): 1}, rows(completed))
 
 
 class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
@@ -16858,6 +17212,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "golden-reach.py": ("\u2014",),
         "handwritten-fixtures.py": ("\u2014",),
         "openapi-surface-census.py": ("\u2014",),
+        "output-insensitive.py": ("\u2014",),
         "probe-differential-isolation.py": ("missing-root", "\u2014", "missing-probe", "missing-control"),
         "scenario-proof-index.py": ("\u2014",),
         "restate-coverage.py": ("\u2014",),
@@ -17865,6 +18220,23 @@ class NamingWireCensusTests(unittest.TestCase):
             path.unlink()
             self.assertIsNone(index.golden_source(root, golden))
 
+    def test_a_measured_probe_tree_and_its_literals_overlay_name_the_probe_document(self) -> None:
+        index = load_script("tools/surface-census/scenario-proof-index.py")
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            source = "docs/openapi-surface/probes/sample-probe.yml"
+            path = root / source
+            path.parent.mkdir(parents=True)
+            path.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            for golden in (
+                "docs/openapi-surface/probe-expected/sample-probe",
+                "docs/fern-measurements/union-literals/sample-probe/fern-expected",
+            ):
+                with self.subTest(golden=golden):
+                    self.assertEqual(index.golden_source(root, golden), source)
+            path.unlink()
+            self.assertIsNone(index.golden_source(root, "docs/openapi-surface/probe-expected/sample-probe"))
+
     def test_owned_shapes_and_adjacent_controls(self) -> None:
         census = load_census()
         cases = (
@@ -17933,6 +18305,42 @@ class NamingWireCensusTests(unittest.TestCase):
                 )
 
 
+def stage_restatement_population(root: Path) -> None:
+    """Give a copied coverage index the inputs `restate-coverage.py` reads beyond the docs.
+
+    Source discovery reads filenames, registrations and golden directories;
+    valid one-line documents supply that filesystem boundary without copying SDKs.
+    """
+    surface = root / "docs/openapi-surface"
+    shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
+    text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+    acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
+    population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
+    registered, golden = map(int, population.groups())
+    fixtures = root / "tests/fixtures"
+    for number in range(registered):
+        directory = fixtures / f"sample-source-{number}"
+        directory.mkdir(parents=True)
+        (directory / "openapi.yml").write_text(
+            "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        if number < golden:
+            (directory / "expected").mkdir()
+    corpus_rows = []
+    for number in range(acquired - registered):
+        name = f"unproven-source-{number}"
+        directory = fixtures / "corpus-sources" / name
+        directory.mkdir(parents=True)
+        (directory / "openapi.yml").write_text(
+            "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
+    (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
+    registry = root / "crates/crozier-e2e/tests/e2e.rs"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("", encoding="utf-8")
+
+
 class CoverageRestatementTests(unittest.TestCase):
     """The public restater diagnoses drift, writes it, and refuses missing measurements."""
 
@@ -17948,35 +18356,7 @@ class CoverageRestatementTests(unittest.TestCase):
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
         shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
-        shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
-        # Source discovery reads filenames, registrations and golden directories;
-        # these valid documents supply that filesystem boundary without copying SDKs.
-        text = self.index.read_text(encoding="utf-8")
-        acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
-        population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
-        registered, golden = map(int, population.groups())
-        fixtures = self.root / "tests/fixtures"
-        for number in range(registered):
-            directory = fixtures / f"sample-source-{number}"
-            directory.mkdir(parents=True)
-            (directory / "openapi.yml").write_text(
-                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
-            )
-            if number < golden:
-                (directory / "expected").mkdir()
-        corpus_rows = []
-        for number in range(acquired - registered):
-            name = f"unproven-source-{number}"
-            directory = fixtures / "corpus-sources" / name
-            directory.mkdir(parents=True)
-            (directory / "openapi.yml").write_text(
-                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
-            )
-            corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
-        (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
-        registry = self.root / "crates/crozier-e2e/tests/e2e.rs"
-        registry.parent.mkdir(parents=True)
-        registry.write_text("", encoding="utf-8")
+        stage_restatement_population(self.root)
 
     def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -18629,10 +19009,14 @@ class CoverageRestatementTests(unittest.TestCase):
 
     def test_changed_narrative_inputs_refuse_without_writing(self) -> None:
         original = self.index.read_text(encoding="utf-8")
+        # An exhausted ranked backlog narrates its emptiness instead of its share.
+        ranked = ("score zero", "have zero witnesses")
+        if "score zero" not in original:
+            ranked = ("no ranked witnesses remain", "nothing remains ranked")
         for before, after in [
             ("All ", "Every "),
-            ("score zero", "have zero witnesses"),
-            ("split four ways", "split ways"),
+            ranked,
+            ("split five ways", "split ways"),
             ("carry byte-match evidence", "have matching evidence"),
             ("carry a committed Fern", "have a measurement"),
             ("rest on a hand-written fixture", "have an authored tree"),
@@ -18713,7 +19097,7 @@ class CoverageRestatementTests(unittest.TestCase):
         revised = self.index.read_text(encoding="utf-8")
         self.assertRegex(revised, rf"\*\*{real - 1} carry byte-match evidence")
         self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
-        self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
+        self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
         self.assertEqual(0, self.run_restater().returncode)
 
     def test_feature_and_combination_ledger_populations_are_checked_in_full(self) -> None:
@@ -18944,7 +19328,30 @@ class CombinationListTests(unittest.TestCase):
     def test_the_coverage_headline_counts_the_combinations_apart(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         self.assertEqual([], restater.combination_headline_failures(REPO))
-
+        doc = " ".join((REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8").split())
+        stated = re.search(
+            r"\*\*Feature combinations are counted apart\.\*\* (\d+) combinations are selected .*?: "
+            r"([^.]+)\. (\d+) of the `gap` ones (?:is|are) decided output-insensitive",
+            doc,
+        )
+        self.assertIsNotNone(stated, "the headline no longer counts the combinations on a line of its own")
+        assert stated is not None
+        categories = Counter(cells[3].strip("`") for _region, cells in combination_rows(REPO).values())
+        records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
+        self.assertEqual([], failures)
+        decided = sum(
+            cells[3].strip("`") == "gap" and (key, "-") in records
+            for key, (_region, cells) in combination_rows(REPO).items()
+        )
+        self.assertEqual(
+            [len(census.COMBINATIONS), dict(categories), decided],
+            [
+                int(stated[1]),
+                {category: int(count) for count, category in re.findall(r"(\d+) are `([^`]+)`", stated[2])},
+                int(stated[3]),
+            ],
+        )
+        self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
 
     def test_a_golden_combination_row_waits_for_measurement_only_while_its_cell_says_so(self) -> None:
         """Only combination rows explicitly marked pending may omit reach measurements."""
@@ -19254,3 +19661,232 @@ class MalformedRequiredMemberTests(unittest.TestCase):
             {"malformed-component": 1, "malformed-body": 1, "valid-control": 1},
             {row["fixture"]: row["count"] for row in payload["rows"]},
         )
+
+
+class OutputInsensitiveTests(unittest.TestCase):
+    """Drive the disposition reader over complete comparison records on disk."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.surface = self.root / "docs/openapi-surface"
+        self.surface.mkdir(parents=True)
+        (self.root / "assets/scaffolding").mkdir(parents=True)
+        (self.root / "assets/scaffolding/metadata.json").write_text(json.dumps(CERTIFIED))
+        (self.surface / "search.md").write_text("Measured `sample-key` in its request context.\n")
+        self.registry = self.surface / "output-insensitive.tsv"
+        self.registry.write_text(
+            "key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n"
+            "sample-key\t-\tdocs/openapi-surface/search.md\t"
+            "docs/openapi-surface/fern.json\tdocs/openapi-surface/crozier.json\n"
+        )
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"sdk.py": "a" * 64},
+                "after": {"sdk.py": "a" * 64},
+            }
+            (self.surface / f"{generator}.json").write_text(json.dumps(record))
+
+    def run_reader(self):
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/output-insensitive.py"), "--root", str(self.root)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_unchanged_complete_comparisons_are_decided(self):
+        result = self.run_reader()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual("", result.stdout)
+
+    def test_missing_comparison_is_rejected(self):
+        (self.surface / "fern.json").unlink()
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("fern.json", result.stderr)
+
+    def test_generated_file_motion_is_rejected(self):
+        for generator in ("fern", "crozier"):
+            with self.subTest(generator=generator):
+                path = self.surface / f"{generator}.json"
+                original = path.read_text()
+                record = json.loads(original)
+                record["after"]["sdk.py"] = "b" * 64
+                path.write_text(json.dumps(record))
+                result = self.run_reader()
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("generated files differ", result.stderr)
+                path.write_text(original)
+
+    def test_reach_ledger_without_sites_uses_the_canonical_sentinel(self):
+        reader = load_script("tools/surface-census/golden-reach.py")
+        reach = reader.Reach("sample-key", "schemas", (), (), ())
+        (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"), encoding="utf-8")
+        result = self.run_reader()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_the_documented_contract_is_the_readers(self):
+        """docs/output-insensitive.md states the columns and comparison fields the reader enforces."""
+        reader = load_script("tools/surface-census/output-insensitive.py")
+        doc = (REPO / "docs/output-insensitive.md").read_text(encoding="utf-8")
+        columns = matched(re.search(r"Each TSV row has (.*?)\. Paths", " ".join(doc.split()))).group(1)
+        self.assertEqual(list(reader.COLUMNS), re.findall(r"`([a-z_]+)`", columns))
+        record = json.loads(doc.partition("```json\n")[2].partition("```")[0])
+        self.assertEqual(set(reader.FIELDS), set(record))
+
+    def test_each_refusal_reaches_the_cli(self):
+        """Every way a row's evidence can fail is one stderr line and exit 1, never a traceback."""
+        sha = "a" * 64
+
+        def registry(old, new):
+            return lambda: self.registry.write_text(self.registry.read_text().replace(old, new))
+
+        def comparison(which, **changes):
+            def mutate():
+                path = self.surface / f"{which}.json"
+                record = json.loads(path.read_text())
+                record.update(changes)
+                path.write_text(json.dumps(record))
+
+            return mutate
+
+        def write(relative, text):
+            return lambda: (self.root / relative).write_text(text)
+
+        def symlinked_search():
+            (self.root / "outside.md").write_text("Measured `sample-key`.\n")
+            (self.surface / "link.md").symlink_to(self.root / "outside.md")
+            registry("docs/openapi-surface/search.md", "docs/openapi-surface/link.md")()
+
+        def reached_arm():
+            reader = load_script("tools/surface-census/golden-reach.py")
+            reach = reader.Reach("sample-key", "schemas", ("sample",), (), (("src/ir.rs::sample[arm]", 1, 1),))
+            (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"), encoding="utf-8")
+            registry("sample-key\t-\t", "sample-key\tsrc/ir.rs::sample[arm]\t")()
+
+        def cover(text):
+            def mutate():
+                (self.surface / "handwritten/sample").mkdir(parents=True)
+                (self.surface / "handwritten/sample/evidence.toml").write_text(text)
+
+            return mutate
+
+        cases = [
+            ("absolute path", registry("docs/openapi-surface/search.md", "/tmp/search.md"), "invalid evidence path"),
+            (
+                "parent traversal",
+                registry("docs/openapi-surface/search.md", "docs/openapi-surface/../x.md"),
+                "invalid evidence path",
+            ),
+            (
+                "outside the docs",
+                registry("docs/openapi-surface/search.md", "assets/search.md"),
+                "invalid evidence path",
+            ),
+            ("symlink escape", symlinked_search, "evidence escapes documentation"),
+            (
+                "missing search record",
+                lambda: (self.surface / "search.md").unlink(),
+                "missing comparison or search record",
+            ),
+            ("uncited key", write("docs/openapi-surface/search.md", "Measured nothing.\n"), "does not cite the key"),
+            ("missing metadata", lambda: (self.root / "assets/scaffolding/metadata.json").unlink(), "metadata.json"),
+            (
+                "malformed metadata",
+                write("assets/scaffolding/metadata.json", '{"cliVersion": 1}'),
+                "names no certified pair",
+            ),
+            ("empty tree", comparison("fern", before={}), "non-empty complete generated tree"),
+            (
+                "escaping tree path",
+                comparison("fern", before={"../sdk.py": sha}, after={"../sdk.py": sha}),
+                "invalid generated-file path",
+            ),
+            (
+                "invalid digest",
+                comparison("fern", before={"sdk.py": "zz"}, after={"sdk.py": "zz"}),
+                "invalid generated-file SHA-256",
+            ),
+            ("malformed JSON", write("docs/openapi-surface/fern.json", "{"), "sample-key"),
+            ("extra field", comparison("fern", note="x"), "invalid comparison fields"),
+            ("schema version", comparison("fern", schema_version=2), "unsupported comparison schema_version"),
+            ("non-string field", comparison("fern", generator=1), "invalid comparison fields"),
+            ("wrong generator", comparison("fern", generator="crozier"), "does not use fern at the certified pair"),
+            (
+                "uncertified pair",
+                comparison("crozier", fern_cli_version="0.0.1"),  # certified-pair: stand-in
+                "does not use crozier at the certified pair",
+            ),
+            ("wrong header", registry("crozier_comparison\n", "crozier\n"), "expected columns"),
+            ("incomplete row", registry("sample-key\t-\t", "sample-key\t\t"), "incomplete disposition row"),
+            ("invalid key", registry("sample-key\t", "Sample_Key\t"), "invalid census key"),
+            (
+                "duplicate row",
+                lambda: self.registry.write_text(
+                    self.registry.read_text() + self.registry.read_text().splitlines(keepends=True)[1]
+                ),
+                "duplicate key and context",
+            ),
+            ("non-string arm", cover('[[covers]]\nkey = "other"\narm = 3\n'), "a cover's arm must be a string"),
+            ("reached arm", reached_arm, "also claimed proven"),
+        ]
+        for name, mutate, expected in cases:
+            with self.subTest(case=name):
+                self.setUp()
+                try:
+                    mutate()
+                except OSError as error:  # a host that refuses symlinks
+                    self.skipTest(f"{name}: {error}")
+                result = self.run_reader()
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_malformed_covers_are_reported_not_raised(self):
+        fixture = self.surface / "handwritten/sample"
+        fixture.mkdir(parents=True)
+        for covers in ('covers = "sample-key"\n', "covers = [1]\n", "[[covers]]\nkey = 3\n"):
+            with self.subTest(covers=covers):
+                (fixture / "evidence.toml").write_text(covers)
+                result = self.run_reader()
+                self.assertEqual(1, result.returncode)
+                self.assertIn("evidence.toml", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_key_claimed_proven_is_rejected(self):
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
+
+    def test_narrow_context_of_a_proven_key_is_rejected(self):
+        self.registry.write_text(self.registry.read_text().replace("sample-key\t-\t", "sample-key\tquery-parameter\t"))
+        self.assertEqual(0, self.run_reader().returncode)
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
+
+    def test_arm_context_is_rejected_only_when_that_arm_is_proven(self):
+        arm = "src/emit.rs::sample[arm]"
+        self.registry.write_text(self.registry.read_text().replace("sample-key\t-\t", f"sample-key\t{arm}\t"))
+        (self.surface / "schemas.md").write_text(
+            "| `sample-key` | sample | schema.example | `golden` | - | - | - | FIXTURE |\n"
+        )
+        self.assertEqual(0, self.run_reader().returncode, self.run_reader().stderr)
+        fixture = self.surface / "handwritten/sample"
+        fixture.mkdir(parents=True)
+        (fixture / "evidence.toml").write_text(f"[[covers]]\nkey = \"sample-key\"\narm = '{arm}'\n")
+        result = self.run_reader()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)

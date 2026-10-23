@@ -1,0 +1,104 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import Block, BlockValue, DataSet, DataSetDataConfiguration, FacetResult, RangeFacet, TextFacet
+    from .errors import BadGatewayError, GatewayTimeoutError
+    from . import datasets, facets
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+    from .client import AsyncFernApi, FernApi
+    from .datasets import (
+        GetDatasetsDatasetNameDetailsItemIdResponse,
+        PostDatasetsDatasetNameSearchResponse,
+        PostDatasetsDatasetNameSearchResponseItemsItem,
+    )
+    from .environment import FernApiEnvironment
+    from .facets import (
+        GetDatasetsDatasetNameFacetsResponseItem,
+        GetDatasetsDatasetNameFacetsResponseItem_Range,
+        GetDatasetsDatasetNameFacetsResponseItem_Text,
+        PostDatasetsDatasetNameFacetRequestFacetsValue,
+        PostDatasetsDatasetNameFacetRequestSort,
+    )
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AsyncFernApi": ".client",
+    "BadGatewayError": ".errors",
+    "Block": ".types",
+    "BlockValue": ".types",
+    "DataSet": ".types",
+    "DataSetDataConfiguration": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
+    "FacetResult": ".types",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "GatewayTimeoutError": ".errors",
+    "GetDatasetsDatasetNameDetailsItemIdResponse": ".datasets",
+    "GetDatasetsDatasetNameFacetsResponseItem": ".facets",
+    "GetDatasetsDatasetNameFacetsResponseItem_Range": ".facets",
+    "GetDatasetsDatasetNameFacetsResponseItem_Text": ".facets",
+    "PostDatasetsDatasetNameFacetRequestFacetsValue": ".facets",
+    "PostDatasetsDatasetNameFacetRequestSort": ".facets",
+    "PostDatasetsDatasetNameSearchResponse": ".datasets",
+    "PostDatasetsDatasetNameSearchResponseItemsItem": ".datasets",
+    "RangeFacet": ".types",
+    "TextFacet": ".types",
+    "__version__": ".version",
+    "datasets": ".datasets",
+    "facets": ".facets",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "AsyncFernApi",
+    "BadGatewayError",
+    "Block",
+    "BlockValue",
+    "DataSet",
+    "DataSetDataConfiguration",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "FacetResult",
+    "FernApi",
+    "FernApiEnvironment",
+    "GatewayTimeoutError",
+    "GetDatasetsDatasetNameDetailsItemIdResponse",
+    "GetDatasetsDatasetNameFacetsResponseItem",
+    "GetDatasetsDatasetNameFacetsResponseItem_Range",
+    "GetDatasetsDatasetNameFacetsResponseItem_Text",
+    "PostDatasetsDatasetNameFacetRequestFacetsValue",
+    "PostDatasetsDatasetNameFacetRequestSort",
+    "PostDatasetsDatasetNameSearchResponse",
+    "PostDatasetsDatasetNameSearchResponseItemsItem",
+    "RangeFacet",
+    "TextFacet",
+    "__version__",
+    "datasets",
+    "facets",
+]

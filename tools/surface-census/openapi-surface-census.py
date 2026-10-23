@@ -1990,6 +1990,10 @@ CONJUNCTIONS = {
     "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
     "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
     "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
+    "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued": "one per Schema Object one of whose properties is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a string `enum`",
+    "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty": "one per Schema Object one of whose properties is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a non-empty `properties` map",
+    "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose properties is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
+    "schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose properties is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds no `oneOf` and an `anyOf` of two or more non-`null` members",
     "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
     "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref`, declares no `oneOf` and holds an `anyOf` of two or more non-`null` members",
     "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `anyOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
@@ -2476,6 +2480,26 @@ CASES: dict[str, tuple[Case, ...]] = {
                 "composition spelling"
             ),
         ),
+        Case(
+            "19a",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued",
+        ),
+        Case(
+            "19b",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty",
+        ),
+        Case(
+            "19c",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        ),
+        Case(
+            "19d",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        ),
         Case("15", block="prop_type_ref", selector="schema.properties>schema.type:primary=array"),
         Case(
             "16",
@@ -2524,7 +2548,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "791d82643902a74a",
-    "prop_type_ref": "94f307f9a0883f21",
+    "prop_type_ref": "1a8982eda3961497",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -4086,7 +4110,7 @@ METHOD_NAME_PORT_DIGESTS = {
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "dotted_tag_group_method": "4f8b8852f85ba4ee",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "3ba287086971a152",
+    "method_from_groupless_id": "6064a84e8bc4a73f",
     "method_from_hyphenated_tag_id": "4eb571e881d67d51",
     "operation_id_tag_prefix": "6b9d3e0baac71cd4",
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
@@ -4176,6 +4200,11 @@ def _fern_location_tokens(name: str) -> list[str]:
     return [_ascii_lower(word) for word in words if word]
 
 
+def _starts_with(words: list[str], prefix: list[str]) -> bool:
+    """Rust's slice `starts_with`: `prefix` is the leading run of `words`."""
+    return words[: len(prefix)] == prefix
+
+
 def _sanitized(name: str) -> tuple[str, bool]:
     """`sanitize_identifier`, and whether its leading-digit prefix fired: the
     name's first character is an ASCII digit, which no other mapping changes."""
@@ -4221,6 +4250,9 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
         method = snake
     elif suffix is not None:
         method = to_snake_case(suffix)
+    elif "-" in text and tag is not None and not _starts_with(_fern_location_tokens(text), _fern_location_tokens(tag)):
+        # A hyphenated id leads with its tag only when its words are the tag's.
+        method = snake
     else:
         method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
@@ -4992,16 +5024,27 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # neither necessary nor sufficient for any of the three arms these predicates
 # name.
 #
-# Two union rules are ported with a normalized-body digest of the Rust each
+# Three union rules are ported with a normalized-body digest of the Rust each
 # reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
-# edit to either function fails until the port is read again: the unrequired-tag
-# clause of `_candidate_tag_values` reads `inferred_discriminant_property_with`,
-# and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
-# scalar arms of `base_type_ref`.
+# edit to any of those functions fails until the port is read again: the
+# unrequired-tag clause of `_candidate_tag_values` reads
+# `inferred_discriminant_property_with`, the untyped-tag rule it and
+# `_inferred_union_discriminant_property` share reads `untyped_enum_tag` and
+# `inferred_union_discriminant_property`, and `Census.same_primitive_unions`
+# reads `same_primitive_union_last` and the scalar arms of `base_type_ref`.
+# `_last_composed_variant` ports `last_composed_variant` and the
+# `is_composed_member` test it loops on, through `_is_map` and
+# `_simple_nullable_member`, which port `is_map` and `simple_nullable_member`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "ab3c68f20ce92ccd",
+    "inferred_discriminant_property_with": "df4a2a63110cfa32",
+    "untyped_enum_tag": "f71e35908e2aed73",
+    "inferred_union_discriminant_property": "c7468f6d8fef712d",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "8c1ce5136f0b7968",
+    "last_composed_variant": "3ac394950dc70c7f",
+    "is_composed_member": "ea34dd7fa128f6b3",
+    "is_map": "ce58b2f1f60a3f18",
+    "simple_nullable_member": "1d041c7fc238931d",
 }
 
 
@@ -5366,6 +5409,50 @@ def _resolved_member_strict(member: Any, schemas: dict[Any, Any]) -> dict[Any, A
     return target if isinstance(target, dict) else None
 
 
+def _is_map(node: dict[Any, Any]) -> bool:
+    """`is_map` of `src/ir.rs`: an object writing no properties beside a schema or `true` `additionalProperties`."""
+    typed = primary_type(node.get("type"))
+    properties = node.get("properties")
+    extra = node.get("additionalProperties")
+    is_object = typed == "object" or (
+        typed is None and "type" not in node and (bool(properties) or "additionalProperties" in node)
+    )
+    return is_object and not properties and (isinstance(extra, dict) or extra is True)
+
+
+def _simple_nullable_member(node: dict[Any, Any]) -> dict[Any, Any] | None:
+    """`simple_nullable_member` of `src/ir.rs`: the one non-`null` member of a nullable pair."""
+    members = node.get("anyOf") if isinstance(node.get("anyOf"), list) else node.get("oneOf")
+    if not isinstance(members, list):
+        return None
+    non_null = [m for m in members if not (isinstance(m, dict) and primary_type(m.get("type")) == "null")]
+    if len(non_null) != 1 or len(non_null) == len(members) or not isinstance(non_null[0], dict):
+        return None
+    sole = non_null[0]
+    if "oneOf" in sole or "anyOf" in sole or string_enum_values(sole) is not None:
+        return None
+    return sole
+
+
+def _last_composed_variant(node: Any) -> Any:
+    """`last_composed_variant` of `src/ir.rs`: descend a composed member to its last alternative."""
+    while isinstance(node, dict):
+        alternatives = node.get("oneOf") if isinstance(node.get("oneOf"), list) else node.get("anyOf")
+        composed = (
+            "$ref" not in node
+            and "allOf" not in node
+            and not node.get("properties")
+            and not _is_map(node)
+            and isinstance(alternatives, list)
+            and len(alternatives) > 1
+            and _simple_nullable_member(node) is None
+        )
+        if not composed:
+            break
+        node = alternatives[-1]
+    return node
+
+
 def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any], enum_tag: bool = True) -> str | None:
     """`inferred_discriminant_property_with` of `src/ir.rs`, condition for condition.
 
@@ -5385,7 +5472,7 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
         return None
     references_components = any(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
     only_references = all(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
-    resolved = [_resolved_member(member, schemas) for member in members]
+    resolved = [_last_composed_variant(_resolved_member(member, schemas)) for member in members]
     if not resolved or not isinstance(resolved[0], dict):
         return None
     first_properties = resolved[0].get("properties")
@@ -5399,7 +5486,6 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
             resolved,
             references_components,
             enum_tag,
-            _any_of_head(node),
             only_references,
         )
         if values is not None and len(set(values)) == len(values):
@@ -5412,7 +5498,6 @@ def _candidate_tag_values(
     resolved: list[Any],
     references_components: bool,
     enum_tag: bool,
-    any_of_head: bool = False,
     only_references: bool = False,
 ) -> list[str] | None:
     """The tag every resolved member writes for one candidate property, or `None`.
@@ -5430,7 +5515,7 @@ def _candidate_tag_values(
         if not isinstance(field, dict):
             return None
         enum_written = field["enum"] if written(field, "enum") else None
-        singleton_enum = not (any_of_head and untyped_enum_tag(field)) and len(string_enum_values(field) or []) == 1
+        singleton_enum = not untyped_enum_tag(field) and len(string_enum_values(field) or []) == 1
         tagged_by_enum = (
             candidate in required_names(variant)
             and singleton_enum
@@ -5492,7 +5577,7 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
             return None
         properties = variant.get("properties")
         field = properties.get("type") if isinstance(properties, dict) else None
-        if _any_of_head(node) and untyped_enum_tag(field):
+        if untyped_enum_tag(field):
             return None
         value = discriminant_value(field)
         if value is None:
@@ -5501,14 +5586,9 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
     return "type" if len(set(values)) == len(values) else None
 
 
-def _any_of_head(node: dict[Any, Any]) -> bool:
-    """Whether a union's members are its `anyOf`: one is written and no `oneOf` is."""
-    return written(node, "anyOf") and not written(node, "oneOf")
-
-
 def untyped_enum_tag(field: Any) -> bool:
-    """`untyped_any_of_enum_tag` of `src/ir.rs`, given an `anyOf` head: an `enum`
-    tag declaring no `type: string`, which Fern does not discriminate on."""
+    """`untyped_enum_tag` of `src/ir.rs`: an `enum` tag declaring no `type: string`,
+    which Fern does not discriminate on under `anyOf` and `oneOf` alike."""
     return isinstance(field, dict) and written(field, "enum") and primary_type(field.get("type")) != "string"
 
 
@@ -5635,7 +5715,8 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
             target = _resolved_member_strict(member, schemas)
             if target is None:
                 return None
-            properties = target.get("properties")
+            variant = _last_composed_variant(target)
+            properties = variant.get("properties") if isinstance(variant, dict) else None
             field = properties.get(property_name) if isinstance(properties, dict) else None
             if discriminant_value(field) is None:
                 return None

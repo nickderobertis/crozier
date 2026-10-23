@@ -17,9 +17,10 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Credential,
-    Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType,
-    PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyExample, BodyField, BodySchemaShape, ClientPathParameter,
+    Credential, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir,
+    ObjectType, PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl,
+    TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -8839,8 +8840,14 @@ impl<'a> ExampleCtx<'a> {
                     "false" => "False".to_string(),
                     _ => example.to_string(),
                 },
+                // A Markdown snippet spells a declared example holding `"` the
+                // JSON way, where a docstring keeps Python's `repr`: ADME
+                // seismic's `persistable_reference` is `"{\"abcd\": …}"` in its
+                // README and `'{"abcd": …}'` in `client.py`.
                 TypeRef::Primitive(Prim::Str | Prim::Bytes)
-                    if self.reference && example.starts_with('\'') && example.ends_with('\'') =>
+                    if (self.documentation || self.reference)
+                        && example.starts_with('\'')
+                        && example.ends_with('\'') =>
                 {
                     let inner = &example[1..example.len() - 1];
                     format!("\"{}\"", inner.replace('"', "\\\""))
@@ -8912,13 +8919,20 @@ impl<'a> ExampleCtx<'a> {
             }
             let items = unique
                 .into_iter()
-                .map(|value| {
+                .filter_map(|value| {
                     if value.is_null() {
-                        return self.value(inner, Slot::Plain);
+                        return if matches!(inner.as_ref(), TypeRef::Optional(_)) {
+                            self.documentation
+                                .then(|| Example::Atom("None".to_string()))
+                        } else {
+                            Some(self.value(inner, Slot::Plain))
+                        };
                     }
                     let literal = value.to_string();
-                    self.value_from_example(inner, &literal)
-                        .unwrap_or_else(|| example_from_json_as(value, !self.documentation))
+                    Some(
+                        self.value_from_example(inner, &literal)
+                            .unwrap_or_else(|| example_from_json_as(value, !self.documentation)),
+                    )
                 })
                 .collect();
             return Some(if self.documentation {
@@ -9004,7 +9018,10 @@ impl<'a> ExampleCtx<'a> {
             // `profiles: {api.example.com: {errorStatus: 500, …}}` is
             // `{"api.example.com": HttpChaosProfile(error_status=500, …)}`.
             if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &value) {
-                if self.resolves_to_object(inner) || self.example_is_composite(inner) {
+                if self.resolves_to_object(inner)
+                    || self.example_is_composite(inner)
+                    || (!self.documentation && !self.resolves_to_any(inner))
+                {
                     let pairs = fields
                         .iter()
                         .map(|(key, field)| {
@@ -9153,11 +9170,19 @@ impl<'a> ExampleCtx<'a> {
         values: &serde_json::Map<String, serde_json::Value>,
     ) -> Vec<(Option<String>, Example)> {
         let documentation = self.documentation;
+        let unknown_maps: Vec<String> = fields
+            .iter()
+            .filter(|field| self.resolves_to_unknown_map(&field.type_ref))
+            .map(|field| field.wire_name.clone())
+            .collect();
         fields
             .into_iter()
             // An example value of `{}` selects nothing: Fern renders no
             // argument for an optional model field the example leaves
-            // empty (`mosip-esignet`'s `claims.id_token: {}`).
+            // empty (`mosip-esignet`'s `claims.id_token: {}`). A map to
+            // unknown values is the exception: there `{}` is Fern's
+            // `{"key": "value"}` placeholder (ADME seismic's
+            // `ExtensionProperties: {}`).
             // Nor does `null`, but in the Markdown writers, which write a
             // required nullable field's `null` as `None`; and an optional
             // field whose schema is deprecated is left out even where the
@@ -9171,7 +9196,8 @@ impl<'a> ExampleCtx<'a> {
                     || !field.deprecated
                         && value.is_some_and(|value| {
                             !value.is_null()
-                                && !value.as_object().is_some_and(serde_json::Map::is_empty)
+                                && (!value.as_object().is_some_and(serde_json::Map::is_empty)
+                                    || unknown_maps.contains(&field.wire_name))
                         })
             })
             .filter_map(
@@ -9214,8 +9240,14 @@ impl<'a> ExampleCtx<'a> {
                         // An empty array carries no example value, so Fern
                         // synthesizes one from the field name rather than
                         // rendering `[]` (`mosip-esignet`'s
-                        // `permittedAuthorizeScopes: []`).
+                        // `permittedAuthorizeScopes: []`); nor does an empty
+                        // object an unknown map is given.
                         Some(serde_json::Value::Array(items)) if items.is_empty() => {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        Some(serde_json::Value::Object(fields))
+                            if fields.is_empty() && self.resolves_to_unknown_map(&type_ref) =>
+                        {
                             self.value(&type_ref, Slot::Named(&wire_name))
                         }
                         Some(value) => {
@@ -9779,6 +9811,16 @@ impl<'a> ExampleCtx<'a> {
                         Example::ReferenceList(vec![])
                     } else {
                         Example::List(vec![])
+                    }
+                } else if !self.field_examples_ignored
+                    && matches!(inner.as_ref(), TypeRef::Optional(_))
+                {
+                    // The importer samples a nullable item as null. Markdown
+                    // keeps it; executable client docstrings omit null items.
+                    if self.documentation {
+                        Example::ReferenceList(vec![Example::Atom("None".to_string())])
+                    } else {
+                        Example::List(Vec::new())
                     }
                 } else {
                     // Fern's IR fallback writes two items where its importer's
@@ -11028,7 +11070,22 @@ fn build_example_inner(
             } else {
                 s.example
                     .as_deref()
-                    .and_then(|example| ctx.value_from_example(&s.type_ref, example))
+                    .and_then(|example| {
+                        if matches!(&s.example, Some(BodyExample::Schema(_)))
+                            && is_unknown_map(&s.type_ref)
+                        {
+                            // A complete schema example keeps nested empty objects;
+                            // pruning unknown properties applies to media examples.
+                            serde_json::from_str(example).ok().map(|value| {
+                                match (documentation, example_from_json_as(value, !documentation)) {
+                                    (true, Example::Dict(pairs)) => Example::ReferenceDict(pairs),
+                                    (_, rendered) => rendered,
+                                }
+                            })
+                        } else {
+                            ctx.value_from_example(&s.type_ref, example)
+                        }
+                    })
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
             // The JSON binary example must have its generated bytes type. The
@@ -11245,7 +11302,8 @@ fn build_example_inner(
                     .map(str::to_string)
                     .or_else(|| named_value(f).map(serde_json::Value::to_string));
                 let supplied_example = supplied_example.map(|example| {
-                        if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner) if ctx.resolves_to_string(inner))
+                        if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner)
+                            if !matches!(inner.as_ref(), TypeRef::Optional(_)) && ctx.resolves_to_string(inner))
                             && example.starts_with('[')
                             && example.contains("null")
                         {
@@ -11804,6 +11862,20 @@ fn format_documentation_example(
     let mut out = Vec::new();
     if is_async {
         out.extend_from_slice(&lines[..client_index]);
+        // After `asyncio`, the stdlib line and the tag imports follow in the
+        // order the snippet first uses them, as the sync form's do: ADME
+        // seismic's register call passes a tag-scoped model before its first
+        // `datetime`, and its async README imports that model first.
+        if !datetime_first {
+            if let Some(datetime) = out.iter().position(|line| line == "import datetime") {
+                let tags_end = out[datetime + 1..]
+                    .iter()
+                    .position(String::is_empty)
+                    .map_or(out.len(), |offset| datetime + 1 + offset);
+                let line = out.remove(datetime);
+                out.insert(tags_end - 1, line);
+            }
+        }
     } else {
         let main_start = imports
             .iter()
@@ -12407,6 +12479,186 @@ mod tests {
                 && !client.contains("447700900000"),
             "{client}"
         );
+    }
+
+    #[test]
+    fn typed_map_examples_coerce_numbers_through_the_value_union() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+            "paths": {"/records": {"post": {
+                "operationId": "storeRecord", "requestBody": {"required": true,
+                    "content": {"application/json": {"schema": {"type": "object",
+                        "required": ["data"], "properties": {"data": {"type": "object",
+                            "additionalProperties": {"anyOf": [{"type": "string"}, {"type": "number"}]},
+                            "example": {"question": 2}
+                        }}
+                    }}}}, "responses": {"204": {"description": "Done"}}
+            }}}
+        }));
+        let client = &files
+            .iter()
+            .find(|(path, _)| path.ends_with("/client.py"))
+            .expect("client")
+            .1;
+        assert!(client.contains("\"question\": 2.0"), "{client}");
+    }
+
+    #[test]
+    fn array_item_map_examples_use_only_the_targets_singular_example() {
+        for singular in [false, true] {
+            let mut row = serde_json::json!({"type": "object", "additionalProperties": true,
+                "examples": [{"email": "jane@example.com"}]});
+            if singular {
+                row["example"] = serde_json::json!({"email": "primary@example.com"});
+            }
+            let files = files_for(serde_json::json!({
+                "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+                "paths": {"/rows": {"post": {"operationId": "insertRows",
+                    "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                        "type": "object", "required": ["rows"], "properties": {"rows": {
+                            "type": "array", "items": {"$ref": "#/components/schemas/RowData"}
+                        }}
+                    }}}}, "responses": {"204": {"description": "Stored"}}
+                }}}, "components": {"schemas": {"RowData": row}}
+            }));
+            for name in ["README.md", "reference.md", "client.py"] {
+                let text = &files
+                    .iter()
+                    .find(|(path, _)| {
+                        path == name || name == "client.py" && path.ends_with("/client.py")
+                    })
+                    .expect("example file")
+                    .1;
+                assert!(
+                    !text.contains("jane@example.com"),
+                    "singular={singular} {name}: {text}"
+                );
+                let expected = if singular {
+                    "primary@example.com"
+                } else {
+                    "\"key\": \"value\""
+                };
+                assert!(
+                    text.contains(expected),
+                    "singular={singular} {name}: {text}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn array_reference_examples_use_the_target_in_body_and_query() {
+        for query in [false, true] {
+            let mut operation = serde_json::json!({
+                "operationId": "probe", "responses": {"204": {"description": "Done"}}
+            });
+            let array = serde_json::json!({"type": "array", "items": {
+                "$ref": "#/components/schemas/Label", "example": "moon"
+            }});
+            if query {
+                operation["parameters"] = serde_json::json!([{
+                    "name": "values", "in": "query", "required": true, "schema": array
+                }]);
+            } else {
+                operation["requestBody"] = serde_json::json!({"required": true, "content": {
+                    "application/json": {"schema": {"type": "object", "required": ["values"],
+                        "properties": {"values": array}}}
+                }});
+            }
+            let files = files_for(serde_json::json!({
+                "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+                "paths": {"/probe": {"post": operation}},
+                "components": {"schemas": {"Label": {"type": "string", "example": "sun"}}}
+            }));
+            let client = &files
+                .iter()
+                .find(|(path, _)| path.ends_with("/client.py"))
+                .expect("client")
+                .1;
+            assert!(
+                client.contains("values=[\"sun\"]"),
+                "query={query}: {client}"
+            );
+            assert!(!client.contains("moon"), "query={query}: {client}");
+        }
+    }
+
+    #[test]
+    fn bare_object_body_examples_preserve_empty_nested_objects() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Api", "version": "1"},
+            "paths": {"/records": {"post": {
+                "operationId": "createRecord",
+                "requestBody": {"content": {"application/json": {"schema": {
+                    "type": "object", "example": {"surveyId": "survey123", "responses": {}}
+                }}}},
+                "responses": {"204": {"description": "Done"}}
+            }}}
+        }));
+        for name in ["README.md", "reference.md", "src/fern/client.py"] {
+            let text = &files
+                .iter()
+                .find(|(path, _)| {
+                    path == name || (name.ends_with("/client.py") && path.ends_with("/client.py"))
+                })
+                .expect("example file")
+                .1;
+            assert!(
+                text.contains("\"surveyId\": \"survey123\"") && text.contains("\"responses\": {}"),
+                "{name}: {text}"
+            );
+            if name.ends_with(".md") {
+                assert!(text.contains("request={\n"), "{name}: {text}");
+            }
+        }
+    }
+
+    #[test]
+    fn nullable_array_examples_keep_nulls_only_in_markdown() {
+        for with_example in [true, false] {
+            let mut document = serde_json::json!({
+                "openapi": "3.1.0",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {"/probe": {"post": {
+                    "operationId": "probe",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"type": "object", "required": ["values"], "properties": {
+                            "values": {"type": "array", "items": {"type": "string", "nullable": true},
+                                "example": [null, "moon"]}
+                        }}
+                    }}},
+                    "responses": {"204": {"description": "Done"}}
+                }}}
+            });
+            if !with_example {
+                document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]
+                    ["schema"]["properties"]["values"]
+                    .as_object_mut()
+                    .expect("values schema")
+                    .remove("example");
+            }
+            let files = files_for(document);
+            let client = files
+                .iter()
+                .find(|(path, _)| path.ends_with("/client.py"))
+                .map(|(_, text)| text)
+                .expect("root client");
+            let expected = if with_example {
+                "values=[\"moon\"]"
+            } else {
+                "values=[]"
+            };
+            assert_eq!(client.matches(expected).count(), 2, "{client}");
+            for name in ["README.md", "reference.md"] {
+                let text = &files
+                    .iter()
+                    .find(|(path, _)| path == name)
+                    .expect("Markdown example")
+                    .1;
+                assert!(text.contains("values=[") && text.contains("None"), "{text}");
+                assert_eq!(text.contains("\"moon\""), with_example, "{text}");
+            }
+        }
     }
 
     #[test]
@@ -15786,7 +16038,7 @@ mod tests {
             convert: false,
             content_type: true,
             content_type_override: Some("*/*".to_string()),
-            example: Some("\"payload\"".to_string()),
+            example: Some(crate::ir::BodyExample::Literal("\"payload\"".to_string())),
         }));
         ep.response_doc = Some("Created widget.".to_string());
 

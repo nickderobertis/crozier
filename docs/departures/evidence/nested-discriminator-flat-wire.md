@@ -20,7 +20,9 @@ Crozier preserves the wrapper's Python interface, validates a flat input through
 its inner union, and serializes its inner fields alongside the outer tag. The
 outer tag wins when the inner model also declares that property. Explicit
 `value=` construction and wrapped inputs remain accepted. Other union shapes
-receive no adapters. The README and reference construct the inner variant using
+receive no adapters. That includes an inner union tagged by the outer union's
+own property, which keeps Fern's wrapped wire as
+[a suspected limitation](../../fern-limitations.md#a-same-property-nested-union-keeps-ferns-wrapped-wire--a-suspected-defect-not-yet-shown-failing). The README and reference construct the inner variant using
 `value=TartOrder_Shortcrust(...)`.
 
 Run the generated SDK journey with:

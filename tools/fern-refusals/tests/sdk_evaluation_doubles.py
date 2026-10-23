@@ -122,7 +122,8 @@ with open(os.environ['SDK_EVAL_CALLS'], 'a') as log:
 mode = os.environ.get('SDK_EVAL_MODE')
 if mode == 'compiler-timeout':
     import time
-    time.sleep(3)
+    # Block until the driver's timeout kills this process, whatever its budget.
+    time.sleep(3600)
 if mode == label + '-fails':
     print('compiler double failed')
     sys.exit(17)

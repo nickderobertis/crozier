@@ -1,0 +1,10 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "c4d21d7edac52e80767e25bbb86fc3ca9f8679e400a76c5da3512f9267c07d91"
+
+[[covers]]
+key = "schema-example-outside-enum"
+arm = 'src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]'
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"

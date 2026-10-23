@@ -112,6 +112,10 @@ HANDWRITTEN = "docs/openapi-surface/handwritten/"
 HANDWRITTEN_TEST = "handwritten_fixtures_match_fern_goldens"
 E2E_COVERS = "docs/openapi-surface/handwritten-e2e.toml"
 MEASUREMENTS = "docs/fern-measurements/"
+# A `measured` Contract A probe: a hand-authored document and the tree Fern
+# generated from it, outside the hand-written fixtures because it covers no arm.
+PROBES = "docs/openapi-surface/probes/"
+PROBE_EXPECTED = "docs/openapi-surface/probe-expected/"
 # How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them.
 CORPUS_DRIVERS = ("assert_corpus_matches(&", "assert_committed_corpus_matches(&", "known_fern_failure(&")
 SETTING_VALUE = (str, int, float, bool)
@@ -711,6 +715,9 @@ def golden_source(root: Path, golden: str) -> str | None:
         sources = root / "tests" / "fixtures" / "corpus-sources" / fixture
         files = sorted(path for path in sources.glob("*") if path.is_file()) if sources.is_dir() else []
         return files[0].relative_to(root).as_posix() if len(files) == 1 else None
+    if golden.startswith(PROBE_EXPECTED) and len(parts) == 4:
+        probe = root / PROBES / f"{parts[3]}.yml"
+        return probe.relative_to(root).as_posix() if probe.is_file() else None
     case = root.joinpath(*parts[:-1])
     if found := _document(case, root):
         return found
@@ -722,7 +729,9 @@ def golden_source(root: Path, golden: str) -> str | None:
         for name in names
         for candidate in [root / HANDWRITTEN / name, *sorted((root / MEASUREMENTS).glob(f"*/{name}"))]
     ]
-    return next((found for candidate in candidates if (found := _document(candidate, root))), None)
+    found = next((found for candidate in candidates if (found := _document(candidate, root))), None)
+    probes = [root / PROBES / f"{name}.yml" for name in names]
+    return found or next((probe.relative_to(root).as_posix() for probe in probes if probe.is_file()), None)
 
 
 def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[str]:
@@ -862,9 +871,11 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     match proof.kind:
         case Kind.REAL if not any(corpus_fixture(golden) in known.corpus for golden in proof.goldens):
             failures.append(f"{where}: a real proof cites a registered corpus row's golden")
-        case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, MEASUREMENTS)) for source in proof.source):
+        case Kind.HANDWRITTEN if not any(
+            source.startswith((HANDWRITTEN, MEASUREMENTS, PROBES)) for source in proof.source
+        ):
             failures.append(f"{where}: a hand-written proof's source is a hand-written fixture")
-        case Kind.HANDWRITTEN if not any(source.startswith(HANDWRITTEN) for source in proof.source):
+        case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, PROBES)) for source in proof.source):
             covers = (root / E2E_COVERS).read_text(encoding="utf-8")
             if not any(f'fixture = "{source}"' in covers for source in proof.source):
                 failures.append(f"{where}: a multi-file hand-written source is a {E2E_COVERS} cover")

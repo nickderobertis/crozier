@@ -326,6 +326,10 @@ inventory=(
   supabase_api_v1_matches_fern_output
   rta_in_japan_twitter_matches_fern_output
   onmyshelf_api_matches_fern_output
+  formbricks_matches_fern_output
+  panoptes_matches_fern_output
+  fletch_mcp_matches_fern_output
+  microsoft_adme_seismic_matches_fern_output
   dashy_route_api_matches_fern_output
   ahasend_api_matches_fern_output
   farmvibes_ai_matches_fern_output

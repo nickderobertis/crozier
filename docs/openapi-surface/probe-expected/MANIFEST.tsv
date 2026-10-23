@@ -23,6 +23,8 @@ dollar-anchor	absent-tree	discards	docs/openapi-surface/probe-expected/dollar-an
 dollar-dynamic-anchor	absent-tree	discards	docs/openapi-surface/probe-expected/dollar-dynamic-anchor	—	1d19f805ccb346cd68a1e3baa4c23f0b62d17ca6f309d11d3cc31ee18bf395e0
 dollar-dynamic-ref	absent-tree	discards	docs/openapi-surface/probe-expected/dollar-dynamic-ref	—	1d19f805ccb346cd68a1e3baa4c23f0b62d17ca6f309d11d3cc31ee18bf395e0
 dollar-vocabulary	absent-tree	discards	docs/openapi-surface/probe-expected/dollar-vocabulary	—	6c545f4d85a3f1accba10ef1f5feaabd84b04b50ad692ec4b98eb8e97f539919
+empty-model-media-example	absent-tree	measured	docs/openapi-surface/probe-expected/empty-model-media-example	—	8ff38da5f4b95b075faf05baf9799795fb2f7b7f8111eda5da641369cbef0c8f
+empty-model-media-example-no-media-control	absent-tree	measured	docs/openapi-surface/probe-expected/empty-model-media-example-no-media-control	—	8ff38da5f4b95b075faf05baf9799795fb2f7b7f8111eda5da641369cbef0c8f
 encoding-allow-reserved	differential	ignores	docs/openapi-surface/probe-expected/encoding-allow-reserved	encoding-allow-reserved-control	d41a10b2c198a4adc6a2db7b10965aaab8d43d238a7614da4942c130b96259f0
 encoding-explode	differential	ignores	docs/openapi-surface/probe-expected/encoding-explode	encoding-explode-control	d41a10b2c198a4adc6a2db7b10965aaab8d43d238a7614da4942c130b96259f0
 enum-member-float	absent-tree	discards	docs/openapi-surface/probe-expected/enum-member-float	—	6be845f1d0696384c37037f4cf060203ea67404ffdb408d47d9ce3dcc317cc32
@@ -75,6 +77,7 @@ matrix-object	absent-tree	discards	docs/openapi-surface/probe-expected/matrix-ob
 max-contains	absent-tree	discards	docs/openapi-surface/probe-expected/max-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
 min-contains	absent-tree	discards	docs/openapi-surface/probe-expected/min-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
 multiple-of	absent-tree	discards	docs/openapi-surface/probe-expected/multiple-of	—	5b30ee96cd8bd64fbe827ffbd4898306e2dcf6f0a33f696bf3c8b29f2a4e0eb3
+museum-titled-array-items	absent-tree	measured	docs/openapi-surface/probe-expected/museum-titled-array-items	—	c5ec63b780b86d729a5da424b8185bdd608dadbd6bee73ca335b42ba668547a2
 nonascii-info-title	differential	ignores	docs/openapi-surface/probe-expected/nonascii-info-title	nonascii-info-title-control	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 nonascii-operationId	refusal	crashes	docs/openapi-surface/probe-expected/nonascii-operationId.fern-refusal.txt	—	df3fea1fbca05031374fd8bf9ee677e383e60870827f503612f683815925c144
 oneof-array-variant-annotated-ref-item	absent-tree	measured	docs/openapi-surface/probe-expected/oneof-array-variant-annotated-ref-item	—	e595b6b0d34334f078c5e43ab36df830d0aa72e6ce60847c1e95148bf301e55a
@@ -102,9 +105,17 @@ range-5XX	absent-tree	measured	docs/openapi-surface/probe-expected/range-5XX	—
 ref-pointer-undeclared-component-head	absent-tree	measured	docs/openapi-surface/probe-expected/ref-pointer-undeclared-component-head	—	58a0c5f21c875b3c555787c4432fa1af2aa5cf92f4b3ef179ce2e5e06fc29171
 ref-pointer-unnamed-segment	refusal	refuses	docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt	—	82df112d57411611dbe1d7a1f2651eaf010bb3254bb61c4558ede7004a0adf5e
 reference-summary	differential	ignores	docs/openapi-surface/probe-expected/reference-summary	reference-summary-control	26f70c1b34a9b8c9a7e7607fe51d509a88e5bbc68d9e544d0ce5e42f8e2b3e04
+schema-example-fractional-on-integer	differential	ignores	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer	schema-example-fractional-on-integer-no-example-control	acf3c4ae70cdff90225762ee30f44ff580d829621ddde8383a7e79848a3a9659
 schema-example-fractional-on-integer-event-stream	refusal	refuses	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream.fern-refusal.txt	—	2a0ce9f4d396e4ff6ce6075b1ec214729892302421d7ed867614cee962df334a
 schema-example-fractional-on-integer-event-stream-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream-control	—	ebae261adfe01a6a6d43050a1c0f1c1ded845f6652ab2f0c10181a1018ab00ad
+schema-example-fractional-on-integer-no-example-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-no-example-control	—	acf3c4ae70cdff90225762ee30f44ff580d829621ddde8383a7e79848a3a9659
 schema-example-fractional-on-integer-optional-request-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-optional-request-control	—	d4a42cea9316a20ea6bfffa358bf1ec7f9d9b266dfcc6dd0f92876e00a3a0a0c
+schema-example-on-ref-to-enum	differential	ignores	docs/openapi-surface/probe-expected/schema-example-on-ref-to-enum	schema-example-on-ref-to-enum-no-example-control	de533d3b2023fe1932046d0f1078a2c5762e01d5d18b23f5cf0a79382cadddc6
+schema-example-on-ref-to-enum-no-example-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-on-ref-to-enum-no-example-control	—	de533d3b2023fe1932046d0f1078a2c5762e01d5d18b23f5cf0a79382cadddc6
+schema-example-on-ref-to-object	differential	ignores	docs/openapi-surface/probe-expected/schema-example-on-ref-to-object	schema-example-on-ref-to-object-no-example-control	31c16b34e83e35be086ac1f7a777218ff8542a309f4740b41effcb16a407533e
+schema-example-on-ref-to-object-no-example-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-on-ref-to-object-no-example-control	—	31c16b34e83e35be086ac1f7a777218ff8542a309f4740b41effcb16a407533e
+schema-example-on-ref-to-union	differential	ignores	docs/openapi-surface/probe-expected/schema-example-on-ref-to-union	schema-example-on-ref-to-union-no-example-control	251c839f48bb19fa089c24f7bd1d692c9b708a12e7b94f451b60890f2fca8fe3
+schema-example-on-ref-to-union-no-example-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-on-ref-to-union-no-example-control	—	251c839f48bb19fa089c24f7bd1d692c9b708a12e7b94f451b60890f2fca8fe3
 server-description-multiword	absent-tree	discards	docs/openapi-surface/probe-expected/server-description-multiword	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 servers-three-levels	absent-tree	discards	docs/openapi-surface/probe-expected/servers-three-levels	—	260673c2ef2063ccc6e69d6850422ddbff593df192fcb4bba1fa991c35e601de
 spaceDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/spaceDelimited-object	—	40385b2cd0f0da666d23940a1d640e04eb5c3e7a73c1a5339594057ec3c57928

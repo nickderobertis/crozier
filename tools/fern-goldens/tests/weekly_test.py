@@ -109,7 +109,8 @@ class RealPlanTests(unittest.TestCase):
         module = weekly.load_references(REPO)
         handwritten = (REPO / module.HANDWRITTEN).resolve()
         measured = (REPO / module.MEASUREMENTS).resolve()
-        overlaid = {"handwritten": 0, "measurements": 0}
+        probed = (REPO / module.PROBE_EXPECTED).resolve()
+        overlaid = {"handwritten": 0, "measurements": 0, "probes": 0}
         for name, case in module.cases().items():
             base = case.overlay.base.resolve() if case.overlay and case.overlay.base else None
             if base is not None and base.is_relative_to(handwritten):
@@ -117,6 +118,8 @@ class RealPlanTests(unittest.TestCase):
             elif base is not None and base.is_relative_to(measured):
                 inner = base.relative_to(measured).as_posix()
                 owner = ("measurements", max((c for c in module.cases() if inner.startswith(f"{c}/")), key=len))
+            elif base is not None and base.is_relative_to(probed):
+                owner = ("probes", base.relative_to(probed).parts[0])
             else:
                 continue
             with self.subTest(case=name):
@@ -175,7 +178,29 @@ class OverlayBaseTests(unittest.TestCase):
             with self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.units(root, {"measurements": ["group/case"]})
         self.assertIn("case group/case overlays", str(raised.exception))
-        self.assertIn("which no hand-written fixture or measurement case writes", str(raised.exception))
+        self.assertIn("which no hand-written fixture, measured probe or measurement case writes", str(raised.exception))
+
+    def test_a_measurement_overlaying_a_measured_probe_shares_the_probes_unit(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            (root / "tools/fern-goldens").mkdir(parents=True)
+            (root / "tools/fern-goldens/fern-references.py").write_bytes(
+                (REPO / "tools/fern-goldens/fern-references.py").read_bytes()
+            )
+            (root / "docs/openapi-surface/probe-expected/sample-probe").mkdir(parents=True)
+            (root / "docs/openapi-surface/probes").mkdir(parents=True)
+            (root / "docs/openapi-surface/probes/sample-probe.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+            (root / "docs/fern-measurements").mkdir(parents=True)
+            (root / "docs/fern-measurements/cases.tsv").write_text(
+                "case\tdocument\tenum_type\tlayout\toverlay\n"
+                "group/case\tdocs/openapi-surface/probes/sample-probe.yml\tliterals\tpackaged\t"
+                "fern-expected:docs/openapi-surface/probe-expected/sample-probe\n",
+                encoding="utf-8",
+            )
+            grouped = weekly.units(root, {"measurements": ["group/case"], "probes": ["sample-probe"]})
+        unit = next(group for group in grouped if ("measurements", "group/case") in group)
+        self.assertIn(("probes", "sample-probe"), unit)
+        self.assertLess(unit.index(("probes", "sample-probe")), unit.index(("measurements", "group/case")))
 
 
 class SubsetTests(unittest.TestCase):

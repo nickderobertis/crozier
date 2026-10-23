@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Shapes
+  version: 1.0.0
+paths:
+  /items:
+    post:
+      operationId: items-create
+      tags:
+        - Items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - info
+              properties:
+                info:
+                  type: object
+                  properties:
+                    label:
+                      type: string
+                created:
+                  type: string
+                  format: date-time
+                meta:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        properties:
+                          kind:
+                            enum:
+                              - Unit
+                          unitId:
+                            type: string
+                          ref:
+                            type: string
+                            example: '{"a":"b"}'
+                        required:
+                          - kind
+                          - ref
+                      - type: object
+                        properties:
+                          kind:
+                            enum:
+                              - Crs
+                          crsId:
+                            type: string
+                          ref:
+                            type: string
+                            example: '{"c":"d"}'
+                        required:
+                          - kind
+                          - ref
+                data:
+                  allOf:
+                    - type: object
+                      properties:
+                        Props:
+                          type: object
+                          description: Placeholder.
+                      required:
+                        - Props
+                    - type: object
+                      properties:
+                        Props:
+                          type: object
+                          description: Typed properties.
+                          properties:
+                            Path:
+                              type: string
+                    - type: object
+                      properties:
+                        Ext:
+                          type: object
+            example:
+              info:
+                label: first
+              created: '2024-01-02T03:04:05Z'
+              meta: []
+              data:
+                Props:
+                  Path: /a
+                Ext: {}
+      responses:
+        '200':
+          description: OK
+  /parts/{id}:
+    get:
+      operationId: widgetpart-get
+      tags:
+        - WidgetPart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /parts:
+    get:
+      operationId: widget-part-list
+      tags:
+        - WidgetPart
+      responses:
+        '200':
+          description: OK
