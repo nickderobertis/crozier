@@ -4,6 +4,9 @@
 Comparison records use schema_version 1 and contain the complete before/after
 relative-file SHA-256 maps. They measure each generator separately: equality
 between generators is the corpus gate's responsibility, not this disposition.
+
+Exit status: 0 when every row's evidence holds (silent), 1 when any row fails
+(one stderr line per failure), 2 on a usage error.
 """
 
 from __future__ import annotations
