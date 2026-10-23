@@ -131,6 +131,18 @@ The paired documents live in [removal-controls/](removal-controls/).
 These controls are evidence of an output-insensitive decision, not hand-written
 fixtures claimed as witnesses.
 
+Both keys are rows of [the shared table](../output-insensitive.tsv) at context
+`-` (`combo-root-oas30-binary-schema` and `combo-root-oas30-download`), citing
+this record and the Nimisampo version-removal comparisons below, so each is
+decided, neither proven nor unproven. Their region rows read `gap` and they
+carry no golden-reach ledger row. Their reach, measured by the scoped golden-only
+tier at commit 63c79bc0a430 before the decision, is recorded here:
+
+| key | handling site | regions reached | golden-only witnesses | declared without a golden |
+|---|---|---:|---|---|
+| `combo-root-oas30-binary-schema` | `src/emit.rs::root_binary_download_undocumented` | 7/7 | `nimisampo` | — |
+| `combo-root-oas30-download` | `src/emit.rs::root_binary_download_undocumented` | 7/7 | `chat-rest-api`, `nimisampo` | `color.pizza`, `loris-dataquery` |
+
 
 The strict-form records of the Nimisampo version-removal control,
 [nimisampo-version-removal-fern.json](nimisampo-version-removal-fern.json) and
