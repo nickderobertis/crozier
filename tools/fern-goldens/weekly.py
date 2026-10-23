@@ -1104,7 +1104,6 @@ def units(base: Path, chosen: dict[str, list[str]]) -> list[list[ItemKey]]:
                 case = max((case for case in rows if inner.startswith(f"{case}/")), key=len, default=None)
                 owner = ("measurements", case) if case is not None else None
             elif overlay.is_relative_to(probed):
-                # A measured probe's tree is the probes item of the same name.
                 # llmlint: ignore[changed_behavior_has_e2e] Generating a probe needs Fern, which no offline journey runs; RealPlanTests plans the committed inventory through units() and holds the museum case to its probe's shard and order, and OverlayBaseTests drives a scratch inventory through the same call.
                 owner = ("probes", overlay.relative_to(probed).parts[0])
             if owner is None:
