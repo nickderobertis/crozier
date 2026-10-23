@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 226 of the 257 registered sources live in `corpus-sources/` (a split
+  and 227 of the 258 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -4086,7 +4086,7 @@ METHOD_NAME_PORT_DIGESTS = {
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "dotted_tag_group_method": "4f8b8852f85ba4ee",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "3ba287086971a152",
+    "method_from_groupless_id": "6064a84e8bc4a73f",
     "method_from_hyphenated_tag_id": "4eb571e881d67d51",
     "operation_id_tag_prefix": "6b9d3e0baac71cd4",
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
@@ -4176,6 +4176,11 @@ def _fern_location_tokens(name: str) -> list[str]:
     return [_ascii_lower(word) for word in words if word]
 
 
+def _starts_with(words: list[str], prefix: list[str]) -> bool:
+    """Rust's slice `starts_with`: `prefix` is the leading run of `words`."""
+    return words[: len(prefix)] == prefix
+
+
 def _sanitized(name: str) -> tuple[str, bool]:
     """`sanitize_identifier`, and whether its leading-digit prefix fired: the
     name's first character is an ASCII digit, which no other mapping changes."""
@@ -4221,6 +4226,9 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
         method = snake
     elif suffix is not None:
         method = to_snake_case(suffix)
+    elif "-" in text and tag is not None and not _starts_with(_fern_location_tokens(text), _fern_location_tokens(tag)):
+        # A hyphenated id leads with its tag only when its words are the tag's.
+        method = snake
     else:
         method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
@@ -4999,7 +5007,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
 # scalar arms of `base_type_ref`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "ab3c68f20ce92ccd",
+    "inferred_discriminant_property_with": "f3ef12e94bfadc38",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "8c1ce5136f0b7968",
 }
@@ -5399,7 +5407,6 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
             resolved,
             references_components,
             enum_tag,
-            _any_of_head(node),
             only_references,
         )
         if values is not None and len(set(values)) == len(values):
@@ -5412,7 +5419,6 @@ def _candidate_tag_values(
     resolved: list[Any],
     references_components: bool,
     enum_tag: bool,
-    any_of_head: bool = False,
     only_references: bool = False,
 ) -> list[str] | None:
     """The tag every resolved member writes for one candidate property, or `None`.
@@ -5430,7 +5436,7 @@ def _candidate_tag_values(
         if not isinstance(field, dict):
             return None
         enum_written = field["enum"] if written(field, "enum") else None
-        singleton_enum = not (any_of_head and untyped_enum_tag(field)) and len(string_enum_values(field) or []) == 1
+        singleton_enum = not untyped_enum_tag(field) and len(string_enum_values(field) or []) == 1
         tagged_by_enum = (
             candidate in required_names(variant)
             and singleton_enum
@@ -5492,7 +5498,7 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
             return None
         properties = variant.get("properties")
         field = properties.get("type") if isinstance(properties, dict) else None
-        if _any_of_head(node) and untyped_enum_tag(field):
+        if untyped_enum_tag(field):
             return None
         value = discriminant_value(field)
         if value is None:
@@ -5501,14 +5507,9 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
     return "type" if len(set(values)) == len(values) else None
 
 
-def _any_of_head(node: dict[Any, Any]) -> bool:
-    """Whether a union's members are its `anyOf`: one is written and no `oneOf` is."""
-    return written(node, "anyOf") and not written(node, "oneOf")
-
-
 def untyped_enum_tag(field: Any) -> bool:
-    """`untyped_any_of_enum_tag` of `src/ir.rs`, given an `anyOf` head: an `enum`
-    tag declaring no `type: string`, which Fern does not discriminate on."""
+    """`untyped_enum_tag` of `src/ir.rs`: an `enum` tag declaring no `type: string`,
+    which Fern does not discriminate on under `anyOf` and `oneOf` alike."""
     return isinstance(field, dict) and written(field, "enum") and primary_type(field.get("type")) != "string"
 
 
