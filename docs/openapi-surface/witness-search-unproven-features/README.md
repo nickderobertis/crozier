@@ -123,7 +123,6 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 | `schema-example-on-ref-to-object` | `search-incomplete` | 93 | decided output-insensitive in every measured context ([attribution](#examples-beside-a-ref-attribution)) |
 | `schema-example-on-ref-to-union` | `search-incomplete` | 12 | decided output-insensitive in every measured context ([attribution](#examples-beside-a-ref-attribution)) |
 | `schema-example-outside-enum` | `search-incomplete` | 137 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `enum-media-selection` fixture |
-
 | `schema-example-temporal-duplicate-element` | `search-incomplete` | 0 | no declarer in the bounded populations |
 | `schema-example-union-ref-sentinel` | `search-incomplete` | 0 | no declarer in the bounded populations |
 
