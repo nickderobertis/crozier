@@ -14,7 +14,6 @@ use super::{
     repo_root, sha256_hex,
 };
 
-/// The measurement case, beside the other schema-shape cases.
 const CASE: &str = "docs/fern-measurements/schema-shapes/adme-seismic-shapes";
 
 /// The comparison failures of crozier's tree at `out` against Fern's.
