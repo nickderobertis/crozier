@@ -5309,7 +5309,10 @@ fn resolved_schema_example_literal(
             let item = match items.reference.as_deref() {
                 Some(reference) => {
                     let schemas = schemas?;
-                    referenced_example_literal(resolve_ref_from_schemas(schemas, reference)?, schemas)?
+                    referenced_example_literal(
+                        resolve_ref_from_schemas(schemas, reference)?,
+                        schemas,
+                    )?
                 }
                 None => bounded_example_literal(schema_example(items)?, declares_int64(items))?,
             };
