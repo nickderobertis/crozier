@@ -329,6 +329,7 @@ inventory=(
   formbricks_matches_fern_output
   panoptes_matches_fern_output
   fletch_mcp_matches_fern_output
+  microsoft_adme_seismic_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

@@ -14782,6 +14782,56 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             rows(completed),
         )
 
+    def test_a_hyphenated_id_strips_its_tag_only_when_its_words_are_the_tags(self) -> None:
+        """`sub-project-2-fa` under `sub-project` strips to `2_fa`; under
+        `SubProject`, whose one word `subproject` its hyphenated words do not
+        spell, it keeps its whole id, as ADME seismic's `sub-project-list` does."""
+        tagged = _operation_document({"operationId": "sub-project-2-fa", "tags": ["sub-project"]})
+        split = _operation_document({"operationId": "sub-project-2-fa", "tags": ["SubProject"]})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, body in (("tagged", tagged), ("split", split)):
+                write_json_fixture(root, name, body)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "operation.operationId:digit-leading-method",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("operation.operationId:digit-leading-method", "tagged"): 1}, rows(completed))
+
+    def test_an_untyped_enum_tag_leaves_a_one_of_undiscriminated(self) -> None:
+        """A `oneOf` whose members tag `kind` with a bare one-member `enum` is no
+        discriminated union, as an `anyOf` written the same way is not; the same
+        tags declaring `type: string` make one."""
+
+        def tagged(*kind: dict) -> dict:
+            members = [
+                {
+                    "type": "object",
+                    "properties": {"kind": {"enum": [value], **extra}, "ref": {"type": "string"}},
+                    "required": ["kind", "ref"],
+                }
+                for value, extra in zip(("Unit", "Crs"), kind, strict=True)
+            ]
+            return _root_document({"oneOf": members})
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "untyped", tagged({}, {}))
+            write_json_fixture(root, "typed", tagged({"type": "string"}, {"type": "string"}))
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.oneOf:discriminated-union",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("schema.oneOf:discriminated-union", "typed"): 1}, rows(completed))
+
 
 class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
     """The real CLI must distinguish each example, enum-member and schema-name

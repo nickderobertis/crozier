@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .items_create_request_meta_item_crs_id import ItemsCreateRequestMetaItemCrsId
+from .items_create_request_meta_item_unit_id import ItemsCreateRequestMetaItemUnitId
+
+ItemsCreateRequestMetaItem = typing.Union[ItemsCreateRequestMetaItemUnitId, ItemsCreateRequestMetaItemCrsId]

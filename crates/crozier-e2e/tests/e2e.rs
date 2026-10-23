@@ -79,6 +79,13 @@ mod document_booleans;
 #[path = "e2e/real_witnesses.rs"]
 mod real_witnesses;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The six shapes the ADME seismic corpus row first mismatched on, each over
+/// the minimal document Fern generated a complete tree from.
+#[path = "e2e/adme_seismic_shapes.rs"]
+mod adme_seismic_shapes;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -9580,6 +9587,7 @@ const CORPORA: &[&Corpus] = &[
     &FORMBRICKS,
     &PANOPTES,
     &FLETCH_MCP,
+    &MICROSOFT_ADME_SEISMIC,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12556,6 +12564,18 @@ const ONMYSHELF_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3004: the publisher's seismic API has a field-less status model.
+const MICROSOFT_ADME_SEISMIC: Corpus = Corpus {
+    api: "microsoft-adme-seismic",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
 /// whose first named request example's empty array is filled from its schema
 /// example.
@@ -13397,7 +13417,12 @@ fn rta_in_japan_twitter_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
+#[test]
+fn microsoft_adme_seismic_matches_fern_output() {
+    assert_committed_corpus_matches(&MICROSOFT_ADME_SEISMIC);
+}
+
 #[test]
 fn panoptes_matches_fern_output() {
     assert_committed_corpus_matches(&PANOPTES);
