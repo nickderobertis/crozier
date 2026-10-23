@@ -12192,8 +12192,14 @@ class FinishedStateGateTests(unittest.TestCase):
         with table.open("a", encoding="utf-8") as handle:
             for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
                 handle.write(f"{key}\t-\tdocs/openapi-surface/{key}.md\t{evidence}")
-        combinations = matched(re.search(r"(\d+) are `golden` and (\d+) are `gap`\.", index.read_text()))
-        combination_golden, combination_gap = map(int, combinations.groups())
+        flat_before = " ".join(index.read_text().split())
+        combination_counts = matched(
+            re.search(r"combinations are selected .*?\): ([^.]+)\. (\d+) of the `gap` ones", flat_before)
+        )
+        combination_categories = {
+            category: int(count) for count, category in re.findall(r"(\d+) are `([^`]+)`", combination_counts[1])
+        }
+        combination_decided = int(combination_counts[2])
 
         failures = finished_state_failures(self.root)
         self.assertTrue(any(f.startswith("sample-undecided: a `FIXTURE` gap row") for f in failures), failures)
@@ -12208,9 +12214,11 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(f"- **{unproven + 1} remain unproven.**", flat)
         # The decided `UNREACHABLE` row leaves the committed-proof count for the decided one.
         self.assertIn(f"{real} + {proof} + {weak} + {decided + 2} + {unproven + 1} = {total + 3}.", text)
+        combination_categories["gap"] += 1
+        counts = [f"{count} are `{category}`" for category, count in sorted(combination_categories.items())]
         self.assertIn(
-            f"{combination_golden} are `golden` and {combination_gap + 1} are `gap`. "
-            "1 of the `gap` ones is decided output-insensitive",
+            ", ".join(counts[:-1]) + " and " + counts[-1] + f". {combination_decided + 1} of the `gap` ones "
+            f"{'is' if combination_decided == 0 else 'are'} decided output-insensitive",
             flat,
         )
         ranked = text.partition("| # | key | region | 1. crozier sites")[2].partition("\n\n")[0]
@@ -18313,6 +18321,18 @@ def stage_restatement_population(root: Path) -> None:
     """
     surface = root / "docs/openapi-surface"
     shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
+    # The shared output-insensitive table decides whole keys the headline counts,
+    # so the copy carries it with every record and comparison its rows cite.
+    table = REPO / "docs/openapi-surface/output-insensitive.tsv"
+    shutil.copyfile(table, surface / table.name)
+    pair = root / "assets/scaffolding/metadata.json"
+    if not pair.exists():
+        pair.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(REPO / "assets/scaffolding/metadata.json", pair)
+    for line in table.read_text(encoding="utf-8").splitlines()[1:]:
+        for cited in line.split("\t")[2:]:
+            (root / cited).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / cited, root / cited)
     text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
     acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
     population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))

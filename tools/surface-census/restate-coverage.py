@@ -101,7 +101,10 @@ def decided_keys(root: Path) -> set[str]:
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    records, failures = module.read_records(root)
+    try:
+        records, failures = module.read_records(root)
+    except SystemExit as error:
+        raise ValueError(str(error)) from error
     if failures:
         raise ValueError("; ".join(failures))
     return {key for key, context in records if context == "-"}
