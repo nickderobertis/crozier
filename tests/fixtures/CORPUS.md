@@ -1884,3 +1884,4 @@ bytes are retained in `licenses/onmyshelf-MIT.txt`.
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3000 | `onmyshelf-api` | github-raw | https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json | `e56b713d272d627a18ba14d3eea992231c550146` | MIT (publisher repository LICENSE.md) | committed | Digit-leading operationId method identifiers and hoisted response classes |
+| 3001 | `microsoft-adme-seismic` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/seismic_ddms_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | Apache-2.0 (document); MIT (publisher repository LICENSE) | committed | Empty object example on a field-less referenced status model |

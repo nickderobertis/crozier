@@ -1,0 +1,17 @@
+
+
+import typing
+
+from .dataset_patch_openzgy_v1meta_item_coordinate_reference_system_id import (
+    DatasetPatchOpenzgyV1MetaItemCoordinateReferenceSystemId,
+)
+from .dataset_patch_openzgy_v1meta_item_three import DatasetPatchOpenzgyV1MetaItemThree
+from .dataset_patch_openzgy_v1meta_item_two import DatasetPatchOpenzgyV1MetaItemTwo
+from .dataset_patch_openzgy_v1meta_item_unit_of_measure_id import DatasetPatchOpenzgyV1MetaItemUnitOfMeasureId
+
+DatasetPatchOpenzgyV1MetaItem = typing.Union[
+    DatasetPatchOpenzgyV1MetaItemUnitOfMeasureId,
+    DatasetPatchOpenzgyV1MetaItemCoordinateReferenceSystemId,
+    DatasetPatchOpenzgyV1MetaItemTwo,
+    DatasetPatchOpenzgyV1MetaItemThree,
+]

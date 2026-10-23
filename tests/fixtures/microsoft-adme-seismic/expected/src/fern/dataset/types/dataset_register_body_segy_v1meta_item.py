@@ -1,0 +1,17 @@
+
+
+import typing
+
+from .dataset_register_body_segy_v1meta_item_coordinate_reference_system_id import (
+    DatasetRegisterBodySegyV1MetaItemCoordinateReferenceSystemId,
+)
+from .dataset_register_body_segy_v1meta_item_three import DatasetRegisterBodySegyV1MetaItemThree
+from .dataset_register_body_segy_v1meta_item_two import DatasetRegisterBodySegyV1MetaItemTwo
+from .dataset_register_body_segy_v1meta_item_unit_of_measure_id import DatasetRegisterBodySegyV1MetaItemUnitOfMeasureId
+
+DatasetRegisterBodySegyV1MetaItem = typing.Union[
+    DatasetRegisterBodySegyV1MetaItemUnitOfMeasureId,
+    DatasetRegisterBodySegyV1MetaItemCoordinateReferenceSystemId,
+    DatasetRegisterBodySegyV1MetaItemTwo,
+    DatasetRegisterBodySegyV1MetaItemThree,
+]
