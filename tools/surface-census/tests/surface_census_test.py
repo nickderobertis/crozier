@@ -19565,6 +19565,114 @@ class OutputInsensitiveTests(unittest.TestCase):
         record = json.loads(doc.partition("```json\n")[2].partition("```")[0])
         self.assertEqual(set(reader.FIELDS), set(record))
 
+    def test_each_refusal_reaches_the_cli(self):
+        """Every way a row's evidence can fail is one stderr line and exit 1, never a traceback."""
+        sha = "a" * 64
+
+        def registry(old, new):
+            return lambda: self.registry.write_text(self.registry.read_text().replace(old, new))
+
+        def comparison(which, **changes):
+            def mutate():
+                path = self.surface / f"{which}.json"
+                record = json.loads(path.read_text())
+                record.update(changes)
+                path.write_text(json.dumps(record))
+
+            return mutate
+
+        def write(relative, text):
+            return lambda: (self.root / relative).write_text(text)
+
+        def symlinked_search():
+            (self.root / "outside.md").write_text("Measured `sample-key`.\n")
+            (self.surface / "link.md").symlink_to(self.root / "outside.md")
+            registry("docs/openapi-surface/search.md", "docs/openapi-surface/link.md")()
+
+        def reached_arm():
+            reader = load_script("tools/surface-census/golden-reach.py")
+            reach = reader.Reach("sample-key", "schemas", ("sample",), (), (("src/ir.rs::sample[arm]", 1, 1),))
+            (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"))
+            registry("sample-key\t-\t", "sample-key\tsrc/ir.rs::sample[arm]\t")()
+
+        def cover(text):
+            def mutate():
+                (self.surface / "handwritten/sample").mkdir(parents=True)
+                (self.surface / "handwritten/sample/evidence.toml").write_text(text)
+
+            return mutate
+
+        cases = [
+            ("absolute path", registry("docs/openapi-surface/search.md", "/tmp/search.md"), "invalid evidence path"),
+            (
+                "parent traversal",
+                registry("docs/openapi-surface/search.md", "docs/openapi-surface/../x.md"),
+                "invalid evidence path",
+            ),
+            (
+                "outside the docs",
+                registry("docs/openapi-surface/search.md", "assets/search.md"),
+                "invalid evidence path",
+            ),
+            ("symlink escape", symlinked_search, "evidence escapes documentation"),
+            (
+                "missing search record",
+                lambda: (self.surface / "search.md").unlink(),
+                "missing comparison or search record",
+            ),
+            ("uncited key", write("docs/openapi-surface/search.md", "Measured nothing.\n"), "does not cite the key"),
+            ("missing metadata", lambda: (self.root / "assets/scaffolding/metadata.json").unlink(), "metadata.json"),
+            (
+                "malformed metadata",
+                write("assets/scaffolding/metadata.json", '{"cliVersion": 1}'),
+                "names no certified pair",
+            ),
+            ("empty tree", comparison("fern", before={}), "non-empty complete generated tree"),
+            (
+                "escaping tree path",
+                comparison("fern", before={"../sdk.py": sha}, after={"../sdk.py": sha}),
+                "invalid generated-file path",
+            ),
+            (
+                "invalid digest",
+                comparison("fern", before={"sdk.py": "zz"}, after={"sdk.py": "zz"}),
+                "invalid generated-file SHA-256",
+            ),
+            ("malformed JSON", write("docs/openapi-surface/fern.json", "{"), "sample-key"),
+            ("extra field", comparison("fern", note="x"), "invalid comparison fields"),
+            ("schema version", comparison("fern", schema_version=2), "unsupported comparison schema_version"),
+            ("non-string field", comparison("fern", generator=1), "invalid comparison fields"),
+            ("wrong generator", comparison("fern", generator="crozier"), "does not use fern at the certified pair"),
+            (
+                "uncertified pair",
+                comparison("crozier", fern_cli_version="0.0.1"),
+                "does not use crozier at the certified pair",
+            ),
+            ("wrong header", registry("crozier_comparison\n", "crozier\n"), "expected columns"),
+            ("incomplete row", registry("sample-key\t-\t", "sample-key\t\t"), "incomplete disposition row"),
+            ("invalid key", registry("sample-key\t", "Sample_Key\t"), "invalid census key"),
+            (
+                "duplicate row",
+                lambda: self.registry.write_text(
+                    self.registry.read_text() + self.registry.read_text().splitlines(keepends=True)[1]
+                ),
+                "duplicate key and context",
+            ),
+            ("non-string arm", cover('[[covers]]\nkey = "other"\narm = 3\n'), "a cover's arm must be a string"),
+            ("reached arm", reached_arm, "also claimed proven"),
+        ]
+        for name, mutate, expected in cases:
+            with self.subTest(case=name):
+                self.setUp()
+                try:
+                    mutate()
+                except OSError as error:  # a host that refuses symlinks
+                    self.skipTest(f"{name}: {error}")
+                result = self.run_reader()
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_malformed_covers_are_reported_not_raised(self):
         fixture = self.surface / "handwritten/sample"
         fixture.mkdir(parents=True)
