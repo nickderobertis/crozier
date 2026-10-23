@@ -15229,6 +15229,23 @@ fn union_shape_fixtures(repo: &Path) -> Vec<String> {
     names
 }
 
+/// A union fixture's document and its python-enums Fern tree. A fixture kept
+/// as a `measured` probe (its arm left the site table) lives with the probes;
+/// every other one is a hand-written fixture.
+fn union_fixture(repo: &Path, name: &str) -> (PathBuf, PathBuf) {
+    let probe = repo
+        .join("docs/openapi-surface/probes")
+        .join(format!("{name}.yml"));
+    if probe.is_file() {
+        return (
+            probe,
+            repo.join("docs/openapi-surface/probe-expected").join(name),
+        );
+    }
+    let fixture = repo.join("docs/openapi-surface/handwritten").join(name);
+    (fixture.join("openapi.yml"), fixture.join("fern-expected"))
+}
+
 /// Every file of a stripped Fern tree but its provenance record, by relative
 /// path.
 fn fern_tree(root: &Path) -> Vec<(String, String)> {
@@ -15247,7 +15264,7 @@ fn fern_tree(root: &Path) -> Vec<(String, String)> {
 /// overlay manifest removes, with the overlay's files laid over it. The
 /// manifest's `digest`, the complete tree's Contract A digest, is held by the
 /// binary gate (`union_shapes_match_complete_goldens_in_both_enum_modes`).
-fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> {
+fn union_literals_tree(python_enums: &Path, overlay: &Path) -> Vec<(String, String)> {
     let manifest: serde_json::Value = serde_json::from_str(
         &std::fs::read_to_string(overlay.join(".crozier-overlay.json")).unwrap(),
     )
@@ -15262,11 +15279,10 @@ fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> 
         .iter()
         .map(|rel| rel.as_str().unwrap())
         .collect();
-    let mut tree: std::collections::BTreeMap<String, String> =
-        fern_tree(&fixture.join("fern-expected"))
-            .into_iter()
-            .filter(|(rel, _)| !removed.contains(&rel.as_str()))
-            .collect();
+    let mut tree: std::collections::BTreeMap<String, String> = fern_tree(python_enums)
+        .into_iter()
+        .filter(|(rel, _)| !removed.contains(&rel.as_str()))
+        .collect();
     tree.extend(
         fern_tree(overlay)
             .into_iter()
@@ -15285,20 +15301,20 @@ fn union_shape_goldens_match_in_process_in_both_enum_modes() {
     use crozier::settings::EnumType;
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
     for name in &union_shape_fixtures(repo) {
-        let fixture = repo.join("docs/openapi-surface/handwritten").join(name);
+        let (spec, python_enums) = union_fixture(repo, name);
         let overlay = repo
             .join("docs/fern-measurements/union-literals")
             .join(name)
             .join("fern-expected");
         for (mode, reference) in [
+            (EnumType::PythonEnums, fern_tree(&python_enums)),
             (
-                EnumType::PythonEnums,
-                fern_tree(&fixture.join("fern-expected")),
+                EnumType::Literals,
+                union_literals_tree(&python_enums, &overlay),
             ),
-            (EnumType::Literals, union_literals_tree(&fixture, &overlay)),
         ] {
             let files: HashMap<String, String> = render_files(GenerateArgs {
-                spec: fixture.join("openapi.yml"),
+                spec: spec.clone(),
                 output: PathBuf::from("unused"),
                 package_name: Some("fern".to_string()),
                 project_name: Some("default_package_name".to_string()),

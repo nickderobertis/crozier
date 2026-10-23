@@ -434,16 +434,21 @@ def restate(root: Path) -> str:
         "[the shared table](openapi-surface/output-insensitive.tsv) records for the whole key; "
         "such a `gap` row is neither proven nor unproven" + (f": {settled_keys}." if settled else ".")
     )
-    fill = {"width": 88, "subsequent_indent": "  ", "break_long_words": False, "break_on_hyphens": False}
+
+    def fill(paragraph: str) -> str:
+        return textwrap.fill(
+            paragraph, width=88, subsequent_indent="  ", break_long_words=False, break_on_hyphens=False
+        )
+
     text = substitute(
         text,
         r"- \*\*\d+ (?:is|are) decided output-insensitive\.\*\*.*?(?=\n- \*\*\d+ remain unproven)",
-        textwrap.fill(decided_text, **fill),
+        fill(decided_text),
     )
     text = substitute(
         text,
         r"- \*\*\d+ remain unproven\.\*\*.*?(?=\n\n\d+ \+)",
-        textwrap.fill(remainder, **fill),
+        fill(remainder),
     )
     text = substitute(
         text,
