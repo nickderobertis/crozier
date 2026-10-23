@@ -19552,7 +19552,7 @@ class OutputInsensitiveTests(unittest.TestCase):
     def test_reach_ledger_without_sites_uses_the_canonical_sentinel(self):
         reader = load_script("tools/surface-census/golden-reach.py")
         reach = reader.Reach("sample-key", "schemas", (), (), ())
-        (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"))
+        (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"), encoding="utf-8")
         result = self.run_reader()
         self.assertEqual(0, result.returncode, result.stderr)
 
@@ -19592,7 +19592,7 @@ class OutputInsensitiveTests(unittest.TestCase):
         def reached_arm():
             reader = load_script("tools/surface-census/golden-reach.py")
             reach = reader.Reach("sample-key", "schemas", ("sample",), (), (("src/ir.rs::sample[arm]", 1, 1),))
-            (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"))
+            (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"), encoding="utf-8")
             registry("sample-key\t-\t", "sample-key\tsrc/ir.rs::sample[arm]\t")()
 
         def cover(text):

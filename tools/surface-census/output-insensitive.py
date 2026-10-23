@@ -184,9 +184,9 @@ def read_records(root: Path) -> tuple[set[tuple[str, str]], list[str]]:
                         check_comparison(local_file(root, row[f"{generator}_comparison"]), generator, pin)
                     records.add(pair)
                 except (OSError, KeyError, TypeError, ValueError) as error:
-                    failures.append(f"{REGISTRY}: {row.get('key', '?')}: {error}")
+                    failures.append(f"{REGISTRY.as_posix()}: {row.get('key', '?')}: {error}")
     except (OSError, KeyError, TypeError, ValueError, tomllib.TOMLDecodeError) as error:
-        failures.append(f"{REGISTRY}: {error}")
+        failures.append(f"{REGISTRY.as_posix()}: {error}")
     return records, failures
 
 
