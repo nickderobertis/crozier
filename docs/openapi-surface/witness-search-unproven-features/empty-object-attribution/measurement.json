@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "key": "schema-example-empty-object",
+  "arm": "src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\\(\\) \\{]",
+  "fern_cli_version": "5.163.1",
+  "fern_python_sdk_version": "5.41.3",
+  "coverage_binary_sha256": "0336ece6f3aab557c1ecabf8970e670847f082fccb60eaa1c5578c950b2c0e21",
+  "crozier_binary_sha256": "7b9b39ed975934ec8e20386a3d32d372108db3e5c9af50f1ef8e2ea06786b0f1",
+  "source_sha256": {
+    "before": "8b0901e6a280bc99824cb07491166c5a9b42ca3ae413f6e7c71174553e604aaf",
+    "after": "11cd1a435d7ce9d04b2e3d91b949689df5f249fa6ca42caa2c7f311439c74b1a"
+  },
+  "trees": {
+    "fern": {
+      "before": "8ff38da5f4b95b075faf05baf9799795fb2f7b7f8111eda5da641369cbef0c8f",
+      "after": "8ff38da5f4b95b075faf05baf9799795fb2f7b7f8111eda5da641369cbef0c8f"
+    },
+    "crozier": {
+      "before": "ad73223b5c2448daf45f433e4505e6cba29f0c5e7459c9d7a65f5b5cfbcf6999",
+      "after": "ad73223b5c2448daf45f433e4505e6cba29f0c5e7459c9d7a65f5b5cfbcf6999"
+    }
+  },
+  "reach": {
+    "before": {
+      "executed_regions": 5,
+      "total_regions": 5
+    },
+    "after": {
+      "executed_regions": 0,
+      "total_regions": 5
+    }
+  }
+}

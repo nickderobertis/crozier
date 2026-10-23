@@ -626,7 +626,25 @@ revision 9365e94497f2c3a4798259249c2cfef6673197b9.
 Copyright 2022 swisstopo. Its redistribution terms are retained in
 licenses/camptocamp-oapi-poc.txt.
 
-The seismic service OpenAPI document in corpus row 3001 is distributed by
+Formbricks API specification and generated SDK golden:
+    https://raw.githubusercontent.com/formbricks/formbricks/bfe7933cb2882c99f2196aa6a46edd104cd7fbb8/docs/api-v2-reference/openapi.yml
+    Copyright (c) 2024 Formbricks GmbH. The docs/ source falls under the
+    repository AGPLv3 grant, retained in licenses/formbricks-AGPL-3.0.txt.
+    Corpus row 3001 retains the unmodified source alongside the generated SDK.
+
+Panoptes API specification and generated SDK golden:
+    https://raw.githubusercontent.com/knaw-huc/panoptes/d3cceae05364f1b9235ca7368488e5329778295c/docs/openapi.yaml
+    Published by the KNAW Humanities Cluster under the repository GPLv3 grant,
+    retained in licenses/panoptes-GPL-3.0.txt. Corpus row 3002 retains the
+    unmodified source alongside the generated SDK.
+
+Fletch API specification and generated SDK golden:
+    https://raw.githubusercontent.com/fletch-now/fletch-mcp/4808c3c96272cdb69476728570b2fea1bcae122d/docs/openapi-2026-09-13.json
+    Copyright (c) 2026 Fletch, under the repository MIT grant, retained in
+    licenses/fletch-mcp-MIT.txt. Corpus row 3003 retains the unmodified
+    source alongside the generated SDK.
+
+The seismic service OpenAPI document in corpus row 3004 is distributed by
 Microsoft in microsoft/adme-samples at revision
 df39d22ed32acfe80fcdbc5b554871b2c752a39a, rest-apis/M18/seismic_ddms_openapi.yaml.
 The document declares Apache-2.0; the publisher repository grants MIT,

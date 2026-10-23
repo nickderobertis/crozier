@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Shelf Labels
+  version: 1.0.0
+paths:
+  /labels:
+    put:
+      operationId: putLabels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [labels]
+              properties:
+                labels:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - type: string
+                      - type: integer
+      responses:
+        '204':
+          description: Labels stored

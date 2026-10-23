@@ -1,4 +1,4 @@
-//! The six shapes corpus row 3001 (`microsoft-adme-seismic`) first mismatched
+//! The six shapes corpus row 3004 (`microsoft-adme-seismic`) first mismatched
 //! Fern on, each driven through the real binary over the minimal document
 //! Fern generated `fern-expected/` from: crozier's complete SDK must equal
 //! Fern's, the line that shape decides must read as Fern writes it in both

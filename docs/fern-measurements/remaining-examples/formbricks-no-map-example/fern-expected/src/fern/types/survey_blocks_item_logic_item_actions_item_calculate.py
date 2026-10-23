@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .survey_blocks_item_logic_item_actions_item_calculate_one import SurveyBlocksItemLogicItemActionsItemCalculateOne
+from .survey_blocks_item_logic_item_actions_item_calculate_zero import SurveyBlocksItemLogicItemActionsItemCalculateZero
+
+SurveyBlocksItemLogicItemActionsItemCalculate = typing.Union[
+    SurveyBlocksItemLogicItemActionsItemCalculateZero, SurveyBlocksItemLogicItemActionsItemCalculateOne
+]

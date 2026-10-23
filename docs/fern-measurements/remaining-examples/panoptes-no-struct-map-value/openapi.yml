@@ -1,0 +1,257 @@
+openapi: 3.1.0
+info:
+  title: Panoptes
+  description: Panoptes dataset browser API specification
+  version: $VERSION_NUMBER
+servers:
+  - url: '/api'
+tags:
+  - name: Datasets
+    description: Endpoints for interacting with a dataset
+  - name: Facets
+    description: Endpoints for interacting with facets
+paths:
+  /datasets:
+    get:
+      summary: Get available data sets
+      description: Get the available data sets.
+      tags:
+        - Datasets
+      responses:
+        200:
+          description: Available data sets results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataSet"
+
+  /datasets/{dataset_name}/search:
+    post:
+      summary: Search dataset
+      description: Search in the index of the dataset.
+      tags:
+        - Datasets
+      requestBody:
+        description: Search parameters
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+                query:
+                  type: string
+                facets:
+                  type: object
+                  additionalProperties:
+                    x-additionalPropertiesName: field
+                    type: object
+
+      responses:
+        200:
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        item_id:
+                          type: string
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        tags:
+                          type: array
+                          items:
+                            type: string
+
+
+
+  /datasets/{dataset_name}/details/{item_id}:
+    get:
+      summary: Get item details
+      description: Get the details for a specific item in the dataset.
+      tags:
+        - Datasets
+      responses:
+        200:
+          description: Item details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item_id:
+                    type: string
+                  item_data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Block'
+        502:
+          description: The external API had an error. Only relevant for datasets which get their data directly from an external API.
+        504:
+          description: The external API timed out. Only relevant for datasets which get their data directly from an external API.
+
+  /datasets/{dataset_name}/facets:
+    get:
+      summary: Get facets
+      description: Get the facets used in this dataset.
+      tags:
+        - Facets
+      responses:
+        200:
+          description: Facets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/TextFacet"
+                    - $ref: "#/components/schemas/RangeFacet"
+  /datasets/{dataset_name}/facet:
+    post:
+      summary: Get Facet options
+      description: Get the available options for a specific facet.
+      tags:
+        - Facets
+      requestBody:
+        description: Search options
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The Facet for which to get options
+                  type: string
+                  example: type
+                amount:
+                  description: How many results to retrieve
+                  type: integer
+                  example: 10
+                filter:
+                  description: String to filter results on. For searching in the list of facet options.
+                  type: string
+                query:
+                  description: Text query used for filtering search results (not facet options). Used to make sure the counts reflect the actual search results.
+                  type: string
+                  required: false
+                sort:
+                  type: string
+                  enum:
+                    - asc
+                    - desc
+                    - hits
+                facets:
+                  type: object
+                  additionalProperties:
+                    x-additionalPropertiesName: field
+                    type: object
+                    properties:
+                      values:
+                        type: array
+                        items:
+                          type: string
+
+      responses:
+        200:
+          description: Facet results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FacetResult"
+
+components:
+  schemas:
+    Block:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: object
+              description: For example, CMDI
+            - type: array
+              items:
+                $ref: "#/components/schemas/Block"
+    TextFacet:
+      type: object
+      properties:
+        property:
+          description: Property which this searches in.
+          type: string
+        name:
+          description: Human readable name of the facet.
+          type: string
+        type:
+          type: string
+          enum: ['text']
+        startOpen:
+          description: Whether this facet should be expanded initially
+          type: bool
+    RangeFacet:
+      type: object
+      properties:
+        property:
+          description: Property which this searches in.
+          type: string
+        name:
+          description: Human readable name of the facet.
+          type: string
+        type:
+          type: string
+          enum: ['range']
+        min:
+          type: integer
+        max:
+          type: integer
+        step:
+          type: integer
+    FacetResult:
+      type: object
+      properties:
+        value:
+          type: string
+        count:
+          type: number
+        name:
+          type: string
+          description: For tree facets. Name of this node (value is the full path including parent nodes)
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/FacetResult"
+    DataSet:
+      type: object
+      properties:
+        name:
+          type: string
+        data_type:
+          type: string
+        data_configuration:
+          type: object
+          properties:
+            id_property:
+              type: string
+            base_url:
+              type: string
+            home_url:
+              type: string

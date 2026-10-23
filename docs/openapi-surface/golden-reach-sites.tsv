@@ -236,7 +236,7 @@ else	schema.else	none
 unevaluated-properties	schema.unevaluatedProperties	none	
 type-array-with-null	fixture=auto-agent-protocol,fixture=cyberark-conjur-api,fixture=discord-com,fixture=discourse.local,fixture=docu-goapiserver,fixture=dot-ai,fixture=frankfurter,fixture=helixdb-http-api,fixture=langchain-agent-protocol,fixture=marimo-plugins,fixture=mistle-control-plane,fixture=mosip-esignet,fixture=paypal-catalog-products,fixture=ramu-shogi,fixture=standrig,fixture=steaminputdb,fixture=timelyapp,fixture=timelyapp-entry,fixture=tlon-notes,fixture=truefoundry-trueforge,fixture=truefoundry-trueforge-5adde28,fixture=ziptax-node	src/openapi.rs::TypeField::primary,src/openapi.rs::Schema::explicitly_nullable	
 type-array-multi-nonnull	schema.type	src/openapi.rs::normalize_multi_type_schemas,src/ir.rs::Builder::variant_ref[if variant\.multi_type_union \{]	
-const	schema.const	src/ir.rs::string_enum_values[\} else \{],src/ir.rs::preserve_const_discriminant,src/ir.rs::inferred_strip_discriminant_property	
+const	schema.const	src/ir.rs::string_enum_values[^ {4}\} else \{$],src/ir.rs::preserve_const_discriminant,src/ir.rs::inferred_strip_discriminant_property	
 dependent-required	schema.dependentRequired	none	
 examples	schema.examples	src/openapi.rs::de_schema_examples,src/ir.rs::schema_example,src/ir.rs::schema_example_literal	
 format-date-time	schema.format=date-time	src/ir.rs::base_type_ref[=Some\("date-time"\)],src/ir.rs::scalar_body[=Some\("date-time"\)],src/emit.rs::render_type[Prim::Datetime => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Datetime\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Datetime\) => \{]	
@@ -279,7 +279,7 @@ xml-namespace	schema.xml.namespace	none
 xml-attribute	schema.xml.attribute	none	
 normalization-collision	components.schemas:normalized-collision	src/ir.rs::deduplicate_type_names,src/naming.rs::class_name	
 items-ref-element	schema.items>schema.$ref	src/ir.rs::Builder::nested_array_element[if items.reference.is_some\(\) \{],src/ir.rs::InlineHoister::hoist_array_item_type[if item_schema.reference.is_some\(\) \{]	
-items-oneof-element	schema.items>schema.oneOf	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if let Some\(members\) = item_schema.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$],src/emit.rs::ExampleCtx::union_value_from_example,src/emit.rs::example_import_cmp[if left_prefix\.is_some\(\) && left_prefix == right_prefix]	
+items-oneof-element	schema.items>schema.oneOf	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if let Some\(members\) = item_schema.one_of],src/emit.rs::ExampleCtx::union_value_from_example,src/emit.rs::example_import_cmp[if left_prefix\.is_some\(\) && left_prefix == right_prefix]	
 items-anyof-element	schema.items>schema.anyOf	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if let Some\(members\) = item_schema.one_of]	
 oneof-ref-variant	schema.oneOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(reference\) = &variant.reference \{],src/ir.rs::Builder::variant_ref[if let Some\(reference\) = &variant.reference \{]	
 anyof-ref-variant	schema.anyOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(reference\) = &variant.reference \{],src/ir.rs::Builder::variant_ref[if let Some\(reference\) = &variant.reference \{]	
@@ -456,8 +456,8 @@ extension-media-type	mediaType.x-*	none
 extension-example	example.x-*	none	
 multiple-of	schema.multipleOf	none	`src/openapi.rs`'s `Schema` declares no field for it
 contains	schema.contains	none	`src/openapi.rs`'s `Schema` declares no field for it
-const-boolean	fixture=dot-ai,fixture=opencodeui,fixture=sim-tables,fixture=standrig	src/ir.rs::string_enum_values[\} else \{]	
-const-integer	fixture=discord-com,fixture=osparc-simcore-webserver,fixture=standrig,fixture=volview-backend-contract	src/ir.rs::string_enum_values[\} else \{]	
+const-boolean	fixture=dot-ai,fixture=opencodeui,fixture=sim-tables,fixture=standrig	src/ir.rs::string_enum_values[^ {4}\} else \{$]	
+const-integer	fixture=discord-com,fixture=osparc-simcore-webserver,fixture=standrig,fixture=volview-backend-contract	src/ir.rs::string_enum_values[^ {4}\} else \{$]	
 format-idn-hostname	schema.format=idn-hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 boolean-schema-true	fixture=webflow-v2	none	
@@ -498,3 +498,7 @@ oneof-map-variant-oneof-value	schema.oneOf>!schema.properties:non-empty&schema.t
 single-operation-required-header	parameter.schema:single-required-header	src/ir.rs::global_headers	Required constructor header from the sole operation.
 openapi31-titled-array-body-content-type	operation.requestBody:titled-array-component-oas-three-one	src/ir.rs::resolve_request_body[let mut body = single\(type_ref, required, convert, target\.title\.is_some\(\)\);]	The registered tamoss body declares the titled OpenAPI 3.1 array shape.
 operation-id-digit-leading-method	operation.operationId:digit-leading-method	src/naming.rs::sanitize_identifier[if out\.starts_with],src/ir.rs::endpoint_pascal_context[else if id\.starts_with]	Method underscores and digit-spelled hoisted class contexts.
+property-map-value-enum	schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	
+property-map-value-struct	schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	
+property-map-value-oneof	schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	
+property-map-value-anyof	schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	

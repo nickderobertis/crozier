@@ -480,7 +480,7 @@ class ReportTests(unittest.TestCase):
         after = index.read_text(encoding="utf-8")
         self.assertIn("The 3 `golden` rows declare 3 handling sites", after)
         self.assertIn("**1 are reached by a registered real specification.**", after)
-        self.assertIn("1 + 0 + 0 + 2 = 3.", after)
+        self.assertIn("1 + 0 + 0 + 0 + 2 = 3.", after)
         self.assertIn("Each of its 1 classes has a decided detector or a fully evaluated document population", after)
         self.assertIn("**Earlier reconstruction from main's 826 of 886.**", after)
         registry.unlink()
@@ -488,6 +488,62 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(failed.returncode, 0)
         self.assertIn("classes.tsv", failed.stderr)
         self.assertEqual(index.read_text(encoding="utf-8"), after)
+
+    def test_arm_headline_counts_output_insensitive_and_refuses_changed_comparison(self) -> None:
+        index, _registry = self.headline_fixture()
+        index.write_text(
+            "\n".join(line for line in index.read_text().split("\n") if not line.startswith("| `flag-orphan` |"))
+        )
+        surface = self.repo / "docs/openapi-surface"
+        metadata = self.repo / "assets/scaffolding/metadata.json"
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        metadata.write_bytes((REPO / "assets/scaffolding/metadata.json").read_bytes())
+        pin = json.loads(metadata.read_text())
+        (surface / "search.md").write_text("Measured flag-orphan with unchanged output.")
+        (surface / "output-insensitive.tsv").write_text(
+            "key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n"
+            "flag-orphan\tsrc/demo.rs::unrelated\tdocs/openapi-surface/search.md\t"
+            "docs/openapi-surface/fern.json\tdocs/openapi-surface/crozier.json\n"
+        )
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": pin["cliVersion"],
+                "fern_python_sdk_version": pin["generatorVersion"],
+                "before": {"sdk.py": "a" * 64},
+                "after": {"sdk.py": "a" * 64},
+            }
+            (surface / f"{generator}.json").write_text(json.dumps(record))
+        result = self.run_arms("--headline")
+        self.assertEqual(0, result.returncode, result.stderr)
+        after = index.read_bytes()
+        self.assertIn("**1 is decided output-insensitive**", after.decode())
+        self.assertIn("1 + 0 + 0 + 1 + 1 = 3.", after.decode())
+        path = surface / "crozier.json"
+        record = json.loads(path.read_text())
+        original = path.read_text()
+        record["after"]["sdk.py"] = "b" * 64
+        path.write_text(json.dumps(record))
+        result = self.run_arms("--headline")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("generated files differ", result.stderr)
+        self.assertEqual(after, index.read_bytes())
+        path.unlink()
+        result = self.run_arms("--headline")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("missing comparison", result.stderr)
+        self.assertEqual(after, index.read_bytes())
+        path.write_text(original)
+        cover = surface / "handwritten/flag-demo"
+        cover.mkdir(parents=True, exist_ok=True)
+        (cover / "evidence.toml").write_text(
+            '[[covers]]\nkey = "flag-orphan"\narm = \'src/demo.rs::unrelated\'\nverdict = "exhausted"\n'
+        )
+        result = self.run_arms("--headline")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("also claimed proven", result.stderr)
+        self.assertEqual(after, index.read_bytes())
 
     def test_arm_headline_measured_covers_and_conflicting_verdicts(self) -> None:
         index, _registry = self.headline_fixture()
@@ -502,7 +558,7 @@ class ReportTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 after = index.read_text(encoding="utf-8")
                 self.assertIn("**1 are reached only by a hand-written fixture.**", after)
-                self.assertIn("1 + 1 + 0 + 1 = 3.", after)
+                self.assertIn("1 + 1 + 0 + 0 + 1 = 3.", after)
                 self.assertIn(f"1 read `{verdict}`", after)
         self.cover("conflicting", "exhausted")
         self.measurements(
@@ -551,7 +607,7 @@ class ReportTests(unittest.TestCase):
         index.write_text(named_without_orphan, encoding="utf-8")
         result = self.run_arms("--headline")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("1 + 0 + 1 + 1 = 3.", index.read_text(encoding="utf-8"))
+        self.assertIn("1 + 0 + 1 + 0 + 1 = 3.", index.read_text(encoding="utf-8"))
         for text, evidence in ((original, refused), (named_without_orphan, empty)):
             index.write_text(text, encoding="utf-8")
             limitations.write_text(evidence, encoding="utf-8")

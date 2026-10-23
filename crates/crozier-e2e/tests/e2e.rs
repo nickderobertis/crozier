@@ -2707,6 +2707,148 @@ fn handwritten_fixtures_match_fern_goldens() {
 }
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+/// Each paired control removes only the scoped example or enum alternative.
+/// Both independent generators must change the same complete-file population.
+#[test]
+fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
+    let cases = [
+        (
+            "lunar-null-labels",
+            "docs/openapi-surface/handwritten/lunar-null-labels/openapi.yml",
+            "docs/openapi-surface/handwritten/lunar-null-labels/fern-expected",
+            "remaining-examples/lunar-null-labels-control",
+            "/paths/~1labels/post/requestBody/content/application~1json/schema/properties/labels",
+            "example",
+        ),
+        (
+            "enum-media-selection",
+            "docs/openapi-surface/handwritten/enum-media-selection/openapi.yml",
+            "docs/openapi-surface/handwritten/enum-media-selection/fern-expected",
+            "remaining-examples/enum-media-selection-control",
+            "/paths/~1probe/post/requestBody/content/application~1json",
+            "example",
+        ),
+        (
+            "compass-choice",
+            "docs/openapi-surface/handwritten/compass-choice/openapi.yml",
+            "docs/openapi-surface/handwritten/compass-choice/fern-expected",
+            "remaining-examples/compass-choice-control",
+            "/paths/~1choices/post/requestBody/content/application~1json/schema/properties/direction/oneOf/0",
+            "const",
+        ),
+        (
+            "shelf-labels-map-variants",
+            "docs/openapi-surface/handwritten/shelf-labels-map-variants/openapi.yml",
+            "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected",
+            "remaining-examples/shelf-labels-map-variants-control",
+            "/paths/~1labels/put/requestBody/content/application~1json/schema/properties/labels/additionalProperties",
+            "oneOf",
+        ),
+        (
+            "panoptes",
+            "tests/fixtures/corpus-sources/panoptes/openapi.yaml",
+            "tests/fixtures/panoptes/expected",
+            "remaining-examples/panoptes-no-struct-map-value",
+            "/paths/~1datasets~1{dataset_name}~1search/post/requestBody/content/application~1json/schema/properties/facets/additionalProperties",
+            "properties",
+        ),
+        (
+            "fletch-mcp",
+            "tests/fixtures/corpus-sources/fletch-mcp/openapi.json",
+            "tests/fixtures/fletch-mcp/expected",
+            "remaining-examples/fletch-mcp-no-enum-map-value",
+            "/paths/~1tokens~1{address}/get/responses/200/content/application~1json/schema/properties/reading/anyOf/0/properties/robinhoodApp/properties/pairs/items/properties/tradability_by_account_type/additionalProperties",
+            "enum",
+        ),
+        (
+            "formbricks",
+            "tests/fixtures/corpus-sources/formbricks/openapi.yml",
+            "tests/fixtures/formbricks/expected",
+            "remaining-examples/formbricks-no-map-example",
+            "/paths/~1management~1responses/post/requestBody/content/application~1json/schema/properties/data",
+            "example",
+        ),
+    ];
+    let files = |tree: &Path| {
+        walk_files(tree)
+            .into_iter()
+            .map(|name| {
+                let bytes = std::fs::read(tree.join(&name)).unwrap();
+                (name, bytes)
+            })
+            .collect::<std::collections::BTreeMap<_, _>>()
+    };
+    let changed = |before: &std::collections::BTreeMap<String, Vec<u8>>,
+                   after: &std::collections::BTreeMap<String, Vec<u8>>| {
+        before
+            .keys()
+            .chain(after.keys())
+            .filter(|name| before.get(*name) != after.get(*name))
+            .cloned()
+            .collect::<std::collections::BTreeSet<_>>()
+    };
+    for (name, source, golden, control, pointer, field) in cases {
+        let source = repo_root().join(source);
+        let control = repo_root().join("docs/fern-measurements").join(control);
+        let control_source = control.join("openapi.yml");
+        let parse = |path: &Path| {
+            crate::yaml::from_str::<serde_json::Value>(&std::fs::read_to_string(path).unwrap())
+                .unwrap()
+        };
+        let mut without_feature = parse(&source);
+        assert!(
+            without_feature
+                .pointer_mut(pointer)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove(field)
+                .is_some(),
+            "{name}: the original must declare the feature"
+        );
+        assert_eq!(
+            without_feature,
+            parse(&control_source),
+            "{name}: control changes another field"
+        );
+        let fern_motion = changed(
+            &files(&repo_root().join(golden)),
+            &files(&control.join("fern-expected")),
+        );
+        assert!(
+            !fern_motion.is_empty(),
+            "{name}: Fern's complete tree did not move"
+        );
+        for strict in [false, true] {
+            let scratch = tempfile::tempdir().unwrap();
+            let missing = scratch.path().join("openapi.yml");
+            let recovered = scratch.path().join("recovered");
+            probe_command(&missing, &recovered)
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains("could not read spec"));
+            assert!(!recovered.exists(), "a missing source writes no SDK");
+            std::fs::copy(&source, &missing).unwrap();
+            let mut generated = Vec::new();
+            for document in [&missing, &control_source] {
+                let output = tempfile::tempdir().unwrap();
+                let mut command = probe_command(document, output.path());
+                command.env("CROZIER_FERN_STRICT", "false");
+                if strict {
+                    command.arg("--fern-strict");
+                }
+                command.assert().success();
+                generated.push(files(output.path()));
+            }
+            assert_eq!(
+                fern_motion,
+                changed(&generated[0], &generated[1]),
+                "{name}: strict={strict}: crozier and Fern must both react to this feature"
+            );
+        }
+    }
+}
+
 #[test]
 fn residual_null_example_is_absent_from_matching_request_snippets() {
     let (_, failures) = handwritten_documents(repo_root());
@@ -9442,6 +9584,9 @@ const CORPORA: &[&Corpus] = &[
     &SUPABASE_API_V1,
     &RTA_IN_JAPAN_TWITTER,
     &ONMYSHELF_API,
+    &FORMBRICKS,
+    &PANOPTES,
+    &FLETCH_MCP,
     &MICROSOFT_ADME_SEISMIC,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
@@ -11126,7 +11271,6 @@ const WEBFLOW_V2: Corpus = Corpus {
     extra_fields: None,
     unmatched: &[
         "reference.md",
-        "src/fern/__init__.py",
         "src/fern/analyze/__init__.py",
         "src/fern/analyze/reports/__init__.py",
         "src/fern/analyze/reports/client.py",
@@ -11150,35 +11294,15 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_in.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_nin.py",
         "src/fern/collections/items/types/list_items_live_items_request_sort_value.py",
-        "src/fern/collections/types/__init__.py",
         "src/fern/collections/types/create_collections_request_fields_item.py",
         "src/fern/collections/types/option_field.py",
         "src/fern/collections/types/option_field_metadata.py",
-        "src/fern/collections/types/option_field_metadata_options_item.py",
-        "src/fern/collections/types/option_field_type.py",
         "src/fern/collections/types/reference_field.py",
-        "src/fern/collections/types/reference_field_metadata.py",
-        "src/fern/collections/types/reference_field_type.py",
         "src/fern/collections/types/static_field.py",
-        "src/fern/collections/types/static_field_type.py",
-        "src/fern/components/__init__.py",
-        "src/fern/components/client.py",
-        "src/fern/components/types/__init__.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
-        "src/fern/components/types/update_content_components_request_nodes_item.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_choices.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_choices_choices_item.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_five.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_placeholder.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_property_overrides.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_property_overrides_property_overrides_item.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_text.py",
-        "src/fern/components/types/update_content_components_request_nodes_item_waiting_text.py",
         "src/fern/forms/client.py",
         "src/fern/forms/raw_client.py",
         "src/fern/forms/types/list_submissions_forms_response.py",
-        "src/fern/pages/__init__.py",
-        "src/fern/pages/client.py",
         "src/fern/pages/scripts/client.py",
         "src/fern/pages/scripts/raw_client.py",
         "src/fern/pages/scripts/types/get_custom_code_scripts_response.py",
@@ -11186,17 +11310,7 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_request_scripts_item.py",
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_response.py",
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_response_scripts_item.py",
-        "src/fern/pages/types/__init__.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_choices.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_choices_choices_item.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_five.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_placeholder.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_property_overrides.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_property_overrides_property_overrides_item.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_text.py",
-        "src/fern/pages/types/update_static_content_request_nodes_item_waiting_text.py",
         "src/fern/products/client.py",
         "src/fern/products/types/create_products_request_product.py",
         "src/fern/sites/redirects/client.py",
@@ -12402,6 +12516,42 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3003: the publisher's responses map account types to an inline string enum.
+const FLETCH_MCP: Corpus = Corpus {
+    api: "fletch-mcp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Corpus row 3002: the publisher's request bodies map field names to inline structs.
+const PANOPTES: Corpus = Corpus {
+    api: "panoptes",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Corpus row 3001: the publisher's response API has typed map examples.
+const FORMBRICKS: Corpus = Corpus {
+    api: "formbricks",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// Corpus row 3000: the publisher's API declares digit-leading method IDs.
 const ONMYSHELF_API: Corpus = Corpus {
     api: "onmyshelf-api",
@@ -12414,7 +12564,7 @@ const ONMYSHELF_API: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Corpus row 3001: the publisher's seismic API has a field-less status model.
+/// Corpus row 3004: the publisher's seismic API has a field-less status model.
 const MICROSOFT_ADME_SEISMIC: Corpus = Corpus {
     api: "microsoft-adme-seismic",
     package_name: "fern",
@@ -13271,6 +13421,21 @@ fn rta_in_japan_twitter_matches_fern_output() {
 #[test]
 fn microsoft_adme_seismic_matches_fern_output() {
     assert_committed_corpus_matches(&MICROSOFT_ADME_SEISMIC);
+}
+
+#[test]
+fn panoptes_matches_fern_output() {
+    assert_committed_corpus_matches(&PANOPTES);
+}
+
+#[test]
+fn fletch_mcp_matches_fern_output() {
+    assert_committed_corpus_matches(&FLETCH_MCP);
+}
+
+#[test]
+fn formbricks_matches_fern_output() {
+    assert_committed_corpus_matches(&FORMBRICKS);
 }
 
 #[test]
