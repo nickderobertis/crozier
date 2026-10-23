@@ -12108,7 +12108,12 @@ class FinishedStateGateTests(unittest.TestCase):
         stage_restatement_population(self.root)
         surface = self.root / "docs/openapi-surface"
         index = self.root / "docs/openapi-surface-coverage.md"
-        restater = [sys.executable, str(REPO / "tools/surface-census/restate-coverage.py"), "--repo-root", str(self.root)]
+        restater = [
+            sys.executable,
+            str(REPO / "tools/surface-census/restate-coverage.py"),
+            "--repo-root",
+            str(self.root),
+        ]
         self.assertEqual(0, subprocess.run(restater, capture_output=True, check=False).returncode)
         stated = matched(re.search(r"^(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.$", index.read_text(), re.M))
         real, proof, weak, decided, unproven, total = map(int, stated.groups())
@@ -19130,7 +19135,8 @@ class CombinationListTests(unittest.TestCase):
         records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
         self.assertEqual([], failures)
         decided = sum(
-            cells[3].strip("`") == "gap" and (key, "-") in records for key, (_region, cells) in combination_rows(REPO).items()
+            cells[3].strip("`") == "gap" and (key, "-") in records
+            for key, (_region, cells) in combination_rows(REPO).items()
         )
         self.assertEqual(
             [len(census.COMBINATIONS), categories["golden"], categories["gap"], decided],

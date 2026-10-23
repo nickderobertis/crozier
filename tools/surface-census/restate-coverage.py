@@ -432,8 +432,7 @@ def restate(root: Path) -> str:
         f"- **{len(settled)} {'is' if len(settled) == 1 else 'are'} decided output-insensitive.** "
         "Deleting the feature leaves both generators' complete trees byte-identical, as "
         "[the shared table](openapi-surface/output-insensitive.tsv) records for the whole key; "
-        "such a `gap` row is neither proven nor unproven"
-        + (f": {settled_keys}." if settled else ".")
+        "such a `gap` row is neither proven nor unproven" + (f": {settled_keys}." if settled else ".")
     )
     fill = {"width": 88, "subsequent_indent": "  ", "break_long_words": False, "break_on_hyphens": False}
     text = substitute(
