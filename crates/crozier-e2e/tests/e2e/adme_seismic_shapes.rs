@@ -32,6 +32,7 @@ fn failures(out: &Path) -> Vec<String> {
     )
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each journey below generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Generate the case's SDK, hold it whole to Fern's, then show that `file`
 /// spelling `fern` (as both trees do) is what the comparison turns on: with
 /// `crozier` in its place the comparison names `file`.
@@ -181,3 +182,4 @@ fn an_async_readme_imports_in_first_use_order() {
         "import asyncio\nimport datetime\nfrom fern.items import ItemsCreateRequestInfo",
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

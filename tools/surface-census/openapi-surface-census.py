@@ -5000,14 +5000,18 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # neither necessary nor sufficient for any of the three arms these predicates
 # name.
 #
-# Two union rules are ported with a normalized-body digest of the Rust each
+# Three union rules are ported with a normalized-body digest of the Rust each
 # reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
-# edit to either function fails until the port is read again: the unrequired-tag
-# clause of `_candidate_tag_values` reads `inferred_discriminant_property_with`,
-# and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
-# scalar arms of `base_type_ref`.
+# edit to any of those functions fails until the port is read again: the
+# unrequired-tag clause of `_candidate_tag_values` reads
+# `inferred_discriminant_property_with`, the untyped-tag rule it and
+# `_inferred_union_discriminant_property` share reads `untyped_enum_tag` and
+# `inferred_union_discriminant_property`, and `Census.same_primitive_unions`
+# reads `same_primitive_union_last` and the scalar arms of `base_type_ref`.
 UNION_PORT_DIGESTS = {
     "inferred_discriminant_property_with": "f3ef12e94bfadc38",
+    "untyped_enum_tag": "f71e35908e2aed73",
+    "inferred_union_discriminant_property": "c7468f6d8fef712d",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "8c1ce5136f0b7968",
 }
