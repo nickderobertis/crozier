@@ -19645,7 +19645,7 @@ class OutputInsensitiveTests(unittest.TestCase):
             ("wrong generator", comparison("fern", generator="crozier"), "does not use fern at the certified pair"),
             (
                 "uncertified pair",
-                comparison("crozier", fern_cli_version="0.0.1"),
+                comparison("crozier", fern_cli_version="0.0.1"),  # certified-pair: stand-in
                 "does not use crozier at the certified pair",
             ),
             ("wrong header", registry("crozier_comparison\n", "crozier\n"), "expected columns"),
