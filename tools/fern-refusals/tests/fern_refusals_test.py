@@ -2236,6 +2236,9 @@ class ProbeRecording(unittest.TestCase):
 # Seconds the compiler-timeout case allows the whole evaluation: enough for the
 # real venv setup on a loaded host, so the timeout lands on the compiler.
 COMPILER_TIMEOUT_BUDGET = 30
+# Seconds past its budget an evaluation may take to stop an overrunning stage,
+# report, and exit before the test fails it as never having stopped.
+DRIVER_STOP_GRACE = 60
 
 
 @unittest.skipIf(os.name == "nt", "the package-tool and compiler doubles are POSIX shell scripts")
@@ -2292,6 +2295,9 @@ class SdkEvaluationDriverTests(unittest.TestCase):
             text=True,
             env=env,
             check=False,
+            # The driver's budget covers every stage; a driver that leaves an
+            # overrunning stage running fails here instead of hanging the suite.
+            timeout=timeout + DRIVER_STOP_GRACE,
         )
         return result, receipt
 
