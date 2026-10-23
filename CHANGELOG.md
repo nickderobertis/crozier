@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.129](https://github.com/nickderobertis/crozier/compare/v0.0.128...v0.0.129) - 2026-10-23
+
+### Added
+
+- *(corpus)* prove the census features and arms still unproven against real or hand-written witnesses ([#570](https://github.com/nickderobertis/crozier/pull/570))
+
 ## [0.0.128](https://github.com/nickderobertis/crozier/compare/v0.0.127...v0.0.128) - 2026-10-23
 
 ### Fixed
