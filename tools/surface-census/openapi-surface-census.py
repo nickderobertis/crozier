@@ -5021,11 +5021,18 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # edit to either function fails until the port is read again: the unrequired-tag
 # clause of `_candidate_tag_values` reads `inferred_discriminant_property_with`,
 # and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
-# scalar arms of `base_type_ref`.
+# scalar arms of `base_type_ref`. `_last_composed_variant` ports
+# `last_composed_variant` and the `is_composed_member` test it loops on, through
+# `_is_map` and `_simple_nullable_member`, which port `is_map` and
+# `simple_nullable_member`.
 UNION_PORT_DIGESTS = {
     "inferred_discriminant_property_with": "24684550992d48e9",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "8c1ce5136f0b7968",
+    "last_composed_variant": "3ac394950dc70c7f",
+    "is_composed_member": "ea34dd7fa128f6b3",
+    "is_map": "ce58b2f1f60a3f18",
+    "simple_nullable_member": "1d041c7fc238931d",
 }
 
 

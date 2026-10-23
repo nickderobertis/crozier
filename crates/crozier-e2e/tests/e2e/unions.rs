@@ -58,7 +58,8 @@ pub(super) fn compared() -> Vec<(String, Vec<String>)> {
 /// carry no cover, but their Fern trees stay byte-gated here and by Contract A.
 const PROBE_FIXTURES: [&str; 1] = ["museum-titled-array-items"];
 
-/// The fixture's document.
+/// A measured probe keeps its document beside the other probes; every other
+/// fixture keeps it in its own hand-written directory.
 fn fixture_spec(name: &str) -> PathBuf {
     if PROBE_FIXTURES.contains(&name) {
         return repo_root()

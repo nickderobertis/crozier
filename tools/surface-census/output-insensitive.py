@@ -18,6 +18,7 @@ import sys
 import tomllib
 from pathlib import Path
 from types import ModuleType
+from typing import NamedTuple
 
 REGISTRY = Path("docs/openapi-surface/output-insensitive.tsv")
 COLUMNS = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
@@ -37,35 +38,67 @@ def local_file(root: Path, value: str) -> Path:
     return resolved
 
 
-def check_comparison(path: Path, generator: str, pin: dict) -> None:
-    """Reject incomplete, uncertified, or output-sensitive comparison records."""
+class CertifiedPair(NamedTuple):
+    """The Fern CLI and python-sdk versions `assets/scaffolding/metadata.json` certifies."""
+
+    cli: str
+    generator: str
+
+
+class Comparison(NamedTuple):
+    """One generator's complete before/after trees, relative path to SHA-256."""
+
+    generator: str
+    pair: CertifiedPair
+    before: dict[str, str]
+    after: dict[str, str]
+
+
+FIELDS = ("schema_version", "generator", "fern_cli_version", "fern_python_sdk_version", "before", "after")
+
+
+def certified_pair(root: Path) -> CertifiedPair:
+    data = json.loads((root / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not all(isinstance(data.get(k), str) for k in ("cliVersion", "generatorVersion")):
+        raise ValueError("assets/scaffolding/metadata.json names no certified pair")
+    return CertifiedPair(data["cliVersion"], data["generatorVersion"])
+
+
+def tree(path: Path, side: str, files: object) -> dict[str, str]:
+    """A complete generated tree: non-empty, relative paths, SHA-256 digests."""
+    if not isinstance(files, dict) or not files:
+        raise ValueError(f"{path}: {side} must record a non-empty complete generated tree")
+    for name, digest in files.items():
+        if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
+            raise ValueError(f"{path}: invalid generated-file path")
+        if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+            raise ValueError(f"{path}: invalid generated-file SHA-256")
+    return files
+
+
+def read_comparison(path: Path) -> Comparison:
+    """Parse one comparison record, refusing any field outside the schema."""
     data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict) or set(data) != {
-        "schema_version",
-        "generator",
-        "fern_cli_version",
-        "fern_python_sdk_version",
-        "before",
-        "after",
-    }:
+    if not isinstance(data, dict) or set(data) != set(FIELDS):
         raise ValueError(f"{path}: invalid comparison fields")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ValueError(f"{path}: unsupported comparison schema_version")
-    if data["generator"] != generator or (data["fern_cli_version"], data["fern_python_sdk_version"]) != (
-        pin["cliVersion"],
-        pin["generatorVersion"],
-    ):
+    if not all(isinstance(data[k], str) for k in ("generator", "fern_cli_version", "fern_python_sdk_version")):
+        raise ValueError(f"{path}: invalid comparison fields")
+    return Comparison(
+        data["generator"],
+        CertifiedPair(data["fern_cli_version"], data["fern_python_sdk_version"]),
+        tree(path, "before", data["before"]),
+        tree(path, "after", data["after"]),
+    )
+
+
+def check_comparison(path: Path, generator: str, pin: CertifiedPair) -> None:
+    """Reject incomplete, uncertified, or output-sensitive comparison records."""
+    comparison = read_comparison(path)
+    if comparison.generator != generator or comparison.pair != pin:
         raise ValueError(f"{path}: comparison does not use {generator} at the certified pair")
-    for side in ("before", "after"):
-        files = data[side]
-        if not isinstance(files, dict) or not files:
-            raise ValueError(f"{path}: {side} must record a non-empty complete generated tree")
-        for name, digest in files.items():
-            if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
-                raise ValueError(f"{path}: invalid generated-file path")
-            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
-                raise ValueError(f"{path}: invalid generated-file SHA-256")
-    if data["before"] != data["after"]:
+    if comparison.before != comparison.after:
         raise ValueError(f"{path}: generated files differ")
 
 
@@ -90,9 +123,16 @@ def proven_contexts(root: Path) -> set[tuple[str, str]]:
             if cells[3].strip("`") == "golden":
                 proven.add((cells[0].strip("`"), "-"))
     for path in (surface / "handwritten").glob("*/evidence.toml"):
-        data = tomllib.loads(path.read_text(encoding="utf-8"))
-        for cover in data.get("covers", []):
-            proven.add((cover["key"], cover.get("arm", "-")))
+        covers = tomllib.loads(path.read_text(encoding="utf-8")).get("covers", [])
+        if not isinstance(covers, list):
+            raise ValueError(f"{path}: covers must be a list of tables")
+        for cover in covers:
+            if not isinstance(cover, dict) or not isinstance(cover.get("key"), str):
+                raise ValueError(f"{path}: every cover needs a string key")
+            arm = cover.get("arm", "-")
+            if not isinstance(arm, str):
+                raise ValueError(f"{path}: a cover's arm must be a string")
+            proven.add((cover["key"], arm))
     ledger = surface / "golden-reach.tsv"
     if ledger.exists():
         module = load_reader("output_insensitive_reach", "golden-reach.py")
@@ -111,7 +151,7 @@ def read_records(root: Path) -> tuple[set[tuple[str, str]], list[str]]:
     records: set[tuple[str, str]] = set()
     failures: list[str] = []
     try:
-        pin = json.loads((root / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
+        pin = certified_pair(root)
         proven = proven_contexts(root)
         with registry.open(encoding="utf-8", newline="") as handle:
             reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
@@ -142,7 +182,7 @@ def read_records(root: Path) -> tuple[set[tuple[str, str]], list[str]]:
                     records.add(pair)
                 except (OSError, KeyError, TypeError, ValueError) as error:
                     failures.append(f"{REGISTRY}: {row.get('key', '?')}: {error}")
-    except (OSError, KeyError, TypeError, ValueError) as error:
+    except (OSError, KeyError, TypeError, ValueError, tomllib.TOMLDecodeError) as error:
         failures.append(f"{REGISTRY}: {error}")
     return records, failures
 

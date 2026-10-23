@@ -12103,8 +12103,9 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_whole_key_decisions_reach_the_gate_and_the_restated_headline(self) -> None:
         """The real finished-state gate and `restate-coverage.py` over one tree holding
-        a `gap` key the shared table decides at `-`, a `gap` key it does not, and a
-        `golden` key it also decides."""
+        `gap` keys the shared table decides at `-` (a `FIXTURE` row, an `UNREACHABLE`
+        row and a combination), a `gap` key it does not, and a `golden` key it also
+        decides."""
         stage_restatement_population(self.root)
         surface = self.root / "docs/openapi-surface"
         index = self.root / "docs/openapi-surface-coverage.md"
@@ -12123,7 +12124,16 @@ class FinishedStateGateTests(unittest.TestCase):
                     f"\n| `{key}` | both | Schema Object.sample | `gap` | census: 0 declarations | none | "
                     "types/ | `FIXTURE` — sample |\n"
                 )
-        (surface / "sample-decided.md").write_text("Deleted `sample-decided`; neither tree moved.\n")
+            handle.write(
+                "\n| `sample-unreachable` | both | Schema Object.sample | `gap` | census: 0 declarations | none | "
+                "types/ | `UNREACHABLE` — sample |\n"
+            )
+        with (surface / "document-paths.md").open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| `combo-sample-decided` | both | Combination — sample | `gap` | none | none | none | none |\n"
+            )
+        for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
+            (surface / f"{key}.md").write_text(f"Deleted `{key}`; neither tree moved.\n")
         for generator in ("fern", "crozier"):
             record = {
                 "schema_version": 1,
@@ -12137,22 +12147,46 @@ class FinishedStateGateTests(unittest.TestCase):
         table = surface / "output-insensitive.tsv"
         evidence = "docs/openapi-surface/sample-fern.json\tdocs/openapi-surface/sample-crozier.json\n"
         with table.open("a", encoding="utf-8") as handle:
-            handle.write(f"sample-decided\t-\tdocs/openapi-surface/sample-decided.md\t{evidence}")
+            for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
+                handle.write(f"{key}\t-\tdocs/openapi-surface/{key}.md\t{evidence}")
+        combinations = matched(re.search(r"(\d+) are `golden` and (\d+) are `gap`\.", index.read_text()))
+        combination_golden, combination_gap = map(int, combinations.groups())
 
         failures = finished_state_failures(self.root)
         self.assertTrue(any(f.startswith("sample-undecided: a `FIXTURE` gap row") for f in failures), failures)
-        self.assertFalse([f for f in failures if "sample-decided" in f], failures)
+        self.assertFalse([f for f in failures if "decided" in f and "undecided" not in f], failures)
+        self.assertFalse([f for f in failures if "sample-unreachable" in f], failures)
         result = subprocess.run([*restater, "--write"], capture_output=True, text=True, check=False)
         self.assertEqual(0, result.returncode, result.stderr)
         text = index.read_text(encoding="utf-8")
         flat = " ".join(text.split())
-        self.assertIn(f"- **{decided + 1} {'is' if decided == 0 else 'are'} decided output-insensitive.**", flat)
-        self.assertIn("`sample-decided`.", flat)
+        self.assertIn(f"- **{decided + 2} are decided output-insensitive.**", flat)
+        self.assertIn("`sample-decided`, `sample-unreachable`.", flat)
         self.assertIn(f"- **{unproven + 1} remain unproven.**", flat)
-        self.assertIn(f"{real} + {proof} + {weak} + {decided + 1} + {unproven + 1} = {total + 2}.", text)
+        # The decided `UNREACHABLE` row leaves the committed-proof count for the decided one.
+        self.assertIn(f"{real} + {proof} + {weak} + {decided + 2} + {unproven + 1} = {total + 3}.", text)
+        self.assertIn(
+            f"{combination_golden} are `golden` and {combination_gap + 1} are `gap`. "
+            "1 of the `gap` ones is decided output-insensitive",
+            flat,
+        )
         ranked = text.partition("| # | key | region | 1. crozier sites")[2].partition("\n\n")[0]
         self.assertIn("`sample-undecided`", ranked)
         self.assertNotIn("`sample-decided`", ranked)
+        # Listing a decided combination as unproven is stale, and the gate says so.
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            NAMED_COMBINATIONS_HEADING,
+            NAMED_COMBINATIONS_HEADING
+            + "\n\n| `combo-sample-decided` | `document-paths` | `not searched` — sample |\n",
+        )
+        self.assertTrue(
+            any(
+                f.startswith("combo-sample-decided: docs/openapi-surface-coverage.md names it")
+                for f in finished_state_failures(self.root)
+            )
+        )
+        index.write_text(text, encoding="utf-8")
 
         golden = next(
             cells[0].strip("`")
@@ -19521,6 +19555,26 @@ class OutputInsensitiveTests(unittest.TestCase):
         (self.surface / "golden-reach.tsv").write_text(reader.ledger_text([reach], "test"))
         result = self.run_reader()
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_the_documented_contract_is_the_readers(self):
+        """docs/output-insensitive.md states the columns and comparison fields the reader enforces."""
+        reader = load_script("tools/surface-census/output-insensitive.py")
+        doc = (REPO / "docs/output-insensitive.md").read_text(encoding="utf-8")
+        columns = matched(re.search(r"Each TSV row has (.*?)\. Paths", " ".join(doc.split()))).group(1)
+        self.assertEqual(list(reader.COLUMNS), re.findall(r"`([a-z_]+)`", columns))
+        record = json.loads(doc.partition("```json\n")[2].partition("```")[0])
+        self.assertEqual(set(reader.FIELDS), set(record))
+
+    def test_malformed_covers_are_reported_not_raised(self):
+        fixture = self.surface / "handwritten/sample"
+        fixture.mkdir(parents=True)
+        for covers in ('covers = "sample-key"\n', "covers = [1]\n", "[[covers]]\nkey = 3\n"):
+            with self.subTest(covers=covers):
+                (fixture / "evidence.toml").write_text(covers)
+                result = self.run_reader()
+                self.assertEqual(1, result.returncode)
+                self.assertIn("evidence.toml", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
 
     def test_key_claimed_proven_is_rejected(self):
         (self.surface / "schemas.md").write_text(
