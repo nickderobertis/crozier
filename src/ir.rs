@@ -10966,12 +10966,12 @@ fn inferred_discriminant_property_with(
             .iter()
             .map(|variant| {
                 let field = variant.properties.get(property)?;
-                // An `anyOf` member's one-member `enum` tags it only when the tag
+                // A union member's one-member `enum` tags it only when the tag
                 // declares `type: string`: Fern discriminates the hand-written
                 // `nested-array-discriminated-unions` fixture's `Pet` over typed
                 // `kind` tags, and leaves Marimo's `DetectedDataSource.hidesWhen`,
                 // whose members write a bare `enum: [dialect]`, an ordinary union.
-                let singleton_enum = !untyped_any_of_enum_tag(schema, field)
+                let singleton_enum = !untyped_enum_tag(field)
                     && string_enum_values(field).is_some_and(|values| values.len() == 1);
                 // A member that spells its tag as a required one-member `enum`
                 // discriminates whether or not the union also references
@@ -11037,13 +11037,13 @@ fn inferred_discriminant_property_with(
     })
 }
 
-/// A one-member `enum` tag on an `anyOf` member that declares no `type: string`,
-/// which Fern does not discriminate on: Marimo's FastAPI-emitted `enum:
-/// [dialect]` tags leave its unions ordinary, where the hand-written
-/// `nested-array-discriminated-unions` fixture's typed `kind` tags do not. A
-/// `const` tag is another spelling and is not read by this.
-fn untyped_any_of_enum_tag(union: &Schema, tag: &Schema) -> bool {
-    let _ = union;
+/// A one-member `enum` tag on a union member that declares no `type: string`,
+/// which Fern does not discriminate on, under `anyOf` and `oneOf` alike:
+/// Marimo's FastAPI-emitted `enum: [dialect]` tags and ADME seismic's `oneOf`
+/// `kind: {enum: [Unit]}` tags leave their unions ordinary, where the
+/// hand-written `nested-array-discriminated-unions` fixture's typed `kind` tags
+/// do not. A `const` tag is another spelling and is not read by this.
+fn untyped_enum_tag(tag: &Schema) -> bool {
     tag.enum_values.is_some() && !is_string_type(tag)
 }
 
@@ -11072,7 +11072,7 @@ fn inferred_union_discriminant_property(
                     .flatten()
                     // The `anyOf` rule of `inferred_discriminant_property_with`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
-                    .filter(|tag| !untyped_any_of_enum_tag(schema, tag))
+                    .filter(|tag| !untyped_enum_tag(tag))
                     .and_then(discriminant_value)
             })
             .collect();
