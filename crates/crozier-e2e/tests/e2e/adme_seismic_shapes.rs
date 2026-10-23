@@ -104,6 +104,18 @@ fn an_untyped_enum_tag_leaves_a_one_of_undiscriminated() {
     );
 }
 
+/// The undiscriminated union's member carries its tag as an ordinary field, so
+/// the README example passes the `kind` value a discriminated variant would
+/// have filled in itself.
+#[test]
+fn an_untyped_enum_tag_is_passed_in_the_readme_example() {
+    holds_line(
+        "README.md",
+        "            kind=ItemsCreateRequestMetaItemUnitIdKind.UNIT,\n",
+        "",
+    );
+}
+
 /// A property two inline `allOf` members declare is typed by the last
 /// declaration, at the first one's place.
 #[test]
