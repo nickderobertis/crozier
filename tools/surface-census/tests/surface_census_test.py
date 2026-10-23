@@ -9484,9 +9484,17 @@ class RankedBacklogTests(unittest.TestCase):
         golden-only witness that is not a hand-authored (vendored) feature target,
         read off the reach ledger; a committed non-generation proof is a
         non-`golden` row with a `MANIFEST.tsv` row carrying a non-generation
-        verdict; everything else is unproven. The three sum to the walk's total.
+        verdict; a `gap` row the shared table decides at `-` is decided
+        output-insensitive; everything else is unproven. They sum to the walk's total.
         """
         rows = list(self.entries.values())
+        records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
+        self.assertEqual([], failures)
+        decided = {
+            key
+            for key, (_region, cells) in self.entries.items()
+            if cells[3].strip("`") == "gap" and (key, "-") in records
+        }
         categories = {
             category: sum(1 for _region, cells in rows if cells[3].strip("`") == category)
             for category in self.CATEGORIES
@@ -9519,11 +9527,13 @@ class RankedBacklogTests(unittest.TestCase):
                 # Weaker proof than a real specification: its own count, never
                 # the byte-match one and never a non-generation proof.
                 handwritten += 1
+            elif key in decided:
+                continue
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
         unreached = {(reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit}
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
-        fixture = len(self.gaps("FIXTURE"))
+        fixture = len(self.gaps("FIXTURE") - decided)
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
         stated = re.search(
             r"enumerates (\d+) features\. By category, (\d+) are `golden`, (\d+) `limitations`, "
@@ -9533,13 +9543,14 @@ class RankedBacklogTests(unittest.TestCase):
             r"the (\d+) `limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) rest "
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
             r"the `handwritten` rows.*?They are not among the (\d+) and never count as a "
-            r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
+            r"real-specification match\. - \*\*(\d+) (?:is|are) decided output-insensitive\.\*\*.*? "
+            r"- \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
             r"rows\..*?(\d+) (?:are|is a) `golden` rows? resting only on residual goldens whose code moves no "
             r"byte-matched file.*?The other (\d+) are `golden` rows declared only by.*?"
-            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
         )
-        self.assertIsNotNone(stated, "the headline no longer states its four numbers")
+        self.assertIsNotNone(stated, "the headline no longer states its five numbers")
         assert stated is not None
         unproven = fixture + residual_gap + no_witness
         expected = [
@@ -9554,6 +9565,7 @@ class RankedBacklogTests(unittest.TestCase):
             len(self.gaps("UNREACHABLE")),
             handwritten,
             byte_match,
+            len(decided),
             unproven,
             fixture,
             residual_gap,
@@ -9561,14 +9573,17 @@ class RankedBacklogTests(unittest.TestCase):
             byte_match,
             proof,
             handwritten,
+            len(decided),
             unproven,
             len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
-        self.assertEqual(len(rows), byte_match + proof + handwritten + unproven, "the four do not partition the walk")
+        self.assertEqual(
+            len(rows), byte_match + proof + handwritten + len(decided) + unproven, "the five do not partition the walk"
+        )
         self.assertEqual(
             proof,
-            categories["limitations"] + len(self.gaps("UNREACHABLE")),
+            categories["limitations"] + len(self.gaps("UNREACHABLE") - decided),
             "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
         )
         # The arms, split the same way: reached by a real specification, reached
@@ -12085,6 +12100,71 @@ class FinishedStateGateTests(unittest.TestCase):
         record["after"]["sdk.py"] = "b" * 64
         path.write_text(json.dumps(record))
         self.assertTrue(any("generated files differ" in failure for failure in finished_state_failures(self.root)))
+
+    def test_whole_key_decisions_reach_the_gate_and_the_restated_headline(self) -> None:
+        """The real finished-state gate and `restate-coverage.py` over one tree holding
+        a `gap` key the shared table decides at `-`, a `gap` key it does not, and a
+        `golden` key it also decides."""
+        stage_restatement_population(self.root)
+        surface = self.root / "docs/openapi-surface"
+        index = self.root / "docs/openapi-surface-coverage.md"
+        restater = [sys.executable, str(REPO / "tools/surface-census/restate-coverage.py"), "--repo-root", str(self.root)]
+        self.assertEqual(0, subprocess.run(restater, capture_output=True, check=False).returncode)
+        stated = matched(re.search(r"^(\d+) \+ (\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.$", index.read_text(), re.M))
+        real, proof, weak, decided, unproven, total = map(int, stated.groups())
+        with (surface / "schemas.md").open("a", encoding="utf-8") as handle:
+            for key in ("sample-decided", "sample-undecided"):
+                handle.write(
+                    f"\n| `{key}` | both | Schema Object.sample | `gap` | census: 0 declarations | none | "
+                    "types/ | `FIXTURE` — sample |\n"
+                )
+        (surface / "sample-decided.md").write_text("Deleted `sample-decided`; neither tree moved.\n")
+        for generator in ("fern", "crozier"):
+            record = {
+                "schema_version": 1,
+                "generator": generator,
+                "fern_cli_version": CERTIFIED["cliVersion"],
+                "fern_python_sdk_version": CERTIFIED["generatorVersion"],
+                "before": {"src/fern/client.py": "a" * 64},
+                "after": {"src/fern/client.py": "a" * 64},
+            }
+            (surface / f"sample-{generator}.json").write_text(json.dumps(record))
+        table = surface / "output-insensitive.tsv"
+        evidence = "docs/openapi-surface/sample-fern.json\tdocs/openapi-surface/sample-crozier.json\n"
+        with table.open("a", encoding="utf-8") as handle:
+            handle.write(f"sample-decided\t-\tdocs/openapi-surface/sample-decided.md\t{evidence}")
+
+        failures = finished_state_failures(self.root)
+        self.assertTrue(any(f.startswith("sample-undecided: a `FIXTURE` gap row") for f in failures), failures)
+        self.assertFalse([f for f in failures if "sample-decided" in f], failures)
+        result = subprocess.run([*restater, "--write"], capture_output=True, text=True, check=False)
+        self.assertEqual(0, result.returncode, result.stderr)
+        text = index.read_text(encoding="utf-8")
+        flat = " ".join(text.split())
+        self.assertIn(f"- **{decided + 1} {'is' if decided == 0 else 'are'} decided output-insensitive.**", flat)
+        self.assertIn("`sample-decided`.", flat)
+        self.assertIn(f"- **{unproven + 1} remain unproven.**", flat)
+        self.assertIn(f"{real} + {proof} + {weak} + {decided + 1} + {unproven + 1} = {total + 2}.", text)
+        ranked = text.partition("| # | key | region | 1. crozier sites")[2].partition("\n\n")[0]
+        self.assertIn("`sample-undecided`", ranked)
+        self.assertNotIn("`sample-decided`", ranked)
+
+        golden = next(
+            cells[0].strip("`")
+            for cells in RankedBacklogTests.region_rows((surface / "schemas.md").read_text(encoding="utf-8"))
+            if cells[3].strip("`") == "golden"
+        )
+        (surface / "sample-golden.md").write_text(f"Deleted `{golden}`; neither tree moved.\n")
+        with table.open("a", encoding="utf-8") as handle:
+            handle.write(f"{golden}\t-\tdocs/openapi-surface/sample-golden.md\t{evidence}")
+        self.assertIn(
+            f"docs/openapi-surface/output-insensitive.tsv: {golden}: key/context is also claimed proven",
+            finished_state_failures(self.root),
+        )
+        refused = subprocess.run(restater, capture_output=True, text=True, check=False)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"{golden}: key/context is also claimed proven", refused.stderr)
+        self.assertEqual(text, index.read_text(encoding="utf-8"))
 
     def add_bounded_feature_search(self) -> BoundedFeatureSearch:
         """Add a pending search without depending on a production gap remaining open."""
@@ -18093,6 +18173,42 @@ class NamingWireCensusTests(unittest.TestCase):
                 )
 
 
+def stage_restatement_population(root: Path) -> None:
+    """Give a copied coverage index the inputs `restate-coverage.py` reads beyond the docs.
+
+    Source discovery reads filenames, registrations and golden directories;
+    valid one-line documents supply that filesystem boundary without copying SDKs.
+    """
+    surface = root / "docs/openapi-surface"
+    shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
+    text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+    acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
+    population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
+    registered, golden = map(int, population.groups())
+    fixtures = root / "tests/fixtures"
+    for number in range(registered):
+        directory = fixtures / f"sample-source-{number}"
+        directory.mkdir(parents=True)
+        (directory / "openapi.yml").write_text(
+            "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        if number < golden:
+            (directory / "expected").mkdir()
+    corpus_rows = []
+    for number in range(acquired - registered):
+        name = f"unproven-source-{number}"
+        directory = fixtures / "corpus-sources" / name
+        directory.mkdir(parents=True)
+        (directory / "openapi.yml").write_text(
+            "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+        )
+        corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
+    (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
+    registry = root / "crates/crozier-e2e/tests/e2e.rs"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("", encoding="utf-8")
+
+
 class CoverageRestatementTests(unittest.TestCase):
     """The public restater diagnoses drift, writes it, and refuses missing measurements."""
 
@@ -18108,35 +18224,7 @@ class CoverageRestatementTests(unittest.TestCase):
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
         shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
-        shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
-        # Source discovery reads filenames, registrations and golden directories;
-        # these valid documents supply that filesystem boundary without copying SDKs.
-        text = self.index.read_text(encoding="utf-8")
-        acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
-        population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
-        registered, golden = map(int, population.groups())
-        fixtures = self.root / "tests/fixtures"
-        for number in range(registered):
-            directory = fixtures / f"sample-source-{number}"
-            directory.mkdir(parents=True)
-            (directory / "openapi.yml").write_text(
-                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
-            )
-            if number < golden:
-                (directory / "expected").mkdir()
-        corpus_rows = []
-        for number in range(acquired - registered):
-            name = f"unproven-source-{number}"
-            directory = fixtures / "corpus-sources" / name
-            directory.mkdir(parents=True)
-            (directory / "openapi.yml").write_text(
-                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
-            )
-            corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
-        (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
-        registry = self.root / "crates/crozier-e2e/tests/e2e.rs"
-        registry.parent.mkdir(parents=True)
-        registry.write_text("", encoding="utf-8")
+        stage_restatement_population(self.root)
 
     def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -18749,7 +18837,7 @@ class CoverageRestatementTests(unittest.TestCase):
         for before, after in [
             ("All ", "Every "),
             ranked,
-            ("split four ways", "split ways"),
+            ("split five ways", "split ways"),
             ("carry byte-match evidence", "have matching evidence"),
             ("carry a committed Fern", "have a measurement"),
             ("rest on a hand-written fixture", "have an authored tree"),
@@ -18830,7 +18918,7 @@ class CoverageRestatementTests(unittest.TestCase):
         revised = self.index.read_text(encoding="utf-8")
         self.assertRegex(revised, rf"\*\*{real - 1} carry byte-match evidence")
         self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
-        self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
+        self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
         self.assertEqual(0, self.run_restater().returncode)
 
     def test_ledger_population_must_equal_golden_categories(self) -> None:
@@ -19033,14 +19121,19 @@ class CombinationListTests(unittest.TestCase):
         doc = " ".join((REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8").split())
         stated = re.search(
             r"\*\*Feature combinations are counted apart\.\*\* (\d+) combinations are selected .*?: "
-            r"(\d+) are `golden` and (\d+) are `gap`\.",
+            r"(\d+) are `golden` and (\d+) are `gap`\. (\d+) of the `gap` ones (?:is|are) decided output-insensitive",
             doc,
         )
         self.assertIsNotNone(stated, "the headline no longer counts the combinations on a line of its own")
         assert stated is not None
         categories = Counter(cells[3].strip("`") for _region, cells in combination_rows(REPO).values())
+        records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
+        self.assertEqual([], failures)
+        decided = sum(
+            cells[3].strip("`") == "gap" and (key, "-") in records for key, (_region, cells) in combination_rows(REPO).items()
+        )
         self.assertEqual(
-            [len(census.COMBINATIONS), categories["golden"], categories["gap"]],
+            [len(census.COMBINATIONS), categories["golden"], categories["gap"], decided],
             [int(value) for value in stated.groups()],
         )
         self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))

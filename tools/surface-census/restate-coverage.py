@@ -88,6 +88,25 @@ def reader() -> ModuleType:
     return module
 
 
+def decided_keys(root: Path) -> set[str]:
+    """Keys the shared table decides output-insensitive as a whole (context `-`).
+
+    Such a `gap` row is neither proven nor unproven; any invalid evidence or a
+    key also claimed proven refuses the restatement rather than counting it.
+    """
+    path = Path(__file__).with_name("output-insensitive.py")
+    spec = importlib.util.spec_from_file_location("coverage_output_insensitive", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    records, failures = module.read_records(root)
+    if failures:
+        raise ValueError("; ".join(failures))
+    return {key for key, context in records if context == "-"}
+
+
 def substitute(text: str, pattern: str, replacement: str) -> str:
     """Refuse a changed document layout rather than silently leaving stale totals."""
     result, count = re.subn(pattern, lambda _match: replacement, text, count=1, flags=re.M | re.S)
@@ -131,6 +150,8 @@ def restate(root: Path) -> str:
         f"the {acquired - registered}\n  others carry none and are acquisition evidence only.",
     )
     parser = reader()
+    decided = decided_keys(root)
+    combinations: Counter[str] = Counter()
     entries: dict[str, CategoryRow] = {}
     counts: dict[str, Totals] = {}
     gaps: dict[str, list[str]] = {name: [] for name in SETTLEMENTS}
@@ -145,6 +166,11 @@ def restate(root: Path) -> str:
         rows = parser.region_rows(region_text)
         if len(candidates) != len(rows):
             raise ValueError(f"{name}: malformed category row")
+        for cells in rows:
+            if cells[0].strip("`").startswith(parser.COMBINATION_PREFIX):
+                combinations[cells[3].strip("`")] += 1
+                if cells[3].strip("`") == "gap" and cells[0].strip("`") in decided:
+                    combinations["decided"] += 1
         rows = [row for row in rows if not row[0].strip("`").startswith(parser.COMBINATION_PREFIX)]
         categories = Counter(row[3].strip("`") for row in rows)
         settlements: Counter[str] = Counter()
@@ -175,6 +201,12 @@ def restate(root: Path) -> str:
         text, r"^\| \*\*total\*\* \|[^\n]+$", "| **total** | " + " | ".join(f"**{n}**" for n in totals) + " |"
     )
     total, golden, limitations, handwritten, gap, fixture, probe, unreachable = totals
+    # A `gap` row the shared table decides at `-` leaves the unproven and
+    # committed-proof counts for its own; its region tallies keep the category.
+    settled = {key for key, entry in entries.items() if entry.category == "gap" and key in decided}
+    fixture -= len(settled & set(gaps["FIXTURE"]))
+    unreachable_open = unreachable - len(settled & set(gaps["UNREACHABLE"]))
+    gaps["FIXTURE"] = [key for key in gaps["FIXTURE"] if key not in settled]
     text = substitute(
         text,
         r"The walk enumerated \*\*\d+\*\* features.*?`UNREACHABLE`\.",
@@ -370,14 +402,14 @@ def restate(root: Path) -> str:
         text = substitute(text, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + table + "\n")
     no_witness = len(witnessless)
     real = golden - len(residual) - no_witness - len(supplemental)
-    proof = limitations + unreachable
+    proof = limitations + unreachable_open
     unproven = fixture + len(residual) + no_witness
     text = substitute(
         text,
         r"The walk enumerates \d+ features\. By category,.*?`gap`\.",
         f"The walk enumerates {total} features. By category, {golden} are `golden`, {limitations}\n`limitations`, {handwritten} `handwritten` and {gap} `gap`.",
     )
-    text = substitute(text, r"those \d+\nsplit four ways", f"those {total}\nsplit four ways")
+    text = substitute(text, r"those \d+\nsplit five ways", f"those {total}\nsplit five ways")
     text = substitute(text, r"\*\*\d+ carry byte-match evidence", f"**{real} carry byte-match evidence")
     text = substitute(text, r"\*\*\d+ carry a committed Fern", f"**{proof} carry a committed Fern")
     text = substitute(text, r"\*\*\d+ rest on a hand-written fixture", f"**{weak} rest on a hand-written fixture")
@@ -395,12 +427,41 @@ def restate(root: Path) -> str:
         f"The other {no_witness} are `golden` rows declared only by corpus rows that carry no golden "
         "([the list](#golden-rows-with-no-golden-only-witness))."
     )
+    settled_keys = ", ".join(f"`{key}`" for key in sorted(settled))
+    decided_text = (
+        f"- **{len(settled)} {'is' if len(settled) == 1 else 'are'} decided output-insensitive.** "
+        "Deleting the feature leaves both generators' complete trees byte-identical, as "
+        "[the shared table](openapi-surface/output-insensitive.tsv) records for the whole key; "
+        "such a `gap` row is neither proven nor unproven"
+        + (f": {settled_keys}." if settled else ".")
+    )
+    fill = {"width": 88, "subsequent_indent": "  ", "break_long_words": False, "break_on_hyphens": False}
+    text = substitute(
+        text,
+        r"- \*\*\d+ (?:is|are) decided output-insensitive\.\*\*.*?(?=\n- \*\*\d+ remain unproven)",
+        textwrap.fill(decided_text, **fill),
+    )
     text = substitute(
         text,
         r"- \*\*\d+ remain unproven\.\*\*.*?(?=\n\n\d+ \+)",
-        textwrap.fill(remainder, width=88, subsequent_indent="  ", break_long_words=False, break_on_hyphens=False),
+        textwrap.fill(remainder, **fill),
     )
-    text = substitute(text, r"^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\.$", f"{real} + {proof} + {weak} + {unproven} = {total}.")
+    text = substitute(
+        text,
+        r"^\d+ \+ \d+ \+ \d+ \+ \d+ \+ \d+ = \d+\.$",
+        f"{real} + {proof} + {weak} + {len(settled)} + {unproven} = {total}.",
+    )
+    text = substitute(
+        text,
+        r"\*\*Feature combinations are counted apart\.\*\*.*?(?=\n\n)",
+        f"**Feature combinations are counted apart.** {sum(combinations[c] for c in parser.CATEGORIES)} "
+        "combinations are selected\n([the list](openapi-surface/combinations.md)): "
+        f"{combinations['golden']} are `golden` and {combinations['gap']} are `gap`.\n"
+        f"{combinations['decided']} of the `gap` ones {'is' if combinations['decided'] == 1 else 'are'} decided "
+        "output-insensitive in\n[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor "
+        f"unproven.\nNone is among the {total} features above, and each other `gap` one is named under\n"
+        "[Unproven combinations, named](#unproven-combinations-named).",
+    )
     text = substitute(
         text,
         r"(\*\*What the `gap` count means\.\*\*).*?(?=\n### Reconciliation)",

@@ -27,7 +27,7 @@ The walk enumerates 721 features. By category, 503 are `golden`, 56
 `limitations`, 148 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 721
-split four ways:
+split five ways:
 
 - **502 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
@@ -105,6 +105,10 @@ split four ways:
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   502 and never count as a real-specification match.
+- **0 are decided output-insensitive.** Deleting the feature leaves both generators'
+  complete trees byte-identical, as [the shared
+  table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
+  row is neither proven nor unproven.
 - **0 remain unproven.** 0 are the `FIXTURE` `gap` rows. Their outstanding evidence is
   recorded in [Unproven features, named](#unproven-features-named). 0 are `golden` rows
   resting only on residual goldens whose code moves no byte-matched file:  ([the
@@ -112,11 +116,13 @@ split four ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-502 + 70 + 149 + 0 = 721.
+502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
 ([the list](openapi-surface/combinations.md)): 85 are `golden` and 6 are `gap`.
-None is among the 721 features above, and each `gap` one is named under
+0 of the `gap` ones are decided output-insensitive in
+[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
+None is among the 721 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
@@ -2328,8 +2334,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 275 sources. The walk reads the
-  **258** registered sources, of which **258** carry a committed golden; the 17
+  acquires 277 sources. The walk reads the
+  **260** registered sources, of which **260** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -3324,7 +3330,7 @@ before, left it that way: the reach ledger re-measured over corpus row 308,
 | key | unreached arm | why it is unproven |
 |---|---|---|
 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv) |
-| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv) |
+| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | `search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv) |
 | `property-map-value-enum` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `not searched` — no arm search has run |
 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `not searched` — no arm search has run |
 | `property-map-value-struct` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `not searched` — no arm search has run |
