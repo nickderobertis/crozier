@@ -2233,6 +2233,11 @@ class ProbeRecording(unittest.TestCase):
             self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
 
 
+# Seconds the compiler-timeout case allows the whole evaluation: enough for the
+# real venv setup on a loaded host, so the timeout lands on the compiler.
+COMPILER_TIMEOUT_BUDGET = 30
+
+
 @unittest.skipIf(os.name == "nt", "the package-tool and compiler doubles are POSIX shell scripts")
 class SdkEvaluationDriverTests(unittest.TestCase):
     """The native driver sequences real child processes and installed-file inspection offline."""
@@ -2383,12 +2388,16 @@ class SdkEvaluationDriverTests(unittest.TestCase):
                 if mode == "compiler-unexecutable":
                     self.compiler.chmod(0o644)
                 try:
-                    result, _ = self.evaluate(mode, mode, receipt, timeout=1 if mode == "compiler-timeout" else 120)
+                    # The budget covers every stage, so it must outlast the venv setup
+                    # before the compiler; the compiler double then blocks until killed.
+                    result, _ = self.evaluate(mode, mode, receipt, timeout=COMPILER_TIMEOUT_BUDGET)
                 finally:
                     self.compiler.chmod(0o755)
                 self.assertEqual(1, result.returncode)
                 self.assertIn("default_generation could not run", result.stderr)
                 self.assertIn("timed out" if mode == "compiler-timeout" else "Permission denied", result.stderr)
+                if mode == "compiler-timeout":
+                    self.assertEqual("default_generation", self.calls.read_text().splitlines()[-1])
                 self.assertEqual("previous receipt\n", receipt.read_text())
                 self.assert_receipt_recovery(receipt, mode + "-recovered")
 
