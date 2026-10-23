@@ -2730,12 +2730,28 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
             "const",
         ),
         (
+            "shelf-labels-map-variants",
+            "docs/openapi-surface/handwritten/shelf-labels-map-variants/openapi.yml",
+            "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected",
+            "remaining-examples/shelf-labels-map-variants-control",
+            "/paths/~1labels/put/requestBody/content/application~1json/schema/properties/labels/additionalProperties",
+            "oneOf",
+        ),
+        (
             "panoptes",
             "tests/fixtures/corpus-sources/panoptes/openapi.yaml",
             "tests/fixtures/panoptes/expected",
             "remaining-examples/panoptes-no-struct-map-value",
             "/paths/~1datasets~1{dataset_name}~1search/post/requestBody/content/application~1json/schema/properties/facets/additionalProperties",
             "properties",
+        ),
+        (
+            "fletch-mcp",
+            "tests/fixtures/corpus-sources/fletch-mcp/openapi.json",
+            "tests/fixtures/fletch-mcp/expected",
+            "remaining-examples/fletch-mcp-no-enum-map-value",
+            "/paths/~1tokens~1{address}/get/responses/200/content/application~1json/schema/properties/reading/anyOf/0/properties/robinhoodApp/properties/pairs/items/properties/tradability_by_account_type/additionalProperties",
+            "enum",
         ),
         (
             "formbricks",
@@ -9563,6 +9579,7 @@ const CORPORA: &[&Corpus] = &[
     &ONMYSHELF_API,
     &FORMBRICKS,
     &PANOPTES,
+    &FLETCH_MCP,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12491,6 +12508,18 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3003: the publisher's responses map account types to an inline string enum.
+const FLETCH_MCP: Corpus = Corpus {
+    api: "fletch-mcp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// Corpus row 3002: the publisher's request bodies map field names to inline structs.
 const PANOPTES: Corpus = Corpus {
     api: "panoptes",
@@ -13372,6 +13401,11 @@ fn rta_in_japan_twitter_matches_fern_output() {
 #[test]
 fn panoptes_matches_fern_output() {
     assert_committed_corpus_matches(&PANOPTES);
+}
+
+#[test]
+fn fletch_mcp_matches_fern_output() {
+    assert_committed_corpus_matches(&FLETCH_MCP);
 }
 
 #[test]

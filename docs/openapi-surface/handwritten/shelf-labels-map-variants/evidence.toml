@@ -1,0 +1,10 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "7d69c8fb6d193d11376de2f33cfbd6ca23fec8200c5eef4e1fcf714a4a028286"
+
+[[covers]]
+key = "property-map-value-oneof"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]'
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"

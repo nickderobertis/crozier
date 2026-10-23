@@ -618,6 +618,43 @@ them means extending the census's licence tiering to documents it never tiered,
 which is census work rather than screening work — for `types.enum.member.float`
 alone that is 351 documents.
 
+
+### A same-property nested union keeps Fern's wrapped wire — a suspected defect, not yet shown failing
+
+Measured at Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 on corpus row
+3001, `formbricks`. crozier byte-matches the golden, so it carries the same
+behaviour. Nothing yet demonstrates a failure at runtime, so this is no
+[departure](departures/README.md). It is recorded here until one is shown.
+
+`conditionGroup`'s `rightOperand` is an `anyOf` of a `static` object and a second
+`anyOf` of three objects: `element`, `variable` and `hiddenField`. All of them
+are tagged by the same `type` property and own a `value` field. Fern infers a
+discriminated union on `type` and names the second member after its last tag. The
+golden's
+[`condition_group_conditions_item_zero_right_operand.py`](../tests/fixtures/formbricks/expected/src/fern/types/condition_group_conditions_item_zero_right_operand.py)
+holds `_Static` and `_HiddenField`, where `_HiddenField.value` is the inner
+three-way union, under `pydantic.Field(discriminator="type")`. The schema's wire
+form is flat, for example `{"type": "element", "value": "x", "meta": {}}`.
+
+- **Send.** `_HiddenField(value=…Element(type="element", value="x"))` serializes
+  as `{"type": "hiddenField", "value": {"type": "element", "value": "x"}}`. Its
+  outer `value` is an object where every member of the inner `anyOf` requires a
+  string, so the payload fails the document's own schema.
+- **Read.** Pydantic dispatches on the outer `type` before any member validator
+  runs. A flat `element` or `variable` payload names a tag the outer union does
+  not list, so it is rejected. A flat `hiddenField` payload selects `_HiddenField`,
+  whose `value` must then be the inner model, not the string the schema sends.
+
+The [`nested-discriminator-flat-wire`](departures/README.md#nested-discriminator-flat-wire)
+repair does not transfer. That repair keys flat detection on the outer tag and
+writes the outer tag over the inner fields. Here the inner variants carry the
+same `type` property, with tags the outer union lacks, and their own `value`, so
+reusing it would overwrite `element` with `hiddenField` on send. It also could not
+tell a flat payload from a wrapped one on read. A correct repair needs a change to
+the public outer alias or a second, same-property adapter. Both are follow-up
+work, and its first step is a runtime demonstration against a schema-validating
+stub.
+
 ## Measurement caveats that outlive this round
 
 ### Witness count and witness *independence* are different measures

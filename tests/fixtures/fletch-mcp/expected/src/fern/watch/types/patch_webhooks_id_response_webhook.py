@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .patch_webhooks_id_response_webhook_created_at import PatchWebhooksIdResponseWebhookCreatedAt
+from .patch_webhooks_id_response_webhook_one import PatchWebhooksIdResponseWebhookOne
+
+PatchWebhooksIdResponseWebhook = typing.Union[
+    PatchWebhooksIdResponseWebhookCreatedAt, PatchWebhooksIdResponseWebhookOne
+]

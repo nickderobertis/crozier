@@ -110,6 +110,9 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 |---|---|---|---|
 | `discriminator-mapping` | `search-incomplete` | 899 | outstanding: screen and parity/reach review not complete |
 | `oneof-string-const-variant` | `search-incomplete` | 70 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `compass-choice` fixture |
+| `property-map-value-enum` | `search-incomplete` | 106 | registered: corpus row 3003, `fletch-mcp`; complete certified-pair SDK byte-match, arm reach measured ([map-value search](#map-value-branch-search)) |
+| `property-map-value-oneof` | `search-incomplete` | 83 | no admissible real document reaches the arm and byte-matches at the certified pair ([map-value search](#map-value-branch-search)); admitted lower-proof `shelf-labels-map-variants` fixture covering `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` |
+| `property-map-value-struct` | `search-incomplete` | 304 | registered: corpus row 3002, `panoptes`; complete certified-pair SDK byte-match, arm reach measured ([map-value search](#map-value-branch-search)) |
 | `operation-id-digit-leading-method` | `search-incomplete` | 97 | registered: corpus row 3000, `onmyshelf-api`; complete certified-pair SDK byte-match |
 | `schema-example-array-null-element` | `search-incomplete` | 41 | no admissible real document both generates at the certified pair and moves output ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `lunar-null-labels` fixture |
 | `schema-example-empty-object` | `search-incomplete` | 171 | arm decided output-insensitive ([attribution](#empty-object-arm-attribution)); no real declarer moves output |
@@ -142,6 +145,7 @@ only if no real witness can be registered.
 | `schema-example-array-null-element` | `search-incomplete` | none-registrable |
 | `schema-example-outside-enum` | `search-incomplete` | none-registrable |
 | `oneof-string-const-variant` | `search-incomplete` | none-registrable |
+| `property-map-value-oneof` | `search-incomplete` | none-registrable |
 
 ## Null-example attribution preflight
 
@@ -388,3 +392,81 @@ files, `reference.md` and `src/fern/management_api_responses/client.py`, in
 Fern's complete tree and in crozier's; the two comparison records sit beside the
 documents, and `remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives`
 re-checks that motion through the binary.
+
+## Map-value branch search
+
+`src/ir.rs::InlineHoister::prop_type_ref`'s operation-scoped map branch lowers a
+structured, unreferenced `additionalProperties` value through the component
+builder. The census reads it as four features, cases 19a to 19d:
+`property-map-value-enum`, `-struct`, `-oneof` and `-anyof`. `formbricks`
+(corpus row 3001) already reaches the branch for `-anyof`. This search covers the
+other three.
+
+**Population.** The same cached pools as [the search](#the-search): APIs.guru at
+`f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`, and the GitHub code-search and
+Sourcegraph acquisitions. That is 12,713 distinct documents, read from the
+shared cache with no new document fetched. Of them, 449 declare at least one of
+the three keys' census selectors. An instrumented crozier build ran over each
+declarer alone. On 51 of them it executes the branch (17 of its 18 regions),
+and those 51 are the candidates. The 106, 304 and 83 declarers in the verdict
+table count documents per key; one document can declare several.
+Licence and grant reads went through `tools/witness-search/rate_limit_guard.py`
+and the shared response cache under `~/.cache/crozier/`. Every crozier run was
+offline under `tests/corpus_match/corpus_offline_test.py`'s `deny_network`. Every
+Fern run held the shared generation lock at CLI 5.163.1 and
+`fernapi/fern-python-sdk` 5.41.3. Whole-tree comparisons used the public
+`crozier compare` in normal and `fern-strict` mode.
+
+[`map-value-bounds.tsv`](map-value-bounds.tsv) lists every candidate, one row per
+distinct source digest: which keys it declares, what crozier does with its
+original bytes, the branch regions executed, its licence and provenance outcome,
+its Fern baseline where one was run, and the whole-tree comparison.
+
+- **`property-map-value-struct`** is witnessed by corpus row 3002, `panoptes`,
+  the KNAW Humanities Cluster's own `docs/openapi.yaml` (GPL-3.0). Its request
+  bodies map facet names to inline structs. Crozier byte-matches its complete
+  certified-pair tree. The control
+  `remaining-examples/panoptes-no-struct-map-value` deletes only the `properties`
+  of the `search` body's `facets` map value. That changes the same files in
+  Fern's complete tree and in crozier's.
+- **`property-map-value-enum`** is witnessed by corpus row 3003, `fletch-mcp`,
+  Fletch's own `docs/openapi-2026-09-13.json` (MIT). Its responses map account
+  types to an inline string enum (`tradability_by_account_type`). Crozier
+  byte-matches its complete tree once a map value whose `type` list names
+  `null` is typed `Optional`, as Fern types it. The control
+  `remaining-examples/fletch-mcp-no-enum-map-value` deletes only one value's
+  `enum`, a single byte range of the original. That moves the same five files in
+  both generators. `OpenRecruiterTools/linkedin-toolkit` also byte-matches; one
+  witness is enough.
+- **`property-map-value-oneof`** has no registrable real witness in this
+  population. Eleven candidates declare it.
+  - Four are not admissible: `lobehub` at two revisions and `recallnet/js-recall`
+    fail the licence screen, and `Lap-Platform/LAP`'s copy of Vercel's
+    definition is not the publisher's.
+  - The `ballerina-platform/openapi-tools` document is a copy of Vercel's
+    definition among a generator's test resources, not a publisher service
+    source.
+  - Crozier refuses `christophhart/HISE`, and its pinned commit grants nothing.
+  - Fern refuses `getchat-dev/node-sdk`.
+  - The four that generate in both are admissible: `mishrasanjeev/grantex`,
+    `crate-works/ro-crate-api`, APIs.guru's `journy.io` and APIs.guru's
+    `vercel.com`. Each still differs from Fern's tree, for reasons
+    outside this branch, which the bounds table names.
+
+  The renewed outcome is `none-registrable`, so the hand-written fixture
+  `shelf-labels-map-variants` is admitted as lower proof. It is a request
+  body's `labels` map whose value is an inline `oneOf` of a string and an
+  integer. Crozier byte-matches Fern's complete tree in normal and strict mode.
+  The control `remaining-examples/shelf-labels-map-variants-control` deletes only
+  that value's `oneOf`, and both generators then change the same five entries.
+
+`remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives` in
+`crates/crozier-e2e/tests/e2e.rs` re-checks all three controls through the binary.
+Each other mismatching candidate is recorded as a follow-up for its own root
+cause. Only Vercel's residual touches a map value, its `items` map of a `oneOf`
+whose first member is itself a `oneOf` with a `null` alternative. Fern types that
+member `Optional` and drops the `null`; crozier keeps a plain union holding
+`typing.Any`. Crozier lowers the same shape identically when it sits in a
+component schema, so the cause is the shared nested-union lowering, not the
+operation-scoped branch this search proves.
+

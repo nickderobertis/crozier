@@ -328,6 +328,7 @@ inventory=(
   onmyshelf_api_matches_fern_output
   formbricks_matches_fern_output
   panoptes_matches_fern_output
+  fletch_mcp_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"
