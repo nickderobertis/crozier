@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.132](https://github.com/nickderobertis/crozier/compare/v0.0.131...v0.0.132) - 2026-10-24
+
+### Fixed
+
+- *(parity)* prove the parameter feature combinations ([#578](https://github.com/nickderobertis/crozier/pull/578))
+
 ## [0.0.131](https://github.com/nickderobertis/crozier/compare/v0.0.130...v0.0.131) - 2026-10-24
 
 ### Fixed
