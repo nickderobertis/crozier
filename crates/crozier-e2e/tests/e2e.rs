@@ -2906,6 +2906,7 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
     let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
@@ -19989,6 +19990,7 @@ fn rgb_lightning_node_matches_fern_output() {
     assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
 }
 
+#[cfg(unix)]
 #[test]
 fn rgb_example_departures_reject_an_adjacent_unexplained_value() {
     let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
