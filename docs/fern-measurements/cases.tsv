@@ -146,6 +146,7 @@ parameter-lowering/base-path-object-literal	docs/fern-measurements/parameter-low
 parameter-lowering/base-path-string	docs/fern-measurements/parameter-lowering/base-path-string/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-templated-string	docs/fern-measurements/parameter-lowering/base-path-templated-string/openapi.yml	python-enums	packaged	-
 schema-shapes/adme-seismic-shapes	docs/fern-measurements/schema-shapes/adme-seismic-shapes/openapi.yml	python-enums	packaged	-
+schema-shapes/pottery-studio-shapes	docs/fern-measurements/schema-shapes/pottery-studio-shapes/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-default-constants	docs/fern-measurements/parameter-lowering/header-default-constants/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-default-literal	docs/fern-measurements/parameter-lowering/header-default-literal/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-defaults-managed	docs/fern-measurements/parameter-lowering/header-defaults-managed/openapi.yml	python-enums	packaged	-

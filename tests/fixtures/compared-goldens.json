@@ -370,6 +370,7 @@
     "docs/fern-measurements/schema-shapes/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [

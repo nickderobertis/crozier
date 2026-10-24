@@ -86,6 +86,14 @@ mod real_witnesses;
 mod adme_seismic_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The model and union shapes the `models-unions-refs` removal controls first
+/// showed crozier departing from the certified pair on, over one minimal
+/// document Fern generated a complete tree from.
+#[path = "e2e/pottery_studio_shapes.rs"]
+mod pottery_studio_shapes;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -20010,18 +20018,18 @@ fn ahasend_api_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison uses the existing corpus golden gate and inventory, as its adjacent witnesses do; splitting that shared Nx family is the recorded follow-up rather than part of this example proof.
-#[test]
-fn rgb_lightning_node_matches_fern_output() {
-    assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
-}
-
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
 #[test]
 fn rapidata_identity_matches_fern_output() {
     assert_committed_corpus_matches(&RAPIDATA_IDENTITY);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison uses the existing corpus golden gate and inventory, as its adjacent witnesses do; splitting that shared Nx family is the recorded follow-up rather than part of this example proof.
+#[test]
+fn rgb_lightning_node_matches_fern_output() {
+    assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
+}
 
 #[cfg(unix)]
 #[test]

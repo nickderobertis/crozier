@@ -52,36 +52,12 @@ diagnostic; none is counted as a zero.
 
 ### The detectors
 
-Each detector is exactly its census conjunction (`&` same anchor, `>` object
-edge, `~>` local reference), as declared in
-`tools/surface-census/openapi-surface-census.py`.
-
-| key | detector |
-|---|---|
-| `combo-allof-deprecated` | `schema.allOf&schema.deprecated` |
-| `combo-allof-nullable` | `schema.allOf&schema.nullable` |
-| `combo-allof-nullable-member` | `schema.allOf>schema.nullable` |
-| `combo-allof-oneof-member` | `schema.allOf>schema.oneOf` |
-| `combo-allof-ref-scalar-default` | `schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar` |
-| `combo-allof-with-required` | `schema.allOf&schema.required` |
-| `combo-annotated-ref-to-nullable-target` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable` |
-| `combo-anyof-beside-discriminator` | `schema.anyOf&schema.discriminator` |
-| `combo-anyof-beside-properties` | `schema.anyOf&schema.properties:non-empty` |
-| `combo-array-item-anyof-titled-member` | `schema.items>schema.anyOf>schema.title` |
-| `combo-array-item-oneof-titled-member` | `schema.items>schema.oneOf>schema.title` |
-| `combo-array-of-nullable-unknown-item` | `schema.items>!schema.type&schema.nullable` |
-| `combo-discriminated-inline-members` | `schema.discriminator&schema.oneOf>!schema.$ref` |
-| `combo-map-beside-anyof` | `schema.additionalProperties&schema.anyOf` |
-| `combo-map-beside-oneof` | `schema.additionalProperties&schema.oneOf` |
-| `combo-map-of-anyof` | `schema.additionalProperties>schema.anyOf` |
-| `combo-map-of-discriminated-union` | `schema.additionalProperties>schema.oneOf:discriminated-union` |
-| `combo-map-of-nullable-values` | `schema.additionalProperties>schema.nullable` |
-| `combo-map-of-oneof` | `schema.additionalProperties>schema.oneOf` |
-| `combo-nullable-map` | `schema.additionalProperties&schema.nullable` |
-| `combo-oneof-beside-properties` | `schema.oneOf&schema.properties:non-empty` |
-| `combo-properties-beside-additional-properties` | `schema.additionalProperties&schema.properties:non-empty` |
-| `combo-property-ref-to-nullable-target` | `schema.properties>schema.$ref~>schema.nullable` |
-| `combo-property-ref-to-read-only-target` | `schema.properties>schema.$ref~>schema.readOnly` |
+Each key's detector is exactly its census conjunction: the `selector` cell of
+its row in [`witness-search-keys.tsv`](../witness-search-keys.tsv), which the
+census declares in `COMBINATIONS` and the combination-list drift test holds to
+[combinations.md](../combinations.md). The search fed those rows to the
+evaluator verbatim; no selector is restated here. In them `&` joins conditions
+at one anchor, `>` follows an object edge and `~>` resolves a local reference.
 
 ### Reproducing the enumeration
 
@@ -293,6 +269,15 @@ tree was edited and no departure was catalogued.
    without a written discriminator (`Builder::discriminated_union`,
    `Builder::field_type_ref`), and the description beside the one-member union
    is lost. The glaze-batch document shows this.
+
+Every repair is also driven end to end through the real binary. The
+corpus golden of row 3300 covers repairs 3 and 5. One minimal from-scratch
+document carries the rest:
+[`pottery-studio-shapes`](../../fern-measurements/schema-shapes/pottery-studio-shapes/openapi.yml).
+Its complete certified-pair tree is committed beside it. Its journeys in
+`crates/crozier-e2e/tests/e2e/pottery_studio_shapes.rs` hold crozier's whole SDK
+to that tree. Each journey shows that crozier's former spelling of its line
+fails the comparison.
 
 These ablations exposed three further differences, recorded as drafted
 follow-ups because no proof here rests on them:
