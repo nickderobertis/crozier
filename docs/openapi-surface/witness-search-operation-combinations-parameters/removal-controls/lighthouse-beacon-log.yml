@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse beacon log
+  version: 1.0.0
+  description: Records the lamp checks a keeper makes on each coastal beacon.
+servers:
+  - url: https://beacons.example.org
+paths:
+  /beacons/{beaconCode}:
+    get:
+      operationId: getBeacon
+      tags: [beacons]
+      summary: Read one beacon's latest lamp check.
+      parameters:
+        - name: beaconCode
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/BeaconCode'
+      responses:
+        '200':
+          description: The beacon.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+  /beacons:
+    get:
+      operationId: listBeacons
+      tags: [beacons]
+      summary: List beacons showing any of the given lamp colours.
+      parameters:
+        - name: colours
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+            default: [amber, red]
+        - name: coast
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The matching beacons.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beacon'
+components:
+  schemas:
+    BeaconCode:
+      type: string
+      description: Three capital letters, a dash and two digits.
+      pattern: '^[A-Z]{3}-[0-9]{2}$'
+    Beacon:
+      type: object
+      required: [code, colour]
+      properties:
+        code:
+          $ref: '#/components/schemas/BeaconCode'
+        colour:
+          type: string
+        lastChecked:
+          type: string
+          format: date-time

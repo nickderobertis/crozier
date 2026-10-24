@@ -1,0 +1,1296 @@
+[
+ {
+  "key": "combo-query-param-oneof",
+  "fixture": "helios-verifiable-api",
+  "removed": "oneOf",
+  "edits": [
+   {
+    "pointer": "/paths/~1eth~1v1~1proof~1logs/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `oneOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 96,
+   "after_files": 95,
+   "changed": {
+    "reference.md": {
+     "before": "be346f50bf40ec81e2c1aa1414db96f7ec46ff07a13f75eaedff99d6fd713767",
+     "after": "38a9b708936f027e8e40209565f2f7c19e2c569b96ce3b9eb1a22534e90aa189"
+    },
+    "src/fern/__init__.py": {
+     "before": "01f4714c3be8f6022433bc5d67737a3639f99601fbbe949852c7ab9818287e5d",
+     "after": "f9c2b706bebd5e361d96cf3b1bc78e179f2f55cb8cf55b8778b844f422f38083"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "159580c73202505152ffaeeaade7a809caaa02ed36fadde5c69202ccaddc137f",
+     "after": "af99db93ef2d90678dce936104dc4ecffc5a4e1ab69833357eb16aa6cf3aa4ca"
+    },
+    "src/fern/types/get_eth_v1proof_logs_request_address.py": {
+     "before": "e37a6f47fa25669bef8a4dc805b6453b28449df609e605fe9fd6bda5bddf5b65",
+     "after": null
+    },
+    "src/fern/verifiable/client.py": {
+     "before": "b5d1656182bc4656c4f6932f82b633270fdddd0f0359e88612cb46784af2b67c",
+     "after": "e3251a3c3d4436d42d9625128372d0174a218c5d3485124e20b68d82da6b106c"
+    },
+    "src/fern/verifiable/raw_client.py": {
+     "before": "e2db2adc7d4e7c047f54e2905492019811893933ace81c117ab3b67e9ddb71db",
+     "after": "22f67395b1c7efab00d09cb4c1cee3a1dd23b10364756f18632d689bc0b7c2d5"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 96,
+   "after_files": 95,
+   "changed": {
+    "reference.md": {
+     "before": "be346f50bf40ec81e2c1aa1414db96f7ec46ff07a13f75eaedff99d6fd713767",
+     "after": "38a9b708936f027e8e40209565f2f7c19e2c569b96ce3b9eb1a22534e90aa189"
+    },
+    "src/fern/__init__.py": {
+     "before": "852a133efe1725d63c998bc9d737f2921f063ea54455a1caf72cb0724f6fe365",
+     "after": "06487e9e28f1cecfbeb4ad613e5b85a33a27299e32bac7c867bdc1ca1463bc42"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "8e4781327f9d3dd683a80ee41f405824c9bfdacd506f2cbbf8b78274fa74cec9",
+     "after": "6a20957b3b812319641960a3949cfbd9e98980972508c731606f57148d43d6ac"
+    },
+    "src/fern/types/get_eth_v1proof_logs_request_address.py": {
+     "before": "c2af1876b87195c19377dcd0a2d7bd5920705f58db1fb2c05244e2be4c46053c",
+     "after": null
+    },
+    "src/fern/verifiable/client.py": {
+     "before": "2273da8064c89d9d438c795b2f942ec99f819e2a77711e1cb6cf1e6f5d98708c",
+     "after": "fc6bada66e93059b281279abf34a1cf331920cc0d22c431fba1a2a7c5311479b"
+    },
+    "src/fern/verifiable/raw_client.py": {
+     "before": "b89a0b624c5e12fbe73d3f8d5a0b46c1f1b367e58567280f1aac53454de308b2",
+     "after": "da96bc70e6db47e20f34d8d8b8fe852e9a595b28f3d68d260bf81bc1b955d113"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 95
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-anyof",
+  "fixture": "openfoodfacts-taxonomy-editor",
+  "removed": "anyOf",
+  "edits": [
+   {
+    "pointer": "/paths/~1{taxonomy_name}~1{branch}~1set-project-status/get/parameters/2/schema",
+    "edit": "removed the parameter schema's `anyOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "reference.md": {
+     "before": "8d3091aeef04d802fd50da7ea185e57887261c431e0479697c17e45566346913",
+     "after": "c42fb464bca9ae9628016e8c7fb9d0c83c89fe19501a57ed4d2ed69f342aec43"
+    },
+    "src/fern/client.py": {
+     "before": "0bab38abd39fda1ba7872a41c8945251d71a3ce04a4edc8ac535df8309bfb3eb",
+     "after": "078a16077169a68cfb1640e4e9fcb23b6ab8ca80fe1024629b476b717b65a6a7"
+    },
+    "src/fern/raw_client.py": {
+     "before": "6f5b02af78dc94f2a0520a9ec9b4bac7cb74b8d732f37e3fce12a7a157c98837",
+     "after": "f45d19d45233284562665210d7ea76218f066d808d03feea34ac15e79df48fb3"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "reference.md": {
+     "before": "8d3091aeef04d802fd50da7ea185e57887261c431e0479697c17e45566346913",
+     "after": "c42fb464bca9ae9628016e8c7fb9d0c83c89fe19501a57ed4d2ed69f342aec43"
+    },
+    "src/fern/client.py": {
+     "before": "c77c87e8d14f2589888462cdddbab5735c8207a4c21c7f1dceda2152629ebbf7",
+     "after": "56a14523c56bfea03b0816395baee2f4dc0dbffa389b1905c2d4f26f0036e127"
+    },
+    "src/fern/raw_client.py": {
+     "before": "f7e6b9f8ea9dc58539de7683a7f0a140f2a40a98aaebed6d02d4bc95c837da90",
+     "after": "a8cb960825184cf97bbdb755227ae8f6152e089b820e0547d2d8b05273937e8d"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 61
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-ref-string-enum",
+  "fixture": "color.pizza",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/paths/~1/parameters/0/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1names~1/parameters/1/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 56,
+   "after_files": 56,
+   "changed": {
+    "reference.md": {
+     "before": "9c92c1c638238c8d88b5efa334ae43569a097cbfe4f16e53ab10158f67bf3903",
+     "after": "ddcafc71e7f7d7fd17955e764b54ea755fd2ec01ca887212dda33477f0df6e3e"
+    },
+    "src/fern/client.py": {
+     "before": "8d75e06321828e1bc646a2c0e9e1a91ff23eba5a662ff2318aa37b7767f389fe",
+     "after": "f6ada7d118623d7d139cc121272ed73e9924b21845c086b7a0d8eaba976bf556"
+    },
+    "src/fern/raw_client.py": {
+     "before": "a7c8dcd3d78f13384a39ed55c7ce106d2bde36fc0a548c048d15ea625390942d",
+     "after": "1aafe209c6837b7fc6f481ac42cbeb9d45e1137c2d0880027daf985bdf2de3f4"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 56,
+   "after_files": 56,
+   "changed": {
+    "reference.md": {
+     "before": "9c92c1c638238c8d88b5efa334ae43569a097cbfe4f16e53ab10158f67bf3903",
+     "after": "ddcafc71e7f7d7fd17955e764b54ea755fd2ec01ca887212dda33477f0df6e3e"
+    },
+    "src/fern/client.py": {
+     "before": "fb43710c134e2d9bda79dc330de94c5cfa9401bf5ded34276612f7cb9b056172",
+     "after": "02d289dcd48843dabd79b471db7ef5b9fb51dc060e6db8d3c8d0e3de2e2a4798"
+    },
+    "src/fern/raw_client.py": {
+     "before": "b0b46109c19299e26c8f868b0e09ae8eac0c1b0f62793b0e62efc8a28e7766c4",
+     "after": "c1d507c3850f3323b3bce4009f188a95f5ee105a295a35a1fa4c2bdfc9b9ce3d"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 56
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-header-param-ref-string-enum",
+  "fixture": "ecommerce-ai-skills-runtime",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1evidence-imports/post/parameters/1/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1v1~1evidence-imports/post/parameters/2/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 307,
+   "after_files": 307,
+   "changed": {
+    "reference.md": {
+     "before": "84dc3ef56f2278cfdf782a2ccbf87ad495d666c1a24e98347738a6f6395732a3",
+     "after": "f8b42396db6db1f7745590cf6dac3bc24f9e6f337be68ec7054d3ca06072dee4"
+    },
+    "src/fern/client.py": {
+     "before": "de267636450fcae3f892ede1d24fe51d8202f01a33fb3f7c9b5cdf216e6cd0ff",
+     "after": "53cb1be24cb017926325ea4a09970bdea88fec73851597750d88d87dc0318ef6"
+    },
+    "src/fern/raw_client.py": {
+     "before": "bf072c196bea009f2d6d3409c5f940638b51c0ef2426cf54a11ddef2c6dff1b7",
+     "after": "282a17430fe53b07150f1f9869a0fd4f40085c9197a527654adc6d71330de498"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 307,
+   "after_files": 307,
+   "changed": {
+    "reference.md": {
+     "before": "2b4c726e361ff4b87358e14b6ac3c2ed990a4104dbf9556513ff291327e96c96",
+     "after": "582ff5ed03e5bb1d39a22bf79b8d6331ecaffc4b2e02a4e9c7cf37b7f186cca8"
+    },
+    "src/fern/client.py": {
+     "before": "3234e3d35d8daf63fed3eeecb900bf6f638a3ed4e5903a88fca278c405d38ff3",
+     "after": "34ce2ad5ef4659e9ca42ed33a08429941eab3bc93497b3f9d92571036e27517b"
+    },
+    "src/fern/raw_client.py": {
+     "before": "25c3b41eabe8f23a78e19d7012546cd963d67390425fa93055a2820c485fa977",
+     "after": "e851da81aa042ae59a1faf654b7e907550fe9d9d9812199342a71094ea0718b3"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 307
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-path-param-ref-string-enum",
+  "fixture": "ramu-shogi",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1user~1settings~1{documentKey}/get/parameters/0/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1api~1user~1settings~1{documentKey}/put/parameters/0/schema",
+    "edit": "replaced the reference to a string enum with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 120,
+   "after_files": 120,
+   "changed": {
+    "reference.md": {
+     "before": "8b10cded280b31cb7b1e866e552ed3b883e9a32347a47719e0a6b3632f564170",
+     "after": "2532985d0b1e8619e53950a1a5e335475e82da0308bfa82266956c562a12bf87"
+    },
+    "src/fern/user_settings/client.py": {
+     "before": "0489024eac1798d7b303dc70adde47481ffcc3a5479812859ea88aa37601cadf",
+     "after": "5e6dec29d85789ca482e94d0dac84a0731208b726ad1a3f7a25338196cb9e4a0"
+    },
+    "src/fern/user_settings/raw_client.py": {
+     "before": "d26261dd6df2353e22fb2e6119f10d746d7899b727cb4dcd14ac6e8c4d337464",
+     "after": "a42d84afe188af7d2b9c0f30ba4a74a75e908ec29d84b9186e108e1ac29e081f"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 120,
+   "after_files": 120,
+   "changed": {
+    "reference.md": {
+     "before": "8b10cded280b31cb7b1e866e552ed3b883e9a32347a47719e0a6b3632f564170",
+     "after": "2532985d0b1e8619e53950a1a5e335475e82da0308bfa82266956c562a12bf87"
+    },
+    "src/fern/user_settings/client.py": {
+     "before": "2d6c999bac0c6616c38aa484d395d51ba8fd03ae3270e8760d9ed06735a91260",
+     "after": "89479fb15c78ab6230613d40585e6755d84d72fecabc142c5ca45c03919e792d"
+    },
+    "src/fern/user_settings/raw_client.py": {
+     "before": "2a211f3b621a8fec67105024345bbdcbe793482f6604e15a656a66d5442d486c",
+     "after": "1e2d91ec10031a78610e2a073a6f922e62b710b2daf5c8a6a8fab08d604a30bb"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 120
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-inline-object",
+  "fixture": "rapidata-identity",
+  "removed": "properties",
+  "edits": [
+   {
+    "pointer": "/paths/~1clients/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1clients/get/parameters/4/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1clients/get/parameters/5/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1customers/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1customers/get/parameters/4/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1customers/get/parameters/5/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1customers/get/parameters/6/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1organizations/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1organizations/get/parameters/4/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1organizations~1all/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1organizations~1all/get/parameters/4/schema",
+    "edit": "removed the parameter schema's `properties`"
+   },
+   {
+    "pointer": "/paths/~1organizations~1all/get/parameters/5/schema",
+    "edit": "removed the parameter schema's `properties`"
+   }
+  ],
+  "crozier": {
+   "before_files": 144,
+   "after_files": 132,
+   "changed": {
+    "reference.md": {
+     "before": "9099400e309dbdb8babb8cb688344b6e31ca516daec1def561810731b8394c36",
+     "after": "93e29fd13fea2366b5fe5e59defba8784299f4f986d8afcfc9b1ca2ecdeab9bc"
+    },
+    "src/fern/__init__.py": {
+     "before": "72a62ac719fe2a08c1b3c76f19bd5e4a6959cbfa7515136bc5a1473d8689b9a9",
+     "after": "886ce815f8eb7c6a91385aaec26506ce56d73d729a4fa1be9bd4706215b70ac2"
+    },
+    "src/fern/client/client.py": {
+     "before": "f158b97129c82073a29df7c3fd1eeea4b0b94d1e0004a4ed1d0fca3b10d3b33a",
+     "after": "dc0760c39e8d1400ace9bdf4b30da41abff49e537c4beb180861e84284efa7d4"
+    },
+    "src/fern/client/raw_client.py": {
+     "before": "1381e41c0f915404082c396628323d4f237923ec7cf10e074ab5bf816fa601a2",
+     "after": "a706172e1b24a5052946b766748585cbc26bb4309e9dbf16b26b981fc284c66a"
+    },
+    "src/fern/customer/client.py": {
+     "before": "6479a4cb05c631d309c63a2f108562fc53bab3855747573197777b9a3aae21e0",
+     "after": "a1cf910f9e42c7da4ebf129b62d3faf6c8d809bc8488403877209e8975d31657"
+    },
+    "src/fern/customer/raw_client.py": {
+     "before": "bccfb461b2f0f9ce406e1f1275ef475e439e4390d7ec2675009381420b51c103",
+     "after": "ec56cf20bf2b8d1e926473ec0afb61841ba64ef1de9d2ca642fd979bc3e3ba9a"
+    },
+    "src/fern/organization/client.py": {
+     "before": "110beb51d5fa495ac995a40e74332ad82941fea00c2c18ea4abc1ba933b3f4a8",
+     "after": "8b0035ec7dc55da0f84cddbb5effb885bcc820201c909b82303cf29101ca4b01"
+    },
+    "src/fern/organization/raw_client.py": {
+     "before": "f68186162baec7cc0a22fe0bbca86d88902264085d50a3bc8169136a64e66e85",
+     "after": "4a900329ed916597bba9ce14eee8113f9e5aad08bd25867ac2cc7d6e096109e1"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "a373b4319759afa85108a19a0174347a7aa8532ff16d5872e4e0ac4ecaea6b13",
+     "after": "e5bb185c72529b07ae73f7b4f3a6eea4f969f89bc18ea0f415c4eae2f499be49"
+    },
+    "src/fern/types/get_clients_request_client_id.py": {
+     "before": "507958560fbb7d087f7e7f016f1f3c3c7d23f3fc76a45ee207e2969aa83fca3e",
+     "after": null
+    },
+    "src/fern/types/get_clients_request_created_at.py": {
+     "before": "9ac706e15c5f75101035b69e1c8e981ad4b9625a40cd26b90a6f3cced3f57196",
+     "after": null
+    },
+    "src/fern/types/get_clients_request_display_name.py": {
+     "before": "80f320b73cec3a6b57a411e73a1c41d622e2b563d5c496b3c9dd18b3e7efda8d",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_email.py": {
+     "before": "ede06b1dcb5a8d6e4fe0f719b9a5190519e5be253c2ce62be81185bebaff0477",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_id.py": {
+     "before": "0f81b56daedc65e2cce4761c3ffcd844a185cb1228788040639eaffc0b5eefbb",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_organization_id.py": {
+     "before": "2092f2d37a935224f60d9a2c74f974a7687432a131fe37805691aca83edabf60",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_organization_name.py": {
+     "before": "d7dec8da28ee497d45e21fdb2ca436f59af3b46e9839e0806ffe670aba1b3a3c",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_id.py": {
+     "before": "27f67238331326173e898e482de50c367bc09e8d275f77a05f4e5d4367d08c8d",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_name.py": {
+     "before": "2509818691fcde00863b3f3873e05d3bfd6eaafe935f17f01110cb7464f17537",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_owner_email.py": {
+     "before": "b3ed87c1962adf4b4d1efbea6f409704e4789dcc46c1be4d0c21f0dad14dde2c",
+     "after": null
+    },
+    "src/fern/types/get_organizations_request_id.py": {
+     "before": "69df69e40d8ad334f3863df7b7fba781aa084799c59c157e3df9bebcbb7d0504",
+     "after": null
+    },
+    "src/fern/types/get_organizations_request_name.py": {
+     "before": "a616cc20e49dfa6bf0309ca2b4a44fb7b705d07d9110f2fd239e70f988a63c9d",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 144,
+   "after_files": 132,
+   "changed": {
+    "reference.md": {
+     "before": "9099400e309dbdb8babb8cb688344b6e31ca516daec1def561810731b8394c36",
+     "after": "93e29fd13fea2366b5fe5e59defba8784299f4f986d8afcfc9b1ca2ecdeab9bc"
+    },
+    "src/fern/__init__.py": {
+     "before": "cdc60f18590877327585bc7af824dbfa83e214716721136fa20296f7a99e1f92",
+     "after": "54f2bcdf8144bcd0436ed135bbae38d504018a2f1535fc460080d7093f6641de"
+    },
+    "src/fern/client/client.py": {
+     "before": "9ba8b30e66e6949f4100bc73fa354e2ba04da86c5a95de92dafac18ea4f38385",
+     "after": "e93bce8ebb52f25eb02361a833990b84dacbc6c87b33500a0384df897ef8dd1f"
+    },
+    "src/fern/client/raw_client.py": {
+     "before": "fdaceae6aaa210fa8885033b8490e48bbfabf515c31fcca3c3cee1be52ab5400",
+     "after": "3101ffad12a2a4c3d45f2183f45da4e9504f4c8492c8f27dacf344f526db28db"
+    },
+    "src/fern/customer/client.py": {
+     "before": "eee5ebab828b584a8903f2c3a2b3ab06fb87fc11714867f583dad2c8310b328a",
+     "after": "d71ff6d808e136da1f9b5fd8ec5884c74c930b11631e9f6bb2ff90940e385b73"
+    },
+    "src/fern/customer/raw_client.py": {
+     "before": "5d833a7a6a50fc24d4619f566be5710fadbc1f142a0359f4dc9eac7f26424cf4",
+     "after": "b76f7ec6baca5e6e6c0d252d0d6bc019e1d2d9042eb856e191dce5153c125846"
+    },
+    "src/fern/organization/client.py": {
+     "before": "1e4bd10f06e6910d78af35ca3e7eb5a334dec8ffd9a8803daccd59ebbac92eed",
+     "after": "130b42a4f011a309db6f60afa48d514028d4a5ad74ddc0101caeb57a38017dcd"
+    },
+    "src/fern/organization/raw_client.py": {
+     "before": "aa8bb767c3633e9331bbefe7ef8ca339b7be9deaa50c00af5056558234f093ca",
+     "after": "cc96b45e3b12c4e52a1ccace6cb5d8fd3256f3568053247b2e3f7441631be362"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "9d4df5eabaa1ae39f37c0cc7b78517c5f351ad6d06a0f56fc045a90cae17fdcd",
+     "after": "c8f7f1285455745e3dc7ded505c3a5c415c12f1c6e5929f7f44110c49692706d"
+    },
+    "src/fern/types/get_clients_request_client_id.py": {
+     "before": "f8e3cd25df7a6d55a8a4555be579e41f70b51e9951522b4b0ce67952cdaa950b",
+     "after": null
+    },
+    "src/fern/types/get_clients_request_created_at.py": {
+     "before": "c0eeb5353ba355daf30613f77ffc48e3f1189a35a8579084df2f3938d0da3391",
+     "after": null
+    },
+    "src/fern/types/get_clients_request_display_name.py": {
+     "before": "46dde16112057915c212af8fc216bce6922c022899cf08b9701b52b3219ba0de",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_email.py": {
+     "before": "1ca3160f0f95ff5b0cfc5d385b185e9d4823bf5f5b70b75969f2f9581a268247",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_id.py": {
+     "before": "484173b683458c4062e3bb2e23e2a48e5227dd4fc97bd8cad5ae26d1b21eaae0",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_organization_id.py": {
+     "before": "c460fb9861a6d361b4887db370c12e578f160eddbcd149254a11fa4442423994",
+     "after": null
+    },
+    "src/fern/types/get_customers_request_organization_name.py": {
+     "before": "3681aef76825432f375eefdb52215e72e87587d70f4c6b0df736514fe8864a43",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_id.py": {
+     "before": "7f5972a025d0c0d179126990db9f4d3d000843fc8b64d105871f66eaaeec5b7b",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_name.py": {
+     "before": "85e485f8e37e2a8813defeae2fa3e0b21df62c43f8ca1459ecb74138cc1552b8",
+     "after": null
+    },
+    "src/fern/types/get_organizations_all_request_owner_email.py": {
+     "before": "e34a7dfb557187a54e6c4b7e22e4b481bea5fcb2a3d0dddb2b1346fd65d276ac",
+     "after": null
+    },
+    "src/fern/types/get_organizations_request_id.py": {
+     "before": "f77ea872c6fc96596560dd7e8380c320ec73ddfdc89e2e3b6403b546b481e2c9",
+     "after": null
+    },
+    "src/fern/types/get_organizations_request_name.py": {
+     "before": "4fa9248b4dd8f27be24fdae1805191aaf953975038ac63406e6326e96bd4b340",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 132
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-ref-object",
+  "fixture": "apideck.com-webhook",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/components/parameters/filter/schema",
+    "edit": "replaced the reference to an object schema with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 95,
+   "after_files": 95,
+   "changed": {
+    "reference.md": {
+     "before": "eb5004250d3da276178d76909531af0d4971ee82523258d8cc52cc610f807b35",
+     "after": "eeb5bb58418de13ec6ad1e21eece772d8584393970262956e67e3ef3f0f2f37a"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "815351c661acdd6bd07787e7147641933e5f00e0e5637c15d69a30429505efde",
+     "after": "d90d8fc4a04e42f0bd428e8dae9f4ecffbcc110520fd59559f00cd1c5f2bc60c"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "afe95b04f1ec8b811e36d405f39a48e293b1a0c4ba3539d4740c9fa5e88bfc83",
+     "after": "9fbae05cabaa20908ea22b64a82504d04b4c58cb13deb4b7640def32df083f88"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 95,
+   "after_files": 95,
+   "changed": {
+    "reference.md": {
+     "before": "eb5004250d3da276178d76909531af0d4971ee82523258d8cc52cc610f807b35",
+     "after": "eeb5bb58418de13ec6ad1e21eece772d8584393970262956e67e3ef3f0f2f37a"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "c244be3a1b95fe16ed253783cb4da99073aa8094d14bfceb59ae47cd67a5c448",
+     "after": "9522ad904ffcafa7d8cff48dfbee79b574adcd7e3b468bf8933ff30c9bef57ff"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "6d6b6ac58656e4a17f9d7deb816567238522556822b66b7551d006ad04da9232",
+     "after": "cbdd870531669b395d7f671431e2722e7ee15bcdfbdb2163071239b2af9fd3df"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 95
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-array-ref-enum-items",
+  "fixture": "sftpgo",
+  "removed": "items-ref",
+  "edits": [
+   {
+    "pointer": "/paths/~1events~1fs/get/parameters/2/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1events~1fs/get/parameters/9/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1events~1provider/get/parameters/2/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1events~1provider/get/parameters/6/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1events~1logs/get/parameters/5/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   },
+   {
+    "pointer": "/paths/~1dumpdata/get/parameters/3/schema",
+    "edit": "replaced the items' reference to a string enum with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 258,
+   "after_files": 258,
+   "changed": {
+    "reference.md": {
+     "before": "c9bb91b33afce493bb4d712f86757c868f93adfc93fc7d128a60963792d78912",
+     "after": "d8ca5110acb783494092efe7258f227f222d0b9c223d0b8c0ae1fb1fdd31eca1"
+    },
+    "src/fern/events/client.py": {
+     "before": "eaf0c31007d7d7286a522743c4639fbcf72611f45eb5175d4e4a8d4fd21c32b5",
+     "after": "2cf820d637abb89a5439bd5710c4c6c90ccdd5297d26b89b86522748c7768ceb"
+    },
+    "src/fern/events/raw_client.py": {
+     "before": "3e858450453b6dd9ac8da7333134dd7d6678b0aa999cf36a8f73881ceb09871e",
+     "after": "2c5e80cdaabe0330759cf76d2639f36974e6570b5e731d33cdd5755cd3e24e07"
+    },
+    "src/fern/maintenance/client.py": {
+     "before": "a0f83c3d82ac23ffbdaaa353053fcaf2d965f5f9671cb117c848db7188127c5c",
+     "after": "028d8f44dae91fbba900a44396ef6a4567947cb7a60de86619cefd7a1a4e90bb"
+    },
+    "src/fern/maintenance/raw_client.py": {
+     "before": "434cc0aa8020ee73df1b8c4d388d57ff7913051e119a846eb64b49c527d60be1",
+     "after": "142d6d2f430ae51a528b8473af725a6e2875a3ad9402ea1cf8cb1e568b7abc4e"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 258,
+   "after_files": 258,
+   "changed": {
+    "reference.md": {
+     "before": "c9bb91b33afce493bb4d712f86757c868f93adfc93fc7d128a60963792d78912",
+     "after": "d8ca5110acb783494092efe7258f227f222d0b9c223d0b8c0ae1fb1fdd31eca1"
+    },
+    "src/fern/events/client.py": {
+     "before": "9b9b423890b225d77e1b4f68a177fbcb2fc206d5bae72cd09b6ab9a218678082",
+     "after": "3ff4d26d4d322ee395c6ab5dad1a843beb5e31246d4cc416d387a95074cb4348"
+    },
+    "src/fern/events/raw_client.py": {
+     "before": "52f464017a6056695e4f63845e0f91e69f260d9bbd6cada77669ad7149ba46df",
+     "after": "d910a197e72ec6137961473284799e9aa570d0d5ab14cd08427e2df99f60f018"
+    },
+    "src/fern/maintenance/client.py": {
+     "before": "b3d2ed26fcb2c642079525ae2cb5be013525ab2fc29a12a533972787ad76810e",
+     "after": "6eca9e0633b5975b6e1024e1bad5983d5fff8baa47d7ef308836d69d3956f96c"
+    },
+    "src/fern/maintenance/raw_client.py": {
+     "before": "854561cc85ef82818dcda216c48b4756bfeafe06b6683b6d59a62ef926a32852",
+     "after": "92939e9321768a5bb23ed229e92e08ea6d46c5c18ce1a05c8083573acedbd902"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 258
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-array-inline-enum-items",
+  "fixture": "rapidata-identity",
+  "removed": "items-enum",
+  "edits": [
+   {
+    "pointer": "/paths/~1clients/get/parameters/2/schema",
+    "edit": "removed the items' `enum`"
+   },
+   {
+    "pointer": "/paths/~1customers/get/parameters/2/schema",
+    "edit": "removed the items' `enum`"
+   },
+   {
+    "pointer": "/paths/~1organizations/get/parameters/2/schema",
+    "edit": "removed the items' `enum`"
+   },
+   {
+    "pointer": "/paths/~1organizations~1all/get/parameters/2/schema",
+    "edit": "removed the items' `enum`"
+   }
+  ],
+  "crozier": {
+   "before_files": 144,
+   "after_files": 140,
+   "changed": {
+    "reference.md": {
+     "before": "9099400e309dbdb8babb8cb688344b6e31ca516daec1def561810731b8394c36",
+     "after": "8b0af0f92b3fc0b1c8f37ebca2a33b0a471f9a35d48b6dbf42f56dbfb0a4b5c4"
+    },
+    "src/fern/__init__.py": {
+     "before": "72a62ac719fe2a08c1b3c76f19bd5e4a6959cbfa7515136bc5a1473d8689b9a9",
+     "after": "a7557ebeda4e815327d30e70162fe317e08d84384f346be0cdad015a351b933f"
+    },
+    "src/fern/client/__init__.py": {
+     "before": "044f01b508952c41199ebc4e0585911efe2f4a4d404edeedd49ec649f3eaec60",
+     "after": "d3b283b7e08f058a505c5587c2024b7b3e2d9cd388a19938dfc70b9dc28e587e"
+    },
+    "src/fern/client/client.py": {
+     "before": "f158b97129c82073a29df7c3fd1eeea4b0b94d1e0004a4ed1d0fca3b10d3b33a",
+     "after": "92914d5cb8e179839ff49d0ac702741cac42f92959e87c067d801562ea00a800"
+    },
+    "src/fern/client/raw_client.py": {
+     "before": "1381e41c0f915404082c396628323d4f237923ec7cf10e074ab5bf816fa601a2",
+     "after": "0099723c319c5fec1812ea4845b0a3a6b642da7d042f2f4935d4168630fa4ca0"
+    },
+    "src/fern/client/types/__init__.py": {
+     "before": "1f4459900c19f9b6c999b72325b37cc86f69b158c4812cfa1fd906e89be1cdf0",
+     "after": "81356a9247abae13de1907bc6569088b441c4b1d12a1dc81d66fcb1031d77756"
+    },
+    "src/fern/client/types/get_clients_request_sort_item.py": {
+     "before": "b569946071b54fcb9ea8e0604d3beb0cfbeecd00ca218b8688321bb6a252730a",
+     "after": null
+    },
+    "src/fern/customer/__init__.py": {
+     "before": "74a9067c52a5c7017fac355a13cbe509281046e38518024c1108916dc1bcc517",
+     "after": "13b6abbce5ea9ccc780f7d0e91d189c9034f9918576fcab07a496916cfcf25b5"
+    },
+    "src/fern/customer/client.py": {
+     "before": "6479a4cb05c631d309c63a2f108562fc53bab3855747573197777b9a3aae21e0",
+     "after": "cae2b6205aa4d8ee27f2ba7135a970b5a601b1116dad74356e420efb88e10fd9"
+    },
+    "src/fern/customer/raw_client.py": {
+     "before": "bccfb461b2f0f9ce406e1f1275ef475e439e4390d7ec2675009381420b51c103",
+     "after": "0c8b0315f5e91acb276742776c625e74a696711c3247f3c978d7a114e4b18715"
+    },
+    "src/fern/customer/types/__init__.py": {
+     "before": "d803c6c61bd7f62981046f76e651e5f99a5411ab1322fabc1ed66566f14a598f",
+     "after": "a64b88e3c8d4563e1ef0275a1b15695de91d50b57f4118d16674000ae0a5c3d8"
+    },
+    "src/fern/customer/types/get_customers_request_sort_item.py": {
+     "before": "daf2ed0f67f60ac56f73e73b7b83d5baf097497f7c27cbc0738b139d5eb7830a",
+     "after": null
+    },
+    "src/fern/organization/__init__.py": {
+     "before": "e8d6c8ef43219f12291558f3accc99e958b1fdf7f63b3d2876f8f4743bacc398",
+     "after": "e7f0aff9038b4e5bff988ceea63dd1281f6eb7b85b6f6db0ac75b29c48bc07c7"
+    },
+    "src/fern/organization/client.py": {
+     "before": "110beb51d5fa495ac995a40e74332ad82941fea00c2c18ea4abc1ba933b3f4a8",
+     "after": "7493ca096f1c5b46c10aa527a54ea7f552807dda403957cdabb57b6c7d7e7b30"
+    },
+    "src/fern/organization/raw_client.py": {
+     "before": "f68186162baec7cc0a22fe0bbca86d88902264085d50a3bc8169136a64e66e85",
+     "after": "45fbf71696eaa590180cb32881953ff2fd020eb463e75a114cde926de9143f12"
+    },
+    "src/fern/organization/types/__init__.py": {
+     "before": "43d5aef60e564be2040d12cce860e154d14d9b3fa05133396c6bd52bf59e2c9a",
+     "after": "cb29a05ba74e6b88bbdd17f42fbb8b677529ca9aa38caaca0b3cdd7e8621e1cb"
+    },
+    "src/fern/organization/types/get_organizations_all_request_sort_item.py": {
+     "before": "f9a69fc747555d502f2e1cb622909c66afce77a5d76b27ef130fab3e28cf1816",
+     "after": null
+    },
+    "src/fern/organization/types/get_organizations_request_sort_item.py": {
+     "before": "6872c3694775ea739b964b3ae7001a808b2447ffc353be2cb3b0a3d3486bc020",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 144,
+   "after_files": 140,
+   "changed": {
+    "reference.md": {
+     "before": "9099400e309dbdb8babb8cb688344b6e31ca516daec1def561810731b8394c36",
+     "after": "8b0af0f92b3fc0b1c8f37ebca2a33b0a471f9a35d48b6dbf42f56dbfb0a4b5c4"
+    },
+    "src/fern/__init__.py": {
+     "before": "cdc60f18590877327585bc7af824dbfa83e214716721136fa20296f7a99e1f92",
+     "after": "22c70ed63245af351f76212c3cd0936e9c809be3bdc5697d0b10323ea7c84ebe"
+    },
+    "src/fern/client/__init__.py": {
+     "before": "1dff7cb663c8f99b73a27853721d162202b0437dd479b2144602f35ca6b991ae",
+     "after": "1b7198cc1e4763ddaef458d08a66e0f220fca41cf665ff2c6832185dccae3537"
+    },
+    "src/fern/client/client.py": {
+     "before": "9ba8b30e66e6949f4100bc73fa354e2ba04da86c5a95de92dafac18ea4f38385",
+     "after": "4212fa984065dedf18eb2c1b9923d309c872e967c67c3229370744f355dc84bf"
+    },
+    "src/fern/client/raw_client.py": {
+     "before": "fdaceae6aaa210fa8885033b8490e48bbfabf515c31fcca3c3cee1be52ab5400",
+     "after": "dcdd7245ab008564d3b73bd9d862ad7ee5c76363f58141f79661da1914912fc0"
+    },
+    "src/fern/client/types/__init__.py": {
+     "before": "8cc93d631a2c8caea33d56d11d0b8ba174fb2476b337586ed49d624d0ff84464",
+     "after": "a7f74d5a9b81172e1e51f434ca16af3278b8620adbe965480e7681af143c7bd9"
+    },
+    "src/fern/client/types/get_clients_request_sort_item.py": {
+     "before": "52fa61f809fb7b6792e23b51273ab5b118603a816a1ee60a2df00918e0fed5ee",
+     "after": null
+    },
+    "src/fern/customer/__init__.py": {
+     "before": "78939753eca675c99cbe90fc71f21438c93c08e109d52de065c061df31df0450",
+     "after": "6cb5df996ea033329049d334b9f0cb8d1810fc98f4910f239bf35d1886ea097c"
+    },
+    "src/fern/customer/client.py": {
+     "before": "eee5ebab828b584a8903f2c3a2b3ab06fb87fc11714867f583dad2c8310b328a",
+     "after": "1c0a51565461bb2076ee98e19e5c64fc25906a209d71bbb31585da3df3ddd16f"
+    },
+    "src/fern/customer/raw_client.py": {
+     "before": "5d833a7a6a50fc24d4619f566be5710fadbc1f142a0359f4dc9eac7f26424cf4",
+     "after": "3a7c6e55ad29a56137362651596a1c7116fbefa0ccb879a1fbc8fda8ba847dd0"
+    },
+    "src/fern/customer/types/__init__.py": {
+     "before": "80f2b7a63336dee9eceffd6683f4521f3c022baac28a9fb3c2e894db9bf78ec2",
+     "after": "b2aade191c820347f4f8ceeb731b051da4e58675cd45b511f475b6829d913c25"
+    },
+    "src/fern/customer/types/get_customers_request_sort_item.py": {
+     "before": "6791e955a7994bef76b0eda0f205054c5ed2ca314057da5575c646272e723229",
+     "after": null
+    },
+    "src/fern/organization/__init__.py": {
+     "before": "c5b1d17d8fa7b9f5cf6a83024b34315fe757aac4d9a59a33da2e27eade2e05e5",
+     "after": "85231d1a0f2e49e1dd6712e49e9b8c44bbd20ebe094c977e8f0999fb15f9dc6c"
+    },
+    "src/fern/organization/client.py": {
+     "before": "1e4bd10f06e6910d78af35ca3e7eb5a334dec8ffd9a8803daccd59ebbac92eed",
+     "after": "cc0256384911196685bb705c379cc8e8954fa438de0c179f28e3fac0828e5674"
+    },
+    "src/fern/organization/raw_client.py": {
+     "before": "aa8bb767c3633e9331bbefe7ef8ca339b7be9deaa50c00af5056558234f093ca",
+     "after": "46b1aba2c19d2638e47cba4789aaddd4233a42a86bc8b29294c3a43ec2724b4a"
+    },
+    "src/fern/organization/types/__init__.py": {
+     "before": "fc07909403dd14666e5f4930b10e10ed9715070b1ea916fcb72b99a3ef1bb884",
+     "after": "7680e9c7e7db3a69e808bbad6c810165adf383f84caf7a8475dc854a784061cd"
+    },
+    "src/fern/organization/types/get_organizations_all_request_sort_item.py": {
+     "before": "e6ecada67ee5a3b7928712c7178550e73d96a97480ab34200499b2df922cfc91",
+     "after": null
+    },
+    "src/fern/organization/types/get_organizations_request_sort_item.py": {
+     "before": "79e92db5aea3d452d7cab0075073c869642207ef6d48eaf5c3da44ebb41bc7ef",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 140
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-ref-date-time",
+  "fixture": "openepcis-dpp-ready",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1dppsByIdAndDate~1{dppId}/get/parameters/1/schema",
+    "edit": "replaced the reference to a date-time alias with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 90,
+   "after_files": 90,
+   "changed": {
+    "reference.md": {
+     "before": "b7f4a98c5afe5b5f2a3c7f52dcfba468a6aea67f4a2327608c6b51be04cd156e",
+     "after": "e5995165df45d8587c2ad8ea359cd64aa1cbc320b12e16c3c1d4b9d38ee4d085"
+    },
+    "src/fern/life_cycle_api/client.py": {
+     "before": "59ae9e48169ad9b0360b3b727a420a32cf67431e5eab27dc2238b3384947802b",
+     "after": "db68051ac68b1ad169702b2ef309ba7df654923d3c3a21e23d204fb34ba777fb"
+    },
+    "src/fern/life_cycle_api/raw_client.py": {
+     "before": "2c103e9a4dbdc7a3b66121f07a885fac55a07af32ee354381ab6de7a9834fdeb",
+     "after": "e4ddf7a65ef77e08581b9c17090212e4db2c4c9963e18fa690bdcd7dd263b820"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 90,
+   "after_files": 90,
+   "changed": {
+    "reference.md": {
+     "before": "b897da5babfb3be17255600876ba9369423dfdc3b8ae0db2c126a10f43aaa9b5",
+     "after": "3752b5b861c749cc03f6d54a56e01e0f2cbae83613dc78113604edc526275a0b"
+    },
+    "src/fern/life_cycle_api/client.py": {
+     "before": "d34a6ada742af0704ba49235d5f0d6d78e2dddcaa367ca6d68d44b78626514aa",
+     "after": "4fc436527a532d938cff441b51aa56f1ac3fe0560b073d1d8e6cafca213827b8"
+    },
+    "src/fern/life_cycle_api/raw_client.py": {
+     "before": "1a9fecdf387c56fda1dbb2059bdb7abb3be769725591554d61d875d44937f4f6",
+     "after": "3a00ecfb6cbd15996fd315d880e935a909a75ee1f728746f3170deefe95189f2"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 90
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-ref-array-alias",
+  "fixture": "groupe-psa",
+  "removed": "ref",
+  "edits": [
+   {
+    "pointer": "/components/parameters/tripState/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/alarmType/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/telemetryType/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/telemetryExtension/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/vehicleExtension/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/vehiclesExtension/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   },
+   {
+    "pointer": "/components/parameters/remoteType/schema",
+    "edit": "replaced the reference to an array schema with an inline `type: string`"
+   }
+  ],
+  "crozier": {
+   "before_files": 443,
+   "after_files": 443,
+   "changed": {
+    "reference.md": {
+     "before": "a4344653f282ad24a65b47486afd93d66d47bdeb3325dfefb99b206b76848da9",
+     "after": "1cda46a66db70598d17d4d5ba51d05646532f7e9c0243548466060fc70bc3b3d"
+    },
+    "src/fern/capabilities/client.py": {
+     "before": "cc083992828f247710e2980582689cecd93a7b636c9af1619c104739225f2f1a",
+     "after": "735894172ce8ca7f872f2d4b94cb2e007d7223282b1149ec920987dfff4e69e1"
+    },
+    "src/fern/capabilities/raw_client.py": {
+     "before": "b7bd86231795a17c9791f4b839f9c8f41bbf3d5940ff4f03540d43747cf34fac",
+     "after": "bcbe4c5ce5e04ccb286d618121fab1c3ac86b1af3ba95cb6b93186fc26bdcc85"
+    },
+    "src/fern/fleet/client.py": {
+     "before": "54f0a16a52f8146734be6eae0dcf8a7e7971cda86ee7e1ad8d6354d6a80eef55",
+     "after": "6b7f007c446ab5c71afebae0e5fe321ea093bf96dda9ed6a839e858c143589e7"
+    },
+    "src/fern/fleet/raw_client.py": {
+     "before": "150f7af233a7f77b78dadf061b481d5a3119d6bf4427a25909107266f5846386",
+     "after": "17655f8ffb89959e8b25c4f93eb220a4f7ca4861c333cff35f3712d6d65ab11f"
+    },
+    "src/fern/remote/client.py": {
+     "before": "9975f55b5fae103dc781a5c77e746bd92d5ba71d22d0a083ff40e637c8f7d4b7",
+     "after": "6eb6ab16603ef55dc6a04e41df78bbe53e4eb203ea32f291f7538954706c7240"
+    },
+    "src/fern/remote/raw_client.py": {
+     "before": "fb7d89d9dff14bbf47564dba2606b66a7e141109387aea155f233d92e33c44a3",
+     "after": "8eb68304943df2b9dfadada9c7fd19aee4f77fa542262f5222279534f0240f40"
+    },
+    "src/fern/trips/client.py": {
+     "before": "1ff6b18131b2885bfb019b95ea9baf60250e992545f7b70bc21011cdc47f7cc8",
+     "after": "a25cc9ef2cdfac5ce90bbb91dbfe5610efcae60da94839f172d7f1bc606cc48e"
+    },
+    "src/fern/trips/raw_client.py": {
+     "before": "240175e105923b6f6ef2cd635000e9c0f495cf2f8e8e1ee0158048cca750f9c9",
+     "after": "ce95c73632ce74cabdb18bceb8dfed4bfd01083787c317122c1f7c83a4de37c6"
+    },
+    "src/fern/vehicles/client.py": {
+     "before": "6e29eea35f58987cc5c974e9089ddb207c243548c5bc5865641eeccaf56d3aff",
+     "after": "8d9b038e69623fc6fece3e9398ef5f892a2534866108f360dc9f59b27538417e"
+    },
+    "src/fern/vehicles/raw_client.py": {
+     "before": "8e79ad429d600f491ed6180fcbad35b2b2738c4a08c421ca84cba7ee3589b434",
+     "after": "59f30dd5b74ae245ff4c25761581fe3167efe26a4fdab5c75a925dafa1ac47f3"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 443,
+   "after_files": 443,
+   "changed": {
+    "reference.md": {
+     "before": "a4344653f282ad24a65b47486afd93d66d47bdeb3325dfefb99b206b76848da9",
+     "after": "1cda46a66db70598d17d4d5ba51d05646532f7e9c0243548466060fc70bc3b3d"
+    },
+    "src/fern/capabilities/client.py": {
+     "before": "df2daaabd65b6272fbf120454765cdf6fbe18d2a19cd80ade31473ab6ff35a24",
+     "after": "50e2dba1d97845e0b77922cf97bf0d981cc246f3da323025507226f50e5594d7"
+    },
+    "src/fern/capabilities/raw_client.py": {
+     "before": "85f11ff8c459ccebc0fad24eafe8a975bd7f11383d60ed650623663bf7d18058",
+     "after": "cef82f04997b5db86fa241754772890b7bcf27ba09d85c55fb396b1bbae0b10b"
+    },
+    "src/fern/fleet/client.py": {
+     "before": "b4f9a38c106b39b811f30429f2301a910b9d02139f3c9dcf2d0d06cd507dab1e",
+     "after": "2eaac64245d09f7f41e04da55b0465a6a1ee1b983e73efdf62b28163648a6dc3"
+    },
+    "src/fern/fleet/raw_client.py": {
+     "before": "913d004c93dfdad8986eec0925cf3f5df0aa6b6dd1b7b3caee753a8c2f1704a8",
+     "after": "ba325315957ea98c16a8dc0c20b7e1b76199b56ab41b1cf0d7d2afae58ee80d4"
+    },
+    "src/fern/remote/client.py": {
+     "before": "85748ad07ef66fcc125e1088ffc46a798b7f99cf62e0ec3dafdd3b1e92fcdd1a",
+     "after": "c70dbb58c0fd4bff7d8945e7c24203eae88d715ad37d2940fab6f76d9a88e800"
+    },
+    "src/fern/remote/raw_client.py": {
+     "before": "9a10a71b31b887e850f61cb9f8ede25429b8fda09ad7ea949280dc7d7d587717",
+     "after": "fce3410dd0506d2cdaf231140d791f5a3b65a8c19db29df7276a3b5c030a27e8"
+    },
+    "src/fern/trips/client.py": {
+     "before": "bd7b8a0888ea9dd6b6c8a26cd8954a5c1f43754c12d2f38803c2bf5494da79eb",
+     "after": "45e76df50e7001cc8a6917c85ab2dcda81ac6ecd31cefc6c17f94045756cdeb0"
+    },
+    "src/fern/trips/raw_client.py": {
+     "before": "25db8834d94470b701f947c5110d5602477c32708b9b8bff6b0f618c86d55403",
+     "after": "4f748f3d32365eb68349ee54da74fe14a30d90c677dbd3b6848a7d052f12c2d5"
+    },
+    "src/fern/vehicles/client.py": {
+     "before": "ae12bf5e6813157d5cb294d54ef9a2afecdcaaac163dd7fe32987c4af9f790a0",
+     "after": "5957b761c01d61e1a8388d86d1e9a8cb3b5f54defe836bc8c37e7e59922c49fc"
+    },
+    "src/fern/vehicles/raw_client.py": {
+     "before": "2a3b6e5fac45b9999cc347e38c99df2be7a98421d9c3db12c7ae0341bcef8650",
+     "after": "59247f48699f5f62cc28d6b262f362c85b982ef4045c89e18fda079fc67327b9"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 443
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-body-property-named-as-path-param",
+  "fixture": "paloalto-cspm-search-manager",
+  "removed": "rename",
+  "edits": [
+   {
+    "pointer": "/paths/~1search~1history~1{id}/post/requestBody",
+    "edit": "renamed the body property `id` to `idField`"
+   }
+  ],
+  "crozier": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {
+    "README.md": {
+     "before": "ac3a5338867d337fc9edec76f262fa807f07306ead67b3aef5fcc427596a034c",
+     "after": "ce2626ed6f128002331c5e55e088f72e05c7686903b7bcdc554a4341a186a6ee"
+    },
+    "reference.md": {
+     "before": "4800428e394f46e4058cd5689748455da14fdf3923cb6bea43d676fb42e176b6",
+     "after": "9ab9d0bf99eef4f2b736a638eb290b1121686b832a76ce1cc26f6c61626cdc9f"
+    },
+    "src/fern/search_manager/client.py": {
+     "before": "a59ea3f8a1cf43537e1b7c29aaef3340b248c59996026e939924fcd0bc74347a",
+     "after": "b27053b1e67bef61d6b698f56b97df9d8934d7a70aba87da17b4b67e6be721f3"
+    },
+    "src/fern/search_manager/raw_client.py": {
+     "before": "1d71e316d78447853fb7edbced0518ca1e70458f904863c1a84248a5b3ec1492",
+     "after": "e7c6cf299112a02fc99744cb29b4a8b8dbf44883b0f3040d8d203f3c3289d9d8"
+    },
+    "src/fern/types/search_model.py": {
+     "before": "abe3d6122f1a732d1f89b895bc86cfca830683c28549c2d425962c7f11bac8b9",
+     "after": "55d2727ce2eddc5ead17edfd335056a5a30c903c72351da7eefe755993bc1dc9"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {
+    "README.md": {
+     "before": "ac3a5338867d337fc9edec76f262fa807f07306ead67b3aef5fcc427596a034c",
+     "after": "ce2626ed6f128002331c5e55e088f72e05c7686903b7bcdc554a4341a186a6ee"
+    },
+    "reference.md": {
+     "before": "4800428e394f46e4058cd5689748455da14fdf3923cb6bea43d676fb42e176b6",
+     "after": "9ab9d0bf99eef4f2b736a638eb290b1121686b832a76ce1cc26f6c61626cdc9f"
+    },
+    "src/fern/search_manager/client.py": {
+     "before": "3ed4b7d0b7e0beb088b43d7b4ce9260cc09ec48748741e3aac5418268520568c",
+     "after": "cad36bec0bb3c828ad5951e26f8b939c545c9209cc4be7a727dd01e2243effb6"
+    },
+    "src/fern/search_manager/raw_client.py": {
+     "before": "df96fe09ddf1713f212a8dd948c4bcf11bf0ab7313c00459da77aece54c67b25",
+     "after": "b3822e796bc295c9ac6e525e7ee5236a051579630d4e56da3491984ea8a5acda"
+    },
+    "src/fern/types/search_model.py": {
+     "before": "0cd73ea6b40ce940de1821a06b96c027c2050c9dc076b8ce5fd75d49d3c3410d",
+     "after": "c450d5d88ae31a524d439b041b497ea485fdd7c0b443aaf0a9f6cc480d0a4231"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 68
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-body-property-named-as-query-param",
+  "fixture": "k8s-container-service-provider",
+  "removed": "rename",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1v1alpha1~1containers/post/requestBody",
+    "edit": "renamed the body property `id` to `idField`"
+   }
+  ],
+  "crozier": {
+   "before_files": 72,
+   "after_files": 72,
+   "changed": {
+    "src/fern/containers/client.py": {
+     "before": "67bfd321f7e1224ee1b2db0ccc823f0c1faae723978ee4ac1be08702d72b5a3f",
+     "after": "9674df325e30ca3cbfa5b5b21f8a4edfe254b4f6006fb23a6f1a8f649bd5adde"
+    },
+    "src/fern/containers/raw_client.py": {
+     "before": "5ac2297556da6d21cc556e48da743bc6073e5c2d9ddbb7bc357829d536d8b6b0",
+     "after": "baa7f15f792e81960c813b31b3b1f97e4a18a521386024dcc9d9170e3d23b08c"
+    },
+    "src/fern/types/container.py": {
+     "before": "f16eba901a4775f31d7676640786bec0cb4793f6aa75d9de3105f10ccd6f7c6e",
+     "after": "e3752ee631c4aaf6b1b9aa77f7d97a48a119b66a4c2f585a881d4e4af489e3ec"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 72,
+   "after_files": 72,
+   "changed": {
+    "src/fern/containers/client.py": {
+     "before": "b49c1f122b516b257fefb9ff6beccee61b161085700e8e1de461e77aae926f38",
+     "after": "2da89c1603b9453e0679c5a1ff2f3925039ea3b33ad277fa6967d6fed1d36a10"
+    },
+    "src/fern/containers/raw_client.py": {
+     "before": "0f37b9674c991b7c895bac5343b4a4ccb51d701dbb1d5bc25d195ba6de3d6bd7",
+     "after": "1e7f8ab4161bbc8df10d765367ed0119a89e0f76d11e2dca27ee242511aab89a"
+    },
+    "src/fern/types/container.py": {
+     "before": "a75916d6f3451de9c48b9484861a09cbf16905f60fe524ef6729c3b29c7c2e59",
+     "after": "99e33754501ef56529aae70c4a1df3191fb5a4bd6767f6d16e2530a3d3dab4ae"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 72
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-body-property-named-as-header-param",
+  "fixture": "ferry-desk-header-collision",
+  "removed": "rename",
+  "edits": [
+   {
+    "pointer": "/paths/~1sailings~1{sailingId}~1bookings/post/requestBody",
+    "edit": "renamed the body property `deck` to `deckField`"
+   }
+  ],
+  "crozier": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {
+    "reference.md": {
+     "before": "2289e053c511df04c2ade85c0c035b11554491dd99338e965828c15228e67740",
+     "after": "a99681bc74a323686291541c64010bd5d60debdd9e13296e09e6f491dbf1fb2e"
+    },
+    "src/fern/sailings/client.py": {
+     "before": "5ea53d8af356cb3cc410478ed9eca8d48d135ee468a0c2bc19e25dc1772d5b25",
+     "after": "31efd208d4ad0120ebd55c24ff7d7ed0889483ca43c8d8b952695de0741b4453"
+    },
+    "src/fern/sailings/raw_client.py": {
+     "before": "380dcd2c24312199b12c40727c0264bc7b823d534cdf0a0a2004dfae010d7ad3",
+     "after": "64422942dff8c3787e1ec657289e12fa82db486f5ed3b6f2a131a0e40a7c5115"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {
+    "reference.md": {
+     "before": "2289e053c511df04c2ade85c0c035b11554491dd99338e965828c15228e67740",
+     "after": "a99681bc74a323686291541c64010bd5d60debdd9e13296e09e6f491dbf1fb2e"
+    },
+    "src/fern/sailings/client.py": {
+     "before": "7a09247cfd0af189c4cc17635dc7b9069fdb11a06617169e8b6159549dda9f96",
+     "after": "bb2e325300188f91896106c26d430674af86aee9a60f7cdeb3779e825203b886"
+    },
+    "src/fern/sailings/raw_client.py": {
+     "before": "73015c517ae6254ab1b4681a386a4c6ad263b937ee280255ba46e0dd37cd4ce7",
+     "after": "9c35fd4912f25bda11947f503147cc5564cff508ff790726879d42610e2fe5ab"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 42
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ }
+]

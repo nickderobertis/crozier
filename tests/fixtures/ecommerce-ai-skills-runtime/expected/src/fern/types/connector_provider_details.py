@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .amazon_ads_provider_details import AmazonAdsProviderDetails
+from .amazon_spapi_provider_details import AmazonSpapiProviderDetails
+from .shopify_provider_details import ShopifyProviderDetails
+
+ConnectorProviderDetails = typing.Union[ShopifyProviderDetails, AmazonSpapiProviderDetails, AmazonAdsProviderDetails]

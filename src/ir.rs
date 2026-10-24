@@ -6654,13 +6654,18 @@ fn resolve_request_body(
     // takes a required `request: DocPagesFlattenRequest`. A referenced
     // composition is passed whole the same way: MockServer's recording
     // promotion declares `required: false` over `$ref RequestDefinition`, a
-    // `oneOf`, and takes a required `request: RequestDefinition`.
+    // `oneOf`, and takes a required `request: RequestDefinition`. So is a closed
+    // empty object, the free-form mapping Fern aliases it to: ecommerce-ai-skills'
+    // Daily Ops `execute` declares `required: false` over `$ref EmptyRequest`
+    // (`additionalProperties: false`, no properties) and takes a required
+    // `request: EmptyRequest`.
     let passed_whole = schema
         .reference
         .as_deref()
         .and_then(|reference| resolve_ref(doc, reference))
         .is_some_and(|target| {
             is_map(target)
+                || is_closed_empty_object(target)
                 || (target.properties.is_empty()
                     && (target.one_of.is_some() || target.any_of.is_some()))
         });
@@ -6728,8 +6733,11 @@ fn resolve_request_body(
             return Some(body);
         }
         // A `$ref` to a map (object with `additionalProperties`, no declared
-        // properties) is passed straight through as `json=request`.
-        if is_map(target) && target.all_of.is_none() {
+        // properties) is passed straight through as `json=request`, and so is a
+        // closed empty object, which Fern declares as the same `Dict` alias.
+        // Without it the operation falls outside the emittable subset and is
+        // dropped from its client.
+        if (is_map(target) || is_closed_empty_object(target)) && target.all_of.is_none() {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
         // A titled array component carries the JSON content-type header, as a
@@ -6759,6 +6767,11 @@ fn resolve_request_body(
             };
             return hoist_fields_with_component_examples(&class, types, component_examples).map(
                 |mut fields| {
+                    restore_promoted_declaration_order(
+                        &doc.components.schemas,
+                        target,
+                        &mut fields,
+                    );
                     for field in &mut fields {
                         if field.example.is_none()
                             && target.is_beta == Some(true)
@@ -16256,6 +16269,73 @@ fn promote_required_parent_properties(
     Some((rewritten, owners))
 }
 
+/// Give a request body's fields their source declaration order where
+/// [`promote_required_parent_properties`] moved a parent's property to lead the
+/// model. The model and the signature keep that order, but Fern's docstring
+/// example writes the composition as declared, every `$ref` member's
+/// properties ahead of the inline ones: ecommerce-ai-skills' `PATCH
+/// /v1/daily-ops-schedules/{scheduleId}` posts `allOf: [$ref
+/// DailyOpsScheduleCreate, {required: [max_source_age_hours, enabled]}]`, and
+/// its docstring passes the two promoted fields last, where
+/// `DailyOpsScheduleCreate` declares them.
+fn restore_promoted_declaration_order(
+    schemas: &IndexMap<String, Schema>,
+    schema: &Schema,
+    fields: &mut [BodyField],
+) {
+    if promote_required_parent_properties(schemas, schema).is_none() {
+        return;
+    }
+    let mut names = Vec::new();
+    source_declaration_names(
+        schemas,
+        schema,
+        &mut std::collections::HashSet::new(),
+        &mut names,
+    );
+    for field in fields {
+        field.declaration_order = names
+            .iter()
+            .position(|name| *name == field.wire_name)
+            .unwrap_or(usize::MAX);
+    }
+}
+
+/// The property names a schema declares, as written: each `$ref` `allOf`
+/// member's ahead of each inline member's, then its own, first declaration
+/// kept.
+fn source_declaration_names<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    schema: &'a Schema,
+    visited: &mut std::collections::HashSet<&'a str>,
+    out: &mut Vec<String>,
+) {
+    let schema = match schema.reference.as_deref() {
+        Some(reference) => {
+            if !visited.insert(reference) {
+                return;
+            }
+            match resolve_ref_from_schemas(schemas, reference) {
+                Some(target) => target,
+                None => return,
+            }
+        }
+        None => schema,
+    };
+    let members = schema.all_of.iter().flatten();
+    for member in members.clone().filter(|member| member.reference.is_some()) {
+        source_declaration_names(schemas, member, visited, out);
+    }
+    for member in members.filter(|member| member.reference.is_none()) {
+        source_declaration_names(schemas, member, visited, out);
+    }
+    for name in schema.properties.keys() {
+        if !out.contains(name) {
+            out.push(name.clone());
+        }
+    }
+}
+
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
 /// union member written so is an empty model to Fern, not a map: Timely's
 /// `V1.Project.cost` offers a cost object or one, and Fern declares
@@ -22583,6 +22663,84 @@ mod tests {
             ))
             .unwrap(),
         )
+    }
+
+    #[test]
+    fn optional_body_naming_a_closed_empty_object_is_passed_whole_and_required() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Kiosk", "version": "1"},
+            "paths": {"/shifts/{shiftId}/close": {"post": {
+                "summary": "Close one till shift",
+                "parameters": [{"name": "shiftId", "in": "path", "required": true,
+                                "schema": {"type": "string"}}],
+                "requestBody": {"required": false, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/NoFields"}}}},
+                "responses": {"200": {"description": "Closed"}}
+            }}},
+            "components": {"schemas": {
+                "NoFields": {"type": "object", "additionalProperties": false}
+            }}
+        }));
+        let endpoint = &ir.endpoints[0];
+        assert!(endpoint.emittable, "the operation stays in its client");
+        let Some(RequestBody::Single(body)) = &endpoint.request_body else {
+            panic!("the closed empty object is passed whole")
+        };
+        assert_eq!(body.type_ref, TypeRef::Named("NoFields".to_string()));
+        assert!(body.required);
+        assert!(body.content_type);
+    }
+
+    #[test]
+    fn fields_a_required_only_member_promotes_keep_their_declared_example_order() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Kiosk", "version": "1"},
+            "paths": {"/rotas/{rotaId}": {"patch": {
+                "summary": "Replace a rota",
+                "parameters": [{"name": "rotaId", "in": "path", "required": true,
+                                "schema": {"type": "string"}}],
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/RotaReplace"}}}},
+                "responses": {"204": {"description": "Replaced"}}
+            }}},
+            "components": {"schemas": {
+                "RotaCreate": {"type": "object", "required": ["title"], "properties": {
+                    "title": {"type": "string"},
+                    "weeks": {"type": "integer"},
+                    "published": {"type": "boolean"}
+                }},
+                "RotaReplace": {"allOf": [
+                    {"$ref": "#/components/schemas/RotaCreate"},
+                    {"type": "object", "required": ["weeks", "published"]}
+                ]}
+            }}
+        }));
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("the composed body is flattened")
+        };
+        let order = |key: fn(&super::BodyField) -> usize| {
+            let mut names: Vec<&super::BodyField> = fields.iter().collect();
+            names.sort_by_key(|field| key(field));
+            names
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>()
+        };
+        // The signature leads with the promoted fields, as Fern's model does…
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["weeks", "published", "title"]
+        );
+        // …while the docstring example writes them where `RotaCreate` declares them.
+        assert_eq!(
+            order(|field| field.declaration_order),
+            ["title", "weeks", "published"]
+        );
     }
 
     #[test]

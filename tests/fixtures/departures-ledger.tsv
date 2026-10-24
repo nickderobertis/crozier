@@ -1266,6 +1266,11 @@ docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/cl
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -3311,6 +3316,14 @@ tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	38	sdk-ident
 tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/dystore-api/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/ecommerce-ai-skills-runtime/expected	reference.md	6141	stream-reference-return-type
+tests/fixtures/ecommerce-ai-skills-runtime/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/ecommerce-ai-skills-runtime/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/ecommerce-ai-skills-runtime/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/ecommerce-ai-skills-runtime/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/ecommerce-ai-skills-runtime/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/ecommerce-ai-skills-runtime/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/ecommerce-ai-skills-runtime/expected-literals	reference.md	6141	stream-reference-return-type
 tests/fixtures/ego-microservices/expected	src/fern/__init__.py	78	init-type-checking-import-order
 tests/fixtures/ego-microservices/expected	src/fern/avatars/client.py	60	multipart-object-required-file-example
 tests/fixtures/ego-microservices/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix

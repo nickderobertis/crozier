@@ -1,0 +1,95 @@
+certified pair: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 (tools/fern-goldens/generate-fern-fixture.sh, under flock ~/.cache/crozier-run-generation.lock)
+document: github.com/FastEndpoints/FastEndpoints:Tests/IntegrationTests/FastEndpoints.OpenApi/release-0.json@03d98ec6a5ad82ba7cd334b1bfe9c144bde535f8
+sha256: add5201908eae4b1f66c46a11e1669384db8400f96de3bf9450cdd51c312455f
+result: refused (fern generate exited 1)
+
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /tmp/tmp.jKECQKAXUl/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping cookie parameter, session_id, in GET /api/swagger-review/cookie-get
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, session_id, in GET /api/swagger-review/cookie-get
+[api]: python-sdk Skipping cookie parameter, someCookie, in POST /api/test-cases/from-cookie-binding-test/{id}
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, someCookie, in POST /api/test-cases/from-cookie-binding-test/{id}
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> delete
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> delete%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> get
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> get%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> patch
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> patch%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> post
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> post%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> put
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> put%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk testCases.yml -> service -> endpoints -> TestCasesMissingHeaderTestDontThrowIfMissingEndpoint
+                  testCases.yml
+                  [error] Multiple request properties resolve to the same generated name tenantId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Endpoint header "tenantID" (name: "tenantId")
+                    - Body property: <Request Body> -> tenantID (name: "tenantID")
+                  
+::error title=[api]%3A python-sdk::testCases.yml -> service -> endpoints -> TestCasesMissingHeaderTestDontThrowIfMissingEndpoint%0AtestCases.yml%0A[error] Multiple request properties resolve to the same generated name tenantId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Endpoint header "tenantID" (name: "tenantId")%0A  - Body property: <Request Body> -> tenantID (name: "tenantID")
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> request -> body -> properties -> child
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestCircularFormData is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> request -> body -> properties -> child%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestCircularFormData is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> response -> type
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestCircularResponse is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> response -> type%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestCircularResponse is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> details
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestRequestDetails is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> details%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestRequestDetails is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> items
+                  api.yml
+                  [error] Type root.SystemCollectionsGenericListOfTestCasesNestedFromFormBindingTestRequestItem is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> items%0Aapi.yml%0A[error] Type root.SystemCollectionsGenericListOfTestCasesNestedFromFormBindingTestRequestItem is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> numbers
+                  api.yml
+                  [error] Type root.SystemCollectionsGenericListOfSystemInt32 is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> numbers%0Aapi.yml%0A[error] Type root.SystemCollectionsGenericListOfSystemInt32 is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> response -> type
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestResponse is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> response -> type%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestResponse is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> examples[0] -> request
+                  api.yml
+                  [error] Unexpected property "details"
+                  [error] Unexpected property "items"
+                  [error] Unexpected property "numbers"
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> examples[0] -> request%0Aapi.yml%0A[error] Unexpected property "details"%0A[error] Unexpected property "items"%0A[error] Unexpected property "numbers"
+[api]: python-sdk swaggerReview.yml -> service -> endpoints -> TestCasesSwaggerReviewHeadRootListBodyReviewEndpoint
+                  swaggerReview.yml
+                  [error] Endpoint is a HEAD, so it cannot have a request body.
+                  
+::error title=[api]%3A python-sdk::swaggerReview.yml -> service -> endpoints -> TestCasesSwaggerReviewHeadRootListBodyReviewEndpoint%0AswaggerReview.yml%0A[error] Endpoint is a HEAD, so it cannot have a request body.
+[api]: python-sdk Found 16 errors and 22 warnings in 1.714 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 16 errors and 22 warnings in 1.714 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

@@ -112,6 +112,7 @@ const KINDS: &[Kind] = &[
             "nimisampo",
             "mockserver",
             "rapidata-identity",
+            "ecommerce-ai-skills-runtime",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

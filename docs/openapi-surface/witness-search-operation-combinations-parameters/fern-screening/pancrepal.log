@@ -1,0 +1,54 @@
+certified pair: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 (tools/fern-goldens/generate-fern-fixture.sh, under flock ~/.cache/crozier-run-generation.lock)
+document: PancrePal-xiaoyibao/PancrePal-xiaoyibao:openapi.json@71130c6bbbd06085d23b30b55360dfebef2c8ab1
+sha256: 289a5ec9b9c384e49cb57a6f9b9da11b1d18a8795a318900116a8d28f0592406
+result: refused (fern generate exited 1)
+
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /tmp/tmp.B8cRCoNSqG/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/v1/agents/ -> get -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "智能体管理" contains non-ASCII characters: 智, 能, 体, 管, 理. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/v1/agents/ -> get -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "智能体管理" contains non-ASCII characters: 智, 能, 体, 管, 理. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/v1/api-keys/ -> post -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "API Key管理" contains non-ASCII characters: 管, 理. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/v1/api-keys/ -> post -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "API Key管理" contains non-ASCII characters: 管, 理. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/v1/auth/register -> post -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "用户认证" contains non-ASCII characters: 用, 户, 认, 证. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/v1/auth/register -> post -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "用户认证" contains non-ASCII characters: 用, 户, 认, 证. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/v1/chat -> post -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "聊天" contains non-ASCII characters: 聊, 天. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/v1/chat -> post -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "聊天" contains non-ASCII characters: 聊, 天. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/v1/upload -> post -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "文件上传" contains non-ASCII characters: 文, 件, 上, 传. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/v1/upload -> post -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "文件上传" contains non-ASCII characters: 文, 件, 上, 传. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk openapi/openapi.yml -> paths -> /health -> get -> tags
+                  openapi/openapi.yml
+                  [error] Tag name "系统" contains non-ASCII characters: 系, 统. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /health -> get -> tags%0Aopenapi/openapi.yml%0A[error] Tag name "系统" contains non-ASCII characters: 系, 统. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+[api]: python-sdk 文件上传.yml -> service -> endpoints -> uploadFile
+                  文件上传.yml
+                  [error] Multiple request properties have the name agent. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Endpoint header "agent"
+                    - Body property: <Request Body> -> agent
+                  
+::error title=[api]%3A python-sdk::文件上传.yml -> service -> endpoints -> uploadFile%0A文件上传.yml%0A[error] Multiple request properties have the name agent. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.%0A  - Endpoint header "agent"%0A  - Body property: <Request Body> -> agent
+[api]: python-sdk Found 7 errors and 2 warnings in 0.521 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 7 errors and 2 warnings in 0.521 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

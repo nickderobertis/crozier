@@ -1,0 +1,184 @@
+certified pair: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 (tools/fern-goldens/generate-fern-fixture.sh, under flock ~/.cache/crozier-run-generation.lock)
+document: github.com/FastEndpoints/FastEndpoints:Tests/IntegrationTests/FastEndpoints.Swagger/release-0.json@03d98ec6a5ad82ba7cd334b1bfe9c144bde535f8
+sha256: 1fce8b94249409b288ec9deb7b9baba5e1cedff1cae03e7034e7f86a0b134e7d
+result: refused (fern generate exited 1)
+
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /tmp/tmp.345uH4HtJh/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping cookie parameter, someCookie, in POST /api/test-cases/from-cookie-binding-test/{id}
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, someCookie, in POST /api/test-cases/from-cookie-binding-test/{id}
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> delete
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> delete%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> get
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> get%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> patch
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> patch%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> post
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> post%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> put
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /api/test/hydrated-test-url-generator-test/{id}/{guid}/{stringBindFrom}/{nullableString}/{fromClaim}/{fromHeader}/{hasPermission} -> put%0Aopenapi/openapi.yml%0A[error] Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk customerSave.yml -> service -> endpoints -> GetCustomersCreateEndpoint1
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: refererID.
+                  [error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "RefererID" (name: "RefererID")
+                    - Path parameter "refererID" (name: "refererID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> GetCustomersCreateEndpoint1%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: refererID.%0A[error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "RefererID" (name: "RefererID")%0A  - Path parameter "refererID" (name: "refererID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> GetCustomersCreateEndpoint2
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: sourceID.
+                  [error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "SourceID" (name: "SourceID")
+                    - Path parameter "sourceID" (name: "sourceID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> GetCustomersCreateEndpoint2%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: sourceID.%0A[error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "SourceID" (name: "SourceID")%0A  - Path parameter "sourceID" (name: "sourceID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> GetCustomersCreateWithPropertiesDIEndpoint1
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: refererID.
+                  [error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "RefererID" (name: "RefererID")
+                    - Path parameter "refererID" (name: "refererID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> GetCustomersCreateWithPropertiesDIEndpoint1%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: refererID.%0A[error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "RefererID" (name: "RefererID")%0A  - Path parameter "refererID" (name: "refererID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> GetCustomersCreateWithPropertiesDIEndpoint2
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: sourceID.
+                  [error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "SourceID" (name: "SourceID")
+                    - Path parameter "sourceID" (name: "sourceID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> GetCustomersCreateWithPropertiesDIEndpoint2%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: sourceID.%0A[error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "SourceID" (name: "SourceID")%0A  - Path parameter "sourceID" (name: "sourceID")
+[api]: python-sdk inventory.yml -> service -> endpoints -> InventoryGetProductEndpoint
+                  inventory.yml
+                  [error] Path parameter is unreferenced in endpoint: productID.
+                  [error] Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "ProductID" (name: "ProductID")
+                    - Path parameter "productID" (name: "productID")
+                  
+::error title=[api]%3A python-sdk::inventory.yml -> service -> endpoints -> InventoryGetProductEndpoint%0Ainventory.yml%0A[error] Path parameter is unreferenced in endpoint: productID.%0A[error] Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "ProductID" (name: "ProductID")%0A  - Path parameter "productID" (name: "productID")
+[api]: python-sdk inventory.yml -> service -> endpoints -> InventoryListRecentEndpoint
+                  inventory.yml
+                  [error] Path parameter is unreferenced in endpoint: categoryID.
+                  [error] Multiple request properties resolve to the same generated name categoryId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "CategoryID" (name: "CategoryID")
+                    - Path parameter "categoryID" (name: "categoryID")
+                  
+::error title=[api]%3A python-sdk::inventory.yml -> service -> endpoints -> InventoryListRecentEndpoint%0Ainventory.yml%0A[error] Path parameter is unreferenced in endpoint: categoryID.%0A[error] Multiple request properties resolve to the same generated name categoryId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "CategoryID" (name: "CategoryID")%0A  - Path parameter "categoryID" (name: "categoryID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> PostCustomersCreateEndpoint1
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: refererID.
+                  [error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "RefererID" (name: "RefererID")
+                    - Path parameter "refererID" (name: "refererID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> PostCustomersCreateEndpoint1%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: refererID.%0A[error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "RefererID" (name: "RefererID")%0A  - Path parameter "refererID" (name: "refererID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> PostCustomersCreateEndpoint2
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: sourceID.
+                  [error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "SourceID" (name: "SourceID")
+                    - Path parameter "sourceID" (name: "sourceID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> PostCustomersCreateEndpoint2%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: sourceID.%0A[error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "SourceID" (name: "SourceID")%0A  - Path parameter "sourceID" (name: "sourceID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> PostCustomersCreateWithPropertiesDIEndpoint1
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: refererID.
+                  [error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "RefererID" (name: "RefererID")
+                    - Path parameter "refererID" (name: "refererID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> PostCustomersCreateWithPropertiesDIEndpoint1%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: refererID.%0A[error] Multiple request properties resolve to the same generated name refererId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "RefererID" (name: "RefererID")%0A  - Path parameter "refererID" (name: "refererID")
+[api]: python-sdk customerSave.yml -> service -> endpoints -> PostCustomersCreateWithPropertiesDIEndpoint2
+                  customerSave.yml
+                  [error] Path parameter is unreferenced in endpoint: sourceID.
+                  [error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "SourceID" (name: "SourceID")
+                    - Path parameter "sourceID" (name: "sourceID")
+                  
+::error title=[api]%3A python-sdk::customerSave.yml -> service -> endpoints -> PostCustomersCreateWithPropertiesDIEndpoint2%0AcustomerSave.yml%0A[error] Path parameter is unreferenced in endpoint: sourceID.%0A[error] Multiple request properties resolve to the same generated name sourceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "SourceID" (name: "SourceID")%0A  - Path parameter "sourceID" (name: "sourceID")
+[api]: python-sdk testCases.yml -> service -> endpoints -> TestCasesMissingHeaderTestDontThrowIfMissingEndpoint
+                  testCases.yml
+                  [error] Multiple request properties resolve to the same generated name tenantId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Endpoint header "tenantID" (name: "tenantId")
+                    - Body property: <Request Body> -> tenantID (name: "tenantID")
+                  
+::error title=[api]%3A python-sdk::testCases.yml -> service -> endpoints -> TestCasesMissingHeaderTestDontThrowIfMissingEndpoint%0AtestCases.yml%0A[error] Multiple request properties resolve to the same generated name tenantId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Endpoint header "tenantID" (name: "tenantId")%0A  - Body property: <Request Body> -> tenantID (name: "tenantID")
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> request -> body -> properties -> child
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestCircularFormData is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> request -> body -> properties -> child%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestCircularFormData is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> response -> type
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestCircularResponse is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestCircularEndpoint -> response -> type%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestCircularResponse is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> details
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestRequestDetails is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> details%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestRequestDetails is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> items
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestRequestItem is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> request -> body -> properties -> items%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestRequestItem is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> response -> type
+                  api.yml
+                  [error] Type root.TestCasesNestedFromFormBindingTestResponse is not defined.
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> response -> type%0Aapi.yml%0A[error] Type root.TestCasesNestedFromFormBindingTestResponse is not defined.
+[api]: python-sdk api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> examples[0] -> request
+                  api.yml
+                  [error] Unexpected property "details"
+                  [error] Unexpected property "items"
+                  
+::error title=[api]%3A python-sdk::api.yml -> service -> endpoints -> TestCasesNestedFromFormBindingTestEndpoint -> examples[0] -> request%0Aapi.yml%0A[error] Unexpected property "details"%0A[error] Unexpected property "items"
+[api]: python-sdk testCases.yml -> service -> endpoints -> TestCasesRouteBindingInEpWithoutReqEpWithoutReqRouteBindingTest
+                  testCases.yml
+                  [error] Path parameter is unreferenced in endpoint: customerID.
+                  [error] Path parameter is unreferenced in endpoint: otherID.
+                  [error] Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "CustomerID" (name: "CustomerID")
+                    - Path parameter "customerID" (name: "customerID")
+                  [error] Multiple request properties resolve to the same generated name otherId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "OtherID" (name: "OtherID")
+                    - Path parameter "otherID" (name: "otherID")
+                  
+::error title=[api]%3A python-sdk::testCases.yml -> service -> endpoints -> TestCasesRouteBindingInEpWithoutReqEpWithoutReqRouteBindingTest%0AtestCases.yml%0A[error] Path parameter is unreferenced in endpoint: customerID.%0A[error] Path parameter is unreferenced in endpoint: otherID.%0A[error] Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "CustomerID" (name: "CustomerID")%0A  - Path parameter "customerID" (name: "customerID")%0A[error] Multiple request properties resolve to the same generated name otherId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "OtherID" (name: "OtherID")%0A  - Path parameter "otherID" (name: "otherID")
+[api]: python-sdk __package__.yml -> types -> TestCasesDupeParamBindingForIEnumerablePropsResponse -> extends -> TestCasesDupeParamBindingForIEnumerablePropsRequest
+                  __package__.yml
+                  [error] Objects can only extend other objects, and TestCasesDupeParamBindingForIEnumerablePropsRequest is not an object.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> TestCasesDupeParamBindingForIEnumerablePropsResponse -> extends -> TestCasesDupeParamBindingForIEnumerablePropsRequest%0A__package__.yml%0A[error] Objects can only extend other objects, and TestCasesDupeParamBindingForIEnumerablePropsRequest is not an object.
+[api]: python-sdk __package__.yml -> types -> TestCasesJsonArrayBindingForIEnumerablePropsResponse -> extends -> TestCasesJsonArrayBindingForIEnumerablePropsRequest
+                  __package__.yml
+                  [error] Objects can only extend other objects, and TestCasesJsonArrayBindingForIEnumerablePropsRequest is not an object.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> TestCasesJsonArrayBindingForIEnumerablePropsResponse -> extends -> TestCasesJsonArrayBindingForIEnumerablePropsRequest%0A__package__.yml%0A[error] Objects can only extend other objects, and TestCasesJsonArrayBindingForIEnumerablePropsRequest is not an object.
+[api]: python-sdk Found 39 errors and 22 warnings in 0.855 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 39 errors and 22 warnings in 0.855 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

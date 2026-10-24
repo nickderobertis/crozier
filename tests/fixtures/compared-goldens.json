@@ -507,6 +507,7 @@
     "docs/openapi-surface/handwritten/event-stream-event-dispatch/fern-expected": {},
     "docs/openapi-surface/handwritten/event-stream-item-schema/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected": {},
+    "docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-slot-query/fern-expected": {},
     "docs/openapi-surface/handwritten/film-shot-planner/fern-expected": {},
@@ -894,6 +895,12 @@
     "tests/fixtures/dot-ai/expected": {},
     "tests/fixtures/dystore-api/expected": {},
     "tests/fixtures/dystore-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/ecommerce-ai-skills-runtime/expected": {},
+    "tests/fixtures/ecommerce-ai-skills-runtime/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

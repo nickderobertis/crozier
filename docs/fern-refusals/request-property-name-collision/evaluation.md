@@ -23,6 +23,17 @@ lift as Fern does. The population's eight documents at the pair (Rebilly's KYC
 requests and the Irrigator API, which are these two shapes, and Telnyx) all
 refuse under strict mode.
 
+A multipart body's properties are request properties beside the operation's
+query and header parameters, and Fern renames neither side: a `deck` header
+(`multipart-header`) or query parameter (`multipart-query`) beside a multipart
+`deck` property is refused, where the same header beside a JSON body's `deck`
+generates and the body field takes a prefix (`json-body-header`). A real
+document carries it: PancrePal-xiaoyibao's `POST /api/v1/upload` declares an
+`agent` header beside its form's `agent` field, recorded in the
+[operation-parameter combinations search](../../openapi-surface/witness-search-operation-combinations-parameters/README.md).
+Before this shape was detected crozier wrote a client whose method passes
+`agent` twice, which `ruff format` refuses as Python.
+
 crozier refuses each refused shape in both modes, naming the operation and the
 name. Generating would need a rename Fern does not make, so no Fern output is a
 reference for it. Fern generates, and crozier generates in both modes, a

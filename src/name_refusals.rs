@@ -341,6 +341,51 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                     }
                 }
             }
+            // A multipart body's properties are request properties beside the
+            // operation's query and header parameters, and Fern renames neither
+            // side: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a
+            // `deck` header or query parameter beside a multipart `deck` property
+            // is refused (`Multiple request properties have the name deck`, this
+            // class's `multipart-*` shapes), where a JSON body's field takes a
+            // prefix instead.
+            if let Some(body) = op.request_body.as_ref().filter(|body| {
+                !body.content.keys().any(|media| {
+                    let media = media.split(';').next().unwrap_or_default().trim();
+                    media == "application/json" || media.ends_with("+json")
+                })
+            }) {
+                for (media_type, media) in &body.content {
+                    let Some(schema) = media
+                        .schema
+                        .as_ref()
+                        .filter(|_| media_type.starts_with("multipart/form-data"))
+                    else {
+                        continue;
+                    };
+                    let mut properties = Vec::new();
+                    collect_property_names(
+                        schema,
+                        &doc.components.schemas,
+                        &mut std::collections::HashSet::new(),
+                        &mut properties,
+                        true,
+                    );
+                    if let Some((index, parameter)) =
+                        op.parameters.iter().enumerate().find(|(index, parameter)| {
+                            matches!(
+                                parameter.location,
+                                Some(
+                                    crate::openapi::ParameterLocation::Query
+                                        | crate::openapi::ParameterLocation::Header
+                                )
+                            ) && !promoted(parameter)
+                                && properties.contains(&names[*index].as_str())
+                        })
+                    {
+                        return Err(refusal(path, Class::RequestPropertyNameCollision, format!("{location} multipart body property {:?} collides with the {} parameter {:?}; give them distinct declared names", names[index], if parameter.location == Some(crate::openapi::ParameterLocation::Query) { "query" } else { "header" }, parameter.name)));
+                    }
+                }
+            }
             // A placeholder no parameter declares has no declared name either.
             for segment in route.split('{').skip(1) {
                 if let Some((name, _)) = segment.split_once('}') {
@@ -1538,6 +1583,29 @@ mod tests {
         // A referenced body is sent whole, so its `id` claims no request name.
         assert_eq!(
             shape_refusal("request-property-name-collision/path-referenced-body-control.yml"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_multipart_property_sharing_a_query_or_header_name_is_refused() {
+        for (shape, location) in [
+            ("multipart-header-probe.yml", "header"),
+            ("multipart-query-probe.yml", "query"),
+        ] {
+            let error = shape_refusal(&format!("request-property-name-collision/{shape}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains(&format!(
+                    "request-property-name-collision: POST /sailings/{{sailingId}}/bookings \
+                     multipart body property \"deck\" collides with the {location} parameter \"deck\""
+                )),
+                "{shape}: {error}"
+            );
+        }
+        // A JSON body's colliding field takes a prefix instead.
+        assert_eq!(
+            shape_refusal("request-property-name-collision/json-body-header-control.yml"),
             None
         );
     }

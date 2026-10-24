@@ -9766,6 +9766,7 @@ const CORPORA: &[&Corpus] = &[
     &FARMVIBES_AI,
     &RGB_LIGHTNING_NODE,
     &RAPIDATA_IDENTITY,
+    &ECOMMERCE_AI_SKILLS_RUNTIME,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12100,6 +12101,20 @@ const RGB_LIGHTNING_NODE: Corpus = Corpus {
 /// copy, witnessing a nullability-only `allOf` member beside a referenced model.
 const RAPIDATA_IDENTITY: Corpus = Corpus {
     api: "rapidata-identity",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ecommerce-ai-skills runtime API — corpus row 3400, the publisher's own
+/// repository's copy, witnessing header parameters typed by referenced string
+/// enums.
+const ECOMMERCE_AI_SKILLS_RUNTIME: Corpus = Corpus {
+    api: "ecommerce-ai-skills-runtime",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20022,6 +20037,13 @@ fn ahasend_api_matches_fern_output() {
 #[test]
 fn rapidata_identity_matches_fern_output() {
     assert_committed_corpus_matches(&RAPIDATA_IDENTITY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ecommerce_ai_skills_runtime_matches_fern_output() {
+    assert_committed_corpus_matches(&ECOMMERCE_AI_SKILLS_RUNTIME);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
