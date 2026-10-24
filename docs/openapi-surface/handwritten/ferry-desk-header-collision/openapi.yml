@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Ferry desk
+  version: 1.0.0
+  description: Books vehicle space on a small island ferry.
+servers:
+  - url: https://ferry.example.org
+paths:
+  /sailings:
+    get:
+      operationId: listSailings
+      tags: [sailings]
+      summary: List the day's sailings.
+      responses:
+        '200':
+          description: The sailings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sailing'
+  /sailings/{sailingId}/bookings:
+    post:
+      operationId: bookVehicle
+      tags: [sailings]
+      summary: Reserve deck space for one vehicle.
+      parameters:
+        - name: sailingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: deck
+          in: header
+          required: false
+          description: The deck the desk prefers to fill first.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [registration]
+              properties:
+                registration:
+                  type: string
+                  description: The vehicle's number plate.
+                deck:
+                  type: string
+                  description: The deck the driver asked for.
+
+      responses:
+        '201':
+          description: The booking.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+components:
+  schemas:
+    Sailing:
+      type: object
+      required: [id, departs]
+      properties:
+        id:
+          type: string
+        departs:
+          type: string
+          format: date-time
+    Booking:
+      type: object
+      required: [reference]
+      properties:
+        reference:
+          type: string
+        deck:
+          type: string

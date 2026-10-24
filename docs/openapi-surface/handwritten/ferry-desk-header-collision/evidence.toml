@@ -1,0 +1,9 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "1c4b36ea070a2c31b9d5768ae9fece76d1f98dfd6c930836dbcee81ae86449e9"
+
+[[covers]]
+key = "combo-body-property-named-as-header-param"
+search = "docs/openapi-surface/witness-search-operation-combinations-parameters/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-operation-combinations-parameters/README.md"

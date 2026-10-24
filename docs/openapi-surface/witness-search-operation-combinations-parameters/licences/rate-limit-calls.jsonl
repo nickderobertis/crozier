@@ -1,0 +1,3 @@
+{"at": "2026-10-24T15:36:31.549+00:00", "bucket": "core", "host": "github", "limit": 60, "remaining": 59, "reserved": 1, "reset": 1792859791, "resource": "core", "status": 200, "used": 1}
+{"at": "2026-10-24T15:36:32.618+00:00", "bucket": "core", "host": "github", "limit": 60, "remaining": 59, "reserved": 1, "reset": 1792859792, "resource": "core", "status": 200, "used": 1}
+{"at": "2026-10-24T15:36:33.569+00:00", "bucket": "core", "host": "github", "limit": 60, "remaining": 58, "reserved": 1, "reset": 1792859792, "resource": "core", "status": 200, "used": 2}

@@ -1,0 +1,192 @@
+[
+ {
+  "key": "combo-path-param-ref-pattern",
+  "fixture": "tlon-notes",
+  "removed": "target-pattern",
+  "edits": [
+   {
+    "pointer": "/paths/~1notes~1~0~1v1~1request~1{requestId}/get/parameters/0/schema",
+    "edit": "removed `pattern` from the referenced schema `#/components/schemas/RequestId`"
+   }
+  ],
+  "crozier": {
+   "before_files": 132,
+   "after_files": 132,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 132,
+   "after_files": 132,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 132
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-path-param-ref-pattern",
+  "fixture": "cyclonedx-transparency-exchange",
+  "removed": "target-pattern",
+  "edits": [
+   {
+    "pointer": "/paths/~1product~1{uuid}/get/parameters/0/schema",
+    "edit": "removed `pattern` from the referenced schema `#/components/schemas/uuid`"
+   }
+  ],
+  "crozier": {
+   "before_files": 118,
+   "after_files": 118,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 118,
+   "after_files": 118,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 118
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-path-param-ref-pattern",
+  "fixture": "discord-com",
+  "removed": "target-pattern",
+  "edits": [
+   {
+    "pointer": "/paths/~1channels~1{channel_id}~1users~1@me~1threads~1archived~1private/parameters/0/schema",
+    "edit": "removed `pattern` from the referenced schema `#/components/schemas/SnowflakeType`"
+   }
+  ],
+  "crozier": {
+   "before_files": 568,
+   "after_files": 568,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 568,
+   "after_files": 568,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 568
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-path-param-ref-pattern",
+  "fixture": "lighthouse-beacon-log",
+  "removed": "target-pattern",
+  "edits": [
+   {
+    "pointer": "/paths/~1beacons~1{beaconCode}/get/parameters/0/schema",
+    "edit": "removed `pattern` from the referenced schema `#/components/schemas/BeaconCode`"
+   }
+  ],
+  "crozier": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 42
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-array-default",
+  "fixture": "appwrite.io-client",
+  "removed": "default",
+  "edits": [
+   {
+    "pointer": "/paths/~1account~1sessions~1oauth2~1{provider}/get/parameters/3/schema",
+    "edit": "removed the parameter schema's `default`"
+   },
+   {
+    "pointer": "/paths/~1database~1collections~1{collectionId}~1documents/get/parameters/1/schema",
+    "edit": "removed the parameter schema's `default`"
+   }
+  ],
+  "crozier": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 93
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-query-param-array-default",
+  "fixture": "lighthouse-beacon-log",
+  "removed": "default",
+  "edits": [
+   {
+    "pointer": "/paths/~1beacons/get/parameters/0/schema",
+    "edit": "removed the parameter schema's `default`"
+   }
+  ],
+  "crozier": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 42,
+   "after_files": 42,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 42
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ }
+]
