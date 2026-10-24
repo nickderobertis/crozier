@@ -1118,6 +1118,12 @@
     "tests/fixtures/qontract-api/expected": {},
     "tests/fixtures/qredence-fleet-rlm/expected": {},
     "tests/fixtures/ramu-shogi/expected": {},
+    "tests/fixtures/rapidata-identity/expected": {},
+    "tests/fixtures/rapidata-identity/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/raybot/expected": {},
     "tests/fixtures/recursive-types/expected": {},
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},

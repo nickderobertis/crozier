@@ -11291,7 +11291,11 @@ fn inferred_strip_discriminant_property(
                     .map(|(_, target)| {
                         // A single-valued tag is a `const` or a one-member `enum`;
                         // both spell the same thing, and TrueForge's content parts
-                        // use the second (`type: {enum: ["text"]}`).
+                        // use the second (`type: string, enum: ["text"]`). An
+                        // `enum` without `type: string` is no tag here either, as
+                        // `untyped_enum_tag` says: Marimo's notification models
+                        // keep their bare `op: {enum: [...]}` fields under an
+                        // `anyOf` of `$ref`s that writes no discriminator.
                         let field = target
                             .required
                             .iter()
@@ -11305,7 +11309,7 @@ fn inferred_strip_discriminant_property(
                             .map(str::to_string)
                             .or_else(|| {
                                 string_enum_values(field)
-                                    .filter(|values| values.len() == 1)
+                                    .filter(|values| values.len() == 1 && !untyped_enum_tag(field))
                                     .map(|values| values[0].clone())
                             })
                     })
@@ -11519,9 +11523,15 @@ fn collect_discriminant_strips(
     standalone: &std::collections::HashSet<String>,
     strips: &mut std::collections::HashMap<String, String>,
 ) {
-    let property = schema
+    // A `discriminator` beside an `anyOf` with no `oneOf` is read as though none
+    // were written, as `discriminated_union` reads it: the members' own tags
+    // decide. Fern's member models drop typed tags there exactly as they do
+    // under an `anyOf` that writes no discriminator.
+    let discriminator = schema
         .discriminator
         .as_ref()
+        .filter(|_| schema.one_of.is_some() || schema.any_of.is_none());
+    let property = discriminator
         .map(|disc| disc.property_name.clone())
         .filter(|property| !property.is_empty())
         .or_else(|| inferred_strip_discriminant_property(schema, schemas));
@@ -11530,11 +11540,11 @@ fn collect_discriminant_strips(
         // every variant's own tag names it: Tally's `Block` declares only
         // `propertyName: type` over 45 `$ref` blocks, each with a one-value
         // `type` enum, and Fern's block models have no `type` field.
-        let unmapped_inferred = schema.discriminator.as_ref().is_some_and(|discriminator| {
+        let unmapped_inferred = discriminator.is_some_and(|discriminator| {
             discriminator.mapping.is_empty()
                 && inferred_strip_discriminant_property(schema, schemas).as_ref() == Some(&property)
         });
-        if schema.discriminator.is_none() || unmapped_inferred {
+        if discriminator.is_none() || unmapped_inferred {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 for variant in variants {
                     if let Some(reference) = &variant.reference {
@@ -11568,14 +11578,14 @@ fn collect_discriminant_strips(
         // A mapping to bare names Fern cannot resolve leaves the union unknown and
         // every member its own plain model, tag and all (Hasura's
         // `FunctionReturnType`).
-        let resolvable = schema.discriminator.as_ref().is_none_or(|discriminator| {
+        let resolvable = discriminator.is_none_or(|discriminator| {
             discriminator
                 .mapping
                 .values()
                 .all(|target| target.contains('/'))
         });
         if resolvable && (schema.one_of.is_some() || is_inheritance_union_base(schema)) {
-            if let Some(discriminator) = &schema.discriminator {
+            if let Some(discriminator) = discriminator {
                 for reference in discriminator.mapping.values() {
                     // Fern hoists the tag onto the union wrapper and drops it from
                     // the member model it consumed — unless that member is also
@@ -13181,7 +13191,7 @@ impl Builder<'_> {
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
                 docstring: declared_doc(collapsed_doc.or_else(|| {
-                    annotation_lost_description(prop_schema, self.schemas)
+                    annotation_lost_description(prop_schema, self.schemas, optional)
                         .unwrap_or_else(|| property_description(prop_schema, optional))
                         .or_else(|| {
                             described_all_of_ref(prop_schema)
@@ -14037,6 +14047,15 @@ impl Builder<'_> {
             // model extending (or flattening) that `$ref`, not the `$ref` itself:
             // Timely's `V1.Hour.state` adds eleven properties to `V1.State`, and
             // Fern declares `V1HourState` under the property's description.
+            // An `allOf` around one inline array, map or scalar is that member:
+            // Rapidata's identity API writes `contacts: {allOf: [{type: array,
+            // items: {type: string}, nullable: true}], description: …}`, and Fern
+            // types the field `Optional[List[str]]`, not a model of its own.
+            if let Some(member) = sole_inline_all_of(prop_schema) {
+                if !is_inline_struct(member) {
+                    return self.field_type_ref(owner, prop, member);
+                }
+            }
             let extends_with_own_properties =
                 single_all_of_ref(prop_schema).is_some() && !prop_schema.properties.is_empty();
             if is_inline_struct(prop_schema)
@@ -15126,8 +15145,18 @@ impl Builder<'_> {
             target.ty.as_ref().and_then(TypeField::primary),
             Some("string" | "integer" | "number" | "boolean")
         );
-        (scalar && target.enum_values.is_none() && target.reference.is_none())
-            .then(|| base_type_ref(target))
+        if !(scalar && target.enum_values.is_none() && target.reference.is_none()) {
+            return None;
+        }
+        // A lone `$ref` member, annotated only beside the `allOf`, aliases the
+        // referenced component itself: a `{allOf: [$ref ConeNumber], default: 6}`
+        // component is `TargetCone = ConeNumber` in Fern's output, where an
+        // annotating member of its own (MockServer's `{default: 0}`) makes it the
+        // bare scalar.
+        if members.len() == 1 {
+            return Some(TypeRef::Named(ref_to_class(reference)));
+        }
+        Some(base_type_ref(target))
     }
 
     fn push_alias(
@@ -17199,7 +17228,18 @@ fn is_empty_schema(schema: &Schema) -> bool {
 fn annotation_lost_description<'a>(
     prop_schema: &'a Schema,
     schemas: &'a IndexMap<String, Schema>,
+    optional: bool,
 ) -> Option<Option<&'a str>> {
+    // A required property `allOf` around one inline array, map or scalar is
+    // converted as that member, and the description beside the `allOf` is lost
+    // with it: Rapidata's identity API documents `capabilities` that way, and
+    // Fern's required field carries no docstring. An optional one's wrapper keeps
+    // it, as Rapidata's optional `contacts` request field shows.
+    if let Some(member) = sole_inline_all_of(prop_schema).filter(|_| !optional) {
+        if !is_inline_struct(member) {
+            return Some(member.description.as_deref());
+        }
+    }
     let (reference, _) = described_all_of_ref(prop_schema)?;
     let target = resolve_ref_from_schemas(schemas, reference)?;
     sole_inline_all_of_element(target).map(|inner| inner.description.as_deref())
@@ -17670,8 +17710,12 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         // are expanded to four spaces by its importer.
         // A description that opens on a line break keeps it: Groupe PSA's
         // `CallbackSubscribe.batchNotify` begins `\nNotification batch…`, and its
-        // model docstring opens on a blank line.
+        // model docstring opens on a blank line. A description of several lines
+        // keeps its opening indentation too: Rapidata's `ExternalAppId` begins
+        // with sixteen spaces before three more lines, and Fern's enum docstring
+        // keeps all sixteen.
         let text = if text.starts_with("    ") && text.contains("\n\n    Attributes:")
+            || text.starts_with(' ') && text.contains('\n')
             || text.starts_with(' ')
                 && text
                     .get(1..)
@@ -17705,7 +17749,10 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
     if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
+        // A description of several lines keeps its opening indentation, as in
+        // [`clean_doc`] (Rapidata's `ExternalAppId`).
         let trimmed = if trimmed.starts_with("    ") && trimmed.contains("\n\n    Attributes:")
+            || trimmed.starts_with(' ') && trimmed.contains('\n')
             || trimmed.starts_with(' ')
                 && trimmed
                     .get(1..)
@@ -21131,6 +21178,182 @@ mod tests {
         } }),
         );
         assert_eq!(builder.map_member_type("Gauge", &plain), None);
+    }
+
+    #[test]
+    fn untyped_one_value_tags_strip_nothing_from_reference_only_unions() {
+        let mut schemas = indexmap::IndexMap::new();
+        for (name, tag) in [("Opened", "opened"), ("Closed", "closed")] {
+            schemas.insert(
+                name.to_string(),
+                schema(serde_json::json!({
+                    "type": "object",
+                    "required": ["op", "at"],
+                    "properties": {
+                        "op": { "enum": [tag] },
+                        "at": { "type": "string" }
+                    }
+                })),
+            );
+        }
+        let union = schema(serde_json::json!({ "anyOf": [
+            { "$ref": "#/components/schemas/Opened" },
+            { "$ref": "#/components/schemas/Closed" }
+        ] }));
+        // A bare one-member `enum` beside no `type: string` tags nothing, so the
+        // member models keep `op`.
+        assert_eq!(
+            super::inferred_strip_discriminant_property(&union, &schemas),
+            None
+        );
+        // The same tags declaring `type: string` are stripped.
+        for name in ["Opened", "Closed"] {
+            let model = schemas.get_mut(name).expect("member");
+            let op = model.properties.get_mut("op").expect("tag");
+            op.ty = schema(serde_json::json!({ "type": "string" })).ty;
+        }
+        assert_eq!(
+            super::inferred_strip_discriminant_property(&union, &schemas).as_deref(),
+            Some("op")
+        );
+    }
+
+    #[test]
+    fn a_discriminator_beside_any_of_strips_as_though_unwritten() {
+        let mut schemas = indexmap::IndexMap::new();
+        for (name, tag) in [("Sealed", "sealed"), ("Vented", "vented")] {
+            schemas.insert(
+                name.to_string(),
+                schema(serde_json::json!({
+                    "type": "object",
+                    "required": ["result"],
+                    "properties": { "result": { "type": "string", "enum": [tag] } }
+                })),
+            );
+        }
+        let members = serde_json::json!([
+            { "$ref": "#/components/schemas/Sealed" },
+            { "$ref": "#/components/schemas/Vented" }
+        ]);
+        let discriminator = serde_json::json!({
+            "propertyName": "result",
+            "mapping": {
+                "sealed": "#/components/schemas/Sealed",
+                "vented": "#/components/schemas/Vented"
+            }
+        });
+        let strips_of = |union: serde_json::Value| {
+            let mut all = schemas.clone();
+            all.insert("Closure".to_string(), schema(union));
+            super::discriminant_strips(&all, &std::collections::HashSet::new())
+        };
+        let written =
+            strips_of(serde_json::json!({ "anyOf": members, "discriminator": discriminator }));
+        let unwritten = strips_of(serde_json::json!({ "anyOf": members }));
+        // The members' typed tags are stripped either way.
+        assert_eq!(written, unwritten);
+        assert_eq!(written.get("Sealed").map(String::as_str), Some("result"));
+        // Beside a `oneOf` the written discriminator is read.
+        let one_of =
+            strips_of(serde_json::json!({ "oneOf": members, "discriminator": discriminator }));
+        assert_eq!(one_of.get("Vented").map(String::as_str), Some("result"));
+    }
+
+    #[test]
+    fn a_property_all_of_around_one_container_is_that_container() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        let array = schema(serde_json::json!({
+            "allOf": [{ "type": "array", "items": { "type": "string" }, "nullable": true }],
+            "description": "Ways to reach the owner."
+        }));
+        assert_eq!(
+            builder.field_type_ref("Owner", "contacts", &array),
+            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+        let map = schema(serde_json::json!({
+            "allOf": [{ "type": "object", "additionalProperties": { "type": "string" } }]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Survey", "fields", &map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Str))
+            )
+        );
+        assert!(builder.types.is_empty(), "no wrapper model is declared");
+        // One inline object member is still a model of its own.
+        let object = schema(serde_json::json!({
+            "allOf": [{ "type": "object", "properties": { "id": { "type": "string" } } }]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Owner", "badge", &object),
+            TypeRef::Named("OwnerBadge".to_string())
+        );
+        // The description beside the collapsed `allOf` is lost on a required
+        // field and kept on an optional one.
+        assert_eq!(
+            super::annotation_lost_description(&array, &schemas, false),
+            Some(None)
+        );
+        assert_eq!(
+            super::annotation_lost_description(&array, &schemas, true),
+            None
+        );
+    }
+
+    #[test]
+    fn a_lone_scalar_reference_with_sibling_annotations_aliases_the_component() {
+        let mut schemas = indexmap::IndexMap::new();
+        schemas.insert(
+            "ConeNumber".to_string(),
+            schema(serde_json::json!({ "type": "integer" })),
+        );
+        let builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        let sibling = schema(serde_json::json!({
+            "allOf": [{ "$ref": "#/components/schemas/ConeNumber" }],
+            "default": 6
+        }));
+        assert_eq!(
+            builder.annotated_scalar_all_of(&sibling),
+            Some(TypeRef::Named("ConeNumber".to_string()))
+        );
+        // An annotating member of its own makes it the bare scalar.
+        let member = schema(serde_json::json!({
+            "allOf": [{ "$ref": "#/components/schemas/ConeNumber" }, { "default": 6 }]
+        }));
+        assert_eq!(
+            builder.annotated_scalar_all_of(&member),
+            Some(TypeRef::Primitive(Prim::Int))
+        );
+    }
+
+    #[test]
+    fn a_description_of_several_lines_keeps_its_opening_indentation() {
+        let text = "        First line.\n        Second line.";
+        assert_eq!(super::clean_doc(Some(text)), Some(text.to_string()));
+        assert_eq!(super::operation_doc(Some(text)), Some(text.to_string()));
+        // One line is trimmed as before.
+        assert_eq!(
+            super::clean_doc(Some("    One line.")),
+            Some("One line.".to_string())
+        );
+        assert_eq!(
+            super::operation_doc(Some("    One line.")),
+            Some("One line.".to_string())
+        );
     }
 
     #[test]

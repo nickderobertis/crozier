@@ -111,6 +111,7 @@ const KINDS: &[Kind] = &[
             "zulip",
             "nimisampo",
             "mockserver",
+            "rapidata-identity",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

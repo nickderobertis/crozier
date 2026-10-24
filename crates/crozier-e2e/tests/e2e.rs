@@ -9757,6 +9757,7 @@ const CORPORA: &[&Corpus] = &[
     &AHASEND_API,
     &FARMVIBES_AI,
     &RGB_LIGHTNING_NODE,
+    &RAPIDATA_IDENTITY,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12078,6 +12079,19 @@ const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
 /// RGB Lightning Node: corpus row 3203, typed request examples and a declared union example.
 const RGB_LIGHTNING_NODE: Corpus = Corpus {
     api: "rgb-lightning-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Rapidata Identity API — corpus row 3300, the publisher's own SDK repository's
+/// copy, witnessing a nullability-only `allOf` member beside a referenced model.
+const RAPIDATA_IDENTITY: Corpus = Corpus {
+    api: "rapidata-identity",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20001,6 +20015,13 @@ fn ahasend_api_matches_fern_output() {
 fn rgb_lightning_node_matches_fern_output() {
     assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn rapidata_identity_matches_fern_output() {
+    assert_committed_corpus_matches(&RAPIDATA_IDENTITY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[cfg(unix)]
 #[test]

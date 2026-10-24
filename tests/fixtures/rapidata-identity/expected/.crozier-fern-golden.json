@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "rapidata-identity",
+  "corpus_spec_ref": "849d81d5ed27baaa50acf7536c12f2c1b0ffed5c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/RapidataAI/rapidata-python-sdk/849d81d5ed27baaa50acf7536c12f2c1b0ffed5c/openapi/schemas/identity.openapi.json"
+}

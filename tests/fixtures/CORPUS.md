@@ -1902,3 +1902,14 @@ bounded search and attribution are recorded in
 | 3201 | `farmvibes-ai` | github-raw | https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json | `d10670e18742d05aec50f73e4695d47978908994` | MIT (publisher LICENSE, retained in licenses/farmvibes-MIT.txt) | committed | Inline composed request body with a media example and nested free-form JSON |
 | 3202 | `ahasend-api` | github-raw | https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml | `831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4` | MIT (document info.license) | committed | Endpoint media examples supersede whole component examples without mixing their fields |
 | 3203 | `rgb-lightning-node` | github-raw | https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml | `d4762ac3d1b3ca83f2f7b4f894e8569109dc572a` | MIT (document info.license) | committed | Request examples containing typed maps, discriminator constructors, empty model arrays and a declared oneOf schema example |
+
+## Schema model and union combinations
+
+This specification is published in its publisher's own SDK repository. Its
+models compose referenced objects with a nullability-only `allOf` member; the
+bounded search and the removal controls are recorded in
+[`witness-search-schema-combinations-models-unions-refs`](../../docs/openapi-surface/witness-search-schema-combinations-models-unions-refs/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3300 | `rapidata-identity` | github-raw | https://raw.githubusercontent.com/RapidataAI/rapidata-python-sdk/849d81d5ed27baaa50acf7536c12f2c1b0ffed5c/openapi/schemas/identity.openapi.json | `849d81d5ed27baaa50acf7536c12f2c1b0ffed5c` | Apache-2.0 (publisher LICENSE, retained in licenses/rapidata-python-sdk-Apache-2.0.txt) | committed | Referenced models composed with a nullability-only `allOf` member; single-member `allOf` arrays and maps on properties |

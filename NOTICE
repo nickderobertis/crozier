@@ -672,3 +672,8 @@ rgb-lightning-node API specification and generated SDK golden:
     https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml
     MIT (document info.license); corpus row 3203 retains the immutable revision. Source bytes
     and the complete generated tree are vendored, with Python comments stripped.
+
+rapidata-identity API specification and generated SDK golden:
+    https://raw.githubusercontent.com/RapidataAI/rapidata-python-sdk/849d81d5ed27baaa50acf7536c12f2c1b0ffed5c/openapi/schemas/identity.openapi.json
+    Apache-2.0 (publisher LICENSE, retained in licenses/rapidata-python-sdk-Apache-2.0.txt); corpus row 3300 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
