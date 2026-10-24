@@ -18196,6 +18196,26 @@ class ScenarioProofIndexTests(unittest.TestCase):
             [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
         )
 
+    def test_diff_hunks_read_the_unexplained_original_line_note(self) -> None:
+        diff = textwrap.dedent(
+            """\
+            --- reference/a.py
+            +++ crozier/a.py
+              kept
+            - old
+            + new
+
+            Unexplained original crozier line(s): 2, 14
+            --- reference/b.py
+            +++ crozier/b.py
+            + added
+            """
+        )
+        self.assertEqual(
+            [("a.py", "-2,1 +2,1"), ("b.py", "-1,0 +1,1")],
+            [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
+        )
+
     def test_a_malformed_diff_is_refused(self) -> None:
         module = self.index_script
         cases = {
@@ -18205,6 +18225,12 @@ class ScenarioProofIndexTests(unittest.TestCase):
             ),
             "--- reference/a.py\n+++ crozier/a.py\n@@ -1 +1 @@\n": "is no context, change or elision line",
             "stray text\n": "is outside any file of the diff",
+            "--- reference/a.py\n+++ crozier/a.py\n- x\nUnexplained original crozier line(s): 0\n": (
+                "is no context, change or elision line"
+            ),
+            "--- reference/a.py\n+++ crozier/a.py\n- x\nUnexplained original crozier line(s): 3\n  kept\n": (
+                "is outside any file of the diff"
+            ),
             "# crozier compare: crozier.yml python\n--- reference/a.py\n+++ crozier/a.py\n  kept\n": "no difference",
         }
         for text, message in cases.items():

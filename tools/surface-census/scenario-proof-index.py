@@ -916,8 +916,10 @@ def diff_hunks(text: str) -> list[Hunk]:
     """Each change of a `crozier compare` diff, as `-start,count +start,count` or a one-sided file.
 
     Raises MalformedDiff on any line that is not the normalized diff's: a file
-    header pair, a one-sided file, a context, change or elision line, a `#`
-    comment or a blank line; and on a diff with no difference at all.
+    header pair, a one-sided file, a context, change or elision line, the
+    `Unexplained original crozier line(s): N, …` note that closes a file whose
+    departure regions moved lines, a `#` comment or a blank line; and on a diff
+    with no difference at all.
     """
     hunks: list[Hunk] = []
     current: str | None = None
@@ -959,6 +961,9 @@ def diff_hunks(text: str) -> list[Hunk]:
         elif line == "" or line.startswith("  "):
             reference += 1
             crozier += 1
+        elif re.match(r"^Unexplained original crozier line\(s\): [1-9]\d*(, [1-9]\d*)*$", line):
+            # A note on positions, not a line of either file; the file it closes ends here.
+            current = None
         else:
             raise MalformedDiff(f"line {number}: `{line[:60]}` is no context, change or elision line")
     if not hunks:
