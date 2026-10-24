@@ -962,7 +962,9 @@ def diff_hunks(text: str) -> list[Hunk]:
             reference += 1
             crozier += 1
         elif re.match(r"^Unexplained original crozier line\(s\): [1-9]\d*(, [1-9]\d*)*$", line):
-            # A note on positions, not a line of either file; the file it closes ends here.
+            # src/parity.rs FileComparisonWithOrigins::diff writes this note on positions,
+            # not a line of either file; the file it closes ends here. The e2e
+            # scenario_proof_index_reads_the_diff_crozier_compare_writes holds the two together.
             current = None
         else:
             raise MalformedDiff(f"line {number}: `{line[:60]}` is no context, change or elision line")

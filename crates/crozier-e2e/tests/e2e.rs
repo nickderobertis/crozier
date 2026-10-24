@@ -3427,6 +3427,15 @@ fn scenario_proof_index_reads_the_diff_crozier_compare_writes() {
         .map(|entry| entry.unwrap().path())
         .collect();
     assert_eq!(written.len(), 1, "{written:?}");
+    // The changed line sits after length-changing departure regions, so the
+    // diff closes with compare's note of its original crozier position: the
+    // reader is held to that note as written, not to a restatement of it.
+    let diff = std::fs::read_to_string(&written[0]).unwrap();
+    assert!(
+        diff.lines()
+            .any(|line| line.starts_with("Unexplained original crozier line(s): ")),
+        "{diff}"
+    );
     let read = std::process::Command::new(python)
         .arg(repo_root().join("tools/surface-census/scenario-proof-index.py"))
         .arg("hunks")
