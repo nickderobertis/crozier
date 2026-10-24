@@ -1,0 +1,80 @@
+[
+  {
+    "repository": "RapidataAI/rapidata-python-sdk",
+    "revision": "849d81d5ed27baaa50acf7536c12f2c1b0ffed5c",
+    "url": "https://api.github.com/repos/RapidataAI/rapidata-python-sdk/license?ref=849d81d5ed27baaa50acf7536c12f2c1b0ffed5c",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+    "license_detection": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "content_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "content_file": "RapidataAI-rapidata-python-sdk-LICENSE"
+  },
+  {
+    "repository": "Stellar-Mail/stealth",
+    "revision": "d4fbdbf812f0cd9c83c118850e5fd397dc5722a8",
+    "url": "https://api.github.com/repos/Stellar-Mail/stealth/license?ref=d4fbdbf812f0cd9c83c118850e5fd397dc5722a8",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "inconceivablelabs/fabric-api",
+    "revision": "a1966b74b5653bd4151c3c1d2cda5ea8d50cf731",
+    "url": "https://api.github.com/repos/inconceivablelabs/fabric-api/license?ref=a1966b74b5653bd4151c3c1d2cda5ea8d50cf731",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "2b481319cb2616112bb821ec09b2b48685b0edc8",
+    "license_detection": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "content_sha256": "577cc64bbfb8c6cbcfa66342dd67da2c610d8acd81dc5d4689a5625359e57985",
+    "content_file": "inconceivablelabs-fabric-api-LICENSE"
+  },
+  {
+    "repository": "murithigeo/ogc-edr-api",
+    "revision": "13a8c28ed2dd5d169ec4b1afea0bb08f8325ded0",
+    "url": "https://api.github.com/repos/murithigeo/ogc-edr-api/license?ref=13a8c28ed2dd5d169ec4b1afea0bb08f8325ded0",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "vickz84259/lolesports-api-docs",
+    "revision": "74027a7950c7e4629d3cab01ddd3990457a9956d",
+    "url": "https://api.github.com/repos/vickz84259/lolesports-api-docs/license?ref=74027a7950c7e4629d3cab01ddd3990457a9956d",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "e688798ab040c7c31c199d8e5856b71dadd2ab08",
+    "license_detection": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "content_sha256": "b779ef112f45b7d9e8774ed6975353f12cbc83e466104cdf61bfae36eaa959e7",
+    "content_file": "vickz84259-lolesports-api-docs-LICENSE"
+  }
+]

@@ -370,6 +370,7 @@
     "docs/fern-measurements/schema-shapes/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
@@ -1118,6 +1119,12 @@
     "tests/fixtures/qontract-api/expected": {},
     "tests/fixtures/qredence-fleet-rlm/expected": {},
     "tests/fixtures/ramu-shogi/expected": {},
+    "tests/fixtures/rapidata-identity/expected": {},
+    "tests/fixtures/rapidata-identity/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/raybot/expected": {},
     "tests/fixtures/recursive-types/expected": {},
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},

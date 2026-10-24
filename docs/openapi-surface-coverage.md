@@ -119,8 +119,8 @@ split five ways:
 502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 8 are `gap`, 81 are `golden` and 2 are `handwritten`.
-2 of the `gap` ones are decided output-insensitive in
+([the list](openapi-surface/combinations.md)): 14 are `gap`, 75 are `golden` and 2 are `handwritten`.
+8 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 None is among the 721 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
@@ -2334,8 +2334,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 282 sources. The walk reads the
-  **265** registered sources, of which **265** carry a committed golden; the 17
+  acquires 283 sources. The walk reads the
+  **266** registered sources, of which **266** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category

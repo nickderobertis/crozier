@@ -12319,8 +12319,15 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertFalse(bounded_incomplete_search(self.root, key, windows_reason.replace("openapi-surface", "..")))
 
     def test_a_gap_combination_row_missing_from_its_named_table_is_refused(self) -> None:
-        gap = sorted(key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "gap")
-        self.assertTrue(gap, "the committed tree carries no gap combination row to drop")
+        # A `gap` row the shared table decides output-insensitive is never named,
+        # so the row to drop is one the named table lists.
+        named = named_gap_combinations(self.root)
+        gap = sorted(
+            key
+            for key, (_r, cells) in combination_rows(self.root).items()
+            if cells[3].strip("`") == "gap" and key in named
+        )
+        self.assertTrue(gap, "the committed tree carries no named gap combination row to drop")
         key = gap[0]
         doc = "docs/openapi-surface-coverage.md"
         line = next(

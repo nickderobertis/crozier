@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Glaze Batch Tracker
+  version: 0.3.0
+paths:
+  /batches:
+    post:
+      operationId: mixBatch
+      tags: [batches]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchOrder'
+      responses:
+        '200':
+          description: The mixed batch.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchOrder'
+components:
+  schemas:
+    BatchOrder:
+      type: object
+      required: [recipe, source]
+      properties:
+        recipe:
+          type: string
+        source:
+          description: Where the raw materials come from.
+          discriminator:
+            propertyName: kind
+          oneOf:
+            - type: object
+              required: [kind, bin]
+              properties:
+                kind:
+                  type: string
+                  enum: [stockroom]
+                bin:
+                  type: string
+        finish:
+          discriminator:
+            propertyName: method
+          oneOf:
+            - type: object
+              required: [method, seconds]
+              properties:
+                method:
+                  type: string
+                  enum: [dipped]
+                seconds:
+                  type: integer
+            - type: object
+              required: [method, coats]
+              properties:
+                method:
+                  type: string
+                  enum: [brushed]
+                coats:
+                  type: integer

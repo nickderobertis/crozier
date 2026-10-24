@@ -1,0 +1,1163 @@
+[
+ {
+  "key": "combo-allof-nullable-member",
+  "fixture": "hse",
+  "removed": "member-nullable-field",
+  "edits": [
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema",
+    "edit": "removed `nullable` from every `allOf` member writing it"
+   },
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema/allOf/1/properties/nodes/items",
+    "edit": "removed `nullable` from every `allOf` member writing it"
+   },
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema/allOf/1/properties/nodes/items/allOf/1/properties/kvsets/oneOf/1/items",
+    "edit": "removed `nullable` from every `allOf` member writing it"
+   },
+   {
+    "pointer": "/components/schemas/performanceCounters/items/properties/counters/items/anyOf/2",
+    "edit": "removed `nullable` from every `allOf` member writing it"
+   },
+   {
+    "pointer": "/components/schemas/performanceCounters/items/properties/counters/items/anyOf/4",
+    "edit": "removed `nullable` from every `allOf` member writing it"
+   }
+  ],
+  "crozier": {
+   "before_files": 97,
+   "after_files": 97,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 97,
+   "after_files": 97,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 97
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-allof-nullable-member",
+  "fixture": "hse",
+  "removed": "nullable-member",
+  "edits": [
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema",
+    "edit": "removed every `allOf` member writing `nullable`"
+   },
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema/allOf/1/properties/nodes/items",
+    "edit": "removed every `allOf` member writing `nullable`"
+   },
+   {
+    "pointer": "/paths/~1kvdbs~1{alias}~1kvs~1{kvsName}~1cn~1tree/get/responses/200/content/application~1json/schema/allOf/1/properties/nodes/items/allOf/1/properties/kvsets/oneOf/1/items",
+    "edit": "removed every `allOf` member writing `nullable`"
+   },
+   {
+    "pointer": "/components/schemas/performanceCounters/items/properties/counters/items/anyOf/2",
+    "edit": "removed every `allOf` member writing `nullable`"
+   },
+   {
+    "pointer": "/components/schemas/performanceCounters/items/properties/counters/items/anyOf/4",
+    "edit": "removed every `allOf` member writing `nullable`"
+   }
+  ],
+  "crozier": {
+   "before_files": 97,
+   "after_files": 90,
+   "changed": {
+    "reference.md": {
+     "before": "82ed0de679468bacb098972f890d61cb0fe784e29835882731207441d515b1a9",
+     "after": "9641ecdc5278d9a9e06cac0e4ba4e793816f440956d8a5d4bfb31b8874a4d341"
+    },
+    "src/fern/__init__.py": {
+     "before": "6a8521c8339448bfe4b2d99ee9cc6973c2b0fd612873960a20ce28793d10f77d",
+     "after": "c16a928c46d63ed0819ab890b4227cf65cbf3a54cad120dbf4d9510c1253686c"
+    },
+    "src/fern/kvs/__init__.py": {
+     "before": "4a623e6b987c9bf404ca8b886b0bb72334c3c1fbe7b36416a845a2311ca6bd9e",
+     "after": "0dd6ac0390d6c86593f0b490bdf46303db1614f0b4120104adb2327f634fe16b"
+    },
+    "src/fern/kvs/client.py": {
+     "before": "ae3a279c978f04fcbe858a53614d3476c9149c597eabf277908648d8bbe6c699",
+     "after": "4d5a93e0c29857c5539785ac7ef6ae2b69729898d868dccccfdf7533fca785b5"
+    },
+    "src/fern/kvs/raw_client.py": {
+     "before": "9ae16e6264262de70fdaca6059212c57d76563d49085d4ceca88243952bbd07a",
+     "after": "96cdd647d14695aea08ec88cd8c8b14e5a39c52edc1d3bd1f7c7b18aed21c4da"
+    },
+    "src/fern/kvs/types/__init__.py": {
+     "before": "30b17f4ac84ce826d9413bfeab9212496aa0daa8cb8f22a133437593f1238559",
+     "after": "3dc7c54daeb60702eeb377447ce5478c14a67d3ed663ca2ede2acd79eef80cb3"
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response.py": {
+     "before": "d644d735228c05b43cc115e48ebe270d65bbbd264ba0e6b783c641755a32ab72",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item.py": {
+     "before": "c19cba6a0203dc3de848b31f9fde4c7a73f754cd1652aac8ef6df487749838c1",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets.py": {
+     "before": "289ad969948cf51e87409d5623bf666ff0173993d444babc675478191fb0f24b",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets_one_item.py": {
+     "before": "1cc90068c0b8c479363a207e740ba36a1eaa5468de3735f289ca709b3e7fc5fd",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets_one_item_job.py": {
+     "before": "55c04022ae3059b48a43376bd1f91f62526ace635a5a392c2c7e15f75147383b",
+     "after": null
+    },
+    "src/fern/types/__init__.py": {
+     "before": "9b6a217e2fad2e4b4ee181aba9a0953714dfdc56d88dd2d349126847ca22a870",
+     "after": "32a2abaaa0dc6b1605a6db2439c06fab4c22ec8dcda6d6310bbcefb48d38f046"
+    },
+    "src/fern/types/performance_counters_item_counters_item.py": {
+     "before": "87e667c7cc528a04e0257b44415469bf785f8af78183c25731b3f4caf089558d",
+     "after": "554a07fb4ab69c662d271b8929ef1b9370842f0d3f532e1f0fc1352f65670706"
+    },
+    "src/fern/types/performance_counters_item_counters_item_four.py": {
+     "before": "1505e8c37715da4ee92eb4c57acbec4305cf997174014d123f0715ee6b2bb59a",
+     "after": "664545d928281032279041efa7dd982d8aebd6403d7c5c3efb5ec401a595d09d"
+    },
+    "src/fern/types/performance_counters_item_counters_item_four_histogram_item.py": {
+     "before": "8d969b3539d07770e284b20f624a8d49c1e95c544733180a3f730513e1beeeb5",
+     "after": null
+    },
+    "src/fern/types/performance_counters_item_counters_item_two.py": {
+     "before": "cf59c42abd372df5742b26b613b7a0bb7012b9451fc3b2b37612b9f39727b753",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 97,
+   "after_files": 89,
+   "changed": {
+    "reference.md": {
+     "before": "82ed0de679468bacb098972f890d61cb0fe784e29835882731207441d515b1a9",
+     "after": "9641ecdc5278d9a9e06cac0e4ba4e793816f440956d8a5d4bfb31b8874a4d341"
+    },
+    "src/fern/__init__.py": {
+     "before": "95b60ebe84d30606c2efb2647b82bc73e160f480c23f71a93a95ef17ee479f5e",
+     "after": "c97d51685ddae107e920d46ee0baa61b282bd2ed257eba6bcbdc8ec5371cfcc2"
+    },
+    "src/fern/kvs/__init__.py": {
+     "before": "11db3bc3888b2b96654d0349c2eb6078f02f27f279c5894019fa895cdbff2a1c",
+     "after": "f3d11693d4a396dc4b043f6cce4764d968be47b3f683fe363e03b2a04910c176"
+    },
+    "src/fern/kvs/client.py": {
+     "before": "f5c226f6f1afb5a434546288651651fac3a657b7d550c100d96e4a9aac7ed8d1",
+     "after": "0411d525c69c89351583cc5074aab361ed05184b5e5c5c7eefb7648c7a84844f"
+    },
+    "src/fern/kvs/raw_client.py": {
+     "before": "bea0cbef28e8fa9e552b5da6111854faa2b6d0a06aedd2b5fe3747dd5b36c9d8",
+     "after": "c6ddce0fcaaa683183e48485873ebac90f8b0055eb4004627a11c1f824d83630"
+    },
+    "src/fern/kvs/types/__init__.py": {
+     "before": "bde4688a7a2173564f39d30425b68e7815f4d28730e7c60869af4ecacd7895fc",
+     "after": "50d4ee8493cd2dc345101a1e5be41ed57641e5b38bb83d3330b9d424af28eee6"
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response.py": {
+     "before": "81319ed089418a8cb0d66954fc17c2ced30d90cf9b8b9ef38505c51904a6520d",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item.py": {
+     "before": "ddc0b39f0e64feea0e37dfa0da62b51e138d3d9be986a6828f87ae5595501e93",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets.py": {
+     "before": "756a77794ac981d0c69cf5733b2f5db52dfcecc50a6f00192102340eb78775aa",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets_one_item.py": {
+     "before": "c9bc51531f7ecf1bb6cafe77fbfc63b42d1402a182bbc74c8fc100c435adca25",
+     "after": null
+    },
+    "src/fern/kvs/types/kvs_cn_tree_get_response_nodes_item_kvsets_one_item_job.py": {
+     "before": "c909206c16678fcface7d696402577bb3e9e6f1501399b9a5c90f533c5d19cdd",
+     "after": null
+    },
+    "src/fern/types/__init__.py": {
+     "before": "f154ca0d09b4113a765b630dc5f6def77b2e28f6bc8c8fe3041684cdc67d4815",
+     "after": "cf51f0f6694b3a8563521e17cf607ca39fedadcafd7896b05fab15ccca593323"
+    },
+    "src/fern/types/performance_counters_item_counters_item.py": {
+     "before": "dd65d4040f3584cbcb5eae496498bc8c6bc349415f174f19899481ac4d403566",
+     "after": "46e57820428625594dcc1cea686897fa830c87ae1438387575bcf7e9f4b0f8f6"
+    },
+    "src/fern/types/performance_counters_item_counters_item_four.py": {
+     "before": "35b8380366a3e16c8e6b7faa33b7c55119ad5c15fe8f9cc25e9605d449ab46f7",
+     "after": null
+    },
+    "src/fern/types/performance_counters_item_counters_item_four_histogram_item.py": {
+     "before": "3ff8a66ae0a570760162451b958d26102d2e34cd3d67379cd03e78371dfc364d",
+     "after": null
+    },
+    "src/fern/types/performance_counters_item_counters_item_two.py": {
+     "before": "828e307ef4d39fae5504215b9a08f16e11096f1bfd2bbb93ecc438faba1ff740",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 3,
+   "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+   },
+   "files_compared": 90
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-anyof-beside-discriminator",
+  "fixture": "marimo",
+  "removed": "discriminator",
+  "edits": [
+   {
+    "pointer": "/components/schemas/CellOutput/properties/data/anyOf/1/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/DetectedDataSource/properties/hidesWhen",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/DetectedDataSourceConfiguration/properties/value",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/KnownUnions/properties/command",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/KnownUnions/properties/error",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/KnownUnions/properties/notification",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/ModelCommand/properties/message",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/ModelLifecycleNotification/properties/message",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/ModelRequest/properties/message",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/NotebookDocumentTransactionRequest/properties/changes/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/Transaction/properties/changes/items",
+    "edit": "removed `discriminator`"
+   }
+  ],
+  "crozier": {
+   "before_files": 487,
+   "after_files": 487,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 487,
+   "after_files": 487,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 487
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-allof-deprecated",
+  "fixture": "groupe-psa",
+  "removed": "deprecated",
+  "edits": [
+   {
+    "pointer": "/components/schemas/ServiceType",
+    "edit": "removed `deprecated`"
+   }
+  ],
+  "crozier": {
+   "before_files": 443,
+   "after_files": 443,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 443,
+   "after_files": 443,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 443
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-allof-ref-scalar-default",
+  "fixture": "openfoodfacts-taxonomy-editor",
+  "removed": "default",
+  "edits": [
+   {
+    "pointer": "/components/schemas/Project/properties/status",
+    "edit": "removed `default`"
+   }
+  ],
+  "crozier": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 61
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-array-item-anyof-titled-member",
+  "fixture": "langchain-agent-protocol",
+  "removed": "member-title",
+  "edits": [
+   {
+    "pointer": "/components/schemas/Message/properties/content/oneOf/1",
+    "edit": "removed `title` from every member of the item `anyOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 101,
+   "after_files": 101,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 101,
+   "after_files": 101,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 101
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-array-item-oneof-titled-member",
+  "fixture": "langchain-agent-server",
+  "removed": "member-title",
+  "edits": [
+   {
+    "pointer": "/paths/~1a2a~1{assistant_id}/post/requestBody/content/application~1json/schema/properties/params/oneOf/0/properties/message/properties/parts",
+    "edit": "removed `title` from every member of the item `oneOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 240,
+   "after_files": 240,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 240,
+   "after_files": 240,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 240
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-discriminated-inline-members",
+  "fixture": "letta",
+  "removed": "discriminator",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1templates/post/requestBody/content/application~1json/schema",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1templates~1{project_id}/post/requestBody/content/application~1json/schema",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1client-side-access-tokens/post/requestBody/content/application~1json/schema/properties/policy/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1client-side-access-tokens/post/responses/201/content/application~1json/schema/properties/policy/properties/data/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1client-side-access-tokens/get/responses/200/content/application~1json/schema/properties/tokens/items/properties/policy/properties/data/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1metadata~1telemetry/post/requestBody/content/application~1json/schema/properties/events/items",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines/post/requestBody/content/application~1json/schema/properties/producer_config",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines/post/responses/200/content/application~1json/schema/properties/pipeline/properties/config",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines/get/responses/200/content/application~1json/schema/properties/pipelines/items/properties/config",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines~1{pipeline_id}/get/responses/200/content/application~1json/schema/properties/pipeline/properties/config",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines~1{pipeline_id}/patch/responses/200/content/application~1json/schema/properties/pipeline/properties/config",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/paths/~1v1~1pipelines~1preview/post/requestBody/content/application~1json/schema/properties/producer_config",
+    "edit": "removed `discriminator`"
+   }
+  ],
+  "crozier": {
+   "before_files": 947,
+   "after_files": 947,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 947,
+   "after_files": 947,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 947
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-discriminated-inline-members",
+  "fixture": "tlon-notes",
+  "removed": "discriminator",
+  "edits": [
+   {
+    "pointer": "/components/schemas/AFolder",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/ANote",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/UFolder",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/UNote",
+    "edit": "removed `discriminator`"
+   }
+  ],
+  "crozier": {
+   "before_files": 132,
+   "after_files": 132,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 132,
+   "after_files": 132,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 132
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-oneof-beside-properties",
+  "fixture": "paloalto-cspm-reports",
+  "removed": "oneOf",
+  "edits": [
+   {
+    "pointer": "/components/schemas/TimeRangeConfigModel",
+    "edit": "removed `oneOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 89,
+   "after_files": 89,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "72b762bfc051589211c803a58c73c1682bdda3f74ada932b4c5b427a5c76f1e4",
+     "after": "1bacf30cc6951632fedda005fa21f176da87b80d6f5bad14a72a6336084a5b14"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "17dcbb4b9d593bde8dd31bd8899989cba474a0284c2d3e6aa9a4f86b21f1e754",
+     "after": "cc60b5cb4415f9a3a2b56c7e1466107efa761beda40d7c0bf8f491614dd60f37"
+    },
+    "src/fern/types/report_generation_config_api_model_target_time_range.py": {
+     "before": "d107de9dcd0506a2a2515a1118b9e591d0eb0b3c19dbcd56b5c88e5fbaf5d6f6",
+     "after": "27e32874edf80d01389120bd01e84fe25b8a83b2015921d6df4ea91456aeeb10"
+    },
+    "src/fern/types/report_target_model_time_range.py": {
+     "before": "bee006e9b5009ebc7bcd71281ef8d35429cf175500d8d364ce1d2f27e719cceb",
+     "after": "8ae6c980744b17642ed3ea766be0d273b0a3e6af90314c4203b3e274bcd2c249"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 89,
+   "after_files": 89,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 3,
+   "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+   },
+   "files_compared": 89
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-oneof-beside-properties",
+  "fixture": "peopledatalabs",
+  "removed": "properties",
+  "edits": [
+   {
+    "pointer": "/paths/~1v5~1person~1search/post/requestBody/content/application~1json/schema",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/paths/~1v5~1company~1search/post/requestBody/content/application~1json/schema",
+    "edit": "removed `properties`"
+   }
+  ],
+  "crozier": {
+   "before_files": 134,
+   "after_files": 138,
+   "changed": {
+    "README.md": {
+     "before": "987ebe76793ef77474f922934036c3eea8f502739a5bcd253f6f6bef9329559f",
+     "after": "f241514aaa07ba0bf21347fcf3a16c0c4570b950ba072981eaf0b4407ddf0b9e"
+    },
+    "reference.md": {
+     "before": "058afa15465fbb9c1ad601024d080e2416ea1fe2a615d91849a7d4057cc3ae15",
+     "after": "4d40bb87349e17be21bdc94487af1711864b7b2413dfc3faa88df60c91ab3e74"
+    },
+    "src/fern/__init__.py": {
+     "before": "91e555121e184ae9723078f002e51ff522d5425cc4d7bb59d709ac8bcb9a4250",
+     "after": "5832b13662dd0467cf6820a88f16f9c0fbf89202a2b250f1e7da238c257c8e33"
+    },
+    "src/fern/company_endpoints/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "842a9f0d7fcd95a8e9337022f733ec35e5cd61575671ea88e971091f070ef7d8"
+    },
+    "src/fern/company_endpoints/client.py": {
+     "before": "21dcf9d59ebeb13940ef0457f27588a92c3f87857b7ac130249b8c266de34c53",
+     "after": "6844d97bea032dff533a881c0594eb19311a6243fbcccfb66202f4fdd7947776"
+    },
+    "src/fern/company_endpoints/raw_client.py": {
+     "before": "dc7298efa44b7fdd6bb2a37add1991ee1565292640003c7d15560c6a0210a4f4",
+     "after": "0da37a18b83dbb14b73a6f111739433d6f43b65e1da3e1401baa6d95a1bd48c9"
+    },
+    "src/fern/company_endpoints/types/__init__.py": {
+     "before": null,
+     "after": "82130d470982963d9a37858c6d32c44ced5876175ae3bba91a1f0b014837df31"
+    },
+    "src/fern/company_endpoints/types/post_v5company_search_request.py": {
+     "before": null,
+     "after": "16538914ce6aa76b394c0996c5d9293a2daf6a53fe5171b375604e6e5caba8a0"
+    },
+    "src/fern/person_endpoints/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "2b8110aa11c03b7aabc0701c9c914832231c078705ebc07bbcec659bff56f8fd"
+    },
+    "src/fern/person_endpoints/client.py": {
+     "before": "9b4f3fb534780d143f9c9b65316f28481c424fdc95a822d4f11a2ad056bc2d95",
+     "after": "65272e783e3379d51c6e69ca9ddbb1d0c4abae6011f043ccee35892dcf2625b8"
+    },
+    "src/fern/person_endpoints/raw_client.py": {
+     "before": "c9ba877d82152b136dfd101bb33a9d90804ce8045d1228c1bed8b97fcca89d71",
+     "after": "d5949334224db47fa38677b672b1a93e3096f6466fe8a6e017fbaef6ae2f8d57"
+    },
+    "src/fern/person_endpoints/types/__init__.py": {
+     "before": null,
+     "after": "80ce9a726841d4382854a92e0ac37ecb4181f850600c46dd231b49eb52d3f72f"
+    },
+    "src/fern/person_endpoints/types/post_v5person_search_request.py": {
+     "before": null,
+     "after": "a71a984a4c3a5446c3cb865a3cf52ae80611e26a5c8ef1f0bea0034687c0a8b6"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 134,
+   "after_files": 134,
+   "changed": {
+    "README.md": {
+     "before": "987ebe76793ef77474f922934036c3eea8f502739a5bcd253f6f6bef9329559f",
+     "after": "f241514aaa07ba0bf21347fcf3a16c0c4570b950ba072981eaf0b4407ddf0b9e"
+    },
+    "reference.md": {
+     "before": "058afa15465fbb9c1ad601024d080e2416ea1fe2a615d91849a7d4057cc3ae15",
+     "after": "39e82c79f5fd2d08cbd559e93cc4ad473a6dd1ca3d3a5f23206b7659e372f14a"
+    },
+    "src/fern/company_endpoints/client.py": {
+     "before": "40643fc090a6afc9dd780006946e6116c1a2ae60a9dc84945b11855fe018f48f",
+     "after": "ae57bc1ee2cdf42e4a895a069dd006b281b8a6f54aff121007f8d49b61e550be"
+    },
+    "src/fern/company_endpoints/raw_client.py": {
+     "before": "81ec9afeae8bf952526107347e3c65277066485557396787e049dbb5445697bb",
+     "after": "58c36db50aaf5aef48fe4af5539a65407a108d51c83178c659a02fe2515276d0"
+    },
+    "src/fern/person_endpoints/client.py": {
+     "before": "ad548b01ab41e847ae1cc57678a323af420c0f7266f95a178b321e32be00d83a",
+     "after": "a1f4e14613ee06cd75ffb1050c6be5cf88966dc20351969d12655ced102ac761"
+    },
+    "src/fern/person_endpoints/raw_client.py": {
+     "before": "fd618e3d889aee0364ea79e0914a436bb29daf0fcb98afc9a1a5c22a88f5434c",
+     "after": "0bd2f4dbc145a68dd6c0edfe2b3204fe92c8586f6016866582c6f3d04e02cbd4"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 3,
+   "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+   },
+   "files_compared": 138
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-oneof-beside-properties",
+  "fixture": "sigstore-rekor",
+  "removed": "properties",
+  "edits": [
+   {
+    "pointer": "/components/schemas/HelmSchema/oneOf/0/properties/chart/properties/provenance",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/components/schemas/DSSESchema/oneOf/0",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/components/schemas/AlpinePackageSchema/oneOf/0/properties/package",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/components/schemas/JARSchema/oneOf/0/properties/archive",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/components/schemas/RekorSchema/oneOf/0/properties/data",
+    "edit": "removed `properties`"
+   },
+   {
+    "pointer": "/components/schemas/RPMSchema/oneOf/0/properties/package",
+    "edit": "removed `properties`"
+   }
+  ],
+  "crozier": {
+   "before_files": 143,
+   "after_files": 129,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "1622ac610a422c6e9650cd27ba7abddde7ee47b2fba03748cd7abdf644ef6c17",
+     "after": "e9d1ba8915f39f23e950e88c6db3f780c6de70f71fafecf0b75a29d79ca68fad"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "bd8336c84fa5e5217ac9136dbb9b209d729bae8afa9aaba7f673cb973e9e75a6",
+     "after": "e67500f3b98aa546fe20fb0dee4eb67efd59614d25e16f26b0249c52b53cbd22"
+    },
+    "src/fern/types/alpine_package_schema_package.py": {
+     "before": "cb96a0d8e36dd3721be763bec2772d811554865abf7e644b23b4255f5141fc60",
+     "after": "125c80f9efbdbfa5cc48569885c8e550f9709e643cf0e43eb3264e5678eccd21"
+    },
+    "src/fern/types/alpine_package_schema_package_hash.py": {
+     "before": "ffd9c682f8aec1082fe84b61591d28d00dcda0d4f56289fc3178e971818286fd",
+     "after": null
+    },
+    "src/fern/types/alpine_package_schema_package_hash_algorithm.py": {
+     "before": "348832860cc668cd434ee519126d4e72a042affe3bf40aa2416c80087efa6ac4",
+     "after": null
+    },
+    "src/fern/types/dsse_schema.py": {
+     "before": "acb296a9631e74ae3469910152f90a37771a95fc459c8fbdf7a09144a0b58be8",
+     "after": "bd4d763d24bd0d101a53673a22bf9ac26187a48a9696dcf67918b0845712663f"
+    },
+    "src/fern/types/dsse_schema_envelope_hash.py": {
+     "before": "0581e2a84c942e4754e119789db5fef578cdfb6dd290cfd6e717b97f2a48185d",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_envelope_hash_algorithm.py": {
+     "before": "8ec63a27268b76ef3495d552228e8ce7f5b825e1d70abff61f7b82727a82063d",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_payload_hash.py": {
+     "before": "26d32b01b52d94a954d0097cc4f713858b95d69a5fb6a49f3ba81ab0b9f7c0f0",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_payload_hash_algorithm.py": {
+     "before": "b509ebe303136f045cda6564ecd9f5c5bb8bccbc6519f224594189de50a93692",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_proposed_content.py": {
+     "before": "c73b72e8709cedfa31964da80d7f337b62931d625a4e1a3d3f0c58251781b20f",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_signatures_item.py": {
+     "before": "997f2a8c8b5f6046c610fa024fe1c4eb60218e1ac716e74366c4a1ced7a52ee9",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_zero.py": {
+     "before": null,
+     "after": "d5684847fb45e106e580c85ba1511947c000ed075d19949c4532ec9abc9d5b8c"
+    },
+    "src/fern/types/helm_schema_chart_provenance.py": {
+     "before": "563f706f19969af080127b51627d39a93cad829a888028728bd9cd18294e22c0",
+     "after": "bf7c8611330889621c1e99bff08d3b71f312171834e6fdbe7a7aec1f891f8b23"
+    },
+    "src/fern/types/helm_schema_chart_provenance_signature.py": {
+     "before": "d6bd240e4ae6875046cc0ffefed07931a9e083a45f1a25026255ddb82ed7b578",
+     "after": null
+    },
+    "src/fern/types/jar_schema_archive.py": {
+     "before": "437edc0b8007a9f4a1f56d25d67b0d0a9b1326cf75107b4055fa6ea37e4172bb",
+     "after": "d46472211255bed4da9af7800ed358a2b5e709daf01f0b682fd40bbc3c0ef3f9"
+    },
+    "src/fern/types/jar_schema_archive_hash.py": {
+     "before": "0a4e97ac225cdc795109283d27ff5e57d2f807e093035c51ead3bb8f847829e7",
+     "after": null
+    },
+    "src/fern/types/jar_schema_archive_hash_algorithm.py": {
+     "before": "daa9d8721d173edb037b1baf867bf5685951ad6a344e4ff67b9db5a07c267c0f",
+     "after": null
+    },
+    "src/fern/types/rekor_schema_data.py": {
+     "before": "f640f82a0bb492dd3d5064a12ee48de538a151a098d8ff41b2def2713a8b2dcc",
+     "after": "7b03dc99b13dc78218c964397cbd93fb68c021d2a0b0c18b0ca5555d30ef22ef"
+    },
+    "src/fern/types/rekor_schema_data_hash.py": {
+     "before": "55317e1c332cd0b65fb68807b716ac20dd9e8491bfb0d08c7dd5e9ec86c84213",
+     "after": null
+    },
+    "src/fern/types/rekor_schema_data_hash_algorithm.py": {
+     "before": "5eb535a00e5fe9dfa06dfdd5c8570965dc2bf0c27835d2376f200252dee5b3db",
+     "after": null
+    },
+    "src/fern/types/rpm_schema_package.py": {
+     "before": "965a5b36c5b44fe10cf7713441f80869abb2cd9276e7efaaf35e41f856143693",
+     "after": "85dd8899696cfc7184b2e9399f2fe3f7f41bf74c9be6930104e9596fa7d2cce1"
+    },
+    "src/fern/types/rpm_schema_package_hash.py": {
+     "before": "3400ba6c0ab97709e149036d2940cd7ceac377a549595e0232c024f9e25b8dcf",
+     "after": null
+    },
+    "src/fern/types/rpm_schema_package_hash_algorithm.py": {
+     "before": "511e5f612478cff0bced75700fa08f31a3f92720bcc1eee5a364dd1b131187b8",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 143,
+   "after_files": 123,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "60f8524c81ccc0088b6b37d496be7f686fd6bd8388a560702169e10bd2c4f8b8",
+     "after": "f451453122d04a21dedbcf4e99619b8d565d2f7d0ec9d31da4bf5b203ef70b34"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "e66702dbb530d057e1ddce5ce53c3649d339ad6955e7f97da12cc7232e5ea550",
+     "after": "6efb22cb1d6bb0f3f0b0043f5f63f9e62ebdc8b58ee15f1d19048a773c3224aa"
+    },
+    "src/fern/types/alpine_package_schema.py": {
+     "before": "7b9e0e2472e6172c9446ad4400d907f4ab9d422c76897de85696afc39bec8734",
+     "after": "29acf56a3b8192ebd11fffeea9097a25f9ae2aa0937c28f413e14a1abceac363"
+    },
+    "src/fern/types/alpine_package_schema_package.py": {
+     "before": "4cf7a264f3134d7d9f61148d53ad619aef6e2cd9259e071379df7a7dc31f099f",
+     "after": null
+    },
+    "src/fern/types/alpine_package_schema_package_hash.py": {
+     "before": "77c67debb89f568d5d59c01cd62b060ddb0ccce8dbe8c118453bc0aa406f6bbb",
+     "after": null
+    },
+    "src/fern/types/alpine_package_schema_package_hash_algorithm.py": {
+     "before": "7d810e8389c5b53eb6f955b4bc2802fde1d0cb61c5da1fc8df62315c9970ab5e",
+     "after": null
+    },
+    "src/fern/types/dsse.py": {
+     "before": "39b20ab9a5a2b0ec8ff89607b89695b2028713a37489efbc4f2760c025a9e4bc",
+     "after": "b77c0d0ef349585201e44e5fe70a306b383f79f8c42eaeb4a4b54df3358b85fa"
+    },
+    "src/fern/types/dsse_schema.py": {
+     "before": "059c213abe8cdc81a69c2c765a8c77cb19610df55124f3585753fbe98ac9a134",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_envelope_hash.py": {
+     "before": "1b7f615b70f9135d59a587d7a9f7bc3311a14d19c7e02245ebf0a26b1978d5aa",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_envelope_hash_algorithm.py": {
+     "before": "da46dbccb916e8f4ddf2208325cbe2249eb425cb211aff193d3909ba5c87b2f7",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_one.py": {
+     "before": null,
+     "after": "f1a63e40506984bf68d939ba455d82ab45a45ed9f1df78e46e25c2ecefd6ec55"
+    },
+    "src/fern/types/dsse_schema_payload_hash.py": {
+     "before": "04017398f8c6ad35184ee1ca500cf1b69e0bb6d9fdde03cffb0a352267e27baf",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_payload_hash_algorithm.py": {
+     "before": "3ea87b5d05c58ea29958e32d7b3db462c2c3fc4441940479081908cffefe869e",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_proposed_content.py": {
+     "before": "b65305489d794a44ecb16764380ff74c6d050e4272bf64cf30e62f4d5a1a2761",
+     "after": null
+    },
+    "src/fern/types/dsse_schema_signatures_item.py": {
+     "before": "1536a495991a7a265932e257fc61555eb340849c0388113368915138665f9abb",
+     "after": null
+    },
+    "src/fern/types/helm_schema_chart.py": {
+     "before": "c1bf10f36949b7931e3fef222da4783f34f5ef0a367c62d5a52381076c6d64a1",
+     "after": "d86854efd6dd485cb63c3795c193feb0d3e016f91bdaf62028ffc29ca28802b0"
+    },
+    "src/fern/types/helm_schema_chart_provenance.py": {
+     "before": "879a904facc7caba051bee16263fb7f7cff2f160dc23defcadd9fdd7944da249",
+     "after": null
+    },
+    "src/fern/types/helm_schema_chart_provenance_signature.py": {
+     "before": "8d84f20c7f1c3aac53fa99fa19a79422ffc585e4cf5e452da13a2e84850a14b7",
+     "after": null
+    },
+    "src/fern/types/jar_schema.py": {
+     "before": "2a120b44abfe5a8a42a153fa36b8c816bbe085d3bfc3dee73d5ec42f294f5358",
+     "after": "1bc899fb77e9ebd7fdd9b450ac0fe3bb92a939a50a9ce02a6f390635443b9745"
+    },
+    "src/fern/types/jar_schema_archive.py": {
+     "before": "28fca749ec23496b27aec3a90b36d2c0c4d32757951b890d6a44a95c841e1135",
+     "after": null
+    },
+    "src/fern/types/jar_schema_archive_hash.py": {
+     "before": "378d913a5b25f30dcf3d79d5ce121dc92ce308e2bc81e7d87078ee6e0e5581bd",
+     "after": null
+    },
+    "src/fern/types/jar_schema_archive_hash_algorithm.py": {
+     "before": "16ac8309631a8f0a3a02d8fae917e7a20c0c2815fa6fd18339b006b0ce5639ce",
+     "after": null
+    },
+    "src/fern/types/rekor_schema.py": {
+     "before": "535e84d9eda0c80fd6c6dbc069ad6c4c9943253de38b601794d379f4e23d2667",
+     "after": "7c1f1009afec3d9f22ef840b363f4044de92f78edd0319a211b45155ea5e1e85"
+    },
+    "src/fern/types/rekor_schema_data.py": {
+     "before": "4e8ec75b61ac843f0954b4cf53a82722ea6f6ac2ccc30ba2a0c25262162328cd",
+     "after": null
+    },
+    "src/fern/types/rekor_schema_data_hash.py": {
+     "before": "a7499a196c2436d8ccce64a35c41ebe4d8d94418b1b6613539f084a35adf57d0",
+     "after": null
+    },
+    "src/fern/types/rekor_schema_data_hash_algorithm.py": {
+     "before": "5c1d86bcee07e2459df074fafe73edd6fc23ee5dc983135b8e3865313885795b",
+     "after": null
+    },
+    "src/fern/types/rpm_schema.py": {
+     "before": "5e8284153844fde17de80cd70eca85000d574af75be4711bc0dab968cd6f3484",
+     "after": "cb6e6b0e09314052d98f455c097890e6c81cc79d8f53615bfda71d3b8ef2e73b"
+    },
+    "src/fern/types/rpm_schema_package.py": {
+     "before": "0a3ace0b38735cfad0dcc5e897d5c89f3274898d999ee442ebded920601feaf7",
+     "after": null
+    },
+    "src/fern/types/rpm_schema_package_hash.py": {
+     "before": "64c4665020f4e9322db5373d58c3d895dfd5de19adacb6aa3cd287ec3657a7d7",
+     "after": null
+    },
+    "src/fern/types/rpm_schema_package_hash_algorithm.py": {
+     "before": "8e5451bb1e0a14444aa39d257671741d100cb14fb3801195326b3dd14e8ea530",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 3,
+   "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+   },
+   "files_compared": 130
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-discriminated-inline-members",
+  "fixture": "probe",
+  "removed": "discriminator",
+  "edits": [
+   {
+    "pointer": "/components/schemas/BatchOrder/properties/source",
+    "edit": "removed `discriminator`"
+   },
+   {
+    "pointer": "/components/schemas/BatchOrder/properties/finish",
+    "edit": "removed `discriminator`"
+   }
+  ],
+  "crozier": {
+   "before_files": 45,
+   "after_files": 45,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 45,
+   "after_files": 45,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 45
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-anyof-beside-discriminator",
+  "fixture": "kiln",
+  "removed": "discriminator",
+  "edits": [
+   {
+    "pointer": "/components/schemas/FiringPlan/properties/closure",
+    "edit": "removed `discriminator`"
+   }
+  ],
+  "crozier": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 58
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-allof-deprecated",
+  "fixture": "kiln",
+  "removed": "deprecated",
+  "edits": [
+   {
+    "pointer": "/components/schemas/FiringPlan/properties/shelf",
+    "edit": "removed `deprecated`"
+   }
+  ],
+  "crozier": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 58
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-allof-ref-scalar-default",
+  "fixture": "kiln",
+  "removed": "default",
+  "edits": [
+   {
+    "pointer": "/components/schemas/TargetCone",
+    "edit": "removed `default`"
+   },
+   {
+    "pointer": "/components/schemas/FiringPlan/properties/atmosphere",
+    "edit": "removed `default`"
+   }
+  ],
+  "crozier": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 58
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-array-item-anyof-titled-member",
+  "fixture": "kiln",
+  "removed": "member-title",
+  "edits": [
+   {
+    "pointer": "/components/schemas/FiringPlan/properties/warnings",
+    "edit": "removed `title` from every member of the item `anyOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 58
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-array-item-oneof-titled-member",
+  "fixture": "kiln",
+  "removed": "member-title",
+  "edits": [
+   {
+    "pointer": "/components/schemas/FiringPlan/properties/segments",
+    "edit": "removed `title` from every member of the item `oneOf`"
+   }
+  ],
+  "crozier": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 58,
+   "after_files": 58,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 58
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace through tools/fern-goldens/generate-fern-fixture.sh; comparison by `crozier compare` from a temporary directory"
+ }
+]

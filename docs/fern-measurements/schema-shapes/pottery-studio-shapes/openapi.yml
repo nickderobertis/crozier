@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Pottery Studio
+  version: 2.1.0
+  description: Books kiln time and tracks glaze batches for a community studio.
+servers:
+  - url: https://studio.example.org/api
+paths:
+  /firings:
+    post:
+      operationId: bookFiring
+      summary: Book a firing
+      description: "    Books a slot on the shared kiln.\n    The slot is held for one hour before it lapses."
+      tags: [firings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiringBooking'
+      responses:
+        '201':
+          description: The booked firing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiringBooking'
+  /batches:
+    post:
+      operationId: mixBatch
+      summary: Mix a glaze batch
+      tags: [batches]
+      requestBody:
+        description: The batch to mix.
+        content:
+          application/json:
+            schema:
+              description: How the batch is sourced.
+              oneOf:
+                - type: object
+                  required: [kind, recipe]
+                  properties:
+                    kind:
+                      type: string
+                      enum: [recipe]
+                    recipe:
+                      type: string
+                    grams:
+                      type: integer
+                - type: object
+                  required: [kind, batchId]
+                  properties:
+                    kind:
+                      type: string
+                      enum: [remix]
+                    batchId:
+                      type: string
+      responses:
+        '200':
+          description: The mixed batch.
+components:
+  schemas:
+    ConeNumber:
+      type: integer
+      description: Pyrometric cone a firing targets.
+    TargetCone:
+      description: The cone used when a booking names none.
+      allOf:
+        - $ref: '#/components/schemas/ConeNumber'
+      default: 6
+    Cooled:
+      type: object
+      required: [outcome, hours]
+      properties:
+        outcome:
+          type: string
+          enum: [cooled]
+        hours:
+          type: integer
+    Vented:
+      type: object
+      required: [outcome, reason]
+      properties:
+        outcome:
+          type: string
+          enum: [vented]
+        reason:
+          type: string
+    FiringBooking:
+      type: object
+      required: [potter, cone, shelf, ending, palette]
+      properties:
+        potter:
+          type: string
+        cone:
+          $ref: '#/components/schemas/TargetCone'
+        shelf:
+          description: Where the load sits in the kiln.
+          discriminator:
+            propertyName: level
+          oneOf:
+            - type: object
+              required: [level, slot]
+              properties:
+                level:
+                  type: string
+                  enum: [upper]
+                slot:
+                  type: integer
+        ending:
+          anyOf:
+            - $ref: '#/components/schemas/Cooled'
+            - $ref: '#/components/schemas/Vented'
+          discriminator:
+            propertyName: outcome
+            mapping:
+              cooled: '#/components/schemas/Cooled'
+              vented: '#/components/schemas/Vented'
+        palette:
+          description: Glaze colours in application order.
+          allOf:
+            - type: array
+              items:
+                type: string

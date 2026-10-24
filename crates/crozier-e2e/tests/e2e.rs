@@ -86,6 +86,14 @@ mod real_witnesses;
 mod adme_seismic_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The model and union shapes the `models-unions-refs` removal controls first
+/// showed crozier departing from the certified pair on, over one minimal
+/// document Fern generated a complete tree from.
+#[path = "e2e/pottery_studio_shapes.rs"]
+mod pottery_studio_shapes;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -9757,6 +9765,7 @@ const CORPORA: &[&Corpus] = &[
     &AHASEND_API,
     &FARMVIBES_AI,
     &RGB_LIGHTNING_NODE,
+    &RAPIDATA_IDENTITY,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12078,6 +12087,19 @@ const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
 /// RGB Lightning Node: corpus row 3203, typed request examples and a declared union example.
 const RGB_LIGHTNING_NODE: Corpus = Corpus {
     api: "rgb-lightning-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Rapidata Identity API — corpus row 3300, the publisher's own SDK repository's
+/// copy, witnessing a nullability-only `allOf` member beside a referenced model.
+const RAPIDATA_IDENTITY: Corpus = Corpus {
+    api: "rapidata-identity",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -19993,6 +20015,13 @@ fn farmvibes_ai_matches_fern_output() {
 #[test]
 fn ahasend_api_matches_fern_output() {
     assert_committed_corpus_matches(&AHASEND_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn rapidata_identity_matches_fern_output() {
+    assert_committed_corpus_matches(&RAPIDATA_IDENTITY);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

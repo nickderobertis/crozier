@@ -878,6 +878,13 @@ docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fer
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/__init__.py	22	init-type-checking-import-order
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/batches/types/__init__.py	8	init-type-checking-import-order
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -4116,6 +4123,13 @@ tests/fixtures/ramu-shogi/expected	src/fern/core/client_wrapper.py	36	sdk-identi
 tests/fixtures/ramu-shogi/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/ramu-shogi/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/ramu-shogi/expected	src/fern/types/__init__.py	52	init-type-checking-import-order
+tests/fixtures/rapidata-identity/expected	src/fern/__init__.py	83	init-type-checking-import-order
+tests/fixtures/rapidata-identity/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/rapidata-identity/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/rapidata-identity/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/rapidata-identity/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/rapidata-identity/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/rapidata-identity/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/raybot/expected	src/fern/__init__.py	126	init-type-checking-import-order
 tests/fixtures/raybot/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/raybot/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
