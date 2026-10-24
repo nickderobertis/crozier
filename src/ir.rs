@@ -6534,7 +6534,11 @@ fn resolve_request_body(
             // and sent whole through `data=`: Zulip's `PATCH
             // /navigation_views/{fragment}` offers two properties and requires one
             // of them through `anyOf`, and Fern declares
-            // `EditNavigationViewRequestBody = typing.Union[typing.Any]`.
+            // `EditNavigationViewRequestBody = typing.Union[typing.Any]`. Members
+            // each tagging one property with a one-value enum discriminate it, as
+            // a JSON union's do: Grantly's OAuth `/token` form is a `oneOf` of an
+            // `authorization_code` and a `refresh_token` grant on `grant_type`,
+            // and Fern declares `PostTokenRequest_AuthorizationCode`.
             if !multipart {
                 if let Some(members) = obj.one_of.as_ref().or(obj.any_of.as_ref()) {
                     let name = if union_body_suffix {
@@ -6542,22 +6546,28 @@ fn resolve_request_body(
                     } else {
                         request_ctx.to_string()
                     };
-                    let variants = members
-                        .iter()
-                        .enumerate()
-                        .map(|(index, variant)| {
-                            hoister.hoist_union_variant(&name, index, variant, members)
-                        })
-                        .collect();
-                    hoister.out.push(TypeDecl::Alias(AliasType {
-                        reach_refs: Vec::new(),
-                        name: name.clone(),
-                        module: naming::module_name(&name),
-                        target: TypeRef::Union(dedupe_union_members(variants)),
-                        docstring: clean_doc(obj.description.as_deref()),
-                        min_length: None,
-                        max_length: None,
-                    }));
+                    let docstring = clean_doc(obj.description.as_deref());
+                    if hoister
+                        .hoist_discriminated_union(&name, obj, docstring.clone())
+                        .is_none()
+                    {
+                        let variants = members
+                            .iter()
+                            .enumerate()
+                            .map(|(index, variant)| {
+                                hoister.hoist_union_variant(&name, index, variant, members)
+                            })
+                            .collect();
+                        hoister.out.push(TypeDecl::Alias(AliasType {
+                            reach_refs: Vec::new(),
+                            name: name.clone(),
+                            module: naming::module_name(&name),
+                            target: TypeRef::Union(dedupe_union_members(variants)),
+                            docstring,
+                            min_length: None,
+                            max_length: None,
+                        }));
+                    }
                     return Some(single_with_override(
                         TypeRef::Named(name),
                         rb.required == Some(true),
@@ -6723,9 +6733,17 @@ fn resolve_request_body(
         // variants carry field aliases that must be respected on write).
         // Its worked example is the media type's own: Primula Tracker's
         // `UpdateStudentRequest` is `Union[Any]` and the golden passes the
-        // declared `{"transition_date": …}`.
+        // declared `{"transition_date": …}`. Under wildcard (`*/*`) media it
+        // sends no content-type header, as an inline union does: Apideck's
+        // proxy verbs with their `anyOf` payloads named as components.
         if target.one_of.is_some() || target.any_of.is_some() {
-            let mut body = single(TypeRef::Named(class), required, true, true);
+            let mut body = single_with_override(
+                TypeRef::Named(class),
+                required,
+                true,
+                true,
+                (media_type == "*/*").then(|| media_type.to_string()),
+            );
             if let RequestBody::Single(single) = &mut body {
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
                     .map(BodyExample::Literal);
@@ -6981,6 +6999,27 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            let parents: Vec<Vec<BodyField>> = schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter_map(|member| member.reference.as_deref())
+                .filter_map(|reference| hoist_fields(&ref_to_class(reference), types))
+                .collect();
+            // A `readOnly` property is the server's to fill, so the request drops
+            // it: Webflow's redirect `create` takes no `id` and its webhook
+            // `create` no `workspaceId` or `createdOn`. One an `allOf` parent
+            // also declares keeps its slot, below.
+            fields.retain(|field| {
+                schema
+                    .properties
+                    .get(&field.wire_name)
+                    .is_none_or(|property| property.read_only != Some(true))
+                    || parents
+                        .iter()
+                        .flatten()
+                        .any(|inherited| inherited.wire_name == field.wire_name)
+            });
             // Own fields precede inherited fields; reuse the parent's resolved types.
             let own_count = fields.len();
             for reference in schema
@@ -8938,6 +8977,7 @@ fn rename_claimed_path_params(
             _ => None,
         })
         .collect();
+    let mut spread = std::collections::HashSet::new();
     // Only the parameters the method keeps can claim a name.
     claimed.retain(|name| {
         query_params.iter().any(|q| q.wire_name == *name)
@@ -8993,10 +9033,25 @@ fn rename_claimed_path_params(
                     if inlined {
                         claimed.extend(properties);
                     } else {
+                        // An urlencoded form still spreads its fields into the
+                        // signature, so a path argument sharing a field's name
+                        // takes a trailing underscore instead (swagger-petstore's
+                        // `PUT /user/{username}` over a form `User`).
+                        if matches!(request_body, Some(RequestBody::Form(_))) {
+                            spread = properties;
+                        }
                         claimed.insert("body".to_string());
                     }
                 }
             }
+        }
+    }
+    for param in path_params.iter_mut() {
+        let overridden = declared
+            .iter()
+            .any(|p| p.name == param.wire_name && p.sdk_name() != p.name);
+        if !overridden && spread.contains(&param.wire_name) {
+            param.py_name = format!("{}_", naming::field_name(&param.wire_name));
         }
     }
     if claimed.is_empty() {
@@ -20257,6 +20312,59 @@ mod tests {
     }
 
     #[test]
+    fn urlencoded_form_field_sharing_a_path_parameter_suffixes_the_argument() {
+        // swagger-petstore's `PUT /user/{username}` with only its form body: the
+        // `User` it names is a response model too, so the body is no inline
+        // request type, but its fields are still spread beside the path argument.
+        let document = |media: &str| -> crate::openapi::OpenApi {
+            serde_json::from_value(serde_json::json!({
+                "openapi": "3.0.3",
+                "paths": {
+                    "/user/{username}": {
+                        "get": {
+                            "operationId": "getUserByName",
+                            "parameters": [{ "name": "username", "in": "path", "required": true, "schema": { "type": "string" } }],
+                            "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } } }
+                        },
+                        "put": {
+                            "operationId": "updateUser",
+                            "parameters": [{ "name": "username", "in": "path", "required": true, "schema": { "type": "string" } }],
+                            "requestBody": { "content": { media: { "schema": { "$ref": "#/components/schemas/User" } } } },
+                            "responses": { "200": { "description": "OK" } }
+                        }
+                    }
+                },
+                "components": { "schemas": { "User": {
+                    "type": "object",
+                    "properties": { "id": { "type": "integer" }, "username": { "type": "string" } }
+                } } }
+            }))
+            .expect("document deserializes")
+        };
+        let argument = |media: &str| {
+            let doc = document(media);
+            let op = doc.paths["/user/{username}"]
+                .put
+                .as_ref()
+                .expect("put operation");
+            let mut tag_types = Vec::new();
+            let ep = build_endpoint(
+                &doc,
+                &[],
+                "/user/{username}",
+                "PUT",
+                op,
+                &mut tag_types,
+                &std::collections::HashSet::new(),
+            );
+            ep.path_params[0].py_name.clone()
+        };
+        assert_eq!(argument("application/x-www-form-urlencoded"), "username_");
+        // A JSON body naming the same model is passed whole, so nothing collides.
+        assert_eq!(argument("application/json"), "username");
+    }
+
+    #[test]
     fn path_parameters_follow_url_placeholder_order() {
         let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
             "operationId": "widgets_get",
@@ -23513,6 +23621,92 @@ mod tests {
         assert_eq!(doc_of("suggestion"), Some("Model for Suggestion"));
         assert_eq!(doc_of("range"), Some("Time Range"));
         assert_eq!(doc_of("note"), None);
+    }
+
+    #[test]
+    fn an_inline_body_drops_its_read_only_properties_unless_a_parent_declares_them() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Routes", "version": "1" },
+            "paths": { "/routes": { "post": {
+                "operationId": "createRoute",
+                "requestBody": { "required": true, "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "required": ["route", "id"],
+                    "properties": {
+                        "id": { "type": "string", "readOnly": true },
+                        "route": { "type": "string" },
+                        "slot": { "type": "string", "readOnly": true }
+                    },
+                    "allOf": [{ "$ref": "#/components/schemas/Booking" }]
+                } } } },
+                "responses": { "204": { "description": "Created" } }
+            } } },
+            "components": { "schemas": {
+                "Booking": { "type": "object", "properties": { "slot": { "type": "string" } } }
+            } }
+        }))
+        .expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("routes".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Routes",
+        )
+        .expect("the config is well formed");
+        let ir = super::build(&doc, &config);
+        let Some(RequestBody::Inline(fields)) = ir.endpoints[0].request_body.as_ref() else {
+            panic!("an inline object body is inlined field by field")
+        };
+        // `id` is the server's to fill; `slot` stays because `Booking` declares it.
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["route", "slot"]
+        );
+    }
+
+    #[test]
+    fn a_referenced_union_body_under_wildcard_media_sends_no_content_type() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "ForwardedPayload": { "anyOf": [
+                    { "type": "object", "properties": {} },
+                    { "type": "string" }
+                ] }
+            } }
+        }))
+        .expect("components deserialize");
+        let types = Vec::new();
+        let resolve = |media: &str| {
+            let body: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+                "required": false,
+                "content": { media: { "schema": { "$ref": "#/components/schemas/ForwardedPayload" } } }
+            }))
+            .expect("request body deserializes");
+            let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
+                root_types: &types,
+                schemas: None,
+                out: Vec::new(),
+            };
+            let resolved =
+                resolve_request_body(&doc, &types, &body, &mut hoister, "ForwardRequest", true)
+                    .expect("referenced union is supported");
+            let wildcard = resolved.is_wildcard_media();
+            let RequestBody::Single(single) = resolved else {
+                panic!("a referenced union is one request argument")
+            };
+            (single.type_ref, single.required, wildcard)
+        };
+        let named = TypeRef::Named("ForwardedPayload".to_string());
+        assert_eq!(resolve("*/*"), (named.clone(), true, true));
+        assert_eq!(resolve("application/json"), (named, true, false));
     }
 
     #[test]
