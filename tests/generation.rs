@@ -4110,6 +4110,16 @@ paths:
             schema: { $ref: "#/components/schemas/CreateWidget" }
       responses:
         '204': { description: Created }
+  /widgets/drafts:
+    post:
+      operationId: widgets_draft
+      tags: [Widgets]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateWidget" }
+      responses:
+        '204': { description: Drafted }
 components:
   schemas:
     WidgetState: { type: string, enum: [ACTIVE, DISABLED] }
@@ -4129,18 +4139,23 @@ components:
 "##,
     );
     let client = &files["src/acme/widgets/client.py"];
-    assert!(client.contains("limit=7"), "{client}");
-    assert!(client.contains("active=True"), "{client}");
-    assert!(client.contains("name=\"Example Widget\""), "{client}");
-    assert!(client.contains("state=WidgetState.DISABLED"), "{client}");
-    assert!(
-        client.contains("labels=[\"regional\", \"global\"]"),
-        "{client}"
-    );
-    assert!(
-        client.contains("properties={\"custom\": \"value\"}"),
-        "{client}"
-    );
+    // `create`'s media example is its whole worked request: the component
+    // example does not patch the fields it leaves out. `draft` declares no
+    // media example, so the component example supplies every value; each
+    // method's snippet appears once in the sync and once in the async client.
+    let count = |needle: &str| client.matches(needle).count();
+    assert_eq!(count("limit=7"), 2, "{client}");
+    assert_eq!(count("active=True"), 2, "{client}");
+    assert_eq!(count("name=\"Example Widget\""), 2, "{client}");
+    assert_eq!(count("state=WidgetState.DISABLED"), 2, "{client}");
+    assert_eq!(count("labels=[\"regional\", \"global\"]"), 2, "{client}");
+    assert_eq!(count("properties={\"custom\": \"value\"}"), 2, "{client}");
+    let create = client
+        .split("def draft(")
+        .next()
+        .expect("the sync client documents create before draft");
+    assert!(create.contains("active=True"), "{create}");
+    assert!(!create.contains("Example Widget"), "{create}");
 }
 
 #[test]
