@@ -18478,14 +18478,16 @@ class CoverageRestatementTests(unittest.TestCase):
             ("unknown category", row.replace(f"| {cells[3]} |", "| invented-category |", 1)),
             ("missing cell", row.replace(f" {cells[1]} |", "", 1)),
         ]:
-            with self.subTest(label):
-                self.assertNotEqual(row, broken)
-                region.write_text(source.replace(row, broken, 1), encoding="utf-8")
-                for args in (("--combinations-only",), ("--combinations-only", "--write"), ("--write",)):
-                    refused = self.run_restater(*args)
-                    self.assertEqual(1, refused.returncode, args)
-                    self.assertIn(f"combination row {cells[0].strip('`')} is not", refused.stderr)
-                self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+            for duplicated in (False, True):
+                with self.subTest(label, beside_a_valid_copy=duplicated):
+                    self.assertNotEqual(row, broken)
+                    replacement = f"{row}\n{broken}" if duplicated else broken
+                    region.write_text(source.replace(row, replacement, 1), encoding="utf-8")
+                    for args in (("--combinations-only",), ("--combinations-only", "--write"), ("--write",)):
+                        refused = self.run_restater(*args)
+                        self.assertEqual(1, refused.returncode, args)
+                        self.assertIn(f"combination row {cells[0].strip('`')} is not", refused.stderr)
+                    self.assertEqual(original, self.index.read_text(encoding="utf-8"))
         region.write_text(source, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only").returncode)
 

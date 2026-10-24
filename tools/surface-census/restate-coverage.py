@@ -176,16 +176,14 @@ def combination_categories(root: Path) -> tuple[Counter[str], int]:
     seen: set[str] = set()
     for name in parser.region_files(index):
         text = (root / "docs/openapi-surface" / name).read_text(encoding="utf-8")
-        rows = parser.region_rows(text)
         # `region_rows` drops a row it cannot parse; a combination row it drops
-        # would leave the population short, so every combination-keyed line
-        # must be one it accepted.
-        accepted = {cells[0].strip("`") for cells in rows}
+        # would leave the population short, so each combination-keyed line
+        # must parse on its own.
         for line in text.splitlines():
             key = line.removeprefix("| ").partition(" |")[0].strip("`")
-            if line.startswith("| ") and key.startswith(parser.COMBINATION_PREFIX) and key not in accepted:
+            if line.startswith("| ") and key.startswith(parser.COMBINATION_PREFIX) and not parser.region_rows(line):
                 raise ValueError(f"{name}: combination row {key} is not an eight-cell row with a known category")
-        for cells in rows:
+        for cells in parser.region_rows(text):
             key = cells[0].strip("`")
             if not key.startswith(parser.COMBINATION_PREFIX):
                 continue

@@ -48,7 +48,6 @@ rather than treating them as zero declarations.
 
 Each detector is exactly its census conjunction: `&` joins conditions at the
 same anchor, `>` follows an object edge, and `~>` resolves a local reference.
-The conjunction grammar is [the census grammar](../../openapi-surface-coverage.md).
 
 | key | detector | meaning |
 |---|---|---|
