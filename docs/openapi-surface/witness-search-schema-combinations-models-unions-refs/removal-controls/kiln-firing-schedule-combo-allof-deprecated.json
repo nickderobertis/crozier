@@ -1,0 +1,317 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Kiln Firing Schedule",
+    "version": "1.4.0",
+    "description": "Plans and records firings for a shared studio kiln."
+  },
+  "servers": [
+    {
+      "url": "https://kiln.example.org/v1"
+    }
+  ],
+  "paths": {
+    "/firings": {
+      "post": {
+        "operationId": "planFiring",
+        "summary": "Plan a firing",
+        "tags": [
+          "firings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FiringPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The planned firing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Firing"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/firings/{firingId}": {
+      "get": {
+        "operationId": "getFiring",
+        "summary": "Read one firing",
+        "tags": [
+          "firings"
+        ],
+        "parameters": [
+          {
+            "name": "firingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The firing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Firing"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ConeNumber": {
+        "type": "integer",
+        "description": "Pyrometric cone the schedule targets."
+      },
+      "TargetCone": {
+        "description": "The cone a firing aims for when the plan names none.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConeNumber"
+          }
+        ],
+        "default": 6
+      },
+      "ShelfCode": {
+        "type": "string",
+        "description": "Shelf label painted on the kiln furniture."
+      },
+      "Atmosphere": {
+        "type": "string",
+        "enum": [
+          "oxidation",
+          "reduction"
+        ]
+      },
+      "Kiln": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "chamberLitres": {
+            "type": "number"
+          }
+        }
+      },
+      "Sealed": {
+        "type": "object",
+        "required": [
+          "result",
+          "peakCelsius"
+        ],
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "sealed"
+            ]
+          },
+          "peakCelsius": {
+            "type": "integer"
+          }
+        }
+      },
+      "Vented": {
+        "type": "object",
+        "required": [
+          "result",
+          "reason"
+        ],
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "vented"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "FiringPlan": {
+        "type": "object",
+        "required": [
+          "label",
+          "cone",
+          "shelf",
+          "atmosphere",
+          "segments",
+          "warnings",
+          "closure",
+          "notes"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Short name for the load."
+          },
+          "cone": {
+            "$ref": "#/components/schemas/TargetCone"
+          },
+          "shelf": {
+            "description": "Shelf the load sits on; superseded by placement maps.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShelfCode"
+              }
+            ]
+          },
+          "atmosphere": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Atmosphere"
+              }
+            ],
+            "default": "oxidation"
+          },
+          "kiln": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Kiln"
+              },
+              {
+                "nullable": true
+              }
+            ]
+          },
+          "segments": {
+            "type": "array",
+            "description": "Heating segments in firing order.",
+            "items": {
+              "oneOf": [
+                {
+                  "title": "Ramp",
+                  "type": "object",
+                  "required": [
+                    "degreesPerHour"
+                  ],
+                  "properties": {
+                    "degreesPerHour": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "title": "Soak",
+                  "type": "object",
+                  "required": [
+                    "minutes"
+                  ],
+                  "properties": {
+                    "minutes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "description": "Conditions that abort the firing.",
+            "items": {
+              "anyOf": [
+                {
+                  "title": "OverTemperature",
+                  "type": "object",
+                  "required": [
+                    "ceilingCelsius"
+                  ],
+                  "properties": {
+                    "ceilingCelsius": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "title": "LidOpened",
+                  "type": "object",
+                  "required": [
+                    "afterMinutes"
+                  ],
+                  "properties": {
+                    "afterMinutes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "closure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sealed"
+              },
+              {
+                "$ref": "#/components/schemas/Vented"
+              }
+            ],
+            "discriminator": {
+              "propertyName": "result",
+              "mapping": {
+                "sealed": "#/components/schemas/Sealed",
+                "vented": "#/components/schemas/Vented"
+              }
+            }
+          },
+          "notes": {
+            "type": "object",
+            "description": "Free-form notes keyed by author, beside the load's owner.",
+            "required": [
+              "owner"
+            ],
+            "properties": {
+              "owner": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Firing": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FiringPlan"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

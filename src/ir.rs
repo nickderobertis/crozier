@@ -11592,7 +11592,9 @@ fn collect_discriminant_strips(
                 .all(|target| target.contains('/'))
         });
         if resolvable && (schema.one_of.is_some() || is_inheritance_union_base(schema)) {
-            if let Some(discriminator) = discriminator {
+            // Only a `oneOf` union or an inheritance base reaches here, so the
+            // written discriminator is the one `discriminator` above kept.
+            if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
                     // Fern hoists the tag onto the union wrapper and drops it from
                     // the member model it consumed — unless that member is also
