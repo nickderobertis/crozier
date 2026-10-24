@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.131](https://github.com/nickderobertis/crozier/compare/v0.0.130...v0.0.131) - 2026-10-24
+
+### Fixed
+
+- *(parity)* prove the model, union and reference feature combinations ([#576](https://github.com/nickderobertis/crozier/pull/576))
+
 ## [0.0.130](https://github.com/nickderobertis/crozier/compare/v0.0.129...v0.0.130) - 2026-10-24
 
 ### Fixed
