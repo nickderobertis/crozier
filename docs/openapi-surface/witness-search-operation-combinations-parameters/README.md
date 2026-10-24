@@ -121,7 +121,7 @@ record as its renewed search.
 
 | key | renewed outcome | why no declarer is registrable |
 |---|---|---|
-| `combo-body-property-named-as-header-param` | `none-registrable` | none is registered; the one GitHub declarer, PancrePal-xiaoyibao (Apache-2.0), is refused by the certified pair because its multipart upload's `agent` header shares its name with a form field; the six Sourcegraph declarers are FastEndpoints integration-test outputs (MIT), two of which the certified pair refuses on a path parameter and a query parameter normalizing to one name, and all six of which crozier refuses under registered Fern refusal classes |
+| `combo-body-property-named-as-header-param` | `none-registrable` | none is registered, and the certified pair refuses all seven declarers, each measured on its own bytes ([fern-screening/](fern-screening/)): the one GitHub declarer, PancrePal-xiaoyibao (Apache-2.0), because its multipart upload's `agent` header shares its name with a form field; the six Sourcegraph declarers, FastEndpoints' `FastEndpoints.Swagger` and `FastEndpoints.OpenApi` `release-0` to `release-2` integration-test outputs (MIT, revision `03d98ec6a5ad`), because a path parameter and a query parameter `hasPermission` normalize to one name. crozier refuses all seven too, under registered Fern refusal classes |
 
 ## How a removal control is taken
 
@@ -259,7 +259,26 @@ The hand-written fixture's ablation is there too
 the hand-written fixture's `deck` header beside a JSON body's `deck` property
 takes a prefix on the body field in both generators. Where the body is
 multipart, the certified pair refuses the operation, for a query parameter as
-for a header. That is PancrePal's upload. Before this search crozier wrote a
+for a header. That is PancrePal's upload.
+
+Each of this key's seven declarers was run through the certified pair on its
+own committed-revision bytes, one generation at a time under the generation
+lock, and every run exits 1 before writing an SDK. The logs are in
+[fern-screening/](fern-screening/), each headed by the document's identity and
+SHA-256:
+
+| declarer | certified pair's refusal | log |
+|---|---|---|
+| PancrePal-xiaoyibao `openapi.json` | `Multiple request properties have the name agent` | [pancrepal.log](fern-screening/pancrepal.log) |
+| FastEndpoints `FastEndpoints.Swagger/release-0.json` | `Parameters path parameter 'hasPermission', query parameter 'hasPermission' all normalize to 'hasPermission'` | [fe-swagger-r0.log](fern-screening/fe-swagger-r0.log) |
+| FastEndpoints `FastEndpoints.Swagger/release-1.json` | the same | [fe-swagger-r1.log](fern-screening/fe-swagger-r1.log) |
+| FastEndpoints `FastEndpoints.Swagger/release-2.json` | the same | [fe-swagger-r2.log](fern-screening/fe-swagger-r2.log) |
+| FastEndpoints `FastEndpoints.OpenApi/release-0.json` | the same | [fe-openapi-r0.log](fern-screening/fe-openapi-r0.log) |
+| FastEndpoints `FastEndpoints.OpenApi/release-1.json` | the same | [fe-openapi-r1.log](fern-screening/fe-openapi-r1.log) |
+| FastEndpoints `FastEndpoints.OpenApi/release-2.json` | the same | [fe-openapi-r2.log](fern-screening/fe-openapi-r2.log) |
+
+None generates, so none can be output-sensitive or registered, and the
+hand-written fixture stands as the proof. Before this search crozier wrote a
 client passing the name twice, which `ruff format` rejects as Python. It now
 refuses both shapes in both modes under `request-property-name-collision`, whose
 [evaluation note](../../fern-refusals/request-property-name-collision/evaluation.md)
