@@ -113,6 +113,9 @@ const KINDS: &[Kind] = &[
             "mockserver",
             "rapidata-identity",
             "ecommerce-ai-skills-runtime",
+            "get-a-room",
+            "grantly",
+            "ebusd",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

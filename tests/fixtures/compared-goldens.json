@@ -899,6 +899,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/ebusd/expected": {},
+    "tests/fixtures/ebusd/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ecommerce-ai-skills-runtime/expected": {},
     "tests/fixtures/ecommerce-ai-skills-runtime/expected-literals": {
       "excluded": [
@@ -959,6 +965,12 @@
     "tests/fixtures/free5gc-pdu-session/expected": {},
     "tests/fixtures/g4brym-download-manager/expected": {},
     "tests/fixtures/gambitcomm.local-mimic/expected": {},
+    "tests/fixtures/get-a-room/expected": {},
+    "tests/fixtures/get-a-room/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/go-kratos-casbin-admin/expected": {},
     "tests/fixtures/googleapis-monitoring-v1/expected": {},
     "tests/fixtures/googleapis-servicebroker/expected": {},
@@ -971,6 +983,12 @@
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected": {},
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected-flat": {},
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/grantly/expected": {},
+    "tests/fixtures/grantly/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

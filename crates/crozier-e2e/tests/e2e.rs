@@ -9767,6 +9767,9 @@ const CORPORA: &[&Corpus] = &[
     &RGB_LIGHTNING_NODE,
     &RAPIDATA_IDENTITY,
     &ECOMMERCE_AI_SKILLS_RUNTIME,
+    &GET_A_ROOM,
+    &GRANTLY,
+    &EBUSD,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12110,6 +12113,45 @@ const RAPIDATA_IDENTITY: Corpus = Corpus {
 /// enums.
 const ECOMMERCE_AI_SKILLS_RUNTIME: Corpus = Corpus {
     api: "ecommerce-ai-skills-runtime",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Get A Room API — corpus row 3470, the publisher's own repository's copy,
+/// witnessing header parameters beside an octet-stream request body.
+const GET_A_ROOM: Corpus = Corpus {
+    api: "get-a-room",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Grantly — corpus row 3471, the publisher's own repository's copy,
+/// witnessing an urlencoded form body that is a `oneOf` of grant shapes.
+const GRANTLY: Corpus = Corpus {
+    api: "grantly",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ebusd HTTP API — corpus row 3472, the publisher's own repository's copy,
+/// witnessing a success response whose `oneOf` admits `null`.
+const EBUSD: Corpus = Corpus {
+    api: "ebusd",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20039,6 +20081,27 @@ fn rapidata_identity_matches_fern_output() {
 #[test]
 fn ecommerce_ai_skills_runtime_matches_fern_output() {
     assert_committed_corpus_matches(&ECOMMERCE_AI_SKILLS_RUNTIME);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn get_a_room_matches_fern_output() {
+    assert_committed_corpus_matches(&GET_A_ROOM);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn grantly_matches_fern_output() {
+    assert_committed_corpus_matches(&GRANTLY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ebusd_matches_fern_output() {
+    assert_committed_corpus_matches(&EBUSD);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

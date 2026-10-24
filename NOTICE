@@ -682,3 +682,18 @@ ecommerce-ai-skills-runtime API specification and generated SDK golden:
     https://raw.githubusercontent.com/kangise/ecommerce-ai-skills/b1a727c3b2c2d27f2793e0d0fcd655ea446ba635/openapi/runtime-api.yaml
     CC0-1.0 (publisher LICENSE, retained in licenses/ecommerce-ai-skills-CC0-1.0.txt); corpus row 3400 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+get-a-room API specification and generated SDK golden:
+    https://raw.githubusercontent.com/hugo-alves/get-a-room/f2130f1eebbc8c697bcdb5cf2a867f6802221523/openapi.yaml
+    Apache-2.0 (the document's info.license and the repository's own LICENSE); corpus row 3470 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+grantly API specification and generated SDK golden:
+    https://raw.githubusercontent.com/thetejascodes/Grantly/11d3792cd0c94b2b07e8865dffb3239523d6392e/openapi.yaml
+    MIT (the document's info.license; the repository carries no LICENSE); corpus row 3471 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ebusd API specification and generated SDK golden:
+    https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml
+    GPL-3.0 (the repository's own LICENSE); corpus row 3472 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

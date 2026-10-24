@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "get-a-room",
+  "corpus_spec_ref": "f2130f1eebbc8c697bcdb5cf2a867f6802221523",
+  "corpus_spec_url": "https://raw.githubusercontent.com/hugo-alves/get-a-room/f2130f1eebbc8c697bcdb5cf2a867f6802221523/openapi.yaml"
+}

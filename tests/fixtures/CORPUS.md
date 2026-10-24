@@ -1925,3 +1925,18 @@ recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3400 | `ecommerce-ai-skills-runtime` | github-raw | https://raw.githubusercontent.com/kangise/ecommerce-ai-skills/b1a727c3b2c2d27f2793e0d0fcd655ea446ba635/openapi/runtime-api.yaml | `b1a727c3b2c2d27f2793e0d0fcd655ea446ba635` | CC0-1.0 (publisher LICENSE, retained in licenses/ecommerce-ai-skills-CC0-1.0.txt) | committed | Header parameters typed by referenced string enums; optional bodies naming a closed empty object; required-only `allOf` members promoting parent fields |
+
+## Operation body and response combinations
+
+Each specification is published in its publisher's own repository. Get A Room's
+attachment upload sends header parameters beside an octet-stream body, Grantly's
+OAuth `/token` posts a form body that is a `oneOf` of two grant shapes, and
+ebusd's HTTP API answers a success union that admits `null`; the bounded search
+and each removal control are recorded in
+[`witness-search-operation-combinations-bodies-responses`](../../docs/openapi-surface/witness-search-operation-combinations-bodies-responses/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3470 | `get-a-room` | github-raw | https://raw.githubusercontent.com/hugo-alves/get-a-room/f2130f1eebbc8c697bcdb5cf2a867f6802221523/openapi.yaml | `f2130f1eebbc8c697bcdb5cf2a867f6802221523` | Apache-2.0 (document info.license and repository LICENSE) | committed | Header parameters beside an octet-stream request body |
+| 3471 | `grantly` | github-raw | https://raw.githubusercontent.com/thetejascodes/Grantly/11d3792cd0c94b2b07e8865dffb3239523d6392e/openapi.yaml | `11d3792cd0c94b2b07e8865dffb3239523d6392e` | MIT (document info.license; the repository carries no LICENSE) | committed | An urlencoded form body that is a `oneOf` of grant shapes tagged by one-value enums |
+| 3472 | `ebusd` | github-raw | https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml | `38db2d28bd5622cadb6078c1662c6f7da5cef891` | GPL-3.0 (repository LICENSE) | committed | A success response whose `oneOf` admits `null` |
