@@ -1552,9 +1552,9 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
 pub enum BodySchemaShape {
     /// Declared by component `$ref`.
     Ref,
-    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring neither a `title`
-    /// nor a `discriminator`. Fern leaves such a body's content type to httpx;
-    /// see `emit.rs`.
+    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring no `title` and
+    /// discriminated neither by a written `discriminator` nor by its members' own
+    /// tags. Fern leaves such a body's content type to httpx; see `emit.rs`.
     InlinePlainUnion,
     /// Any other inline schema, or no schema at all.
     #[default]
@@ -1563,7 +1563,7 @@ pub enum BodySchemaShape {
 
 impl BodySchemaShape {
     /// Read the shape off the first media schema a Request Body Object declares.
-    fn of(schema: Option<&Schema>) -> Self {
+    fn of(schema: Option<&Schema>, schemas: &IndexMap<String, Schema>) -> Self {
         let Some(schema) = schema else {
             return Self::Other;
         };
@@ -1571,6 +1571,10 @@ impl BodySchemaShape {
             Self::Ref
         } else if (schema.one_of.is_some() || schema.any_of.is_some())
             && schema.discriminator.is_none()
+            // Members tagging themselves discriminate the union as a written
+            // discriminator does, and the header stays: Letta's template body,
+            // its `discriminator` removed, keeps it in Fern's output.
+            && inferred_union_discriminant_property(schema, schemas).is_none()
             && schema
                 .title
                 .as_deref()
@@ -4521,11 +4525,14 @@ fn build_endpoint(
             .map(|(media_type, _)| media_type)
             .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
             .map(str::to_string),
-        body_schema_shape: BodySchemaShape::of(op.request_body.as_ref().and_then(|body| {
-            body.content
-                .values()
-                .find_map(|media| media.schema.as_ref())
-        })),
+        body_schema_shape: BodySchemaShape::of(
+            op.request_body.as_ref().and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            }),
+            &doc.components.schemas,
+        ),
         body_schema_dropped: false,
         body_schema_shared: op
             .request_body
@@ -13277,8 +13284,10 @@ impl Builder<'_> {
         // A lone inline member is the schema's own shape, not a union to infer a
         // tag over: TrueForge's `WebSearchProviderManifest` is `oneOf` one object
         // tagged `type: {enum: [parallel]}`, and Fern declares a plain model with a
-        // `WebSearchProviderManifestType` enum field.
-        if schema.discriminator.is_none() && variants.len() == 1 && is_inline_object(&variants[0]) {
+        // `WebSearchProviderManifestType` enum field. A `discriminator` written
+        // beside it changes nothing: Fern declares the same plain model for a
+        // lone tagged member with and without one.
+        if variants.len() == 1 && is_inline_object(&variants[0]) {
             return None;
         }
         let property_name = schema
@@ -14353,6 +14362,19 @@ impl Builder<'_> {
                         Box::new(TypeRef::Primitive(Prim::Any)),
                     );
                 }
+                // A lone inline member under a written `discriminator` is read as
+                // though none were written: Fern declares the same plain model
+                // for it either way.
+                if prop_schema.discriminator.is_some()
+                    && members.len() == 1
+                    && is_inline_object(&members[0])
+                {
+                    let undiscriminated = Schema {
+                        discriminator: None,
+                        ..prop_schema.clone()
+                    };
+                    return self.field_type_ref(owner, prop, &undiscriminated);
+                }
                 // A property-level union whose members all tag themselves with the
                 // same single-valued property is one of Fern's discriminated unions
                 // even with no `discriminator` block — braintrust's `CodeBundle.location`
@@ -14582,18 +14604,16 @@ impl Builder<'_> {
                     // beneath a one-element `typing.Union`.
                     if let [only] = members.as_slice() {
                         if is_inline_struct(only) {
-                            // Documented by the member when the property is not:
-                            // NPQ's one-member `anyOf` `attributes`.
+                            // Documented by the member, which Fern converts in the
+                            // union's place (NPQ's one-member `anyOf` `attributes`);
+                            // a description beside the union is lost with it, as a
+                            // lone tagged `oneOf` member under a described property
+                            // shows at the certified pair.
                             self.add_object(
                                 &name,
                                 naming::module_name(&name),
                                 only,
-                                clean_doc(
-                                    prop_schema
-                                        .description
-                                        .as_deref()
-                                        .or(only.description.as_deref()),
-                                ),
+                                clean_doc(only.description.as_deref()),
                             );
                             return TypeRef::Named(name);
                         }
@@ -17238,6 +17258,18 @@ fn annotation_lost_description<'a>(
     if let Some(member) = sole_inline_all_of(prop_schema).filter(|_| !optional) {
         if !is_inline_struct(member) {
             return Some(member.description.as_deref());
+        }
+    }
+    // So is the description beside a one-member inline union, which Fern
+    // converts as its member.
+    if let Some([only]) = prop_schema
+        .one_of
+        .as_deref()
+        .or(prop_schema.any_of.as_deref())
+        .filter(|_| !optional && prop_schema.reference.is_none() && !is_map(prop_schema))
+    {
+        if is_inline_struct(only) {
+            return Some(only.description.as_deref());
         }
     }
     let (reference, _) = described_all_of_ref(prop_schema)?;
@@ -21337,6 +21369,90 @@ mod tests {
         assert_eq!(
             builder.annotated_scalar_all_of(&member),
             Some(TypeRef::Primitive(Prim::Int))
+        );
+    }
+
+    #[test]
+    fn a_lone_tagged_member_is_a_model_with_or_without_a_discriminator() {
+        let schemas = indexmap::IndexMap::new();
+        let member = serde_json::json!({
+            "type": "object",
+            "required": ["kind", "bin"],
+            "properties": {
+                "kind": { "type": "string", "enum": ["stockroom"] },
+                "bin": { "type": "string" }
+            }
+        });
+        for union in [
+            serde_json::json!({ "discriminator": { "propertyName": "kind" }, "oneOf": [member] }),
+            serde_json::json!({ "oneOf": [member] }),
+        ] {
+            let mut builder = Builder {
+                types: Vec::new(),
+                schemas: &schemas,
+                strip_discriminant: std::collections::HashMap::new(),
+                building_types: std::collections::HashSet::new(),
+                copying_refs: Vec::new(),
+            };
+            let type_ref = builder.field_type_ref("Order", "source", &schema(union));
+            assert_eq!(type_ref, TypeRef::Named("OrderSource".to_string()));
+            assert!(
+                !builder
+                    .types
+                    .iter()
+                    .any(|declaration| matches!(declaration, TypeDecl::DiscriminatedUnion(_))),
+                "a lone member declares no discriminated union"
+            );
+        }
+        // The description beside the union is lost on a required field and on
+        // the member's model.
+        let described = schema(serde_json::json!({
+            "description": "Where it comes from.", "oneOf": [member]
+        }));
+        assert_eq!(
+            super::annotation_lost_description(&described, &schemas, false),
+            Some(None)
+        );
+        assert_eq!(
+            super::annotation_lost_description(&described, &schemas, true),
+            None
+        );
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        builder.field_type_ref("Order", "source", &described);
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object) if object.name == "OrderSource" && object.docstring.is_none()
+        )));
+    }
+
+    #[test]
+    fn a_self_tagged_inline_union_body_is_no_plain_union() {
+        let schemas = indexmap::IndexMap::new();
+        let member = |tag: &str| {
+            serde_json::json!({
+                "type": "object",
+                "required": ["type"],
+                "properties": { "type": { "type": "string", "enum": [tag] } }
+            })
+        };
+        let tagged = schema(serde_json::json!({ "oneOf": [member("agent"), member("file")] }));
+        assert_eq!(
+            super::BodySchemaShape::of(Some(&tagged), &schemas),
+            super::BodySchemaShape::Other
+        );
+        let plain = schema(serde_json::json!({ "oneOf": [
+            { "type": "object", "properties": { "a": { "type": "string" } } },
+            { "type": "object", "properties": { "b": { "type": "string" } } }
+        ] }));
+        assert_eq!(
+            super::BodySchemaShape::of(Some(&plain), &schemas),
+            super::BodySchemaShape::InlinePlainUnion
         );
     }
 
