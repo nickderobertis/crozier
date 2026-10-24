@@ -2906,6 +2906,7 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
@@ -2926,6 +2927,7 @@ fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
     );
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_example_restrictions_hold_through_compare() {
@@ -3006,6 +3008,7 @@ fn declared_reference_example_restrictions_hold_through_compare() {
     assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Generates the committed harbor-map-validation measurement and its controls, a measurement gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn declared_map_examples_validate_values_and_nullable_controls_keep_the_same_fallback() {
     let fixture = repo_root().join("docs/fern-measurements/examples-docs/harbor-map-validation");
@@ -20129,6 +20132,7 @@ fn rgb_declared_examples_reject_bad_imports_and_duplicate_arguments() {
     );
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over the registered RGB Lightning Node corpus golden, then the real census diff reader, on the crozier-e2e edge every corpus comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn compare_reports_original_lines_after_a_real_length_changing_example_departure() {

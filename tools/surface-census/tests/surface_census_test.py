@@ -18466,6 +18466,29 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         self.assertEqual(original, self.index.read_text(encoding="utf-8"))
 
+    def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        original = self.index.read_text(encoding="utf-8")
+        region = self.root / "docs/openapi-surface/schemas.md"
+        source = region.read_text(encoding="utf-8")
+        row = next(line for line in source.splitlines() if line.startswith("| combo-"))
+        cells = restater.reader().region_rows(row)[0]
+        for label, broken in [
+            ("unknown category", row.replace(f"| {cells[3]} |", "| invented-category |", 1)),
+            ("missing cell", row.replace(f" {cells[1]} |", "", 1)),
+        ]:
+            with self.subTest(label):
+                self.assertNotEqual(row, broken)
+                region.write_text(source.replace(row, broken, 1), encoding="utf-8")
+                for args in (("--combinations-only",), ("--combinations-only", "--write"), ("--write",)):
+                    refused = self.run_restater(*args)
+                    self.assertEqual(1, refused.returncode, args)
+                    self.assertIn(f"combination row {cells[0].strip('`')} is not", refused.stderr)
+                self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        region.write_text(source, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only").returncode)
+
     def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
         measured = subprocess.run(
             [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
