@@ -77,9 +77,9 @@ ARTIFACTS = ("types/", "client.py", "raw_client.py", "errors/", "reference.md", 
 SOURCE = r"src/(?:[a-z_]+/)*[a-z_]+\.rs"
 
 
-def reader() -> ModuleType:
+def reader(filename: str = "witness-search-region-keys.py") -> ModuleType:
     """Use the region parser shared by the census and its gate."""
-    path = Path(__file__).with_name("witness-search-region-keys.py")
+    path = Path(__file__).with_name(filename)
     spec = importlib.util.spec_from_file_location("coverage_region_reader", path)
     if spec is None or spec.loader is None:
         raise ValueError(f"cannot load {path}")
@@ -101,7 +101,10 @@ def decided_keys(root: Path) -> set[str]:
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    records, failures = module.read_records(root)
+    try:
+        records, failures = module.read_records(root)
+    except SystemExit as error:
+        raise ValueError(str(error)) from error
     if failures:
         raise ValueError("; ".join(failures))
     return {key for key, context in records if context == "-"}
@@ -137,10 +140,89 @@ def source_counts(root: Path) -> tuple[int, int, int]:
     return len(acquired), len(sources), golden
 
 
+def validate_reach_population(keys: set[str], features: set[str], combinations: set[str]) -> None:
+    """Require each measured population in full, without counting combinations as features."""
+    prefix = reader().COMBINATION_PREFIX
+    for label, expected, actual in (
+        ("feature", features, {key for key in keys if not key.startswith(prefix)}),
+        ("combination", combinations, {key for key in keys if key.startswith(prefix)}),
+    ):
+        if actual != expected:
+            raise ValueError(
+                f"golden-reach.tsv: {label} keys must equal the golden category population; "
+                f"missing {sorted(expected - actual)}, extra {sorted(actual - expected)}"
+            )
+
+
+COMBINATION_SENTENCE = (
+    r"\*\*Feature combinations are counted apart\.\*\* \d+ combinations are selected\s+"
+    r"\(\[the list\]\(openapi-surface/combinations\.md\)\): [^\n.]+\.\n"
+    r"\d+ of the `gap` ones (?:is|are) decided output-insensitive in\n"
+    r"\[the shared table\]\(openapi-surface/output-insensitive\.tsv\), neither proven nor unproven\."
+)
+
+
+def combination_categories(root: Path) -> tuple[Counter[str], int]:
+    """Read combinations apart from features, using the shared category parser.
+
+    Returns every category the combination rows carry, and how many of their
+    `gap` rows the shared table decides output-insensitive as a whole.
+    """
+    parser = reader()
+    decided = decided_keys(root)
+    settled = 0
+    index = root / "docs/openapi-surface-coverage.md"
+    categories: Counter[str] = Counter()
+    seen: set[str] = set()
+    for name in parser.region_files(index):
+        text = (root / "docs/openapi-surface" / name).read_text(encoding="utf-8")
+        # `region_rows` drops a row it cannot parse; a combination row it drops
+        # would leave the population short, so each combination-keyed line
+        # must parse on its own.
+        for line in text.splitlines():
+            key = line.removeprefix("| ").partition(" |")[0].strip("`")
+            if line.startswith("| ") and key.startswith(parser.COMBINATION_PREFIX) and not parser.region_rows(line):
+                raise ValueError(f"{name}: combination row {key} is not an eight-cell row with a known category")
+        for cells in parser.region_rows(text):
+            key = cells[0].strip("`")
+            if not key.startswith(parser.COMBINATION_PREFIX):
+                continue
+            if key in seen:
+                raise ValueError(f"duplicate combination row {key}")
+            seen.add(key)
+            categories[cells[3].strip("`")] += 1
+            settled += cells[3].strip("`") == "gap" and key in decided
+    if not categories:
+        raise ValueError("no combination region rows")
+    return categories, settled
+
+
+def restate_combinations(root: Path, text: str) -> str:
+    """Restate only the combination sentence; category vocabulary comes from rows."""
+    categories, decided = combination_categories(root)
+    parts = [f"{count} are `{category}`" for category, count in sorted(categories.items())]
+    counts = ", ".join(parts[:-1]) + " and " + parts[-1] if len(parts) > 1 else parts[0]
+    return substitute(
+        text,
+        COMBINATION_SENTENCE,
+        f"**Feature combinations are counted apart.** {sum(categories.values())} combinations are selected\n"
+        f"([the list](openapi-surface/combinations.md)): {counts}.\n"
+        f"{decided} of the `gap` ones {'is' if decided == 1 else 'are'} decided output-insensitive in\n"
+        "[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.",
+    )
+
+
+def combination_headline_failures(root: Path) -> list[str]:
+    """Require the whole category/count mapping, including the total and grammar."""
+    text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+    expected = restate_combinations(root, text)
+    return [] if text == expected else ["combination headline differs from the complete region category counts"]
+
+
 def restate(root: Path) -> str:
     """Derive tables from category rows and the committed blind-spot measurement."""
     index = root / "docs/openapi-surface-coverage.md"
-    text = index.read_text(encoding="utf-8")
+    text = restate_combinations(root, index.read_text(encoding="utf-8"))
     acquired, registered, golden_sources = source_counts(root)
     text = substitute(
         text,
@@ -150,9 +232,10 @@ def restate(root: Path) -> str:
         f"the {acquired - registered}\n  others carry none and are acquisition evidence only.",
     )
     parser = reader()
+    reach_reader = reader("golden-reach.py")
     decided = decided_keys(root)
-    combinations: Counter[str] = Counter()
     entries: dict[str, CategoryRow] = {}
+    golden_combinations: set[str] = set()
     counts: dict[str, Totals] = {}
     gaps: dict[str, list[str]] = {name: [] for name in SETTLEMENTS}
     for name in parser.region_files(index):
@@ -166,11 +249,16 @@ def restate(root: Path) -> str:
         rows = parser.region_rows(region_text)
         if len(candidates) != len(rows):
             raise ValueError(f"{name}: malformed category row")
-        for cells in rows:
-            if cells[0].strip("`").startswith(parser.COMBINATION_PREFIX):
-                combinations[cells[3].strip("`")] += 1
-                if cells[3].strip("`") == "gap" and cells[0].strip("`") in decided:
-                    combinations["decided"] += 1
+        for row in rows:
+            if (
+                row[0].strip("`").startswith(parser.COMBINATION_PREFIX)
+                and row[3].strip("`") == "golden"
+                and not reach_reader.pending_combination(row)
+            ):
+                key = row[0].strip("`")
+                if key in golden_combinations:
+                    raise ValueError(f"duplicate category row: {key}")
+                golden_combinations.add(key)
         rows = [row for row in rows if not row[0].strip("`").startswith(parser.COMBINATION_PREFIX)]
         categories = Counter(row[3].strip("`") for row in rows)
         settlements: Counter[str] = Counter()
@@ -331,8 +419,8 @@ def restate(root: Path) -> str:
                 raise ValueError(f"golden-reach.tsv: invalid unreached_sites for {row['key']}")
             ledger[row["key"]] = Reach("" if row["witnesses"] == "-" else row["witnesses"], int(row["unreached_sites"]))
     golden_keys = {key for key, entry in entries.items() if entry.category == "golden"}
-    if set(ledger) != golden_keys:
-        raise ValueError("golden-reach.tsv: keys must equal the golden category population")
+    validate_reach_population(set(ledger), golden_keys, golden_combinations)
+    ledger = {key: reach for key, reach in ledger.items() if key in golden_keys}
     one = [
         f"| `{key}` | `{entries[key].region}` | `{reach.witnesses}` |"
         for key, reach in ledger.items()
@@ -457,14 +545,8 @@ def restate(root: Path) -> str:
     )
     text = substitute(
         text,
-        r"\*\*Feature combinations are counted apart\.\*\*.*?(?=\n\n)",
-        f"**Feature combinations are counted apart.** {sum(combinations[c] for c in parser.CATEGORIES)} "
-        "combinations are selected\n([the list](openapi-surface/combinations.md)): "
-        f"{combinations['golden']} are `golden` and {combinations['gap']} are `gap`.\n"
-        f"{combinations['decided']} of the `gap` ones {'is' if combinations['decided'] == 1 else 'are'} decided "
-        "output-insensitive in\n[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor "
-        f"unproven.\nNone is among the {total} features above, and each other `gap` one is named under\n"
-        "[Unproven combinations, named](#unproven-combinations-named).",
+        r"None is among the \d+ features above, and each other `gap` one is named under",
+        f"None is among the {total} features above, and each other `gap` one is named under",
     )
     text = substitute(
         text,
@@ -784,7 +866,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO)
     parser.add_argument("--write", action="store_true", help="write the derived tables; otherwise check for drift")
-    parser.add_argument(
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--combinations-only", action="store_true", help="restate only the combination sentence")
+    modes.add_argument(
         "--snapshot-json", type=Path, help="restate document snapshot from native surface-census --json output"
     )
     args = parser.parse_args()
@@ -798,7 +882,11 @@ def main() -> int:
                         raise ValueError("document snapshot differs; rerun with --write")
                     target.write_text(content, encoding="utf-8", newline="\n")
             return 0
-        result = restate(args.repo_root)
+        result = (
+            restate_combinations(args.repo_root, path.read_text(encoding="utf-8"))
+            if args.combinations_only
+            else restate(args.repo_root)
+        )
         if result != path.read_text(encoding="utf-8"):
             if not args.write:
                 raise ValueError("derived tables differ; run tools/surface-census/restate-coverage.py --write")

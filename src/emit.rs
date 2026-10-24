@@ -3160,7 +3160,7 @@ fn reference_entry(
         untyped_arguments: BTreeSet::new(),
         sdk_first_party: true,
     };
-    let example = (!ep.binary_schema_response || !module.is_empty() || ep.openapi_31)
+    let example = (!root_binary_download_undocumented(ep))
         .then(|| {
             build_documentation_example(
                 ep,
@@ -3396,9 +3396,9 @@ fn reference_entry(
             .map(|description| format!("{description}{}", ep.reference_description_suffix)),
         example,
         example_gap: if !endpoint_has_worked_example(ep)
+            || root_binary_download_undocumented(ep)
             || !path_object_documented(ep, &ir.types, &ir.tag_types)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-            || ep.binary_schema_response && module.is_empty() && !ep.openapi_31
         {
             ""
         } else {
@@ -4901,6 +4901,7 @@ fn render_discriminated_union(
         // FieldMetadata(alias="objectType"), pydantic.Field(alias="objectType")]`.
         let mut discriminant = render_field(
             &Field {
+                example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: union.discriminant_property.clone(),
                 py_name: discriminant_field_name(union),
                 type_ref: TypeRef::Literal(vec![member.discriminant.clone()]),
@@ -8674,6 +8675,65 @@ struct ExampleCtx<'a> {
     sdk_first_party: bool,
 }
 
+/// The two exact values and imports a declared-example departure can recognize.
+pub(crate) struct DeclaredExampleSubstitution {
+    pub fallback: String,
+    pub declared: String,
+    pub fallback_imports: BTreeSet<String>,
+    pub declared_imports: BTreeSet<String>,
+}
+
+/// The three supported contexts for a declared worked example.
+#[derive(Clone, Copy)]
+pub(crate) enum DeclaredExampleMode {
+    Docstring,
+    Readme,
+    Reference,
+}
+
+pub(crate) fn declared_example_substitution(
+    ir: &Ir,
+    type_ref: &TypeRef,
+    example: &serde_json::Value,
+    mode: DeclaredExampleMode,
+) -> Option<DeclaredExampleSubstitution> {
+    let mut ctx = ExampleCtx {
+        types: &ir.types,
+        enum_type: ir.enum_type,
+        yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
+        tag_decls: &ir.tag_types,
+        referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
+        referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
+        uses_datetime: false,
+        datetime_precedes_tag_import: false,
+        auth: &ir.auth,
+        has_environment: ir.environment.is_some(),
+        global_headers: &ir.global_headers,
+        client_path_parameters: &ir.client_path_parameters,
+        building: Default::default(),
+        expanding_aliases: Vec::new(),
+        documentation: !matches!(mode, DeclaredExampleMode::Docstring),
+        reference: matches!(mode, DeclaredExampleMode::Reference),
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
+        sdk_first_party: true,
+    };
+    let fallback = ctx.value(type_ref, Slot::Plain).flat();
+    let fallback_imports = ctx.referenced.clone();
+    ctx.referenced.clear();
+    let declared = ctx
+        .value_from_example(type_ref, &example.to_string())?
+        .flat();
+    Some(DeclaredExampleSubstitution {
+        fallback,
+        declared,
+        fallback_imports,
+        declared_imports: ctx.referenced,
+    })
+}
+
 /// The slot a string value sits in, which decides its placeholder text: a named
 /// field/param uses the name, a map value uses `"value"`, anything else `"string"`.
 /// A path parameter is named too, and differs only in how a union is exampled
@@ -8845,6 +8905,9 @@ impl<'a> ExampleCtx<'a> {
                 });
             }
             let values: Vec<serde_json::Value> = serde_json::from_value(value).ok()?;
+            if values.is_empty() && self.resolves_to_object(inner) {
+                return Some(self.value(t, Slot::Plain));
+            }
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
                 if matches!(t, TypeRef::List(_))
@@ -8956,6 +9019,7 @@ impl<'a> ExampleCtx<'a> {
             // `{"api.example.com": HttpChaosProfile(error_status=500, …)}`.
             if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &value) {
                 if self.resolves_to_object(inner)
+                    || self.example_is_composite(inner)
                     || (!self.documentation && !self.resolves_to_any(inner))
                 {
                     let pairs = fields
@@ -8976,29 +9040,31 @@ impl<'a> ExampleCtx<'a> {
                     });
                 }
             }
-            if let (true, TypeRef::Dict(_, inner)) = (self.reference, t) {
+            if let (true, TypeRef::Dict(_, inner)) = (self.documentation || self.reference, t) {
                 let serde_json::Value::Object(fields) = value else {
                     return None;
                 };
-                // `reference.md` writes a free-form value on one line and a
-                // typed one by its type: MockServer's HAR `log` is one line,
-                // while its WASM test's `Dict[str, List[str]]` headers wrap
-                // `["acme"]` as a list.
+                // Both Markdown writers keep each free-form map value on one
+                // line. Typed values still render through their declared type:
+                // a list of strings wraps, unlike an unknown JSON array.
                 let unknown = self.resolves_to_any(inner);
-                return Some(Example::ReferenceDict(
-                    fields
-                        .into_iter()
-                        .map(|(key, value)| {
-                            let rendered = if unknown {
-                                Example::Atom(example_from_json_as(value, false).flat())
-                            } else {
-                                self.value_from_example(inner, &value.to_string())
-                                    .unwrap_or_else(|| example_from_json_as(value, false))
-                            };
-                            (key, rendered)
-                        })
-                        .collect(),
-                ));
+                let pairs = fields
+                    .into_iter()
+                    .map(|(key, value)| {
+                        let rendered = if unknown {
+                            Example::Atom(example_from_json_as(value, false).flat())
+                        } else {
+                            self.value_from_example(inner, &value.to_string())
+                                .unwrap_or_else(|| example_from_json_as(value, false))
+                        };
+                        (key, rendered)
+                    })
+                    .collect();
+                return Some(if self.reference {
+                    Example::ReferenceDict(pairs)
+                } else {
+                    Example::DocDict(pairs)
+                });
             }
             return Some(example_from_json_as(value, !self.documentation));
         }
@@ -9066,8 +9132,11 @@ impl<'a> ExampleCtx<'a> {
                 .as_deref()
                 .map(|source| naming::child_class_name(source, &union.discriminant_property))
                 .is_some_and(|enum_name| matches!(self.find(&enum_name), Some(TypeDecl::Enum(_))));
-        if member.layout.is_wrapped() || writes_tag || member.source.is_some() {
+        if member.layout.is_wrapped() || writes_tag {
             return None;
+        }
+        if member.source.is_some() {
+            return Some(self.value(&TypeRef::Named(union.name.clone()), Slot::Plain));
         }
         let fields = member
             .fields
@@ -11956,12 +12025,10 @@ fn compact_documentation_values(
     compact
 }
 
-/// Whether a binary download is one Fern documents with no worked example: a
-/// root-client method of a 3.0 document whose success schema itself declares
-/// `format: binary`. Its docstring has no `Examples`, and the README anchors on
-/// the next eligible operation instead (`binary-download-with-body-has-no-example`).
+/// A root binary-schema operation without an error response has no worked
+/// download example. A declared error supplies a valid example in both versions.
 fn root_binary_download_undocumented(ep: &Endpoint) -> bool {
-    ep.binary_response && ep.module.is_empty() && ep.binary_schema_response && !ep.openapi_31
+    ep.binary_response && ep.module.is_empty() && ep.binary_schema_response && ep.errors.is_empty()
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
@@ -14688,6 +14755,7 @@ mod tests {
 
     fn model_field(name: &str, type_ref: TypeRef, required: bool) -> Field {
         Field {
+            example_source: crate::ir::FieldExampleSource::Property,
             wire_name: name.to_string(),
             py_name: name.to_string(),
             type_ref,
@@ -15106,6 +15174,45 @@ mod tests {
             example_from_json_as(quoted, false).flat(),
             r#"{"body": "{\"orders\":[]}", "note": "it's \"x\""}"#
         );
+    }
+
+    #[test]
+    fn readme_freeform_map_values_stay_flat_without_flattening_typed_lists() {
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        ctx.documentation = true;
+        let features = serde_json::json!([{"geometry": {"coordinates": [[
+            [-3.8, 50.2], [-3.7, 50.3], [-3.6, 50.4], [-3.5, 50.5], [-3.4, 50.6], [-3.8, 50.2]
+        ]]}}]);
+        let value = serde_json::json!({"type": "FeatureCollection", "features": features});
+        let map = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::Primitive(Prim::Any)),
+        );
+        let rendered = ctx
+            .value_from_example(&map, &value.to_string())
+            .unwrap()
+            .into_documentation_dicts()
+            .render(8);
+        assert!(
+            rendered.contains(&format!(
+                "\"features\": {}",
+                example_from_json_as(features, false).flat()
+            )),
+            "{rendered}"
+        );
+
+        let typed = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))),
+        );
+        let values = serde_json::json!({"markers": ["a deliberately long named marker along the ridge", "another deliberately long named marker by the river"]});
+        let rendered = ctx
+            .value_from_example(&typed, &values.to_string())
+            .unwrap()
+            .into_documentation_dicts()
+            .render(8);
+        assert!(rendered.contains("\"markers\": [\n"), "{rendered}");
     }
 
     #[test]
@@ -15675,6 +15782,71 @@ mod tests {
         );
         assert!(ctx.referenced.is_empty());
         assert!(!ctx.uses_datetime);
+    }
+
+    #[test]
+    fn typed_map_lists_and_empty_model_arrays_construct_their_items() {
+        let types = vec![TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
+            name: "Parcel".to_string(),
+            module: "parcel".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("label", TypeRef::Primitive(Prim::Str), true)],
+            example_fields: Default::default(),
+            docstring: None,
+            xml: None,
+        })];
+        let item = TypeRef::Named("Parcel".to_string());
+        let list = TypeRef::List(Box::new(item));
+        let map = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(list.clone()),
+        );
+        for (documentation, reference) in [(false, false), (true, false), (false, true)] {
+            let mut ctx = example_ctx(&types, &[], &Auth::None);
+            ctx.documentation = documentation;
+            ctx.reference = reference;
+            let rendered = ctx
+                .value_from_example(&map, r#"{"dock":[{"label":"fragile"}]}"#)
+                .unwrap()
+                .flat();
+            assert!(rendered.contains("Parcel(label=\"fragile\")"), "{rendered}");
+            let rendered = ctx.value_from_example(&list, "[]").unwrap().flat();
+            assert!(rendered.contains("Parcel(label=\"label\")"), "{rendered}");
+        }
+    }
+
+    #[test]
+    fn referenced_discriminator_examples_keep_typed_synthesized_constructors() {
+        let mut quantity = model_field("quantity", TypeRef::Primitive(Prim::Int), true);
+        quantity.example = Some("42".to_string());
+        let types = vec![TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
+            discriminant_name: None,
+            name: "Cargo".to_string(),
+            module: "cargo".to_string(),
+            discriminant_property: "kind".to_string(),
+            members: vec![UnionMember {
+                layout: crate::ir::UnionMemberLayout::Flattened,
+                class_name: "Cargo_Crate".to_string(),
+                discriminant: "crate".to_string(),
+                discriminant_index: None,
+                fields: vec![quantity],
+                source: Some("Crate".to_string()),
+                docstring: None,
+            }],
+            variant_targets: Vec::new(),
+            docstring: None,
+        })];
+        let mut ctx = example_ctx(&types, &[], &Auth::None);
+        let rendered = ctx
+            .value_from_example(
+                &TypeRef::Named("Cargo".to_string()),
+                r#"{"kind":"crate","quantity":400}"#,
+            )
+            .unwrap()
+            .flat();
+        assert_eq!(rendered, "Cargo_Crate(quantity=42)");
     }
 
     #[test]
@@ -16710,6 +16882,76 @@ mod tests {
                 }
             }}}
         })
+    }
+
+    fn loaded_files_for(document: serde_json::Value) -> Vec<(String, String)> {
+        let input = tempfile::tempdir().unwrap();
+        let source = input.path().join("openapi.json");
+        std::fs::write(&source, serde_json::to_string(&document).unwrap()).unwrap();
+        let doc = crate::openapi::load(&source).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            source,
+            input.path().join("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let files = generate(&crate::ir::build(&doc, &config))
+            .unwrap()
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect::<Vec<_>>();
+        files
+    }
+
+    #[test]
+    fn root_download_examples_with_json_errors_do_not_depend_on_openapi_version() {
+        for version in ["3.0.3", "3.1.0"] {
+            let mut document = download_document("application/octet-stream");
+            document["openapi"] = serde_json::json!(version);
+            document["paths"]["/files/{id}/download"]["get"]
+                .as_object_mut()
+                .unwrap()
+                .remove("tags");
+            let files = loaded_files_for(document);
+            let client = file(&files, "src/api/client.py");
+            assert!(client.contains("        Examples\n"), "{version}: {client}");
+            let readme = file(&files, "README.md");
+            assert!(
+                readme.contains("client.files_download("),
+                "{version}: {readme}"
+            );
+        }
+    }
+
+    #[test]
+    fn root_binary_ndjson_without_errors_omits_examples_in_both_versions() {
+        for version in ["3.0.3", "3.1.0"] {
+            let mut document = download_document("application/x-ndjson");
+            document["openapi"] = serde_json::json!(version);
+            let operation = document["paths"]["/files/{id}/download"]["get"]
+                .as_object_mut()
+                .unwrap();
+            operation.remove("tags");
+            operation["responses"]
+                .as_object_mut()
+                .unwrap()
+                .remove("404");
+            let files = loaded_files_for(document);
+            let client = file(&files, "src/api/client.py");
+            assert!(
+                !client.contains("        Examples\n"),
+                "{version}: {client}"
+            );
+        }
     }
 
     #[test]

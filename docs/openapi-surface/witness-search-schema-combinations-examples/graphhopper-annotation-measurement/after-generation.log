@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import importlib.util,sys;from pathlib import Path;p=Path('tools/fern-goldens/fern-references.py');s=importlib.util.spec_from_file_location('fr',p);m=importlib.util.module_from_spec(s);sys.modules[s.name]=m;s.loader.exec_module(m);m.generated_tree(Path(sys.argv[1]),Path(sys.argv[2]),m.certified_pair(),enum_type='python-enums',layout='packaged')
+                                                                                                                                                                                                                                           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/tools/fern-goldens/fern-references.py", line 391, in generated_tree
+    raise ReferenceError(
+        f"fern generate exited {run.generate_exit} with no tree:\n{run.generate_log.strip()[-2000:]}"
+    )
+fr.ReferenceError: fern generate exited 1 with no tree:
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk clusterApi.yml -> service
+                  clusterApi.yml
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::clusterApi.yml -> service%0AclusterApi.yml%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.
+[api]: python-sdk Found 7 errors and 0 warnings in 1.280 seconds.
+::error title=[api]%3A python-sdk::Found 7 errors and 0 warnings in 1.280 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

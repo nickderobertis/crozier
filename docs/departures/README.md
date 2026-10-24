@@ -193,10 +193,10 @@ when the two differ.
 ### `anyof-path-param-schema-example`
 
 - **Kind:** `richer-documentation`
-- **Trigger:** A path parameter whose schema is an inline anyOf or oneOf composition declaring a string schema-level example: the worked examples of README.md, reference.md and each client.py docstring.
+- **Trigger:** A path parameter whose schema is an inline anyOf or oneOf composition declaring a string schema-level example, a required string query parameter with a referenced schema and its own example, or a required property with an example beside an allOf reference and description-only annotations, or a required property referencing a oneOf component whose declared example validates against exactly one supported alternative: the worked examples of README.md, reference.md and each client.py docstring.
 - **Fern writes:** The parameter's own name as its placeholder value (branch_id_or_ref="branch_id_or_ref").
-- **crozier writes:** The composition's declared example (branch_id_or_ref="abcdefghijklmnopqrst"). Every other argument and line is retained.
-- **Why:** Both calls bind and are valid strings for the parameter's str annotation; crozier's passes the value the specification itself declares as the parameter's example, which its composition admits, where Fern's passes a placeholder the specification never declares.
+- **crozier writes:** The specification's declared example (branch_id_or_ref="abcdefghijklmnopqrst"). Every other argument and line is retained.
+- **Why:** Both calls bind and are valid strings for the parameter's str annotation; crozier's passes the value the specification itself declares, where Fern's passes a placeholder or an arbitrary first alternative. The rule rejects invalid declared union examples and abstains on unsupported assertions.
 - **Evidence:** [`docs/departures/evidence/anyof-path-param-schema-example.md`](../../docs/departures/evidence/anyof-path-param-schema-example.md)
 
 ### `binary-json-body-example`

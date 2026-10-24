@@ -651,3 +651,24 @@ The document declares Apache-2.0; the publisher repository grants MIT,
 Copyright (c) Microsoft Corporation. Its repository grant is retained in
 licenses/microsoft-adme-samples.txt; the standard Apache-2.0 terms are retained
 in licenses/fern-APACHE-2.0.txt.
+
+Dashy API specification and generated SDK golden:
+    https://raw.githubusercontent.com/lissy93/dashy/6d7a394da71d083e719e32f3e365fa99fec320c2/services/endpoints/api/openapi.yml
+    MIT, declared by the document's info.license; corpus row 3200 retains
+    the immutable revision. Source bytes and the complete generated tree are
+    vendored, with Python comments stripped as described above.
+
+farmvibes-ai API specification and generated SDK golden:
+    https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json
+    MIT (publisher LICENSE, retained in licenses/farmvibes-MIT.txt); corpus row 3201 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.
+
+ahasend-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml
+    MIT (document info.license); corpus row 3202 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.
+
+rgb-lightning-node API specification and generated SDK golden:
+    https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml
+    MIT (document info.license); corpus row 3203 retains the immutable revision. Source bytes
+    and the complete generated tree are vendored, with Python comments stripped.

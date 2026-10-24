@@ -1,0 +1,209 @@
+[
+  {
+    "key": "combo-param-example-beside-ref-schema",
+    "fixture": "hse",
+    "selected": true,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-param-example-beside-ref-schema",
+    "fixture": "zulip",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-media-example-on-ref-union-body",
+    "fixture": "dashy-route-api",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "reference.md",
+      "src/fern/keys/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-on-ref-union-body",
+    "fixture": "mockserver",
+    "selected": true,
+    "declaration_sites": 6,
+    "removed_fields": 6,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "reference.md",
+      "src/fern/expectation/client.py",
+      "src/fern/verify/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-on-inline-allof-body",
+    "fixture": "ahasend-api",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-media-example-on-inline-allof-body",
+    "fixture": "farmvibes-ai",
+    "selected": true,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "README.md",
+      "reference.md",
+      "src/fern/workflows/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-on-ref-allof-body",
+    "fixture": "dashy-route-api",
+    "selected": true,
+    "declaration_sites": 2,
+    "removed_fields": 2,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "README.md",
+      "reference.md",
+      "src/fern/items/client.py",
+      "src/fern/sections/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-beside-component-example",
+    "fixture": "ahasend-api",
+    "selected": true,
+    "declaration_sites": 12,
+    "removed_fields": 12,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "reference.md",
+      "src/fern/sub_accounts/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-beside-component-example",
+    "fixture": "confluent-kafka-connect",
+    "selected": false,
+    "declaration_sites": 7,
+    "removed_fields": 7,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-allof-schema-example",
+    "fixture": "ahasend-api",
+    "selected": false,
+    "declaration_sites": 2,
+    "removed_fields": 2,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "reference.md",
+      "src/fern/smtp_credentials/client.py",
+      "src/fern/webhooks/client.py"
+    ]
+  },
+  {
+    "key": "combo-allof-schema-example",
+    "fixture": "apicurio.local-registry",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-allof-schema-example",
+    "fixture": "zulip",
+    "selected": true,
+    "declaration_sites": 11,
+    "removed_fields": 11,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "fixture": "webflow-v2",
+    "selected": false,
+    "declaration_sites": 2,
+    "removed_fields": 2,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "fixture": "zulip",
+    "selected": true,
+    "declaration_sites": 7,
+    "removed_fields": 7,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-anyof-schema-example",
+    "fixture": "ahasend-api",
+    "selected": false,
+    "declaration_sites": 2,
+    "removed_fields": 2,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-anyof-schema-example",
+    "fixture": "supabase-api-v1",
+    "selected": true,
+    "declaration_sites": 10,
+    "removed_fields": 10,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": [
+      "README.md",
+      "reference.md",
+      "src/fern/environments/client.py"
+    ]
+  },
+  {
+    "key": "combo-annotated-ref-property-example",
+    "fixture": "zulip",
+    "selected": true,
+    "declaration_sites": 1,
+    "removed_fields": 6,
+    "perturbation": "remove only matching example fields through native object-kind traversal",
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "fixture": "chat-rest-api",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "replace root OpenAPI 3.0 version with 3.1.0",
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-download",
+    "fixture": "nimisampo",
+    "selected": false,
+    "declaration_sites": 1,
+    "removed_fields": 1,
+    "perturbation": "replace root OpenAPI 3.0 version with 3.1.0",
+    "changed_files": []
+  },
+  {
+    "key": "combo-root-oas30-binary-schema",
+    "fixture": "nimisampo",
+    "selected": false,
+    "declaration_sites": 2,
+    "removed_fields": 1,
+    "perturbation": "replace root OpenAPI 3.0 version with 3.1.0",
+    "changed_files": []
+  }
+]

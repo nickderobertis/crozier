@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "key": "combo-annotated-ref-property-example",
+  "source_sha256": "33d6a0b7c4c9d9c7f3c300efc82dd6cb905c0f316b058d87e13c8ab0c1bc82eb",
+  "repository": "APIs-guru/openapi-directory",
+  "revision": "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
+  "source_path": "APIs/graphhopper.com/1.0.0/openapi.yaml",
+  "removed_property": "#/components/schemas/RouteRequest/properties/vehicle/example",
+  "removed_value": "bike",
+  "enum_type": "python_enums",
+  "certified_pair": {
+    "cli_version": "5.163.1",
+    "python_sdk_version": "5.41.3"
+  },
+  "before": {
+    "generation_exit": 1,
+    "files": {},
+    "generation_log": "before-generation.log"
+  },
+  "after": {
+    "generation_exit": 1,
+    "files": {},
+    "generation_log": "after-generation.log"
+  },
+  "screening": "Both canonical input states refuse with service-auth-undefined and write no SDK; this is candidate screening, not a non-generation disposition for the combination key."
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "key": "combo-media-example-on-ref-allof-body",
+    "fixture": "dashy-route-api",
+    "removed_sites": 2,
+    "changed_files": [
+      "README.md",
+      "reference.md",
+      "src/fern/items/client.py",
+      "src/fern/sections/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-on-inline-allof-body",
+    "fixture": "farmvibes-ai",
+    "removed_sites": 1,
+    "changed_files": [
+      "README.md",
+      "reference.md",
+      "src/fern/workflows/client.py"
+    ]
+  },
+  {
+    "key": "combo-media-example-beside-component-example",
+    "fixture": "ahasend-api",
+    "removed_sites": 12,
+    "changed_files": [
+      "reference.md",
+      "src/fern/sub_accounts/client.py"
+    ]
+  }
+]

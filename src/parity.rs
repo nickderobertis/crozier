@@ -13,10 +13,11 @@
 //!    comments are stripped ([`crate::strip_python_comments`]), leaving a
 //!    comment-only line blank. Comments are outside the compared output — the
 //!    committed goldens hold none — so this records no departure.
-//! 2. **A region rule**: a catalog rule that recognises a whole construct (the
+//! 2. **Region rules**: catalog rules that recognise exact constructs (the
 //!    `generatorConfig` block of `.fern/metadata.json`, an `__init__.py`'s
 //!    `TYPE_CHECKING` imports in another order) replaces crozier's region with
-//!    Fern's. The region rules read disjoint paths, so at most one applies.
+//!    Fern's. Independent regions compose; overlapping or non-progressing
+//!    applications are refused, and untouched lines retain their source indices.
 //! 3. **Line rules**: the two sides' lines are aligned (a longest common
 //!    subsequence), and inside each run of differing lines a catalog rule may
 //!    pair one Fern line with the crozier line aligned to it, or account for a
@@ -133,11 +134,74 @@ pub fn compare_file(
     crozier: &str,
     reference: &str,
 ) -> Result<FileComparison, String> {
+    compare_file_with_origins(context, rel, crozier, reference).map(|result| result.comparison)
+}
+
+/// A comparison and the original positions of its unexplained generated lines.
+#[derive(Debug, Clone)]
+pub struct FileComparisonWithOrigins {
+    /// The ordinary verdict and departure ledger entries.
+    pub comparison: FileComparison,
+    /// Source positions retained across length-changing region replacements.
+    pub unexplained_original_lines: Vec<NonZeroUsize>,
+}
+
+impl FileComparisonWithOrigins {
+    /// Render the ordinary diff with explicit original generated-line positions.
+    #[must_use]
+    pub fn diff(&self) -> Option<String> {
+        self.comparison.diff().map(|mut diff| {
+            if !self.unexplained_original_lines.is_empty() {
+                let positions = self
+                    .unexplained_original_lines
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                diff.push_str(&format!(
+                    "\nUnexplained original crozier line(s): {positions}\n"
+                ));
+            }
+            diff
+        })
+    }
+}
+
+/// Compare a file while preserving source positions for mismatch reporting.
+///
+/// # Errors
+///
+/// Returns the same rule failures as [`compare_file`], including invalid regions.
+pub fn compare_file_with_origins(
+    context: &Context,
+    rel: &str,
+    crozier: &str,
+    reference: &str,
+) -> Result<FileComparisonWithOrigins, String> {
+    compare_file_using_regions(
+        context,
+        rel,
+        crozier,
+        reference,
+        &rules_of(|rule| rule.region),
+    )
+}
+
+fn compare_file_using_regions(
+    context: &Context,
+    rel: &str,
+    crozier: &str,
+    reference: &str,
+    region_rules: &[(&'static str, departures::RegionRule)],
+) -> Result<FileComparisonWithOrigins, String> {
     let (crozier, reference) = (mechanics(rel, crozier), mechanics(rel, reference));
     if verdict_text(rel, &crozier) == verdict_text(rel, &reference) {
-        return Ok(FileComparison {
-            departures: Vec::new(),
-            residual: None,
+        return Ok(FileComparisonWithOrigins {
+            comparison: FileComparison {
+                departures: Vec::new(),
+                residual: None,
+            },
+            unexplained_original_lines: Vec::new(),
         });
     }
     let fern: Vec<&str> = reference.split('\n').collect();
@@ -148,28 +212,7 @@ pub fn compare_file(
         crozier: &original,
         context,
     };
-    let mut departures = Vec::new();
-
-    // crozier's lines, with the region a region rule accounts for replaced by
-    // Fern's; every other line keeps its original index.
-    let mut lines: Vec<(&str, Option<usize>)> = original
-        .iter()
-        .enumerate()
-        .map(|(j, line)| (*line, Some(j)))
-        .collect();
-    for (id, rule) in rules_of(|rule| rule.region) {
-        if let Some(region) = rule(&pair)? {
-            lines.splice(
-                region.crozier.clone(),
-                region.fern.clone().map(|i| (fern[i], None)),
-            );
-            departures.push(FileDeparture {
-                line: NonZeroUsize::MIN.saturating_add(region.crozier.start),
-                id,
-            });
-            break;
-        }
-    }
+    let (lines, mut departures) = apply_regions(&pair, region_rules)?;
 
     // Line rules, inside each run of lines the alignment leaves unpaired.
     let line_rules = rules_of(|rule| rule.line);
@@ -198,6 +241,7 @@ pub fn compare_file(
             .map(|id| (id, origin))
     };
     let mut result: Vec<&str> = Vec::with_capacity(current.len());
+    let mut unexplained = BTreeSet::new();
     let ops = align(fern.len(), current.len(), |i, j| fern[i] == current[j]);
     let mut index = 0;
     while index < ops.len() {
@@ -233,16 +277,120 @@ pub fn compare_file(
                     id,
                 });
             }
+            if claimed.is_none() {
+                if let Op::Insert(b) = op {
+                    if let Some(origin) = lines[added[b]].1 {
+                        unexplained.insert(NonZeroUsize::MIN.saturating_add(origin));
+                    }
+                }
+            }
             result.extend(kept);
         }
     }
     departures.sort();
     let applied = result.join("\n");
     let (reference, applied) = (verdict_text(rel, &reference), verdict_text(rel, &applied));
-    Ok(FileComparison {
-        departures,
-        residual: (reference != applied).then(|| (reference.to_string(), applied.to_string())),
+    Ok(FileComparisonWithOrigins {
+        comparison: FileComparison {
+            departures,
+            residual: (reference != applied).then(|| (reference.to_string(), applied.to_string())),
+        },
+        unexplained_original_lines: unexplained.into_iter().collect(),
     })
+}
+
+type OriginLines<'a> = Vec<(&'a str, Option<usize>)>;
+
+fn apply_regions<'a>(
+    pair: &Pair<'a>,
+    rules: &[(&'static str, departures::RegionRule)],
+) -> Result<(OriginLines<'a>, Vec<FileDeparture>), String> {
+    let mut lines: OriginLines<'a> = pair
+        .crozier
+        .iter()
+        .enumerate()
+        .map(|(index, line)| (*line, Some(index)))
+        .collect();
+    let mut applied = Vec::new();
+    let mut seen = BTreeSet::new();
+    let mut claimed_reference = BTreeSet::new();
+    loop {
+        let current: Vec<_> = lines.iter().map(|(line, _)| *line).collect();
+        if current == pair.fern {
+            return Ok((lines, applied));
+        }
+        let current_pair = Pair {
+            rel: pair.rel,
+            fern: pair.fern,
+            crozier: &current,
+            context: pair.context,
+        };
+        let mut changed = false;
+        for (id, rule) in rules {
+            let Some(region) = rule(&current_pair)? else {
+                continue;
+            };
+            // llmlint: ignore-block[changed_behavior_has_e2e] Only compiled RegionRule callbacks supply these ranges; CLI documents cannot inject them. invalid_callback_ranges_are_refused_by_the_comparison_engine and repeated_callback_attempt_is_refused_by_the_comparison_engine drive the actual engine with faulty callbacks.
+            let before = current
+                .get(region.crozier.clone())
+                .ok_or_else(|| format!("{id}: invalid crozier region"))?;
+            let after = pair
+                .fern
+                .get(region.fern.clone())
+                .ok_or_else(|| format!("{id}: invalid reference region"))?;
+            if before == after {
+                return Err(format!("{id}: non-progressing departure region"));
+            }
+            // llmlint: ignore-end[changed_behavior_has_e2e]
+            let origins = &lines[region.crozier.clone()];
+            let origin = origins
+                .first()
+                .and_then(|(_, index)| *index)
+                .or_else(|| origins.iter().find_map(|(_, index)| *index))
+                .or_else(|| {
+                    lines
+                        .get(region.crozier.start)
+                        .and_then(|(_, index)| *index)
+                })
+                .unwrap_or(pair.crozier.len());
+            let identity = (*id, origin, before.to_vec(), after.to_vec());
+            // llmlint: ignore-block[changed_behavior_has_e2e] This defence-in-depth identity check is unreachable by construction when overlap or non-progress refuses first. repeated_callback_attempt_is_refused_by_the_comparison_engine proves a repeat is refused; CLI comparisons use only compiled callbacks and cannot inject this fault.
+            if !seen.insert(identity) {
+                return Err(format!("{id}: repeated departure region"));
+            }
+            // llmlint: ignore-end[changed_behavior_has_e2e]
+            let mut replacement = Vec::new();
+            let mut reference_changes = Vec::new();
+            for operation in align(after.len(), before.len(), |i, j| after[i] == before[j]) {
+                match operation {
+                    Op::Equal(i, j) => replacement.push((after[i], origins[j].1)),
+                    Op::Delete(i) => {
+                        let index = region.fern.start + i;
+                        if claimed_reference.contains(&index) {
+                            return Err(format!("{id}: overlapping reference departure region"));
+                        }
+                        reference_changes.push(index);
+                        replacement.push((after[i], None));
+                    }
+                    Op::Insert(j) if origins[j].1.is_none() => {
+                        return Err(format!("{id}: overlapping departure region"));
+                    }
+                    Op::Insert(_) => {}
+                }
+            }
+            claimed_reference.extend(reference_changes);
+            lines.splice(region.crozier.clone(), replacement);
+            applied.push(FileDeparture {
+                line: NonZeroUsize::MIN.saturating_add(origin),
+                id,
+            });
+            changed = true;
+            break;
+        }
+        if !changed {
+            return Ok((lines, applied));
+        }
+    }
 }
 
 /// The catalog entry whose file rule accounts for `rel`, a file only `side`
@@ -636,12 +784,12 @@ fn file_difference(
             Vec::new(),
         );
     };
-    match compare_file(context, rel, crozier_text, reference_text) {
+    match compare_file_with_origins(context, rel, crozier_text, reference_text) {
         Ok(compared) => {
-            let difference = (!compared.matches()).then(|| {
+            let difference = (!compared.comparison.matches()).then(|| {
                 Difference::Text(include_text_diffs.then(|| compared.diff().unwrap_or_default()))
             });
-            (difference, compared.departures)
+            (difference, compared.comparison.departures)
         }
         Err(error) => processing(error),
     }
@@ -667,6 +815,287 @@ mod tests {
             .iter()
             .map(|departure| (departure.line.get(), departure.id))
             .collect()
+    }
+
+    fn exact_test_region(
+        pair: &Pair<'_>,
+        before: &[&str],
+        after: &[&str],
+    ) -> Option<departures::Region> {
+        let start = pair
+            .crozier
+            .windows(before.len())
+            .position(|lines| lines == before)?;
+        let target = pair
+            .fern
+            .windows(after.len())
+            .position(|lines| lines == after)?;
+        Some(departures::Region {
+            crozier: start..start + before.len(),
+            fern: target..target + after.len(),
+        })
+    }
+
+    fn union_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(exact_test_region(
+            pair,
+            &["    kind=ChoiceWindow(", "        lookback=20,", "    ),"],
+            &["    kind=ChoiceZero.NORTH,"],
+        ))
+    }
+
+    fn file_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(exact_test_region(
+            pair,
+            &["client.upload(", "    file=\"example_file\",", ")"],
+            &["client.upload()"],
+        ))
+    }
+
+    #[test]
+    fn independent_regions_compose_and_report_unexplained_original_lines() {
+        let fern = "start\n    kind=ChoiceZero.NORTH,\nmiddle\nclient.upload()\nend";
+        let crozier = "start\n    kind=ChoiceWindow(\n        lookback=20,\n    ),\nmiddle\nclient.upload(\n    file=\"example_file\",\n)\nend";
+        let rules: &[(&str, departures::RegionRule)] =
+            &[("union", union_test_region), ("file", file_test_region)];
+        let compared =
+            compare_file_using_regions(&Context::default(), "client.py", crozier, fern, rules)
+                .unwrap();
+        assert!(compared.comparison.matches());
+        assert_eq!(ids(&compared.comparison), [(2, "union"), (6, "file")]);
+        let changed = crozier.replace("\nend", "\nunexplained");
+        let compared =
+            compare_file_using_regions(&Context::default(), "client.py", &changed, fern, rules)
+                .unwrap();
+        assert!(!compared.comparison.matches());
+        let diff = compared.diff().unwrap();
+        assert!(diff.contains("unexplained"), "{diff}");
+        assert!(diff.contains("original crozier line(s): 9"), "{diff}");
+        for (id, rule) in rules {
+            let a = if *id == "union" {
+                "    kind=ChoiceZero.NORTH,"
+            } else {
+                "client.upload()"
+            };
+            let b = if *id == "union" {
+                "    kind=ChoiceWindow(\n        lookback=20,\n    ),"
+            } else {
+                "client.upload(\n    file=\"example_file\",\n)"
+            };
+            let compared =
+                compare_file_using_regions(&Context::default(), "client.py", b, a, &[(*id, *rule)])
+                    .unwrap();
+            assert!(compared.comparison.matches());
+            assert_eq!(ids(&compared.comparison), [(1, *id)]);
+        }
+    }
+
+    fn insertion_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        let Some(start) = pair.crozier.iter().position(|line| *line == "end") else {
+            return Ok(None);
+        };
+        let Some(target) = pair.fern.iter().position(|line| *line == "header") else {
+            return Ok(None);
+        };
+        Ok(Some(departures::Region {
+            crozier: start..start,
+            fern: target..target + 1,
+        }))
+    }
+
+    #[test]
+    fn reference_only_insertions_keep_the_original_anchor() {
+        for (crozier, fern, expected, rules) in [
+            (
+                "start\nend",
+                "start\nheader\nend",
+                2,
+                vec![("insert", insertion_test_region as departures::RegionRule)],
+            ),
+            (
+                "client.upload(\n    file=\"example_file\",\n)\nend",
+                "client.upload()\nheader\nend",
+                4,
+                vec![
+                    ("file", file_test_region as departures::RegionRule),
+                    ("insert", insertion_test_region),
+                ],
+            ),
+        ] {
+            let compared =
+                compare_file_using_regions(&Context::default(), "client.py", crozier, fern, &rules)
+                    .unwrap();
+            assert!(compared.comparison.matches());
+            assert!(
+                ids(&compared.comparison).contains(&(expected, "insert")),
+                "{:?}",
+                ids(&compared.comparison)
+            );
+        }
+    }
+
+    fn broad_file_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        let generated = pair.crozier.join("\n").replace(
+            "client.upload(\n    file=\"example_file\",\n)",
+            "client.upload()",
+        );
+        if generated == pair.fern.join("\n") && pair.crozier != pair.fern {
+            Ok(Some(departures::Region {
+                fern: 0..pair.fern.len(),
+                crozier: 0..pair.crozier.len(),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    #[test]
+    fn disjoint_changes_compose_inside_overlapping_verification_scopes() {
+        let fern = "start\n    kind=ChoiceZero.NORTH,\nlabel=\"glassware\"\nclient.upload()\nend";
+        let crozier = "start\n    kind=ChoiceWindow(\n        lookback=20,\n    ),\nlabel=\"glassware\"\nclient.upload(\n    file=\"example_file\",\n)\nend";
+        let rules: &[(&str, departures::RegionRule)] = &[
+            ("union", union_test_region),
+            ("file", broad_file_test_region),
+        ];
+        let compared =
+            compare_file_using_regions(&Context::default(), "client.py", crozier, fern, rules)
+                .unwrap();
+        assert!(compared.comparison.matches());
+        assert_eq!(ids(&compared.comparison), [(1, "file"), (2, "union")]);
+        let changed = crozier.replace("label=\"glassware\"", "label=\"unexplained\"");
+        let compared =
+            compare_file_using_regions(&Context::default(), "client.py", &changed, fern, rules)
+                .unwrap();
+        let diff = compared.diff().unwrap();
+        assert!(diff.contains("unexplained"), "{diff}");
+        assert!(
+            compared
+                .unexplained_original_lines
+                .contains(&NonZeroUsize::new(5).unwrap()),
+            "{diff}"
+        );
+    }
+
+    fn overlapping_test_region(pair: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        if pair.crozier.contains(&"    kind=ChoiceZero.NORTH,") {
+            Ok(Some(departures::Region {
+                fern: 0..1,
+                crozier: 0..2,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn non_progressing_test_region(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(Some(departures::Region {
+            fern: 0..1,
+            crozier: 0..1,
+        }))
+    }
+
+    #[test]
+    fn overlapping_and_non_progressing_regions_are_refused() {
+        let fern = "start\n    kind=ChoiceZero.NORTH,\nend";
+        let crozier = "start\n    kind=ChoiceWindow(\n        lookback=20,\n    ),\nunexplained";
+        let error = compare_file_using_regions(
+            &Context::default(),
+            "client.py",
+            crozier,
+            fern,
+            &[
+                ("union", union_test_region),
+                ("overlap", overlapping_test_region),
+            ],
+        )
+        .unwrap_err();
+        assert!(error.contains("overlapping"), "{error}");
+        let error = compare_file_using_regions(
+            &Context::default(),
+            "client.py",
+            crozier,
+            fern,
+            &[("stuck", non_progressing_test_region)],
+        )
+        .unwrap_err();
+        assert!(error.contains("non-progressing"), "{error}");
+    }
+
+    fn invalid_crozier_region(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(Some(departures::Region {
+            fern: 0..1,
+            crozier: 0..usize::MAX,
+        }))
+    }
+
+    fn invalid_reference_region(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        Ok(Some(departures::Region {
+            fern: 0..usize::MAX,
+            crozier: 0..1,
+        }))
+    }
+
+    #[test]
+    fn invalid_callback_ranges_are_refused_by_the_comparison_engine() {
+        for (name, rule, expected) in [
+            (
+                "crozier",
+                invalid_crozier_region as departures::RegionRule,
+                "invalid crozier region",
+            ),
+            (
+                "reference",
+                invalid_reference_region as departures::RegionRule,
+                "invalid reference region",
+            ),
+        ] {
+            let error = compare_file_using_regions(
+                &Context::default(),
+                "client.py",
+                "old",
+                "new",
+                &[(name, rule)],
+            )
+            .unwrap_err();
+            assert!(error.contains(expected), "{error}");
+        }
+    }
+
+    static REPEAT_CALLBACK_CALLS: std::sync::atomic::AtomicUsize =
+        std::sync::atomic::AtomicUsize::new(0);
+
+    fn repeated_callback_attempt(_: &Pair<'_>) -> Result<Option<departures::Region>, String> {
+        use std::sync::atomic::Ordering;
+        // Bound the faulty callback so the test still terminates if both defensive
+        // refusal guards are deliberately removed to verify the regression.
+        if REPEAT_CALLBACK_CALLS.fetch_add(1, Ordering::SeqCst) >= 4 {
+            return Ok(None);
+        }
+        Ok(Some(departures::Region {
+            fern: 0..1,
+            crozier: 0..1,
+        }))
+    }
+
+    #[test]
+    fn repeated_callback_attempt_is_refused_by_the_comparison_engine() {
+        use std::sync::atomic::Ordering;
+        REPEAT_CALLBACK_CALLS.store(0, Ordering::SeqCst);
+        let error = compare_file_using_regions(
+            &Context::default(),
+            "client.py",
+            "old\nother",
+            "new\nunexplained",
+            &[("repeat", repeated_callback_attempt)],
+        )
+        .unwrap_err();
+        assert!(
+            error.contains("non-progressing")
+                || error.contains("repeated")
+                || error.contains("overlapping"),
+            "{error}"
+        );
+        assert!(REPEAT_CALLBACK_CALLS.load(Ordering::SeqCst) >= 2);
     }
 
     const WRAPPER: &str = "src/acme/core/client_wrapper.py";

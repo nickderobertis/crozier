@@ -1,0 +1,317 @@
+[
+  {
+    "key": "combo-media-example-on-ref-union-body",
+    "fixture": "mockserver",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 505,
+      "after_files": 505,
+      "changed": {
+        "reference.md": {
+          "before": "0cef2d5c7702a9b8cc2045637ad0e81b9bf3647e08bd359d56c4891f30e7418b",
+          "after": "ba2730a86f5c0b39e32b603ccbdcb4bd3f302e360c6bbb1448c505522ae95aec"
+        },
+        "src/fern/expectation/client.py": {
+          "before": "4c6ec715d857f5d6658f0eb049b583c4eb47a177251485ad4740f915248657d3",
+          "after": "4b780193fef29123ad90acbe43927a9807949334ef1eafbcfa320dfefa8ae228"
+        },
+        "src/fern/verify/client.py": {
+          "before": "3443af7743950ad1d4c52ea32fb59566cfa3b0f0c51919ef5cf9a5fe893301b4",
+          "after": "777f12ccc804663e65abfbbb373358d17e607b3f4e40dd83457999df4da5c641"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 505,
+      "after_files": 505,
+      "changed": {
+        "reference.md": {
+          "before": "0cef2d5c7702a9b8cc2045637ad0e81b9bf3647e08bd359d56c4891f30e7418b",
+          "after": "ba2730a86f5c0b39e32b603ccbdcb4bd3f302e360c6bbb1448c505522ae95aec"
+        },
+        "src/fern/expectation/client.py": {
+          "before": "176f8e5b2852771e0d51ec7d31d5a0418e013943f40bcfaf9bca6b09ec57bb7e",
+          "after": "8b2f7375bcb694cd1e4174f523e77b488edff842c47e08b9b01ab7b295ad798f"
+        },
+        "src/fern/verify/client.py": {
+          "before": "d837cb39de87f14e9780d9beb83791970c8a20f053226f4c8b30dc151eb27396",
+          "after": "05a95e3072791843d21bd7fca5e826e96b88fa2ad464b06b9082db29b895c571"
+        }
+      }
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-media-example-on-inline-allof-body",
+    "fixture": "farmvibes-ai",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 55,
+      "after_files": 55,
+      "changed": {
+        "README.md": {
+          "before": "b5cf52d89310ba6958f225d2a62a0fecf2d454654d06efd9599fb50af8706cda",
+          "after": "1431a7882b9745cb8f2c1d721bf5d623dc4bd8792cfae08343a05bfe9458b387"
+        },
+        "reference.md": {
+          "before": "df18c8d6e0c8e433c4e1ad597a476e1a6544e082537d627ca02af9ac09b89dd1",
+          "after": "067e795c3312aadb34f20d0751d07bcf814e907162276b6ba7ec7a2fc77f8989"
+        },
+        "src/fern/workflows/client.py": {
+          "before": "b1f56e3b431004b4bdbc1913f297d97f70c712a8cf2cf4674ccbb1af19aa6f59",
+          "after": "d0c5c357f85ad02e88bde8879b46e5e2850a9665fc33f5a310f42432f3f1581b"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 55,
+      "after_files": 55,
+      "changed": {
+        "README.md": {
+          "before": "b5cf52d89310ba6958f225d2a62a0fecf2d454654d06efd9599fb50af8706cda",
+          "after": "1431a7882b9745cb8f2c1d721bf5d623dc4bd8792cfae08343a05bfe9458b387"
+        },
+        "reference.md": {
+          "before": "df18c8d6e0c8e433c4e1ad597a476e1a6544e082537d627ca02af9ac09b89dd1",
+          "after": "067e795c3312aadb34f20d0751d07bcf814e907162276b6ba7ec7a2fc77f8989"
+        },
+        "src/fern/workflows/client.py": {
+          "before": "4efd05f00cbabb7edaac4b11ceab0a56c4e05f93459a3c965cb212730916853f",
+          "after": "13e9dc8ec48e9e1af307c39ac617c199f205cb1ac1337e2e53647893fbe5743d"
+        }
+      }
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-media-example-on-ref-allof-body",
+    "fixture": "dashy-route-api",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 81,
+      "after_files": 81,
+      "changed": {
+        "README.md": {
+          "before": "d72ffb494293e21bf61ff722c03353f14385f48bbba7d02158279cae6fb7ae2e",
+          "after": "3deba0c294b51af01a7a69b4e834ece073a38b90bbff7cc1205046995a2aee5d"
+        },
+        "reference.md": {
+          "before": "8c23aaa0b3c5dba4262cbdce9a9f9fefe78ec432c3f0fb7ab71c76571c340360",
+          "after": "ecd26fff2a4e66783b181d445c53b45ec8faff6fc671d5f57585f29f30c20396"
+        },
+        "src/fern/items/client.py": {
+          "before": "090ab9e85dacfa1b707adad19a9d484a857708129c86ba7eab75c5a950f9cd4d",
+          "after": "1bd675943e27d1b7c040b3606e0e9f0a3b54419288c74fc36cef2dc34b921dc1"
+        },
+        "src/fern/sections/client.py": {
+          "before": "8ad5731741a7281fc715f6b4766df2cce9736b14b743231b4812f1a39345bf19",
+          "after": "906562e9dd5c3614c25aebc95df8e976ffa39c86dbe45c1dcade23832c6a0aeb"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 81,
+      "after_files": 81,
+      "changed": {
+        "README.md": {
+          "before": "d72ffb494293e21bf61ff722c03353f14385f48bbba7d02158279cae6fb7ae2e",
+          "after": "3deba0c294b51af01a7a69b4e834ece073a38b90bbff7cc1205046995a2aee5d"
+        },
+        "reference.md": {
+          "before": "8c23aaa0b3c5dba4262cbdce9a9f9fefe78ec432c3f0fb7ab71c76571c340360",
+          "after": "ecd26fff2a4e66783b181d445c53b45ec8faff6fc671d5f57585f29f30c20396"
+        },
+        "src/fern/items/client.py": {
+          "before": "c78fd77bef219b1936008da7877ff7141153fbb15c401031edfffa2acc7755a9",
+          "after": "e1331bda7b3217c457307512378222a5c57b5357531801b7695266063989195a"
+        },
+        "src/fern/sections/client.py": {
+          "before": "d180b0d4628c32c554aef3e442e83947bb761e303d05aea377283e6430b126ec",
+          "after": "d29fe0dc80d95bd814e8ff5819fcce00d3bade9ab235fe73ef731fc3d64a58aa"
+        }
+      }
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-media-example-beside-component-example",
+    "fixture": "ahasend-api",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 193,
+      "after_files": 193,
+      "changed": {
+        "reference.md": {
+          "before": "70681be4f209bd598c0516390ce872d7921b85700fb4e869e996677613a39989",
+          "after": "e6acf7ce689f0ab19b57b15775b1f50065e2f40ea952ecf99595b005558d5478"
+        },
+        "src/fern/sub_accounts/client.py": {
+          "before": "47bd468cb8d1c1aabec82f27381dae3e13f28f8df45d7edd36a6a072193c5d75",
+          "after": "7b3baad850937c8ec0c44b22c9b34aaca1aaab79cc2c02121c35b44c609156be"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 193,
+      "after_files": 193,
+      "changed": {
+        "reference.md": {
+          "before": "70681be4f209bd598c0516390ce872d7921b85700fb4e869e996677613a39989",
+          "after": "e6acf7ce689f0ab19b57b15775b1f50065e2f40ea952ecf99595b005558d5478"
+        },
+        "src/fern/sub_accounts/client.py": {
+          "before": "a601cb21106028b80e5bbdedcaeb6a03ac0d4f8d3681c662c1305597559d85a9",
+          "after": "6035d538219a7a73ef8535e8fd003d2d357097f3efb430f9b374fd2136dec716"
+        }
+      }
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-allof-schema-example",
+    "fixture": "ahasend-api",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 193,
+      "after_files": 193,
+      "changed": {
+        "reference.md": {
+          "before": "70681be4f209bd598c0516390ce872d7921b85700fb4e869e996677613a39989",
+          "after": "daf9fc031f813352a09357b67d54272c233079756fa353b11b02f5b7b6d997ab"
+        },
+        "src/fern/smtp_credentials/client.py": {
+          "before": "6b4fefb27ca59c916d05a0ed950d18da301082f9a674ee787716849364bc0929",
+          "after": "2814190a7732db139c67b82605ed9828b1ee43e819c551021748dd932bbb1a08"
+        },
+        "src/fern/webhooks/client.py": {
+          "before": "970d66d214c6e9a6b661895b0be9ed688ac44dd771025fcba9ef479be9f09018",
+          "after": "029f1919c76f7b6f0d8e2ba7a48e1cee2fde9a6aecf76ee69e5962293a5c4514"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 193,
+      "after_files": 193,
+      "changed": {
+        "reference.md": {
+          "before": "70681be4f209bd598c0516390ce872d7921b85700fb4e869e996677613a39989",
+          "after": "daf9fc031f813352a09357b67d54272c233079756fa353b11b02f5b7b6d997ab"
+        },
+        "src/fern/smtp_credentials/client.py": {
+          "before": "cb8f2253e24a6ed55ef644c46477949a80a2714436c32600b441b2aaa0f1c9c2",
+          "after": "45b1883b146226efaae7f9227058bb1a667936ccd07c7d9c33b77668706c3863"
+        },
+        "src/fern/webhooks/client.py": {
+          "before": "3114b741f88c7e8e0ef1be0c5f655cd8b588e2c500f6ed97d8019fb19d8dc30b",
+          "after": "c3dc32c4e92bed49265f4e3fa4bfd01a136dc8cafd23e28c23c0c48e44634d30"
+        }
+      }
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  },
+  {
+    "key": "combo-anyof-schema-example",
+    "fixture": "supabase-api-v1",
+    "perturbation": "Remove every example field at an anchor matching this key; keep all other document fields. Resolve external references through the committed corpus prepare step.",
+    "crozier": {
+      "before_files": 612,
+      "after_files": 612,
+      "changed": {
+        "README.md": {
+          "before": "17b5c7d665146e3bec63873a4270dd5bef9632ee9fdefbc96f05a0c079980a9f",
+          "after": "aa3f72929bfc92000fffdb56597e07f4eb9f8d7182287a854c3ad4c1910e483e"
+        },
+        "reference.md": {
+          "before": "a5e8793f76170d86370d062302409418ed82032843515f2f2b91fc3b1a9da66d",
+          "after": "913148fd2e2441db2c671029fba822df67196f7f048ead1e67c06bafe7b014fe"
+        },
+        "src/fern/environments/client.py": {
+          "before": "cec8d5e87430dc7735ca12816974a2d75e554bf3a48aa5838411d44857743750",
+          "after": "e68b201efce8158dbb01b033615a1b333befa6cc83e9374103eaa1730d07e267"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 612,
+      "after_files": 612,
+      "changed": {}
+    },
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    },
+    "intentional_departure": "anyof-path-param-schema-example: Fern ignores the removed declared examples; Crozier preserves them under the existing richer-documentation rule."
+  },
+  {
+    "key": "combo-oneof-schema-example",
+    "fixture": "rgb-lightning-node",
+    "perturbation": "Remove every matching schema example (2 fields); keep every other field.",
+    "crozier": {
+      "before_files": 168,
+      "after_files": 168,
+      "changed": {
+        "reference.md": {
+          "before": "9743acf7489dab09bb2ed7c588bb85c8b2bcfc1bc4c0c742a949fb3abe00ba99",
+          "after": "5b5b636d10a5b212d20c9f60056d2ea80a7185f80ca1ba801a9bc85cca07c14a"
+        },
+        "src/fern/rgb/client.py": {
+          "before": "19a84d48dc526634212d38a9728b93fb69ad69426dcf822763140c4e2129c5a3",
+          "after": "704b125fd72a1205e9a4184bcdd614a878077376fa63a60c3d9c82e0f55282f8"
+        }
+      }
+    },
+    "certified_pair": {
+      "before_files": 168,
+      "after_files": 168,
+      "changed": {}
+    },
+    "intentional_departure": "anyof-path-param-schema-example: the declared oneOf component example validates; Fern chooses its first alternative instead.",
+    "control_comparison": {
+      "exit_code": 0,
+      "counts": {
+        "matched": 1,
+        "mismatched": 0,
+        "could_not_check": 0
+      }
+    }
+  }
+]

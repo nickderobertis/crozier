@@ -1,0 +1,76 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Harbor parcel requests",
+    "version": "1"
+  },
+  "paths": {
+    "/parcels": {
+      "post": {
+        "operationId": "submit_parcel",
+        "parameters": [
+          {
+            "name": "tracking",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrackingCode",
+              "type": "string"
+            },
+            "example": "harbor-842",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Parcel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The parcel was recorded."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TrackingCode": {
+        "type": "string",
+        "description": "A parcel tracking code."
+      },
+      "Category": {
+        "type": "string",
+        "description": "A delivery category."
+      },
+      "Parcel": {
+        "type": "object",
+        "required": [
+          "label",
+          "category"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "glassware"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              },
+              {
+                "description": "The preferred delivery category."
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

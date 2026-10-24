@@ -2906,6 +2906,162 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[cfg(unix)]
+#[test]
+fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let source = fixture.join("openapi.yml");
+    let expected = fixture.join("fern-expected");
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "{result:#}");
+    let (code, result) = compare_with_certified_reference(
+        &source,
+        &expected,
+        Some(("README.md", "label=\"glassware\"", "label=\"unexplained\"")),
+    );
+    assert_eq!(code, 3, "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!(["README.md"])
+    );
+}
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[cfg(unix)]
+#[test]
+fn declared_reference_example_restrictions_hold_through_compare() {
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
+            .unwrap();
+    let work = tempfile::tempdir().unwrap();
+    for (name, pointer, replacement) in [
+        (
+            "invalid-query-example",
+            "/components/schemas/TrackingCode/minLength",
+            serde_json::json!(100),
+        ),
+        (
+            "unsupported-query-assertion",
+            "/components/schemas/TrackingCode/pattern",
+            serde_json::json!("^harbor-"),
+        ),
+        (
+            "constrained-target",
+            "/components/schemas/Category/minLength",
+            serde_json::json!(1),
+        ),
+        (
+            "unsupported-target",
+            "/components/schemas/Category/pattern",
+            serde_json::json!(".*"),
+        ),
+        (
+            "invalid-example",
+            "/components/schemas/Parcel/properties/category/example",
+            serde_json::json!(17),
+        ),
+        (
+            "ineligible-member",
+            "/components/schemas/Parcel/properties/category/allOf/1/type",
+            serde_json::json!("string"),
+        ),
+    ] {
+        let mut document = original.clone();
+        let (parent, field) = pointer.rsplit_once('/').unwrap();
+        document
+            .pointer_mut(parent)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert(field.to_string(), replacement);
+        let spec = work.path().join(format!("{name}.json"));
+        std::fs::write(&spec, document.to_string()).unwrap();
+        let (code, result) =
+            compare_with_certified_reference(&spec, &fixture.join("fern-expected"), None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        assert!(
+            result["comparison"]["differing"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|path| path == "README.md"),
+            "{name}: {result:#}"
+        );
+    }
+    let mut valid = original.clone();
+    valid["components"]["schemas"]["TrackingCode"]["minLength"] = serde_json::json!(1);
+    let valid_spec = work.path().join("valid-query-constraint.json");
+    std::fs::write(&valid_spec, valid.to_string()).unwrap();
+    let (code, result) =
+        compare_with_certified_reference(&valid_spec, &fixture.join("fern-expected"), None);
+    assert_eq!(
+        code, 0,
+        "a constraint admitting the source value remains eligible: {result:#}"
+    );
+    let (code, result) = compare_with_certified_reference(
+        &fixture.join("openapi.yml"),
+        &fixture.join("fern-expected"),
+        None,
+    );
+    assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
+}
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Generates the committed harbor-map-validation measurement and its controls, a measurement gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn declared_map_examples_validate_values_and_nullable_controls_keep_the_same_fallback() {
+    let fixture = repo_root().join("docs/fern-measurements/examples-docs/harbor-map-validation");
+    let spec = fixture.join("openapi.yml");
+    for (mode, golden) in [
+        (
+            "python-enums",
+            "docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected",
+        ),
+        (
+            "literals",
+            "docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected",
+        ),
+    ] {
+        let out = tempfile::tempdir().unwrap();
+        probe_command(&spec, out.path())
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+        for (method, value) in [
+            ("record_map_accepted", "\"days\": 20"),
+            ("record_map_rejected", "\"days\": 20"),
+            ("record_closed_accepted", "days=20"),
+            ("record_closed_rejected", "days=20"),
+            ("record_null_allowed", "lookback=20"),
+            ("record_null_disallowed", "lookback=20"),
+        ] {
+            let body = client
+                .split(&format!("    def {method}("))
+                .nth(1)
+                .unwrap()
+                .split("    def ")
+                .next()
+                .unwrap();
+            assert!(body.contains(value), "{mode}/{method}: {body}");
+            assert!(
+                !body.contains("days=30") && !body.contains("\"invalid\""),
+                "{mode}/{method}: invalid source content must not be emitted: {body}"
+            );
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let failures = golden_tree_failures(
+            "declared map validation",
+            spec.to_str().unwrap(),
+            &ledger,
+            &repo_root().join(golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n"));
+    }
+}
+
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, JSON problem responses, and a
@@ -3274,6 +3430,15 @@ fn scenario_proof_index_reads_the_diff_crozier_compare_writes() {
         .map(|entry| entry.unwrap().path())
         .collect();
     assert_eq!(written.len(), 1, "{written:?}");
+    // The changed line sits after length-changing departure regions, so the
+    // diff closes with compare's note of its original crozier position: the
+    // reader is held to that note as written, not to a restatement of it.
+    let diff = std::fs::read_to_string(&written[0]).unwrap();
+    assert!(
+        diff.lines()
+            .any(|line| line.starts_with("Unexplained original crozier line(s): ")),
+        "{diff}"
+    );
     let read = std::process::Command::new(python)
         .arg(repo_root().join("tools/surface-census/scenario-proof-index.py"))
         .arg("hunks")
@@ -9588,6 +9753,10 @@ const CORPORA: &[&Corpus] = &[
     &PANOPTES,
     &FLETCH_MCP,
     &MICROSOFT_ADME_SEISMIC,
+    &DASHY_ROUTE_API,
+    &AHASEND_API,
+    &FARMVIBES_AI,
+    &RGB_LIGHTNING_NODE,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11897,6 +12066,51 @@ const RAMU_SHOGI: Corpus = Corpus {
 /// LangChain Agent Protocol — corpus row 172, the publisher's own description.
 const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
     api: "langchain-agent-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// RGB Lightning Node: corpus row 3203, typed request examples and a declared union example.
+const RGB_LIGHTNING_NODE: Corpus = Corpus {
+    api: "rgb-lightning-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+const FARMVIBES_AI: Corpus = Corpus {
+    api: "farmvibes-ai",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+const AHASEND_API: Corpus = Corpus {
+    api: "ahasend-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+const DASHY_ROUTE_API: Corpus = Corpus {
+    api: "dashy-route-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -19760,6 +19974,259 @@ fn ramu_shogi_matches_fern_output() {
 fn langchain_agent_protocol_matches_fern_output() {
     assert_committed_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn dashy_route_api_matches_fern_output() {
+    assert_committed_corpus_matches(&DASHY_ROUTE_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn farmvibes_ai_matches_fern_output() {
+    assert_committed_corpus_matches(&FARMVIBES_AI);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ahasend_api_matches_fern_output() {
+    assert_committed_corpus_matches(&AHASEND_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison uses the existing corpus golden gate and inventory, as its adjacent witnesses do; splitting that shared Nx family is the recorded follow-up rather than part of this example proof.
+#[test]
+fn rgb_lightning_node_matches_fern_output() {
+    assert_committed_corpus_matches(&RGB_LIGHTNING_NODE);
+}
+
+#[cfg(unix)]
+#[test]
+fn rgb_example_departures_reject_an_adjacent_unexplained_value() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "{result:#}");
+    for (path, before, after) in [
+        (
+            "reference.md",
+            "strategy=SyncStrategy.FAST_SYNC",
+            "strategy=SyncStrategy.UNEXPLAINED",
+        ),
+        (
+            "src/fern/rgb/client.py",
+            "skip_sync=False",
+            "skip_sync=True",
+        ),
+    ] {
+        let (code, result) =
+            compare_with_certified_reference(&source, &expected, Some((path, before, after)));
+        assert_eq!(code, 3, "{result:#}");
+        assert_eq!(result["comparison"]["differing"], serde_json::json!([path]));
+    }
+}
+#[cfg(unix)]
+#[test]
+fn declared_union_example_restrictions_hold_through_compare() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let original = std::fs::read_to_string(&source).unwrap();
+    let work = tempfile::tempdir().unwrap();
+    for (name, before, after) in [
+        ("invalid", "                  type: integer\n                  example: 20",
+            "                  type: integer\n                  maximum: 10\n                  example: 20"),
+        ("unsupported", "                  type: integer\n                  example: 20",
+            "                  type: integer\n                  maximum: 100\n                  example: 20"),
+    ] {
+        let changed = original.replace(before, after);
+        assert_ne!(changed, original, "{name} must alter the source");
+        let spec = work.path().join(format!("{name}.yaml"));
+        std::fs::write(&spec, changed).unwrap();
+        let (code, result) = compare_with_certified_reference(&spec, &expected, None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        assert!(result["comparison"]["differing"].as_array().unwrap()
+            .iter().any(|path| path == "reference.md"), "{name}: {result:#}");
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(code, 0, "the unmodified source recovers: {result:#}");
+}
+
+#[cfg(unix)]
+#[test]
+fn rgb_declared_examples_reject_synthesized_fields_and_array_items_through_compare() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let original = std::fs::read_to_string(&source).unwrap();
+    let controls = [
+        ("partial", original
+            .replacen("              required:\n                - lookback\n", "", 1)
+            .replacen("        Vanilla:\n          lookback: 20", "        Vanilla: {}", 1)),
+        ("array", original
+            .replacen("                  type: integer\n                  example: 20",
+                "                  type: array\n                  items:\n                    type: object\n                    properties:\n                      days: {type: integer}", 1)
+            .replacen("        Vanilla:\n          lookback: 20",
+                "        Vanilla:\n          lookback: []", 1)),
+    ];
+    let work = tempfile::tempdir().unwrap();
+    for (name, control) in controls {
+        assert_ne!(control, original, "{name} must change the document");
+        let spec = work.path().join(format!("{name}.yaml"));
+        std::fs::write(&spec, control).unwrap();
+        let (code, result) = compare_with_certified_reference(&spec, &expected, None);
+        assert_eq!(code, 3, "{name}: {result:#}");
+        // Other model files intentionally differ because these are source
+        // controls. Pin this worked call so those differences cannot hide an
+        // overbroad example-value allowance.
+        assert!(
+            result["comparison"]["differing"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|path| path == "reference.md"),
+            "{name}: {result:#}"
+        );
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        code, 0,
+        "the original declared example recovers: {result:#}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn rgb_declared_examples_reject_bad_imports_and_duplicate_arguments() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let expected = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    for (before, after) in [
+        (
+            "from fern import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+            "from fern import FernApi, SyncOptions, SyncStrategy",
+        ),
+        (
+            "from fern import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+            "from fern..invalid import FernApi, SyncOptions, SyncKeychainZero, SyncStrategy",
+        ),
+        (
+            "keychain=SyncKeychainZero.COLORED,",
+            "keychain=SyncKeychainZero.COLORED,\n        keychain=SyncKeychainZero.COLORED,",
+        ),
+    ] {
+        let (code, result) = compare_with_certified_reference(
+            &source,
+            &expected,
+            Some(("reference.md", before, after)),
+        );
+        assert_eq!(code, 3, "{result:#}");
+        assert_eq!(
+            result["comparison"]["differing"],
+            serde_json::json!(["reference.md"])
+        );
+    }
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        code, 0,
+        "the unmodified import and argument block recovers: {result:#}"
+    );
+}
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over the registered RGB Lightning Node corpus golden, then the real census diff reader, on the crozier-e2e edge every corpus comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[cfg(unix)]
+#[test]
+fn compare_reports_original_lines_after_a_real_length_changing_example_departure() {
+    let source = repo_root().join("tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml");
+    let certified = repo_root().join("tests/fixtures/rgb-lightning-node/expected");
+    let work = tempfile::tempdir().unwrap();
+    let generated = work.path().join("generated");
+    probe_command(&source, &generated).assert().success();
+    let marker = "**options:** `SyncOptions`";
+    let generated_text = std::fs::read_to_string(generated.join("reference.md")).unwrap();
+    let original_line = generated_text
+        .lines()
+        .position(|line| line.trim_end() == marker)
+        .unwrap()
+        + 1;
+    let reference = work.path().join("reference");
+    copy_dir(&certified, &reference);
+    let reference_md = reference.join("reference.md");
+    let original_reference = std::fs::read_to_string(&reference_md).unwrap();
+    let reference_line = original_reference
+        .lines()
+        .position(|line| line.trim_end() == marker)
+        .unwrap()
+        + 1;
+    assert!(
+        original_line > reference_line,
+        "the real departures must change length before the diagnostic"
+    );
+    let config = work.path().join("crozier.yml");
+    let quoted = reference.display().to_string().replace('\'', "'\"'\"'");
+    std::fs::write(
+        &config,
+        serde_json::json!({
+            "spec": source, "package-name":"fern", "project-name":"default_package_name",
+            "reference":{"command":format!("cp -R '{quoted}'/. \"$CROZIER_REFERENCE_OUTPUT\"")}
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let run = |diff_dir: Option<&Path>| {
+        let mut command = crozier();
+        command.arg("compare").arg(&config).args(["--json", "-"]);
+        if let Some(directory) = diff_dir {
+            command.arg("--diff-dir").arg(directory);
+        }
+        let output = command.output().unwrap();
+        let report: serde_json::Value = serde_json::from_slice(&output.stdout)
+            .unwrap_or_else(|error| panic!("{error}: {output:?}"));
+        (output.status.code().unwrap(), report)
+    };
+    let (code, report) = run(None);
+    assert_eq!(code, 0, "{report:#}");
+    assert_eq!(original_reference.matches(marker).count(), 1);
+    std::fs::write(
+        &reference_md,
+        original_reference.replace(marker, "**options:** `str`"),
+    )
+    .unwrap();
+    let diffs = work.path().join("diffs");
+    let (code, report) = run(Some(&diffs));
+    assert_eq!(code, 3, "{report:#}");
+    let comparison = &report["results"][0]["comparison"];
+    assert_eq!(comparison["differing"], serde_json::json!(["reference.md"]));
+    assert!(
+        comparison["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == "reference.md"
+                && departure["id"] == "anyof-path-param-schema-example"
+                && departure["line"].as_u64().unwrap() < original_line as u64),
+        "{report:#}"
+    );
+    let files: Vec<_> = walk_files(&diffs)
+        .into_iter()
+        .filter(|file| file.ends_with(".diff"))
+        .collect();
+    assert_eq!(files.len(), 1);
+    let diff = std::fs::read_to_string(diffs.join(&files[0])).unwrap();
+    assert!(
+        diff.contains(&format!(
+            "Unexplained original crozier line(s): {original_line}\n"
+        )),
+        "{diff}"
+    );
+    std::fs::write(reference_md, original_reference).unwrap();
+    let (code, report) = run(None);
+    assert_eq!(
+        code, 0,
+        "restoring the reference clears the mismatch: {report:#}"
+    );
+}
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn hse_matches_fern_output() {

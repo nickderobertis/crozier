@@ -2,8 +2,8 @@
 //!
 //! Ordering matters for byte-exact output: object properties and component
 //! schemas are [`IndexMap`]s so their document order survives into generated
-//! field order and file order. Only the fields crozier consumes are modeled;
-//! unknown keys are ignored so real-world specs still parse.
+//! field order and file order. Unknown input stays accepted. Schema nodes
+//! retain unmodeled keywords for departure validation; generation ignores them.
 //!
 //! # Fern-compatible extensions
 //!
@@ -24,6 +24,8 @@
 //! The precedence is applied in the field accessors ([`Operation::audiences`],
 //! [`Operation::ignored`], [`Schema::ignored`]); the paired serde fields exist only
 //! to carry the two raw spellings.
+
+pub(crate) mod example_validation;
 
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
@@ -1576,6 +1578,11 @@ impl From<String> for LiteralTypeOverride {
 /// is set) or an inline schema described by the remaining fields.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Schema {
+    /// Keywords generation does not model. Departure validation abstains on
+    /// unrecognized assertions instead of silently validating a weaker schema.
+    /// Schema is input-only; this metadata is never serialized into an SDK.
+    #[serde(flatten)]
+    pub(crate) unmodeled_keywords: std::collections::BTreeMap<String, serde_json::Value>,
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
@@ -1810,7 +1817,9 @@ pub struct Schema {
     #[serde(skip)]
     pub malformed: bool,
     /// Set when a boolean stood where this schema object was expected. Not a
-    /// wire field; see [`normalize_boolean_property_objects`].
+    /// wire field; also retained on an object degraded because an immediate property
+    /// was boolean, so example validation abstains without affecting its ancestors.
+    /// See [`normalize_boolean_property_objects`].
     #[serde(skip)]
     pub(crate) boolean_stand_in: bool,
     /// Set when this node's `$ref` named a component schema the document never
@@ -3282,6 +3291,7 @@ fn normalize_boolean_property_objects(doc: &mut OpenApi) {
             {
                 *node = Schema {
                     description: node.description.take(),
+                    boolean_stand_in: true,
                     ..Schema::default()
                 };
             }
@@ -6777,12 +6787,41 @@ components:
             members[1],
             Schema {
                 description: Some("Open.".to_string()),
+                boolean_stand_in: true,
                 ..Schema::default()
             }
         );
         assert!(doc.components.schemas["Listed"]
             .properties
             .contains_key("tags"));
+    }
+
+    #[test]
+    fn boolean_property_degradation_does_not_propagate_to_ancestors() {
+        let mut doc = parse(
+            r#"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Envelope:
+      type: object
+      required: [window]
+      properties:
+        window:
+          type: object
+          properties:
+            lookback: false
+"#,
+        );
+        normalize_boolean_property_objects(&mut doc);
+        let envelope = &doc.components.schemas["Envelope"];
+        assert!(!envelope.boolean_stand_in);
+        assert_eq!(envelope.required.iter().collect::<Vec<_>>(), ["window"]);
+        assert_eq!(envelope.ty, Some(TypeField::Single("object".to_string())));
+        assert!(envelope.properties["window"].boolean_stand_in);
+        assert!(envelope.properties["window"].properties.is_empty());
     }
 
     #[test]

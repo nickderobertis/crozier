@@ -9531,7 +9531,12 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
-        unreached = {(reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit}
+        # Feature proof totals above exclude combinations. The arm headline
+        # explicitly describes the whole reach ledger, including combinations.
+        arm_ledger_rows = self.reach_ledger(combinations=True)
+        unreached = {
+            (reach.key, spec) for _rank, reach in arm_ledger_rows for spec, hit, _total in reach.sites if not hit
+        }
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         fixture = len(self.gaps("FIXTURE") - decided)
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
@@ -9588,7 +9593,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         # The arms, split the same way: reached by a real specification, reached
         # only by a hand-written fixture, reachable only by a Fern-refused document.
-        arms = [(reach.key, spec) for _rank, reach in ledger_rows for spec, _hit, _total in reach.sites]
+        arms = [(reach.key, spec) for _rank, reach in arm_ledger_rows for spec, _hit, _total in reach.sites]
         refused = set(refused_arm_records(REPO)) & unreached
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
         REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
@@ -9625,7 +9630,7 @@ class RankedBacklogTests(unittest.TestCase):
         decided = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)[0] & unreached
         self.assertEqual(
             [
-                categories["golden"],
+                len(arm_ledger_rows),
                 len(arms),
                 reached,
                 len(covered),
@@ -10875,8 +10880,46 @@ class RankedBacklogTests(unittest.TestCase):
         spec.loader.exec_module(module)
         return module
 
-    def reach_ledger(self):
-        return self.golden_reach().read_ledger()
+    def reach_ledger(self, path=None, *, combinations=False):
+        module = self.golden_reach()
+        rows = module.read_ledger() if path is None else module.read_ledger(path)
+        golden = module.golden_rows(self.REGIONS)
+        load_script("tools/surface-census/restate-coverage.py").validate_reach_population(
+            {reach.key for _rank, reach in rows},
+            {key for key in golden if not key.startswith(COMBINATION_PREFIX)},
+            {key for key in golden if key.startswith(COMBINATION_PREFIX)},
+        )
+        return (
+            rows
+            if combinations
+            else [(rank, reach) for rank, reach in rows if not reach.key.startswith(COMBINATION_PREFIX)]
+        )
+
+    def test_reach_reader_rejects_missing_and_extra_features_and_combinations(self) -> None:
+        original = (self.REGIONS / "golden-reach.tsv").read_text(encoding="utf-8")
+        lines = original.splitlines(keepends=True)
+        header = next(line.rstrip().split("\t") for line in lines if line.startswith("rank\t"))
+        column = header.index("key")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "golden-reach.tsv"
+            for combination in (False, True):
+                row = next(
+                    line
+                    for line in lines
+                    if len(line.rstrip().split("\t")) == len(header)
+                    and line.split("\t")[column] != "key"
+                    and line.split("\t")[column].startswith(COMBINATION_PREFIX) == combination
+                )
+                for missing in (False, True):
+                    with self.subTest(combination=combination, missing=missing):
+                        fields = row.rstrip().split("\t")
+                        fields[column] = (COMBINATION_PREFIX if combination else "") + "unknown-reach"
+                        broken = original.replace(row, "", 1) if missing else original + "\t".join(fields) + "\n"
+                        path.write_text(broken, encoding="utf-8")
+                        with self.assertRaisesRegex(ValueError, "golden category population"):
+                            self.reach_ledger(path)
+                        path.write_text(original, encoding="utf-8")
+                        self.assertTrue(self.reach_ledger(path))
 
     def reach_table(self, heading: str, width: int) -> list[list[str]]:
         """The body rows of the first table under `heading`, header and rule dropped."""
@@ -10892,9 +10935,9 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders(self) -> None:
         """A `golden` row with no reach cell, or a stale one, is refused."""
         module = self.golden_reach()
-        rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger()}
-        for key, (region, cells) in sorted(self.entries.items()):
-            if cells[3].strip("`") != "golden":
+        rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger(combinations=True)}
+        for key, (region, cells) in sorted((self.entries | self.combination_entries).items()):
+            if cells[3].strip("`") != "golden" or module.pending_combination(cells):
                 continue
             with self.subTest(region=region, key=key):
                 self.assertTrue(
@@ -10907,8 +10950,8 @@ class RankedBacklogTests(unittest.TestCase):
     def test_the_reach_ledger_is_every_golden_row_in_ranking_order(self) -> None:
         """One ledger row per golden row, owned by the right region, in rubric order."""
         module = self.golden_reach()
-        ledger = self.reach_ledger()
-        golden = {key: region for key, (region, cells) in self.entries.items() if cells[3].strip("`") == "golden"}
+        ledger = self.reach_ledger(combinations=True)
+        golden = module.golden_rows(self.REGIONS)
         self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
         self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
         self.assertEqual(
@@ -10921,7 +10964,7 @@ class RankedBacklogTests(unittest.TestCase):
         """The site table is what the ledger measured, and each site still bounds code."""
         module = self.golden_reach()
         table = module.read_sites_table()
-        for _rank, reach in self.reach_ledger():
+        for _rank, reach in self.reach_ledger(combinations=True):
             with self.subTest(key=reach.key):
                 self.assertEqual(table[reach.key].sites, tuple(spec for spec, _h, _t in reach.sites))
         for spec in sorted({spec for row in table.values() for spec in row.sites}):
@@ -11241,7 +11284,7 @@ class RankedBacklogTests(unittest.TestCase):
         edit or a stale section fails here.
         """
         module = golden_reach_script()
-        ledger = self.reach_ledger()
+        ledger = self.reach_ledger(combinations=True)
         rows = module.arm_rows(ledger, self.REGIONS)
         self.assertEqual(
             [
@@ -12149,8 +12192,14 @@ class FinishedStateGateTests(unittest.TestCase):
         with table.open("a", encoding="utf-8") as handle:
             for key in ("sample-decided", "sample-unreachable", "combo-sample-decided"):
                 handle.write(f"{key}\t-\tdocs/openapi-surface/{key}.md\t{evidence}")
-        combinations = matched(re.search(r"(\d+) are `golden` and (\d+) are `gap`\.", index.read_text()))
-        combination_golden, combination_gap = map(int, combinations.groups())
+        flat_before = " ".join(index.read_text().split())
+        combination_counts = matched(
+            re.search(r"combinations are selected .*?\): ([^.]+)\. (\d+) of the `gap` ones", flat_before)
+        )
+        combination_categories = {
+            category: int(count) for count, category in re.findall(r"(\d+) are `([^`]+)`", combination_counts[1])
+        }
+        combination_decided = int(combination_counts[2])
 
         failures = finished_state_failures(self.root)
         self.assertTrue(any(f.startswith("sample-undecided: a `FIXTURE` gap row") for f in failures), failures)
@@ -12165,9 +12214,11 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(f"- **{unproven + 1} remain unproven.**", flat)
         # The decided `UNREACHABLE` row leaves the committed-proof count for the decided one.
         self.assertIn(f"{real} + {proof} + {weak} + {decided + 2} + {unproven + 1} = {total + 3}.", text)
+        combination_categories["gap"] += 1
+        counts = [f"{count} are `{category}`" for category, count in sorted(combination_categories.items())]
         self.assertIn(
-            f"{combination_golden} are `golden` and {combination_gap + 1} are `gap`. "
-            "1 of the `gap` ones is decided output-insensitive",
+            ", ".join(counts[:-1]) + " and " + counts[-1] + f". {combination_decided + 1} of the `gap` ones "
+            f"{'is' if combination_decided == 0 else 'are'} decided output-insensitive",
             flat,
         )
         ranked = text.partition("| # | key | region | 1. crozier sites")[2].partition("\n\n")[0]
@@ -18145,6 +18196,26 @@ class ScenarioProofIndexTests(unittest.TestCase):
             [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
         )
 
+    def test_diff_hunks_read_the_unexplained_original_line_note(self) -> None:
+        diff = textwrap.dedent(
+            """\
+            --- reference/a.py
+            +++ crozier/a.py
+              kept
+            - old
+            + new
+
+            Unexplained original crozier line(s): 2, 14
+            --- reference/b.py
+            +++ crozier/b.py
+            + added
+            """
+        )
+        self.assertEqual(
+            [("a.py", "-2,1 +2,1"), ("b.py", "-1,0 +1,1")],
+            [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
+        )
+
     def test_a_malformed_diff_is_refused(self) -> None:
         module = self.index_script
         cases = {
@@ -18154,6 +18225,12 @@ class ScenarioProofIndexTests(unittest.TestCase):
             ),
             "--- reference/a.py\n+++ crozier/a.py\n@@ -1 +1 @@\n": "is no context, change or elision line",
             "stray text\n": "is outside any file of the diff",
+            "--- reference/a.py\n+++ crozier/a.py\n- x\nUnexplained original crozier line(s): 0\n": (
+                "is no context, change or elision line"
+            ),
+            "--- reference/a.py\n+++ crozier/a.py\n- x\nUnexplained original crozier line(s): 3\n  kept\n": (
+                "is outside any file of the diff"
+            ),
             "# crozier compare: crozier.yml python\n--- reference/a.py\n+++ crozier/a.py\n  kept\n": "no difference",
         }
         for text, message in cases.items():
@@ -18270,6 +18347,18 @@ def stage_restatement_population(root: Path) -> None:
     """
     surface = root / "docs/openapi-surface"
     shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
+    # The shared output-insensitive table decides whole keys the headline counts,
+    # so the copy carries it with every record and comparison its rows cite.
+    table = REPO / "docs/openapi-surface/output-insensitive.tsv"
+    shutil.copyfile(table, surface / table.name)
+    pair = root / "assets/scaffolding/metadata.json"
+    if not pair.exists():
+        pair.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(REPO / "assets/scaffolding/metadata.json", pair)
+    for line in table.read_text(encoding="utf-8").splitlines()[1:]:
+        for cited in line.split("\t")[2:]:
+            (root / cited).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / cited, root / cited)
     text = (root / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
     acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
     population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
@@ -18329,6 +18418,78 @@ class CoverageRestatementTests(unittest.TestCase):
             encoding="utf-8",
             check=False,
         )
+
+    def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        written = self.run_restater("--combinations-only", "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        self.assertEqual([], restater.combination_headline_failures(self.root))
+        original = self.index.read_text(encoding="utf-8")
+        marker = "**Feature combinations are counted apart.**"
+        prefix, sentence = original.split(marker, 1)
+        sentence, suffix = sentence.split(".\n", 1)
+        counts = re.findall(r"(\d+) are `([^`]+)`", sentence)
+        self.assertGreaterEqual(len(counts), 3, "the fixture must include its handwritten combinations")
+        count, category = counts[0]
+        total = int(matched(re.search(r"(\d+) combinations", sentence)).group(1))
+        for changed in [
+            sentence.replace(f"{total} combinations", f"{total + 1} combinations"),
+            sentence + f" and {count} are `{category}`",
+            sentence.replace(f"{count} are `{category}`", f"{int(count) + 1} are `{category}`"),
+            sentence.replace(f"{count} are `{category}`", f"{count} are `invented-category`"),
+            sentence + " and 0 are `extra-category`",
+            sentence.replace(f"{count} are `{category}`, ", "", 1),
+        ]:
+            with self.subTest(sentence=changed):
+                self.index.write_text(prefix + marker + changed + ".\n" + suffix, encoding="utf-8")
+                self.assertTrue(restater.combination_headline_failures(self.root))
+                self.assertEqual(1, self.run_restater("--combinations-only").returncode)
+                repaired = self.run_restater("--combinations-only", "--write")
+                self.assertEqual(0, repaired.returncode, repaired.stderr)
+                self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        parser = restater.reader()
+        region = self.root / "docs/openapi-surface/schemas.md"
+        source = region.read_text(encoding="utf-8")
+        row = next(line for line in source.splitlines() if line.startswith("| combo-"))
+        cells = parser.region_rows(row)[0]
+        for category in parser.CATEGORIES:
+            with self.subTest(category=category):
+                replacement = row.replace(f"| {cells[3]} |", f"| {category} |", 1)
+                if category != cells[3]:
+                    self.assertNotEqual(row, replacement)
+                region.write_text(source.replace(row, replacement, 1), encoding="utf-8")
+                written = self.run_restater("--combinations-only", "--write")
+                self.assertEqual(0, written.returncode, written.stderr)
+                self.assertEqual([], restater.combination_headline_failures(self.root))
+                self.assertEqual(0, self.run_restater("--combinations-only").returncode)
+        region.write_text(source, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
+    def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        original = self.index.read_text(encoding="utf-8")
+        region = self.root / "docs/openapi-surface/schemas.md"
+        source = region.read_text(encoding="utf-8")
+        row = next(line for line in source.splitlines() if line.startswith("| combo-"))
+        cells = restater.reader().region_rows(row)[0]
+        for label, broken in [
+            ("unknown category", row.replace(f"| {cells[3]} |", "| invented-category |", 1)),
+            ("missing cell", row.replace(f" {cells[1]} |", "", 1)),
+        ]:
+            for duplicated in (False, True):
+                with self.subTest(label, beside_a_valid_copy=duplicated):
+                    self.assertNotEqual(row, broken)
+                    replacement = f"{row}\n{broken}" if duplicated else broken
+                    region.write_text(source.replace(row, replacement, 1), encoding="utf-8")
+                    for args in (("--combinations-only",), ("--combinations-only", "--write"), ("--write",)):
+                        refused = self.run_restater(*args)
+                        self.assertEqual(1, refused.returncode, args)
+                        self.assertIn(f"combination row {cells[0].strip('`')} is not", refused.stderr)
+                    self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        region.write_text(source, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only").returncode)
 
     def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
         measured = subprocess.run(
@@ -19010,6 +19171,35 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
         self.assertEqual(0, self.run_restater().returncode)
 
+    def test_feature_and_combination_ledger_populations_are_checked_in_full(self) -> None:
+        path = self.root / "docs/openapi-surface/golden-reach.tsv"
+        original = path.read_text(encoding="utf-8")
+        lines = original.splitlines(keepends=True)
+        header = next(line.rstrip().split("\t") for line in lines if line.startswith("rank\t"))
+        column = header.index("key")
+        for combination in (False, True):
+            row = next(
+                line
+                for line in lines
+                if len(line.rstrip().split("\t")) == len(header)
+                and line.split("\t")[column] != "key"
+                and line.split("\t")[column].startswith(COMBINATION_PREFIX) == combination
+            )
+            for missing in (False, True):
+                with self.subTest(combination=combination, missing=missing):
+                    fields = row.rstrip().split("\t")
+                    fields[column] = (COMBINATION_PREFIX if combination else "") + "unregistered-reach"
+                    broken = original.replace(row, "", 1) if missing else original + "\t".join(fields) + "\n"
+                    path.write_text(broken, encoding="utf-8")
+                    before = self.index.read_bytes()
+                    result = self.run_restater("--write")
+                    self.assertEqual(1, result.returncode, result.stderr)
+                    self.assertIn("golden category population", result.stderr)
+                    self.assertEqual(before, self.index.read_bytes())
+                    path.write_text(original, encoding="utf-8")
+                    recovered = self.run_restater("--write")
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_ledger_population_must_equal_golden_categories(self) -> None:
         path = self.root / "docs/openapi-surface/golden-reach.tsv"
         original = path.read_text(encoding="utf-8")
@@ -19207,10 +19397,12 @@ class CombinationListTests(unittest.TestCase):
         self.assertIn("combinations.md has no '## Rejected' section", self.failures())
 
     def test_the_coverage_headline_counts_the_combinations_apart(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        self.assertEqual([], restater.combination_headline_failures(REPO))
         doc = " ".join((REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8").split())
         stated = re.search(
             r"\*\*Feature combinations are counted apart\.\*\* (\d+) combinations are selected .*?: "
-            r"(\d+) are `golden` and (\d+) are `gap`\. (\d+) of the `gap` ones (?:is|are) decided output-insensitive",
+            r"([^.]+)\. (\d+) of the `gap` ones (?:is|are) decided output-insensitive",
             doc,
         )
         self.assertIsNotNone(stated, "the headline no longer counts the combinations on a line of its own")
@@ -19223,8 +19415,12 @@ class CombinationListTests(unittest.TestCase):
             for key, (_region, cells) in combination_rows(REPO).items()
         )
         self.assertEqual(
-            [len(census.COMBINATIONS), categories["golden"], categories["gap"], decided],
-            [int(value) for value in stated.groups()],
+            [len(census.COMBINATIONS), dict(categories), decided],
+            [
+                int(stated[1]),
+                {category: int(count) for count, category in re.findall(r"(\d+) are `([^`]+)`", stated[2])},
+                int(stated[3]),
+            ],
         )
         self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
 

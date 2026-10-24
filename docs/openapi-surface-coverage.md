@@ -119,19 +119,19 @@ split five ways:
 502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 85 are `golden` and 6 are `gap`.
-0 of the `gap` ones are decided output-insensitive in
+([the list](openapi-surface/combinations.md)): 8 are `gap`, 81 are `golden` and 2 are `handwritten`.
+2 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 None is among the 721 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 503 `golden` rows declare 1023 handling sites in
+same way. The 510 `golden` rows declare 1032 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **901 are reached by a registered real specification.** Its scoped
+- **910 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **114 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 114 is still one of the 122 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -144,7 +144,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **2 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-901 + 114 + 5 + 1 + 2 = 1023. Fourteen sites left the table with the two functions
+910 + 114 + 5 + 1 + 2 = 1032. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
@@ -2334,8 +2334,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 278 sources. The walk reads the
-  **261** registered sources, of which **261** carry a committed golden; the 17
+  acquires 282 sources. The walk reads the
+  **265** registered sources, of which **265** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -3003,7 +3003,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **417** reach every handling site their
+The golden rows split in two. **424** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 122 unreached arms in all. By the verdict each arm's linked record states, 56 read `exhausted`, 26 read `search-incomplete`, 0 read `config-gated`, and 40 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3425,6 +3425,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `oneof-empty-object-variant` | `schemas` | `milvus-vector-operations` |
 | `enum-uuid-member` | `schemas` | `reverb.com` |
 | `extension-paths` | `oas31-extensions` | `apicurio.local-registry` |
+| `is-beta-extension` | `oas31-extensions` | `squareup.com` |
 | `boolean-schema-false` | `schemas` | `tamoss` |
 | `boolean-schema-true` | `schemas` | `webflow-v2` |
 | `contains` | `schemas` | `auto-agent-protocol` |
@@ -3437,7 +3438,6 @@ ledger, so a registration that adds a second witness removes the row here.
 | `header-allow-empty-value` | `parameters` | `ndw-accessibility-map` |
 | `header-content` | `parameters` | `vtex-pricing` |
 | `header-examples` | `parameters` | `microcks.local` |
-| `is-beta-extension` | `oas31-extensions` | `squareup.com` |
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
 | `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |

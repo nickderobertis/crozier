@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Harbor trace archives",
+    "version": "1"
+  },
+  "paths": {
+    "/trace-archives": {
+      "post": {
+        "operationId": "export_archive",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "station"
+                ],
+                "properties": {
+                  "station": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The requested readings.",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

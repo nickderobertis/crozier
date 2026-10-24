@@ -102,3 +102,39 @@ write — with or without a JSON-encoded object beside it. The parity rule reads
 the required `core.File` parameters off the generated signature and their wire
 names off the raw client's request, and accepts exactly those placeholders
 added to an otherwise identical call.
+
+## RGB Lightning Node's required file inputs
+
+The pinned [RGB Lightning Node source](../../../tests/fixtures/corpus-sources/rgb-lightning-node/openapi.yaml)
+(corpus row 3203) supplies two further instances of this existing defect.
+The certified pair's complete [client](../../../tests/fixtures/rgb-lightning-node/expected/src/fern/rgb/client.py)
+requires keyword-only `file` in `post_an_asset_media` and
+`provide_an_out_of_band_consignment`, but its sync and async docstring examples
+omit it. Imports of the actual SDK and `inspect.signature(method).bind(None,
+**docstring_call_keywords)`, with the keywords parsed from each method's
+`Examples` section by `ast.parse`, execute as follows (Python 3.14.7,
+pydantic 2.14.0, httpx 0.28.1):
+
+```text
+RgbClient.post_an_asset_media {} TypeError: missing a required keyword-only argument: 'file'
+RgbClient.provide_an_out_of_band_consignment {} TypeError: missing a required keyword-only argument: 'file'
+AsyncRgbClient.post_an_asset_media {} TypeError: missing a required keyword-only argument: 'file'
+AsyncRgbClient.provide_an_out_of_band_consignment {} TypeError: missing a required keyword-only argument: 'file'
+```
+
+The same execution on Crozier's generated SDK gives:
+
+```text
+RgbClient.post_an_asset_media {"file": "example_file"} binds
+RgbClient.provide_an_out_of_band_consignment {"file": "example_file"} binds
+AsyncRgbClient.post_an_asset_media {"file": "example_file"} binds
+AsyncRgbClient.provide_an_out_of_band_consignment {"file": "example_file"} binds
+```
+
+The existing recognizer verifies the actual required-file signature and
+request encoding, and preserves every other argument. RGB also has a separate
+declared-union-example departure in this file; parity applies their verified,
+disjoint changed lines separately. The exact ledger rows are generated through
+the corpus gate. `rgb_example_departures_reject_an_adjacent_unexplained_value`
+exercises the public comparison and rejects a changed adjacent value in each
+of the reference and client examples.

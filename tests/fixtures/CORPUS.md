@@ -1888,3 +1888,17 @@ bytes are retained in `licenses/onmyshelf-MIT.txt`.
 | 3002 | `panoptes` | github-raw | https://raw.githubusercontent.com/knaw-huc/panoptes/d3cceae05364f1b9235ca7368488e5329778295c/docs/openapi.yaml | `d3cceae05364f1b9235ca7368488e5329778295c` | GPL-3.0 (publisher repository LICENSE) | committed | Operation-scoped map of an inline struct (request body `facets`) |
 | 3003 | `fletch-mcp` | github-raw | https://raw.githubusercontent.com/fletch-now/fletch-mcp/4808c3c96272cdb69476728570b2fea1bcae122d/docs/openapi-2026-09-13.json | `4808c3c96272cdb69476728570b2fea1bcae122d` | MIT (publisher repository LICENSE) | committed | Response map of an inline string enum (`tradability_by_account_type`) |
 | 3004 | `microsoft-adme-seismic` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/seismic_ddms_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | Apache-2.0 (document); MIT (publisher repository LICENSE) | committed | Empty object example on a field-less referenced status model |
+
+## Schema example combinations
+
+These specifications are published in their applications' own repositories.
+Their request examples exercise composed models and example precedence; the
+bounded search and attribution are recorded in
+[`witness-search-schema-combinations-examples`](../../docs/openapi-surface/witness-search-schema-combinations-examples/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3200 | `dashy-route-api` | github-raw | https://raw.githubusercontent.com/lissy93/dashy/6d7a394da71d083e719e32f3e365fa99fec320c2/services/endpoints/api/openapi.yml | `6d7a394da71d083e719e32f3e365fa99fec320c2` | MIT (document info.license) | committed | Request media examples on referenced composed schemas; items and sections clients |
+| 3201 | `farmvibes-ai` | github-raw | https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json | `d10670e18742d05aec50f73e4695d47978908994` | MIT (publisher LICENSE, retained in licenses/farmvibes-MIT.txt) | committed | Inline composed request body with a media example and nested free-form JSON |
+| 3202 | `ahasend-api` | github-raw | https://raw.githubusercontent.com/AhaSend/docs/831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4/openapi.yaml | `831d3aa1ab8eea80fb0d1db24ab8cdd0958712f4` | MIT (document info.license) | committed | Endpoint media examples supersede whole component examples without mixing their fields |
+| 3203 | `rgb-lightning-node` | github-raw | https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml | `d4762ac3d1b3ca83f2f7b4f894e8569109dc572a` | MIT (document info.license) | committed | Request examples containing typed maps, discriminator constructors, empty model arrays and a declared oneOf schema example |

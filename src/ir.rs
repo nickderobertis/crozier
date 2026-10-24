@@ -2387,6 +2387,9 @@ pub struct Field {
     /// The property's `example` as a Python literal, shown in a worked snippet
     /// instead of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
+    /// Where the worked value came from, retaining a property's fallback when
+    /// a containing object's example supplies another value.
+    pub example_source: FieldExampleSource,
     /// Whether the property's schema admits only the empty object; see
     /// [`BodyField::admits_only_empty_object`].
     pub admits_only_empty_object: bool,
@@ -2415,6 +2418,16 @@ pub struct Field {
     /// A string property's declared `maxLength`, which that fallback samples
     /// when no `minLength` is declared and it is under ten.
     pub max_length: Option<u64>,
+}
+
+/// A model field's example layers before an endpoint selects its media example.
+#[derive(Debug, Clone)]
+pub enum FieldExampleSource {
+    /// The field still carries its own property's example.
+    Property,
+    /// An object example supplied the current value; preserve the property's
+    /// own value, including its absence, for an endpoint with a media example.
+    Object { property: Option<String> },
 }
 
 impl Field {
@@ -5295,7 +5308,11 @@ fn resolved_schema_example_literal(
             // does not annotate the target, but the target's own example does.
             let item = match items.reference.as_deref() {
                 Some(reference) => {
-                    referenced_example_literal(resolve_ref_from_schemas(schemas?, reference)?)?
+                    let schemas = schemas?;
+                    referenced_example_literal(
+                        resolve_ref_from_schemas(schemas, reference)?,
+                        schemas,
+                    )?
                 }
                 None => bounded_example_literal(schema_example(items)?, declares_int64(items))?,
             };
@@ -5361,7 +5378,17 @@ fn may_hold_a_string(schema: &serde_json::Value) -> bool {
 /// examples, the 3.1 `examples` array included — so a map declaring only
 /// `examples` gives nothing: Sim's `V2TableRowData` does, and its golden
 /// examples `data` as `{"key": "value"}`.
-fn referenced_example_literal(target: &Schema) -> Option<String> {
+fn referenced_example_literal(
+    target: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    if target.one_of.is_some()
+        && schema_example(target).is_some_and(|example| {
+            crate::openapi::example_validation::matches(schemas, target, example, 0) == Some(false)
+        })
+    {
+        return None;
+    }
     if is_map(target) && target.example.is_none() {
         return None;
     }
@@ -6719,27 +6746,39 @@ fn resolve_request_body(
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if target.properties.declared() || target.all_of.is_some() {
-            return hoist_fields(&class, types).map(|mut fields| {
-                for field in &mut fields {
-                    if field.example.is_none()
-                        && target.is_beta == Some(true)
-                        && target.properties.len() > 1
-                        && target
-                            .properties
-                            .get(&field.wire_name)
-                            .is_some_and(|property| {
-                                property.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
-                                    && property.min_length.is_some_and(|minimum| minimum > 0)
-                                    && property.max_length.is_none_or(|maximum| maximum <= 128)
-                            })
-                    {
-                        field.example = Some("\"x\"".to_string());
+            let component_examples = match media_example(doc, media) {
+                Some(_) => ComponentExamplePolicy::PropertyFallbacksOnly,
+                None => ComponentExamplePolicy::Include,
+            };
+            return hoist_fields_with_component_examples(&class, types, component_examples).map(
+                |mut fields| {
+                    for field in &mut fields {
+                        if field.example.is_none()
+                            && target.is_beta == Some(true)
+                            && target.properties.len() > 1
+                            && target
+                                .properties
+                                .get(&field.wire_name)
+                                .is_some_and(|property| {
+                                    property.ty.as_ref().and_then(|ty| ty.primary())
+                                        == Some("string")
+                                        && property.min_length.is_some_and(|minimum| minimum > 0)
+                                        && property.max_length.is_none_or(|maximum| maximum <= 128)
+                                })
+                        {
+                            field.example = Some("\"x\"".to_string());
+                        }
                     }
-                }
-                apply_body_example(&mut fields, schema_example(target), false);
-                apply_body_example(&mut fields, media_example(doc, media), true);
-                RequestBody::Inline(fields)
-            });
+                    // A media example is a whole worked request, not a patch over
+                    // the component's example. Keep property-level fallbacks, but
+                    // do not splice component-only fields into that request.
+                    if media_example(doc, media).is_none() {
+                        apply_body_example(&mut fields, schema_example(target), false);
+                    }
+                    apply_body_example(&mut fields, media_example(doc, media), true);
+                    RequestBody::Inline(fields)
+                },
+            );
         }
         // A `$ref` to a bare object (no properties/`allOf` — a free-form `Dict`
         // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
@@ -7336,7 +7375,10 @@ fn hoist_inline_object(
             // `example`.
             example: resolved_schema_example_literal(prop_schema, hoister.schemas).or_else(|| {
                 let reference = prop_schema.reference.as_deref()?;
-                referenced_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
+                referenced_example_literal(
+                    resolve_ref_from_schemas(hoister.schemas?, reference)?,
+                    hoister.schemas?,
+                )
             }),
             media_example: false,
             schema_body_example: false,
@@ -8034,6 +8076,7 @@ impl InlineHoister<'_> {
                 .unwrap_or(false);
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
+                example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
@@ -8058,7 +8101,7 @@ impl InlineHoister<'_> {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                     })?;
                     let target = resolve_ref_from_schemas(self.schemas?, reference)?;
-                    referenced_example_literal(target)
+                    referenced_example_literal(target, self.schemas?)
                 }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
@@ -9345,10 +9388,10 @@ fn hoist_form_object(
                         let reference = prop_schema.reference.as_deref().or_else(|| {
                             described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                         })?;
-                        referenced_example_literal(resolve_ref_from_schemas(
+                        referenced_example_literal(
+                            resolve_ref_from_schemas(hoister.schemas?, reference)?,
                             hoister.schemas?,
-                            reference,
-                        )?)
+                        )
                     }),
                 media_example: false,
                 schema_body_example: false,
@@ -9404,6 +9447,20 @@ fn single_with_override(
 /// [`BodyField`]s, deciding per field whether it serializes through the convert
 /// wrapper. Returns `None` if the object is not among the built types.
 fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+    hoist_fields_with_component_examples(class, types, ComponentExamplePolicy::Include)
+}
+
+#[derive(Clone, Copy)]
+enum ComponentExamplePolicy {
+    Include,
+    PropertyFallbacksOnly,
+}
+
+fn hoist_fields_with_component_examples(
+    class: &str,
+    types: &[TypeDecl],
+    component_examples: ComponentExamplePolicy,
+) -> Option<Vec<BodyField>> {
     // A body naming an alias of a model flattens the model it aliases: SFTPGo's
     // `AdminTOTPConfig` is `allOf: [$ref BaseTOTPConfig]` and nothing else, so it
     // is an alias in the type layer, and `save_admin_totp_config` still takes
@@ -9424,7 +9481,14 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
     })?;
     let mut fields = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    append_request_fields(obj, class, types, &mut seen, &mut fields);
+    append_request_fields(
+        obj,
+        class,
+        types,
+        &mut seen,
+        &mut fields,
+        component_examples,
+    );
     let mut reference_names = Vec::new();
     let mut reference_seen = std::collections::HashSet::new();
     append_reference_field_names(obj, types, &mut reference_seen, &mut reference_names);
@@ -9573,6 +9637,7 @@ fn append_request_fields(
     types: &[TypeDecl],
     seen: &mut std::collections::HashSet<String>,
     out: &mut Vec<BodyField>,
+    component_examples: ComponentExamplePolicy,
 ) {
     if !seen.insert(obj.name.clone()) {
         return;
@@ -9595,7 +9660,13 @@ fn append_request_fields(
         form_content_type: None,
         collision_prefix: Some(naming::field_name(request_class)),
         inline_object: false,
-        example: f.example.clone(),
+        example: match (&f.example_source, component_examples) {
+            (
+                FieldExampleSource::Object { property },
+                ComponentExamplePolicy::PropertyFallbacksOnly,
+            ) => property.clone(),
+            _ => f.example.clone(),
+        },
         media_example: false,
         schema_body_example: false,
         reference_order: 0,
@@ -9609,7 +9680,14 @@ fn append_request_fields(
             TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
             _ => None,
         }) {
-            append_request_fields(base_obj, request_class, types, seen, out);
+            append_request_fields(
+                base_obj,
+                request_class,
+                types,
+                seen,
+                out,
+                component_examples,
+            );
         }
     }
 }
@@ -11727,6 +11805,7 @@ fn append_member_fields(
             base_type_ref(prop_schema)
         };
         fields.push(Field {
+            example_source: crate::ir::FieldExampleSource::Property,
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
             declared_name: prop_schema.property_name().map(str::to_owned),
@@ -11876,6 +11955,7 @@ fn declared_discriminant_name(schema: &Schema) -> Option<String> {
 /// whole rather than flattening it.
 fn wrapped_value_field(type_ref: TypeRef) -> Field {
     Field {
+        example_source: crate::ir::FieldExampleSource::Property,
         wire_name: "value".to_string(),
         py_name: "value".to_string(),
         type_ref,
@@ -12717,6 +12797,11 @@ impl Builder<'_> {
         if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
             for field in &mut fields {
                 if let Some(value) = example.get(&field.wire_name) {
+                    let property = match &field.example_source {
+                        FieldExampleSource::Property => field.example.clone(),
+                        FieldExampleSource::Object { property } => property.clone(),
+                    };
+                    field.example_source = FieldExampleSource::Object { property };
                     field.example = example_literal(value);
                 }
             }
@@ -13077,6 +13162,7 @@ impl Builder<'_> {
                 .then(|| collapsed_member_description(prop_schema, &type_ref))
                 .flatten();
             fields.push(Field {
+                example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
@@ -13117,12 +13203,12 @@ impl Builder<'_> {
                             .as_deref()
                             .and_then(|reference| reference.rsplit('/').next())
                             .and_then(|key| self.schemas.get(key))
-                            .and_then(referenced_example_literal)
+                            .and_then(|target| referenced_example_literal(target, self.schemas))
                     })
                     .or_else(|| {
                         sole_all_of_ref(prop_schema)
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(referenced_example_literal)
+                            .and_then(|target| referenced_example_literal(target, self.schemas))
                     })
                     .or_else(|| {
                         // An array whose element is a `$ref` to an exampled scalar
@@ -13139,7 +13225,7 @@ impl Builder<'_> {
                                     .or_else(|| sole_all_of_ref(items))
                             })
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(referenced_example_literal)?;
+                            .and_then(|target| referenced_example_literal(target, self.schemas))?;
                         Some(format!("[{item}]"))
                     }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
@@ -13515,6 +13601,7 @@ impl Builder<'_> {
                     class_name,
                     discriminant: value.clone(),
                     fields: vec![Field {
+                        example_source: crate::ir::FieldExampleSource::Property,
                         wire_name: "value".to_string(),
                         py_name: "value".to_string(),
                         type_ref: TypeRef::Named(name.to_string()),
@@ -17854,6 +17941,7 @@ mod tests {
 
     fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
         Field {
+            example_source: crate::ir::FieldExampleSource::Property,
             wire_name: name.to_string(),
             py_name: name.to_string(),
             type_ref,
@@ -22010,6 +22098,141 @@ mod tests {
             super::error_body_type(&response, "ConflictError"),
             TypeRef::Named("JournalContext".into())
         );
+    }
+
+    #[test]
+    fn inline_single_reference_composition_examples_use_the_referenced_object_path() {
+        let directory = tempfile::tempdir().unwrap();
+        let spec = directory.path().join("openapi.json");
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Harbor schedules", "version": "1"},
+            "paths": {"/schedules": {"post": {
+                "operationId": "create_schedule", "requestBody": {
+                    "required": true, "content": {"application/json": {
+                        "schema": {"allOf": [{"$ref": "#/components/schemas/Schedule"}],
+                            "title": "Schedule input", "description": "A harbor departure."},
+                        "example": {"label": "evening ferry"}
+                    }}
+                }, "responses": {"204": {"description": "Stored"}}
+            }}},
+            "components": {"schemas": {"Schedule": {
+                "type": "object", "required": ["label"],
+                "properties": {"label": {"type": "string"}},
+                "example": {"label": "morning ferry"}
+            }}}
+        });
+        std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+        let doc = crate::openapi::load(&spec).unwrap();
+        let media = &doc.paths["/schedules"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content["application/json"];
+        let schema = media.schema.as_ref().unwrap();
+        assert_eq!(
+            schema.reference.as_deref(),
+            Some("#/components/schemas/Schedule")
+        );
+        assert!(schema.all_of.is_none());
+        assert_eq!(schema.title.as_deref(), Some("Schedule input"));
+        let config = crate::config::GenerateConfig::new(
+            spec,
+            directory.path().join("out"),
+            Some("harbor".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Harbor",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("the normalized reference must flatten the component fields");
+        };
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].wire_name, "label");
+        assert_eq!(fields[0].example.as_deref(), Some("\"evening ferry\""));
+        assert!(!fields[0].schema_body_example);
+    }
+
+    #[test]
+    fn referenced_union_schema_examples_reject_values_that_match_no_member() {
+        for (lookback, accepted) in [
+            (serde_json::json!(20), true),
+            (serde_json::json!("twenty"), false),
+        ] {
+            let target: crate::openapi::Schema = serde_json::from_value(serde_json::json!({
+                "oneOf": [{"type":"string","enum":["North"]},
+                    {"type":"object","required":["Window"],"properties":{
+                        "Window":{"type":"object","required":["lookback"],"properties":{
+                            "lookback":{"type":"integer"}}}}}],
+                "example":{"Window":{"lookback":lookback}}
+            }))
+            .unwrap();
+            assert_eq!(
+                super::referenced_example_literal(&target, &indexmap::IndexMap::new()).is_some(),
+                accepted
+            );
+        }
+    }
+
+    #[test]
+    fn media_object_example_supersedes_component_example_with_property_fallback() {
+        for media in [false, true] {
+            let mut document = serde_json::json!({
+                "openapi": "3.0.3", "info": {"title": "Beacon permits", "version": "1"},
+                "paths": {"/permits": {"post": {
+                    "operationId": "issue_permit", "requestBody": {
+                        "required": true, "content": {"application/json": {
+                            "schema": {"$ref": "#/components/schemas/Permit"}
+                        }}
+                    }, "responses": {"204": {"description": "Stored"}}
+                }}},
+                "components": {"schemas": {"Permit": {
+                    "type": "object", "required": ["label"], "properties": {
+                        "label": {"type": "string"},
+                        "scopes": {"type": "array", "items": {"type": "string"},
+                            "example": ["property-scope"]},
+                        "zone": {"type": "string"}
+                    },
+                    "example": {"label": "component-label", "scopes": ["component-scope"], "zone": "north"}
+                }}}
+            });
+            if media {
+                document["paths"]["/permits"]["post"]["requestBody"]["content"]
+                    ["application/json"]["example"] =
+                    serde_json::json!({"label": "media-label", "scopes": []});
+            }
+            let ir = build_document(document);
+            let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+                panic!("a referenced object is flattened")
+            };
+            let field = |name: &str| fields.iter().find(|field| field.wire_name == name).unwrap();
+            assert_eq!(
+                field("label").example.as_deref(),
+                Some(if media {
+                    "\"media-label\""
+                } else {
+                    "\"component-label\""
+                })
+            );
+            assert_eq!(
+                field("scopes").example.as_deref(),
+                Some(if media {
+                    "[\"property-scope\"]"
+                } else {
+                    "[\"component-scope\"]"
+                })
+            );
+            assert_eq!(
+                field("zone").example.as_deref(),
+                if media { None } else { Some("\"north\"") }
+            );
+            assert_eq!(field("label").schema_body_example, !media);
+        }
     }
 
     fn request_shape_ir() -> super::Ir {
