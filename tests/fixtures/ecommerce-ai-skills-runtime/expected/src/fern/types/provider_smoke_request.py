@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .marketplace_provider_smoke_request import MarketplaceProviderSmokeRequest
+from .open_ai_provider_smoke_request import OpenAiProviderSmokeRequest
+
+ProviderSmokeRequest = typing.Union[OpenAiProviderSmokeRequest, MarketplaceProviderSmokeRequest]

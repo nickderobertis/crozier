@@ -1913,3 +1913,15 @@ bounded search and the removal controls are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3300 | `rapidata-identity` | github-raw | https://raw.githubusercontent.com/RapidataAI/rapidata-python-sdk/849d81d5ed27baaa50acf7536c12f2c1b0ffed5c/openapi/schemas/identity.openapi.json | `849d81d5ed27baaa50acf7536c12f2c1b0ffed5c` | Apache-2.0 (publisher LICENSE, retained in licenses/rapidata-python-sdk-Apache-2.0.txt) | committed | Referenced models composed with a nullability-only `allOf` member; single-member `allOf` arrays and maps on properties |
+
+## Operation parameter combinations
+
+This specification is published in its publisher's own repository, under the
+repository's CC0-1.0 grant. Its evidence-import operation sends two headers
+typed by named string enums; the bounded search and the removal control are
+recorded in
+[`witness-search-operation-combinations-parameters`](../../docs/openapi-surface/witness-search-operation-combinations-parameters/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3400 | `ecommerce-ai-skills-runtime` | github-raw | https://raw.githubusercontent.com/kangise/ecommerce-ai-skills/b1a727c3b2c2d27f2793e0d0fcd655ea446ba635/openapi/runtime-api.yaml | `b1a727c3b2c2d27f2793e0d0fcd655ea446ba635` | CC0-1.0 (publisher LICENSE, retained in licenses/ecommerce-ai-skills-CC0-1.0.txt) | committed | Header parameters typed by referenced string enums; optional bodies naming a closed empty object; required-only `allOf` members promoting parent fields |

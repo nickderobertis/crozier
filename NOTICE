@@ -677,3 +677,8 @@ rapidata-identity API specification and generated SDK golden:
     https://raw.githubusercontent.com/RapidataAI/rapidata-python-sdk/849d81d5ed27baaa50acf7536c12f2c1b0ffed5c/openapi/schemas/identity.openapi.json
     Apache-2.0 (publisher LICENSE, retained in licenses/rapidata-python-sdk-Apache-2.0.txt); corpus row 3300 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ecommerce-ai-skills-runtime API specification and generated SDK golden:
+    https://raw.githubusercontent.com/kangise/ecommerce-ai-skills/b1a727c3b2c2d27f2793e0d0fcd655ea446ba635/openapi/runtime-api.yaml
+    CC0-1.0 (publisher LICENSE, retained in licenses/ecommerce-ai-skills-CC0-1.0.txt); corpus row 3400 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

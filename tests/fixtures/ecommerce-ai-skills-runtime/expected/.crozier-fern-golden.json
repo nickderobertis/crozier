@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "ecommerce-ai-skills-runtime",
+  "corpus_spec_ref": "b1a727c3b2c2d27f2793e0d0fcd655ea446ba635",
+  "corpus_spec_url": "https://raw.githubusercontent.com/kangise/ecommerce-ai-skills/b1a727c3b2c2d27f2793e0d0fcd655ea446ba635/openapi/runtime-api.yaml"
+}

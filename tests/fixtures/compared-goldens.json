@@ -898,6 +898,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/ecommerce-ai-skills-runtime/expected": {},
+    "tests/fixtures/ecommerce-ai-skills-runtime/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ego-microservices/expected": {},
     "tests/fixtures/electric-sql/expected": {},
     "tests/fixtures/embedpdf-cloudpdf/expected": {},
