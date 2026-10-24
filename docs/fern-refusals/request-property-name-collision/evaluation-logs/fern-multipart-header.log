@@ -1,0 +1,12 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: sailings.yml -> service -> endpoints -> bookVehicle
+        issue: Multiple request properties have the name deck. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "deck"
+  - Body property: <Request Body> -> deck
+
+Found 1 error and 0 warnings in <n> seconds.

@@ -10750,8 +10750,20 @@ fn build_example_inner(
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
+    // Fern's IR fallback example names a header by its camelCase name, as it
+    // does where the success answer is text or bytes: ecommerce-ai-skills'
+    // Weekly Ops `POST /v1/agent-runs`, whose body admits no importer example,
+    // passes `idempotency_key="idempotencyKey"` where its sibling operations
+    // pass the wire name `"Idempotency-Key"`. An operation whose body Fern
+    // drops keeps the wire name: the same document's `text/csv` evidence import
+    // passes `evidence_filename="X-Evidence-Filename"`.
+    let fallback_header_name = ep.importer_example_missing
+        && ep
+            .request_body
+            .as_ref()
+            .is_some_and(|body| !matches!(body, RequestBody::Bytes { .. }));
     let header_slot = |wire: &str| {
-        if ep.text_response || ep.binary_response {
+        if ep.text_response || ep.binary_response || fallback_header_name {
             let mut words = naming::split_words(wire).into_iter();
             let mut value = words.next().unwrap_or_default();
             for word in words {
@@ -12479,6 +12491,79 @@ mod tests {
                 && !client.contains("447700900000"),
             "{client}"
         );
+    }
+
+    #[test]
+    fn an_ir_fallback_example_names_a_required_header_by_its_camel_case_name() {
+        let operation = |summary: &str, body: &str| {
+            serde_json::json!({"post": {
+                "summary": summary,
+                "parameters": [{"name": "Idempotency-Key", "in": "header", "required": true,
+                                "schema": {"type": "string", "maxLength": 200}}],
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"$ref": format!("#/components/schemas/{body}")}}}},
+                "responses": {"204": {"description": "Accepted"}}
+            }})
+        };
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {
+                "/tallies": operation("Start a tally", "TallyStart"),
+                "/recounts": operation("Request a recount", "Recount"),
+                "/ballots": {"post": {
+                    "summary": "Upload a ballot sheet",
+                    "parameters": [{"name": "Idempotency-Key", "in": "header",
+                                    "required": true, "schema": {"type": "string"}}],
+                    "requestBody": {"required": true, "content": {"text/csv": {
+                        "schema": {"type": "string", "format": "binary"}}}},
+                    "responses": {"204": {"description": "Stored"}}
+                }},
+                // Two operations without the header keep it a method parameter
+                // rather than a client-level one.
+                "/wards": {"get": {"summary": "List wards",
+                                   "responses": {"204": {"description": "Listed"}}}},
+                "/boxes": {"get": {"summary": "List boxes",
+                                   "responses": {"204": {"description": "Listed"}}}}
+            },
+            "components": {"schemas": {
+                // Members that only restate `required` leave Fern's importer no
+                // example for the body, so the IR fallback writes the call.
+                "TallyStart": {
+                    "type": "object",
+                    "properties": {"ward": {"type": "string"}, "box": {"type": "string"}},
+                    "anyOf": [{"required": ["ward"]}, {"required": ["box"]}]
+                },
+                "Recount": {
+                    "type": "object", "required": ["ward"],
+                    "properties": {"ward": {"type": "string"}}
+                }
+            }}
+        }));
+        let client = files
+            .iter()
+            .find(|(path, _)| path.ends_with("/client.py") && path.matches('/').count() == 2)
+            .map(|(_, contents)| contents)
+            .expect("the root client is generated");
+        let example = |method: &str| {
+            let call = format!("client.{method}(");
+            let start = client
+                .find(&call)
+                .unwrap_or_else(|| panic!("{method}: {client}"));
+            client[start..start + client[start..].find(')').unwrap()].to_string()
+        };
+        assert!(
+            example("start_a_tally").contains("idempotency_key=\"idempotencyKey\""),
+            "{client}"
+        );
+        // An imported example passes the wire name, and so does an operation
+        // whose `text/csv` body Fern drops.
+        for method in ["request_a_recount", "upload_a_ballot_sheet"] {
+            assert!(
+                example(method).contains("idempotency_key=\"Idempotency-Key\""),
+                "{method}: {client}"
+            );
+        }
     }
 
     #[test]
