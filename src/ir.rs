@@ -1489,18 +1489,24 @@ fn urlencoded_body_source_names(doc: &OpenApi) -> std::collections::HashSet<Stri
         .collect()
 }
 
-/// Whether every operation carries a non-empty security requirement (its own, or
-/// the document default). An SDK with any unauthenticated operation makes the
-/// credential optional. A spec with no operations falls back to the
+/// Whether every operation carries a non-empty security requirement list (its
+/// own, or the document default). An SDK with any unauthenticated operation makes
+/// the credential optional. A spec with no operations falls back to the
 /// document-level `security`, the only declaration it has left, and stays
 /// required when the document declares none.
+///
+/// Only an empty list unauthenticates an operation; one holding nothing but the
+/// anonymous `{}` does not. The certified pair keeps a required token on
+/// go-wind-cms's app API, whose login operation declares `security: [{}]`, and on a
+/// one-operation document whose root `security` is `[{}]`, while `audiobookshelf`'s
+/// one `security: []` operation makes its token optional.
 fn all_operations_authenticated(doc: &OpenApi) -> bool {
     let mut any = false;
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             any = true;
             let effective = op.security.as_ref().or(doc.security.as_ref());
-            let authed = effective.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty()));
+            let authed = effective.is_some_and(|reqs| !reqs.is_empty());
             if !authed {
                 return false;
             }
@@ -19215,6 +19221,53 @@ mod tests {
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.default.1, "https://api.example.com/%2Fapi%2Fv1");
+    }
+
+    /// An operation reads as authenticated whenever its effective security list
+    /// is non-empty, anonymous `{}` entries included; only an empty list leaves
+    /// the token optional. Measured at the certified pair on go-wind-cms's app API
+    /// (an operation's `security: [{}]`) and on a from-scratch document (a root
+    /// `security: [{}]`).
+    #[test]
+    fn only_an_empty_security_list_makes_the_token_optional() {
+        let cases = [
+            (None, Some(serde_json::json!([{}])), true),
+            (Some(serde_json::json!([{}])), None, true),
+            (
+                Some(serde_json::json!([{}])),
+                Some(serde_json::json!([{}, {"keeperToken": []}])),
+                true,
+            ),
+            (
+                Some(serde_json::json!([{"keeperToken": []}])),
+                Some(serde_json::json!([])),
+                false,
+            ),
+        ];
+        for (root, own, expected) in cases {
+            let mut operation = serde_json::json!({
+                "operationId": "listLanterns",
+                "responses": { "200": { "description": "OK" } }
+            });
+            if let Some(own) = &own {
+                operation["security"] = own.clone();
+            }
+            let mut document = serde_json::json!({
+                "components": {
+                    "securitySchemes": { "keeperToken": { "type": "http", "scheme": "bearer" } }
+                },
+                "paths": { "/lanterns": { "get": operation } }
+            });
+            if let Some(root) = &root {
+                document["security"] = root.clone();
+            }
+            let doc: crate::openapi::OpenApi =
+                serde_json::from_value(document).expect("document deserializes");
+            let Auth::Bearer { required, .. } = auth_model(&doc) else {
+                panic!("a bearer scheme should wire the client");
+            };
+            assert_eq!(required, expected, "root {root:?}, operation {own:?}");
+        }
     }
 
     /// An `http` `basic` scheme no Security Requirement Object names still wires
