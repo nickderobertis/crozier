@@ -3236,16 +3236,12 @@ fn reference_entry(
         })
         .collect();
     if let Some(RequestBody::Inline(fields)) = &ep.request_body {
-        reference_body.sort_by_key(|param| {
-            fields
-                .iter()
-                .find(|field| field.py_name == param.name)
-                .map_or(usize::MAX, |field| field.reference_order)
-        });
         // The field a stream condition fixes is not a method argument, but the
-        // reference documents it — as a bare `typing.Literal`, after the required
-        // fields and ahead of the optional ones: it takes no default, so the
-        // required-first ordering below places it last of the required.
+        // reference documents it — as a bare `typing.Literal`, in its declared
+        // place among the required fields and ahead of the optional ones: it
+        // takes no default, so the required-first ordering below keeps it with
+        // the required. The certified pair lists `harbour-tide-desk`'s `stream`,
+        // declared first, ahead of `port`.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
                 reference_body.push(DocParam {
@@ -3256,6 +3252,12 @@ fn reference_entry(
                 });
             }
         }
+        reference_body.sort_by_key(|param| {
+            fields
+                .iter()
+                .find(|field| field.py_name == param.name)
+                .map_or(usize::MAX, |field| field.reference_order)
+        });
     }
     // Nor does it document a constant header, which Fern's does (the
     // `constant-header-docs-arguments` departure).
@@ -5736,27 +5738,24 @@ fn raw_docstring(
         push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
-    pad_root_docstring_blank_lines(ep, &mut lines);
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
-/// Give a root-client method docstring's blank lines the 8-space body indent.
-///
-/// Fern writes them indented on a root-client method and empty on a grouped one,
-/// whatever the document's version. Ruff strips that indent from most docstrings,
-/// so it survives only in one ruff leaves alone, one with a line ending in a backslash:
-/// `discourse.local`'s and `electric-sql`'s root methods (OpenAPI 3.1) keep it,
-/// `tamoss`'s and `webflow-v2`'s grouped ones (3.1) and `zulip`'s (3.0) do not,
-/// and the certified pair keeps it on `electric-sql` re-declared as 3.0.3.
-fn pad_root_docstring_blank_lines(ep: &Endpoint, lines: &mut [String]) {
-    if ep.module.is_empty() {
-        lines
-            .iter_mut()
-            .filter(|line| line.is_empty())
-            .for_each(|line| {
-                *line = "        ".to_string();
-            });
-    }
+/// Give a method docstring's blank lines the 8-space body indent, as Fern writes
+/// every one, root or grouped, buffered or streaming, whatever the document's
+/// version. Ruff strips that indent from most docstrings, so it survives only in
+/// one ruff leaves alone, one with a line ending in a backslash: the root methods
+/// of `discourse.local` and `electric-sql` keep it, the certified pair keeps it on
+/// `electric-sql` re-declared as 3.0.3, and on every method of the from-scratch
+/// `harbour-tide-desk` measurement, the grouped `gauges` ones included.
+fn pad_docstring_blank_lines(lines: &mut [String]) {
+    lines
+        .iter_mut()
+        .filter(|line| line.is_empty())
+        .for_each(|line| {
+            *line = "        ".to_string();
+        });
 }
 
 /// Render one path parameter's docstring block: its `name : ty` line, then the
@@ -5799,7 +5798,9 @@ fn python_doc_line(line: &str) -> String {
 /// at all — matching Fern.
 fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
     match response_doc {
-        Some("") => lines.push(String::new()),
+        // Fern writes an empty description at the description indent: twelve
+        // spaces, which ruff keeps where it keeps the docstring's other indents.
+        Some("") => lines.push("            ".to_string()),
         Some(doc) => lines.extend(
             doc.split('\n')
                 .map(|line| format!("            {}", python_doc_line(line))),
@@ -6811,6 +6812,7 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     lines.push(format!("        {return_type}"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
     lines.push("        \"\"\"".to_string());
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
@@ -6947,6 +6949,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
     lines.push(format!("        {return_type}"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
     lines.push("        \"\"\"".to_string());
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
@@ -8074,7 +8077,7 @@ fn client_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
-    pad_root_docstring_blank_lines(ep, &mut lines);
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
@@ -8195,6 +8198,7 @@ fn client_binary_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
@@ -8286,7 +8290,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
     }
     lines.push("        \"\"\"".to_string());
-    pad_root_docstring_blank_lines(ep, &mut lines);
+    pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
 }
 
@@ -16850,13 +16854,14 @@ mod tests {
         );
     }
 
-    /// A root-client method's docstring section separators carry the 8-space
-    /// indent in a 3.0 document as in a 3.1 one, and a grouped method's stay empty: Fern
-    /// keys the indent on the module, not the version (`electric-sql`
-    /// re-declared as 3.0.3, measured at the certified pair). Each description
-    /// ends a line in a backslash, as the witnesses' do, so ruff keeps the indent.
+    /// Every method docstring's section separators carry the 8-space indent,
+    /// root or grouped, in a 3.0 document as in a 3.1 one, and an empty return
+    /// description is a 12-space line: measured at the certified pair on the
+    /// from-scratch `harbour-tide-desk` case and on `electric-sql` re-declared as
+    /// 3.0.3. Each description ends a line in a backslash, as theirs do, so ruff
+    /// keeps the indents.
     #[test]
-    fn root_docstring_blank_lines_are_indented_whatever_the_version() {
+    fn docstring_blank_lines_are_indented_in_every_module_and_version() {
         for version in ["3.0.3", "3.1.0"] {
             let files = files_for(serde_json::json!({
                 "openapi": version,
@@ -16865,7 +16870,7 @@ mod tests {
                     "/readings": {"get": {
                         "operationId": "listReadings",
                         "description": "List the latest readings.\n\nEach gauge reports under C:\\",
-                        "responses": {"200": {"description": "Readings", "content": {
+                        "responses": {"200": {"description": "", "content": {
                             "application/json": {"schema": {"type": "string"}}}}}
                     }},
                     "/gauges": {"get": {
@@ -16890,17 +16895,68 @@ mod tests {
                     root.contains("reports under C:\\\\\n        \n        Parameters"),
                     "{version}: {root}"
                 );
+                assert!(
+                    root.contains("str\n            \n") || root.contains("str]\n            \n"),
+                    "{version}: the empty return description is not a 12-space line: {root}"
+                );
             }
             for grouped in [
                 source("src/api/gauges/client.py"),
                 source("src/api/gauges/raw_client.py"),
             ] {
                 assert!(
-                    grouped.contains("lives under C:\\\\\n\n        Parameters"),
+                    grouped.contains("lives under C:\\\\\n        \n        Parameters"),
                     "{version}: {grouped}"
                 );
             }
         }
+    }
+
+    /// `reference.md` documents a stream condition's field in its declared place
+    /// among the required body fields: the certified pair lists
+    /// `harbour-tide-desk`'s `stream`, declared first, ahead of `port`.
+    #[test]
+    fn a_stream_condition_field_keeps_its_declared_reference_place() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Tide Desk", "version": "1"},
+            "paths": {"/surges": {"post": {
+                "operationId": "forecastSurge",
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object",
+                    "required": ["stream", "port"],
+                    "properties": {
+                        "stream": {"type": "boolean", "description": "Whether to stream."},
+                        "port": {"type": "string", "description": "The port."}
+                    }
+                }}}},
+                "responses": {"200": {"description": "OK", "content": {
+                    "application/json": {"schema": {"$ref": "#/components/schemas/Surge"}},
+                    "text/event-stream": {"schema": {"$ref": "#/components/schemas/SurgeUpdate"}}
+                }}},
+                "x-fern-streaming": {
+                    "stream-condition": "$request.stream",
+                    "response": {"$ref": "#/components/schemas/Surge"},
+                    "response-stream": {"$ref": "#/components/schemas/SurgeUpdate"}
+                }
+            }}},
+            "components": {"schemas": {
+                "Surge": {"type": "object", "properties": {"height": {"type": "number"}}},
+                "SurgeUpdate": {"type": "object", "properties": {"delta": {"type": "number"}}}
+            }}
+        }));
+        let reference = &files
+            .iter()
+            .find(|(path, _)| path == "reference.md")
+            .expect("reference.md is generated")
+            .1;
+        let stream = reference
+            .find("**stream:** `typing.Literal`")
+            .expect("the condition field is documented");
+        let port = reference
+            .find("**port:** `str`")
+            .expect("port is documented");
+        assert!(stream < port, "{reference}");
     }
 
     /// A 3.0 document posting `body` to `/leads` and answering JSON.

@@ -94,6 +94,14 @@ mod adme_seismic_shapes;
 mod pottery_studio_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The client-construction and docstring shapes the `naming-clients` removal
+/// controls first showed crozier departing from the certified pair on, over two
+/// from-scratch documents Fern generated complete trees from.
+#[path = "e2e/naming_clients_shapes.rs"]
+mod naming_clients_shapes;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -1935,6 +1943,16 @@ const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions"
 /// Each `CLIENTS_EXTENSIONS_DIR` case: its directory, the document crozier
 /// generates it from, and the setting Fern's tree was measured under.
 const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
+    (
+        "harbour-tide-desk",
+        "docs/fern-measurements/clients-extensions/harbour-tide-desk/openapi.yml",
+        &[],
+    ),
+    (
+        "lighthouse-keeper-roster",
+        "docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml",
+        &[],
+    ),
     (
         "auction-house-bids-literals",
         "docs/openapi-surface/handwritten/auction-house-bids/openapi.yml",

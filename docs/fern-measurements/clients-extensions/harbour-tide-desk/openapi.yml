@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: Harbour Tide Desk
+  version: 1.0.0
+  description: Publishes a harbour's tide tables, surge forecasts and gauges.
+servers:
+  - url: https://tides.harbour.example
+security:
+  - {}
+paths:
+  /tides:
+    get:
+      operationId: listTides
+      description: |
+        Lists the tide tables the harbour publishes.
+
+        Archived tables are filed under C:\
+      parameters:
+        - name: port
+          in: query
+          description: The port whose tables to list.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The tide tables.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TideTable"
+  /surges:
+    post:
+      operationId: forecastSurge
+      description: |
+        Forecasts a storm surge for one port.
+
+        Raw readings are filed under D:\
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stream, port]
+              properties:
+                stream:
+                  type: boolean
+                  description: Whether to stream the forecast as it is computed.
+                port:
+                  type: string
+                  description: The port to forecast for.
+      responses:
+        "200":
+          description: The surge forecast.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Surge"
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/SurgeUpdate"
+      x-fern-streaming:
+        stream-condition: $request.stream
+        response:
+          $ref: "#/components/schemas/Surge"
+        response-stream:
+          $ref: "#/components/schemas/SurgeUpdate"
+  /forecasts:
+    post:
+      tags: [Forecasts]
+      summary: Forecast the next tide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stream, port]
+              properties:
+                stream:
+                  type: boolean
+                  description: Whether to stream the forecast as it is computed.
+                port:
+                  type: string
+                  description: The port to forecast for.
+      responses:
+        "200":
+          description: The tide forecast.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Forecast"
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/ForecastUpdate"
+      x-fern-streaming:
+        stream-condition: $request.stream
+        response:
+          $ref: "#/components/schemas/Forecast"
+        response-stream:
+          $ref: "#/components/schemas/ForecastUpdate"
+  /gauges:
+    get:
+      operationId: listGauges
+      tags: [Gauges]
+      security:
+        - {}
+      description: |
+        Lists the harbour's tide gauges.
+
+        Calibration files sit under E:\
+      responses:
+        "200":
+          description: The gauges.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gauge"
+components:
+  securitySchemes:
+    harbourToken:
+      type: http
+      scheme: bearer
+  schemas:
+    TideTable:
+      type: object
+      properties:
+        port:
+          type: string
+        high_water:
+          type: string
+          format: date-time
+    Surge:
+      type: object
+      properties:
+        height:
+          type: number
+    SurgeUpdate:
+      type: object
+      properties:
+        delta:
+          type: number
+    Forecast:
+      type: object
+      properties:
+        height:
+          type: number
+    ForecastUpdate:
+      type: object
+      properties:
+        delta:
+          type: number
+    Gauge:
+      type: object
+      properties:
+        id:
+          type: string
+        berth:
+          type: string

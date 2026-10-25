@@ -15,7 +15,7 @@ Each key ends one of two ways here:
 
 Nine keys are proven by already-registered witnesses; no corpus row is added.
 One, `combo-document-security-security-nonempty`, is decided output-insensitive.
-Four [repairs](#repairs) to `src/` were needed first.
+Five [repairs](#repairs) to `src/` were needed first.
 
 ## The search
 
@@ -126,7 +126,7 @@ and both controls are recorded:
 
 - `combo-oas31-root-response` and `combo-oas31-grouped-response`: declaring
   OpenAPI 3.0.3 moves neither generator, on `electric-sql` and `helixdb-http-api`
-  alike. Fern indents a root method's docstring blank lines whatever the version
+  alike. Fern indents every method docstring's blank lines whatever the version
   (the first repair), and ruff strips that indent from every docstring without a
   line ending in a backslash. Deleting the root operations' success content, and
   deleting the grouped operations' tags, move the same files in both.
@@ -241,19 +241,34 @@ release build of the tree this record is committed with.
 
 ## Repairs
 
-The controls exposed four departures from the certified pair. Each is fixed in
-`src/` with a unit test driving the touched function on the triggering shape. No
-golden or Fern tree was edited and no departure was catalogued. Regenerating
-every registered corpus row and every document under `docs/` with crozier before
-and after all four moves no file.
+The controls exposed four departures from the certified pair, and the
+from-scratch documents written to drive the repairs end to end exposed a fifth.
+Each is fixed in `src/` with a unit test driving the touched function on the
+triggering shape. No golden or Fern tree was edited and no departure was
+catalogued. Regenerating every registered corpus row and every other document
+under `docs/` with crozier before and after all five moves no file.
 
-1. **A root method's docstring indent, whatever the version.** Crozier gave a
-   root-client method's docstring blank lines the 8-space indent only under
-   OpenAPI 3.1 (`src/emit.rs`, `pad_root_docstring_blank_lines`). The certified
-   pair indents them under 3.0.3 too: `electric-sql` re-declared as 3.0.3 moved
-   two crozier files and no certified-pair file. The committed goldens agree:
-   the root methods of `discourse.local` and `electric-sql` keep the indent, and
-   grouped methods in 3.0 and 3.1 documents do not.
+Two from-scratch measurement cases hold all five through the real binary:
+[`harbour-tide-desk`](../../fern-measurements/clients-extensions/harbour-tide-desk/openapi.yml)
+(a bearer scheme under a root `security: [{}]`, root and grouped methods whose
+descriptions end a line in a backslash, and two `stream-condition` operations)
+and
+[`lighthouse-keeper-roster`](../../fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml)
+(a basic scheme no requirement names). Each has its complete certified-pair
+tree, which `clients_extensions_measurements_match_fern` compares whole, and
+`crates/crozier-e2e/tests/e2e/naming_clients_shapes.rs` shows each repaired line
+is what that comparison turns on.
+
+1. **Every method's docstring indent, whatever the version.** Crozier gave a
+   method docstring's blank lines the 8-space indent only on a root-client
+   method under OpenAPI 3.1, and wrote an empty return description as a blank
+   line (`src/emit.rs`, `pad_docstring_blank_lines`, `push_return_doc`). The
+   certified pair indents them under 3.0.3 too, where `electric-sql` re-declared
+   as 3.0.3 moved two crozier files and no certified-pair file, and on grouped
+   and streaming methods alike, with an empty return description a 12-space
+   line, as `harbour-tide-desk` measures. Ruff strips both indents unless a
+   docstring line ends in a backslash, which is why no committed golden had
+   shown the grouped case.
 2. **Basic credentials with no requirement.** Crozier dropped an HTTP `basic`
    scheme's credentials when no Security Requirement Object named one
    (`src/ir.rs`, `auth_model`). The certified pair keeps them optional, as for a
@@ -274,3 +289,7 @@ and after all four moves no file.
    root `security` is `[{}]`, which crozier now byte-matches
    ([comparison](removal-controls/lantern-root-anonymous.json)). Only an empty
    list makes it optional.
+5. **A stream condition's field in `reference.md`.** Crozier documented the
+   field a stream condition fixes after every other required body field
+   (`src/emit.rs`, `reference_entry`). The certified pair keeps its declared
+   place: `harbour-tide-desk`'s `stream`, declared first, ahead of `port`.

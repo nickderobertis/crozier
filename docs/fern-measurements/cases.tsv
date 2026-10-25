@@ -190,3 +190,5 @@ union-literals/quiz-nullable-response-union	docs/openapi-surface/handwritten/qui
 union-literals/survey-map-value-union	docs/openapi-surface/handwritten/survey-map-value-union/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/survey-map-value-union/fern-expected
 union-literals/telescope-renamed-discriminant	docs/openapi-surface/handwritten/telescope-renamed-discriminant/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected
 union-literals/thermostat-nullable-member	docs/openapi-surface/handwritten/thermostat-nullable-member/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected
+clients-extensions/harbour-tide-desk	docs/fern-measurements/clients-extensions/harbour-tide-desk/openapi.yml	python-enums	packaged	-
+clients-extensions/lighthouse-keeper-roster	docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml	python-enums	packaged	-
