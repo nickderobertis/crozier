@@ -1078,7 +1078,10 @@ def witness_blocked(root: Path, key: str, reason: str) -> bool:
             re.M,
         )
         with record.with_name("census.tsv").open(encoding="utf-8", newline="") as handle:
-            documents = [row.get("document") or "" for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key]
+            documents = [
+                row.get("document") or "" for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key
+            ]
+
         def parts(value: str) -> list[str]:
             return [part for part in re.split(r"[/:@;\s]+", value) if part]
 
@@ -12382,7 +12385,11 @@ class FinishedStateGateTests(unittest.TestCase):
         rows = combination_rows(self.root)
         key = sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
         region = f"docs/openapi-surface/{rows[key].region}.md"
-        self.edit(region, f"| {key} | both | {rows[key].cells[2]} | golden |", f"| {key} | both | {rows[key].cells[2]} | gap |")
+        self.edit(
+            region,
+            f"| {key} | both | {rows[key].cells[2]} | golden |",
+            f"| {key} | both | {rows[key].cells[2]} | gap |",
+        )
         self.assertIn(
             f"{key}: a `gap` combination row ({combination_rows(self.root)[key].region}.md) missing from "
             f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md",
