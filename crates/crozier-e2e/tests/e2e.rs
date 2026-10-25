@@ -96,7 +96,7 @@ mod pottery_studio_shapes;
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The client-construction and docstring shapes the `naming-clients` removal
-/// controls first showed crozier departing from the certified pair on, over two
+/// controls first showed crozier departing from the certified pair on, over
 /// from-scratch documents Fern generated complete trees from.
 #[path = "e2e/naming_clients_shapes.rs"]
 mod naming_clients_shapes;

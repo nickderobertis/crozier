@@ -1,8 +1,8 @@
 //! The client-construction and docstring shapes the `naming-clients` removal
 //! controls first showed crozier departing from the certified pair on, each
-//! driven through the real binary over one of three from-scratch documents Fern
-//! generated `fern-expected/` from (`clients_extensions_measurements_match_fern`
-//! compares each whole): the line a shape decides must read as Fern writes it in
+//! driven through the real binary over a from-scratch document Fern generated
+//! `fern-expected/` from (`clients_extensions_measurements_match_fern` compares
+//! each whole): the line a shape decides must read as Fern writes it in
 //! both trees, and crozier's tree with that line put back the way crozier used to
 //! write it must fail the comparison. The removal controls are
 //! `docs/openapi-surface/witness-search-operation-combinations-naming-clients/README.md`'s.
