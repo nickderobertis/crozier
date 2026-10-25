@@ -3033,8 +3033,10 @@ names read `search-incomplete`, the verdict their covers cite:
 fixture executing both, so no setting gates them. Of the arms with no arm search,
 the four streaming arms rest on the covers of their hand-written fixtures
 (`event-stream-event-dispatch`, `streaming-extension-terminator` and
-`stream-condition-union-body`); three example arms remain named gaps (`schema-example-empty-object`,
-`schema-example-object-on-map` and `schema-example-outside-enum`); four root-body
+`stream-condition-union-body`); of the three example arms once listed here,
+`schema-example-empty-object`'s and `schema-example-object-on-map`'s are now
+reached by their golden-only witnesses and `schema-example-outside-enum`'s rests on
+the `enum-media-selection` fixture's cover; four root-body
 format or typed-query arms and `parameter-in-query`'s declared-default arm are
 instead covered by independent fixtures whose bounded searches remain
 `search-incomplete`; fifteen request-body, response-media
