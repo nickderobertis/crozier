@@ -1,0 +1,18 @@
+certified pair: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 (tools/fern-goldens/fern-references.py's workspace, under flock ~/.cache/crozier-run-generation.lock)
+document: OpenAPITools/openapi-generator:samples/client/petstore/csharp/generichost/latest/UseDateTimeOffset/api/openapi.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115
+sha256: 4a26e0fc983b5c589af74f0540267bfcbe1a6e4cabfae2c6b4b45f449b53beca
+result: refused (fern generate exited 1)
+
+fern generate exited 1 with no tree:
+derscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::fake.yml -> types -> TestEnumParametersRequestEnumHeaderStringArrayItem%0Afake.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk fake.yml -> types -> TestEnumParametersRequestEnumQueryStringArrayItem
+                  fake.yml
+                  [error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::fake.yml -> types -> TestEnumParametersRequestEnumQueryStringArrayItem%0Afake.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk Found 6 errors and 6 warnings in 0.662 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 6 errors and 6 warnings in 0.662 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

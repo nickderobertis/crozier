@@ -1,0 +1,2739 @@
+[
+ {
+  "key": "combo-multipart-body-with-params",
+  "fixture": "mindee-ocr",
+  "control": "combo-multipart-body-with-params",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1products~1{account}~1{product}~1{version}~1predict/post/requestBody/content/multipart~1form-data",
+    "edit": "deleted the `multipart/form-data` alternative beside the JSON one"
+   },
+   {
+    "pointer": "/paths/~1v1~1products~1{account}~1{product}~1{version}~1predict_async/post/requestBody/content/multipart~1form-data",
+    "edit": "renamed the `multipart/form-data` media type to `application/json`"
+   },
+   {
+    "pointer": "/paths/~1v1~1workflows~1{workflow_id}~1executions/post/requestBody/content/multipart~1form-data",
+    "edit": "renamed the `multipart/form-data` media type to `application/json`"
+   },
+   {
+    "pointer": "/paths/~1v1~1workflows~1{workflow_id}~1predict_async/post/requestBody/content/multipart~1form-data",
+    "edit": "renamed the `multipart/form-data` media type to `application/json`"
+   }
+  ],
+  "crozier": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "reference.md": {
+     "before": "c7523464fc5c1c3bfd3492c9582b5e8441450d685f5b8a60c580bc52e4dd3785",
+     "after": "1edc18966d90b9eb19664539b5c0eb670c9b7551303bbf81b075a80e0e085bd6"
+    },
+    "src/fern/prediction/client.py": {
+     "before": "5224f32a8384c70ec44976cb6a030a77ffcec8086f93f1e3d4faab2073e77639",
+     "after": "1438df39a2a33c84a2bf0a6e902a6d3da58dd9c5a8c5a2d6744aa6291a23f60e"
+    },
+    "src/fern/prediction/raw_client.py": {
+     "before": "2651f3dc6e9f107431e0e4e377c483b3950b645d19d75886265ce85123b0d682",
+     "after": "14ab5fd27557217d210bfcefdc0b1cf79e86aa88936e1230dfa2cbeb78621d7a"
+    },
+    "src/fern/workflows/client.py": {
+     "before": "80f382ca13ca12885c742d981fa6c08a2450f33ee26637132414d3b454a55e94",
+     "after": "f7881ff28f2a37c9004d803e376f7e8d1ee416cd9db4d1aa8df4965a8d76d340"
+    },
+    "src/fern/workflows/raw_client.py": {
+     "before": "b156587c8304f71309aff669fbe643e784f21233f064743034c8653c12c9aee5",
+     "after": "318d69261432dfc4540d808ab16f1347fe91cb9f0c62769dd1f10edd4b4325cd"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "reference.md": {
+     "before": "c7523464fc5c1c3bfd3492c9582b5e8441450d685f5b8a60c580bc52e4dd3785",
+     "after": "1edc18966d90b9eb19664539b5c0eb670c9b7551303bbf81b075a80e0e085bd6"
+    },
+    "src/fern/prediction/client.py": {
+     "before": "16cb253c45437f6747f546c533986ddd62ccf7a9384abcbf2c238c30f04939c9",
+     "after": "d7f7323d57b5c3ae58745d48ca9bac5aaeb2c7f40e71b8371a8125888a8d5609"
+    },
+    "src/fern/prediction/raw_client.py": {
+     "before": "937030e41f9a6b2f5ad08ae0fccda1445170ccc910a25df84a5c2a881e050ebd",
+     "after": "d9470ce10fd989fa1dc2bbc7840eed01e8fe3d0232fa9e278c672c2351ba4e17"
+    },
+    "src/fern/workflows/client.py": {
+     "before": "4d081be55b3b061ac5a9239dc06dc1902cebf84e5fa4f8fc55f3e7119e29f193",
+     "after": "9ef927532dac6604947105ece156b543d80276e42ce583102a52d6fd742b5887"
+    },
+    "src/fern/workflows/raw_client.py": {
+     "before": "d735374568262b661c22dd06d9b0e02882a144f0872376d25200c60835ca0392",
+     "after": "7040f754a740019ac364e26662c9fa063d1f115234c430978b77f7d980ec1612"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 61
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-form-urlencoded-body-with-params",
+  "fixture": "listennotes",
+  "control": "combo-form-urlencoded-body-with-params",
+  "edits": [
+   {
+    "pointer": "/paths/~1episodes/post/requestBody/content/application~1x-www-form-urlencoded",
+    "edit": "renamed the `application/x-www-form-urlencoded` media type to `application/json`"
+   },
+   {
+    "pointer": "/paths/~1podcasts/post/requestBody/content/application~1x-www-form-urlencoded",
+    "edit": "renamed the `application/x-www-form-urlencoded` media type to `application/json`"
+   },
+   {
+    "pointer": "/paths/~1podcasts~1submit/post/requestBody/content/application~1x-www-form-urlencoded",
+    "edit": "renamed the `application/x-www-form-urlencoded` media type to `application/json`"
+   }
+  ],
+  "crozier": {
+   "before_files": 181,
+   "after_files": 178,
+   "changed": {
+    "reference.md": {
+     "before": "ab88fbeca33ab03776e58cd55d627441b5609a1724450d0a76afb002e6ae971e",
+     "after": "200e4fbc11d86d1eda8361d154a5260773d572b582ef25bc4b3cad9f82cf5099"
+    },
+    "src/fern/__init__.py": {
+     "before": "9d4c9f070696de3d2a484b23a914206ad1b7d1cfe863df7a1c6023fdb043bfec",
+     "after": "b2356cf00f8d399a18c1615bd84d744d8cc3802e3acdf7cb3a65afd659a43202"
+    },
+    "src/fern/directory_api/raw_client.py": {
+     "before": "f87440fa43eb7bedc6c1cb475f1688790e4fe811369a03c0de5c526ea8b6bfb9",
+     "after": "3305e1f6fa48e00d23fa599ee7ef4a465038a84137e3559d2c4b91ce47820664"
+    },
+    "src/fern/podcaster_api/raw_client.py": {
+     "before": "af25652cdbc6179e5a9a5b9d503ab56a87c3b76f33bb8d16b18726f988c630cd",
+     "after": "6af0be460b2ecb437aa89e02661b5925860722aca156c5878e961871e20e7f67"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "8aa8f495fa598e7fba3c95ba12b1ead9e251fef47145648ca39a2048f6b98d26",
+     "after": "8f07d7debd73e0219ad0036a233f6ed5a897667777db9fd02c68f2db89a50391"
+    },
+    "src/fern/types/get_episodes_in_batch_form.py": {
+     "before": "3df23b4d7150dce2378f1335b32936d0f84940325fcb2d8ee254a2186f286662",
+     "after": null
+    },
+    "src/fern/types/get_podcasts_in_batch_form.py": {
+     "before": "08d854b78f8194f31d76783cdb2ca95fb90726412e7923f139fe99d45cd37fb4",
+     "after": null
+    },
+    "src/fern/types/submit_podcast_form.py": {
+     "before": "5012da6f8f84588fa4f815edfab456a2e5fdbc95c4311a9ccd7e0389a85dd3fe",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 181,
+   "after_files": 178,
+   "changed": {
+    "reference.md": {
+     "before": "ab88fbeca33ab03776e58cd55d627441b5609a1724450d0a76afb002e6ae971e",
+     "after": "200e4fbc11d86d1eda8361d154a5260773d572b582ef25bc4b3cad9f82cf5099"
+    },
+    "src/fern/__init__.py": {
+     "before": "51866cb32a626c45d1ec0dfaf7b58e86eee52363c910e255863692a44b5165c7",
+     "after": "e1b0f12c4aee5509ceca211ec38f121c11cd1fbbb87c85689f2a000d31e09c04"
+    },
+    "src/fern/directory_api/raw_client.py": {
+     "before": "c87ea76ffcf8910fa2270f874832587f70740a519ea81e089d50c1d704dbb433",
+     "after": "ac96d6be465cec29b0a48f06271fc566d0e128a68deb01f11124c7d616471c51"
+    },
+    "src/fern/podcaster_api/raw_client.py": {
+     "before": "2823cb505d665d494a43f4c3b7aa076037214597c4952933df81657a89c04065",
+     "after": "c3b0e43b8443861d86fc16ca4ee04937b84395ea026ab405d46f01d4ebfdb1ce"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "2b871d26260fa4562fde718fee7ab5e8d7fcbc4b4500b279dd68b8afc3fee865",
+     "after": "d34c64041bc2fc62caa99132639d9a548123e3ac6121763746bb10121f5565dd"
+    },
+    "src/fern/types/get_episodes_in_batch_form.py": {
+     "before": "2d6049a745b938a83b7c44c972fa5795c20ec4ce99ed10481c6c041c982076fe",
+     "after": null
+    },
+    "src/fern/types/get_podcasts_in_batch_form.py": {
+     "before": "b563c5a9298845b590e69e18662788ea38dbfb13ca5a45f61072f14067d4c217",
+     "after": null
+    },
+    "src/fern/types/submit_podcast_form.py": {
+     "before": "0999695743337fff9e3db93827e061847158822f0006e9d9789fd8cfef27d235",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 178
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-multipart-beside-json-body",
+  "fixture": "mindee-ocr",
+  "control": "combo-multipart-beside-json-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1products~1{account}~1{product}~1{version}~1predict/post/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `multipart/form-data`"
+   }
+  ],
+  "crozier": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "README.md": {
+     "before": "c7cd2ebbb8f94abc690f68f332b695dd4623ae9bc69f9a42a9b5ba01fbec7f9c",
+     "after": "9f39996519067b8018603be0b89c22f670863dfa139228fcf67ba6c9ff631dbb"
+    },
+    "reference.md": {
+     "before": "c7523464fc5c1c3bfd3492c9582b5e8441450d685f5b8a60c580bc52e4dd3785",
+     "after": "b427db06c4bcf0945e6d1a408f3adb9df102d4e10e5550dead86aeacdf406ae3"
+    },
+    "src/fern/prediction/client.py": {
+     "before": "5224f32a8384c70ec44976cb6a030a77ffcec8086f93f1e3d4faab2073e77639",
+     "after": "3d01f79551ef399abe4d169eb4bb81d706cf4ddf910ddc68bd5d6788869ca00f"
+    },
+    "src/fern/prediction/raw_client.py": {
+     "before": "2651f3dc6e9f107431e0e4e377c483b3950b645d19d75886265ce85123b0d682",
+     "after": "885cf53df56065861ef3d80fed4d13e10b9e69571044248e28dc1f726b9b1ecb"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "README.md": {
+     "before": "c7cd2ebbb8f94abc690f68f332b695dd4623ae9bc69f9a42a9b5ba01fbec7f9c",
+     "after": "9f39996519067b8018603be0b89c22f670863dfa139228fcf67ba6c9ff631dbb"
+    },
+    "reference.md": {
+     "before": "c7523464fc5c1c3bfd3492c9582b5e8441450d685f5b8a60c580bc52e4dd3785",
+     "after": "b427db06c4bcf0945e6d1a408f3adb9df102d4e10e5550dead86aeacdf406ae3"
+    },
+    "src/fern/prediction/client.py": {
+     "before": "16cb253c45437f6747f546c533986ddd62ccf7a9384abcbf2c238c30f04939c9",
+     "after": "5ee657fbcde7be10880806c0d3ffb2786e76c70382f82a92c834f43fbea57167"
+    },
+    "src/fern/prediction/raw_client.py": {
+     "before": "937030e41f9a6b2f5ad08ae0fccda1445170ccc910a25df84a5c2a881e050ebd",
+     "after": "a02938838ebabec294bc7791e5cf1662f18291784149b389c8bf3b7ba77fc95c"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 61
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-form-urlencoded-beside-json-body",
+  "fixture": "swagger-petstore",
+  "control": "combo-form-urlencoded-beside-json-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1pet/put/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `application/x-www-form-urlencoded`"
+   },
+   {
+    "pointer": "/paths/~1pet/post/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `application/x-www-form-urlencoded`"
+   },
+   {
+    "pointer": "/paths/~1store~1order/post/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `application/x-www-form-urlencoded`"
+   },
+   {
+    "pointer": "/paths/~1user/post/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `application/x-www-form-urlencoded`"
+   },
+   {
+    "pointer": "/paths/~1user~1{username}/put/requestBody/content/application~1json",
+    "edit": "deleted the JSON alternative beside `application/x-www-form-urlencoded`"
+   }
+  ],
+  "crozier": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {
+    "src/fern/pet/raw_client.py": {
+     "before": "a647e615a6b53d6b506f09f66e2a7dd76a6b5fdcf6c8dcc4003fd1d27e8b4cb4",
+     "after": "337289ae25ad61177879cfee2e698853c32f424652a81e38fd2100b0a80bcac7"
+    },
+    "src/fern/store/raw_client.py": {
+     "before": "4fe13535e7f82f8c9ddaedfeec5a413d5bc96cb5d26ea808195eeec95cce5289",
+     "after": "8afa451a9b7a27daa3f848bbc64bbd9c1997f826b78ef055935d7f30cf3eb605"
+    },
+    "src/fern/user/raw_client.py": {
+     "before": "5b81aa4357c3567af1e5d0ad25d21e6a0ed2424e9dc9042e2d31046c39a56312",
+     "after": "0965fd9f7c405f1b496643bef1136dc3daf650f22c34367fe9de880cef2c035b"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {
+    "src/fern/pet/raw_client.py": {
+     "before": "3f638bba16e6469a60746474fc5db795cdecd8135b14c4e0552b716dad475003",
+     "after": "426daca704a010313b1cc2abfa7e7905020ec4a1dd736b0e086c4956f6a05c93"
+    },
+    "src/fern/store/raw_client.py": {
+     "before": "1be6ddddafcb77f5bda5d71fda5aee2b25b1edbefa054c779ec2d429a219f62f",
+     "after": "e69fc8c3a8766092f2c9aa8e54008d6587e4848139d0ec6922746897383e6886"
+    },
+    "src/fern/user/raw_client.py": {
+     "before": "44d6766e430d526aeaca46240ea282b2d8036a729c2bd584e3fba48d43b8547e",
+     "after": "f14c87351bfe0aea2a8dd0149081385c33f49d8a1162ca4e1a4e099a70498f1e"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 68
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-params-beside-inline-oneof-body",
+  "fixture": "apideck.com-webhook",
+  "control": "combo-params-beside-inline-oneof-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1webhook~1w~1{id}~1{serviceId}/post/requestBody/content/application~1json/schema",
+    "edit": "moved the inline `oneOf` body schema to `#/components/schemas/WebhooksresolvePayload`"
+   },
+   {
+    "pointer": "/paths/~1webhook~1webhooks~1{id}~1execute~1{serviceId}/post/requestBody/content/application~1json/schema",
+    "edit": "moved the inline `oneOf` body schema to `#/components/schemas/WebhooksexecutePayload`"
+   },
+   {
+    "pointer": "/paths/~1webhook~1webhooks~1{id}~1x~1{serviceId}/post/requestBody/content/application~1json/schema",
+    "edit": "moved the inline `oneOf` body schema to `#/components/schemas/WebhooksshortexecutePayload`"
+   }
+  ],
+  "crozier": {
+   "before_files": 95,
+   "after_files": 94,
+   "changed": {
+    "reference.md": {
+     "before": "eb5004250d3da276178d76909531af0d4971ee82523258d8cc52cc610f807b35",
+     "after": "637603d0a030f56d2ef3341602e081ebb4dbd00c16ad2f971753129903870198"
+    },
+    "src/fern/__init__.py": {
+     "before": "3efa499fe6f8c0c627b7c95db5822339ddb2aeadd1ae434d2239b55ac14a350c",
+     "after": "b8cb92ca7d5be6ae2fc7042a7563a2eb56eea98cfb51e8a230e336442c12381b"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "df2f7945cfffab4d86fbbf69ff8ab707905ee7ec7daa26833c728e8fb09a8560",
+     "after": "1b5c8367d6f7b26e3a7f42f03d5bc74b05eca72b7009331326c8f6fbceb9c677"
+    },
+    "src/fern/types/webhooksexecute_payload.py": {
+     "before": null,
+     "after": "495a079c1d0dcb9092a22b9eb578f98f073fe75ac9d6a2e13403fb9fd0177501"
+    },
+    "src/fern/types/webhooksresolve_payload.py": {
+     "before": null,
+     "after": "5821bdf92975ad6afad63dcd4229808c9f6236b0797a4de2b75114dc59f2a96b"
+    },
+    "src/fern/types/webhooksshortexecute_payload.py": {
+     "before": null,
+     "after": "c2fe5c2cf65ce82a5d56a36b766dbd1fab7f910bf3472c13a9b236faa0b4e772"
+    },
+    "src/fern/webhooks/__init__.py": {
+     "before": "ec739bc8c131bd047e9b17e373481082ef5be9e5ea05ca9f32649cb440bf3475",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "815351c661acdd6bd07787e7147641933e5f00e0e5637c15d69a30429505efde",
+     "after": "55c42fa5e98e06137cf1dabf1dc57e87a2aa086dcfe34cc8e8f9225d56e28408"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "afe95b04f1ec8b811e36d405f39a48e293b1a0c4ba3539d4740c9fa5e88bfc83",
+     "after": "fa8fc60e0a19c241400ed0100bee95fe824e99e996a5ce75ca836ade327bfd26"
+    },
+    "src/fern/webhooks/types/__init__.py": {
+     "before": "9b97560bc323f8657e48284b7c7d6a967901235451c61db5d6207f1e5aa1cc99",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_execute_request_body.py": {
+     "before": "b5e4101025d2b8890134074d16c59cf7e0ccdf453512ee8a472b74201fcf28fc",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_resolve_request_body.py": {
+     "before": "27e627054c2e5561e13e5b76d90ac9795f8e7fb4666800d6c39e38f31ccefaea",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_short_execute_request_body.py": {
+     "before": "65191ca4e225ff88128daeda8c0fa90ac2857225bac4f579d9b14e6fa58e9949",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 95,
+   "after_files": 94,
+   "changed": {
+    "reference.md": {
+     "before": "eb5004250d3da276178d76909531af0d4971ee82523258d8cc52cc610f807b35",
+     "after": "637603d0a030f56d2ef3341602e081ebb4dbd00c16ad2f971753129903870198"
+    },
+    "src/fern/__init__.py": {
+     "before": "13d32c09778838306f0f173f5b0d970bae83b931f0d50a6f41e42bc1941550d8",
+     "after": "af6fd991625769264fd6855a320de7b24f577501447bb3643febba0c3ca7b04a"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "0a778accf232840c62fd893fa619b7dc9aa04ac01cd2656d7c500c4a3efde42e",
+     "after": "50eb1df1d7a8af3e35ca57c22930265b9fc82313f9720106f34b776a554bbd8f"
+    },
+    "src/fern/types/webhooksexecute_payload.py": {
+     "before": null,
+     "after": "a068642ee508d302febdc86ee1274673387156fb97283ffcc91f37bbd2ad8cdd"
+    },
+    "src/fern/types/webhooksresolve_payload.py": {
+     "before": null,
+     "after": "9c625647a43091173a6df2c643267d93e34934933541082a5134b31657a1bd8b"
+    },
+    "src/fern/types/webhooksshortexecute_payload.py": {
+     "before": null,
+     "after": "1e6fcd0cfb6e58b61ca2ed92cc79beebb3d658b314c8c20ad489eb5073543914"
+    },
+    "src/fern/webhooks/__init__.py": {
+     "before": "82b28d2b35967f4d0e1aa2b22f66d40fc2df74348d31c013d755432d359dbd55",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "c244be3a1b95fe16ed253783cb4da99073aa8094d14bfceb59ae47cd67a5c448",
+     "after": "9d6468dbaff4807287d204f7604165d4a1168802029d2075f640c35671d08146"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "6d6b6ac58656e4a17f9d7deb816567238522556822b66b7551d006ad04da9232",
+     "after": "ff3ce4e909bb2983001ad14fa9b983d119ace42572a0c972ceac5c0fe6faacb6"
+    },
+    "src/fern/webhooks/types/__init__.py": {
+     "before": "1d6a1a6039ee4a90dffb03694843eda9fc8edf32a8190fce09c0d80de544c01e",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_execute_request_body.py": {
+     "before": "ce928744d31ebe4b66da566ee6f531a6cb294a117955521648edb5750fabe6b1",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_resolve_request_body.py": {
+     "before": "729436792fbff86462bfb240d92dde43b59b986e14f2055bdbeeaed3a654d7ce",
+     "after": null
+    },
+    "src/fern/webhooks/types/webhooks_short_execute_request_body.py": {
+     "before": "b41ece8c3806562dd96206740beb490762634813f458ab0baabeb044dfb014d6",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 94
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-params-beside-inline-anyof-body",
+  "fixture": "apideck.com-proxy",
+  "control": "combo-params-beside-inline-anyof-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1proxy/put/requestBody/content/*~1*/schema",
+    "edit": "moved the inline `anyOf` body schema to `#/components/schemas/PutproxyPayload`"
+   },
+   {
+    "pointer": "/paths/~1proxy/post/requestBody/content/*~1*/schema",
+    "edit": "moved the inline `anyOf` body schema to `#/components/schemas/PostproxyPayload`"
+   },
+   {
+    "pointer": "/paths/~1proxy/patch/requestBody/content/*~1*/schema",
+    "edit": "moved the inline `anyOf` body schema to `#/components/schemas/PatchproxyPayload`"
+   }
+  ],
+  "crozier": {
+   "before_files": 50,
+   "after_files": 49,
+   "changed": {
+    "README.md": {
+     "before": "df118ae0a8917496318bb58e1d79818c819b16ee7409d21288bdc4086c07c297",
+     "after": "762d5c81482b1c23c685c09429545ca953b6667214a0aae88779d37f91282445"
+    },
+    "reference.md": {
+     "before": "ab20cbe499061d25cf8efc5b89991d811dd903e39fc62924fb5895fe001230cd",
+     "after": "7673963748f94e98cd4243023bf00da8fa53311edb88184740918229126ef574"
+    },
+    "src/fern/__init__.py": {
+     "before": "c42babaf8a81838b5803978cc40751c6211c496c4ce4a4ec8c06c9aa0bbc1c90",
+     "after": "5d908711cfa5cb03d342d22043e3ebb735d58012a3a75427f13a8778f3163bcb"
+    },
+    "src/fern/execute/__init__.py": {
+     "before": "8b441278280bcd4503d9d94ac0487ccdc00e478c0402b399220b8e86e56f5b90",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/execute/client.py": {
+     "before": "d5fc107e394d1b8bfec2b4ddde18b0a940ccb6588dd2196f7ed9b620adb10367",
+     "after": "6ef1b0f102a199a98566e21097fa2ab2733ef5164e59eb0dea749d5264bf5bcd"
+    },
+    "src/fern/execute/raw_client.py": {
+     "before": "455b48ba2d3e61dab411d0dcff0e063d3a0f3e38207096385bdc7590213c51ac",
+     "after": "a598fe800c401dc82cfe3c9be0119c9f13a4556fba0c109942790556fd232ffa"
+    },
+    "src/fern/execute/types/__init__.py": {
+     "before": "98ae51d04f2207db970c6e2c11e97421f38d2a97fa09dd44a9c85b46c5ffa6c1",
+     "after": null
+    },
+    "src/fern/execute/types/patch_proxy_request_body.py": {
+     "before": "1a5b3a24fcf7d6c4e027eddcbd52d0dc86d6696e557fe2617b6523b0f9d4a2fe",
+     "after": null
+    },
+    "src/fern/execute/types/patch_proxy_request_body_zero.py": {
+     "before": "c1351059324b15e4afbd149b219b72994f2aa20e293738e8ee2998769b407427",
+     "after": null
+    },
+    "src/fern/execute/types/post_proxy_request_body.py": {
+     "before": "507f0568200fb91ebc722772e5edf63b8872e15ff6718ae0296075930bfdcfb7",
+     "after": null
+    },
+    "src/fern/execute/types/post_proxy_request_body_zero.py": {
+     "before": "00e40c1ac984d3af7d5a8796edb4ac164124cdbb3dc6a24c7bcab0fe5d441448",
+     "after": null
+    },
+    "src/fern/execute/types/put_proxy_request_body.py": {
+     "before": "356557fe8d829ea91fe105341f048a9ede820ea20d4b7cf2ad478d7c35dd5a22",
+     "after": null
+    },
+    "src/fern/execute/types/put_proxy_request_body_zero.py": {
+     "before": "e027b0bf256893ae4fa123e37fd3ae8167de6b9cb56da24618a07a08d9e8ef40",
+     "after": null
+    },
+    "src/fern/types/__init__.py": {
+     "before": "f16874e16e539b15bbae5d6da6fdadea538c7fef1cbe174a471feb6039771a1e",
+     "after": "054bd909dbe032ab9c8f2a04de514451999ba884f4b1464c1af596036d5a4aab"
+    },
+    "src/fern/types/patchproxy_payload.py": {
+     "before": null,
+     "after": "04871cbc9f65e4d8352188ccc71c30897bfb276e32eab8f35775e6a96bd100c0"
+    },
+    "src/fern/types/patchproxy_payload_zero.py": {
+     "before": null,
+     "after": "dbf306b7deec491f5cc800e18967ded5942826720b67c2c12da4b0c4527d3101"
+    },
+    "src/fern/types/postproxy_payload.py": {
+     "before": null,
+     "after": "6a02747fa358a7aec5701592894119ed4bdb2fa0ea22f3af63a468f5da7e7975"
+    },
+    "src/fern/types/postproxy_payload_zero.py": {
+     "before": null,
+     "after": "7931c18c4c6a27041ca56d70fc12add142ba28827a3355c6f769f2db69f335b6"
+    },
+    "src/fern/types/putproxy_payload.py": {
+     "before": null,
+     "after": "a044d5ce3e97f6af225f281d0db7901358bf3a2229c852696612f21bafcfb9d2"
+    },
+    "src/fern/types/putproxy_payload_zero.py": {
+     "before": null,
+     "after": "a200dd49ea19ea3e54580c6e2319d4c362a16c4798a934174f2f9e2d3f284a4b"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 50,
+   "after_files": 49,
+   "changed": {
+    "README.md": {
+     "before": "df118ae0a8917496318bb58e1d79818c819b16ee7409d21288bdc4086c07c297",
+     "after": "762d5c81482b1c23c685c09429545ca953b6667214a0aae88779d37f91282445"
+    },
+    "reference.md": {
+     "before": "ab20cbe499061d25cf8efc5b89991d811dd903e39fc62924fb5895fe001230cd",
+     "after": "7673963748f94e98cd4243023bf00da8fa53311edb88184740918229126ef574"
+    },
+    "src/fern/__init__.py": {
+     "before": "d8c3cbf08b3d2ea512de3c75cbf215e9bc23bd8c48b694a309bf32d96b688a65",
+     "after": "0e388d7fabb594fd67d72f6878f053ee2627ac4c04cfb38804056745e9c341e4"
+    },
+    "src/fern/execute/__init__.py": {
+     "before": "03a936c1ce46b82829385c799d6cddb4d379eb353affd4c65015fc8aebf93372",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/execute/client.py": {
+     "before": "eac911571408c1c75409e4658c656b766674865073266a89905ca27f4f4a8aea",
+     "after": "8628f0042b2522142097572e7e0ab55334934a9eec041dd2648bc960b8644c3c"
+    },
+    "src/fern/execute/raw_client.py": {
+     "before": "15bdc3ec1b50bef044548bc9134a49d373fbfe76134f21363ef22b5af5d4fb2c",
+     "after": "f02b4088f2f6a13bea7dd11c171942e4359b1d01468f5889e6a494182f800cbc"
+    },
+    "src/fern/execute/types/__init__.py": {
+     "before": "f5b73da8959f1bd95eaad0a65e159b097a38f184569ae1612bed7b8479f98aa4",
+     "after": null
+    },
+    "src/fern/execute/types/patch_proxy_request_body.py": {
+     "before": "ca1155c80939593d42ce8697fb449f8cc2475f2a72e162366d88819210af45a5",
+     "after": null
+    },
+    "src/fern/execute/types/patch_proxy_request_body_zero.py": {
+     "before": "d2939e2ec0d1079eef4556b6ac1f4c2bfe3335349506f2e407a6b4d883ffb025",
+     "after": null
+    },
+    "src/fern/execute/types/post_proxy_request_body.py": {
+     "before": "77faa5c2713f0f43c2eb23dfcace30af248b2a179d8ee655d9df6b2d814f8dc0",
+     "after": null
+    },
+    "src/fern/execute/types/post_proxy_request_body_zero.py": {
+     "before": "5593754f06603796b93f1c959309f911872ae86b62cef410b8990d6249660005",
+     "after": null
+    },
+    "src/fern/execute/types/put_proxy_request_body.py": {
+     "before": "70398c60ab21ba2242e3b9543b8ed74772e49a4aaf44fa5fedb6608a2cd8d5e8",
+     "after": null
+    },
+    "src/fern/execute/types/put_proxy_request_body_zero.py": {
+     "before": "72a99bf253ecf41bf59889646aec5466c02fedf20276968486740e9b2b4d88c3",
+     "after": null
+    },
+    "src/fern/types/__init__.py": {
+     "before": "ee481dd3fb0bc56860d20538b6b1cdd3ec1a74d5a2d56a45f495ac934906de13",
+     "after": "3820bfd08b99d93763dc9d6ffa59d4e780323216fd81f8fa1fd64d1d31a9b3b6"
+    },
+    "src/fern/types/patchproxy_payload.py": {
+     "before": null,
+     "after": "60b3c66525a41c3e315d78e079a54ffe2d78a16ade9bb7a3817048ed984f3d85"
+    },
+    "src/fern/types/patchproxy_payload_zero.py": {
+     "before": null,
+     "after": "bcc837633205488d2df105e653c858680beca06bab5a93f358c34f48355065f4"
+    },
+    "src/fern/types/postproxy_payload.py": {
+     "before": null,
+     "after": "05dc93daeca011aeaef9295e0518d8776cc9b7b61144018daf4ca218877799bb"
+    },
+    "src/fern/types/postproxy_payload_zero.py": {
+     "before": null,
+     "after": "aa333e829c82dba0e620294609bfeaa26c220a8895ffa619a1df50bb2e1098fc"
+    },
+    "src/fern/types/putproxy_payload.py": {
+     "before": null,
+     "after": "5cf0354f7a77f5bd5d290af85713ac4c5056b9ea26640c27ee8ee4445a9dd87c"
+    },
+    "src/fern/types/putproxy_payload_zero.py": {
+     "before": null,
+     "after": "0c8071e2b619df5e5f6b156538659df83243810a47ef3d457e8e2d2126d1628a"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 49
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-ref-body-read-only-property",
+  "fixture": "steaminputdb",
+  "control": "combo-ref-body-read-only-property",
+  "edits": [
+   {
+    "pointer": "/components/schemas/SearchRequestBody/properties/$schema/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/ConfigQueryBody/properties/$schema/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/AppsQueryBody/properties/$schema/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/OpenIDBody/properties/$schema/readOnly",
+    "edit": "deleted `readOnly`"
+   }
+  ],
+  "crozier": {
+   "before_files": 133,
+   "after_files": 133,
+   "changed": {
+    "reference.md": {
+     "before": "48858c395fcde1ab394ec7fd73f01e9c18a1fcec672dad6a8a2d348def761c65",
+     "after": "2ff1fbdd58a6798141eda92a9504ad31c2dee86b1232b9ea0018122f80e65467"
+    },
+    "src/fern/search/client.py": {
+     "before": "bee1da0e95cd0a5da5af1f0dde1c603001b5bc127a4ecf3ae445960a92a9a8e7",
+     "after": "8b0acc6afefb0f43d219322389ef4f9512a2ddff318296d55933a74672e6482a"
+    },
+    "src/fern/search/raw_client.py": {
+     "before": "85f7c26022a50ee385cf15b0920b4f70587588ca75cc1aba5f36f1121afaa051",
+     "after": "5d762789bbe0c4cc0f967825fe57d3613d76fc3fc644d8463db982d97f03e259"
+    },
+    "src/fern/steam/client.py": {
+     "before": "963576253b160a91c16e16678f614c823bca2b1200925e4ed35df405102e2cf0",
+     "after": "5c59bd90a4d241503188f41798c993eacf555fe84272e972b1db305b89e5456e"
+    },
+    "src/fern/steam/raw_client.py": {
+     "before": "ac561ab569eb928a7d33876d32545153e4a968f5dc627054368cf0a80219aab3",
+     "after": "056b3048ee4e6ab3f18e40811a5bbda23b2358577dbffafbaf67e2087173a84d"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 133,
+   "after_files": 133,
+   "changed": {
+    "reference.md": {
+     "before": "48858c395fcde1ab394ec7fd73f01e9c18a1fcec672dad6a8a2d348def761c65",
+     "after": "2ff1fbdd58a6798141eda92a9504ad31c2dee86b1232b9ea0018122f80e65467"
+    },
+    "src/fern/search/client.py": {
+     "before": "e8e1469ca33710ff26e80f36a71541c45b2a4f543faa1848d195b04db8971776",
+     "after": "e4d9fc1075ef4d90c4776461712ef36369a2996c4dec9672457c6db0f253ea2b"
+    },
+    "src/fern/search/raw_client.py": {
+     "before": "1549e348d8ac2065beb223832e9a2bf360fcc725b4d29568706bdddc72bce806",
+     "after": "babddad3055a26fbb2618b657c51e0f7e5b9bae55d6035bee957357b12a5c7e3"
+    },
+    "src/fern/steam/client.py": {
+     "before": "cb52b4cc32a309243eddc272aa26e1b8bea2c9d9ecdeb23ebd55642b2061191e",
+     "after": "05d810aaf9b47e6708b6168b381691cb9645e2d6f2c3262d18dfd4d30322434a"
+    },
+    "src/fern/steam/raw_client.py": {
+     "before": "68db51263f73b842150ed983d0821f71b92d6873b542d738ffa8d715d15f98b7",
+     "after": "c58504f93b1543e5e6be9f9cfe576df8831d734811b802a19de257d8befc0831"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 133
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-optional-ref-union-body",
+  "fixture": "openintegrationhub-secret-service",
+  "control": "combo-optional-ref-union-body-inline",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1v1~1auth-clients~1/post/requestBody/content/application~1json/schema",
+    "edit": "inlined the optional body's `#/components/schemas/MutableAuthClient`"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1auth-clients~1{clientId}/patch/requestBody/content/application~1json/schema",
+    "edit": "inlined the optional body's `#/components/schemas/MutableAuthClient`"
+   }
+  ],
+  "crozier": {
+   "before_files": 104,
+   "after_files": 106,
+   "changed": {
+    "README.md": {
+     "before": "c507eee3a4f418547ac096d27dfb06897886bca20cde069afce54a6e9f5979b4",
+     "after": "0cdf3a26075274adb96f28cd35ed364f9ee078fef2319e6b8700747ccece1857"
+    },
+    "reference.md": {
+     "before": "2efc6beefb74acfee13c02eb5cd57b48aa55b91219aed205b36f3342aee7303a",
+     "after": "83f50c0a0dcebee857ef841e049b187639fc990339658d1148ba3a2720597ba2"
+    },
+    "src/fern/__init__.py": {
+     "before": "2e10d0756762878bb42b2bc989bcde5ef7ca73b4906fad3253f61fbaf548ea58",
+     "after": "a0664937800cec9d80756ced114af89cd6aedef4d50bcbf918981dc557a1c0db"
+    },
+    "src/fern/auth_clients/__init__.py": {
+     "before": "6d09e1e5d5dd295f09e43a378fe0dfb8324abc93893104690464cbebb36e23d1",
+     "after": "3c58e03c9066ec862446c3a12e999728b810fbb7c164a1bafe9f6908ea37cfd1"
+    },
+    "src/fern/auth_clients/client.py": {
+     "before": "ca39755ee816fa9ec4d7555fc5a65bc23592d488de0cbbf8aabcfb20895240c7",
+     "after": "55d9eb92a67a57702b2b74253b3a630b9dbdd18cb1646cb95fdfe927184dec79"
+    },
+    "src/fern/auth_clients/raw_client.py": {
+     "before": "54eac0296465c65275c73070e3f3a2eea7287338bf5c7e58881f1ff959a60290",
+     "after": "67eda4d80744ff720e40c1082d529adf854a53b78e068b2a363405f7cfccbe49"
+    },
+    "src/fern/auth_clients/types/__init__.py": {
+     "before": "98d8fa450a469ade2d016a5bdf5d237d05e589c9eced4af197120d4eef7c2103",
+     "after": "841f23bbf69e787abdbf3da664622de1fe3ae5eecc312541daad9aa34c07a924"
+    },
+    "src/fern/auth_clients/types/create_client_request.py": {
+     "before": null,
+     "after": "62c14a14ab5288e5e4adb6449dbbe6163572428a7dd50ef28a7a3c2b04db7f90"
+    },
+    "src/fern/auth_clients/types/update_client_request_body.py": {
+     "before": null,
+     "after": "8cd9f29377e8e9446fd2e815bf0269102c387a82b987a78908b511a6b61b093d"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 104,
+   "after_files": 106,
+   "changed": {
+    "README.md": {
+     "before": "c507eee3a4f418547ac096d27dfb06897886bca20cde069afce54a6e9f5979b4",
+     "after": "0cdf3a26075274adb96f28cd35ed364f9ee078fef2319e6b8700747ccece1857"
+    },
+    "reference.md": {
+     "before": "2efc6beefb74acfee13c02eb5cd57b48aa55b91219aed205b36f3342aee7303a",
+     "after": "83f50c0a0dcebee857ef841e049b187639fc990339658d1148ba3a2720597ba2"
+    },
+    "src/fern/__init__.py": {
+     "before": "0bc40ce0fca749900fda7518e7d27a9f2c1457d32ecd5719f95568137be6f6d7",
+     "after": "e16d01a740d5071c35900cacf3d622adc0724cb3af76a389b6c73340aa25e4a6"
+    },
+    "src/fern/auth_clients/__init__.py": {
+     "before": "b983f1b2ae25e206797da959555b850c126d458e9129328ca6289e64fe4ca48f",
+     "after": "e65f6f9d7ee0e66dfaafb4a11a184532e451c670a4afa71af965257a284db189"
+    },
+    "src/fern/auth_clients/client.py": {
+     "before": "2a0aee469de33510560711334fc7166d10daea042561919e7c75143133d2ddcb",
+     "after": "57f02c586a650dd5aa2c9e171ce0daf98fc040b82685d7c39746da73bfa15575"
+    },
+    "src/fern/auth_clients/raw_client.py": {
+     "before": "08087c7d5d357421badc33f49207bfce33c7c348977b39b87e0161754f02a5ef",
+     "after": "0ee02a9cb5106cbe5041ddf94ba8bfbe39e01b7a93ca218ec81ae67bf5ff1217"
+    },
+    "src/fern/auth_clients/types/__init__.py": {
+     "before": "7955fa8cf10737534e71e03bba01fe56819825a649ad1c6388c19d8576f47ec7",
+     "after": "61a18120e0e3f9ff90e7f2df23b0b48ef15e15d6d07666c61c03bbb624fbecf5"
+    },
+    "src/fern/auth_clients/types/create_client_request.py": {
+     "before": null,
+     "after": "6fffd3b5158f12be1636e83c2dde0a3de5d444033187d7e007a1ee938280bade"
+    },
+    "src/fern/auth_clients/types/update_client_request_body.py": {
+     "before": null,
+     "after": "f938f13624bf7f601c4b8007d95c61b092ca23adbed17f1de653dfe62bb7d9b0"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 106
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-optional-ref-map-body",
+  "fixture": "oip-web-api",
+  "control": "combo-optional-ref-map-body-inline",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1module-federation~1register-module/post/requestBody/content/application~1json/schema",
+    "edit": "inlined the optional body's `#/components/schemas/RegisterModuleDto`"
+   },
+   {
+    "pointer": "/paths/~1api~1module-federation~1register-module/post/requestBody/content/text~1json/schema",
+    "edit": "inlined the optional body's `#/components/schemas/RegisterModuleDto`"
+   },
+   {
+    "pointer": "/paths/~1api~1module-federation~1register-module/post/requestBody/content/application~1*+json/schema",
+    "edit": "inlined the optional body's `#/components/schemas/RegisterModuleDto`"
+   }
+  ],
+  "crozier": {
+   "before_files": 40,
+   "after_files": 41,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "1eb06bcd191ee299551890ea794723eeae51103a4cc8b9bd2e8d4be37acb8571",
+     "after": "45f635479b52692ba2f80d045ae0584392c458626de555720a054209c6d0f5cd"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "c0e56b4d1d0c8a797c1bbfd4765a2df95c09ab0eda17132c6374bbab93f87b40",
+     "after": "21959d83d0cceeaa3ab8e5be3f460dda9d026a23f3086a5c18b7ddfb07233741"
+    },
+    "src/fern/types/register_module_dto.py": {
+     "before": null,
+     "after": "aa665a32a6013515609c25a589370e067fe4dc375f9092a7c7c4d2779c40f3ca"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 40,
+   "after_files": 41,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "13b5f91db6ecd409c2f4f78bdd6ff9e464b89eb86e4c90a21daeb5ec8cdad912",
+     "after": "d78947be4b089f0781eab0941c3b5dc6d91d9ed373c5c8c74f624d31acc0bec7"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "1778abe7dd2dd279aa2f294c3a6e8b26967c33842658bb2c3d575ba71a6b9e1c",
+     "after": "11ae580bc7d5a3e1c25bf811eef81ab3c4f70e53481c5fffe3a0027de4097de2"
+    },
+    "src/fern/types/register_module_dto.py": {
+     "before": null,
+     "after": "5e49b9d73faf3c5ce85ddcc789acf7ccd057195f45fcb03cee39c29b2b7a2069"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 41
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-oneof",
+  "fixture": "dashy-route-api",
+  "control": "combo-success-oneof",
+  "edits": [
+   {
+    "pointer": "/paths/~1config~1{filename}~1{key}/get/responses/200/content/application~1json/schema",
+    "edit": "replaced the success schema (a `oneOf` union) with its first non-null member"
+   }
+  ],
+  "crozier": {
+   "before_files": 81,
+   "after_files": 81,
+   "changed": {
+    "reference.md": {
+     "before": "8c23aaa0b3c5dba4262cbdce9a9f9fefe78ec432c3f0fb7ab71c76571c340360",
+     "after": "da2c9c815d1695c122f93296f34d53112a3adcda81da9b418334cd6d0c2f0114"
+    },
+    "src/fern/keys/client.py": {
+     "before": "be3ce1c5fe9dd120159a820268643796cb882cf058d96a2c636aaf3210056a90",
+     "after": "e783379654b4544dc0690e6d91f9ba6a0e75f6c506373ea3a912595e8983cb11"
+    },
+    "src/fern/keys/raw_client.py": {
+     "before": "d365072dc42816477ab40fe5b82abce1fdeeb29d15bacc00f2d617bb4214c1b8",
+     "after": "fd9394fda466d14e590656381867f90681b7772f5d67a11fbf54100d6c8abbf1"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 81,
+   "after_files": 81,
+   "changed": {
+    "reference.md": {
+     "before": "8c23aaa0b3c5dba4262cbdce9a9f9fefe78ec432c3f0fb7ab71c76571c340360",
+     "after": "da2c9c815d1695c122f93296f34d53112a3adcda81da9b418334cd6d0c2f0114"
+    },
+    "src/fern/keys/client.py": {
+     "before": "0d58b7b7d69ba858e2779fc870155abfa2144939e5addf7038fa2691f9e0576c",
+     "after": "337fcb758126b112e2b57ecd4acf569c94ba7fd8192e3aff63ed5949b4613731"
+    },
+    "src/fern/keys/raw_client.py": {
+     "before": "62bd8617bc50fe767619d9e6099ac8e8bc0f28a7d6aebac97c74abaa5e7a380c",
+     "after": "c2c7f57ebd7fc293ab139a4b3e91b8ce64845a7284c77708e82c6dbb9ce4b90b"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 81
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-anyof",
+  "fixture": "vellum-gateway",
+  "control": "combo-success-anyof",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1credential-requests~1peek/post/responses/200/content/application~1json/schema",
+    "edit": "replaced the success schema (a `anyOf` union) with its first non-null member"
+   },
+   {
+    "pointer": "/paths/~1v1~1credential-requests~1submit/post/responses/200/content/application~1json/schema",
+    "edit": "replaced the success schema (a `anyOf` union) with its first non-null member"
+   }
+  ],
+  "crozier": {
+   "before_files": 200,
+   "after_files": 192,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "8a4f8309d832b342b711fa13845f28c875bd0d995bfff98dd8187aa10872b6e1",
+     "after": "7694c652cf179a5cc2edb612d8e59ec1bbd937845a02d67a99c779ec5e5c86e8"
+    },
+    "src/fern/credential_requests/__init__.py": {
+     "before": "71e84673e8058333dd44c2a5a5a69ffa5968f8062a320b4d2c656edd3acf0856",
+     "after": "3ad5fc116c10fa98b8ab935cc3a9e0297f842e2b46a4d0550bee58c8b6544777"
+    },
+    "src/fern/credential_requests/types/__init__.py": {
+     "before": "6234a5de928b4706b70cd4b37db203cd887022690ad58efc972926b3ffd3d8be",
+     "after": "81fc7558de869a83a9c2e257d9f8cd4227bd510bbb0834ceaea1ee9354a012b5"
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response.py": {
+     "before": "f4ad87da8ab2d10a6d026fc57ef3d6f80d49bb62781a566ab0853a34120c1bfe",
+     "after": "6cca5df921e5987a486ae84db6488b7eedc986f6de83584b15553d78c49438aa"
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error.py": {
+     "before": "44cf181fa1fb7ed4d9429d9477066987132d5127a4ffe717d299867de6d54d08",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error_error.py": {
+     "before": "8b68e7a8de07f983accce588f95a082d4e0a471b5e472dad5c802a844d4c7990",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error_error_code.py": {
+     "before": "ec10a28a8e77e232a3789ce1526e82bc950bc81bf1b2608d4e579b46c95bd4be",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_expires_at.py": {
+     "before": "5110b1cb15fbb67fd1475509fe2742bd4efab791de7fa028cce942ccaafe9aa2",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response.py": {
+     "before": "dea849c2ef1e74f00dd2869ff423f32dab59f9905815f10921a18e11ab9ea01c",
+     "after": "876079ac898ca6c20a2c9b47dbd01dbdd5faf2729a68748498c879c8241305cd"
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error.py": {
+     "before": "dcaf2fbe55dd69fae113fb5640c68e8a7289b95b93ed30f44c1a7e1e99a91a57",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error_error.py": {
+     "before": "92ab710233baad17141783ccbbdefadf0b7f8ab2f1a482333c0a0dc98935010c",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error_error_code.py": {
+     "before": "7afd022c0fb0513b44e08b66472b553d1072f9d8a8be598df7c305bcb82f6055",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_ok.py": {
+     "before": "977fc6593f866410e0fba0d7048b92a7d694ba0233383fa901d002ec169b86ef",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 200,
+   "after_files": 192,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "ae600df417f92c6d552a8a25c32b99991c7366b1cb4ccbec44f82f8c80f2cb62",
+     "after": "a7598ef91f3369896adf4a9aa496fa4070848fd657c9002668f92fb93addeebd"
+    },
+    "src/fern/credential_requests/__init__.py": {
+     "before": "c1d32380129db41c0e55450b588ea1add2667f7711e6197b688f047ec1fe2632",
+     "after": "da0de456ac87eecce722469c72b304e0c6f72aaa0d88d6ffa18a79f90e88a17a"
+    },
+    "src/fern/credential_requests/types/__init__.py": {
+     "before": "316b4356811844300d29202cfd11a8883317f2edd5146314d2f1b08935dd5c54",
+     "after": "93515d44eb1919613bb46bc05aea92b81709424386016eb561308363b3e36093"
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response.py": {
+     "before": "a3612b627c20981db639e70430f8d499e946354f733c3fff53821c5cd1cb29a2",
+     "after": "a7ee1f64eec7e29dddb3c056fef3d48d758ca8e45692f5f152c8959f56c2cf34"
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error.py": {
+     "before": "2119b00d51d1b01b215e73b5f8c86c9488123f2a42f7e430319021544fec90d0",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error_error.py": {
+     "before": "f526fa6899e5fb6e0b9a93bb4a4bf3f4982602272d5983cec7ce79151542a5b8",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_error_error_code.py": {
+     "before": "88e5d77b429fc6579c451904900c9c9c10eed47e02763691fe2def732c48eea5",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_peek_response_expires_at.py": {
+     "before": "d47d8a47d625f5173fc5fa1cb46922ceb87bef4c00e60dc939eb4da442f93b76",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response.py": {
+     "before": "04e0aefddd3d9a026b20b71026768c669018b6e1975d6e3bcf92cb736c4fb49e",
+     "after": "fa555161f6637cbcc60c6e2f3293d3083dae88218338af2771c3cff50e444f3d"
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error.py": {
+     "before": "f4fef0a9f2eb2a96c365e29d1f39460c45588b9f2cd513656138a876932e858f",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error_error.py": {
+     "before": "ea2e490c47be6100180336736380749e2795d489376134d0f09c35a8608ea9c1",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_error_error_code.py": {
+     "before": "4fa27349f5a213e43dd4e05d98fbfb57db0fb1e270f0aaaca72d0abfe6364b57",
+     "after": null
+    },
+    "src/fern/credential_requests/types/credential_requests_submit_response_ok.py": {
+     "before": "88a2a5280cac4813b4963b9712a7ec90ac3605c74194dca9b715943648b14483",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 192
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-anyof-nullable",
+  "fixture": "deepsearch-ds-v2",
+  "control": "combo-success-anyof-nullable",
+  "edits": [
+   {
+    "pointer": "/paths/~1project~1{proj_key}~1data_indices~1{index_key}~1conversion_settings/get/responses/200/content/application~1json/schema/anyOf",
+    "edit": "deleted the union's `type: null` member"
+   },
+   {
+    "pointer": "/paths/~1project~1{proj_key}~1data_indices~1{index_key}~1conversion_settings/patch/responses/200/content/application~1json/schema/anyOf",
+    "edit": "deleted the union's `type: null` member"
+   }
+  ],
+  "crozier": {
+   "before_files": 220,
+   "after_files": 220,
+   "changed": {
+    "reference.md": {
+     "before": "9f8cc81ffa40dfc423615de57f166f3e1607e137fe38a2b918b3679444a32655",
+     "after": "ca88edc938736d2c3562920158973f7b7329e1447447ff38be6027d6e74341d6"
+    },
+    "src/fern/data_indices/client.py": {
+     "before": "5b422a81bad256e91cc74884e83dfa6d0d19cb85f9aa16479899fe26e479603d",
+     "after": "6191cc67e6400f5c8fd6183c24427315c32c584db8460c0ff099d074b6f6581f"
+    },
+    "src/fern/data_indices/raw_client.py": {
+     "before": "5e027d3a7c13c5104c0455642ac58caf26c14c25174d5b1d850fff4b4d9bd286",
+     "after": "551d1c00f94f2bafd4a40601d118eb421311dce6450754178a6a99917533bb0e"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 220,
+   "after_files": 220,
+   "changed": {
+    "reference.md": {
+     "before": "9f8cc81ffa40dfc423615de57f166f3e1607e137fe38a2b918b3679444a32655",
+     "after": "ca88edc938736d2c3562920158973f7b7329e1447447ff38be6027d6e74341d6"
+    },
+    "src/fern/data_indices/client.py": {
+     "before": "9cdd2ebbf714e2c33b5aa6f0d3ff924c03cbc9a81d00115df8474e65ce4e58be",
+     "after": "938c36357fc25b1bea47770dcb182fa93cd2bcd3d09f1b66e75d7025ce5e9fca"
+    },
+    "src/fern/data_indices/raw_client.py": {
+     "before": "abf51b385a4a7b1e0a85b7fcbd82744a1740a3d211be83bee77d487edc5cb74b",
+     "after": "5350888bdae7518f812b3b5692dc50446ab5a05e692fdba05c44da46be6412bd"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 220
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-no-content-beside-body-response",
+  "fixture": "oal-example",
+  "control": "combo-no-content-beside-body-response",
+  "edits": [
+   {
+    "pointer": "/paths/~1something/get/responses/204",
+    "edit": "deleted the 204 response beside the success response carrying content"
+   }
+  ],
+  "crozier": {
+   "before_files": 50,
+   "after_files": 50,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "36c814a219d0c9c3633c7436bf666830edfeb796dbf281eb2261c0a674efad53"
+    },
+    "src/fern/client.py": {
+     "before": "f5362c4591b7fc7ea71742f1af4fac31112cf8e5a6ba006605ac7a6be7b56c9b",
+     "after": "5d6c9021fde74bb0edadacc109e305f0b2bcb14f2e69059a38439a2ef151a5dc"
+    },
+    "src/fern/raw_client.py": {
+     "before": "8b0a1828f06481fa7a10cac14deeae2ab06cfc5ca23b12cf0e16ac3dbc1f4eb3",
+     "after": "979cb22ad0110755dbd8525b02d54fef868350a002703dcbc2a59955bdbc5112"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 50,
+   "after_files": 50,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "36c814a219d0c9c3633c7436bf666830edfeb796dbf281eb2261c0a674efad53"
+    },
+    "src/fern/client.py": {
+     "before": "f808aeffad80a2e8a547b2f7e8af577d60dbd520cab7f0e97318b963c516df88",
+     "after": "2da7672d3ac5d227784dfa0f8e2d75a5b6c68489dbfb8111ebb35f06ba4b67ba"
+    },
+    "src/fern/raw_client.py": {
+     "before": "4a562485a238311c571046bd026f45618832b98bd6535c35a5a05f01ebb4f644",
+     "after": "9549e171dee04f05a5f102cf7fc5b129bf962c3b25d0dd041901dcd451eceade"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 50
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-json-beside-download",
+  "fixture": "osparc-simcore-webserver",
+  "control": "combo-success-json-beside-download",
+  "edits": [
+   {
+    "pointer": "/paths/~1v0~1auth~1captcha/get/responses/200/content/application~1json",
+    "edit": "deleted the success response's `application/json` alternative"
+   }
+  ],
+  "crozier": {
+   "before_files": 625,
+   "after_files": 625,
+   "changed": {
+    "reference.md": {
+     "before": "73017b5b15b4a925d4d2feffd670ee36e980381b4f1df5646c1e1aadb0a90b3c",
+     "after": "efb3157a0a9fb1a1719df4a87af2a1352e5c152bbc492f5aeb5446d07476f821"
+    },
+    "src/fern/auth/client.py": {
+     "before": "ba4f59222e82861516baf5c7285698e8001e7169b82965c214183b2d874609c8",
+     "after": "e61213b5371b8a9d9707f7682b454a2a79bac4f7c031a8a8ae723e05d67ae820"
+    },
+    "src/fern/auth/raw_client.py": {
+     "before": "83b8b2f54e55ee5f8c07ced437eaf6a84ef69ad0025c5eea1863d2b570a14d3b",
+     "after": "b2a8bd1da6b47a7d64619b3c56df4f9ebe2f424cd95770fa561c8b8ffc8ce739"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 625,
+   "after_files": 625,
+   "changed": {
+    "reference.md": {
+     "before": "73017b5b15b4a925d4d2feffd670ee36e980381b4f1df5646c1e1aadb0a90b3c",
+     "after": "efb3157a0a9fb1a1719df4a87af2a1352e5c152bbc492f5aeb5446d07476f821"
+    },
+    "src/fern/auth/client.py": {
+     "before": "b3e69091e05125ce7c8efd137e5021710065a6b52b3961b0490e55e73c770e2b",
+     "after": "e52767f609b600843b057d8ccfca4fdb6407cb7d0981276509fec0899b47c08c"
+    },
+    "src/fern/auth/raw_client.py": {
+     "before": "9da98cf40981888941171291c4a7bacb7887d7bc5724cf2f18b135611fe81336",
+     "after": "21c7bdd1774fff778aa0b98db427f2eca046776bf63d3a2138146f043965a7a9"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 625
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-text-beside-download",
+  "fixture": "chat-rest-api",
+  "control": "combo-success-text-beside-download",
+  "edits": [
+   {
+    "pointer": "/paths/~1message~1content~1{id}/get/responses/200/content/text~1plain",
+    "edit": "deleted the success response's `text/plain` alternative"
+   }
+  ],
+  "crozier": {
+   "before_files": 47,
+   "after_files": 47,
+   "changed": {
+    "reference.md": {
+     "before": "54ba8ce16f8986aef067700e62c7d9b9bbc5b78902bd62186185dc5415ce7d2d",
+     "after": "eece26d27a0b302dd3b926842fe13c1b46e3197837c242348c469f3ba3d7c1b7"
+    },
+    "src/fern/client.py": {
+     "before": "5ac897c0929a9f946dac5898a2fb19c5e634a2db88f5d88c8effea3b9ab8df76",
+     "after": "6507097b609b03d2cabc8ba206a3150ac6ad25053fc8d477166bcd4567d56c14"
+    },
+    "src/fern/raw_client.py": {
+     "before": "ebaaf40feb307083d67dca3f0ab02ee88c7b67f51dbbc553b7f150a4fb02b18d",
+     "after": "f28b0e1d8b89d621d628fe08740100ca2b215d2684601657c725c61700681ff4"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 47,
+   "after_files": 47,
+   "changed": {
+    "reference.md": {
+     "before": "54ba8ce16f8986aef067700e62c7d9b9bbc5b78902bd62186185dc5415ce7d2d",
+     "after": "eece26d27a0b302dd3b926842fe13c1b46e3197837c242348c469f3ba3d7c1b7"
+    },
+    "src/fern/client.py": {
+     "before": "2d5ade0431fb9d1cc5347c0caa355bfedcd352e68a67add27a7e5e06430a8bb1",
+     "after": "f6ca3f4d6b0a5e8f471a62b702d5c67c39ca6b5f88f60a11dd4601e895a51608"
+    },
+    "src/fern/raw_client.py": {
+     "before": "15e7a479bc540f70bf0f18e912172019e5d0d32b2e1766d8981c9d5ff97f0cc6",
+     "after": "2befbb906e2e037ad1609e89a0cecc5db250f5c7cb9db580c648063b960620e8"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 47
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-json-beside-binary-schema",
+  "fixture": "microcks.local",
+  "control": "combo-success-json-beside-binary-schema",
+  "edits": [
+   {
+    "pointer": "/paths/~1export/get/responses/200/content/application~1json",
+    "edit": "deleted the success response's `application/json` alternative"
+   }
+  ],
+  "crozier": {
+   "before_files": 107,
+   "after_files": 107,
+   "changed": {
+    "reference.md": {
+     "before": "6c12061210bbac815e58fe382d3d2a64dc31c01a16b4edcf56cd702962e7f353",
+     "after": "43d4f61e2f2d41391fcb0f2905ead707af02a23b9734fc84ef12b9ac7b2886fe"
+    },
+    "src/fern/mock/client.py": {
+     "before": "3c7f684c8efd6d289c117e170adb6bd1fec2961bd8a718ab1bec25b73c5fa5dc",
+     "after": "52cc63aee62ec0f0e4d0fbace13189defeaff2942f477ff17e5ff413dce00f37"
+    },
+    "src/fern/mock/raw_client.py": {
+     "before": "a0ad543059d510cf82b161bd3c9c2ff6ca6f45bd7bdb3f33f4e6258249816ab9",
+     "after": "7464198ce24cec96666b178d939668679d1c86069448385d5f5efc0b91f2e639"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 107,
+   "after_files": 107,
+   "changed": {
+    "reference.md": {
+     "before": "6c12061210bbac815e58fe382d3d2a64dc31c01a16b4edcf56cd702962e7f353",
+     "after": "43d4f61e2f2d41391fcb0f2905ead707af02a23b9734fc84ef12b9ac7b2886fe"
+    },
+    "src/fern/mock/client.py": {
+     "before": "383972f31ee012abeaa07b6733cbdc00a1b3a2517b13a25c2ca5b83429da6748",
+     "after": "94e6695e3787342f134b7685c9dfc1a6c9b798589dd219406f30e8dd774f53be"
+    },
+    "src/fern/mock/raw_client.py": {
+     "before": "2b9e9692f1c72baa25a57995910095c821e4ef266511c86b40334c96ab2d21da",
+     "after": "ff5387aeddd5bd97f5633fd01a924326796f91a104ab9dcb06cc924398af975f"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 107
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-errors-shared-ref",
+  "fixture": "exa-gate",
+  "control": "combo-errors-shared-ref",
+  "edits": [
+   {
+    "pointer": "/components/responses/Error/content/application~1json",
+    "edit": "deleted the body that repeats status 401's `#/components/schemas/ProxyError`"
+   }
+  ],
+  "crozier": {
+   "before_files": 51,
+   "after_files": 51,
+   "changed": {
+    "src/fern/errors/bad_request_error.py": {
+     "before": "f1b339bddd5aa13101ef30f1a6312a81a14b650248aec132a298a41da07574f3",
+     "after": "39e2d655143f9d4e3e3d2a9eb11a39cc5a292244e362fe9615b2e5d59e0e7c06"
+    },
+    "src/fern/errors/conflict_error.py": {
+     "before": "28f9e1badd707ad5cab9711ee2ff07470716a3a0c6c954055056680ed85320ca",
+     "after": "3b8e0dd334253b14b776e3e65e0dd43aef9bed851c899b6c1317356434e03d81"
+    },
+    "src/fern/errors/locked_error.py": {
+     "before": "3034237bd4e74f9e273ab3654c60fcc0beb857dba61914e0b9d0ec8a10d2e788",
+     "after": "8c5e501e87b81e24b7afaaed455b31af342f79695d8462e92b67edca02f305fb"
+    },
+    "src/fern/errors/not_found_error.py": {
+     "before": "0b60c4858bad210876c1a1147408fea86fbde899bd1f6e722345b9169cbea4db",
+     "after": "a485c13e7ddd84b35020d097c1641195425b7d8981040642cae4ab094e8e1b52"
+    },
+    "src/fern/errors/unauthorized_error.py": {
+     "before": "9bcd1d6b546e368a8748e44dd0772133f438552ec68846d74cb88d572953c5af",
+     "after": "5dad8352ffce9a6da9bc403c0896b90f309b9cc5fbf036a4ba0a580394ef6d1f"
+    },
+    "src/fern/errors/upgrade_required_error.py": {
+     "before": "3cb7452c33d2f7c24208281f300fb92b651f5cab38b9add8849e2cefe5d0e6ae",
+     "after": "29adbe2d6a59805673cd0a5b1419cbe370477d907c2106f3f9b608f2d8157dd2"
+    },
+    "src/fern/raw_client.py": {
+     "before": "b39a7be4cd8a0b0a56d8e5f018f97e726fefbc99189c91d7af9b3baf40289743",
+     "after": "db77afa5a37d7a0fa583d6c787f5f7c6c9aaf080fa8af9fb69879b837cd25957"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 51,
+   "after_files": 51,
+   "changed": {
+    "src/fern/errors/bad_request_error.py": {
+     "before": "90ff59dd34e7863e6e64bda7967c8e61d0105af6a9bbc169793b0ec185c68760",
+     "after": "70b02bae171eaa612b61d9e870cc7d942cb96b3b74fb307fa3af8a5cd31e4103"
+    },
+    "src/fern/errors/conflict_error.py": {
+     "before": "91e88d49e13f50e3bc67b4720231e94d574bb345b0cb80253b3bed53b4573541",
+     "after": "29dbfceb7d1d740f1d970dd31ef74bc804590bd964b5e39c9ece58f601f76add"
+    },
+    "src/fern/errors/locked_error.py": {
+     "before": "44d03e37861dd9ef0c48413cd8a886a5e048560c1c303d46fba6ae5aea4c9cd5",
+     "after": "d509df10b102dffabb77e97862723c65655b0f0c30cf6f3dee94825419ba1d4f"
+    },
+    "src/fern/errors/not_found_error.py": {
+     "before": "56d0063c915dbc7591d5c0773344805547b2f55b030fc22de1a26f5ea6699f4a",
+     "after": "7ddb703852041378e7b72d50ef663b4a785d80bf82439d25d1f945a816a1f4ff"
+    },
+    "src/fern/errors/unauthorized_error.py": {
+     "before": "2951e4cd6f78cf120290cb019e4170048d7c54dce43d032d96dc84797c868cf5",
+     "after": "bce27ca9a003bf067922076c90f91a3c1381a5a8a8d219b855536fe71174dad9"
+    },
+    "src/fern/errors/upgrade_required_error.py": {
+     "before": "afcaaa604416dd977811e12156020ba3edad2b3874aabc5e6a0b811e1414db64",
+     "after": "a3f99e515378819d4652321f921008a6ffd0e932ece6886f31c9440049ce7bbf"
+    },
+    "src/fern/raw_client.py": {
+     "before": "53f461907ef59f2922a7c32f005e3c9c6c34fbf29daadc74f9dd369a66504b1d",
+     "after": "005bd3d7a3861ed7143331456c8c1b2f6d6228b0837e1c052448e6c568018986"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 51
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-multiple-media",
+  "fixture": "subsloth",
+  "control": "combo-error-multiple-media-keep-last",
+  "edits": [
+   {
+    "pointer": "/components/responses/Forbidden/content/application~1json",
+    "edit": "deleted an error media type other than the last"
+   },
+   {
+    "pointer": "/components/responses/ServiceUnavailable/content/application~1json",
+    "edit": "deleted an error media type other than the last"
+   }
+  ],
+  "crozier": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {
+    "src/fern/episodes/raw_client.py": {
+     "before": "4d760e2a0a2fcfc1e8d6a0e25b5c256cc2d5a1db03d54e3750819c06755095a0",
+     "after": "d76e6b15f57c4308f4de523789c323c2d30a8ef2d4af1a101b6317a1d5d5485c"
+    },
+    "src/fern/errors/forbidden_error.py": {
+     "before": "58be5ef8a081baf4d266797325d4f19aa9f208bb5d01c29d31ff64e4d5e2f2c7",
+     "after": "774a5b5ea0e9512b8631795d4aa852ef4604da2c1a56e8d523a53ba9bf4ac066"
+    },
+    "src/fern/errors/service_unavailable_error.py": {
+     "before": "96f46746528c4f1d5edd0e7e0216eedc440b94715e295ccfb83e0fc3108692ba",
+     "after": "6599fe95caf8ea9064dd3750833e705c05ab6ff9c2e4ede0802119043a7a071e"
+    },
+    "src/fern/movies/raw_client.py": {
+     "before": "018f465a7946b196e245ee61662757474d318b541b712474a593e3dfb4a6aad4",
+     "after": "9775209250095a55db8fd0baccedacbff5ad288a4d99a352f18ef96c3f2eccb6"
+    },
+    "src/fern/shows/raw_client.py": {
+     "before": "0ad8e248b71683e4b07047d532a6d7934cceef9e59a2a5db2ae468e82a91ed5c",
+     "after": "6e982f958658f3ffa00a03672de8337ce5a2123e7cd9ee3c23097a76d00b246d"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {
+    "src/fern/episodes/raw_client.py": {
+     "before": "4df3fc4c675dfeda110379bd759fa8d5d93bea6c7227a4a1b7b68790c7d55f9e",
+     "after": "fe4f6914a0820e072fb7a3192e133255c0797a1a51f3f4a45a00cd33a3a5075b"
+    },
+    "src/fern/errors/forbidden_error.py": {
+     "before": "decec525dce5c686ad89b41cbbd99a2985265df4fdbf12c58809ae091e09c9d0",
+     "after": "6c2c76e81638fd76b255d00125d457c7fce90340afd815f45325129c1e1eba1d"
+    },
+    "src/fern/errors/service_unavailable_error.py": {
+     "before": "d01a02a8a094a9ce91771ede41813cb3a193c1b7112e3088512a28b341ac4955",
+     "after": "d0c654ff16e029d8b9cfbb0f5cd598516ae007d79018194acf67a2a0aab89cbb"
+    },
+    "src/fern/movies/raw_client.py": {
+     "before": "25e4248ff569ee0c466e2c9125bd5383c84c8c6efa7e944172c4c352675e928b",
+     "after": "4d38db9f1667fc667c34cda5246b014ed938e52be601c107dab7d80566f5eb69"
+    },
+    "src/fern/shows/raw_client.py": {
+     "before": "162c1baecbdf34d8bbf24f8e5422c47cfaff87e76e5170448b6c0a89cf10d7c3",
+     "after": "4b3c531632d43ec4de266eceed23c1753c6e66b510e42466ff0572e35b1dd115"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 93
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-oneof",
+  "fixture": "volview-backend-contract",
+  "control": "combo-error-oneof",
+  "edits": [
+   {
+    "pointer": "/paths/~1jobs~1{jobId}~1results/get/responses/409/content/application~1json/schema",
+    "edit": "replaced the error schema (a `oneOf` union) with its first member"
+   }
+  ],
+  "crozier": {
+   "before_files": 121,
+   "after_files": 125,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "518b72987010d965457eb404680b578487949526ba09cd5151ca1656d9679c12",
+     "after": "458ef32098c696b54655c124c0581ce02244095fbf23c9e1bcdc644e8f840a6b"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "dd649aba76f143313d6524b753face7811e7b34a6f077169cb531e2f87827aa7",
+     "after": "d379db7749dd512e29ef690cdd7b8f916adb6778c955274b4135d8fdce8d69a5"
+    },
+    "src/fern/types/conflict_error_body.py": {
+     "before": null,
+     "after": "3e73052c49c9f60f91d9d58d2771cee3d4d1ff31eba02df3c795bc3107c66e78"
+    },
+    "src/fern/types/conflict_error_body_code.py": {
+     "before": null,
+     "after": "1dc5bd2c5efae9e4b2f06871a3b14f148af24e04e236bae1109f92b112b4220b"
+    },
+    "src/fern/types/conflict_error_body_result_state.py": {
+     "before": null,
+     "after": "fa904e6f1df86f284912c16103a2c69305304f3c50e008a8dbe018f23f6d214d"
+    },
+    "src/fern/types/conflict_error_body_state.py": {
+     "before": null,
+     "after": "e13b6519ea3b96aaaa4b655d1c46b5c251bc68f5c4ac8414b4e137bf71291862"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 121,
+   "after_files": 125,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "b0ea79c18a6b9b09a3567da58f104ea1c26e1970610c45a82321035b7fc60854",
+     "after": "6a7978461ee52a24567626d9b2c41f254213706c04fb18c4416bb963deb45587"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "6690bdade6b40fce433ccab8db78d5afe3ffc493c829639f15135dc3215a24bf",
+     "after": "1bf9454bbd8905a24da3c6a9a1bfb83eea3ed268f6f3e3879db116c820f1210f"
+    },
+    "src/fern/types/conflict_error_body.py": {
+     "before": null,
+     "after": "f5509519230e6e0dfb275e1982bace65d91141707c7f4933e2b3931a3ba14a3b"
+    },
+    "src/fern/types/conflict_error_body_code.py": {
+     "before": null,
+     "after": "b753cdfe6fb6f151d27b2f71ed06d9e481e7905bcbf97781cef235d0ea4e5a17"
+    },
+    "src/fern/types/conflict_error_body_result_state.py": {
+     "before": null,
+     "after": "adc065290076f8271149b5652f51f5b3394d4264a18a8a633ca4897c2d8ad845"
+    },
+    "src/fern/types/conflict_error_body_state.py": {
+     "before": null,
+     "after": "95dd2c1b378db339601190d17cf51141ed81b07ee03cd849b621fcd02d1584ff"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 125
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-object",
+  "fixture": "buildrelay",
+  "control": "combo-error-object",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1jobs~1filesystem/post/responses/500/content/application~1json/schema/properties",
+    "edit": "deleted the inline error object's `properties` (and `required`)"
+   }
+  ],
+  "crozier": {
+   "before_files": 52,
+   "after_files": 51,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "54b4bac5444a096f9c17cc2d5ced68a3d48075d0104b9d86773fbf7f901ed026",
+     "after": "806f6108019a72904baeb05d32b5db23c6a87d48681bd77b6d550d91905aaab3"
+    },
+    "src/fern/errors/internal_server_error.py": {
+     "before": "2abcfcc180838e948e4f32efa6acdc0fbf72095c078ea676d8209219d34c12ae",
+     "after": "b104cb584068964dfe4c747e7fdfefc4145bafe45158c92e95895113448c13ea"
+    },
+    "src/fern/jobs/raw_client.py": {
+     "before": "adc852e5976e52e770a57fb2241114c5e21358e272eb6507208a5827f034b62c",
+     "after": "73f1638a7e733d2a9e65a35b9a1744cff2550633560f12fd285b45804efe402d"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "86158c6b0ff662a1b593574dd0df6b76a613c8409a7c750425540a5ff7928607",
+     "after": "27fb221d2b4cba3424c2b220b9c5bc1fa8e2fba3d935b7cc21ecc12539b43446"
+    },
+    "src/fern/types/internal_server_error_body.py": {
+     "before": "8e05c422934aa004db13a09f1a9b12fc8653989607784f6792b434b490afc02b",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 52,
+   "after_files": 51,
+   "changed": {
+    "src/fern/__init__.py": {
+     "before": "3765d4d1053bf401f488595f148795f50ced71ecce48df49908cd2f87f0af115",
+     "after": "19199772e7b21219d8acdbc38e3d968446d15c4b060a2ebb90e9a1764385a611"
+    },
+    "src/fern/errors/internal_server_error.py": {
+     "before": "726484d46fd4f5ed6801965781c143c795b5a896a35c4121e6448d461173dce2",
+     "after": "40e4cd2b11e5fef9767f0928bbbb819f14e543116716829986c7ca8b72a23927"
+    },
+    "src/fern/jobs/raw_client.py": {
+     "before": "1b0e83bddc88097f60cac4ec34b02e54cddbd5562a8967ebb7c919940e9414a4",
+     "after": "40b1821bb1b0192cfc5cea2ae22f9e7b5ee12d0108098a581c29938fbda3b5cb"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "f5efc009836be05a21f69d7367c386de2ed6d808383e9d4d7d8d9df9f5085653",
+     "after": "205cf2ea32a25d124229908cee1a7559d5a407fba8453a56f351bca5408c8a3e"
+    },
+    "src/fern/types/internal_server_error_body.py": {
+     "before": "f7ebc84469a0a240117e340abbde9b8f83b7bcef7331b4a98708410f99c84170",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 51
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-status-different-schemas",
+  "fixture": "withsecure-gdpr-subject-rights",
+  "control": "combo-error-status-different-schemas",
+  "edits": [
+   {
+    "pointer": "/paths/~1deletionrequeststatus/post/responses/451/content",
+    "edit": "replaced the content with the first operation's status-451 content"
+   }
+  ],
+  "crozier": {
+   "before_files": 74,
+   "after_files": 74,
+   "changed": {
+    "src/fern/deletion/raw_client.py": {
+     "before": "2b253afd8d0ec9b8603f764cbd6722242c235f3aa0cdbc99882da9b267d79dfd",
+     "after": "95af04bc11c7e0a142b0ceb4d683d5d69fba97c8a693c375a7df2af20f9c91f8"
+    },
+    "src/fern/errors/unavailable_for_legal_reasons_error.py": {
+     "before": "0a587a1fbc11abbfa94df1d475cfbda187efc0d3deef8682f4e12cf73ab49ac5",
+     "after": "6da523f105841cb5e2c33cef7f82142e2f71d16b036e4d6d25e459e763f34c37"
+    },
+    "src/fern/export/raw_client.py": {
+     "before": "db51bd2f92e7d59658e0a3c0156f9d8e30db476e15b290d9160e7ac1d1f50487",
+     "after": "ae506214ead4e25f0f7253df507fd64ab335d3db6d8dae503efb8ef2c60e437a"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 74,
+   "after_files": 74,
+   "changed": {
+    "src/fern/deletion/raw_client.py": {
+     "before": "41a74c6b25a07e97076f8c7a7dd6b40a6769962b7b7b231ecd90aac3844fb5eb",
+     "after": "727be0d3c1e3fec3a0ac190af23652d741f1eb790bc6a275a29539492883750c"
+    },
+    "src/fern/errors/unavailable_for_legal_reasons_error.py": {
+     "before": "5c9dc8771d1ef1ad35a7916f0fd0e676ecd3d4b2c71053ff01110b92a6c69009",
+     "after": "98a27f502caa95487fcaf5ca4f17b4e1f7826e3a7bc7257e466a1b36af037f02"
+    },
+    "src/fern/export/raw_client.py": {
+     "before": "10f2d747ae9e86baf9cd11d76ceb69091c7b727f923ae9d3890e2908af9473f0",
+     "after": "f472414c2976466eda767d9cd6ad084293742837d25150308fadb4962ec395bc"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 74
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-echo-body-effective-oauth2",
+  "fixture": "swagger-petstore",
+  "control": "combo-echo-body-effective-oauth2",
+  "edits": [
+   {
+    "pointer": "/paths/~1pet/put/responses/200/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/Pet`"
+   },
+   {
+    "pointer": "/paths/~1pet/put/responses/200/content/application~1xml/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/Pet`"
+   },
+   {
+    "pointer": "/paths/~1pet/post/responses/200/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/Pet`"
+   },
+   {
+    "pointer": "/paths/~1pet/post/responses/200/content/application~1xml/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/Pet`"
+   },
+   {
+    "pointer": "/paths/~1store~1order/post/responses/200/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/Order`"
+   },
+   {
+    "pointer": "/paths/~1user/post/responses/200/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/User`"
+   },
+   {
+    "pointer": "/paths/~1user/post/responses/200/content/application~1xml/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/User`"
+   }
+  ],
+  "crozier": {
+   "before_files": 68,
+   "after_files": 81,
+   "changed": {
+    "reference.md": {
+     "before": "3c3996456c81fbbdc48dc2c15acfba06276a5ff21f66136e8e0c06c4b6a2aba4",
+     "after": "5e7138f9451c1848097e6ea861b1c527e000574b383c0507e7b79cf1debfae86"
+    },
+    "src/fern/__init__.py": {
+     "before": "b46283f8a6156722195243085b73745502891594169617eb520a40548737b238",
+     "after": "47123aa4c35417d721f2bad64c3376200927353bf8fc90c05226710c9fdcb2db"
+    },
+    "src/fern/pet/__init__.py": {
+     "before": "9f59e6b8784280c5aa07d425d8e25b59d26e98a6e944ee45675eb2d169b3093a",
+     "after": "9086f1cfa63704405aa899b770ec1e2bddaf75ca8e0115bf894174f74f741503"
+    },
+    "src/fern/pet/client.py": {
+     "before": "8f5b986fbaaf74e7f0d9647bbec344951cee828bb15873bff3ccfb8204d07376",
+     "after": "b6a1f3ff008de808d286cd6bdfa79f844a21b0673b35ef99a364a444e1c7061c"
+    },
+    "src/fern/pet/raw_client.py": {
+     "before": "a647e615a6b53d6b506f09f66e2a7dd76a6b5fdcf6c8dcc4003fd1d27e8b4cb4",
+     "after": "b4f9b827409679ec40443f020da89b8cf65c3880fc57296ea30036769987264d"
+    },
+    "src/fern/pet/types/__init__.py": {
+     "before": "2a136f13da38c0fbaf0f457ef305737c926873e5af6f3dade8434005aededf91",
+     "after": "be5e213d3a365fa607b58d474f8e1b0e32d9aabeb12bd917e0ba395854158bce"
+    },
+    "src/fern/pet/types/add_pet_response.py": {
+     "before": null,
+     "after": "c507ce4b0eec72ee8549fad614e1f56773c2dd95f3a062200ee5e2622cdb484c"
+    },
+    "src/fern/pet/types/add_pet_response_status.py": {
+     "before": null,
+     "after": "91f61632680ec4939e9bbe4f20a9c2e29ccfa7b8d82bd82203462be9a5ddf008"
+    },
+    "src/fern/pet/types/update_pet_response.py": {
+     "before": null,
+     "after": "cc8c3312639198069cbc2650f88d086dc4ffdb0f7f7d69ff7bed39044361ecd5"
+    },
+    "src/fern/pet/types/update_pet_response_status.py": {
+     "before": null,
+     "after": "597edb0d1943e5f1205383fcbed094f98349474ef1e98aeb61d8946f4b27230d"
+    },
+    "src/fern/store/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "179d07eeee4c2fbb0060bbba19461fc8092e1273fb15561204edec5789c4cf02"
+    },
+    "src/fern/store/client.py": {
+     "before": "c33c7ac4e4ca6dad0cd6127ca85cc98a70395e1491293fe27f8fe7f252ffcc12",
+     "after": "0ea1243f2990db6c202f4433e7cfa704c7811bc58b2d401b236179e1ee605ddf"
+    },
+    "src/fern/store/raw_client.py": {
+     "before": "4fe13535e7f82f8c9ddaedfeec5a413d5bc96cb5d26ea808195eeec95cce5289",
+     "after": "9ad667aa76b12d42f30132209629b2e93e1eceda97cdf48c136d222efc1f1d59"
+    },
+    "src/fern/store/types/__init__.py": {
+     "before": null,
+     "after": "ecc4ed8e1073d21fd2873fddff765863d93eacdcd8482f03d4b403ae1d2e5aed"
+    },
+    "src/fern/store/types/place_order_response.py": {
+     "before": null,
+     "after": "d558ef8350826c98735c8456bdb43a5cd8e4da4902ed0072492817737d01e313"
+    },
+    "src/fern/store/types/place_order_response_status.py": {
+     "before": null,
+     "after": "55daa397c9ffffd1ac15d5e10e5e34339ef8eeb488e9b3de8d4c2379d421d39c"
+    },
+    "src/fern/user/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "19584df0cec0d464af190644165e4254fc867af44fb8524de2265ec1ebac874c"
+    },
+    "src/fern/user/client.py": {
+     "before": "56c5c4aa8d6390ca5e9b89eb5e687af0f22bf5b58d28f3cc0a76bf95b53795a7",
+     "after": "6c1dd0c95ef075c597dc3678d14a69f8dcf0dadb4848eae94a55ea31305b8712"
+    },
+    "src/fern/user/raw_client.py": {
+     "before": "5b81aa4357c3567af1e5d0ad25d21e6a0ed2424e9dc9042e2d31046c39a56312",
+     "after": "2a9c61d2e805cc3bb539c9b839f6ce1daedbf1cd11c80633719bc16d214bd73a"
+    },
+    "src/fern/user/types/__init__.py": {
+     "before": null,
+     "after": "a1b95070a64283f692d9238f8cce2473a9c22e5246449c42facdf24f18948ee5"
+    },
+    "src/fern/user/types/create_user_response.py": {
+     "before": null,
+     "after": "a828d3f15ac1a9f2c8e224d72a16400b75617a50959f59b932af07a6fba05475"
+    },
+    "tests/xml/test_add_pet_response.py": {
+     "before": null,
+     "after": "d6bcb49e5163cbee52a6e687b822992ed163ad41eaa8a0e6bbd4170c433124ff"
+    },
+    "tests/xml/test_create_user_response.py": {
+     "before": null,
+     "after": "116b2db17c678891bb1799b9ac7e12b7fad19f3ae2b07716d53bfd88d0855000"
+    },
+    "tests/xml/test_place_order_response.py": {
+     "before": null,
+     "after": "be766d3580898e15e0e8b48d017daee8b0706f88fbbd93f3f3dd3b5517cf9b41"
+    },
+    "tests/xml/test_update_pet_response.py": {
+     "before": null,
+     "after": "b2cea4da34642b9aac40e9f006120762142c4d1f3b524c2acb5b932f48faac40"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 68,
+   "after_files": 81,
+   "changed": {
+    "reference.md": {
+     "before": "3c3996456c81fbbdc48dc2c15acfba06276a5ff21f66136e8e0c06c4b6a2aba4",
+     "after": "5e7138f9451c1848097e6ea861b1c527e000574b383c0507e7b79cf1debfae86"
+    },
+    "src/fern/__init__.py": {
+     "before": "5a4867a86c97ce679c06ffb02d9ec541844ec2d56356fc919a0692e21d42fa54",
+     "after": "a403d22de193daf28232664ad6bc4f6b64395977280565e6a9360b43f5457c67"
+    },
+    "src/fern/pet/__init__.py": {
+     "before": "fdd9c8d9e82740f260c512d90aeccf7c036b8c91050294f7deff7b3ab85bd94e",
+     "after": "c66639437c0cb3ca03c3087b9e36cce309018e0c0aeb13fc5195b7fa6e0ef071"
+    },
+    "src/fern/pet/client.py": {
+     "before": "2fa11345eeb7cd5d7a880d53938adf0748cc8403aa8d4562a3a943bf25719e70",
+     "after": "6f4ffe0530ed395c3b25ccf49927c1c8358594a783ffd314260c369e9f5a5e20"
+    },
+    "src/fern/pet/raw_client.py": {
+     "before": "3f638bba16e6469a60746474fc5db795cdecd8135b14c4e0552b716dad475003",
+     "after": "336ba7b6912fc9e89714f737254c8f9618ba24abbffb2c633dc45873b244af9d"
+    },
+    "src/fern/pet/types/__init__.py": {
+     "before": "44d8c981d5ab4f398a137b5133c638f2abeede8d3792e92a353295855fde27d7",
+     "after": "e726eab18e29efa0ec11c58c310567adb1542fbcaa07506d64128144e637f023"
+    },
+    "src/fern/pet/types/add_pet_response.py": {
+     "before": null,
+     "after": "e138d0b81e12517aaaf17bfe30c02f841201acd37c7c39fbf86d1d5e513eb9f9"
+    },
+    "src/fern/pet/types/add_pet_response_status.py": {
+     "before": null,
+     "after": "402a5b7e9632e71072e888be38c6267367a1100e2f60d24612d01e0dcf72b21e"
+    },
+    "src/fern/pet/types/update_pet_response.py": {
+     "before": null,
+     "after": "341b53562a5ab699ac9f6c6bf2706baa6b33e266b116e097db3fbf2d508e7211"
+    },
+    "src/fern/pet/types/update_pet_response_status.py": {
+     "before": null,
+     "after": "dd717bb7ec99624388a1becba9f0692c6018b3e8313128c31f58e93dd80ba45d"
+    },
+    "src/fern/store/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "5ac9407ea62b7f59db06dbd985be8ac2430757eb54ae7c4e4bd56804e36df0c7"
+    },
+    "src/fern/store/client.py": {
+     "before": "76c12d195705507a3756a0b726a1662744dff8c6fbdd63295020753bbc488108",
+     "after": "e489e2123e0b222f70272ff96adbd22dad13578848390330f31ab28cb5844534"
+    },
+    "src/fern/store/raw_client.py": {
+     "before": "1be6ddddafcb77f5bda5d71fda5aee2b25b1edbefa054c779ec2d429a219f62f",
+     "after": "5fe2fa4934b82ccea7070adaac84ad517693c2964efcddf82b7e0395b176898a"
+    },
+    "src/fern/store/types/__init__.py": {
+     "before": null,
+     "after": "9240de40dd91d7e2072654dfd2f7f59c876ef23881becf26efa677ab87aa6ce6"
+    },
+    "src/fern/store/types/place_order_response.py": {
+     "before": null,
+     "after": "8a6e8b7151df97e9a453781090c4bf92b6c7cc8544ba92339b555b51e86c55ea"
+    },
+    "src/fern/store/types/place_order_response_status.py": {
+     "before": null,
+     "after": "9f5bf74ed0e6f15f8ea29dac397f784e7c46a027bb6957d25fb6a9402d7e0fd1"
+    },
+    "src/fern/user/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "8556b3547e1993cb2f32f58cd9c6ff130ce08d7eb90ed77c2f56a53e72cab014"
+    },
+    "src/fern/user/client.py": {
+     "before": "9c0f900558d2fde8247c554f20c120c641cdc681c29e370be48e8e76299f9d81",
+     "after": "daf442f4a9ec25a6c3af5a3d4d7fbef2be4955d4945e633a9344563c3eec625e"
+    },
+    "src/fern/user/raw_client.py": {
+     "before": "44d6766e430d526aeaca46240ea282b2d8036a729c2bd584e3fba48d43b8547e",
+     "after": "655e182f6a7860e89c86bf015f1761110471bb1aedec6f37adb584189e2cff1f"
+    },
+    "src/fern/user/types/__init__.py": {
+     "before": null,
+     "after": "1f30bbf87c46de5e9184a3317fc2da0825e8945c2f51e44b97cb969e78438592"
+    },
+    "src/fern/user/types/create_user_response.py": {
+     "before": null,
+     "after": "14e459ce58d7b666cd93c733b2a45a8e7c382351f3334d982ccc37582baf071c"
+    },
+    "tests/xml/test_add_pet_response.py": {
+     "before": null,
+     "after": "45ec37526f6278f7e528f22e2187a7552e27d5cac12fc98cddf655d869964e6c"
+    },
+    "tests/xml/test_create_user_response.py": {
+     "before": null,
+     "after": "6d668866e9280bc6e958dd28f2ba56526026524c0a21d821835083b68bdd5a31"
+    },
+    "tests/xml/test_place_order_response.py": {
+     "before": null,
+     "after": "884e3c9b12ce63b22e1280fdcc459c78837e6118d535907a9d317048ee0dfd9d"
+    },
+    "tests/xml/test_update_pet_response.py": {
+     "before": null,
+     "after": "caed185455001fd0a423164ffb23eb452906bc869f7f4cd8004a65f28e775892"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 81
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-echo-body-effective-non-oauth-required",
+  "fixture": "redocly.com-museum",
+  "control": "combo-echo-body-effective-non-oauth-required",
+  "edits": [
+   {
+    "pointer": "/paths/~1special-events/post/responses/201/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/SpecialEvent`"
+   }
+  ],
+  "crozier": {
+   "before_files": 70,
+   "after_files": 72,
+   "changed": {
+    "reference.md": {
+     "before": "ed57dd5969eb64806fa65874d0e106458f4eca1ea99460a05aa17d373d5e5035",
+     "after": "cf0c400996ca9148cbd87b6441930d340d62219e8263406a58115ff79a105620"
+    },
+    "src/fern/__init__.py": {
+     "before": "bb9b1bd116f3872abd9dd67aa9983388592d5b70e08c892e061b1475509460a8",
+     "after": "15a89f2a8c41be4ca9fa11e22db99ad11527305eb9cb2f7d3567159f4f6559b3"
+    },
+    "src/fern/events/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "518817a6fca656ed023e9400bc1bde1a09ec361c65107c8bd79ae3e7e9240882"
+    },
+    "src/fern/events/client.py": {
+     "before": "53b0ad4c488280ca95933016134def1f31c132ee8a8191ff33859d7f8c8f0c67",
+     "after": "91166d9a0c739e661d63cb3f75a501f4ba107291e7b2da5ed66713bd8cc30643"
+    },
+    "src/fern/events/raw_client.py": {
+     "before": "89c220236939cb4f4472b69c17bcda4be4ae8d26b18d19ce43764f0b36fa79aa",
+     "after": "2e4bf1676eaa7b2df2f0a3bbb3ec4659ac10f3b77fbd2314a19b90839487b159"
+    },
+    "src/fern/events/types/__init__.py": {
+     "before": null,
+     "after": "5c4d8865ec9ff92eaf25e83ae3026b7fe80cc9b2f85af4e1111ca6adb5048bb0"
+    },
+    "src/fern/events/types/create_special_event_response.py": {
+     "before": null,
+     "after": "d208e5baef606bad5196c214163186c9eb5c7c0fb629cfbcb0a5e673ac9d464d"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 70,
+   "after_files": 72,
+   "changed": {
+    "reference.md": {
+     "before": "ed57dd5969eb64806fa65874d0e106458f4eca1ea99460a05aa17d373d5e5035",
+     "after": "cf0c400996ca9148cbd87b6441930d340d62219e8263406a58115ff79a105620"
+    },
+    "src/fern/__init__.py": {
+     "before": "cbc09e29bfaca48e2363a4555757f6fdd3b2cceb3d0fa11f61762a1027abcb59",
+     "after": "3afb2a036bc0b56b4880c59a1693117863c2bce93e7499d963afcac10ba74880"
+    },
+    "src/fern/events/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": "facf1a9980f7ce839d17822b6f5e799ab992c8cbaa08e92a148c6b8f2a2ba397"
+    },
+    "src/fern/events/client.py": {
+     "before": "b8ac7c1604fe8d6092aec354110c88d740dd1ff8312b2a627e46afde759c1eb5",
+     "after": "7c9465f33943c029f5db0e6b00d6d38f0c51ddd334bede4bb6e3f0607fb00db7"
+    },
+    "src/fern/events/raw_client.py": {
+     "before": "1410f6135ab4451eb2b40f14ca03c607348b7e437c4dba6ecfe798e80dd6c3ea",
+     "after": "a0db0d112ece093ce4059c10192f977145675e8998af4f7d599951cf7cb9ce45"
+    },
+    "src/fern/events/types/__init__.py": {
+     "before": null,
+     "after": "5c02d692378ced3dd28df470764c748cdcb7d91b8653ba7811d761e78da99334"
+    },
+    "src/fern/events/types/create_special_event_response.py": {
+     "before": null,
+     "after": "f022c59db6ef8b84d58a3e2ec7d5eb9e970ed7e603f6492e908cfe9c6d4ebb50"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 72
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-echo-body-effective-anonymous",
+  "fixture": "oal-example",
+  "control": "combo-echo-body-effective-anonymous",
+  "edits": [
+   {
+    "pointer": "/paths/~1some~1path~1{id}~1template/put/responses/default/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/obj1`"
+   },
+   {
+    "pointer": "/paths/~1some~1path~1{id}~1template/patch/responses/default/content/application~1json/schema",
+    "edit": "inlined the success schema, which wrote the request body's `#/components/schemas/obj1`"
+   }
+  ],
+  "crozier": {
+   "before_files": 50,
+   "after_files": 52,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "8e0d38a29506f47ad5cce70cc34497e5a24d023f1bf4183fb1a4abafdf2ecc34"
+    },
+    "src/fern/__init__.py": {
+     "before": "a79866bd1307b56eb6f372aca425c1f0084da713f9fd06870418c705dca120af",
+     "after": "a401446b3eeba38f1bcab7320d3c274b5d7270a262db3d793c2ec327037b269f"
+    },
+    "src/fern/client.py": {
+     "before": "f5362c4591b7fc7ea71742f1af4fac31112cf8e5a6ba006605ac7a6be7b56c9b",
+     "after": "1a2c03938e126e6c231599ca801a46277c8d545671d3344605a4e18fd05e889d"
+    },
+    "src/fern/raw_client.py": {
+     "before": "8b0a1828f06481fa7a10cac14deeae2ab06cfc5ca23b12cf0e16ac3dbc1f4eb3",
+     "after": "b0bd5ee35a972e53015365db60aba377ebb0783e08812ad6f299c4f31d3b57d7"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "a8a4c9f64b024a915fdaacaf97fa40345947af6775871f7ca197c16a7cde35c8",
+     "after": "65c43612dd04365e2c7d7baca9b819cca1bbc52ba18548f84f40c2426be44ba0"
+    },
+    "src/fern/types/patch_some_path_id_template_response.py": {
+     "before": null,
+     "after": "21f4eb9ba73ab10470a6bdb1d2c5bf137e247fb107760545f5e05da516987dbf"
+    },
+    "src/fern/types/put_some_path_id_template_response.py": {
+     "before": null,
+     "after": "87aeeea89d1c8ee094d6a1883d26f08f479e3219c58abc48d3e24e00dd6c2ae6"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 50,
+   "after_files": 52,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "8e0d38a29506f47ad5cce70cc34497e5a24d023f1bf4183fb1a4abafdf2ecc34"
+    },
+    "src/fern/__init__.py": {
+     "before": "607be8cbda6c2a9e436c3a1be01e8d5013db5f0daabcbf87d96729da196374d6",
+     "after": "e72067271d443a334f1f17cea1b167af9476125abad54259ee182cb1866d69c4"
+    },
+    "src/fern/client.py": {
+     "before": "f808aeffad80a2e8a547b2f7e8af577d60dbd520cab7f0e97318b963c516df88",
+     "after": "39e72da54f83756c276913d12387fa04dd9c0e47fb14b6a3df50d2d85d70a1b2"
+    },
+    "src/fern/raw_client.py": {
+     "before": "4a562485a238311c571046bd026f45618832b98bd6535c35a5a05f01ebb4f644",
+     "after": "81dbeeac12f564fe13925840503640351b760a5d041d53bff936b267408c58d4"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "81954daaa1479f6091ee7e55165cb242e3449cc1e9f675d7fca6e63ad88fc1f2",
+     "after": "5afeb93784272a5bbcc5bc03ae459817b7017684673821994a4392c128281543"
+    },
+    "src/fern/types/patch_some_path_id_template_response.py": {
+     "before": null,
+     "after": "aaec04b56c23206d02d769f215854285c45b0db6b08e9e361fe2eb2043f5bf5e"
+    },
+    "src/fern/types/put_some_path_id_template_response.py": {
+     "before": null,
+     "after": "7abbc4d914668c8b64ed5251bcb276be587132a65e962d95a621324f792bd5c3"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 52
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-statuses-mixed-media",
+  "fixture": "oal-example",
+  "control": "combo-success-statuses-mixed-media",
+  "edits": [
+   {
+    "pointer": "/paths/~1something/get/responses/204",
+    "edit": "deleted the other success status 204"
+   }
+  ],
+  "crozier": {
+   "before_files": 50,
+   "after_files": 50,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "36c814a219d0c9c3633c7436bf666830edfeb796dbf281eb2261c0a674efad53"
+    },
+    "src/fern/client.py": {
+     "before": "f5362c4591b7fc7ea71742f1af4fac31112cf8e5a6ba006605ac7a6be7b56c9b",
+     "after": "5d6c9021fde74bb0edadacc109e305f0b2bcb14f2e69059a38439a2ef151a5dc"
+    },
+    "src/fern/raw_client.py": {
+     "before": "8b0a1828f06481fa7a10cac14deeae2ab06cfc5ca23b12cf0e16ac3dbc1f4eb3",
+     "after": "979cb22ad0110755dbd8525b02d54fef868350a002703dcbc2a59955bdbc5112"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 50,
+   "after_files": 50,
+   "changed": {
+    "reference.md": {
+     "before": "f932a137a1dd8201a0c8ddd6998f9146a97a52e8be927a518f255553480b695b",
+     "after": "36c814a219d0c9c3633c7436bf666830edfeb796dbf281eb2261c0a674efad53"
+    },
+    "src/fern/client.py": {
+     "before": "f808aeffad80a2e8a547b2f7e8af577d60dbd520cab7f0e97318b963c516df88",
+     "after": "2da7672d3ac5d227784dfa0f8e2d75a5b6c68489dbfb8111ebb35f06ba4b67ba"
+    },
+    "src/fern/raw_client.py": {
+     "before": "4a562485a238311c571046bd026f45618832b98bd6535c35a5a05f01ebb4f644",
+     "after": "9549e171dee04f05a5f102cf7fc5b129bf962c3b25d0dd041901dcd451eceade"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 50
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-inline-body-read-only-property",
+  "fixture": "webflow-v2",
+  "control": "combo-inline-body-read-only-property",
+  "edits": [
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1redirects/post/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1redirects~1{redirect_id}/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1pages~1{page_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1pages~1{page_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/workspaceId/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/siteId/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/siteId",
+    "edit": "renamed to `siteIdField`, so the writable property does not collide with the same-named parameter"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/lastTriggered/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   }
+  ],
+  "crozier": {
+   "before_files": 1456,
+   "after_files": 1456,
+   "changed": {
+    "reference.md": {
+     "before": "f4967eed80de5c139b91e94c92093ea5007b8f105944396e53330172ff6b9b13",
+     "after": "d54fa8d088d358ad9617fa144f40f9f40b2020433d9282f93b5ee43cb8e67428"
+    },
+    "src/fern/collections/items/client.py": {
+     "before": "2bc844d3e7ea8b5b9e1c6079b9dc89b73b57720cc61af3bbe2dfddc48e8a5264",
+     "after": "2f1b02e74a60377ba947aabeec503b63fd1c35d6a2533ef242ce177016642337"
+    },
+    "src/fern/collections/items/raw_client.py": {
+     "before": "7e6466436253681e768962b48f3c0697e86635792f4f254320116e61a80a989a",
+     "after": "98f16253986a142144c7b31afe46aeee3f3df370c0017e19bb8cec2bed6118a4"
+    },
+    "src/fern/pages/scripts/client.py": {
+     "before": "445e434908e5d89c170c6414399107a393a09944b3cfd1e666ae8c3fe2ffff57",
+     "after": "b6f91d76117a31f6312f35cf130375b47a023bd503402427aa6dcbdf733bb244"
+    },
+    "src/fern/pages/scripts/raw_client.py": {
+     "before": "cf2702778fb9e08f128f67887c62cd486531d9372cfc69a8a545ce52621b044a",
+     "after": "344085dcc43156629213a1d55dbf652e4d3b6f2e04e48dbc2a1c8805c301ac58"
+    },
+    "src/fern/sites/redirects/client.py": {
+     "before": "9a02229c50c5bb727c5a67d1e5bf617776d53b2e2118c7d282cab8af6f0d1abc",
+     "after": "a84ed2e843531ad3367f59f0c2b0c40055e8f1c4d12efc20c66f7b36f5410f74"
+    },
+    "src/fern/sites/redirects/raw_client.py": {
+     "before": "7c907821dbb6551d15420864684da00364993a592ce89a54ee6195a7406b4f9b",
+     "after": "c27c07ecb8fbf0f48e973dd5114cfb618fbe814362e4c1934035636d82304520"
+    },
+    "src/fern/sites/scripts/client.py": {
+     "before": "e5b9ad9c36c94aa931c463e20191787dbfd0a6a8cb762a52456d17318fc1d574",
+     "after": "d6bb5f5d1fdc80891530b6c0afcc86659ec12dd823548e34230a86eb21b26bf1"
+    },
+    "src/fern/sites/scripts/raw_client.py": {
+     "before": "eb7d26a3e02b6087e860f52110fe77df6d4aca9f735f2959e5a6a794dc8de822",
+     "after": "a657c94adc30b2d5781730a9df7f4affbb6bd2ffc759f7667749b3f878344721"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "a57c167f6de83016d024ceda166c0273249877b1c467de9ee0b71dcc718f2c42",
+     "after": "48f23227d18aef4895ea8c7872dd1201deeed5803cd64df99c4b7bd71dd90c76"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "f95ea7ba40a45c3b4bf3a79da073de83e0b70a14dbcea6eb65ab3809008edf92",
+     "after": "017efeec5e2419d45a2b14af2465ed762fa0bbc24ea65974befd4d904a8c55d2"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 1501,
+   "after_files": 1501,
+   "changed": {
+    "reference.md": {
+     "before": "e559dfa6eec9815cb63914c11d3200c196fe298aacdbf1974f23ad785e2072a9",
+     "after": "d287d34bf3ab4c2cd083ba219ad4ed0a3928423511592f36df0c3309e0828051"
+    },
+    "src/fern/collections/items/client.py": {
+     "before": "0ba8aeb60674403cf1e55c73bb187c904580a6014448e166658bc3d0a46c28c4",
+     "after": "21abbe3b883bb1f5a82f8e43b9f504fc94fa4f84b448b3e05723aedb5b249910"
+    },
+    "src/fern/collections/items/raw_client.py": {
+     "before": "9dc6de9f12a3ba54f88f44ed2e08a826af59397ce641777f3257ad5c723a6e73",
+     "after": "05d369c0c5656edc61d976aed27077b8c3aed7e32a174a6eb458c0122f1e9d81"
+    },
+    "src/fern/pages/scripts/client.py": {
+     "before": "9e82365175e4b99c754c100be8abfec7a7e701e572c0d9ab9053c8fb7dd2d8ab",
+     "after": "8e62fc4c5a9a896a0676ff9fd9b3fe71c60847c29cf787f9932c651feb60f0f2"
+    },
+    "src/fern/pages/scripts/raw_client.py": {
+     "before": "860c2cbdfdbe21b9f4e13d019fd8e6334611b3f62c0e57c083c439e3eccb433f",
+     "after": "dc533e4af36e1dea270c04a038eaa3079aac1d7906884c1d04f0b51f1ef957a4"
+    },
+    "src/fern/sites/redirects/client.py": {
+     "before": "c5957555a42ea40a8b3f2f04da6aa65b7915066013e40ce59a4f63470f40235e",
+     "after": "8da606d3b8827d241c926fc165dc6029394533f0c8db9d3cd80102e20ebd2e23"
+    },
+    "src/fern/sites/redirects/raw_client.py": {
+     "before": "9fd2d7fec63df60a85d72c6be287c1266194af8b6f1dc21ff5887bf4093a3809",
+     "after": "e087272840f42f00d41d5aae6a252a695149a38f9a322af8623a2c9e0fb27c6c"
+    },
+    "src/fern/sites/scripts/client.py": {
+     "before": "734652987760c74f9da5a9f88635e924730fa433c033bb6c8b974ebafbda2166",
+     "after": "21a56c892bd42fa2d5a23c941ff368b13b3e590907b2d53e04e117cd0d0c4c1a"
+    },
+    "src/fern/sites/scripts/raw_client.py": {
+     "before": "3230ceccfea9520218524c8990ea9a99d1cab2f5db79f2309868d27fbfc9d4c9",
+     "after": "0a5f7b49ef374ff380124d83c7edf01aecaa4581126cc35789754834ea84edf4"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "a433a0e41df589fe0871717b116a4a7618d4f71a8c2376839720917dc4e66de4",
+     "after": "99b524a9c738677fbfa34485249b68c8a1c6834a80e65841d4e84d37e4f0969a"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "bc30b4e6e6cacbc505e670d9d9599b4d6b46b8202a0ec57b42627f4665f2f58d",
+     "after": "810000007c4548ab81d8e163510313ae73868acc0eb7aa8fba2955f87ebe1852"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 3,
+   "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+   },
+   "files_compared": 1501
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-octet-stream-body-header-param",
+  "fixture": "get-a-room",
+  "control": "combo-octet-stream-body-header-param-drop-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1rooms~1{roomId}~1attachments/post/requestBody",
+    "edit": "deleted the octet-stream request body beside the header parameters"
+   }
+  ],
+  "crozier": {
+   "before_files": 105,
+   "after_files": 105,
+   "changed": {
+    "reference.md": {
+     "before": "0c04fcfc3d2956ca5e7ba0341a961cc9e99e1802a282af29c47736e0d64c62b0",
+     "after": "295ff00846593a17d11f8c07f504250ab0d2e1851fd68c6b3cbc94283b5f5dcd"
+    },
+    "src/fern/rooms/client.py": {
+     "before": "b45c504ef37ab07616ef0ba7aad2aca7e0ca09cf7b5d5144808849cbfa425f94",
+     "after": "380c1dc9f7d65f8030b7e7e502cdd861e997946fdbe6339f4153de7cb719e62b"
+    },
+    "src/fern/rooms/raw_client.py": {
+     "before": "9b707c1a477b7ebd452d348ae56c170b864b045a29cd2ed8af935409ad3980fd",
+     "after": "99f018b0121be1697668e5be4cd4cd47b45d7363d1b38a7a691e00bfc100ae6c"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 105,
+   "after_files": 105,
+   "changed": {
+    "reference.md": {
+     "before": "0c04fcfc3d2956ca5e7ba0341a961cc9e99e1802a282af29c47736e0d64c62b0",
+     "after": "295ff00846593a17d11f8c07f504250ab0d2e1851fd68c6b3cbc94283b5f5dcd"
+    },
+    "src/fern/rooms/client.py": {
+     "before": "397f323a12f8288084da00bdc7525ddcfdccacf451c820b8179dfbb29fc532d0",
+     "after": "d6d31f46dfea61a209781279f9a3d15deffbe69069dcbf03167b3669510dbd0e"
+    },
+    "src/fern/rooms/raw_client.py": {
+     "before": "419eced5878b3267ba9301b50bf94635f594e3a4d60fdeee2120646f172091c0",
+     "after": "7242abd981b797c26966984c7fc6ee48b21f536e2d8284fed8e9eaf1f8ff6f39"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 105
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-form-urlencoded-union-body",
+  "fixture": "grantly",
+  "control": "combo-form-urlencoded-union-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1token/post/requestBody/content/application~1x-www-form-urlencoded/schema",
+    "edit": "replaced the form body's `oneOf` with its first member"
+   }
+  ],
+  "crozier": {
+   "before_files": 65,
+   "after_files": 63,
+   "changed": {
+    "README.md": {
+     "before": "61dee3373369cd1356e9a06bfffbdefda692d1ec9886b4808fc90135eed470b4",
+     "after": "80ee7ce5e967832b1f5a52ffdb55b07bafc923db91a92a9807e0de1a9ed0c725"
+    },
+    "reference.md": {
+     "before": "cf1f329ae76839ad17317e514f47cbff892c924b19ed9b04bb12cbc4f88ec0ed",
+     "after": "d394afc253de58bdc4a6faa741556629094a50c26ae051aa8bcd36f6c7c477bd"
+    },
+    "src/fern/__init__.py": {
+     "before": "7a4572325907da2126a573d5389ac44dc6273c513c79b7e7b76432df085cd9ae",
+     "after": "b31d81867d2e168f1c7c9f546a2ac2a3204123425e5577f6519e6c5400015c6e"
+    },
+    "src/fern/protocol/__init__.py": {
+     "before": "00af5e9533fc8a605170c70cf66722903e42bc45af3529ecf5f709e4579f09d0",
+     "after": "0fedb08c0b9c8c367dec239998a13fe756d81012153a0b8f76bec712b0ed6b55"
+    },
+    "src/fern/protocol/client.py": {
+     "before": "94c44c3e46915dc66790862c0b26747145c5f11ebe5f7066950a3639bc8ba2de",
+     "after": "15511ebc429771f7679b4d745d7ae8257f8ef4f0d62cf5b869cff866458e32d9"
+    },
+    "src/fern/protocol/raw_client.py": {
+     "before": "39d3d884e027374d37e0dfc145bd5885cb1ff999595016cecc8b27e8bb311de8",
+     "after": "9d7445844d0ce147dd3e25194065c104d4dff1fc37eb5a27481ad95999423285"
+    },
+    "src/fern/protocol/types/__init__.py": {
+     "before": "40cfc454bdb209d77ad94784bfafedee826876d15bdc60cc4e741d53cf976a65",
+     "after": "d70fa35dea65a273aef1762436f1462cfec9e3abe8bdc04780b4c3eefe8eead8"
+    },
+    "src/fern/protocol/types/post_token_request.py": {
+     "before": "7deea65233536827d924e1375878af045daef0eca5ac188e94781e23bb3de493",
+     "after": null
+    },
+    "src/fern/protocol/types/post_token_request_authorization_code.py": {
+     "before": "7d5c98e2647ae911bafee76ac68e9392effebe55867d607e1fe342ce604e5788",
+     "after": null
+    },
+    "src/fern/protocol/types/post_token_request_grant_type.py": {
+     "before": null,
+     "after": "2b7670afe6d2b510dd020b7b9eb5d7d4c282cbd964da0d7af2e41417176e8347"
+    },
+    "src/fern/protocol/types/post_token_request_refresh_token.py": {
+     "before": "19f1831314b1e9181ec74fe21a567e17a4294e89b8445e7c5ae967dbdbecb07f",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 65,
+   "after_files": 63,
+   "changed": {
+    "README.md": {
+     "before": "61dee3373369cd1356e9a06bfffbdefda692d1ec9886b4808fc90135eed470b4",
+     "after": "80ee7ce5e967832b1f5a52ffdb55b07bafc923db91a92a9807e0de1a9ed0c725"
+    },
+    "reference.md": {
+     "before": "cf1f329ae76839ad17317e514f47cbff892c924b19ed9b04bb12cbc4f88ec0ed",
+     "after": "d394afc253de58bdc4a6faa741556629094a50c26ae051aa8bcd36f6c7c477bd"
+    },
+    "src/fern/__init__.py": {
+     "before": "2cfb39682a15a5f87cb7b391683ff8b7db742c37ec3693ba4b185ac37fb73307",
+     "after": "6afed7b0c7c8255438b75c9bda7b183e4fc7642dee156ba1ccabc9e0e8f5d597"
+    },
+    "src/fern/protocol/__init__.py": {
+     "before": "dac2cd48fa14342541224cda36b0933357e389ccf9d287878e60634c8832a9e1",
+     "after": "4ff1017010a27d19db7f1e1554982e67808049e474bd5468ad73b013e46c3f67"
+    },
+    "src/fern/protocol/client.py": {
+     "before": "fa8629d0b21f3be375d26bc25941cf3af6f401c945eefa3a0e296a10d37a377a",
+     "after": "eba28027c542a0b9ef554c8128d06adc554b815b451af06dc9f8e0b43d854cb1"
+    },
+    "src/fern/protocol/raw_client.py": {
+     "before": "5890b25b0fa62d558f22578ee4ebfc7cd47c1e114b15bde9dace019f0b2a97a3",
+     "after": "3335dcc5ad21168fa202652ede460a325c774256c5dfeb9fb77de36f533db4de"
+    },
+    "src/fern/protocol/types/__init__.py": {
+     "before": "7b6b36f74026b56b49f9ce85403f6bb96e77961fcef4f2ad0157bc9bcba88c49",
+     "after": "f025e38ecee9355316fc1fdab73371dd40a44c9b9fb847487973bad5e304e62a"
+    },
+    "src/fern/protocol/types/post_token_request.py": {
+     "before": "f9704bd98bea70bd412eee9c852486c8ab4a3fed1d8255cfb4167fe71a0a995b",
+     "after": null
+    },
+    "src/fern/protocol/types/post_token_request_authorization_code.py": {
+     "before": "25a2fe10d861ddadd09f1a1d5e61206da41b70a2bdfe85b7ef6d85aaa90d162c",
+     "after": null
+    },
+    "src/fern/protocol/types/post_token_request_grant_type.py": {
+     "before": null,
+     "after": "bc257811e802b89c101c774118930dcc314ac1b2fb28fcaec5788a41230b0fe9"
+    },
+    "src/fern/protocol/types/post_token_request_refresh_token.py": {
+     "before": "e64471160be420d235d7116faefbfb0cccb6ebae59998eb661d68cda1a6d000e",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 63
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-success-oneof-nullable",
+  "fixture": "ebusd",
+  "control": "combo-success-oneof-nullable",
+  "edits": [
+   {
+    "pointer": "/components/schemas/FieldValue/nullable",
+    "edit": "deleted `nullable: true`"
+   }
+  ],
+  "crozier": {
+   "before_files": 66,
+   "after_files": 66,
+   "changed": {
+    "reference.md": {
+     "before": "ae64fab7e81d65e6e59af74761b57226c1880c562969fa3d827d9c195f95dde5",
+     "after": "9ff7b9298ecd06e773b29173a6bc1cb8831b368a7a1fb8ba0fbce626c32f8d1c"
+    },
+    "src/fern/client.py": {
+     "before": "ff35113d364247074d98815f5203a72e23b817cd607626470cdb17d1d4779c0f",
+     "after": "e6a56e6797f6474b4edd0bc139ea261d00586c9094ba7dffa0b8876cc229a466"
+    },
+    "src/fern/raw_client.py": {
+     "before": "1ce24605743df8a5756f1dbef5c752d52b35995b94216397024e65b85888cebe",
+     "after": "3aaa5d8e3f1f94fdafbb1532ed4f73c5c9c647e6fc400052ab87c67c1e9cc284"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 66,
+   "after_files": 66,
+   "changed": {
+    "reference.md": {
+     "before": "ae64fab7e81d65e6e59af74761b57226c1880c562969fa3d827d9c195f95dde5",
+     "after": "9ff7b9298ecd06e773b29173a6bc1cb8831b368a7a1fb8ba0fbce626c32f8d1c"
+    },
+    "src/fern/client.py": {
+     "before": "15866fda7dfd6b056ab5bcc128a5f720b07a7313c562c07c5df19676c9dc99be",
+     "after": "9e1b0ac9664bed680dfd9afafe58e41be0f99d70c9a00ba2cc40c1ebb7b3a010"
+    },
+    "src/fern/raw_client.py": {
+     "before": "ebee6bba771382bd20e11eb78b9e483765e4a76ccd3677b049fbc3178281207c",
+     "after": "175dc5d81e95cda14615ff2eb8d8983a2ddaf381f06adad4341dc15ca2472a8c"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 66
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ }
+]

@@ -12319,23 +12319,13 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertFalse(bounded_incomplete_search(self.root, key, windows_reason.replace("openapi-surface", "..")))
 
     def test_a_gap_combination_row_missing_from_its_named_table_is_refused(self) -> None:
-        # A `gap` row the shared table decides output-insensitive is never named,
-        # so the row to drop is one the named table lists.
-        named = named_gap_combinations(self.root)
-        gap = sorted(
-            key
-            for key, (_r, cells) in combination_rows(self.root).items()
-            if cells[3].strip("`") == "gap" and key in named
-        )
-        self.assertTrue(gap, "the committed tree carries no named gap combination row to drop")
-        key = gap[0]
-        doc = "docs/openapi-surface-coverage.md"
-        line = next(
-            line
-            for line in (self.root / doc).read_text(encoding="utf-8").splitlines()
-            if line.startswith(f"| `{key}` |")
-        )
-        self.edit(doc, line + "\n", "")
+        # The committed tree may name no unproven combination at all, so the case
+        # makes one: a `golden` combination row demoted to `gap`, which the shared
+        # table does not decide and the named table does not list.
+        rows = combination_rows(self.root)
+        key = sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
+        region = f"docs/openapi-surface/{rows[key].region}.md"
+        self.edit(region, f"| {key} | both | {rows[key].cells[2]} | golden |", f"| {key} | both | {rows[key].cells[2]} | gap |")
         self.assertIn(
             f"{key}: a `gap` combination row ({combination_rows(self.root)[key].region}.md) missing from "
             f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md",
@@ -12347,11 +12337,15 @@ class FinishedStateGateTests(unittest.TestCase):
             key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "golden"
         )
         key = golden[0]
-        self.edit(
-            "docs/openapi-surface-coverage.md",
-            "| key | region | why it is unproven |\n|---|---|---|\n| `combo-",
-            f"| key | region | why it is unproven |\n|---|---|---|\n| `{key}` | `schemas` | `not searched` — x |\n| `combo-",
-        )
+        # The feature table shares this header, so the edit is made in the
+        # combination section alone.
+        doc = "docs/openapi-surface-coverage.md"
+        header = "| key | region | why it is unproven |\n|---|---|---|\n"
+        text = (self.root / doc).read_text(encoding="utf-8")
+        before, section = text.split(NAMED_COMBINATIONS_HEADING, 1)
+        self.assertIn(header, section, f"{doc}'s combination table no longer carries its header")
+        section = section.replace(header, f"{header}| `{key}` | `schemas` | `not searched` — x |\n", 1)
+        (self.root / doc).write_text(before + NAMED_COMBINATIONS_HEADING + section, encoding="utf-8", newline="\n")
         self.assertIn(
             f"{key}: docs/openapi-surface-coverage.md names it an unproven combination, but it is "
             "not a `gap` combination row; remove the row",

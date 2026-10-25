@@ -1,0 +1,264 @@
+[
+ {
+  "key": "combo-form-urlencoded-body-with-params",
+  "fixture": "swagger-petstore",
+  "control": "combo-form-urlencoded-body-with-params",
+  "edits": [
+   {
+    "pointer": "/paths/~1user~1{username}/put/requestBody/content/application~1x-www-form-urlencoded",
+    "edit": "deleted the `application/x-www-form-urlencoded` alternative beside the JSON one"
+   }
+  ],
+  "crozier": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-ref-body-read-only-property",
+  "fixture": "paloalto-cspm-search-manager",
+  "control": "combo-ref-body-read-only-property",
+  "edits": [
+   {
+    "pointer": "/components/schemas/SearchModel/properties/alertId/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/async/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/asyncResultUrl/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/cursor/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/filters/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/groupBy/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/readOnly/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/searchType/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/components/schemas/SearchModel/properties/timeGranularity/readOnly",
+    "edit": "deleted `readOnly`"
+   }
+  ],
+  "crozier": {
+   "before_files": 68,
+   "after_files": 68,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-optional-ref-union-body",
+  "fixture": "openintegrationhub-secret-service",
+  "control": "combo-optional-ref-union-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1v1~1auth-clients~1/post/requestBody/required",
+    "edit": "set the request body's `required` to true"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1auth-clients~1{clientId}/patch/requestBody/required",
+    "edit": "set the request body's `required` to true"
+   }
+  ],
+  "crozier": {
+   "before_files": 104,
+   "after_files": 104,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-optional-ref-map-body",
+  "fixture": "oip-web-api",
+  "control": "combo-optional-ref-map-body",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1module-federation~1register-module/post/requestBody/required",
+    "edit": "set the request body's `required` to true"
+   }
+  ],
+  "crozier": {
+   "before_files": 40,
+   "after_files": 40,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-multiple-media",
+  "fixture": "mermade-openapi-converter",
+  "control": "combo-error-multiple-media",
+  "edits": [
+   {
+    "pointer": "/paths/~1convert/post/responses/400/content/application~1x-yaml",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1validate/post/responses/400/content/application~1x-yaml",
+    "edit": "deleted an error media type beyond the first"
+   }
+  ],
+  "crozier": {
+   "before_files": 51,
+   "after_files": 51,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-multiple-media",
+  "fixture": "mermade-openapi-converter",
+  "control": "combo-error-multiple-media-keep-last",
+  "edits": [
+   {
+    "pointer": "/paths/~1convert/post/responses/400/content/application~1json",
+    "edit": "deleted an error media type other than the last"
+   },
+   {
+    "pointer": "/paths/~1validate/post/responses/400/content/application~1json",
+    "edit": "deleted an error media type other than the last"
+   }
+  ],
+  "crozier": {
+   "before_files": 51,
+   "after_files": 51,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-multiple-media",
+  "fixture": "6-dot-authentiqio.appspot.com",
+  "control": "combo-error-multiple-media",
+  "edits": [
+   {
+    "pointer": "/paths/~1scope~1{job}/get/responses/404/content/application~1jwt",
+    "edit": "deleted an error media type beyond the first"
+   }
+  ],
+  "crozier": {
+   "before_files": 71,
+   "after_files": 71,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-error-multiple-media",
+  "fixture": "eozilla",
+  "control": "combo-error-multiple-media",
+  "edits": [
+   {
+    "pointer": "/paths/~1/get/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1conformance/get/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1processes~1{processID}/get/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1processes~1{processID}~1execution/post/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1processes~1{processID}~1execution/post/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs/get/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}/get/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}/get/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}/delete/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}/delete/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}~1results/get/responses/404/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   },
+   {
+    "pointer": "/paths/~1jobs~1{jobId}~1results/get/responses/500/content/text~1html",
+    "edit": "deleted an error media type beyond the first"
+   }
+  ],
+  "crozier": {
+   "before_files": 105,
+   "after_files": 105,
+   "changed": {}
+  },
+  "certified_pair": null,
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-octet-stream-body-header-param",
+  "fixture": "get-a-room",
+  "control": "combo-octet-stream-body-header-param",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1rooms~1{roomId}~1attachments/post/parameters/2",
+    "edit": "deleted the header parameter beside the octet-stream body"
+   },
+   {
+    "pointer": "/paths/~1v1~1rooms~1{roomId}~1attachments/post/parameters/1",
+    "edit": "deleted the header parameter beside the octet-stream body"
+   },
+   {
+    "pointer": "/paths/~1v1~1rooms~1{roomId}~1attachments/post/parameters/0",
+    "edit": "deleted the header parameter beside the octet-stream body"
+   }
+  ],
+  "crozier": {
+   "before_files": 105,
+   "after_files": 105,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 105,
+   "after_files": 105,
+   "changed": {}
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ }
+]

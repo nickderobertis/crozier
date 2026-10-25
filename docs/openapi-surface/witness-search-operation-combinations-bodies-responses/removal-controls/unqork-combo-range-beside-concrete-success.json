@@ -1,0 +1,51 @@
+{
+ "key": "combo-range-beside-concrete-success",
+ "fixture": "unqork",
+ "control": "combo-range-beside-concrete-success",
+ "edits": [
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1execute/put/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  },
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1api/get/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  },
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1api/put/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  },
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1api/post/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  },
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1api/delete/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  },
+  {
+   "pointer": "/paths/~1modules~1{moduleId}~1api/patch/responses/2XX",
+   "edit": "deleted the `2XX` range beside the concrete success status"
+  }
+ ],
+ "crozier": {
+  "before_files": 174,
+  "after_files": 174,
+  "changed": {}
+ },
+ "certified_pair": {
+  "before_files": 174,
+  "after_files": 174,
+  "changed": {}
+ },
+ "control_comparison": {
+  "exit_code": 0,
+  "counts": {
+   "matched": 1,
+   "mismatched": 0,
+   "could_not_check": 0
+  },
+  "files_compared": 174
+ },
+ "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+}
