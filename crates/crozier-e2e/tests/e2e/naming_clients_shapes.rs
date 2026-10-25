@@ -1,8 +1,8 @@
 //! The client-construction and docstring shapes the `naming-clients` removal
 //! controls first showed crozier departing from the certified pair on, each
-//! driven through the real binary over one of two from-scratch documents Fern
+//! driven through the real binary over one of three from-scratch documents Fern
 //! generated `fern-expected/` from (`clients_extensions_measurements_match_fern`
-//! compares both whole): the line a shape decides must read as Fern writes it in
+//! compares each whole): the line a shape decides must read as Fern writes it in
 //! both trees, and crozier's tree with that line put back the way crozier used to
 //! write it must fail the comparison. The removal controls are
 //! `docs/openapi-surface/witness-search-operation-combinations-naming-clients/README.md`'s.
@@ -24,6 +24,10 @@ const TIDE_DESK: &str = "harbour-tide-desk";
 /// The basic document: an HTTP `basic` scheme no Security Requirement Object
 /// names.
 const KEEPER_ROSTER: &str = "lighthouse-keeper-roster";
+
+/// The binary document: a root and a grouped `application/octet-stream`
+/// download whose descriptions end a line in a backslash.
+const CHART_VAULT: &str = "harbour-chart-vault";
 
 fn case_dir(case: &str) -> std::path::PathBuf {
     repo_root().join(CLIENTS_EXTENSIONS_DIR).join(case)
@@ -165,5 +169,30 @@ fn a_basic_scheme_without_a_requirement_keeps_optional_credentials() {
         "        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n",
         "",
     );
+}
+
+/// A binary download's raw and client docstrings, root and grouped, keep the
+/// same 8-space separators, where crozier used to write them bare.
+#[test]
+fn a_binary_stream_docstring_keeps_its_indent() {
+    for (file, line) in [
+        ("src/fern/raw_client.py", "Plates are archived under F:\\\\"),
+        ("src/fern/client.py", "Plates are archived under F:\\\\"),
+        (
+            "src/fern/soundings/raw_client.py",
+            "Survey logs are archived under G:\\\\",
+        ),
+        (
+            "src/fern/soundings/client.py",
+            "Survey logs are archived under G:\\\\",
+        ),
+    ] {
+        holds_line(
+            CHART_VAULT,
+            file,
+            &format!("{line}\n        \n        Parameters"),
+            &format!("{line}\n\n        Parameters"),
+        );
+    }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

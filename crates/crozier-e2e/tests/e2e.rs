@@ -1949,6 +1949,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &[],
     ),
     (
+        "harbour-chart-vault",
+        "docs/fern-measurements/clients-extensions/harbour-chart-vault/openapi.yml",
+        &[],
+    ),
+    (
         "lighthouse-keeper-roster",
         "docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml",
         &[],

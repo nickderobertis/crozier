@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Harbour Chart Vault
+  version: 1.0.0
+  description: Serves a harbour's scanned nautical charts and soundings.
+servers:
+  - url: https://charts.harbour.example
+paths:
+  /charts/{chart_id}/scan:
+    get:
+      operationId: downloadChartScan
+      description: |
+        Downloads one chart's scanned plate.
+
+        Plates are archived under F:\
+      parameters:
+        - name: chart_id
+          in: path
+          required: true
+          description: The chart whose plate to download.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The scanned plate.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /soundings/{survey_id}/export:
+    get:
+      operationId: exportSoundings
+      tags: [Soundings]
+      description: |
+        Exports one survey's raw soundings.
+
+        Survey logs are archived under G:\
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          description: The survey whose soundings to export.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The raw soundings.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary

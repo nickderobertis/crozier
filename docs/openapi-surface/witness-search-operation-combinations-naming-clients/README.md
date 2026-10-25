@@ -266,7 +266,10 @@ is what that comparison turns on.
    certified pair indents them under 3.0.3 too, where `electric-sql` re-declared
    as 3.0.3 moved two crozier files and no certified-pair file, and on grouped
    and streaming methods alike, with an empty return description a 12-space
-   line, as `harbour-tide-desk` measures. Ruff strips both indents unless a
+   line, as `harbour-tide-desk` measures, and on binary downloads' raw and
+   client methods, root and grouped, as
+   [`harbour-chart-vault`](../../fern-measurements/clients-extensions/harbour-chart-vault/openapi.yml)
+   measures. Ruff strips both indents unless a
    docstring line ends in a backslash, which is why no committed golden had
    shown the grouped case.
 2. **Basic credentials with no requirement.** Crozier dropped an HTTP `basic`
