@@ -1,0 +1,31 @@
+{
+ "key": "combo-document-security-security-nonempty",
+ "fixture": "lamplighter-rounds",
+ "control": "combo-document-security-security-nonempty",
+ "edits": [
+  {
+   "pointer": "/paths/~1rounds~1{district}/put/security",
+   "edit": "deleted the operation's nonempty `security` override of the document requirement"
+  }
+ ],
+ "crozier": {
+  "before_files": 42,
+  "after_files": 42,
+  "changed": {}
+ },
+ "certified_pair": {
+  "before_files": 42,
+  "after_files": 42,
+  "changed": {}
+ },
+ "control_comparison": {
+  "exit_code": 0,
+  "counts": {
+   "matched": 1,
+   "mismatched": 0,
+   "could_not_check": 0
+  },
+  "files_compared": 42
+ },
+ "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+}

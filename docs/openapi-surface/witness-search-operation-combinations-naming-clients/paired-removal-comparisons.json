@@ -1,0 +1,1715 @@
+[
+ {
+  "key": "combo-tagged-group-and-method-name",
+  "fixture": "truefoundry-trueforge-5adde28",
+  "control": "combo-tagged-group-and-method-name-drop-method",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1internal~1list-permissions/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1internal~1metrics~1charts/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1internal~1metrics~1charts-data/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1internal~1metrics~1meters/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1internal~1schedules~1runs~1execute/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1internal~1sessions~1get-or-create-by-external-id/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents~1{agent_id}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents~1{agent_id}/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents~1{agent_id}/delete/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1agents~1{agent_id}~1code-snippets/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1auth~1me/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1capabilities/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1catalogs~1mcp-servers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1catalogs~1model-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1catalogs~1sandbox-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1catalogs~1skills/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1catalogs~1web-search-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers~1{name}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers~1{name}~1authorize/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers~1{name}~1authorize/delete/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers~1{name}~1tools/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1models/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules~1runs/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules~1{schedule_id}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules~1{schedule_id}/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules~1{schedule_id}/delete/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules~1{schedule_id}~1runs/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}/delete/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}/patch/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1cancel/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1events/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}~1download-sandbox-file/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}~1events/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}~1subscribe/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1mcp-servers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1mcp-servers/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1mcp-servers/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1mcp-servers~1{name}/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1model-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1model-providers/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1model-providers/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1sandbox-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1sandbox-providers/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1skills/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1skills/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1skills/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1web-search-providers/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1web-search-providers/put/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1skills/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1skills~1versions/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside the tag and group"
+   }
+  ],
+  "crozier": {
+   "before_files": 404,
+   "after_files": 362,
+   "changed": {
+    "README.md": {
+     "before": "82407f82f834eca0c1c5160c4ed04ba470d7b6999a993bbb516e96ebd64b1cf3",
+     "after": "4a1c2a92a79e1050794d830b3c3b3a22b60bf6b96245a513afa6956b9333b04b"
+    },
+    "reference.md": {
+     "before": "d1e3913ad4f3b11773ed43605b4afd1d6d24bbac7f94f2fe3322f03dd4f6917d",
+     "after": "86a9a6b0f1b0af64d1a7ec19dbbe5ae91378c817b410571ad770ae2d33a1ab78"
+    },
+    "src/fern/__init__.py": {
+     "before": "04832c8948ddc5b8232b1d0212fc515e1dd59bb8c2c4464904b065c69825feb3",
+     "after": "cbc428cb4ac4c9b9157ec74ba67759e42450fe757a917f95d3e3796bf4a72d8f"
+    },
+    "src/fern/agent_sessions/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/agent_sessions/client.py": {
+     "before": null,
+     "after": "f2970c0e83f67bc3dead0575d5d05a28463a833d3cce546728b028027db4a18f"
+    },
+    "src/fern/agent_sessions/raw_client.py": {
+     "before": null,
+     "after": "d4c4c1d6d205869841f7ac9bf89b3110084b4b04c338aeddc004e18ff3f70388"
+    },
+    "src/fern/agents/client.py": {
+     "before": "a04c82160c1aee78b531ea7fa459eb11c8ea3440bdeb10d8014c03571353f062",
+     "after": "7e3f6ead5c3c35bf74dfd0f047f6400da4e9289c8ab13554f7f6bc0ab87d1433"
+    },
+    "src/fern/agents/raw_client.py": {
+     "before": "a3b260c73b2e627bc42ead61653976c32661b8e5e72a9f24f2ec6fd2a1d70f21",
+     "after": "a3ec1677b29f72e11a07805f7e9c607a36aec21fde65cdc69806c5fa424ac7bf"
+    },
+    "src/fern/auth/client.py": {
+     "before": "29c806f325bd083cd353de751a64c7f03b2d6e95f52cca7a232a89f12318fb5e",
+     "after": "6d06cf768fcc395f6d904be8077cdba0785f2797a26b947974d65f1d30690c8b"
+    },
+    "src/fern/auth/raw_client.py": {
+     "before": "506a86a1d4c60cf3f73736fe116543462eb29b9ebda1e5caea6c946aab8cd771",
+     "after": "61041fcff64f1e9e874af1f8948c2c8d93bf3dbae47209224d62b2faa46ad2cd"
+    },
+    "src/fern/capabilities/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/capabilities/client.py": {
+     "before": null,
+     "after": "04ae2274d3ad8739c2404782abd5b15af5de4168f1810036066c84f3ea6f0512"
+    },
+    "src/fern/capabilities/raw_client.py": {
+     "before": null,
+     "after": "e01575a63afa72dc6de12e08443e0c24ad6909f2fec25bde8f33711619128d7f"
+    },
+    "src/fern/catalogs/__init__.py": {
+     "before": "5f6a4628bf34227eaab61481dd728591b7c25b8ba0a3570d3d4e44e739062a05",
+     "after": null
+    },
+    "src/fern/catalogs/client.py": {
+     "before": "66100052af9b4733d401abe3e4bccd339260d33567fb82d9921f7d5b4e787274",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/client.py": {
+     "before": "b9fac985353fe88b66a93c9a3b2a360464166c123d37810aec15bd60594e7cfc",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/raw_client.py": {
+     "before": "ad9672af98bb5d5db12ed493fa911d38fe5e6570c2d18be2da986e88521a5635",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/client.py": {
+     "before": "0cdbd99abf7f06c068f099ae56c08fdc4ed84e938962a5fce58e04efc257b852",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/raw_client.py": {
+     "before": "4380c578306d3abfe22100a9cecadd5cd7da6840462ecd55eb341c455d26dc2f",
+     "after": null
+    },
+    "src/fern/catalogs/raw_client.py": {
+     "before": "a663295375b3d5be339303bb32e73f3721b3d8c611e95cd71784e7ebeeb3edc7",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/client.py": {
+     "before": "a329583a361d09f15a904c7fc97a5db11861c5a91ec0caf4716bd56ec01a78c5",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/raw_client.py": {
+     "before": "39399d1baa17c508fbc4327b0912b0717ca52d19ce464654991d84ee2e175749",
+     "after": null
+    },
+    "src/fern/catalogs/skills/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/skills/client.py": {
+     "before": "9b4924a26f6d10f373e99378f711dc9bf83a8018f2795bd427421dce779a69d3",
+     "after": null
+    },
+    "src/fern/catalogs/skills/raw_client.py": {
+     "before": "47e57e2cf6370d20216bdec542a6f5325db463f875b26e914261f534e1728ffc",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/client.py": {
+     "before": "faaf5c88e47df87e1142e3e9a3829ef74efce34ad61776165033e5e18a6347cf",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/raw_client.py": {
+     "before": "bf359fe28cc24c0afcdb5f08a848c26b97bb6451997ad8b8b155dde7928dc2e7",
+     "after": null
+    },
+    "src/fern/client.py": {
+     "before": "623df84160d5eaeee305cbee06e49258aa9dc0b5df0893b457f4d24e50736825",
+     "after": "8ef5f1dd9eca96147baf7220ae19493e63f22e09671dd828dee64dea43e311ba"
+    },
+    "src/fern/internal/__init__.py": {
+     "before": "379f12d58e2df1ae88c0fe38b5a86713dd1e8e213b15672842fd64008d1f00a5",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/internal/agents/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/agents/client.py": {
+     "before": "cb727307b6a1a296411c181efdcf4cc218df1694fa72dc7e609045ae131dde62",
+     "after": null
+    },
+    "src/fern/internal/agents/raw_client.py": {
+     "before": "e22316c6a73fb6be16352fce0931ee7c31f4bbed81ad57973c7c4b08e9ca202c",
+     "after": null
+    },
+    "src/fern/internal/client.py": {
+     "before": "77f0520b83e1e4a7aba80fe1d7220470f6b80fb2bd425d24875fb3a34adf9499",
+     "after": "ba28e3184c718fdd83e5303e8038278a78da238d96043e99a9c711059a365b0c"
+    },
+    "src/fern/internal/metrics/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/metrics/client.py": {
+     "before": "8093b14f78ba28e8b02b9240b1e28ac6063c6f7d9fbed01256cecc01025e27dd",
+     "after": null
+    },
+    "src/fern/internal/metrics/raw_client.py": {
+     "before": "394c109f703d53bda4b5d9c7c2ee0bac50b33e85221b537879d1ef9150af265a",
+     "after": null
+    },
+    "src/fern/internal/raw_client.py": {
+     "before": "a626abb8a8a537338e6f7c44d8b726d0c8ae738f0c79c0f5715a87f126a81161",
+     "after": "be4b11168a888ba9ce2f2584022fb44b8ec06c4c3276cf4c73b28efd5b89369b"
+    },
+    "src/fern/internal/schedules/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/schedules/client.py": {
+     "before": "7568e18b2fa2d658696406985ab402515dd773259175538c9b2f92709f63ddff",
+     "after": null
+    },
+    "src/fern/internal/schedules/raw_client.py": {
+     "before": "dd0f79b48b4372707de946865eac24a68e2a6d392d616650c9ae96619ab6033d",
+     "after": null
+    },
+    "src/fern/internal/sessions/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/sessions/client.py": {
+     "before": "b67947584c0764a3ae43973fd6fde388d051afa5d34359f4ae82cfac6a904f24",
+     "after": null
+    },
+    "src/fern/internal/sessions/raw_client.py": {
+     "before": "5a82a635a58a7609842fcc27608e35de9a20afc73791a06a66d484e61c42d9c5",
+     "after": null
+    },
+    "src/fern/mcp_servers/client.py": {
+     "before": "0785a1a494dc8d9736ac890980568220305a9c8947d862b3e56a4919025dbe20",
+     "after": "0707f4a845225ef706148cd370f8034c9340a80be50afeacd5bca54b97051731"
+    },
+    "src/fern/mcp_servers/raw_client.py": {
+     "before": "b9461fec87474dc1383f74b5a6e01ed11f9394c8b1cdb17fdd9e7f0d7ea72c6e",
+     "after": "4f4ee8245ade5dd409ed2e98dec4580eae8a661cead1af6c76dc0f5196bea5c3"
+    },
+    "src/fern/models/client.py": {
+     "before": "3166e1c793c051f5c3056c1c48b6212d478fb7509140ea4f19a978fcd191110e",
+     "after": "74aa541260921a28201dd7bca13f952b82088072c9e78cde9935e9462f769500"
+    },
+    "src/fern/models/raw_client.py": {
+     "before": "88feb901a1b1722996cb9b985d287cd8e5498877ac7b7e5a1dc7650aa7b74da3",
+     "after": "f148107fe5c76af4bcaf97ad72092717996611feb0567e3c0b4c0aa0fdeb7661"
+    },
+    "src/fern/sandboxes/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/sandboxes/client.py": {
+     "before": null,
+     "after": "eafcfcbaa8911119bf6aefcd36606656718241cbd0397a04a921b0fff46aafa8"
+    },
+    "src/fern/sandboxes/raw_client.py": {
+     "before": null,
+     "after": "4d6fda895c7f4425cefd12f31c667ed6453801fed08bb33774feaf16e5e3c327"
+    },
+    "src/fern/schedules/client.py": {
+     "before": "19db1bbb9ab97d1d86f1ff16546273a8745d6beba97440c267b9a89ff16d7e34",
+     "after": "da5b13564ec30929ae331169ab3791e674eee1a23f9005b6c4e6882aee0c0c41"
+    },
+    "src/fern/schedules/raw_client.py": {
+     "before": "11ce4481d76f7ea9841883512d6d076ce5eec042517acda601c52cd321d6c1b0",
+     "after": "efb8992c5c9a9029ceb86294b27573c76c9ed2f583cd266d497fa6db43549cb7"
+    },
+    "src/fern/server/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/server/client.py": {
+     "before": "7ef53be64af50a680091f6c9980cec462db1720820c5daec4cb7091fefd76171",
+     "after": null
+    },
+    "src/fern/server/raw_client.py": {
+     "before": "fc5d7aece990e9b1e1c9454720c65992d84aa75e926611ab6cccd8b733a07217",
+     "after": null
+    },
+    "src/fern/sessions/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/sessions/client.py": {
+     "before": "a9dcd165188d67758919e8415af360f1d0c4751f509821370b3fb4ab96220dc3",
+     "after": null
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "ac897c3aab4789ea8515cfe1054acc9c9d09043f6d0bb90f42dcbad0fbc150a9",
+     "after": null
+    },
+    "src/fern/settings/__init__.py": {
+     "before": "5f6a4628bf34227eaab61481dd728591b7c25b8ba0a3570d3d4e44e739062a05",
+     "after": null
+    },
+    "src/fern/settings/client.py": {
+     "before": "f557f12d35179fde6de8f20fa6f072c149f3eea53c9f63496a050460d1c8442c",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/client.py": {
+     "before": "d75831481ba676ccfaeafc0f8f8cd171a21de3611ee26677a99294e77024edbb",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/raw_client.py": {
+     "before": "17c3ad77cafd673133dbfa7cdde4eae7d679127948090fdd6f291ffe541e1c5c",
+     "after": null
+    },
+    "src/fern/settings/model_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/model_providers/client.py": {
+     "before": "6bded4015bcd21dca968100b22104846fb7f6b48f5ef4535486f980cba4259e4",
+     "after": null
+    },
+    "src/fern/settings/model_providers/raw_client.py": {
+     "before": "385d2b86d7f8abdd860f3ce7247d490ea5f3bbf6051845b7692cf33a1e9c061b",
+     "after": null
+    },
+    "src/fern/settings/raw_client.py": {
+     "before": "8773bc96911a27b93a3100ba0a34062654306f473df187bf32d70220c09bfdfb",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/client.py": {
+     "before": "8aefbe043237d079f9442e8554cc561a377b3c59ba5167e00e9c21c81e08fedf",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/raw_client.py": {
+     "before": "b18b3c78d31fccc46cc16fbcfa0bf1e0b13b9ca19531eec232566daa6e922627",
+     "after": null
+    },
+    "src/fern/settings/skills/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/skills/client.py": {
+     "before": "453af97c5788e000f288a568913b021bac6f202e320649bcddbabf01722c2c84",
+     "after": null
+    },
+    "src/fern/settings/skills/raw_client.py": {
+     "before": "7670b4cf7d456c279403e99b171632330a61b93ba687ec048f6eb3c9d5ac2124",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/client.py": {
+     "before": "d9e03d3f94408eb682e29d80a365d15fe0890965608e415c014adeb72e520124",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/raw_client.py": {
+     "before": "d44003ef42fb93c9c4cad22649301e79d7987e347bfaf372997002e1f91fa126",
+     "after": null
+    },
+    "src/fern/skills/client.py": {
+     "before": "2fd397829ffe3c6ec3cb77dc4a1d991da8c7e0a5d7cf4cfe95957946aa4bbba6",
+     "after": "f2d6d974e793088ca9ced88c82b86f8b4a057320ebdc311e188c9f616ebb1fbb"
+    },
+    "src/fern/skills/raw_client.py": {
+     "before": "ac04beb1b3aaa1c5a7c4a312afa1a4e4a8d7e5daeb9fcde4116d6b8cbb22d214",
+     "after": "3a72ace12277cc84654ce8396848c570752c5403cb2e8418b44cfe25096b583e"
+    },
+    "src/fern/web_search_providers/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/web_search_providers/client.py": {
+     "before": null,
+     "after": "a46ca3d469808ceb5eb2936df00de652dcaf890cb91e49d1391a74610ef08d91"
+    },
+    "src/fern/web_search_providers/raw_client.py": {
+     "before": null,
+     "after": "1ef9b05827f12365aa525c101a8ab02b35c8d5f1898d070e1d9fcfc5e12cec9a"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 404,
+   "after_files": 362,
+   "changed": {
+    "README.md": {
+     "before": "82407f82f834eca0c1c5160c4ed04ba470d7b6999a993bbb516e96ebd64b1cf3",
+     "after": "4a1c2a92a79e1050794d830b3c3b3a22b60bf6b96245a513afa6956b9333b04b"
+    },
+    "reference.md": {
+     "before": "0bea1ca2190c8ff3c8171d5511e78fc396806bae9739aa2a99c72d772affd18d",
+     "after": "67fe51084058fa6070cd56c75cbc104b20bda5b47b6c54bdff2db0576ab3d011"
+    },
+    "src/fern/__init__.py": {
+     "before": "4ebd48149c375b49ee4fb41261e71f7254e13af8eddcd798cefa40afb1a20556",
+     "after": "5ee78ceff15a6f31dfcde4120a254e4e7305d0dcaf0099e4e32494be2b3ffd44"
+    },
+    "src/fern/agent_sessions/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/agent_sessions/client.py": {
+     "before": null,
+     "after": "edf6cb29239ebb50d0fbea956df720aa28669161c67c33312bedbe2612caeb65"
+    },
+    "src/fern/agent_sessions/raw_client.py": {
+     "before": null,
+     "after": "089850e0ecb5680d46778bfb771b6a3cdcde3e6db2994ac9c4225f071e7ddf96"
+    },
+    "src/fern/agents/client.py": {
+     "before": "f53bcdcb2ce468ab2246cbf91e31670ecd564e185f288e8e2efd654cbfb4b217",
+     "after": "f863ab219a1e0db50fd909dd243b1f34837528600e9d29eab759eda7ed3c0d91"
+    },
+    "src/fern/agents/raw_client.py": {
+     "before": "a4f4b550f7c926b3bdaf06363ab203381c4b6c9e0f5da37eacf2e3cb5886371c",
+     "after": "e65f1b34583d28f610969ffe7194b75d26a1381a383f34be2358b2d469aa41ba"
+    },
+    "src/fern/auth/client.py": {
+     "before": "4d0ab34b71687c50e82a6c0de7e667d1bb5a2cbefb972d5db7a1ff982877ccfd",
+     "after": "4c50e3c6f6c25b4cddcf9f92356309065b1f499f56d533b43a3e65237e458cf2"
+    },
+    "src/fern/auth/raw_client.py": {
+     "before": "c90758f99e969fda3c1baaf83a92ad06e79365c2212af1ddedd0cc84d1210c3f",
+     "after": "a31653bbf093efe2c332389ef69735767ce2f7cd75c31490a11fd2bde25bf8de"
+    },
+    "src/fern/capabilities/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/capabilities/client.py": {
+     "before": null,
+     "after": "a4cdba2f00a1998f7007e9b169b7fb83775f6a84db921075569d9ace9ec7fe7a"
+    },
+    "src/fern/capabilities/raw_client.py": {
+     "before": null,
+     "after": "bf6e894f6cf29f76a2004d719b04f66e183f15d2fdfb79747a22ecc66e20fbc3"
+    },
+    "src/fern/catalogs/__init__.py": {
+     "before": "a9c68bf2e673bc49c4c8df0627a53128b7198681482e3a20ba01316d4b833b8f",
+     "after": null
+    },
+    "src/fern/catalogs/client.py": {
+     "before": "ff6e0fb3e83e2fc38e403e65468f6bc25c8da0ae73c8d86e95c9710796d7751d",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/client.py": {
+     "before": "3e162965b6bdb524563e09732f2d80b7e3ffee8cc8ca55d5d9bcc57ac7a72421",
+     "after": null
+    },
+    "src/fern/catalogs/mcp_servers/raw_client.py": {
+     "before": "869693e3e1cc69408f979de92c05d01ef6562f4e60b1cbfe3b354e91a0408e99",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/client.py": {
+     "before": "05e1c225ef0140dd4c6e01725f45456f40ae5fc148e3544cf1947f0f88ce5449",
+     "after": null
+    },
+    "src/fern/catalogs/model_providers/raw_client.py": {
+     "before": "d4b78bf1719452676c84e42fec5aed8380ea8d5ec82696dde607451c2b364430",
+     "after": null
+    },
+    "src/fern/catalogs/raw_client.py": {
+     "before": "a584dc04233a8aa390f03e973b2cf4369110d3720001e23a98dcaa7212cc91fd",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/client.py": {
+     "before": "2e203c63a2c21857bc8478a679b0e18e4ba6f83fe363731e6d2ef59b608d4b87",
+     "after": null
+    },
+    "src/fern/catalogs/sandbox_providers/raw_client.py": {
+     "before": "b368aed30ebd3f2da0296bda8caba9b9bf5f192f2495469b3d18c48cfb7c5144",
+     "after": null
+    },
+    "src/fern/catalogs/skills/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/skills/client.py": {
+     "before": "eb9c9ed7daa19d77912090ab023fcfc5f45898d8c8219925dad58308887fe00a",
+     "after": null
+    },
+    "src/fern/catalogs/skills/raw_client.py": {
+     "before": "4106f311516fa9c71dcab6ffdb8faa061ade6cc8266e1d39cc20cca7662c5637",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/client.py": {
+     "before": "172c063fd6f7a3e8f902ad7be892595c72008cbc38496361c3fba4df89ecf5f0",
+     "after": null
+    },
+    "src/fern/catalogs/web_search_providers/raw_client.py": {
+     "before": "40ba457abd0f584c29894a4bb7b3384aeabad76beed49b5c62b435a73bd3db64",
+     "after": null
+    },
+    "src/fern/client.py": {
+     "before": "6689ecfd8b58f121350a4a7d88d9993b8081e52d771197004fab6c052b0dc481",
+     "after": "c3b199017246011c9e911a7123c1e1f7cf8cd6ae5d47dff0005afd1f212039e0"
+    },
+    "src/fern/internal/__init__.py": {
+     "before": "6227777bba5760444e0ad9fd933ddd9215dea58bebff97aeab95922b8c6e2f67",
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/internal/agents/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/agents/client.py": {
+     "before": "d71054c4d088700b3eee90e0103f21dad2647df41e97c597da3895c2cd774762",
+     "after": null
+    },
+    "src/fern/internal/agents/raw_client.py": {
+     "before": "d0e788bfa87ef0fae87d4b7f29c616439d9acd030e83b0d54dffe312860f883a",
+     "after": null
+    },
+    "src/fern/internal/client.py": {
+     "before": "a869a2701aaad5339858e5b54500378ec9624ac1b65af28a5a245f4ccd6119c6",
+     "after": "0bed2170809fd1aab19acd8a3a2cb414cb566c35162aec0edcbd459a43474151"
+    },
+    "src/fern/internal/metrics/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/metrics/client.py": {
+     "before": "d3eed50a7a328e77c14ed473a4e119bd1a6ffd0689cf7f65ea0417430f27cb4c",
+     "after": null
+    },
+    "src/fern/internal/metrics/raw_client.py": {
+     "before": "97a4f40ce8d48683e71237c220b63564fa59caf39716f558d9793bff78646e40",
+     "after": null
+    },
+    "src/fern/internal/raw_client.py": {
+     "before": "baef4953a82ae53d8d4412698a95deb8a9656544743475a49c1bc32f71cf2e91",
+     "after": "53c5172f7ddb690120369ace5236e7db2e4a0e85986f5c0028572357c7aa1b34"
+    },
+    "src/fern/internal/schedules/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/schedules/client.py": {
+     "before": "a9940893e0619cd8eddc8569896e16a455a17412a60564b20e1a8d665c809a78",
+     "after": null
+    },
+    "src/fern/internal/schedules/raw_client.py": {
+     "before": "9a94b39599acc9fe72363d418571df489689bd0e0fc44dde91295e64a5a0eca4",
+     "after": null
+    },
+    "src/fern/internal/sessions/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/internal/sessions/client.py": {
+     "before": "7e5d7593154a436bd577b806e453c21b10190e552d701390df9ced6785bfcad3",
+     "after": null
+    },
+    "src/fern/internal/sessions/raw_client.py": {
+     "before": "aa6b50e1a01d1a2e0f55b8b08cc0e034ea6ddb50ec1d0171719f00da816ecdc8",
+     "after": null
+    },
+    "src/fern/mcp_servers/client.py": {
+     "before": "c0b326a27cc502edbab444c5e8f076e8f9746e3f4316c1ce3a51dee51e394ad0",
+     "after": "3ca50395d81bfbaa1cb049cb0fa0af998ea079f3f38d4798aba28591fe53e78b"
+    },
+    "src/fern/mcp_servers/raw_client.py": {
+     "before": "ba72421540b199190908399f7981a97886e93aecbdd72929288c415f43f6e71e",
+     "after": "3359a2bd0499ac53686efad08753d8124c24f9a68b2db32a45ab81d63d73512d"
+    },
+    "src/fern/models/client.py": {
+     "before": "8c961b872c012e42973e05e4898c0dc93c73b62bab678177cacca55890772e7c",
+     "after": "449845ed50b89a60e8eadff79bb56b88df9cf8fdc78e7c7786cd8fa1b1d85678"
+    },
+    "src/fern/models/raw_client.py": {
+     "before": "fa511adb3a06ec55c166cb9a37f0ca2265722e08bbf484d454da87adb27c5043",
+     "after": "bad20a12176ab3ab2033e733e50e7a66d008c10a13b70037deb6f84617a30b43"
+    },
+    "src/fern/sandboxes/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/sandboxes/client.py": {
+     "before": null,
+     "after": "7caa7d3ddc3d7ff5691d5c1f18a36f1198b70071711dbd763c816bc06f682db0"
+    },
+    "src/fern/sandboxes/raw_client.py": {
+     "before": null,
+     "after": "148e32be146e01734dca08b0f74c86e41893aa4edc4f39da739940ed7115bcf9"
+    },
+    "src/fern/schedules/client.py": {
+     "before": "3b6c2eaafe546e7f749a8e7c0b3fa9f557a492dce6878c6e3e2d39f8ba56e530",
+     "after": "df11a78659c1d3b67136b65e150d9b442aee544d36981b63c7dbd22f7ee54944"
+    },
+    "src/fern/schedules/raw_client.py": {
+     "before": "832b6b11b4a933a1648c2d3ae14fcfedf064f8097da66581730985e00f5fabe6",
+     "after": "e72cc9ab8ddcb654acbabbd31d46c5367d5c15df484908a39bb2fd0797b809f1"
+    },
+    "src/fern/server/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/server/client.py": {
+     "before": "184034af23b6421f0bf6d96191934e59feb449038e597271e1dfbe7509c9f6cf",
+     "after": null
+    },
+    "src/fern/server/raw_client.py": {
+     "before": "acb86d7800e253cbdb85931b5e8547c8166ac387aea7f2fd1ae9f98ac48a4484",
+     "after": null
+    },
+    "src/fern/sessions/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/sessions/client.py": {
+     "before": "871d28ae2e117ae4bc02a46c8b46ecd2f77d54e351dcc4698b5ef07407c67c95",
+     "after": null
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "7fbe690f423ad09f7b3b25397da6368ee9e39d30f547d7c0d3d0cca425bb298b",
+     "after": null
+    },
+    "src/fern/settings/__init__.py": {
+     "before": "a9c68bf2e673bc49c4c8df0627a53128b7198681482e3a20ba01316d4b833b8f",
+     "after": null
+    },
+    "src/fern/settings/client.py": {
+     "before": "016fb014f8b012d5491a30584f6c227d66ff5446e06f9aebf110246e6115c702",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/client.py": {
+     "before": "c9e1f7045a68034fea496e24314c66b587d4790625ca5f968a93f108dcf77f9c",
+     "after": null
+    },
+    "src/fern/settings/mcp_servers/raw_client.py": {
+     "before": "0c02587fc7c09e828f1e3e3892299e7aeff5a67a8ca3af551f3ec38b1674e187",
+     "after": null
+    },
+    "src/fern/settings/model_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/model_providers/client.py": {
+     "before": "afb161759ad4e7f915453334bd756a9e6a31340259fa974d87c9fa9435fa6b25",
+     "after": null
+    },
+    "src/fern/settings/model_providers/raw_client.py": {
+     "before": "c15f1153a465fe3c0efb3921c2a928b14edf02e9b4ca2ec779f976bbac3030e6",
+     "after": null
+    },
+    "src/fern/settings/raw_client.py": {
+     "before": "d8401b7059e6dd141d37682f46e4eb45e6901561e7c60fdade8c3d4ed8a3ce56",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/client.py": {
+     "before": "faade904b9bf56cf300ff1840a92bf7211fec016b83687d83898c33a9f1cefeb",
+     "after": null
+    },
+    "src/fern/settings/sandbox_providers/raw_client.py": {
+     "before": "d2767225c45b4a5dff054ba614076e239422b4dde38c27ae06d3466299879f82",
+     "after": null
+    },
+    "src/fern/settings/skills/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/skills/client.py": {
+     "before": "66b1df0601a5e1f38e3b62a1b7f0e02c3b9ff116fa9e0c1d7bff898294f517a2",
+     "after": null
+    },
+    "src/fern/settings/skills/raw_client.py": {
+     "before": "ea83cb227994156c02961f6764830e27908beade3f3e18e4b2e8667f31b65ded",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/client.py": {
+     "before": "3dcbaafbf5cb4d2757f07405a322f7073a41bf9fdd6e0bddbc1cca468125890b",
+     "after": null
+    },
+    "src/fern/settings/web_search_providers/raw_client.py": {
+     "before": "c165e243e3eeb4398c0ee757b241c931b403f74f35dbefbd7e665ef1e18ff63e",
+     "after": null
+    },
+    "src/fern/skills/client.py": {
+     "before": "984e023fd46ebb2b2286847daa12dd51477a9540d64a3975214b8f6f5febaf56",
+     "after": "1da4a9dedb5bfdc5ff7684d136b6f9a9e27fece98f01f95cd7abd839b5143eb0"
+    },
+    "src/fern/skills/raw_client.py": {
+     "before": "8e806b70299b01c7ef0688a7f21b85ca31068a93cef2d8a7d12272248bdf841b",
+     "after": "b3938759d5751ad4657d6452a5a7350033cd26cf6255fc56b616fcc72191c68d"
+    },
+    "src/fern/web_search_providers/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/web_search_providers/client.py": {
+     "before": null,
+     "after": "70924dbec6d88c5c8111a27c74a0a98b54cc53e5c98e885e17db4c06abef499b"
+    },
+    "src/fern/web_search_providers/raw_client.py": {
+     "before": null,
+     "after": "a9ea76d2021d4b0158e967994ae0710c26b45f473c2709833b9e24659c1de5c6"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 362
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-streaming-method-name",
+  "fixture": "truefoundry-trueforge",
+  "control": "combo-streaming-method-name",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns/post/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside `x-fern-streaming`"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}~1subscribe/get/x-fern-sdk-method-name",
+    "edit": "deleted the declared SDK method name beside `x-fern-streaming`"
+   }
+  ],
+  "crozier": {
+   "before_files": 350,
+   "after_files": 353,
+   "changed": {
+    "README.md": {
+     "before": "7b43d402a581e53373993342f045681b5c490e1f2f38dc21dff40e1d7b82cf2d",
+     "after": "ab0c90d439d1046868c1b2a5e679138e02497d2883c1da3eeeb34e71f6a91bcb"
+    },
+    "reference.md": {
+     "before": "e5b56b62eea4f5545a21abd928b1507082d08eee65f555d1d740b4c056a96699",
+     "after": "c5405d7202476035aa737fb958eff20bc087fff824fbeb3962c52b217967a24e"
+    },
+    "src/fern/__init__.py": {
+     "before": "ec188251dcb6ef133319c8fa67a37c10a624d01f741ade014d01bd77e31d915d",
+     "after": "e3aa40ea7503993c8a81f9b2839d2b94739da0ac97f1f4f3ab2f3ccd91669670"
+    },
+    "src/fern/agent_sessions/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/agent_sessions/client.py": {
+     "before": null,
+     "after": "8156eee824ee5f113827bb165e105676db19561e0192b7c8197660f5adfaa956"
+    },
+    "src/fern/agent_sessions/raw_client.py": {
+     "before": null,
+     "after": "5ff71aef6198bdb1ba28c707cf87af9cf34bbb5fd963a6391aefe3adb2410245"
+    },
+    "src/fern/client.py": {
+     "before": "bf5e5bf28acbce453e70af8722932cd0e55b5638e162487a6c9c9cea8a0df4f9",
+     "after": "9abfcb3ee480635312556ad53fa707b670f0b51c53723bd3ae8be25a85f84c03"
+    },
+    "src/fern/sessions/client.py": {
+     "before": "5b5ee62a587adb37c5dfba732833490c0c862041b740a8108debc0f2aed65e92",
+     "after": "2fc76b57bed4632088a2728e3d12a277c9ec5f1eb736a2dab3175b872205f111"
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "075d7cfad7baabe46e5f940934d10827f7a8fd66dd77926bbc427d76612180da",
+     "after": "05f1509250f3e845e85e86d529a2c309a145639ed24d8f3fb3e4e98563ed6f6a"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 350,
+   "after_files": 353,
+   "changed": {
+    "README.md": {
+     "before": "7b43d402a581e53373993342f045681b5c490e1f2f38dc21dff40e1d7b82cf2d",
+     "after": "ab0c90d439d1046868c1b2a5e679138e02497d2883c1da3eeeb34e71f6a91bcb"
+    },
+    "reference.md": {
+     "before": "6781bfee1abc670237080f53dffc03f4d3d564ac734574576d85e4fce25b2ad5",
+     "after": "eec2bc14d777dbf661f259e5b4ea81f7f3f39de9ace6d35376c1e8d3080f5fa6"
+    },
+    "src/fern/__init__.py": {
+     "before": "720c087a5b43f43f3181096adc5f26f2e9e04eee6a465219a48fa698095322ed",
+     "after": "0c03102442f63e7d854e31e34472caf7a99439b34b38ff3d4b158ec2be64d0c8"
+    },
+    "src/fern/agent_sessions/__init__.py": {
+     "before": null,
+     "after": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d"
+    },
+    "src/fern/agent_sessions/client.py": {
+     "before": null,
+     "after": "a88bf8c051481698f46ad5aa8a6760fb5947554f9245fe3c73a52fd2acffb273"
+    },
+    "src/fern/agent_sessions/raw_client.py": {
+     "before": null,
+     "after": "6203498fdada3e3f7d034397e78a9890de522f576336359265d68549c49ec158"
+    },
+    "src/fern/client.py": {
+     "before": "cbf3182f335c28d4c230319cf38e65c5fc13065dc9d23fc1a904cf0cc6046de2",
+     "after": "660d4cd5c70bfae3c0fe24319961f290a2a12527a8024891f8c0fde589529563"
+    },
+    "src/fern/sessions/client.py": {
+     "before": "c33804eaa0d1699e44d60a372896e9788a044433110d88edf30f951b19407c53",
+     "after": "64d7f51834b4e1278b82d114ca8e14af1c0e0c657c9a4b9c63b04018be880c91"
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "dabd351022df8b5de4dd4b02edb3b95230562f1aa8c9f29f414155e39d1ef2e8",
+     "after": "51af06cb51feb7341067b5ce6d86df454e4cc002a76132d4d7bfba102c137724"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 353
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-paginated-grouped-operation",
+  "fixture": "truefoundry-trueforge",
+  "control": "combo-paginated-grouped-operation",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1v1~1mcp-servers/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1schedules/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1events/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1sessions~1{session_id}~1turns~1{turn_id}~1events/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   },
+   {
+    "pointer": "/paths/~1api~1v1~1settings~1mcp-servers/get/x-fern-pagination",
+    "edit": "deleted `x-fern-pagination` beside the declared SDK group"
+   }
+  ],
+  "crozier": {
+   "before_files": 350,
+   "after_files": 349,
+   "changed": {
+    "README.md": {
+     "before": "7b43d402a581e53373993342f045681b5c490e1f2f38dc21dff40e1d7b82cf2d",
+     "after": "943e7da8faeecefce7b5433df46d29196c4ca283db9b3959f9fb08c867bc91c3"
+    },
+    "src/fern/core/__init__.py": {
+     "before": "5622858c5843dfeaa438504f3f8dd0ce2b4654b0d3cd0ff107707c9d70575397",
+     "after": "bad788e2a07cb6720136f4c441be878ab896fd7b06d5ab56b8552e2eaa926e7a"
+    },
+    "src/fern/core/pagination.py": {
+     "before": "0d3bdd1a55acf046ad169d48c51599d88c581af2d956d64f4f1940d0ae1ce1c0",
+     "after": null
+    },
+    "src/fern/mcp_servers/client.py": {
+     "before": "33cf961713c65202fce78a3accc5d0f1f2f4575a3f238bf2d417d7579d4ebd92",
+     "after": "26cfee7980bed08753ce01a572364ab0491be96d2afee410f1cae583bd857f46"
+    },
+    "src/fern/mcp_servers/raw_client.py": {
+     "before": "214884027a727c73e15e6c9419ed606d5f0eaa53e85cafb592877642dffc33f1",
+     "after": "82adaccce93b748c3649ad6a05744117dd7461582601a7bfcfd6be6faefe016e"
+    },
+    "src/fern/schedules/client.py": {
+     "before": "23bffa75678ea15b79cd0ba2824bf52dadf112e0bc9be7319c5bbea967707f7f",
+     "after": "460cd040af60fbb8607157e72d7db5e7cccf4ae3fe7810fe463fe981a2ca9158"
+    },
+    "src/fern/schedules/raw_client.py": {
+     "before": "df85d6933141d2fa95d333a2ee5e06b3f367098a505e2b1580656575698988fc",
+     "after": "7963297b07cc70d651dc57aa626a89c0f9edf39c386607869e96ee306dbdda48"
+    },
+    "src/fern/sessions/client.py": {
+     "before": "5b5ee62a587adb37c5dfba732833490c0c862041b740a8108debc0f2aed65e92",
+     "after": "cc22916c60274a7c7084f17f66e03f2fdd41a996cf776a5072f5ed2eff991cb7"
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "075d7cfad7baabe46e5f940934d10827f7a8fd66dd77926bbc427d76612180da",
+     "after": "76cb7ed97f1a7aeff0e1532c91cc42801dbb665cbc90e21a73bb2a7f9772e369"
+    },
+    "src/fern/settings/mcp_servers/client.py": {
+     "before": "b51b60373a206c09d785239b94c38cc50b607a036a1077c9eb68d819aba72333",
+     "after": "ad35c318714a3e8be9f0659407b8b50ce4da876110fb29dc83cb1d4c07f56143"
+    },
+    "src/fern/settings/mcp_servers/raw_client.py": {
+     "before": "421004118f4492cc6372fae3d5debfa5fca5b1bcc3568f80a946097bd3c10278",
+     "after": "7c163c0af620e9cb1a64572ad5bd503d9eb7494d907416aafaebdcb9a79b6f59"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 350,
+   "after_files": 349,
+   "changed": {
+    "README.md": {
+     "before": "7b43d402a581e53373993342f045681b5c490e1f2f38dc21dff40e1d7b82cf2d",
+     "after": "943e7da8faeecefce7b5433df46d29196c4ca283db9b3959f9fb08c867bc91c3"
+    },
+    "src/fern/core/__init__.py": {
+     "before": "5622858c5843dfeaa438504f3f8dd0ce2b4654b0d3cd0ff107707c9d70575397",
+     "after": "bad788e2a07cb6720136f4c441be878ab896fd7b06d5ab56b8552e2eaa926e7a"
+    },
+    "src/fern/core/pagination.py": {
+     "before": "f63399aea64e361313c1bdaf2a7a099250cc51f73e9ef9348d19c103ff22426a",
+     "after": null
+    },
+    "src/fern/mcp_servers/client.py": {
+     "before": "062e50ddfea4b283b6a97392aed091d6e176d1ddbe413acfd7879f501b19fc27",
+     "after": "60535957319993452d47f604871998c043ad8650fc96c61dd8aa59ab9637bc64"
+    },
+    "src/fern/mcp_servers/raw_client.py": {
+     "before": "f3fc11d6f81f080d0d0601a7453d90e455431d56245ac3ad2bf8d54f7782687a",
+     "after": "53fdbf55ea5b76a62f8b5f29f606fcf3f086ce5536da04ed1352089e3b9a86a3"
+    },
+    "src/fern/schedules/client.py": {
+     "before": "257d7765871632be8974cb11f098184a19a1280612ff40990f02baa044f4ba92",
+     "after": "dd0bda12f013fdcb8d09b3e0d1d97d90c61a6dd2852de26c05ecc90b7ad805b9"
+    },
+    "src/fern/schedules/raw_client.py": {
+     "before": "5cae8e3a07a2806f078c8469ab5fc85ed2bed58aab43c2edc76d3e383d7bb9c6",
+     "after": "fc8f0cffec723f0f5724e11568c04cf52e1c4ea8c1cbaca0f86c112966e5baec"
+    },
+    "src/fern/sessions/client.py": {
+     "before": "c33804eaa0d1699e44d60a372896e9788a044433110d88edf30f951b19407c53",
+     "after": "aa97616182b058433aa60d1e9d55636f5daecc4399708121ec8237bab3434fd7"
+    },
+    "src/fern/sessions/raw_client.py": {
+     "before": "dabd351022df8b5de4dd4b02edb3b95230562f1aa8c9f29f414155e39d1ef2e8",
+     "after": "6de17577b45cead01ff24173475b0cae6919fe3a22351a56adf7eeab4fccf126"
+    },
+    "src/fern/settings/mcp_servers/client.py": {
+     "before": "79f20f3cb22f3fb7bfb60cfce958b366f2d838e8da8ab57ca39dac4562541297",
+     "after": "5f6b7a8b8608ef90c9f44fb081d22ad102fd85e9c1266a1e81ad315897f06b65"
+    },
+    "src/fern/settings/mcp_servers/raw_client.py": {
+     "before": "41e02ef5039227682565943e973aed2d5248fa303610de5086b22671e279f395",
+     "after": "136bda887091ae00b88f86c898a6f5b03fb1d12f7a42779be3eaeb8fe9afc36a"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 349
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-oas31-root-response",
+  "fixture": "electric-sql",
+  "control": "combo-oas31-root-response-drop-content",
+  "edits": [
+   {
+    "pointer": "/paths/~1v1~1shape/get/responses/200/content",
+    "edit": "deleted the root operation's success response content"
+   },
+   {
+    "pointer": "/paths/~1v1~1shape/post/responses/200/content",
+    "edit": "deleted the root operation's success response content"
+   }
+  ],
+  "crozier": {
+   "before_files": 65,
+   "after_files": 52,
+   "changed": {
+    "reference.md": {
+     "before": "78a8a5db6efc9c7856351fe9a2f37b0721485db24a6aba18582719cef3b6d1da",
+     "after": "c52de995a530e948e621b0959fcd9957d06afd7f7ee9e15655c502bd55ea42c9"
+    },
+    "src/fern/__init__.py": {
+     "before": "0dac0e116c4f6262821c182edc82f01d02ce3c70298d992aa20733dc584d2dd5",
+     "after": "1d60f9bc931d789dcd593ca2dece8f150b4f4bdaef8b1a2dc796c70decddfa3c"
+    },
+    "src/fern/client.py": {
+     "before": "f04d99649df4a0765449d275eacbc08d4422e982d981c0aafdb3132259742a39",
+     "after": "1d94f07ee41d22e13c5cb965220546c176d6a7e546a8ffe0c2286a84b489db79"
+    },
+    "src/fern/raw_client.py": {
+     "before": "7ae1d0f2def1764855d0730d1cc182231ac6e11e3135222d312c76a9f6eda669",
+     "after": "fff924891e3fc8aa727ce8ec14976a3c3dae4036bee246315a04f42427cd91f0"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "9d9f605f04798e4d8cd9f1505defa92d4283afd3b9a596bdb6d7c050aa03736d",
+     "after": "12f648a7dedea0bec4c4cd39207d98ac4ecab48f9b427a692be170a027323f42"
+    },
+    "src/fern/types/get_v1shape_response.py": {
+     "before": "bdd3110725f2a6989bd677fe1949c3cecfc3ebc520f5d101fcaedc51fea388fa",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data.py": {
+     "before": "984f7544aee9fce241e8aa09a5291acdf56fe326fbbec0ecd554b3fb17b338af",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item.py": {
+     "before": "0128f49031402e8b167da10f8004091e29351e0cad55ad3da0878f5116c43e08",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item_headers.py": {
+     "before": "67a1a7cde86636518427d6cfb3b202d76b29067ab866ad508582b52e0edece09",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item_headers_operation.py": {
+     "before": "d3bf51f2f18698b087de9b9d0892c0b063a785f602ec0bdbf134eef2fc33f6c8",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_metadata.py": {
+     "before": "7b1100ef104ef0baad62c0ca99623c3128f00fa18c0de747b8c91cfcb9b7f62a",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item.py": {
+     "before": "fee38ff70b5a5b05bcee73465d7dcfe132d0ddc7dd0b0f010828f494f6280533",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers.py": {
+     "before": "c70cc510f75aa5553d2c1910327baca8223c5d8a9c0ae19e213561e222012f01",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers_control.py": {
+     "before": "206a53933b046359f31a92fbca64850355a159601cf48c123b285cb018ed5c62",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers_operation.py": {
+     "before": "b5d8b2f17c87ff4bec427811b6b442d67f805cc6284cc044bc0acba64d0449cd",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response.py": {
+     "before": "4d1f08eb269420e9297ad3f77cb4a50a01b8abf0841eac7fe484ceebba6b3b8d",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response_data_item.py": {
+     "before": "f901761dd3ce3d7e9a83efd41aa9a602093b58b71e6fc3dac7c13622142c0782",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response_metadata.py": {
+     "before": "28f3b335a19def0da253a8a0dab8691e71a20cf95df03ff2d842af35ae491d2b",
+     "after": null
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 65,
+   "after_files": 52,
+   "changed": {
+    "reference.md": {
+     "before": "78a8a5db6efc9c7856351fe9a2f37b0721485db24a6aba18582719cef3b6d1da",
+     "after": "c52de995a530e948e621b0959fcd9957d06afd7f7ee9e15655c502bd55ea42c9"
+    },
+    "src/fern/__init__.py": {
+     "before": "e48863df972812417f6732167131bf7fde14bfae7f5ac4abc503c1bd5220d747",
+     "after": "27867deb0925c160fbcef638c3c27de6dc78caba36d29574b17d39080921aa41"
+    },
+    "src/fern/client.py": {
+     "before": "48aea81eef656b25ba42a54bcd27328cad31bc71021513df8dac34f22b4ba835",
+     "after": "db637f998ce09bb491b55de82a0c6e7008e7b01020227efdf77fb0f5c475c89a"
+    },
+    "src/fern/raw_client.py": {
+     "before": "65f2f4562d4eeea335622291b87be17b20ea4476c48bdef1b4f1f91775753e95",
+     "after": "c45df90cd7c7f1ccd1397f42f953eb960e916e2f37ebe57fafb56971bc9ba8f6"
+    },
+    "src/fern/types/__init__.py": {
+     "before": "bc12e20145407faf18ae4fd5596daac1b0a4f513c65aabdea228a77082890350",
+     "after": "3fa741d2d42f6d894b90ed16b02fe08b13a9d0da617aa8e93ccefb0050d89d78"
+    },
+    "src/fern/types/get_v1shape_response.py": {
+     "before": "cf9a3670fcc75e247098e31b22fd3a4e41495d095a49c91840d96840d844d34b",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data.py": {
+     "before": "49f2d14ef1caa79c2a02ff9f1353e80ca29448bda8b97755205b686b9ac4c8da",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item.py": {
+     "before": "6603f5b79932ad2d2aa7c385bea54f846ad7d71b592522a3d9069e8f36ccbad3",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item_headers.py": {
+     "before": "888e98af0bfa35f667f4e600b3b4d77634d2450171c6a3dc7df5bdbabeb3bfa6",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_data_item_headers_operation.py": {
+     "before": "ee8afb22d82d8f1fd40aaba226ac49856b7f4cdb7a10c62aff7ccb9c046d11e6",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_data_metadata.py": {
+     "before": "10d5b3a683a2180c78015173989dbc6b3abb6d7385e17541bc187f0f49ad10b9",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item.py": {
+     "before": "2e779620d7951caddd5ac2f5e03d524991cca1715c4204e58ab82e391d3f336f",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers.py": {
+     "before": "10f89055aefa2c752b7deb851316f8c72a1f822161e31f2964140a8710b79f3d",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers_control.py": {
+     "before": "d7fba3e539164c7389898e9949075d066bf03b2df7d408cea741d3c70bcf3199",
+     "after": null
+    },
+    "src/fern/types/get_v1shape_response_zero_item_headers_operation.py": {
+     "before": "4305983100212536a157e9a80f8c0351548201ac8bb9321cde09747dddfbbcf0",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response.py": {
+     "before": "0ff66a466d801cbfe04f64d9633a47ac618e81aa75e43ae53de71bf9355a4b4b",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response_data_item.py": {
+     "before": "72fd75f735a1bdcd16afd47ea7ad0dadac0444a2c47009518405a862c683d4aa",
+     "after": null
+    },
+    "src/fern/types/post_v1shape_response_metadata.py": {
+     "before": "e670b507a98bc9fcbfc290cddc74fb22880032e4fe8a8e4901c0d48c7ae9109c",
+     "after": null
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 52
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-oas31-grouped-response",
+  "fixture": "helixdb-http-api",
+  "control": "combo-oas31-grouped-response-ungroup",
+  "edits": [
+   {
+    "pointer": "/paths/~1v2~1query/post/tags",
+    "edit": "deleted `tags`, so no group or tag places the operation"
+   },
+   {
+    "pointer": "/paths/~1healthz/get/tags",
+    "edit": "deleted `tags`, so no group or tag places the operation"
+   },
+   {
+    "pointer": "/paths/~1readyz/get/tags",
+    "edit": "deleted `tags`, so no group or tag places the operation"
+   }
+  ],
+  "crozier": {
+   "before_files": 80,
+   "after_files": 75,
+   "changed": {
+    "README.md": {
+     "before": "e3d79348fde1c91efeb2ff25b1594a1e4d58cd098f260af0a5e0ea0e9bb314be",
+     "after": "a51fd314feaff0290720e96197a7f67e182e92d04dd2dd9dbcf42a8ecba2ee6f"
+    },
+    "reference.md": {
+     "before": "adaa219430b1eade6d09a36d8aad7400a426edf49f16178c1094ea99b84a301d",
+     "after": "b98c96564200704c1f4a6f62bf4ad4dd476a67259a3270b3fba21f4a56f2cf66"
+    },
+    "src/fern/__init__.py": {
+     "before": "7b7c1869a2013a4e8bac09fbe2bf3e7df2cd9a568585023fdbc282a38049fe68",
+     "after": "3a7437c5c570f141fd7d433395ce392c2b950009d7315fa2ceb3367c60025952"
+    },
+    "src/fern/client.py": {
+     "before": "a300283e30baad150d34c8c98b6eb7287e82ee52775bb76cb4f157f225e2a267",
+     "after": "b9b8059510be205753c4a8acae5dcf63e7fbf1ca8ac68292047a599b20f8b5e0"
+    },
+    "src/fern/health/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/health/client.py": {
+     "before": "6e8be2acf51e992d443549d41b8829096067c5aa715fe9ef48b8116d02fa87b7",
+     "after": null
+    },
+    "src/fern/health/raw_client.py": {
+     "before": "ec3bf69aa10c98d221d69e171e35cff5efb2c97b9e28dfda091dade438640795",
+     "after": null
+    },
+    "src/fern/queries/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/queries/client.py": {
+     "before": "3dcfca42261a5db15200efe7cd28deee611fa272c6f3d1f21723480727912004",
+     "after": null
+    },
+    "src/fern/queries/raw_client.py": {
+     "before": "6ef8d302eb09679a0162a58cc37790168910ce12df8a6127109be371c680149c",
+     "after": null
+    },
+    "src/fern/raw_client.py": {
+     "before": null,
+     "after": "26e3dbc3c06c88373f4f69d7e9d2e3379eaeb77c349b91b8479a9fbe596ce885"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 80,
+   "after_files": 75,
+   "changed": {
+    "README.md": {
+     "before": "e3d79348fde1c91efeb2ff25b1594a1e4d58cd098f260af0a5e0ea0e9bb314be",
+     "after": "a51fd314feaff0290720e96197a7f67e182e92d04dd2dd9dbcf42a8ecba2ee6f"
+    },
+    "reference.md": {
+     "before": "adaa219430b1eade6d09a36d8aad7400a426edf49f16178c1094ea99b84a301d",
+     "after": "b98c96564200704c1f4a6f62bf4ad4dd476a67259a3270b3fba21f4a56f2cf66"
+    },
+    "src/fern/__init__.py": {
+     "before": "0c84b8f29e578d506dde11b2bafa8d0acf4041c3d7b932462d6ba8dd63a98159",
+     "after": "b96c81c7193ca5e6f627ccc0ae87bd187bc0e03b2a82cca4ba5370bf93c48d67"
+    },
+    "src/fern/client.py": {
+     "before": "330bd1bc9fc4a292a445639272a64e8ba5746d3adb082cf3ef86fbeca9008229",
+     "after": "fca01ced8f3202b8df44db6451949219f8db761d43f017860a7057f40de365b9"
+    },
+    "src/fern/health/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/health/client.py": {
+     "before": "ad3011c192fbe386c1ad8c247e2d4992cc7dada0a14aeceab18dc80064c09982",
+     "after": null
+    },
+    "src/fern/health/raw_client.py": {
+     "before": "fb7999894431331248b6299a65c6f5fdc5969c274a93cd79c593bdf8b5351707",
+     "after": null
+    },
+    "src/fern/queries/__init__.py": {
+     "before": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+     "after": null
+    },
+    "src/fern/queries/client.py": {
+     "before": "b69d62b895ac106df63809ce9eccca1da0db8cde4017fb16e34fe843b21a284a",
+     "after": null
+    },
+    "src/fern/queries/raw_client.py": {
+     "before": "984b06dd49bf462ac4a1df5e4c6ba188442e456e94d610c3033a3629c7f09147",
+     "after": null
+    },
+    "src/fern/raw_client.py": {
+     "before": null,
+     "after": "4dcd2a145d73f2bd3537498683f9cd284805c8f15ba0d5d5601931b2a08c4f01"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 75
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-document-security-security-empty",
+  "fixture": "audiobookshelf",
+  "control": "combo-document-security-security-empty",
+  "edits": [
+   {
+    "pointer": "/paths/~1api~1authors~1{id}~1image/get/security",
+    "edit": "deleted the operation's empty `security` override of the document requirement"
+   }
+  ],
+  "crozier": {
+   "before_files": 181,
+   "after_files": 181,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "0b63811bc57e4cc937e04b305e3f9e2a1e93414c2133dde6acf84dadb64faf6d",
+     "after": "faccfcafc6b922eeb114ad31f13a39c6032f8e89cbcede58d826e51b740059f3"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "3de90af53e239b755cce49f76b0ee87dd51377d4a2bf2ad01b10b48e57832ae6",
+     "after": "87d3100fe9254162298f52d473f53bb5a6144b9aaae22d489f9de24c72c937aa"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 181,
+   "after_files": 181,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "0aa55722a545bda71a8b7529accc2971c2eaf0b1edb171684e2d01dda77abcd9",
+     "after": "ad3b45b9cfee11cd8e5de8d1a789d08ae310ea5d4f790d642f190759b2fa8940"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "3be0ace73c4d4b6ef9139dcdef3f2b8f44aa6e6cf25343c0b01d310def1e64c8",
+     "after": "983e9e8753e3aa6077dfcb756559704348132b71efa666effb03e4f8b3319f1e"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 181
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-basic-auth-document-requirement",
+  "fixture": "subsloth",
+  "control": "combo-basic-auth-document-requirement",
+  "edits": [
+   {
+    "pointer": "/security",
+    "edit": "deleted the document's `security` requirement"
+   }
+  ],
+  "crozier": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "5a8eaff2bdc10722074ecf55d97d39fbde7c1b48da415b94995a4020f70f1e4a",
+     "after": "536d795caceea09bca9132fb26db6b81e5c4d37ec7f80407b3f9f964a34916c5"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "79c228765ac73bfe9b382074fa8908d41a22da88011c2f78a3f1bb4a10b92c7c",
+     "after": "46076d2929f1f3d1b3e858dde773db1b08edad73ee4e364e2b6b5ef093e6c810"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 93,
+   "after_files": 93,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "7fcb1fc196cfa78c0a192f7638c59edc360c9d89b8e8d438216cf9234b89c096",
+     "after": "37324731cc79b8c156877297c43a054cd9590ab9d836abd686b6afb1298e41de"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "d01e9366db1e429ba97a87408e48aa51ac4faca9e146ba4e99e9c57640fdf67e",
+     "after": "3e198c5fe4f91d3a1f70e931bf4b4471fd0fa9ce3c850032fe0a3c7cc4193e43"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 93
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-basic-auth-operation-requirement",
+  "fixture": "nexmo-messages",
+  "control": "combo-basic-auth-operation-requirement",
+  "edits": [
+   {
+    "pointer": "/paths/~1/post/security",
+    "edit": "deleted the operation's `security` beside the declared HTTP basic scheme"
+   }
+  ],
+  "crozier": {
+   "before_files": 210,
+   "after_files": 210,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "5416477d1c827fbc79b9a85c55ea8aa44f1b25ba6b9198bdf231321fe118dbcf",
+     "after": "27034feaa5aef3ab39ada38eff26e032926c2c08ba2646f0079aed78b3e1e356"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "79c228765ac73bfe9b382074fa8908d41a22da88011c2f78a3f1bb4a10b92c7c",
+     "after": "46076d2929f1f3d1b3e858dde773db1b08edad73ee4e364e2b6b5ef093e6c810"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 210,
+   "after_files": 210,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "ddda65906616c72fdcb4e479bc017dc78497da536ec6a78961f89a282388c4ce",
+     "after": "446f361c6f81b4218fe4ad2aa5ba7ae5ba9048a67b495e4f766a6ea2e6bc8bb7"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "d01e9366db1e429ba97a87408e48aa51ac4faca9e146ba4e99e9c57640fdf67e",
+     "after": "3e198c5fe4f91d3a1f70e931bf4b4471fd0fa9ce3c850032fe0a3c7cc4193e43"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 210
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-document-operation-security",
+  "fixture": "mindee-ocr",
+  "control": "combo-document-operation-security",
+  "edits": [
+   {
+    "pointer": "/paths/~1internal~1health/get/security",
+    "edit": "deleted the operation's `security` beside the document's"
+   }
+  ],
+  "crozier": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "704c8415f6fd08e72fdd996956428d1db15f1bcedf199858f0b76d6f7730e53b",
+     "after": "b3b4a188a6d209588a1f671f9e3d14fb1415197480197eda9a6e71afbe30a954"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "3de90af53e239b755cce49f76b0ee87dd51377d4a2bf2ad01b10b48e57832ae6",
+     "after": "87d3100fe9254162298f52d473f53bb5a6144b9aaae22d489f9de24c72c937aa"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 61,
+   "after_files": 61,
+   "changed": {
+    "src/fern/client.py": {
+     "before": "23ee735233d6d28a074ca65ceb41c9cc66a9822b2ac39fcc881ea1eb7519474b",
+     "after": "cc75ecbbb7b2f9bb0c345ed0ad40486a9dde7b00fc6b56201cd13f4cd147715c"
+    },
+    "src/fern/core/client_wrapper.py": {
+     "before": "3be0ace73c4d4b6ef9139dcdef3f2b8f44aa6e6cf25343c0b01d310def1e64c8",
+     "after": "983e9e8753e3aa6077dfcb756559704348132b71efa666effb03e4f8b3319f1e"
+    }
+   }
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   },
+   "files_compared": 61
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ }
+]
