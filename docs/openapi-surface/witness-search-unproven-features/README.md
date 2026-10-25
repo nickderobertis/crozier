@@ -297,8 +297,14 @@ document is a witness, because no context of these keys changes output.
 ## Empty-object arm attribution
 
 `schema-example-empty-object` is a `golden` feature; its
-`src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` arm is
-decided output-insensitive, never proven. The four real declarers the census
+`src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` arm was
+decided output-insensitive, never proven, until the reconciled reach
+measurement found all 5 of its regions executed by its byte-matched golden-only
+witnesses, which since the previous measurement gained `microsoft-adme-seismic`
+(corpus row 3004) and `rgb-lightning-node` (row 3203): it is now a reached arm in [the ledger](../golden-reach.tsv), and its row of
+[the shared table](../output-insensitive.tsv) was withdrawn, since an arm is never
+both reached and decided. The record below stays as the evidence that decision
+rested on. The four real declarers the census
 records executing the arm (two Meraki versions, Open Banking PCM and ADME
 seismic) move no crozier-generated file when their empty-object examples are
 deleted, so none is an output-sensitive witness. The locally
@@ -312,8 +318,8 @@ Both complete trees are identical between the two documents at the certified
 pair (38 Fern files) and in crozier. The two documents are also committed as
 `measured` probe trees (`empty-model-media-example` and
 `empty-model-media-example-no-media-control` in `../probe-expected/MANIFEST.tsv`),
-which crozier byte-matches. The comparison records are the arm's row of
-[the shared table](../output-insensitive.tsv).
+which crozier byte-matches. The comparison records were the arm's row of
+the shared table and remain committed beside this record.
 
 ## Remaining bounds after the source repairs
 

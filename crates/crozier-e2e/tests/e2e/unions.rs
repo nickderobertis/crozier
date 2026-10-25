@@ -54,9 +54,13 @@ pub(super) fn compared() -> Vec<(String, Vec<String>)> {
 }
 
 /// Fixtures kept as `measured` probe trees rather than hand-written fixtures:
-/// their arm left the site table when crozier stopped branching on it, so they
-/// carry no cover, but their Fern trees stay byte-gated here and by Contract A.
-const PROBE_FIXTURES: [&str; 1] = ["museum-titled-array-items"];
+/// their arm left the site table when crozier stopped branching on it, or a
+/// registered real specification now reaches it, so they carry no cover, but
+/// their Fern trees stay byte-gated here and by Contract A.
+const PROBE_FIXTURES: [&str; 2] = [
+    "museum-titled-array-items",
+    "pharmacy-nullable-scalar-unions",
+];
 
 /// A measured probe keeps its document beside the other probes; every other
 /// fixture keeps it in its own hand-written directory.

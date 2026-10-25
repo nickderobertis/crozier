@@ -18586,6 +18586,45 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         self.assertEqual(original, self.index.read_text(encoding="utf-8"))
 
+    def test_combination_proof_split_follows_the_reach_ledger_and_the_rows(self) -> None:
+        def stated() -> list[int]:
+            flat = " ".join(self.index.read_text(encoding="utf-8").split())
+            found = matched(
+                re.search(
+                    r"\*\*Combinations by proof\.\*\* \*\*(\d+)\*\* are byte-matched .*? \*\*(\d+)\*\* are compared "
+                    r".*? \*\*(\d+)\*\* rest on .*? \*\*(\d+)\*\* remains? unproven and \*\*(\d+)\*\* (?:is|are) "
+                    r"decided output-insensitive: [\d +]+ = (\d+)\.",
+                    flat,
+                )
+            )
+            return [int(found[n]) for n in range(1, 7)]
+
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        real, measured, weak, unproven, decided, total = stated()
+        self.assertEqual(total, real + measured + weak + unproven + decided)
+        self.assertEqual(len(census.COMBINATIONS), total)
+        original = self.index.read_text(encoding="utf-8")
+        # A golden combination whose ledger row names no golden-only witness is unproven.
+        ledger = self.root / "docs/openapi-surface/golden-reach.tsv"
+        ledger_text = ledger.read_text(encoding="utf-8")
+        line = next(
+            row for row in ledger_text.splitlines() if row.split("\t")[1:2] and row.split("\t")[1].startswith("combo-")
+        )
+        fields = line.split("\t")
+        fields[6] = "-"
+        ledger.write_text(ledger_text.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        self.assertEqual(1, self.run_restater("--combinations-only").returncode)
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        self.assertEqual([real - 1, measured, weak, unproven + 1, decided, total], stated())
+        ledger.write_text(ledger_text, encoding="utf-8")
+        # A hand-edited figure is drift the check refuses and the write repairs.
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        self.index.write_text(original.replace(f"**{weak}** rest on", f"**{weak + 1}** rest on", 1), encoding="utf-8")
+        self.assertEqual(1, self.run_restater("--combinations-only").returncode)
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
     def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
@@ -19140,10 +19179,9 @@ class CoverageRestatementTests(unittest.TestCase):
             ),
             "partial site": (
                 region,
-                lambda text: text
-                + "\n"
-                + sample.replace("`src/naming.rs` 1", "`src/naming.rs` 1, `src/emit.rs`")
-                + "\n",
+                lambda text: (
+                    text + "\n" + sample.replace("`src/naming.rs` 1", "`src/naming.rs` 1, `src/emit.rs`") + "\n"
+                ),
             ),
             "artifact": (region, lambda text: text + "\n" + sample.replace("`client.py`", "unknown.py") + "\n"),
             "declarations": (region, lambda text: text + "\n" + sample.replace("0 declarations", "unknown") + "\n"),
@@ -19155,9 +19193,13 @@ class CoverageRestatementTests(unittest.TestCase):
             "ledger short row": (ledger, lambda text: text + "sample\n"),
             "ledger duplicate": (
                 ledger,
-                lambda text: text
-                + next(line for line in text.splitlines() if not line.startswith("#") and not line.startswith("rank\t"))
-                + "\n",
+                lambda text: (
+                    text
+                    + next(
+                        line for line in text.splitlines() if not line.startswith("#") and not line.startswith("rank\t")
+                    )
+                    + "\n"
+                ),
             ),
             "residual section": (
                 self.index,

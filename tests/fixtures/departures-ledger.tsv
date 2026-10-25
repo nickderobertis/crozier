@@ -1755,11 +1755,6 @@ docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fer
 docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/pharmacy-nullable-scalar-unions/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/pharmacy-nullable-scalar-unions/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/pharmacy-nullable-scalar-unions/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/pharmacy-nullable-scalar-unions/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/pharmacy-nullable-scalar-unions/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/poster-upload/fern-expected	src/fern/client.py	130	multipart-object-required-file-example
 docs/openapi-surface/handwritten/poster-upload/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/poster-upload/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -2663,6 +2658,11 @@ docs/openapi-surface/probe-expected/parameter-style-simple-path-object	src/fern/
 docs/openapi-surface/probe-expected/parameter-style-simple-path-object	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/parameter-style-simple-path-object	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/parameter-style-simple-path-object	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/pipeDelimited-array	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/pipeDelimited-array	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/pipeDelimited-array	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
