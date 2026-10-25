@@ -5736,7 +5736,20 @@ fn raw_docstring(
         push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() && ep.openapi_31 {
+    pad_root_docstring_blank_lines(ep, &mut lines);
+    lines.join("\n")
+}
+
+/// Give a root-client method docstring's blank lines the 8-space body indent.
+///
+/// Fern writes them indented on a root-client method and empty on a grouped one,
+/// whatever the document's version. Ruff strips that indent from most docstrings,
+/// so it survives only in one ruff leaves alone, one with a line ending in a backslash:
+/// `discourse.local`'s and `electric-sql`'s root methods (OpenAPI 3.1) keep it,
+/// `tamoss`'s and `webflow-v2`'s grouped ones (3.1) and `zulip`'s (3.0) do not,
+/// and the certified pair keeps it on `electric-sql` re-declared as 3.0.3.
+fn pad_root_docstring_blank_lines(ep: &Endpoint, lines: &mut [String]) {
+    if ep.module.is_empty() {
         lines
             .iter_mut()
             .filter(|line| line.is_empty())
@@ -5744,7 +5757,6 @@ fn raw_docstring(
                 *line = "        ".to_string();
             });
     }
-    lines.join("\n")
 }
 
 /// Render one path parameter's docstring block: its `name : ty` line, then the
@@ -8062,14 +8074,7 @@ fn client_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() && ep.openapi_31 {
-        lines
-            .iter_mut()
-            .filter(|line| line.is_empty())
-            .for_each(|line| {
-                *line = "        ".to_string();
-            });
-    }
+    pad_root_docstring_blank_lines(ep, &mut lines);
     lines.join("\n")
 }
 
@@ -8281,14 +8286,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() && ep.openapi_31 {
-        lines
-            .iter_mut()
-            .filter(|line| line.is_empty())
-            .for_each(|line| {
-                *line = "        ".to_string();
-            });
-    }
+    pad_root_docstring_blank_lines(ep, &mut lines);
     lines.join("\n")
 }
 
@@ -16850,6 +16848,59 @@ mod tests {
             raw.contains("params={\n                \"voltage\": voltage,"),
             "{raw}"
         );
+    }
+
+    /// A root-client method's docstring section separators carry the 8-space
+    /// indent in a 3.0 document as in a 3.1 one, and a grouped method's stay empty: Fern
+    /// keys the indent on the module, not the version (`electric-sql`
+    /// re-declared as 3.0.3, measured at the certified pair). Each description
+    /// ends a line in a backslash, as the witnesses' do, so ruff keeps the indent.
+    #[test]
+    fn root_docstring_blank_lines_are_indented_whatever_the_version() {
+        for version in ["3.0.3", "3.1.0"] {
+            let files = files_for(serde_json::json!({
+                "openapi": version,
+                "info": {"title": "Tide Gauges", "version": "1"},
+                "paths": {
+                    "/readings": {"get": {
+                        "operationId": "listReadings",
+                        "description": "List the latest readings.\n\nEach gauge reports under C:\\",
+                        "responses": {"200": {"description": "Readings", "content": {
+                            "application/json": {"schema": {"type": "string"}}}}}
+                    }},
+                    "/gauges": {"get": {
+                        "operationId": "listGauges",
+                        "tags": ["Gauges"],
+                        "description": "List the gauges.\n\nEach lives under C:\\",
+                        "responses": {"200": {"description": "Gauges", "content": {
+                            "application/json": {"schema": {"type": "string"}}}}}
+                    }}
+                }
+            }));
+            let source = |suffix: &str| {
+                files
+                    .iter()
+                    .find(|(path, _)| path.ends_with(suffix))
+                    .unwrap_or_else(|| panic!("{suffix} is not generated"))
+                    .1
+                    .as_str()
+            };
+            for root in [source("src/api/client.py"), source("src/api/raw_client.py")] {
+                assert!(
+                    root.contains("reports under C:\\\\\n        \n        Parameters"),
+                    "{version}: {root}"
+                );
+            }
+            for grouped in [
+                source("src/api/gauges/client.py"),
+                source("src/api/gauges/raw_client.py"),
+            ] {
+                assert!(
+                    grouped.contains("lives under C:\\\\\n\n        Parameters"),
+                    "{version}: {grouped}"
+                );
+            }
+        }
     }
 
     /// A 3.0 document posting `body` to `/leads` and answering JSON.
