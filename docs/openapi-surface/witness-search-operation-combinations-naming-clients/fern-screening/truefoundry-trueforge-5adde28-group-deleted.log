@@ -1,0 +1,22 @@
+certified pair: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 (tools/fern-goldens/generate-fern-fixture.sh, under flock ~/.cache/crozier-run-generation.lock)
+document: corpus row truefoundry-trueforge-5adde28's source with x-fern-sdk-group-name deleted at the 61 operations writing tags, a group and a method name (the JSON round trip, then the deletion)
+sha256: f82f613e2f3df8fbe751a7ab0016e6ba82a08a19064262d1f4e8c5503bf4832b
+result: refused (fern generate exited 1)
+
+fern generate exited 1 with no tree:
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> create_turn
+                  __package__.yml
+                  [error] CreateTurnRequest is already declared in this file
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> create_turn%0A__package__.yml%0A[error] CreateTurnRequest is already declared in this file
+[api]: python-sdk Found 1 errors and 2 warnings in 0.647 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 1 errors and 2 warnings in 0.647 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

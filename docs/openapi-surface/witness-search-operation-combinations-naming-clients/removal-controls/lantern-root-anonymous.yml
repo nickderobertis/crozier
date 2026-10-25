@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Lantern Registry
+  version: 1.0.0
+servers:
+  - url: https://lanterns.example.com
+security:
+  - {}
+paths:
+  /lanterns:
+    get:
+      operationId: listLanterns
+      tags: [Lanterns]
+      responses:
+        "200":
+          description: The lanterns on record.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  securitySchemes:
+    keeperToken:
+      type: http
+      scheme: bearer

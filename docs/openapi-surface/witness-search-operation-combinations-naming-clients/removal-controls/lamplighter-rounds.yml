@@ -1,0 +1,84 @@
+openapi: 3.0.3
+info:
+  title: Lamplighter Rounds
+  version: 1.0.0
+  description: Schedules the evening rounds of a town's lamplighters.
+servers:
+  - url: https://rounds.lamplighters.example
+security:
+  - keeperToken: []
+paths:
+  /rounds:
+    post:
+      operationId: scheduleRound
+      tags: [Rounds]
+      summary: Schedule a round
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Round"
+      responses:
+        "200":
+          description: The round as scheduled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Round"
+  /rounds/{district}:
+    put:
+      operationId: replaceRound
+      tags: [Rounds]
+      summary: Replace a district's round
+      description: The guild's dispatcher replaces a round with its own credential.
+      security:
+        - guildDispatch: [rounds:write]
+      parameters:
+        - name: district
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Round"
+      responses:
+        "200":
+          description: The round as replaced.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Round"
+components:
+  securitySchemes:
+    keeperToken:
+      type: http
+      scheme: bearer
+    guildDispatch:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://rounds.lamplighters.example/oauth/token
+          scopes:
+            rounds:write: Schedule rounds
+  schemas:
+    Round:
+      type: object
+      required: [district, lamps]
+      properties:
+        district:
+          type: string
+          description: The district the round covers.
+          example: Old Harbour
+        lamps:
+          type: integer
+          description: How many lamps the round lights.
+          example: 42
+        starts_at:
+          type: string
+          format: date-time
+          description: When the lamplighter sets out.

@@ -1126,18 +1126,11 @@ fn auth_model(doc: &OpenApi) -> Auth {
     // An OAuth2 scheme reads the same way: SteamInputDB declares one `oauth2`
     // scheme, no `security` at the document level and none on any of its nine
     // operations, and its golden's wrapper still takes an optional `token` and
-    // sends `Authorization: Bearer`. Only an `http` `basic` scheme is taken solely
-    // from a declared Security Requirement Object — an empty root `security: []`
-    // counts, and so does one on a webhook operation. Selection order is untouched
-    // by this: the first supported scheme still wins, and the check is on what
-    // that scheme turned out to be.
-    let requirement_declared = doc.security.is_some()
-        || doc
-            .paths
-            .values()
-            .chain(doc.webhooks.values())
-            .flat_map(crate::openapi::PathItem::operations)
-            .any(|(_, op)| op.security.is_some());
+    // sends `Authorization: Bearer`. So does an `http` `basic` scheme at Fern CLI
+    // 5.163.1 with fern-python-sdk 5.41.3: `nexmo-messages` with its one
+    // operation's `security` deleted, and `apache.org` (Airflow) with its root
+    // `security: []` deleted, each keep optional `username` and `password`. The
+    // first supported scheme wins, whatever the requirements name.
     let selected = doc.components.security_schemes.values().find(|scheme| {
         (scheme.ty == SecuritySchemeType::ApiKey
             && scheme.location == Some(ParameterLocation::Header))
@@ -1149,17 +1142,6 @@ fn auth_model(doc: &OpenApi) -> Auth {
             || scheme.ty == SecuritySchemeType::OAuth2
             || scheme.ty == SecuritySchemeType::OpenIdConnect
     });
-    if !requirement_declared
-        && selected.is_none_or(|scheme| {
-            scheme.ty != SecuritySchemeType::ApiKey
-                && scheme.ty != SecuritySchemeType::OAuth2
-                && scheme.ty != SecuritySchemeType::OpenIdConnect
-                && !(scheme.ty == SecuritySchemeType::Http
-                    && scheme.scheme == Some(HttpAuthScheme::Bearer))
-        })
-    {
-        return Auth::None;
-    }
     match selected {
         // `name` is validated non-empty at the boundary (see `openapi::load`).
         Some(s)
@@ -1507,18 +1489,24 @@ fn urlencoded_body_source_names(doc: &OpenApi) -> std::collections::HashSet<Stri
         .collect()
 }
 
-/// Whether every operation carries a non-empty security requirement (its own, or
-/// the document default). An SDK with any unauthenticated operation makes the
-/// credential optional. A spec with no operations falls back to the
+/// Whether every operation carries a non-empty security requirement list (its
+/// own, or the document default). An SDK with any unauthenticated operation makes
+/// the credential optional. A spec with no operations falls back to the
 /// document-level `security`, the only declaration it has left, and stays
 /// required when the document declares none.
+///
+/// Only an empty list unauthenticates an operation; one holding nothing but the
+/// anonymous `{}` does not. The certified pair keeps a required token on
+/// go-wind-cms's app API, whose login operation declares `security: [{}]`, and on a
+/// one-operation document whose root `security` is `[{}]`, while `audiobookshelf`'s
+/// one `security: []` operation makes its token optional.
 fn all_operations_authenticated(doc: &OpenApi) -> bool {
     let mut any = false;
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             any = true;
             let effective = op.security.as_ref().or(doc.security.as_ref());
-            let authed = effective.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty()));
+            let authed = effective.is_some_and(|reqs| !reqs.is_empty());
             if !authed {
                 return false;
             }
@@ -3389,36 +3377,35 @@ fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
         .collect()
 }
 
-/// The two method names a `stream-condition` operation splits into: the
-/// streaming half's and the buffered half's. An extension-declared name names
-/// both (`compose_stream` / `compose`). Without one, the buffered half takes the
-/// name the operation's own derivation gives it while the streaming half is the
-/// whole `operationId` snake-cased: measured at fern-python-sdk 5.41.3,
+/// The method names a `stream-condition` operation splits into: the streaming
+/// half's, if it has one, and the buffered half's. An extension-declared name
+/// names both (`compose_stream` / `compose`). Without one, the buffered half takes
+/// the name the operation's own derivation gives it while the streaming half is
+/// the whole `operationId` snake-cased: measured at fern-python-sdk 5.41.3,
 /// privateGPT's tagged FastAPI id `prompt_completion_v1_completions_post` splits
 /// into `prompt_completion_v1completions_post_stream` and `prompt_completion`.
-/// The `stream` fallback is for an operation declaring neither, and is
-/// meaningful only inside that split.
+/// An operation declaring neither has no streaming half at all, only the buffered
+/// one under its derived name: the certified pair gives TrueFoundry's
+/// `POST /api/v1/sessions/{session_id}/turns`, its method name deleted, one
+/// `create_and_execute_a_turn_in_a_session` sending `"stream": False`.
 fn stream_condition_method_names(
     op: &Operation,
     http_method: &str,
     path: &str,
-) -> (String, String) {
+) -> (Option<String>, String) {
     let id = op
         .operation_id
         .as_deref()
         .map(str::trim)
         .unwrap_or_default();
+    let base = endpoint_method_name(op, http_method, path);
     if op.sdk_method_name().is_some() {
-        let base = endpoint_method_name(op, http_method, path);
-        (format!("{base}_stream"), base)
+        (Some(format!("{base}_stream")), base)
     } else if !id.is_empty() {
         let stream = naming::sanitize_identifier(&naming::to_snake_case(id));
-        (
-            format!("{stream}_stream"),
-            endpoint_method_name(op, http_method, path),
-        )
+        (Some(format!("{stream}_stream")), base)
     } else {
-        ("stream_stream".to_string(), "stream".to_string())
+        (None, base)
     }
 }
 
@@ -3515,7 +3502,8 @@ struct StreamSplit {
 }
 
 /// The variants an operation generates. One `None` for the ordinary case; a
-/// streaming and a buffered `Some` when a `stream-condition` is declared.
+/// streaming and a buffered `Some` when a `stream-condition` is declared, or the
+/// buffered one alone when nothing names the streaming half.
 fn stream_condition_variants(
     op: &Operation,
     http_method: &str,
@@ -3529,10 +3517,16 @@ fn stream_condition_variants(
         return vec![None];
     };
     let (stream_method_name, base) = stream_condition_method_names(op, http_method, path);
+    let halves: &[bool] = if stream_method_name.is_some() {
+        &[true, false]
+    } else {
+        &[false]
+    };
+    let stream_method_name = stream_method_name.unwrap_or_else(|| base.clone());
     let sse_media = success_response_entry(op)
         .is_some_and(|response| response.content.contains_key("text/event-stream"));
     let mut variants = Vec::new();
-    for stream in [true, false] {
+    for &stream in halves {
         let mut operation = op.clone();
         // Each half sees only its own success media type and its own view of the
         // extension — the streaming half an unconditional stream in the declared
@@ -19229,6 +19223,92 @@ mod tests {
         assert_eq!(env.default.1, "https://api.example.com/%2Fapi%2Fv1");
     }
 
+    /// An operation reads as authenticated whenever its effective security list
+    /// is non-empty, anonymous `{}` entries included; only an empty list leaves
+    /// the token optional. Measured at the certified pair on go-wind-cms's app API
+    /// (an operation's `security: [{}]`) and on a from-scratch document (a root
+    /// `security: [{}]`).
+    #[test]
+    fn only_an_empty_security_list_makes_the_token_optional() {
+        let cases = [
+            (None, Some(serde_json::json!([{}])), true),
+            (Some(serde_json::json!([{}])), None, true),
+            (
+                Some(serde_json::json!([{}])),
+                Some(serde_json::json!([{}, {"keeperToken": []}])),
+                true,
+            ),
+            (
+                Some(serde_json::json!([{"keeperToken": []}])),
+                Some(serde_json::json!([])),
+                false,
+            ),
+        ];
+        for (root, own, expected) in cases {
+            let mut operation = serde_json::json!({
+                "operationId": "listLanterns",
+                "responses": { "200": { "description": "OK" } }
+            });
+            if let Some(own) = &own {
+                operation["security"] = own.clone();
+            }
+            let mut document = serde_json::json!({
+                "components": {
+                    "securitySchemes": { "keeperToken": { "type": "http", "scheme": "bearer" } }
+                },
+                "paths": { "/lanterns": { "get": operation } }
+            });
+            if let Some(root) = &root {
+                document["security"] = root.clone();
+            }
+            let doc: crate::openapi::OpenApi =
+                serde_json::from_value(document).expect("document deserializes");
+            let Auth::Bearer { required, .. } = auth_model(&doc) else {
+                panic!("a bearer scheme should wire the client");
+            };
+            assert_eq!(required, expected, "root {root:?}, operation {own:?}");
+        }
+    }
+
+    /// An `http` `basic` scheme no Security Requirement Object names still wires
+    /// optional credentials, as a bearer one does: the certified pair keeps
+    /// `username` and `password` on `nexmo-messages` with its operation's
+    /// `security` deleted and on `apache.org` with its root `security: []` deleted.
+    #[test]
+    fn basic_scheme_without_any_requirement_wires_optional_credentials() {
+        for root_security in [None, Some(serde_json::json!([]))] {
+            let mut document = serde_json::json!({
+                "components": {
+                    "securitySchemes": {
+                        "keeperLogin": { "type": "http", "scheme": "basic" },
+                        "keeperToken": { "type": "http", "scheme": "bearer" }
+                    }
+                },
+                "paths": {
+                    "/lighthouses": {
+                        "get": {
+                            "operationId": "listLighthouses",
+                            "responses": { "200": { "description": "OK" } }
+                        }
+                    }
+                }
+            });
+            let removed = root_security.is_none();
+            if let Some(security) = root_security {
+                document["security"] = security;
+            }
+            let doc: crate::openapi::OpenApi =
+                serde_json::from_value(document).expect("document deserializes");
+            let Auth::Basic { required, .. } = auth_model(&doc) else {
+                panic!("the first scheme, basic, should wire the client (root removed: {removed})");
+            };
+            assert!(
+                !required,
+                "no operation is authenticated (root removed: {removed})"
+            );
+        }
+    }
+
     #[test]
     fn header_api_key_without_root_security_is_still_required() {
         let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
@@ -25607,6 +25687,70 @@ components:
         assert!(!super::request_body_ignored(&body(serde_json::json!({
             "content": { "application/json": {}, "multipart/form-data": {} }
         }))));
+    }
+
+    /// A `stream-condition` operation nothing names keeps only its buffered
+    /// half, under its derived name, while one with an `operationId` still
+    /// splits in two: the certified pair's TrueFoundry turn creation, its method
+    /// name deleted, is one `create_and_execute_a_turn_in_a_session`.
+    #[test]
+    fn an_unnamed_stream_condition_operation_keeps_only_its_buffered_half() {
+        let streamed = |operation_id: Option<&str>, summary: &str| {
+            let mut op = serde_json::json!({
+                "summary": summary,
+                "tags": ["Tides"],
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object",
+                    "required": ["stream"],
+                    "properties": {"stream": {"type": "boolean"}, "port": {"type": "string"}}
+                }}}},
+                "responses": {"200": {"description": "OK", "content": {
+                    "application/json": {"schema": {"$ref": "#/components/schemas/Forecast"}},
+                    "text/event-stream": {"schema": {"$ref": "#/components/schemas/ForecastEvent"}}
+                }}},
+                "x-fern-streaming": {
+                    "stream-condition": "$request.stream",
+                    "response": {"$ref": "#/components/schemas/Forecast"},
+                    "response-stream": {"$ref": "#/components/schemas/ForecastEvent"}
+                }
+            });
+            if let Some(id) = operation_id {
+                op["operationId"] = serde_json::json!(id);
+            }
+            op
+        };
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Harbour Tides", "version": "1"},
+            "paths": {
+                "/forecasts": {"post": streamed(None, "Forecast the next tide")},
+                "/surges": {"post": streamed(Some("forecastSurge"), "Forecast a surge")}
+            },
+            "components": {"schemas": {
+                "Forecast": {"type": "object", "properties": {"height": {"type": "number"}}},
+                "ForecastEvent": {"type": "object", "properties": {"delta": {"type": "number"}}}
+            }}
+        }));
+        let methods: Vec<(&str, Option<bool>)> = ir
+            .endpoints
+            .iter()
+            .map(|ep| {
+                (
+                    ep.method_name.as_str(),
+                    ep.stream_condition
+                        .as_ref()
+                        .map(|(_, streaming)| *streaming),
+                )
+            })
+            .collect();
+        assert_eq!(
+            methods,
+            [
+                ("forecast_the_next_tide", Some(false)),
+                ("forecast_surge_stream", Some(true)),
+                ("forecast_surge", Some(false)),
+            ]
+        );
     }
 
     fn build_document(document: serde_json::Value) -> super::Ir {

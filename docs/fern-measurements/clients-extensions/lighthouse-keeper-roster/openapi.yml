@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse Keeper Roster
+  version: 1.0.0
+  description: Lists the keepers on a coast's lighthouse roster.
+servers:
+  - url: https://roster.lighthouses.example
+paths:
+  /keepers:
+    get:
+      operationId: listKeepers
+      tags: [Keepers]
+      summary: List the keepers on the roster
+      responses:
+        "200":
+          description: The keepers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Keeper"
+components:
+  securitySchemes:
+    keeperLogin:
+      type: http
+      scheme: basic
+  schemas:
+    Keeper:
+      type: object
+      properties:
+        name:
+          type: string
+        station:
+          type: string

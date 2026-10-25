@@ -119,19 +119,19 @@ split five ways:
 502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 12 are `gap`, 76 are `golden` and 3 are `handwritten`.
-11 of the `gap` ones are decided output-insensitive in
+([the list](openapi-surface/combinations.md)): 13 are `gap`, 75 are `golden` and 3 are `handwritten`.
+12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 None is among the 721 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 510 `golden` rows declare 1032 handling sites in
+same way. The 510 `golden` rows declare 1020 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **910 are reached by a registered real specification.** Its scoped
+- **898 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **114 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 114 is still one of the 122 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -144,10 +144,14 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **2 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-910 + 114 + 5 + 1 + 2 = 1032. Fourteen sites left the table with the two functions
+898 + 114 + 5 + 1 + 2 = 1020. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
-committed measurement without them. No arm rests on a witness whose redistribution grant is
+committed measurement without them. Twelve more left with the
+[naming-clients repairs](openapi-surface/witness-search-operation-combinations-naming-clients/README.md#repairs):
+the three docstring-indent arms each `openapi-version-3.1.*` row declared, which
+no longer read the version, and the `auth_model` arm three security rows declared,
+which no longer exists; their six rows were re-measured. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture

@@ -1,0 +1,68 @@
+[
+  {
+    "repository": "TachiWeb/TachiWeb-Server",
+    "revision": "756aed147f9d3ad64b0620ab69c3eb4575264177",
+    "url": "https://api.github.com/repos/TachiWeb/TachiWeb-Server/license?ref=756aed147f9d3ad64b0620ab69c3eb4575264177",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "tx7do/go-wind-cms",
+    "revision": "093169df531a7823fea2aa3a69c0cf142d63aff5",
+    "url": "https://api.github.com/repos/tx7do/go-wind-cms/license?ref=093169df531a7823fea2aa3a69c0cf142d63aff5",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "94c28643fbfcd74c3a220815fd822efbce048afc",
+    "license_detection": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "content_sha256": "7ae9a33952d4d71ba84d64efb5e35d24cdab267f9a88346af38f8c670db81e3c",
+    "content_file": "tx7do-go-wind-cms-LICENSE"
+  },
+  {
+    "repository": "RedPlanetHQ/core",
+    "revision": "4a5b18d8db55d66e5dfda41b18461f359b340c42",
+    "url": "https://api.github.com/repos/RedPlanetHQ/core/license?ref=4a5b18d8db55d66e5dfda41b18461f359b340c42",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "4b71f7101e9f5e265d85c4472581614d10f87081",
+    "license_detection": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "content_sha256": "8a7607ed1c4861524b9099b39e18e34a75be465880b572afcabec66b0fe44cc4",
+    "content_file": "RedPlanetHQ-core-LICENSE"
+  },
+  {
+    "repository": "openmeterio/openmeter",
+    "revision": "f32c3d66411c234e2160113e110d7c72b5012afe",
+    "url": "https://api.github.com/repos/openmeterio/openmeter/license?ref=f32c3d66411c234e2160113e110d7c72b5012afe",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+    "license_detection": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "content_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "content_file": "openmeterio-openmeter-LICENSE"
+  }
+]
