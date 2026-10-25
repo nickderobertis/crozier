@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "grantly",
+  "corpus_spec_ref": "11d3792cd0c94b2b07e8865dffb3239523d6392e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/thetejascodes/Grantly/11d3792cd0c94b2b07e8865dffb3239523d6392e/openapi.yaml"
+}

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "ebusd",
+  "corpus_spec_ref": "38db2d28bd5622cadb6078c1662c6f7da5cef891",
+  "corpus_spec_url": "https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml"
+}

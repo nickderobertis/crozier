@@ -899,6 +899,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/ebusd/expected": {},
+    "tests/fixtures/ebusd/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ecommerce-ai-skills-runtime/expected": {},
     "tests/fixtures/ecommerce-ai-skills-runtime/expected-literals": {
       "excluded": [
@@ -959,6 +965,12 @@
     "tests/fixtures/free5gc-pdu-session/expected": {},
     "tests/fixtures/g4brym-download-manager/expected": {},
     "tests/fixtures/gambitcomm.local-mimic/expected": {},
+    "tests/fixtures/get-a-room/expected": {},
+    "tests/fixtures/get-a-room/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/go-kratos-casbin-admin/expected": {},
     "tests/fixtures/googleapis-monitoring-v1/expected": {},
     "tests/fixtures/googleapis-servicebroker/expected": {},
@@ -971,6 +983,12 @@
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected": {},
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected-flat": {},
     "tests/fixtures/googleapis-youtubeanalytics-v1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/grantly/expected": {},
+    "tests/fixtures/grantly/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -1261,13 +1279,8 @@
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",
           "src/fern/products/types/create_products_request_product.py",
-          "src/fern/sites/redirects/client.py",
-          "src/fern/sites/redirects/raw_client.py",
           "src/fern/sites/robots_txt/client.py",
           "src/fern/sites/scripts/client.py",
-          "src/fern/sites/scripts/raw_client.py",
-          "src/fern/webhooks/client.py",
-          "src/fern/webhooks/raw_client.py",
           "src/fern/workspaces/__init__.py",
           "src/fern/workspaces/audit_logs/__init__.py",
           "src/fern/workspaces/audit_logs/types/__init__.py",

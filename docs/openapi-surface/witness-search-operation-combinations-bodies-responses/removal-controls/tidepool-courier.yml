@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Tidepool Courier
+  version: 1.4.0
+  description: Dispatches parcels between harbour lockers.
+servers:
+  - url: https://courier.tidepool.example/v1
+paths:
+  /parcels/{parcelId}:
+    get:
+      operationId: getParcel
+      tags: [parcels]
+      summary: Look up one parcel
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The parcel as it stands now
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Parcel"
+        2XX:
+          description: Any other accepted answer, carrying a tracking note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingNote"
+  /parcels:
+    post:
+      operationId: sendParcel
+      tags: [parcels]
+      summary: Hand a parcel to the courier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParcelDraft"
+      responses:
+        "201":
+          description: The receipt for the accepted parcel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Receipt"
+        2XX:
+          description: Accepted for later pickup
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingNote"
+components:
+  schemas:
+    Parcel:
+      type: object
+      required: [id, locker]
+      properties:
+        id:
+          type: string
+        locker:
+          type: string
+        weightGrams:
+          type: integer
+    ParcelDraft:
+      type: object
+      required: [locker]
+      properties:
+        locker:
+          type: string
+        weightGrams:
+          type: integer
+    Receipt:
+      type: object
+      required: [parcelId]
+      properties:
+        parcelId:
+          type: string
+        fee:
+          type: number
+    TrackingNote:
+      type: object
+      properties:
+        note:
+          type: string

@@ -1,0 +1,251 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        AgentCheckRequest,
+        AgentCheckResponse,
+        AgentCheckResponseNextActionsItem,
+        AgentCheckResponseRole,
+        AgentCloseRequest,
+        AgentCloseResponse,
+        AgentCloseResponseRole,
+        AgentCollectRequest,
+        AgentCollectResponse,
+        AgentCollectResponseRole,
+        AgentFinalRequest,
+        AgentFinalResponse,
+        AgentFinalResponseNextActionsItem,
+        AgentFinalResponseRole,
+        AgentFinishRequest,
+        AgentFinishResponse,
+        AgentFinishResponseNextActionsItem,
+        AgentFinishResponseRole,
+        AgentJoinRequest,
+        AgentJoinResponse,
+        AgentSayRequest,
+        AgentSayResponse,
+        AgentSayResponseNextActionsItem,
+        AgentSayResponseRole,
+        CreatedRoom,
+        Error,
+        RoomAttachment,
+        RoomFinal,
+        RoomMessage,
+        RoomMessageRole,
+        RoomStatus,
+        RoomStatusStatus,
+        Sha256,
+    )
+    from .errors import (
+        BadRequestError,
+        ConflictError,
+        ContentTooLargeError,
+        ForbiddenError,
+        GoneError,
+        NotFoundError,
+        TooManyRequestsError,
+        UnauthorizedError,
+        UnsupportedMediaTypeError,
+    )
+    from . import agents, rooms, service
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+    from .agents import (
+        UseAgentInvitationRequest,
+        UseAgentInvitationRequest_Check,
+        UseAgentInvitationRequest_Close,
+        UseAgentInvitationRequest_Collect,
+        UseAgentInvitationRequest_Final,
+        UseAgentInvitationRequest_Finish,
+        UseAgentInvitationRequest_Join,
+        UseAgentInvitationRequest_Say,
+        UseAgentInvitationResponse,
+    )
+    from .client import AsyncFernApi, FernApi
+    from .environment import FernApiEnvironment
+    from .rooms import (
+        CloseRoomResponse,
+        CollectRoomResponse,
+        FinalizeRoomResponse,
+        GetRoomTaskResponse,
+        ListRoomAttachmentsResponse,
+        ListRoomMessagesResponse,
+        SendRoomMessageRequestBody,
+        SendRoomMessageResponse,
+        UploadRoomAttachmentResponse,
+    )
+    from .service import HealthResponse, HealthResponseService
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AgentCheckRequest": ".types",
+    "AgentCheckResponse": ".types",
+    "AgentCheckResponseNextActionsItem": ".types",
+    "AgentCheckResponseRole": ".types",
+    "AgentCloseRequest": ".types",
+    "AgentCloseResponse": ".types",
+    "AgentCloseResponseRole": ".types",
+    "AgentCollectRequest": ".types",
+    "AgentCollectResponse": ".types",
+    "AgentCollectResponseRole": ".types",
+    "AgentFinalRequest": ".types",
+    "AgentFinalResponse": ".types",
+    "AgentFinalResponseNextActionsItem": ".types",
+    "AgentFinalResponseRole": ".types",
+    "AgentFinishRequest": ".types",
+    "AgentFinishResponse": ".types",
+    "AgentFinishResponseNextActionsItem": ".types",
+    "AgentFinishResponseRole": ".types",
+    "AgentJoinRequest": ".types",
+    "AgentJoinResponse": ".types",
+    "AgentSayRequest": ".types",
+    "AgentSayResponse": ".types",
+    "AgentSayResponseNextActionsItem": ".types",
+    "AgentSayResponseRole": ".types",
+    "AsyncFernApi": ".client",
+    "BadRequestError": ".errors",
+    "CloseRoomResponse": ".rooms",
+    "CollectRoomResponse": ".rooms",
+    "ConflictError": ".errors",
+    "ContentTooLargeError": ".errors",
+    "CreatedRoom": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
+    "Error": ".types",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "FinalizeRoomResponse": ".rooms",
+    "ForbiddenError": ".errors",
+    "GetRoomTaskResponse": ".rooms",
+    "GoneError": ".errors",
+    "HealthResponse": ".service",
+    "HealthResponseService": ".service",
+    "ListRoomAttachmentsResponse": ".rooms",
+    "ListRoomMessagesResponse": ".rooms",
+    "NotFoundError": ".errors",
+    "RoomAttachment": ".types",
+    "RoomFinal": ".types",
+    "RoomMessage": ".types",
+    "RoomMessageRole": ".types",
+    "RoomStatus": ".types",
+    "RoomStatusStatus": ".types",
+    "SendRoomMessageRequestBody": ".rooms",
+    "SendRoomMessageResponse": ".rooms",
+    "Sha256": ".types",
+    "TooManyRequestsError": ".errors",
+    "UnauthorizedError": ".errors",
+    "UnsupportedMediaTypeError": ".errors",
+    "UploadRoomAttachmentResponse": ".rooms",
+    "UseAgentInvitationRequest": ".agents",
+    "UseAgentInvitationRequest_Check": ".agents",
+    "UseAgentInvitationRequest_Close": ".agents",
+    "UseAgentInvitationRequest_Collect": ".agents",
+    "UseAgentInvitationRequest_Final": ".agents",
+    "UseAgentInvitationRequest_Finish": ".agents",
+    "UseAgentInvitationRequest_Join": ".agents",
+    "UseAgentInvitationRequest_Say": ".agents",
+    "UseAgentInvitationResponse": ".agents",
+    "__version__": ".version",
+    "agents": ".agents",
+    "rooms": ".rooms",
+    "service": ".service",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "AgentCheckRequest",
+    "AgentCheckResponse",
+    "AgentCheckResponseNextActionsItem",
+    "AgentCheckResponseRole",
+    "AgentCloseRequest",
+    "AgentCloseResponse",
+    "AgentCloseResponseRole",
+    "AgentCollectRequest",
+    "AgentCollectResponse",
+    "AgentCollectResponseRole",
+    "AgentFinalRequest",
+    "AgentFinalResponse",
+    "AgentFinalResponseNextActionsItem",
+    "AgentFinalResponseRole",
+    "AgentFinishRequest",
+    "AgentFinishResponse",
+    "AgentFinishResponseNextActionsItem",
+    "AgentFinishResponseRole",
+    "AgentJoinRequest",
+    "AgentJoinResponse",
+    "AgentSayRequest",
+    "AgentSayResponse",
+    "AgentSayResponseNextActionsItem",
+    "AgentSayResponseRole",
+    "AsyncFernApi",
+    "BadRequestError",
+    "CloseRoomResponse",
+    "CollectRoomResponse",
+    "ConflictError",
+    "ContentTooLargeError",
+    "CreatedRoom",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "Error",
+    "FernApi",
+    "FernApiEnvironment",
+    "FinalizeRoomResponse",
+    "ForbiddenError",
+    "GetRoomTaskResponse",
+    "GoneError",
+    "HealthResponse",
+    "HealthResponseService",
+    "ListRoomAttachmentsResponse",
+    "ListRoomMessagesResponse",
+    "NotFoundError",
+    "RoomAttachment",
+    "RoomFinal",
+    "RoomMessage",
+    "RoomMessageRole",
+    "RoomStatus",
+    "RoomStatusStatus",
+    "SendRoomMessageRequestBody",
+    "SendRoomMessageResponse",
+    "Sha256",
+    "TooManyRequestsError",
+    "UnauthorizedError",
+    "UnsupportedMediaTypeError",
+    "UploadRoomAttachmentResponse",
+    "UseAgentInvitationRequest",
+    "UseAgentInvitationRequest_Check",
+    "UseAgentInvitationRequest_Close",
+    "UseAgentInvitationRequest_Collect",
+    "UseAgentInvitationRequest_Final",
+    "UseAgentInvitationRequest_Finish",
+    "UseAgentInvitationRequest_Join",
+    "UseAgentInvitationRequest_Say",
+    "UseAgentInvitationResponse",
+    "__version__",
+    "agents",
+    "rooms",
+    "service",
+]

@@ -9767,6 +9767,9 @@ const CORPORA: &[&Corpus] = &[
     &RGB_LIGHTNING_NODE,
     &RAPIDATA_IDENTITY,
     &ECOMMERCE_AI_SKILLS_RUNTIME,
+    &GET_A_ROOM,
+    &GRANTLY,
+    &EBUSD,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11492,13 +11495,8 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/products/client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/sites/redirects/client.py",
-        "src/fern/sites/redirects/raw_client.py",
         "src/fern/sites/robots_txt/client.py",
         "src/fern/sites/scripts/client.py",
-        "src/fern/sites/scripts/raw_client.py",
-        "src/fern/webhooks/client.py",
-        "src/fern/webhooks/raw_client.py",
         "src/fern/workspaces/__init__.py",
         "src/fern/workspaces/audit_logs/__init__.py",
         "src/fern/workspaces/audit_logs/types/__init__.py",
@@ -12115,6 +12113,45 @@ const RAPIDATA_IDENTITY: Corpus = Corpus {
 /// enums.
 const ECOMMERCE_AI_SKILLS_RUNTIME: Corpus = Corpus {
     api: "ecommerce-ai-skills-runtime",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Get A Room API — corpus row 3470, the publisher's own repository's copy,
+/// witnessing header parameters beside an octet-stream request body.
+const GET_A_ROOM: Corpus = Corpus {
+    api: "get-a-room",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Grantly — corpus row 3471, the publisher's own repository's copy,
+/// witnessing an urlencoded form body that is a `oneOf` of grant shapes.
+const GRANTLY: Corpus = Corpus {
+    api: "grantly",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ebusd HTTP API — corpus row 3472, the publisher's own repository's copy,
+/// witnessing a success response whose `oneOf` admits `null`.
+const EBUSD: Corpus = Corpus {
+    api: "ebusd",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -16672,6 +16709,48 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
 }
 
 #[test]
+fn a_form_field_sharing_a_path_parameter_name_suffixes_the_path_argument() {
+    // swagger-petstore's `PUT /user/{username}` with only its urlencoded body:
+    // `User` is also a response model, so the body is no inline request type,
+    // yet its fields are spread beside the path argument. Fern 5.41.3 names the
+    // path argument `username_`; passing `username` twice is not valid Python.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Desk API, version: 1.0.0 }\npaths:\n  /user/{username}:\n    get:\n      operationId: getUserByName\n      tags: [user]\n      parameters:\n        - { name: username, in: path, required: true, schema: { type: string } }\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }\n    put:\n      operationId: updateUser\n      tags: [user]\n      parameters:\n        - { name: username, in: path, required: true, schema: { type: string } }\n      requestBody:\n        content:\n          application/x-www-form-urlencoded:\n            schema: { $ref: '#/components/schemas/User' }\n      responses:\n        '200': { description: Updated }\ncomponents:\n  schemas:\n    User:\n      type: object\n      properties:\n        id: { type: integer }\n        username: { type: string }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/user/client.py"))
+        .expect("user client is generated");
+    assert!(
+        client.contains("        username_: str,\n")
+            && client.contains("        username: typing.Optional[str] = OMIT,\n")
+            && client.contains("            username_=\"username\",\n"),
+        "the path argument takes the trailing underscore beside the form field: {client}"
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/user/raw_client.py"))
+        .expect("user raw client is generated");
+    assert!(
+        raw.contains("f\"user/{encode_path_param(username_)}\"")
+            && raw.contains("\"username\": username,"),
+        "the URL interpolates the renamed path argument and the form sends the field: {raw}"
+    );
+}
+
+#[test]
+fn a_referenced_union_body_under_wildcard_media_sends_no_content_type() {
+    // Apideck's proxy verbs once their inline `anyOf` payloads are named: Fern
+    // 5.41.3 sends the referenced union through the converter with no header.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Relay API, version: 1.0.0 }\npaths:\n  /relay:\n    post:\n      operationId: forward\n      tags: [relay]\n      parameters:\n        - { name: x-relay-target, in: header, required: true, schema: { type: string } }\n      requestBody:\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/RelayPayload' }\n      responses:\n        '204': { description: Forwarded }\ncomponents:\n  schemas:\n    RelayPayload:\n      anyOf:\n        - { type: object, properties: {} }\n        - { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/relay/raw_client.py"))
+        .expect("relay raw client is generated");
+    assert!(
+        raw.contains("object_=request, annotation=RelayPayload, direction=\"write\"")
+            && !raw.contains("\"content-type\": \"application/json\""),
+        "a wildcard referenced union sends no JSON content-type header: {raw}"
+    );
+}
+
+#[test]
 fn binary_requests_ignore_declared_operation_headers() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      parameters:\n        - { name: X-Preserve-Ids, in: header, schema: { type: boolean } }\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
@@ -20044,6 +20123,27 @@ fn rapidata_identity_matches_fern_output() {
 #[test]
 fn ecommerce_ai_skills_runtime_matches_fern_output() {
     assert_committed_corpus_matches(&ECOMMERCE_AI_SKILLS_RUNTIME);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn get_a_room_matches_fern_output() {
+    assert_committed_corpus_matches(&GET_A_ROOM);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn grantly_matches_fern_output() {
+    assert_committed_corpus_matches(&GRANTLY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ebusd_matches_fern_output() {
+    assert_committed_corpus_matches(&EBUSD);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

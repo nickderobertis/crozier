@@ -803,6 +803,7 @@ NAMED_FEATURES_HEADING = "#### Unproven features, named"
 # The reason a named gap gives when no search backs it at all: its own
 # reason, apart from a search reading `search-incomplete` or `exhausted`.
 NOT_SEARCHED = "`not searched`"
+WITNESS_BLOCKED = "`witness blocked`"
 NAMED_COMBINATIONS_HEADING = "#### Unproven combinations, named"
 # A feature combination's key prefix (`docs/openapi-surface/combinations.md`): its
 # region row is counted apart from the single features.
@@ -1049,6 +1050,54 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
         return False
 
 
+def witness_blocked(root: Path, key: str, reason: str) -> bool:
+    """Admit a searched combination whose admissible witnesses unrelated residuals block.
+
+    The reason links a committed search record whose `## Blocked witnesses` table names
+    each admissible candidate it read for `key` (a declarer of `key` in that
+    record's `census.tsv`), how many files each still mismatches, and the
+    unrelated shapes that cause it.
+    """
+    match = re.fullmatch(r"`witness blocked` — \[blocked witnesses\]\(([^)#]+)(?:#[^)]*)?\)\..*", reason)
+    if not match:
+        return False
+    path = pathlib.PurePosixPath(match.group(1).replace("\\", "/"))
+    if path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive:
+        return False
+    record = root / "docs" / path
+    if record.name != "README.md":
+        return False
+    try:
+        text = record.read_text(encoding="utf-8")
+        if "\n## Blocked witnesses\n" not in text:
+            return False
+        section = text.split("\n## Blocked witnesses\n", 1)[1].split("\n## ", 1)[0]
+        lines = re.findall(
+            rf"^\| `{re.escape(key)}` \| `([^`]+)` \| ([1-9]\d*) \| ([^|]*\S[^|]*) \|$",
+            section,
+            re.M,
+        )
+        with record.with_name("census.tsv").open(encoding="utf-8", newline="") as handle:
+            documents = [
+                row.get("document") or "" for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key
+            ]
+
+        def parts(value: str) -> list[str]:
+            return [part for part in re.split(r"[/:@;\s]+", value) if part]
+
+        def declares(candidate: str, document: str) -> bool:
+            # A whole run of path components, never a substring of one: `flow`
+            # does not name `corpus-sources/webflow-v2/openapi.yml`.
+            want, have = parts(candidate), parts(document)
+            return bool(want) and any(have[i : i + len(want)] == want for i in range(len(have)))
+
+        return bool(lines) and all(
+            any(declares(candidate, document) for document in documents) for candidate, _n, _s in lines
+        )
+    except (OSError, UnicodeError, csv.Error, ValueError):
+        return False
+
+
 RESIDUAL_HEADING = "#### Golden rows resting only on residual goldens"
 
 
@@ -1177,10 +1226,13 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"{key}: docs/openapi-surface-coverage.md names it in region "
                 f"{named_combinations[key].region!r}, but its row is in {region!r}"
             )
-        elif not named_combinations[key].why.startswith(NOT_SEARCHED):
+        elif not (
+            named_combinations[key].why.startswith(NOT_SEARCHED)
+            or witness_blocked(root, key, named_combinations[key].why)
+        ):
             failures.append(
                 f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
-                f"without {NOT_SEARCHED} as its reason"
+                f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason"
             )
     for key in sorted(set(named_combinations) - set(gap_combinations)):
         failures.append(
@@ -12095,6 +12147,14 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
         copies += [surface / "witness-search-unproven-features" / name for name in ("README.md", "census.tsv")]
+        # A `witness blocked` combination links its search record and census.
+        copies += [
+            path.relative_to(REPO)
+            for record in (REPO / surface).glob("witness-search-*/README.md")
+            if record.with_name("census.tsv").is_file()
+            for path in (record, record.with_name("census.tsv"))
+            if path.parent.name != "witness-search-unproven-features"
+        ]
         copies += [
             path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")
         ]
@@ -12319,23 +12379,17 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertFalse(bounded_incomplete_search(self.root, key, windows_reason.replace("openapi-surface", "..")))
 
     def test_a_gap_combination_row_missing_from_its_named_table_is_refused(self) -> None:
-        # A `gap` row the shared table decides output-insensitive is never named,
-        # so the row to drop is one the named table lists.
-        named = named_gap_combinations(self.root)
-        gap = sorted(
-            key
-            for key, (_r, cells) in combination_rows(self.root).items()
-            if cells[3].strip("`") == "gap" and key in named
+        # The committed tree may name no unproven combination at all, so the case
+        # makes one: a `golden` combination row demoted to `gap`, which the shared
+        # table does not decide and the named table does not list.
+        rows = combination_rows(self.root)
+        key = sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
+        region = f"docs/openapi-surface/{rows[key].region}.md"
+        self.edit(
+            region,
+            f"| {key} | both | {rows[key].cells[2]} | golden |",
+            f"| {key} | both | {rows[key].cells[2]} | gap |",
         )
-        self.assertTrue(gap, "the committed tree carries no named gap combination row to drop")
-        key = gap[0]
-        doc = "docs/openapi-surface-coverage.md"
-        line = next(
-            line
-            for line in (self.root / doc).read_text(encoding="utf-8").splitlines()
-            if line.startswith(f"| `{key}` |")
-        )
-        self.edit(doc, line + "\n", "")
         self.assertIn(
             f"{key}: a `gap` combination row ({combination_rows(self.root)[key].region}.md) missing from "
             f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md",
@@ -12347,14 +12401,73 @@ class FinishedStateGateTests(unittest.TestCase):
             key for key, (_r, cells) in combination_rows(self.root).items() if cells[3].strip("`") == "golden"
         )
         key = golden[0]
-        self.edit(
-            "docs/openapi-surface-coverage.md",
-            "| key | region | why it is unproven |\n|---|---|---|\n| `combo-",
-            f"| key | region | why it is unproven |\n|---|---|---|\n| `{key}` | `schemas` | `not searched` — x |\n| `combo-",
-        )
+        # The feature table shares this header, so the edit is made in the
+        # combination section alone.
+        doc = "docs/openapi-surface-coverage.md"
+        header = "| key | region | why it is unproven |\n|---|---|---|\n"
+        text = (self.root / doc).read_text(encoding="utf-8")
+        before, section = text.split(NAMED_COMBINATIONS_HEADING, 1)
+        self.assertIn(header, section, f"{doc}'s combination table no longer carries its header")
+        section = section.replace(header, f"{header}| `{key}` | `schemas` | `not searched` — x |\n", 1)
+        (self.root / doc).write_text(before + NAMED_COMBINATIONS_HEADING + section, encoding="utf-8", newline="\n")
         self.assertIn(
             f"{key}: docs/openapi-surface-coverage.md names it an unproven combination, but it is "
             "not a `gap` combination row; remove the row",
+            finished_state_failures(self.root),
+        )
+
+    def name_a_demoted_combination(self, reason: str) -> tuple[str, str]:
+        """Demote a `golden` combination row to `gap` and name it with `reason`."""
+        rows = combination_rows(self.root)
+        key = sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
+        region = rows[key].region
+        self.edit(
+            f"docs/openapi-surface/{region}.md",
+            f"| {key} | both | {rows[key].cells[2]} | golden |",
+            f"| {key} | both | {rows[key].cells[2]} | gap |",
+        )
+        doc = "docs/openapi-surface-coverage.md"
+        header = "| key | region | why it is unproven |\n|---|---|---|\n"
+        text = (self.root / doc).read_text(encoding="utf-8")
+        before, section = text.split(NAMED_COMBINATIONS_HEADING, 1)
+        section = section.replace(header, f"{header}| `{key}` | `{region}` | {reason} |\n", 1)
+        (self.root / doc).write_text(before + NAMED_COMBINATIONS_HEADING + section, encoding="utf-8", newline="\n")
+        return key, region
+
+    def test_a_named_combination_with_neither_admitted_reason_is_refused(self) -> None:
+        key, _region = self.name_a_demoted_combination("`search incomplete` — no record")
+        self.assertIn(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
+            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_witness_blocked_reason_without_its_record_is_refused(self) -> None:
+        key, _region = self.name_a_demoted_combination(
+            "`witness blocked` — [blocked witnesses](openapi-surface/no-such-search/README.md#blocked-witnesses). x"
+        )
+        self.assertIn(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
+            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_witness_blocked_record_naming_a_non_declarer_is_refused(self) -> None:
+        record = "openapi-surface/blocked-witness-probe/README.md"
+        (self.root / "docs" / record).parent.mkdir(parents=True, exist_ok=True)
+        key, _region = self.name_a_demoted_combination(
+            f"`witness blocked` — [blocked witnesses]({record}#blocked-witnesses). x"
+        )
+        (self.root / "docs" / record).write_text(
+            f"# Probe\n\n## Blocked witnesses\n\n| `{key}` | `flow` | 3 | unrelated shapes |\n", encoding="utf-8"
+        )
+        (self.root / "docs" / record).with_name("census.tsv").write_text(
+            f"key\tsource\tdocument\tsites\tsha256\tscreening\n{key}\tregistered\tcorpus-sources/webflow-v2/openapi.yml\t1\tx\ty\n",
+            encoding="utf-8",
+        )
+        self.assertIn(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
+            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
             finished_state_failures(self.root),
         )
 

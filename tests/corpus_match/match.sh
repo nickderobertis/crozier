@@ -336,6 +336,9 @@ inventory=(
   rgb_lightning_node_matches_fern_output
   rapidata_identity_matches_fern_output
   ecommerce_ai_skills_runtime_matches_fern_output
+  get_a_room_matches_fern_output
+  grantly_matches_fern_output
+  ebusd_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

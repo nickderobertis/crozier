@@ -1,0 +1,254 @@
+[
+  {
+    "repository": "GreenButtonAlliance/OpenESPI-GreenButton-Java",
+    "revision": "06666dc82396b53ed14e7a5c45266ed54015c1ce",
+    "url": "https://api.github.com/repos/GreenButtonAlliance/OpenESPI-GreenButton-Java/license?ref=06666dc82396b53ed14e7a5c45266ed54015c1ce",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "SeekStorm/SeekStorm",
+    "revision": "50cb0ddffe1e45eb574f927079d1bcffecf8980b",
+    "url": "https://api.github.com/repos/SeekStorm/SeekStorm/license?ref=50cb0ddffe1e45eb574f927079d1bcffecf8980b",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "3478d8515a805492b4797d35fd05a31e86d2402e",
+    "license_detection": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "content_sha256": "4e4ae03f240cc0d614e25d9cf118d5db2486d196533d4137ecbfbfb7ba20576d",
+    "content_file": "SeekStorm-SeekStorm-LICENSE"
+  },
+  {
+    "repository": "cyberark/conjur-sdk-java",
+    "revision": "d11199582307d196adc2c073069b729acc44a0cb",
+    "url": "https://api.github.com/repos/cyberark/conjur-sdk-java/license?ref=d11199582307d196adc2c073069b729acc44a0cb",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "af8afbaf45a9e86e587252721ba1b10e1191f77c",
+    "license_detection": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "content_sha256": "e092618211b1d864e3caf325abbd567f997e6ffb98d9fb97188d4fa280334bbe",
+    "content_file": "cyberark-conjur-sdk-java-LICENSE"
+  },
+  {
+    "repository": "hugo-alves/get-a-room",
+    "revision": "f2130f1eebbc8c697bcdb5cf2a867f6802221523",
+    "url": "https://api.github.com/repos/hugo-alves/get-a-room/license?ref=f2130f1eebbc8c697bcdb5cf2a867f6802221523",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "aa0459424dab23e954ee5c2b90968d2f93ec4184",
+    "license_detection": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "content_sha256": "b23d49034cd70794ea3c2d24987761893bd3eb4872267c2adaaf395d85669a4b",
+    "content_file": "hugo-alves-get-a-room-LICENSE"
+  },
+  {
+    "repository": "meow-sci/gatOS",
+    "revision": "b88c28588e013841cfec58a1b3a09fcbd2cbc47e",
+    "url": "https://api.github.com/repos/meow-sci/gatOS/license?ref=b88c28588e013841cfec58a1b3a09fcbd2cbc47e",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "5b9642c5b4e01ccb572030dc56a098fdb1580150",
+    "license_detection": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "content_sha256": "e97a25a739d228bf6c9dc0f67f67cf75ecac4ad75f66d57eef543c20772a789b",
+    "content_file": "meow-sci-gatOS-LICENSE"
+  },
+  {
+    "repository": "thetejascodes/Grantly",
+    "revision": "11d3792cd0c94b2b07e8865dffb3239523d6392e",
+    "url": "https://api.github.com/repos/thetejascodes/Grantly/license?ref=11d3792cd0c94b2b07e8865dffb3239523d6392e",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "Cosmian/authentication",
+    "revision": "4cc6d4ec7aada3751b754795783188c24b970790",
+    "url": "https://api.github.com/repos/Cosmian/authentication/license?ref=4cc6d4ec7aada3751b754795783188c24b970790",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "db4e8144f7d6e0568dc411b8ee51137affd4c2b1",
+    "license_detection": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "content_sha256": "e3a0a24081e5d4b602b18d3ef8842e696c187b38bd5c4ed3f40772fe72123d2e",
+    "content_file": "Cosmian-authentication-LICENSE"
+  },
+  {
+    "repository": "Dkaattae/math-adventures-hq",
+    "revision": "ae79d82ab6e2536cffdc0f73fa4d3cec36e85113",
+    "url": "https://api.github.com/repos/Dkaattae/math-adventures-hq/license?ref=ae79d82ab6e2536cffdc0f73fa4d3cec36e85113",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "YAQMC/YAQMC",
+    "revision": "27a747213ec645523ab3f3194cb7df0812f7fe1c",
+    "url": "https://api.github.com/repos/YAQMC/YAQMC/license?ref=27a747213ec645523ab3f3194cb7df0812f7fe1c",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+    "license_detection": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "content_sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "content_file": "YAQMC-YAQMC-LICENSE"
+  },
+  {
+    "repository": "ales27pm/swarmer",
+    "revision": "4d0b92d65005c8182cbfb62b38be6f56e4c9158e",
+    "url": "https://api.github.com/repos/ales27pm/swarmer/license?ref=4d0b92d65005c8182cbfb62b38be6f56e4c9158e",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "blackmesadev/mesastream",
+    "revision": "c8b52d27b38e4fec6c8809e107ed6cd8ec081233",
+    "url": "https://api.github.com/repos/blackmesadev/mesastream/license?ref=c8b52d27b38e4fec6c8809e107ed6cd8ec081233",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+    "license_detection": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "content_sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "content_file": "blackmesadev-mesastream-LICENSE"
+  },
+  {
+    "repository": "john30/ebusd",
+    "revision": "38db2d28bd5622cadb6078c1662c6f7da5cef891",
+    "url": "https://api.github.com/repos/john30/ebusd/license?ref=38db2d28bd5622cadb6078c1662c6f7da5cef891",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "e963df8294069543e782fd72aa71832dca1571ca",
+    "license_detection": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "content_sha256": "8c75a9231db8906865e29706ed63aad18fd918c92c15dbefbb13c25fe42850b4",
+    "content_file": "john30-ebusd-LICENSE"
+  },
+  {
+    "repository": "kindalus/antbox",
+    "revision": "122e4bbf6f543d48e051ba314db6203b362abe3b",
+    "url": "https://api.github.com/repos/kindalus/antbox/license?ref=122e4bbf6f543d48e051ba314db6203b362abe3b",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "04c344c6fe0cfab8edebdcd022ecdcc8a38e5d59",
+    "license_detection": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "content_sha256": "44de1d8d3a6e3829360a0305fbf5dbf3ab8421cf46e93e4cbca522ce977ae4ca",
+    "content_file": "kindalus-antbox-LICENSE"
+  },
+  {
+    "repository": "rebeccapanel/Rebecca",
+    "revision": "9b557a2b0db6c3b3e3ff97b0884994645c856831",
+    "url": "https://api.github.com/repos/rebeccapanel/Rebecca/license?ref=9b557a2b0db6c3b3e3ff97b0884994645c856831",
+    "status": 200,
+    "cache": "miss",
+    "license_path": "LICENSE",
+    "license_blob_sha": "a44b6bde9f616621804125f41107f8f6c6a6cfba",
+    "license_detection": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "content_sha256": "0fc92418fdf2587c3824100772fed1acf6c62b86372bbb6844fc9d487d2725ed",
+    "content_file": "rebeccapanel-Rebecca-LICENSE"
+  },
+  {
+    "repository": "thepartly/reflectapi",
+    "revision": "b2738c07e19fe8b54f96f55245438fadc42ef0e0",
+    "url": "https://api.github.com/repos/thepartly/reflectapi/license?ref=b2738c07e19fe8b54f96f55245438fadc42ef0e0",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  },
+  {
+    "repository": "martin76ec/musicfy-web-admin",
+    "revision": "c74a657af806ce91b86c995d57e3346b8be1f6",
+    "url": "https://api.github.com/repos/martin76ec/musicfy-web-admin/license?ref=c74a657af806ce91b86c995d57e3346b8be1f6",
+    "status": 404,
+    "cache": "miss",
+    "response": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/rest/licenses/licenses#get-the-license-for-a-repository",
+      "status": "404"
+    }
+  }
+]

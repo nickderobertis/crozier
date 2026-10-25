@@ -119,8 +119,8 @@ split five ways:
 502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 14 are `gap`, 74 are `golden` and 3 are `handwritten`.
-10 of the `gap` ones are decided output-insensitive in
+([the list](openapi-surface/combinations.md)): 12 are `gap`, 76 are `golden` and 3 are `handwritten`.
+11 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 None is among the 721 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
@@ -2334,8 +2334,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 284 sources. The walk reads the
-  **267** registered sources, of which **267** carry a committed golden; the 17
+  acquires 287 sources. The walk reads the
+  **270** registered sources, of which **270** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -3348,16 +3348,14 @@ removes the row.
 A `gap` combination row — a feature combination
 [`combinations.md`](openapi-surface/combinations.md) selects that no registered
 golden source declares — is unproven, and it may stand only as a row below, which
-the same gate checks. None has had a witness search, so each reads
-`not searched`; a search's verdict replaces that reason, and a registered witness
-or a hand-written fixture removes the row.
+the same gate checks. A row reads `not searched` until a witness search runs, or
+`witness blocked` when the search found admissible declarers whose goldens
+unrelated residuals keep from byte-matching, linking the record that names each
+one; a registered witness or a hand-written fixture removes the row.
 
 | key | region | why it is unproven |
 |---|---|---|
-| `combo-octet-stream-body-header-param` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object whose request body offers `application/octet-stream` and no JSON media type and one of whose parameters is in `header`), and no witness search has been run |
-| `combo-form-urlencoded-union-body` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object whose request body offers `application/x-www-form-urlencoded` and no JSON media type, one of whose media types' schema declares `oneOf`), and no witness search has been run |
-| `combo-success-oneof-nullable` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object where a selected success representation resolves to a nullable schema or a union with a null member and a selected success representation resolves to a schema declaring oneOf), and no witness search has been run |
-| `combo-range-beside-concrete-success` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object where the selected success response declares nonempty content and the responses map declares 2XX beside a concrete 2xx status), and no witness search has been run |
+| `combo-inline-body-read-only-property` | `bodies-media` | `witness blocked` — [blocked witnesses](openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses). `webflow-v2` still mismatches 6 of the 11 files deleting the inline bodies' `readOnly` moves, and `osf.io` 69 of its 583, on unrelated shapes (deepObject map query value types, cross-package placement of shared inline types, worked-example values); its readOnly handling itself matches |
 
 #### The `example` arm, removed as a proven divergence
 
