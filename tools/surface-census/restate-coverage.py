@@ -233,18 +233,19 @@ def combination_proofs(root: Path) -> ProofSplit:
                 continue
             category = cells[3].strip("`")
             settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
-            if category == "golden":
-                split["real" if key in witnessed else "unproven"] += 1
-            elif category == "handwritten":
-                split["handwritten"] += 1
-            elif category == "limitations":
-                split["measured"] += 1
-            elif key in decided:
-                split["decided"] += 1
-            elif settlement == Settlement.UNREACHABLE:
-                split["measured"] += 1
-            else:
-                split["unproven"] += 1
+            match category:
+                case "golden":
+                    split["real" if key in witnessed else "unproven"] += 1
+                case "handwritten":
+                    split["handwritten"] += 1
+                case "limitations":
+                    split["measured"] += 1
+                case _ if key in decided:
+                    split["decided"] += 1
+                case _ if settlement == Settlement.UNREACHABLE:
+                    split["measured"] += 1
+                case _:
+                    split["unproven"] += 1
     return ProofSplit(*(split[field] for field in ProofSplit._fields))
 
 
