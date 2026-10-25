@@ -18616,6 +18616,17 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(1, self.run_restater("--combinations-only").returncode)
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         self.assertEqual([real - 1, measured, weak, unproven + 1, decided, total], stated())
+        # A ledger without its witness column is refused, nothing is written, and restoring it recovers.
+        restated = self.index.read_text(encoding="utf-8")
+        header = next(row for row in ledger_text.splitlines() if row.startswith("rank\t"))
+        ledger.write_text(
+            ledger_text.replace(header, header.replace("\twitnesses\t", "\tdeclarers\t"), 1), encoding="utf-8"
+        )
+        for args in (("--combinations-only",), ("--combinations-only", "--write")):
+            refused = self.run_restater(*args)
+            self.assertEqual(1, refused.returncode, args)
+            self.assertIn("golden-reach.tsv is not a golden-reach ledger", refused.stderr)
+        self.assertEqual(restated, self.index.read_text(encoding="utf-8"))
         ledger.write_text(ledger_text, encoding="utf-8")
         # A hand-edited figure is drift the check refuses and the write repairs.
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)

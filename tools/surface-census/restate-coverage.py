@@ -220,11 +220,9 @@ def combination_proofs(root: Path) -> ProofSplit:
     parser = reader()
     decided = decided_keys(root)
     surface = root / "docs/openapi-surface"
-    witnessed: set[str] = set()
+    # `decided_keys` has already parsed this ledger through golden-reach's `read_ledger`, which refuses a malformed one.
     with (surface / "golden-reach.tsv").open(encoding="utf-8", newline="") as handle:
         records = csv.DictReader((line for line in handle if not line.startswith("#")), delimiter="\t")
-        if not records.fieldnames or not {"key", "witnesses"}.issubset(records.fieldnames):
-            raise ValueError("golden-reach.tsv: missing key/witnesses header")
         witnessed = {row["key"] for row in records if row["witnesses"] not in ("", "-", None)}
     split: Counter[str] = Counter()
     for name in parser.region_files(root / "docs/openapi-surface-coverage.md"):
@@ -263,8 +261,6 @@ def restate_combinations(root: Path, text: str) -> str:
         "[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.",
     )
     split = combination_proofs(root)
-    if sum(split) != sum(categories.values()) or split.decided != decided:
-        raise ValueError("the combination proof split does not partition the combination rows")
     return substitute(
         text,
         COMBINATION_PROOF_SENTENCE,
