@@ -6737,14 +6737,10 @@ fn resolve_request_body(
         // sends no content-type header, as an inline union does: Apideck's
         // proxy verbs with their `anyOf` payloads named as components.
         if target.one_of.is_some() || target.any_of.is_some() {
-            let mut body = single_with_override(
-                TypeRef::Named(class),
-                required,
-                true,
-                true,
-                (media_type == "*/*").then(|| media_type.to_string()),
-            );
+            let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
+                single.content_type_override =
+                    (media_type == "*/*").then(|| media_type.to_string());
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
                     .map(BodyExample::Literal);
             }
