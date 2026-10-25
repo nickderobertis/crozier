@@ -18625,6 +18625,13 @@ class CoverageRestatementTests(unittest.TestCase):
             refused = self.run_restater(*args)
             self.assertEqual(1, refused.returncode, args)
             self.assertIn("golden-reach.tsv is not a golden-reach ledger", refused.stderr)
+        registry = self.root / "docs/openapi-surface/output-insensitive.tsv"
+        registry_text = registry.read_text(encoding="utf-8")
+        registry.unlink()
+        refused = self.run_restater("--combinations-only", "--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("golden-reach.tsv is not a golden-reach ledger", refused.stderr)
+        registry.write_text(registry_text, encoding="utf-8")
         self.assertEqual(restated, self.index.read_text(encoding="utf-8"))
         ledger.write_text(ledger_text, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)

@@ -220,10 +220,11 @@ def combination_proofs(root: Path) -> ProofSplit:
     parser = reader()
     decided = decided_keys(root)
     surface = root / "docs/openapi-surface"
-    # `decided_keys` has already parsed this ledger through golden-reach's `read_ledger`, which refuses a malformed one.
-    with (surface / "golden-reach.tsv").open(encoding="utf-8", newline="") as handle:
-        records = csv.DictReader((line for line in handle if not line.startswith("#")), delimiter="\t")
-        witnessed = {row["key"] for row in records if row["witnesses"] not in ("", "-", None)}
+    try:
+        ledger = reader("golden-reach.py").read_ledger(surface / "golden-reach.tsv")
+    except SystemExit as error:
+        raise ValueError(str(error)) from error
+    witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
     split: Counter[str] = Counter()
     for name in parser.region_files(root / "docs/openapi-surface-coverage.md"):
         for cells in parser.region_rows((surface / name).read_text(encoding="utf-8")):
