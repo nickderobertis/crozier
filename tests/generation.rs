@@ -5251,8 +5251,12 @@ fn a_description_keeps_its_trailing_carriage_return_in_the_markdown_writers() {
     assert!(reference.contains("Reads the notes.\r\n"), "{reference:?}");
 }
 
+/// An `http` `basic` scheme wires optional credentials whether or not a Security
+/// Requirement Object names it, as a bearer scheme does: the certified pair keeps
+/// `username` and `password` on `nexmo-messages` with its operation's `security`
+/// deleted, and on `apache.org` with its root `security: []` deleted.
 #[test]
-fn an_http_scheme_no_requirement_selects_leaves_the_client_unauthenticated() {
+fn an_http_basic_scheme_no_requirement_selects_still_wires_optional_credentials() {
     let unreferenced = render(
         r#"openapi: 3.0.3
 info: { title: Open, version: 1.0.0 }
@@ -5268,8 +5272,16 @@ components:
 "#,
     );
     let wrapper = &unreferenced["src/acme/core/client_wrapper.py"];
-    assert!(!wrapper.contains("BasicAuth"), "{wrapper}");
-    assert!(!wrapper.contains("username"), "{wrapper}");
+    assert!(
+        wrapper.contains(
+            "username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ),
+        "{wrapper}"
+    );
+    assert!(
+        wrapper.contains("if username is not None and password is not None:"),
+        "{wrapper}"
+    );
 
     let requested = render(
         r#"openapi: 3.0.3
@@ -15948,10 +15960,11 @@ fn alias_module(alias: &str) -> String {
     out
 }
 
-/// `reference.md` documents the condition field as a bare `typing.Literal` after
-/// the required fields and ahead of the optional ones.
+/// `reference.md` documents the condition field as a bare `typing.Literal` in its
+/// declared place among the required fields and ahead of the optional ones, as
+/// the certified pair lists `harbour-tide-desk`'s `stream` ahead of `port`.
 #[test]
-fn the_reference_documents_the_condition_after_required_fields() {
+fn the_reference_documents_the_condition_in_its_declared_place_among_required_fields() {
     let files = render(&condition_spec(
         "      operationId: plan",
         "{ type: object, required: [origin], properties: { notes: { type: string }, live: { type: boolean }, origin: { type: string } } }",
@@ -15963,7 +15976,7 @@ fn the_reference_documents_the_condition_after_required_fields() {
     let origin = section.find("**origin:** `str`").expect(section);
     let live = section.find("**live:** `typing.Literal`").expect(section);
     let notes = section.find("**notes:**").expect(section);
-    assert!(origin < live && live < notes, "{section}");
+    assert!(live < origin && origin < notes, "{section}");
 }
 
 #[test]
