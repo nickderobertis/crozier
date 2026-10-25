@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.134](https://github.com/nickderobertis/crozier/compare/v0.0.133...v0.0.134) - 2026-10-25
+
+### Fixed
+
+- *(parity)* prove the naming and client feature combinations ([#595](https://github.com/nickderobertis/crozier/pull/595))
+
 ## [0.0.133](https://github.com/nickderobertis/crozier/compare/v0.0.132...v0.0.133) - 2026-10-25
 
 ### Fixed
