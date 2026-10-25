@@ -1079,7 +1079,18 @@ def witness_blocked(root: Path, key: str, reason: str) -> bool:
         )
         with record.with_name("census.tsv").open(encoding="utf-8", newline="") as handle:
             documents = [row.get("document") or "" for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key]
-        return bool(lines) and all(any(candidate in document for document in documents) for candidate, _n, _s in lines)
+        def parts(value: str) -> list[str]:
+            return [part for part in re.split(r"[/:@;\s]+", value) if part]
+
+        def declares(candidate: str, document: str) -> bool:
+            # A whole run of path components, never a substring of one: `flow`
+            # does not name `corpus-sources/webflow-v2/openapi.yml`.
+            want, have = parts(candidate), parts(document)
+            return bool(want) and any(have[i : i + len(want)] == want for i in range(len(have)))
+
+        return bool(lines) and all(
+            any(declares(candidate, document) for document in documents) for candidate, _n, _s in lines
+        )
     except (OSError, UnicodeError, csv.Error, ValueError):
         return False
 
@@ -12441,10 +12452,10 @@ class FinishedStateGateTests(unittest.TestCase):
             f"`witness blocked` — [blocked witnesses]({record}#blocked-witnesses). x"
         )
         (self.root / "docs" / record).write_text(
-            f"# Probe\n\n## Blocked witnesses\n\n| `{key}` | `not-a-declarer` | 3 | unrelated shapes |\n", encoding="utf-8"
+            f"# Probe\n\n## Blocked witnesses\n\n| `{key}` | `flow` | 3 | unrelated shapes |\n", encoding="utf-8"
         )
         (self.root / "docs" / record).with_name("census.tsv").write_text(
-            f"key\tsource\tdocument\tsites\tsha256\tscreening\n{key}\tregistered\tcorpus-sources/real/openapi.yaml\t1\tx\ty\n",
+            f"key\tsource\tdocument\tsites\tsha256\tscreening\n{key}\tregistered\tcorpus-sources/webflow-v2/openapi.yml\t1\tx\ty\n",
             encoding="utf-8",
         )
         self.assertIn(
