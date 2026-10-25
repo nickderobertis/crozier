@@ -1510,6 +1510,41 @@ model. What Fern reads, and so what crozier reads:
 The generated tests are Fern's own: a model whose required child element the
 sample document leaves out fails its round trip in Fern's SDK too.
 
+### Known defects crozier reproduces on purpose
+
+By user ruling, crozier reproduces fern-python-sdk 5.41.3's XML models and their
+generated `tests/xml/` modules byte for byte, **including their known defects**:
+this is a deliberate match, not a catalogued departure. Only a specification
+that declares OpenAPI `xml` objects is affected; without one no XML model and no
+`tests/xml/` module is generated. The defect shapes, and what each does:
+
+- **A generated round-trip test omits a required child element.** Its sample
+  document is the bare element (`<LambdaFunctionAssociation />`), and the
+  `test_from_xml_preserves_unknown_attributes_and_children` sample never carries
+  a child, so `from_xml` fails pydantic validation on the missing required field.
+- **A required plain-object child the XML model cannot parse.** A required
+  property whose type is a plain model rather than an XML model is skipped by
+  the parent's `from_xml` (`xml_content(node, {}, skip={"Tags"})`), so the field
+  is `None` and validation fails even when the sample supplies the element.
+- **An `xml.name` of `##default`** is emitted as the element name, which is not
+  a valid XML name: `to_xml` writes `<##default>` and parsing it back fails with
+  `not well-formed (invalid token)`.
+- **A child-order test repeats a single-valued child**
+  (`<header /><metadata /><header />`): the model keeps one value per
+  single-valued field, so the serialized form has one `<header />` and the
+  `in` assertion fails.
+
+Measured by running each golden's `tests/xml/` with pytest under pydantic
+2.14.1 on Python 3.14 (crozier's output byte-matches each golden, so the counts
+are crozier's too):
+
+| golden | failing / total | shapes |
+|---|---|---|
+| `swagger-petstore` | 4 / 30 | 2 omitted required child (`Pet.name`), 2 `##default` (`ApiResponse`) |
+| `amazonaws.com-cloudfront` | 214 / 785 | all 214 are a required child absent from the parse result, across 107 models; in 36 of those models (72 tests) at least one is a required plain-object child the model skips |
+| `openaire-graph` | 7 / 116 | 5 single-valued child repeated by the child-order test, 2 omitted required child (`XmlResult`) |
+| `byautomata.io` | 0 / 20 | none |
+
 ## Enum name sanitization (issue #50)
 
 The real-`enum.Enum` generator derived each member name and `visit()` parameter
