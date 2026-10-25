@@ -119,7 +119,7 @@ split five ways:
 502 + 70 + 149 + 0 + 0 = 721.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 11 are `gap`, 77 are `golden` and 3 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 12 are `gap`, 76 are `golden` and 3 are `handwritten`.
 11 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 None is among the 721 features above, and each other `gap` one is named under
@@ -3348,12 +3348,14 @@ removes the row.
 A `gap` combination row — a feature combination
 [`combinations.md`](openapi-surface/combinations.md) selects that no registered
 golden source declares — is unproven, and it may stand only as a row below, which
-the same gate checks. None has had a witness search, so each reads
-`not searched`; a search's verdict replaces that reason, and a registered witness
-or a hand-written fixture removes the row.
+the same gate checks. A row reads `not searched` until a witness search runs, or
+`witness blocked` when the search found admissible declarers whose goldens
+unrelated residuals keep from byte-matching, linking the record that names each
+one; a registered witness or a hand-written fixture removes the row.
 
 | key | region | why it is unproven |
 |---|---|---|
+| `combo-inline-body-read-only-property` | `bodies-media` | `witness blocked` — [blocked witnesses](openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses). `webflow-v2` still mismatches 6 of the 11 files deleting the inline bodies' `readOnly` moves, and `osf.io` 69 of its 583, on unrelated shapes (deepObject map query value types, cross-package placement of shared inline types, worked-example values); its readOnly handling itself matches |
 
 #### The `example` arm, removed as a proven divergence
 

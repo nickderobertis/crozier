@@ -3,7 +3,7 @@
 This bounded search covers the thirty `bodies-responses` rows owned by
 `prove-operation-combinations` in [combinations.md](../combinations.md). The
 certified pair is Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3.
-Each key is settled one of two ways here:
+Each key ends one of three ways here:
 
 - **Proven by a real witness:** one admissible registered declarer, whose
   complete certified-pair golden crozier byte-matches, is output-sensitive.
@@ -12,10 +12,15 @@ Each key is settled one of two ways here:
 - **Decided output-insensitive:** the feature moves neither generator's output
   on any document tried, a from-scratch one included. Such a key is decided, not
   proven.
+- **Unproven, witness blocked:** admissible declarers the certified pair
+  generates from exist, but unrelated residuals keep crozier from byte-matching
+  every file the combination's removal moves. A hand-written fixture is not
+  admitted while they exist, so the key stays named as unproven.
 
-Twenty-nine keys are proven by real witnesses, three of them by corpus rows this
+Twenty-eight keys are proven by real witnesses, three of them by corpus rows this
 search registers (3470, 3471 and 3472). One key is decided output-insensitive.
-No hand-written fixture was needed, and no owned key is left unproven.
+One, `combo-inline-body-read-only-property`, is unproven: its witnesses are
+[blocked](#blocked-witnesses).
 
 ## The search
 
@@ -114,7 +119,7 @@ witness, further declarers keep their recorded screening state.
 | `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 154 | proven: registered `swagger-petstore`, after the first repair below |
 | `combo-form-urlencoded-body-with-params` | `search-incomplete` | 415 | proven: registered `listennotes` |
 | `combo-form-urlencoded-union-body` | `search-incomplete` | 27 | proven: registered `grantly` (corpus row 3471, registered by this search), after the third repair below |
-| `combo-inline-body-read-only-property` | `search-incomplete` | 20 | proven: registered `webflow-v2`, after the fourth repair below; see [its witness](#the-read-only-witness) |
+| `combo-inline-body-read-only-property` | `search-incomplete` | 20 | unproven, witness blocked: `webflow-v2` and `osf.io` generate under the certified pair, but unrelated residuals keep the files the combination moves from byte-matching ([blocked witnesses](#blocked-witnesses)) |
 | `combo-multipart-beside-json-body` | `search-incomplete` | 154 | proven: registered `mindee-ocr` |
 | `combo-multipart-body-with-params` | `search-incomplete` | 780 | proven: registered `mindee-ocr` |
 | `combo-no-content-beside-body-response` | `search-incomplete` | 631 | proven: registered `oal-example` |
@@ -181,10 +186,10 @@ ran from a temporary directory.
 ## Proven keys
 
 [paired-removal-comparisons.json](paired-removal-comparisons.json) holds the
-twenty-nine proving controls. In each, crozier's and the certified pair's
-changed file sets are equal. Each ablated tree compares with exit 0, except
-`webflow-v2`'s (below). Each witness's corpus golden test passes, so the files
-the combination writes byte-match in the witness's own golden.
+twenty-eight proving controls. In each, crozier's and the certified pair's
+changed file sets are equal, and each ablated tree compares with exit 0. Each
+witness's corpus golden test passes with no `unmatched` allowance, so every file
+the combination's removal moves byte-matches in the witness's own golden.
 
 | key | witness | removed | files that move in both generators |
 |---|---|---|---|
@@ -213,7 +218,6 @@ the combination writes byte-match in the witness's own golden.
 | `combo-echo-body-effective-non-oauth-required` | `redocly.com-museum` | the success schema repeating the body's reference, inlined | 7: the events clients, the hoisted response type, `reference.md` |
 | `combo-echo-body-effective-anonymous` | `oal-example` | the success schemas repeating the body's reference, inlined | 7: the root clients, two hoisted response types, `reference.md` |
 | `combo-success-statuses-mixed-media` | `oal-example` | the other success status | 3: the root clients, `reference.md` |
-| `combo-inline-body-read-only-property` | `webflow-v2` | `readOnly` on the inline bodies' properties | 11: the redirects, sites-scripts, pages-scripts, collection-items and webhooks clients, `reference.md` |
 | `combo-octet-stream-body-header-param` | `get-a-room` | the octet-stream body beside the header parameters | 3: the rooms clients, `reference.md` |
 | `combo-form-urlencoded-union-body` | `grantly` | the form body's `oneOf`, replaced by its first member | 11: the protocol clients, the discriminated `PostTokenRequest` types, `__init__.py`, `README.md`, `reference.md` |
 | `combo-success-oneof-nullable` | `ebusd` | the success union's `null` member | 3: the root clients, `reference.md` |
@@ -228,23 +232,6 @@ ablated tree byte-matches crozier's ablated output.
 The proven rows' reach cells still read `pending measurement`. They enter
 [the reach ledger](../golden-reach.tsv) at the next full `just golden-reach`, a
 restatement this node leaves to `reconcile-coverage`.
-
-### The read-only witness
-
-`webflow-v2` is the only admissible declarer of
-`combo-inline-body-read-only-property` that the certified pair generates from
-and crozier comes near; `osf.io` is the other, and crozier differs in 69 of its
-583 files across most clients. Before this search, `webflow-v2`'s golden listed
-the redirects, webhooks and sites-scripts clients in its `unmatched` residual,
-because crozier kept an inline body's `readOnly` properties as optional
-arguments. The fourth repair below drops them, and those five files left the
-list.
-
-Six of the eleven files its removal control moves still carry other residual
-hunks: query map value types in the collection-items clients, cross-package
-type placement in the scripts clients, and `reference.md`. Those hunks are
-unchanged by the removal. The ablated tree mismatches the certified pair in
-exactly the 38 files the committed golden does, and the readOnly hunks match.
 
 ### The witnesses this search registered
 
@@ -268,6 +255,27 @@ Other declarers of these keys keep their screening in [census.tsv](census.tsv).
 For `combo-success-oneof-nullable`, `gatOS`, `YAQMC` and `mesastream` also
 generate under the certified pair, with crozier divergences on unrelated shapes;
 they are not repaired, since one witness per key suffices.
+
+## Blocked witnesses
+
+`combo-inline-body-read-only-property` has two admissible declarers that the
+certified pair generates from. Neither proves it: each still mismatches files
+for reasons unrelated to the combination. The other declarers lack a licence
+grant or fall under registered Fern refusal classes ([census.tsv](census.tsv)).
+
+| key | candidate | files still mismatched | unrelated shapes |
+|---|---|---:|---|
+| `combo-inline-body-read-only-property` | `webflow-v2` | 6 | of the 11 files deleting the inline bodies' `readOnly` moves in both generators: deepObject map query parameters, whose value types the certified pair hoists and crozier types `Any` or an inline union (the collection-items clients); inline types `sites.scripts` and `pages.scripts` share, which the certified pair places in each package and crozier in one (the two scripts clients, one raw client); and in `reference.md`, those two plus collection-field union selection, worked-example values and a query enum typed `Any` |
+| `combo-inline-body-read-only-property` | `osf.io` | 69 | of its 583 generated files, across most clients: worked-example layout in `README.md` and `reference.md` and divergences in most tag clients; not attributed further |
+
+Before this search, `webflow-v2`'s golden listed the redirects, webhooks and
+sites-scripts raw clients in its `unmatched` residual, because crozier kept an
+inline body's `readOnly` properties as optional arguments. The fourth repair
+below drops them, and those five files left the list. Its removal control moves
+the same eleven files in both generators, and the ablated tree mismatches the
+certified pair in exactly the 38 files the committed golden does, so the
+remaining hunks predate the combination and do not move with it. The control is
+kept with the screening controls, since it does not prove the key.
 
 ## Output-insensitive keys
 
@@ -294,7 +302,8 @@ in [removal-controls/](removal-controls/).
 ## Controls that reach but do not prove
 
 [screening-removal-comparisons.json](screening-removal-comparisons.json) keeps
-the controls whose removal moved no crozier file. A declarer whose removal moves
+the controls that do not prove their key: those whose removal moved no crozier
+file, and one blocked witness's. A declarer whose removal moves
 no generated file reaches the combination but does not prove it; each key above
 was then proven by another declarer or another member's removal:
 
@@ -305,6 +314,8 @@ was then proven by another declarer or another member's removal:
 - `mermade-openapi-converter`, `6-dot-authentiqio.appspot.com` and `eozilla`
   for `combo-error-multiple-media`, with the first media type kept.
 - `get-a-room`'s header-deletion control, measured in both generators.
+- `webflow-v2` for `combo-inline-body-read-only-property`: output-sensitive and
+  measured in both generators, but [blocked](#blocked-witnesses).
 
 `komga` declares `combo-success-json-beside-download`, but the clients its
 download operations write are residuals in its golden's `unmatched` list, so
@@ -335,4 +346,5 @@ moves only `webflow-v2`.
    `readOnly` properties, unless an `allOf` parent declares the same name, as
    the [`inline-body-readonly-own-overlap`](../handwritten/inline-body-readonly-own-overlap/)
    fixture already pins (`resolve_request_body`). This is Webflow's redirect and
-   webhook creation.
+   webhook creation. The key it serves stays unproven until the
+   [blocking residuals](#blocked-witnesses) are repaired.

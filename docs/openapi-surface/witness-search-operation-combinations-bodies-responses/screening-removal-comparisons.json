@@ -260,5 +260,205 @@
    "changed": {}
   },
   "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
+ },
+ {
+  "key": "combo-inline-body-read-only-property",
+  "fixture": "webflow-v2",
+  "control": "combo-inline-body-read-only-property",
+  "edits": [
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1redirects/post/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1redirects~1{redirect_id}/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1bulk/post/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}/patch/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/lastPublished/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1collections~1{collection_id}~1items~1{item_id}~1live/patch/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1pages~1{page_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1pages~1{page_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/lastUpdated/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1custom_code/put/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/id/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/workspaceId/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/siteId/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/siteId",
+    "edit": "renamed to `siteIdField`, so the writable property does not collide with the same-named parameter"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/lastTriggered/readOnly",
+    "edit": "deleted `readOnly`"
+   },
+   {
+    "pointer": "/paths/~1sites~1{site_id}~1webhooks/post/requestBody/content/application~1json/schema/properties/createdOn/readOnly",
+    "edit": "deleted `readOnly`"
+   }
+  ],
+  "crozier": {
+   "before_files": 1456,
+   "after_files": 1456,
+   "changed": {
+    "reference.md": {
+     "before": "f4967eed80de5c139b91e94c92093ea5007b8f105944396e53330172ff6b9b13",
+     "after": "d54fa8d088d358ad9617fa144f40f9f40b2020433d9282f93b5ee43cb8e67428"
+    },
+    "src/fern/collections/items/client.py": {
+     "before": "2bc844d3e7ea8b5b9e1c6079b9dc89b73b57720cc61af3bbe2dfddc48e8a5264",
+     "after": "2f1b02e74a60377ba947aabeec503b63fd1c35d6a2533ef242ce177016642337"
+    },
+    "src/fern/collections/items/raw_client.py": {
+     "before": "7e6466436253681e768962b48f3c0697e86635792f4f254320116e61a80a989a",
+     "after": "98f16253986a142144c7b31afe46aeee3f3df370c0017e19bb8cec2bed6118a4"
+    },
+    "src/fern/pages/scripts/client.py": {
+     "before": "445e434908e5d89c170c6414399107a393a09944b3cfd1e666ae8c3fe2ffff57",
+     "after": "b6f91d76117a31f6312f35cf130375b47a023bd503402427aa6dcbdf733bb244"
+    },
+    "src/fern/pages/scripts/raw_client.py": {
+     "before": "cf2702778fb9e08f128f67887c62cd486531d9372cfc69a8a545ce52621b044a",
+     "after": "344085dcc43156629213a1d55dbf652e4d3b6f2e04e48dbc2a1c8805c301ac58"
+    },
+    "src/fern/sites/redirects/client.py": {
+     "before": "9a02229c50c5bb727c5a67d1e5bf617776d53b2e2118c7d282cab8af6f0d1abc",
+     "after": "a84ed2e843531ad3367f59f0c2b0c40055e8f1c4d12efc20c66f7b36f5410f74"
+    },
+    "src/fern/sites/redirects/raw_client.py": {
+     "before": "7c907821dbb6551d15420864684da00364993a592ce89a54ee6195a7406b4f9b",
+     "after": "c27c07ecb8fbf0f48e973dd5114cfb618fbe814362e4c1934035636d82304520"
+    },
+    "src/fern/sites/scripts/client.py": {
+     "before": "e5b9ad9c36c94aa931c463e20191787dbfd0a6a8cb762a52456d17318fc1d574",
+     "after": "d6bb5f5d1fdc80891530b6c0afcc86659ec12dd823548e34230a86eb21b26bf1"
+    },
+    "src/fern/sites/scripts/raw_client.py": {
+     "before": "eb7d26a3e02b6087e860f52110fe77df6d4aca9f735f2959e5a6a794dc8de822",
+     "after": "a657c94adc30b2d5781730a9df7f4affbb6bd2ffc759f7667749b3f878344721"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "a57c167f6de83016d024ceda166c0273249877b1c467de9ee0b71dcc718f2c42",
+     "after": "48f23227d18aef4895ea8c7872dd1201deeed5803cd64df99c4b7bd71dd90c76"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "f95ea7ba40a45c3b4bf3a79da073de83e0b70a14dbcea6eb65ab3809008edf92",
+     "after": "017efeec5e2419d45a2b14af2465ed762fa0bbc24ea65974befd4d904a8c55d2"
+    }
+   }
+  },
+  "certified_pair": {
+   "before_files": 1501,
+   "after_files": 1501,
+   "changed": {
+    "reference.md": {
+     "before": "e559dfa6eec9815cb63914c11d3200c196fe298aacdbf1974f23ad785e2072a9",
+     "after": "d287d34bf3ab4c2cd083ba219ad4ed0a3928423511592f36df0c3309e0828051"
+    },
+    "src/fern/collections/items/client.py": {
+     "before": "0ba8aeb60674403cf1e55c73bb187c904580a6014448e166658bc3d0a46c28c4",
+     "after": "21abbe3b883bb1f5a82f8e43b9f504fc94fa4f84b448b3e05723aedb5b249910"
+    },
+    "src/fern/collections/items/raw_client.py": {
+     "before": "9dc6de9f12a3ba54f88f44ed2e08a826af59397ce641777f3257ad5c723a6e73",
+     "after": "05d369c0c5656edc61d976aed27077b8c3aed7e32a174a6eb458c0122f1e9d81"
+    },
+    "src/fern/pages/scripts/client.py": {
+     "before": "9e82365175e4b99c754c100be8abfec7a7e701e572c0d9ab9053c8fb7dd2d8ab",
+     "after": "8e62fc4c5a9a896a0676ff9fd9b3fe71c60847c29cf787f9932c651feb60f0f2"
+    },
+    "src/fern/pages/scripts/raw_client.py": {
+     "before": "860c2cbdfdbe21b9f4e13d019fd8e6334611b3f62c0e57c083c439e3eccb433f",
+     "after": "dc533e4af36e1dea270c04a038eaa3079aac1d7906884c1d04f0b51f1ef957a4"
+    },
+    "src/fern/sites/redirects/client.py": {
+     "before": "c5957555a42ea40a8b3f2f04da6aa65b7915066013e40ce59a4f63470f40235e",
+     "after": "8da606d3b8827d241c926fc165dc6029394533f0c8db9d3cd80102e20ebd2e23"
+    },
+    "src/fern/sites/redirects/raw_client.py": {
+     "before": "9fd2d7fec63df60a85d72c6be287c1266194af8b6f1dc21ff5887bf4093a3809",
+     "after": "e087272840f42f00d41d5aae6a252a695149a38f9a322af8623a2c9e0fb27c6c"
+    },
+    "src/fern/sites/scripts/client.py": {
+     "before": "734652987760c74f9da5a9f88635e924730fa433c033bb6c8b974ebafbda2166",
+     "after": "21a56c892bd42fa2d5a23c941ff368b13b3e590907b2d53e04e117cd0d0c4c1a"
+    },
+    "src/fern/sites/scripts/raw_client.py": {
+     "before": "3230ceccfea9520218524c8990ea9a99d1cab2f5db79f2309868d27fbfc9d4c9",
+     "after": "0a5f7b49ef374ff380124d83c7edf01aecaa4581126cc35789754834ea84edf4"
+    },
+    "src/fern/webhooks/client.py": {
+     "before": "a433a0e41df589fe0871717b116a4a7618d4f71a8c2376839720917dc4e66de4",
+     "after": "99b524a9c738677fbfa34485249b68c8a1c6834a80e65841d4e84d37e4f0969a"
+    },
+    "src/fern/webhooks/raw_client.py": {
+     "before": "bc30b4e6e6cacbc505e670d9d9599b4d6b46b8202a0ec57b42627f4665f2f58d",
+     "after": "810000007c4548ab81d8e163510313ae73868acc0eb7aa8fba2955f87ebe1852"
+    }
+   }
+  },
+  "condition": "crozier generated with the working directory outside crozier's repository (a fresh temporary directory), so no repository ruff configuration applies; the certified pair generated in its own temporary Fern workspace, one generation at a time under flock ~/.cache/crozier-run-generation.lock; comparison by `crozier compare` from a temporary directory"
  }
 ]
