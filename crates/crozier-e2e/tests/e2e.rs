@@ -16709,6 +16709,48 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
 }
 
 #[test]
+fn a_form_field_sharing_a_path_parameter_name_suffixes_the_path_argument() {
+    // swagger-petstore's `PUT /user/{username}` with only its urlencoded body:
+    // `User` is also a response model, so the body is no inline request type,
+    // yet its fields are spread beside the path argument. Fern 5.41.3 names the
+    // path argument `username_`; passing `username` twice is not valid Python.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Desk API, version: 1.0.0 }\npaths:\n  /user/{username}:\n    get:\n      operationId: getUserByName\n      tags: [user]\n      parameters:\n        - { name: username, in: path, required: true, schema: { type: string } }\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }\n    put:\n      operationId: updateUser\n      tags: [user]\n      parameters:\n        - { name: username, in: path, required: true, schema: { type: string } }\n      requestBody:\n        content:\n          application/x-www-form-urlencoded:\n            schema: { $ref: '#/components/schemas/User' }\n      responses:\n        '200': { description: Updated }\ncomponents:\n  schemas:\n    User:\n      type: object\n      properties:\n        id: { type: integer }\n        username: { type: string }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/user/client.py"))
+        .expect("user client is generated");
+    assert!(
+        client.contains("        username_: str,\n")
+            && client.contains("        username: typing.Optional[str] = OMIT,\n")
+            && client.contains("            username_=\"username\",\n"),
+        "the path argument takes the trailing underscore beside the form field: {client}"
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/user/raw_client.py"))
+        .expect("user raw client is generated");
+    assert!(
+        raw.contains("f\"user/{encode_path_param(username_)}\"")
+            && raw.contains("\"username\": username,"),
+        "the URL interpolates the renamed path argument and the form sends the field: {raw}"
+    );
+}
+
+#[test]
+fn a_referenced_union_body_under_wildcard_media_sends_no_content_type() {
+    // Apideck's proxy verbs once their inline `anyOf` payloads are named: Fern
+    // 5.41.3 sends the referenced union through the converter with no header.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Relay API, version: 1.0.0 }\npaths:\n  /relay:\n    post:\n      operationId: forward\n      tags: [relay]\n      parameters:\n        - { name: x-relay-target, in: header, required: true, schema: { type: string } }\n      requestBody:\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/RelayPayload' }\n      responses:\n        '204': { description: Forwarded }\ncomponents:\n  schemas:\n    RelayPayload:\n      anyOf:\n        - { type: object, properties: {} }\n        - { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/relay/raw_client.py"))
+        .expect("relay raw client is generated");
+    assert!(
+        raw.contains("object_=request, annotation=RelayPayload, direction=\"write\"")
+            && !raw.contains("\"content-type\": \"application/json\""),
+        "a wildcard referenced union sends no JSON content-type header: {raw}"
+    );
+}
+
+#[test]
 fn binary_requests_ignore_declared_operation_headers() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      parameters:\n        - { name: X-Preserve-Ids, in: header, schema: { type: boolean } }\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
