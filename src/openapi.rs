@@ -6733,6 +6733,9 @@ components:
         }
         assert_eq!(members("noted"), Some(2));
         assert_eq!(members("reserved"), Some(2));
+        // No end-to-end journey for this one: with the list gone the node is the
+        // bare `{}` every reader already lowers as an unconstrained value, so
+        // the structure asserted here is the whole of what it generates.
         assert_eq!(
             members("alone"),
             None,

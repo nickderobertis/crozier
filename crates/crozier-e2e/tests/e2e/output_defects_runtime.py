@@ -30,6 +30,8 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, NamedTuple
 
+import pydantic
+
 # The schemas each journey validates against; a document without them is not the measurement.
 CASE_SCHEMAS = {"615": ("Load", "Kiln"), "617": ("Coat", "MatteCoat", "GlossCoat")}
 
@@ -43,11 +45,58 @@ def check(condition: bool, message: str) -> None:
         raise Failure(message)
 
 
+# The `type` values the walker reads, each with the instances it accepts.
+ACCEPTED: dict[str, Callable[[Any], bool]] = {
+    "object": lambda value: isinstance(value, dict),
+    "string": lambda value: isinstance(value, str),
+    "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
+    "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
+}
+REF_PREFIX = "#/components/schemas/"
+
+
+def shape_errors(schema: Any, components: dict[str, Any], at: str) -> list[str]:
+    """Where `schema` is not a shape `schema_errors` can walk without failing."""
+    if not isinstance(schema, dict):
+        return [f"{at} is not an object"]
+    errors = []
+    reference = schema.get("$ref")
+    if reference is not None and (
+        not isinstance(reference, str) or reference.removeprefix(REF_PREFIX) not in components
+    ):
+        errors.append(f"{at}.$ref {reference!r} names no component schema")
+    if "type" in schema and schema["type"] not in ACCEPTED:
+        errors.append(f"{at}.type {schema['type']!r} is not one of {sorted(ACCEPTED)}")
+    if not isinstance(schema.get("required", []), list):
+        errors.append(f"{at}.required is not a list")
+    members = schema.get("allOf", [])
+    if not isinstance(members, list):
+        errors.append(f"{at}.allOf is not a list")
+    else:
+        for index, member in enumerate(members):
+            errors += shape_errors(member, components, f"{at}.allOf[{index}]")
+    properties = schema.get("properties", {})
+    if not isinstance(properties, dict):
+        errors.append(f"{at}.properties is not an object")
+    else:
+        for key, value in properties.items():
+            errors += shape_errors(value, components, f"{at}.properties.{key}")
+    if "discriminator" in schema:
+        discriminator = schema["discriminator"]
+        mapping = discriminator.get("mapping", {}) if isinstance(discriminator, dict) else None
+        if not isinstance(mapping, dict) or not isinstance(discriminator.get("propertyName"), str):
+            errors.append(f"{at}.discriminator needs a string propertyName and an object mapping")
+        else:
+            for tag, target in mapping.items():
+                errors += shape_errors({"$ref": target}, components, f"{at}.discriminator.mapping.{tag}")
+    return errors
+
+
 def resolve(schema: dict[str, Any], components: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
     reference = schema.get("$ref")
     if reference is None:
         return None, schema
-    name = reference.rsplit("/", 1)[-1]
+    name = reference.removeprefix(REF_PREFIX)
     return name, components[name]
 
 
@@ -72,13 +121,7 @@ def schema_errors(
     for member in schema.get("allOf", []):
         errors += schema_errors(instance, member, components, at, dispatched)
     kind = schema.get("type")
-    accepted = {
-        "object": lambda value: isinstance(value, dict),
-        "string": lambda value: isinstance(value, str),
-        "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
-        "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
-    }
-    if kind is not None and not accepted[kind](instance):
+    if kind is not None and not ACCEPTED[kind](instance):
         return [*errors, f"{at}: {instance!r} is not {kind}"]
     if isinstance(instance, dict):
         errors += [f"{at}: missing {key}" for key in schema.get("required", []) if key not in instance]
@@ -134,6 +177,7 @@ class Variant(NamedTuple):
     arguments: dict[str, Any]
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] These calls are the subject under test, not a client this script owns: the generated SDK's synchronous FernApi is what the measurement's runtime.txt drives over Fern's tree, and its model typing is what #615 and #617 settle.
 def empty_member_keeps_the_reference(
     fern: Any, spec: dict[str, Any], base_url: str, recorder: Recorder, say: Callable[[str], None]
 ) -> None:
@@ -205,7 +249,7 @@ def annotated_copy_keeps_the_variants(
     pots = fern.FernApi(base_url=base_url).pots
     for tag, wire, arguments in VARIANTS:
         suffix = tag.capitalize()
-        parsed = fern.core.pydantic_utilities.parse_obj_as(fern.PotOuterCoat, wire)
+        parsed = pydantic.TypeAdapter(fern.PotOuterCoat).validate_python(wire)
         check(
             type(parsed).__name__ == f"PotOuterCoat_{suffix}",
             f"{wire!r} parsed through PotOuterCoat as {type(parsed).__name__}, not PotOuterCoat_{suffix}",
@@ -239,18 +283,21 @@ def annotated_copy_keeps_the_variants(
         say(
             f"RecoatPotRequestCoat_{suffix} is sent as {json.dumps(sent['coat'], sort_keys=True)}, which Coat validates"
         )
-        parsed = fern.core.pydantic_utilities.parse_obj_as(fern.RecoatPotRequestCoat, wire)
+        parsed = pydantic.TypeAdapter(fern.RecoatPotRequestCoat).validate_python(wire)
         check(
             type(parsed) is body_class, f"{wire!r} parsed as {type(parsed).__name__}, not RecoatPotRequestCoat_{suffix}"
         )
         say(f"{json.dumps(wire, sort_keys=True)} parses as RecoatPotRequestCoat_{suffix}")
 
 
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
+
+
 JOURNEYS = {"615": empty_member_keeps_the_reference, "617": annotated_copy_keeps_the_variants}
 
 
 def read_spec(path: Path, case: str) -> dict[str, Any]:
-    """The measurement document, or ValueError naming what it lacks."""
+    """The measurement document, or ValueError naming what it lacks or what the walker cannot read."""
     spec = json.loads(path.read_text(encoding="utf-8"))
     schemas = spec.get("components", {}).get("schemas") if isinstance(spec, dict) else None
     if not isinstance(schemas, dict):
@@ -258,6 +305,9 @@ def read_spec(path: Path, case: str) -> dict[str, Any]:
     missing = [name for name in CASE_SCHEMAS[case] if not isinstance(schemas.get(name), dict)]
     if missing:
         raise ValueError(f"components.schemas lacks {', '.join(missing)}")
+    errors = [error for name, schema in schemas.items() for error in shape_errors(schema, schemas, name)]
+    if errors:
+        raise ValueError("; ".join(errors))
     return spec
 
 
@@ -281,7 +331,6 @@ def main() -> int:
     sys.path.insert(0, str(args.sdk_src.resolve()))
     try:
         fern = importlib.import_module("fern")
-        importlib.import_module("fern.core.pydantic_utilities")
     except Exception as error:  # any import failure means the SDK input is unusable
         print(f"cannot import the fern package under {args.sdk_src} ({error!r}); regenerate the SDK", file=sys.stderr)
         return 2

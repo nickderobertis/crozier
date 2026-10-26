@@ -174,6 +174,24 @@ fn sdk_env_output_defect_journeys_hold_for_crozier_and_fern() {
     missing.stderr(predicate::str::contains(
         "must contain the generated fern package",
     ));
+    let malformed = work.path().join("malformed.json");
+    std::fs::write(
+        &malformed,
+        r##"{"components": {"schemas": {"Load": {"properties": {"kiln": {"$ref": "#/components/schemas/Absent"}}}, "Kiln": {"type": "array"}}}}"##,
+    )
+    .unwrap();
+    journey(
+        &python,
+        EMPTY_MEMBER,
+        &case_dir(EMPTY_MEMBER).join("fern-expected/src"),
+        &malformed,
+    )
+    .assert()
+    .code(2)
+    .stderr(predicate::str::contains(
+        "Load.properties.kiln.$ref '#/components/schemas/Absent' names no component schema",
+    ))
+    .stderr(predicate::str::contains("Kiln.type 'array' is not one of"));
     for (case, removed, kept, refused) in [
         (
             EMPTY_MEMBER,
