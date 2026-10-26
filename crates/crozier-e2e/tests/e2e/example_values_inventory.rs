@@ -260,6 +260,26 @@ pub fn observed_rows(
             });
         }
     }
+    // And every line a rejected-example departure accounts for holds a
+    // repaired value of the inventory: the departure is applied nowhere else.
+    for (file, line, id) in departures {
+        if !mechanism::ALL.contains(&id.as_str()) || !compared(file) {
+            continue;
+        }
+        let backed = values.iter().any(|value| {
+            value.file == *file
+                && value.disposition == Disposition::Repaired
+                && (value.line == *line
+                    || value.mechanism == Some(mechanism::ARRAY)
+                        && value.line <= *line
+                        && *line <= value.line + 400)
+        });
+        if !backed {
+            failures.push(format!(
+                "{file}:{line}: `{id}` is applied where no repaired value of the inventory stands"
+            ));
+        }
+    }
     if failures.is_empty() {
         Ok(rows)
     } else {

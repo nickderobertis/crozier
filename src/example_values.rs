@@ -143,17 +143,18 @@ impl Keyword {
                     .unwrap_or(true),
             ),
             (Keyword::Format(format), Value::String(text)) => admits(format_admits(format, text)),
-            (Keyword::Format(format), Value::Number(number)) => {
-                let range = match format.as_str() {
-                    "int32" => Some((f64::from(i32::MIN), f64::from(i32::MAX))),
-                    "int64" => Some((-(2f64.powi(63)), 2f64.powi(63) - 1.0)),
-                    _ => None,
-                };
-                match (range, number.as_f64()) {
-                    (Some((low, high)), Some(n)) => admits(n >= low && n <= high),
-                    _ => Reading::Admits,
-                }
-            }
+            (Keyword::Format(format), Value::Number(number)) => match format.as_str() {
+                "int32" => admits(number.as_i64().is_some_and(|n| i32::try_from(n).is_ok())),
+                // A literal past the signed 64-bit range reads as a `u64`, or
+                // as a double where it fits neither; one inside reads as `i64`.
+                "int64" => admits(
+                    number.is_i64()
+                        || number
+                            .as_f64()
+                            .is_some_and(|n| n.fract() != 0.0 && n.abs() < 2f64.powi(63)),
+                ),
+                _ => Reading::Admits,
+            },
             (Keyword::Minimum(bound), Value::Number(n)) => {
                 admits(n.as_f64().is_some_and(|n| n >= *bound))
             }
@@ -578,8 +579,11 @@ impl ValueConstraints {
     }
 
     fn construct_number(&self, fern: &serde_json::Number) -> Option<Value> {
-        let integer = fern.is_i64() || fern.is_u64();
         let value = fern.as_f64()?;
+        let integer_format = self.keywords.iter().any(|keyword| {
+            matches!(keyword, Keyword::Format(format) if format == "int32" || format == "int64")
+        });
+        let integer = fern.is_i64() || fern.is_u64() || (integer_format && value.fract() == 0.0);
         let mut low = f64::NEG_INFINITY;
         let mut high = f64::INFINITY;
         let mut steps = Vec::new();
@@ -594,6 +598,11 @@ impl ValueConstraints {
                 Keyword::Format(format) if format == "int32" => {
                     low = low.max(f64::from(i32::MIN));
                     high = high.min(f64::from(i32::MAX));
+                }
+                // The nearest doubles inside the signed 64-bit range.
+                Keyword::Format(format) if format == "int64" => {
+                    low = low.max(-(2f64.powi(63)));
+                    high = high.min(2f64.powi(63) - 1024.0);
                 }
                 _ => {}
             }
@@ -838,8 +847,7 @@ fn full_time(text: &str) -> bool {
         let Some((hours, minutes)) = offset.split_once(':') else {
             return false;
         };
-        if !digits(hours, 2).is_some_and(|h| h < 24) || !digits(minutes, 2).is_some_and(|m| m < 60)
-        {
+        if digits(hours, 2).is_none_or(|h| h >= 24) || digits(minutes, 2).is_none_or(|m| m >= 60) {
             return false;
         }
     }
@@ -1091,8 +1099,19 @@ pub mod mechanism {
     /// A string enum's first member, the example Fern writes for an enum,
     /// which the earlier `pattern-narrowed-enum-example` departure corrects.
     pub const ENUM_MEMBER: &str = "pattern-narrowed-enum-example";
+    /// A declared integer past 2^53 written as the double nearest it, which
+    /// the earlier `int64-example-rounded-out-of-range` departure corrects.
+    pub const ROUNDED: &str = "int64-example-rounded-out-of-range";
     /// Every mechanism an inventory row may name.
-    pub const NAMED: [&str; 6] = [NAME, PLACEHOLDER, SIZED, NUMBER, ARRAY, ENUM_MEMBER];
+    pub const NAMED: [&str; 7] = [
+        NAME,
+        PLACEHOLDER,
+        SIZED,
+        NUMBER,
+        ARRAY,
+        ENUM_MEMBER,
+        ROUNDED,
+    ];
 }
 
 /// Why an inventoried value is, or is not, written differently from Fern.
@@ -1460,6 +1479,16 @@ mod tests {
                 serde_json::json!({"type": "integer", "format": "int32"}),
                 Value::from(4_000_000_000_i64),
                 "format=int32",
+            ),
+            (
+                serde_json::json!({"type": "integer", "format": "int64"}),
+                python_value("-9223372036854776000").unwrap(),
+                "format=int64",
+            ),
+            (
+                serde_json::json!({"type": "integer", "format": "int64"}),
+                python_value("9223372036854776000").unwrap(),
+                "format=int64",
             ),
             (
                 serde_json::json!({"type": "array", "items": {"type": "string"}, "minItems": 2}),

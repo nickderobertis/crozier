@@ -431,6 +431,32 @@ impl ExampleCtx<'_> {
                         _ => (min, max),
                     },
                 )];
+                // Fern writes a declared integer past 2^53 as the double nearest
+                // it; where that leaves the schema's range, the earlier
+                // `int64-example-rounded-out-of-range` departure writes it exactly.
+                if let Value::Number(number) = &value {
+                    let rounded = crate::ir::js_integer_literal(number);
+                    if rounded != *literal {
+                        if let Some(Verdict::Rejected(keyword)) =
+                            python_value(&rounded).map(|fern| combined.verdict(&fern))
+                        {
+                            pending.push(Pending {
+                                needles: needles.to_vec(),
+                                value: ExampleValue {
+                                    file: String::new(),
+                                    line: 0,
+                                    argument: path.to_string(),
+                                    fern: rounded,
+                                    crozier: literal.clone(),
+                                    constraint: keyword.to_string(),
+                                    mechanism: Some(mechanism::ROUNDED),
+                                    disposition: Disposition::Repaired,
+                                },
+                            });
+                            return;
+                        }
+                    }
+                }
                 let constraint = match combined.verdict(&value) {
                     Verdict::Accepted | Verdict::Undecided(None) => return,
                     Verdict::Undecided(Some(keyword)) => {

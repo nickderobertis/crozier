@@ -59,8 +59,27 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
                 constraints,
             });
         }
+        walk_inside(schema, names, schemas, out, depth);
+    }
+    /// The nodes inside `schema`: its properties, items and map values, and
+    /// those of its composition members, which are no value of their own — an
+    /// `allOf` member's keywords are already the value's, and a `oneOf` or
+    /// `anyOf` member's are an alternative, out of scope.
+    fn walk_inside(
+        schema: &Schema,
+        names: &[String],
+        schemas: &indexmap::IndexMap<String, Schema>,
+        out: &mut Vec<Node>,
+        depth: usize,
+    ) {
         for (name, property) in &schema.properties {
-            walk(property, &[name.clone()], schemas, out, depth + 1);
+            walk(
+                property,
+                std::slice::from_ref(name),
+                schemas,
+                out,
+                depth + 1,
+            );
         }
         if let Some(items) = &schema.items {
             walk(items, names, schemas, out, depth + 1);
@@ -75,12 +94,12 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
             &schema.discarded_all_of,
         ] {
             for member in members.iter().flatten() {
-                walk(member, names, schemas, out, depth + 1);
+                walk_inside(member, names, schemas, out, depth + 1);
             }
         }
     }
     for (name, schema) in schemas {
-        walk(schema, &[name.clone()], schemas, &mut out, 0);
+        walk(schema, std::slice::from_ref(name), schemas, &mut out, 0);
     }
     let parameters = source
         .components

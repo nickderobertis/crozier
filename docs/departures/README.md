@@ -151,6 +151,11 @@ golden's rows become exactly what its comparisons recorded. Review the diff
 before committing it — every new row is a line where crozier now writes
 something other than Fern.
 
+The same recipe regenerates
+[the inventory of worked-example values their own schema rejects](evidence/invalid-example-values/README.md),
+which the same comparisons hold per golden, recorded under
+`CROZIER_RECORD_EXAMPLE_INVENTORY`.
+
 ## Adding a departure
 
 A fix node that makes crozier depart from Fern on purpose — correcting a Fern
