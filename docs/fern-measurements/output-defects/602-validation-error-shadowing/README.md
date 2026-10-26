@@ -9,7 +9,7 @@ schema into `raw_client.py` beside pydantic's exception of the same name.
 
 `fern-expected/` is the complete, comment-stripped tree Fern CLI 5.163.1 with
 `fernapi/fern-python-sdk` 5.41.3 generated from it, through
-`tools/fern-goldens/fern-references.py generate measurements
+`just fern-references measurements
 output-defects/602-validation-error-shadowing` (the case is a
 [`../../cases.tsv`](../../cases.tsv) row). Nothing in it was edited.
 
