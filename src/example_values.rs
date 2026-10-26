@@ -95,6 +95,42 @@ impl Format {
     }
 }
 
+/// A finite number a numeric keyword bounds a value by.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Bound(f64);
+
+impl Bound {
+    /// `n` as a bound; `None` for an infinite or `NaN` one.
+    #[must_use]
+    pub fn new(n: f64) -> Option<Self> {
+        n.is_finite().then_some(Self(n))
+    }
+
+    /// The bound.
+    #[must_use]
+    pub fn get(self) -> f64 {
+        self.0
+    }
+}
+
+/// A positive, finite `multipleOf` divisor.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Step(f64);
+
+impl Step {
+    /// `n` as a divisor; `None` for zero, a negative or a non-finite one.
+    #[must_use]
+    pub fn new(n: f64) -> Option<Self> {
+        (n.is_finite() && n > 0.0).then_some(Self(n))
+    }
+
+    /// The divisor.
+    #[must_use]
+    pub fn get(self) -> f64 {
+        self.0
+    }
+}
+
 /// One in-scope validation keyword and its declared value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
@@ -111,15 +147,15 @@ pub enum Keyword {
     /// `format`, one in scope.
     Format(Format),
     /// `minimum`, inclusive.
-    Minimum(f64),
+    Minimum(Bound),
     /// `maximum`, inclusive.
-    Maximum(f64),
+    Maximum(Bound),
     /// `exclusiveMinimum` (3.1's number, or 3.0's `true` beside `minimum`).
-    ExclusiveMinimum(f64),
+    ExclusiveMinimum(Bound),
     /// `exclusiveMaximum`, likewise.
-    ExclusiveMaximum(f64),
+    ExclusiveMaximum(Bound),
     /// `multipleOf`, positive.
-    MultipleOf(f64),
+    MultipleOf(Step),
     /// `minItems`.
     MinItems(u64),
     /// `maxItems`.
@@ -141,11 +177,11 @@ impl Keyword {
             "minLength" => Keyword::MinLength(count()?),
             "maxLength" => Keyword::MaxLength(count()?),
             "format" => Keyword::Format(Format::parse(value)?),
-            "minimum" => Keyword::Minimum(number()?),
-            "maximum" => Keyword::Maximum(number()?),
-            "exclusiveMinimum" => Keyword::ExclusiveMinimum(number()?),
-            "exclusiveMaximum" => Keyword::ExclusiveMaximum(number()?),
-            "multipleOf" => Keyword::MultipleOf(number()?),
+            "minimum" => Keyword::Minimum(Bound::new(number()?)?),
+            "maximum" => Keyword::Maximum(Bound::new(number()?)?),
+            "exclusiveMinimum" => Keyword::ExclusiveMinimum(Bound::new(number()?)?),
+            "exclusiveMaximum" => Keyword::ExclusiveMaximum(Bound::new(number()?)?),
+            "multipleOf" => Keyword::MultipleOf(Step::new(number()?)?),
             "minItems" => Keyword::MinItems(count()?),
             "maxItems" => Keyword::MaxItems(count()?),
             _ => return None,
@@ -171,11 +207,11 @@ impl fmt::Display for Keyword {
             Keyword::MinLength(n) => write!(f, "minLength={n}"),
             Keyword::MaxLength(n) => write!(f, "maxLength={n}"),
             Keyword::Format(format) => write!(f, "format={}", format.as_str()),
-            Keyword::Minimum(n) => write!(f, "minimum={}", number(*n)),
-            Keyword::Maximum(n) => write!(f, "maximum={}", number(*n)),
-            Keyword::ExclusiveMinimum(n) => write!(f, "exclusiveMinimum={}", number(*n)),
-            Keyword::ExclusiveMaximum(n) => write!(f, "exclusiveMaximum={}", number(*n)),
-            Keyword::MultipleOf(n) => write!(f, "multipleOf={}", number(*n)),
+            Keyword::Minimum(n) => write!(f, "minimum={}", number(n.get())),
+            Keyword::Maximum(n) => write!(f, "maximum={}", number(n.get())),
+            Keyword::ExclusiveMinimum(n) => write!(f, "exclusiveMinimum={}", number(n.get())),
+            Keyword::ExclusiveMaximum(n) => write!(f, "exclusiveMaximum={}", number(n.get())),
+            Keyword::MultipleOf(n) => write!(f, "multipleOf={}", number(n.get())),
             Keyword::MinItems(n) => write!(f, "minItems={n}"),
             Keyword::MaxItems(n) => write!(f, "maxItems={n}"),
         }
@@ -236,19 +272,19 @@ impl Keyword {
                 _ => Reading::Admits,
             },
             (Keyword::Minimum(bound), Value::Number(n)) => {
-                admits(n.as_f64().is_some_and(|n| n >= *bound))
+                admits(n.as_f64().is_some_and(|n| n >= bound.get()))
             }
             (Keyword::Maximum(bound), Value::Number(n)) => {
-                admits(n.as_f64().is_some_and(|n| n <= *bound))
+                admits(n.as_f64().is_some_and(|n| n <= bound.get()))
             }
             (Keyword::ExclusiveMinimum(bound), Value::Number(n)) => {
-                admits(n.as_f64().is_some_and(|n| n > *bound))
+                admits(n.as_f64().is_some_and(|n| n > bound.get()))
             }
             (Keyword::ExclusiveMaximum(bound), Value::Number(n)) => {
-                admits(n.as_f64().is_some_and(|n| n < *bound))
+                admits(n.as_f64().is_some_and(|n| n < bound.get()))
             }
             (Keyword::MultipleOf(step), Value::Number(n)) => {
-                admits(n.as_f64().is_some_and(|n| is_multiple(n, *step)))
+                admits(n.as_f64().is_some_and(|n| is_multiple(n, step.get())))
             }
             (Keyword::MinItems(n), Value::Array(items)) => admits(items.len() as u64 >= *n),
             (Keyword::MaxItems(n), Value::Array(items)) => admits(items.len() as u64 <= *n),
@@ -638,9 +674,11 @@ impl ValueConstraints {
                     .keywords
                     .iter()
                     .find_map(|keyword| match keyword {
-                        Keyword::MultipleOf(step) => {
-                            Some(if integer { lcm_step(*step) } else { *step })
-                        }
+                        Keyword::MultipleOf(step) => Some(if integer {
+                            lcm_step(step.get())
+                        } else {
+                            step.get()
+                        }),
                         _ => None,
                     })
                     .unwrap_or(1.0);
@@ -701,11 +739,11 @@ impl ValueConstraints {
         let step_up = if integer { 1.0 } else { 0.1 };
         for keyword in &self.keywords {
             match keyword {
-                Keyword::Minimum(n) => low = low.max(*n),
-                Keyword::ExclusiveMinimum(n) => low = low.max(*n + step_up),
-                Keyword::Maximum(n) => high = high.min(*n),
-                Keyword::ExclusiveMaximum(n) => high = high.min(*n - step_up),
-                Keyword::MultipleOf(n) => steps.push(*n),
+                Keyword::Minimum(n) => low = low.max(n.get()),
+                Keyword::ExclusiveMinimum(n) => low = low.max(n.get() + step_up),
+                Keyword::Maximum(n) => high = high.min(n.get()),
+                Keyword::ExclusiveMaximum(n) => high = high.min(n.get() - step_up),
+                Keyword::MultipleOf(n) => steps.push(n.get()),
                 Keyword::Format(Format::Int32) => {
                     low = low.max(f64::from(i32::MIN));
                     high = high.min(f64::from(i32::MAX));
@@ -842,27 +880,32 @@ fn own_keywords(schema: &Schema) -> Vec<Keyword> {
     // OpenAPI 3.0 spells an exclusive bound as `exclusiveMinimum: true` beside
     // `minimum`; 3.1 as the number itself.
     let exclusive = |key: &str| unmodeled.get(key).and_then(Value::as_bool) == Some(true);
-    if let Some(n) = schema.minimum.as_ref().and_then(Value::as_f64) {
+    if let Some(n) = schema
+        .minimum
+        .as_ref()
+        .and_then(Value::as_f64)
+        .and_then(Bound::new)
+    {
         keywords.push(if exclusive("exclusiveMinimum") {
             Keyword::ExclusiveMinimum(n)
         } else {
             Keyword::Minimum(n)
         });
     }
-    if let Some(n) = number("maximum") {
+    if let Some(n) = number("maximum").and_then(Bound::new) {
         keywords.push(if exclusive("exclusiveMaximum") {
             Keyword::ExclusiveMaximum(n)
         } else {
             Keyword::Maximum(n)
         });
     }
-    if let Some(n) = number("exclusiveMinimum") {
+    if let Some(n) = number("exclusiveMinimum").and_then(Bound::new) {
         keywords.push(Keyword::ExclusiveMinimum(n));
     }
-    if let Some(n) = number("exclusiveMaximum") {
+    if let Some(n) = number("exclusiveMaximum").and_then(Bound::new) {
         keywords.push(Keyword::ExclusiveMaximum(n));
     }
-    if let Some(n) = number("multipleOf").filter(|n| *n > 0.0) {
+    if let Some(n) = number("multipleOf").and_then(Step::new) {
         keywords.push(Keyword::MultipleOf(n));
     }
     if let Some(n) = count("minItems") {
@@ -1360,22 +1403,24 @@ fn escape(text: &str) -> String {
         .replace('\n', "\\n")
 }
 
-fn unescape(text: &str) -> String {
+/// A field a record wrote, unescaped; `None` for a backslash [`escape`]
+/// never writes.
+fn unescape(text: &str) -> Option<String> {
     let mut out = String::new();
     let mut chars = text.chars();
     while let Some(c) = chars.next() {
         if c == '\\' {
-            match chars.next() {
-                Some('t') => out.push('\t'),
-                Some('n') => out.push('\n'),
-                Some(other) => out.push(other),
-                None => out.push('\\'),
-            }
+            out.push(match chars.next()? {
+                't' => '\t',
+                'n' => '\n',
+                '\\' => '\\',
+                _ => return None,
+            });
         } else {
             out.push(c);
         }
     }
-    out
+    Some(out)
 }
 
 impl ExampleValue {
@@ -1397,7 +1442,8 @@ impl ExampleValue {
     }
 
     /// The value a record line holds; `None` for a line that is not one, a
-    /// line number of zero or a constraint no keyword spells included.
+    /// line number of zero, an escape the record never writes or a
+    /// constraint no keyword spells included.
     #[must_use]
     pub fn parse(line: &str) -> Option<Self> {
         let fields: Vec<&str> = line.split('\t').collect();
@@ -1407,13 +1453,13 @@ impl ExampleValue {
             return None;
         };
         Some(Self {
-            file: unescape(file),
+            file: unescape(file)?,
             line: number.parse().ok()?,
             finding: Finding {
-                argument: unescape(argument),
-                fern: unescape(fern),
-                crozier: unescape(crozier),
-                constraint: Keyword::parse(&unescape(constraint))?,
+                argument: unescape(argument)?,
+                fern: unescape(fern)?,
+                crozier: unescape(crozier)?,
+                constraint: Keyword::parse(&unescape(constraint)?)?,
                 mechanism: match *mechanism {
                     "-" => None,
                     id => Some(Mechanism::parse(id)?),
@@ -1744,11 +1790,11 @@ mod tests {
             Keyword::MinLength(3),
             Keyword::MaxLength(4),
             Keyword::Format(Format::DateTime),
-            Keyword::Minimum(-2.5),
-            Keyword::Maximum(10.0),
-            Keyword::ExclusiveMinimum(0.0),
-            Keyword::ExclusiveMaximum(1e3),
-            Keyword::MultipleOf(0.25),
+            Keyword::Minimum(Bound::new(-2.5).unwrap()),
+            Keyword::Maximum(Bound::new(10.0).unwrap()),
+            Keyword::ExclusiveMinimum(Bound::new(0.0).unwrap()),
+            Keyword::ExclusiveMaximum(Bound::new(1e3).unwrap()),
+            Keyword::MultipleOf(Step::new(0.25).unwrap()),
             Keyword::MinItems(2),
             Keyword::MaxItems(0),
         ];
@@ -1759,9 +1805,32 @@ mod tests {
                 "{keyword}"
             );
         }
-        for text in ["pattern", "minLength=-1", "format=snowflake", "tooLong=3"] {
+        for text in [
+            "pattern",
+            "minLength=-1",
+            "format=snowflake",
+            "tooLong=3",
+            "multipleOf=0",
+            "multipleOf=-2",
+            "minimum=inf",
+        ] {
             assert_eq!(Keyword::parse(text), None, "{text}");
         }
+    }
+
+    #[test]
+    fn a_record_line_with_an_escape_it_never_writes_is_refused() {
+        let line = "README.md\t3\tid\t\"id\"\t\"0\"\tpattern=^\\\\d$\tschema-rejected-name-example\trepaired";
+        let value = ExampleValue::parse(line).expect("a record line");
+        assert_eq!(
+            value.finding.constraint,
+            Keyword::Pattern("^\\d$".to_string())
+        );
+        assert_eq!(ExampleValue::parse(&value.render()), Some(value));
+        for broken in [line.replace("^\\\\d$", "^\\d$"), format!("{line}\\")] {
+            assert_eq!(ExampleValue::parse(&broken), None, "{broken}");
+        }
+        assert_eq!(ExampleValue::parse(&line.replace("\t3\t", "\t0\t")), None);
     }
 
     #[test]

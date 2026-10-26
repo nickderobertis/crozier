@@ -21,9 +21,11 @@ use crate::openapi::{AdditionalProperties, OpenApi, Schema};
 /// constructions.
 #[derive(Debug, Default)]
 pub(super) struct Index {
-    /// For each scalar mechanism and Fern's value, every value crozier may
-    /// write in its place.
-    scalars: BTreeMap<(Mechanism, ValueKey), BTreeSet<ValueKey>>,
+    /// For each scalar mechanism, argument and Fern's value, every value
+    /// crozier may write in its place. A list's items and a map's values are
+    /// keyed by the argument that passes them and by the empty argument, an
+    /// item written on a line of its own.
+    scalars: BTreeMap<(Mechanism, String, ValueKey), BTreeSet<ValueKey>>,
     /// For each list Fern writes with its count of items, every count crozier
     /// may cut or pad it to with copies of its first item.
     lists: BTreeMap<ListKey, BTreeSet<usize>>,
@@ -60,7 +62,23 @@ struct ListKey {
 /// constraints.
 struct Node {
     names: Vec<String>,
+    /// The arguments a worked example passes the value as.
+    arguments: BTreeSet<String>,
     constraints: Box<ValueConstraints>,
+}
+
+/// The keywords and keys a value of the wire name `name` is passed as: the
+/// name itself (a JSON body's key) and each Python spelling the generator
+/// gives an argument or field of it.
+fn arguments_of(name: &str) -> BTreeSet<String> {
+    [
+        name.to_owned(),
+        crate::naming::field_name(name),
+        crate::naming::request_field_name(name),
+        crate::naming::model_field_name(name),
+    ]
+    .into_iter()
+    .collect()
 }
 
 /// Every value node of `source`: parameters by their names (headers also by
@@ -72,6 +90,7 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
     fn walk(
         schema: &Schema,
         names: &[String],
+        arguments: &BTreeSet<String>,
         schemas: &indexmap::IndexMap<String, Schema>,
         out: &mut Vec<Node>,
         depth: usize,
@@ -82,10 +101,11 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
         if let Some(constraints) = ValueConstraints::of(schema, schemas) {
             out.push(Node {
                 names: names.to_vec(),
+                arguments: arguments.clone(),
                 constraints,
             });
         }
-        walk_inside(schema, names, schemas, out, depth);
+        walk_inside(schema, names, arguments, schemas, out, depth);
     }
     /// The nodes inside `schema`: its properties, items and map values, and
     /// those of its composition members, which are no value of their own — an
@@ -94,24 +114,35 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
     fn walk_inside(
         schema: &Schema,
         names: &[String],
+        arguments: &BTreeSet<String>,
         schemas: &indexmap::IndexMap<String, Schema>,
         out: &mut Vec<Node>,
         depth: usize,
     ) {
         for (name, property) in &schema.properties {
+            let mut passed = arguments_of(name);
+            passed.extend(
+                property
+                    .property_name()
+                    .map(arguments_of)
+                    .unwrap_or_default(),
+            );
             walk(
                 property,
                 std::slice::from_ref(name),
+                &passed,
                 schemas,
                 out,
                 depth + 1,
             );
         }
+        let mut contained = arguments.clone();
+        contained.insert(String::new());
         if let Some(items) = &schema.items {
-            walk(items, names, schemas, out, depth + 1);
+            walk(items, names, &contained, schemas, out, depth + 1);
         }
         if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
-            walk(value, &[], schemas, out, depth + 1);
+            walk(value, &[], &contained, schemas, out, depth + 1);
         }
         for members in [
             &schema.one_of,
@@ -120,12 +151,19 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
             &schema.discarded_all_of,
         ] {
             for member in members.iter().flatten() {
-                walk_inside(member, names, schemas, out, depth + 1);
+                walk_inside(member, names, arguments, schemas, out, depth + 1);
             }
         }
     }
     for (name, schema) in schemas {
-        walk(schema, std::slice::from_ref(name), schemas, &mut out, 0);
+        walk(
+            schema,
+            std::slice::from_ref(name),
+            &BTreeSet::new(),
+            schemas,
+            &mut out,
+            0,
+        );
     }
     let parameters = source
         .components
@@ -145,14 +183,23 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
             camel.push_str(&crate::naming::to_pascal_case(&word));
         }
         let names = vec![parameter.name.clone(), camel];
+        let mut arguments = arguments_of(&parameter.name);
+        arguments.extend(arguments_of(parameter.sdk_name()));
+        arguments.insert(crate::naming::field_name(crate::ir::header_param_stem(
+            &parameter.name,
+        )));
+        // A path parameter named like a body property it spreads beside takes
+        // a trailing underscore.
+        arguments.insert(format!("{}_", crate::naming::field_name(&parameter.name)));
         if let Some(constraints) = ValueConstraints::of_parameter(parameter, source) {
             out.push(Node {
                 names: names.clone(),
+                arguments: arguments.clone(),
                 constraints,
             });
         }
         if let Some(schema) = &parameter.schema {
-            walk(schema, &names, schemas, &mut out, 1);
+            walk_inside(schema, &names, &arguments, schemas, &mut out, 1);
         }
     }
     let bodies = source
@@ -164,13 +211,21 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
                 .into_iter()
                 .filter_map(|(_, op)| op.request_body.as_ref())
         }));
+    let request: BTreeSet<String> = ["request".to_string()].into_iter().collect();
     for body in bodies {
         for schema in body
             .content
             .values()
             .filter_map(|media| media.schema.as_ref())
         {
-            walk(schema, &["request".to_string()], schemas, &mut out, 0);
+            walk(
+                schema,
+                &["request".to_string()],
+                &request,
+                schemas,
+                &mut out,
+                0,
+            );
         }
     }
     out
@@ -230,18 +285,24 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
             }
         }
         for (id, fern) in constructions {
-            if !seen.insert((id, fern.to_string(), format!("{constraints:?}"))) {
+            if !seen.insert((
+                id,
+                fern.to_string(),
+                format!("{:?}{constraints:?}", node.arguments),
+            )) {
                 continue;
             }
             if !matches!(constraints.verdict(&fern), Verdict::Rejected(_)) {
                 continue;
             }
             if let Some(choice) = constraints.choose(&fern) {
-                index
-                    .scalars
-                    .entry((id, ValueKey::of(&fern)))
-                    .or_default()
-                    .insert(ValueKey::of(choice.value()));
+                for argument in &node.arguments {
+                    index
+                        .scalars
+                        .entry((id, argument.clone(), ValueKey::of(&fern)))
+                        .or_default()
+                        .insert(ValueKey::of(choice.value()));
+                }
             }
         }
     }
@@ -306,20 +367,92 @@ fn tokens(line: &str) -> Option<Vec<Token<'_>>> {
 /// Fern's and crozier's literals, in order, at every place the two lines
 /// differ, when they differ only in literals: `None` when any other token
 /// differs, or when nothing does.
-fn literal_changes<'a>(fern: &'a str, crozier: &'a str) -> Option<Vec<(&'a str, &'a str)>> {
+fn literal_changes<'a>(fern: &'a str, crozier: &'a str) -> Option<Vec<Change<'a>>> {
     let (left, right) = (tokens(fern)?, tokens(crozier)?);
     if left.len() != right.len() {
         return None;
     }
     let mut changes = Vec::new();
-    for (a, b) in left.iter().zip(&right) {
+    for (at, (a, b)) in left.iter().zip(&right).enumerate() {
         match (a, b) {
             _ if a == b => {}
-            (Token::Literal(fern), Token::Literal(crozier)) => changes.push((*fern, *crozier)),
+            (Token::Literal(fern), Token::Literal(crozier)) => changes.push(Change {
+                arguments: arguments_at(&left, at),
+                fern,
+                crozier,
+            }),
             _ => return None,
         }
     }
     (!changes.is_empty()).then_some(changes)
+}
+
+/// One literal two lines differ in, with the arguments its line passes it as.
+#[derive(Debug, PartialEq, Eq)]
+struct Change<'a> {
+    arguments: Vec<String>,
+    fern: &'a str,
+    crozier: &'a str,
+}
+
+/// The arguments the literal at `at` of a line's `tokens` is passed as: the
+/// keyword its `name=` names; else the key of its `"key": ` entry and the
+/// keyword of the bracket it stands in on this line, or, where that bracket
+/// opens on an earlier line, the empty argument every list's items and map's
+/// values are keyed by too.
+fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<String> {
+    let before: Vec<&Token<'_>> = tokens[..at]
+        .iter()
+        .filter(|token| !matches!(token, Token::Other(" ")))
+        .collect();
+    let keyword = |end: usize| -> Option<String> {
+        let name: String = before[..end]
+            .iter()
+            .rev()
+            .map_while(|token| match token {
+                Token::Other(c) if c.chars().all(|c| c.is_alphanumeric() || c == '_') => Some(*c),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .collect();
+        (!name.is_empty()).then_some(name)
+    };
+    if let Some(Token::Other("=")) = before.last() {
+        return keyword(before.len() - 1).into_iter().collect();
+    }
+    let mut out = Vec::new();
+    if let (Some(Token::Other(":")), Some(Token::Literal(key))) = (
+        before.last(),
+        before.len().checked_sub(2).map(|k| before[k]),
+    ) {
+        if let Some(Value::String(key)) = python_value(key) {
+            out.push(key);
+        }
+    }
+    let mut depth = 0usize;
+    let mut enclosing = None;
+    for (index, token) in before.iter().enumerate().rev() {
+        match token {
+            Token::Other("]" | ")" | "}") => depth += 1,
+            Token::Other("[" | "(" | "{") if depth > 0 => depth -= 1,
+            Token::Other("[" | "(" | "{") => {
+                if let (Some(Token::Other("=")), Some(name)) = (
+                    index.checked_sub(1).map(|k| before[k]),
+                    keyword(index.saturating_sub(1)),
+                ) {
+                    enclosing = Some(name);
+                }
+                break;
+            }
+            _ => {}
+        }
+    }
+    // Only where the line names no argument around the literal does it stand
+    // on a line of its own, an item or entry of an argument named above.
+    out.push(enclosing.unwrap_or_default());
+    out
 }
 
 /// Whether the pair's file holds worked examples: `README.md`, `reference.md`
@@ -339,17 +472,24 @@ fn indexed(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
         .context
         .source_rejected_examples
         .get_or_init(|| index(pair.context.source_document.as_ref()));
-    changes.into_iter().all(|(fern_literal, crozier_literal)| {
-        let (Some(fern_value), Some(crozier_value)) =
-            (python_value(fern_literal), python_value(crozier_literal))
-        else {
+    changes
+        .into_iter()
+        .all(|change| index.scalar(id, &change.arguments, change.fern, change.crozier))
+}
+
+impl Index {
+    /// Whether crozier's literal is a value `id`'s repair writes in place of
+    /// Fern's for a schema one of `arguments` documents.
+    fn scalar(&self, id: Mechanism, arguments: &[String], fern: &str, crozier: &str) -> bool {
+        let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
             return false;
         };
-        index
-            .scalars
-            .get(&(id, ValueKey::of(&fern_value)))
-            .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier_value)))
-    })
+        arguments.iter().any(|argument| {
+            self.scalars
+                .get(&(id, argument.clone(), ValueKey::of(&fern)))
+                .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier)))
+        })
+    }
 }
 
 /// Whether `fern` and `crozier` are an example line where Fern's value is the
@@ -744,22 +884,16 @@ fn keyword_before(trees: &[Tree<'_>], at: usize) -> Option<String> {
 /// Whether Fern's literal and crozier's are a repair some scalar mechanism
 /// makes: Fern's that construction's value, crozier's the one its schema's
 /// repair chooses.
-fn scalar_holds(index: &Index, fern: &str, crozier: &str) -> bool {
-    let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
-        return false;
-    };
-    Mechanism::SCALAR.into_iter().any(|id| {
-        index
-            .scalars
-            .get(&(id, ValueKey::of(&fern)))
-            .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier)))
-    })
+fn scalar_holds(index: &Index, arguments: &[String], fern: &str, crozier: &str) -> bool {
+    Mechanism::SCALAR
+        .into_iter()
+        .any(|id| index.scalar(id, arguments, fern, crozier))
 }
 
 /// Whether crozier's value differs from Fern's only by repairs: literals a
 /// scalar mechanism repairs, and lists [`list_holds`] accounts for, at any
 /// depth.
-fn trees_hold(index: &Index, fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
+fn trees_hold(index: &Index, passed: &str, fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
     fern.len() == crozier.len()
         && fern
             .iter()
@@ -768,15 +902,18 @@ fn trees_hold(index: &Index, fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
             .all(|(at, pair)| match pair {
                 (left, right) if left == right => true,
                 (Tree::Token(Token::Literal(left)), Tree::Token(Token::Literal(right))) => {
-                    scalar_holds(index, left, right)
+                    let arguments =
+                        vec![keyword_before(fern, at).unwrap_or_else(|| passed.to_owned())];
+                    scalar_holds(index, &arguments, left, right)
                 }
                 (Tree::Group(open, left), Tree::Group(other, right)) if open == other => {
+                    let keyword = keyword_before(fern, at).unwrap_or_else(|| passed.to_owned());
                     if left.len() == right.len() {
-                        left.iter().zip(right).all(|(l, r)| trees_hold(index, l, r))
+                        left.iter()
+                            .zip(right)
+                            .all(|(l, r)| trees_hold(index, &keyword, l, r))
                     } else {
-                        *open == Bracket::Square
-                            && keyword_before(fern, at)
-                                .is_some_and(|keyword| list_holds(index, &keyword, left, right))
+                        *open == Bracket::Square && list_holds(index, &keyword, left, right)
                     }
                 }
                 _ => false,
@@ -800,7 +937,7 @@ fn list_holds(
     let kept = fern
         .iter()
         .zip(crozier)
-        .all(|(f, c)| trees_hold(index, f, c));
+        .all(|(f, c)| trees_hold(index, keyword, f, c));
     let list = ListKey {
         keyword: keyword.to_owned(),
         count,
@@ -935,26 +1072,68 @@ pub(super) fn array_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
 mod tests {
     use super::*;
 
+    /// The literals two lines differ in, each with the arguments it is read as.
+    fn changes(fern: &str, crozier: &str) -> Option<Vec<(Vec<String>, String, String)>> {
+        literal_changes(fern, crozier).map(|changes| {
+            changes
+                .into_iter()
+                .map(|change| {
+                    (
+                        change.arguments,
+                        change.fern.to_owned(),
+                        change.crozier.to_owned(),
+                    )
+                })
+                .collect()
+        })
+    }
+
+    fn strings(items: &[&str]) -> Vec<String> {
+        items.iter().map(|item| (*item).to_owned()).collect()
+    }
+
     #[test]
     fn a_line_pair_differs_in_literals_only_or_not_at_all() {
         assert_eq!(
-            literal_changes("    guild_id=\"guild_id\",", "    guild_id=\"0\","),
-            Some(vec![("\"guild_id\"", "\"0\"")])
+            changes("    guild_id=\"guild_id\",", "    guild_id=\"0\","),
+            Some(vec![(
+                strings(&["guild_id"]),
+                "\"guild_id\"".into(),
+                "\"0\"".into()
+            )])
         );
         assert_eq!(
-            literal_changes("    limit=1,", "    limit=-5,"),
-            Some(vec![("1", "-5")])
+            changes("    limit=1,", "    limit=-5,"),
+            Some(vec![(strings(&["limit"]), "1".into(), "-5".into())])
+        );
+        // A list's items are read as its argument's, or as a bare item.
+        assert_eq!(
+            changes("    w=[0.2, 1.1],", "    w=[0.2, 1.0],"),
+            Some(vec![(strings(&["w"]), "1.1".into(), "1.0".into())])
+        );
+        // An entry by its key; an item on a line of its own as a bare item.
+        assert_eq!(
+            changes("        \"key\": \"value\",", "        \"key\": \"0\","),
+            Some(vec![(
+                strings(&["key", ""]),
+                "\"value\"".into(),
+                "\"0\"".into()
+            )])
         );
         assert_eq!(
-            literal_changes("    w=[0.2, 1.1, 1.1],", "    w=[0.2, 1.0, 1.0],"),
-            Some(vec![("1.1", "1.0"), ("1.1", "1.0")])
+            changes("        \"ids\",", "        \"0\","),
+            Some(vec![(strings(&[""]), "\"ids\"".into(), "\"0\"".into())])
         );
         assert_eq!(
-            literal_changes("    name=\"name\",", "    name='\"a\"',"),
-            Some(vec![("\"name\"", "'\"a\"'")])
+            changes("    name=\"name\",", "    name='\"a\"',"),
+            Some(vec![(
+                strings(&["name"]),
+                "\"name\"".into(),
+                "'\"a\"'".into()
+            )])
         );
         // A changed keyword is no such pair, nor are equal lines.
-        assert_eq!(literal_changes("    a=\"a\",", "    b=\"0\","), None);
-        assert_eq!(literal_changes("    a=\"a\",", "    a=\"a\","), None);
+        assert_eq!(changes("    a=\"a\",", "    b=\"0\","), None);
+        assert_eq!(changes("    a=\"a\",", "    a=\"a\","), None);
     }
 }

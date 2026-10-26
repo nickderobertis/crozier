@@ -7091,4 +7091,51 @@ mod tests {
         assert!(!dup.matches(), "{:?}", dup.departures);
         assert!(!compare(&["\"0\"", "\"x\""]).matches());
     }
+
+    /// A repair the source indexes for one argument excuses the same change at
+    /// no other: an unrelated number, map value or list keeps failing.
+    #[test]
+    fn a_repair_indexed_for_one_argument_excuses_no_other() {
+        let source = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Body": {"type": "object", "properties": {
+                "count": {"type": "integer", "minimum": 5},
+                "other": {"type": "integer"},
+                "labels": {"type": "object",
+                    "additionalProperties": {"type": "string", "format": "uuid"}},
+                "notes": {"type": "object", "additionalProperties": {"type": "string"}},
+                "tags": {"type": "array", "minItems": 3, "items": {"type": "string"}},
+                "names": {"type": "array", "items": {"type": "string"}}
+            }}}}
+        });
+        let uuid = "d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32";
+        let labels = format!("labels={{\"key\": \"{uuid}\"}},");
+        let notes = format!("notes={{\"key\": \"{uuid}\"}},");
+        for ((own_fern, own_crozier), (other_fern, other_crozier)) in [
+            (("count=1,", "count=5,"), ("other=1,", "other=5,")),
+            (
+                ("labels={\"key\": \"value\"},", labels.as_str()),
+                ("notes={\"key\": \"value\"},", notes.as_str()),
+            ),
+            (
+                ("tags=[\"tags\"],", "tags=[\"tags\", \"tags\", \"tags\"],"),
+                (
+                    "names=[\"names\"],",
+                    "names=[\"names\", \"names\", \"names\"],",
+                ),
+            ),
+        ] {
+            let own =
+                rejected_example_comparison(&source, (own_fern, own_crozier), ("pass", "pass"));
+            assert!(own.matches(), "{own_crozier}: {:?}", own.diff());
+            let other =
+                rejected_example_comparison(&source, (other_fern, other_crozier), ("pass", "pass"));
+            assert!(
+                !other.matches(),
+                "{other_crozier} was excused by another argument's repair"
+            );
+        }
+    }
 }

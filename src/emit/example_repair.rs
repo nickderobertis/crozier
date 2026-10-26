@@ -73,7 +73,6 @@ pub(super) enum Destination {
 
 /// One example block a writer produced, with its rejected values.
 struct Block {
-    /// Where its writer puts it.
     destination: Destination,
     lines: Vec<String>,
     values: Vec<Pending>,
