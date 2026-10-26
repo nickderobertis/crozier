@@ -22,6 +22,7 @@ import json
 import sys
 import threading
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -36,7 +37,18 @@ sdk = importlib.import_module("fern")
 ParsingError = importlib.import_module("fern.core.parse_error").ParsingError
 
 INVALID_PROBLEM = json.dumps({"line": "not a line number", "rule": "serial-comma"}).encode()
-received: list[dict[str, object]] = []
+
+
+@dataclass(frozen=True)
+class Request:
+    """One request the server received, as the journeys assert on it."""
+
+    path: str
+    query: dict[str, list[str]]
+    headers: dict[str, str]
+
+
+received: list[Request] = []
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -44,7 +56,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
-        received.append({"path": url.path, "query": parse_qs(url.query), "headers": dict(self.headers.items())})
+        headers = {name.lower(): value for name, value in self.headers.items()}
+        received.append(Request(url.path, parse_qs(url.query), headers))
         status, body = 200, b"[]"
         if url.path.endswith("/problems/first"):
             body = INVALID_PROBLEM
@@ -118,12 +131,11 @@ def validation_error(base_url: str) -> None:
 
 def assert_request(index: int, path: str, query: dict[str, list[str]], headers: dict[str, str]) -> None:
     request = received[index]
-    assert request["path"] == path, request
-    assert request["query"] == query, request
-    sent = {name.lower(): value for name, value in request["headers"].items()}
+    assert request.path == path, request
+    assert request.query == query, request
     for name, value in headers.items():
-        assert sent.get(name.lower()) == value, (name, request)
-    print(f"{request['path']} query={json.dumps(query, sort_keys=True)} headers={json.dumps(headers, sort_keys=True)}")
+        assert request.headers.get(name.lower()) == value, (name, request)
+    print(f"{request.path} query={json.dumps(query, sort_keys=True)} headers={json.dumps(headers, sort_keys=True)}")
 
 
 def parameter_collision(base_url: str) -> None:

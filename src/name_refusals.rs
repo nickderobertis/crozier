@@ -661,7 +661,6 @@ fn source_property_names(
     }
 }
 
-/// The request name a body property declares: its `x-crozier-property-name` /
 /// Whether Fern generates past two parameters in different locations that share
 /// a request name, so neither is refused. Measured at Fern CLI 5.163.1 /
 /// fern-python-sdk 5.41.3
@@ -691,6 +690,7 @@ fn generated_location_pair(
         || renamed_path(other, other_declared, parameter)
 }
 
+/// The request name a body property declares: its `x-crozier-property-name` /
 /// `x-fern-property-name` — the Fern definition `name` the collision check
 /// compares — else the parameter-name spelling this validator also reads.
 fn request_property_name(property: &serde_json::Value) -> Option<&str> {

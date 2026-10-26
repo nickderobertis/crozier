@@ -1,6 +1,7 @@
-Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each run serves the SDK's requests from a
-real http.server on 127.0.0.1 (no mocked transport), answering every route
-with a body whose `line` is a string where the schema declares an integer.
+Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each
+run serves the SDK's requests from a real http.server on 127.0.0.1 (no
+mocked transport), answering every route with a body whose `line` is a
+string where the schema declares an integer.
 Command: PYTHONDONTWRITEBYTECODE=1 python crates/crozier-e2e/tests/e2e/output_defect_journeys.py validation-error <sdk>/src
 
 == Fern CLI 5.163.1 / fern-python-sdk 5.41.3: fern-expected/src

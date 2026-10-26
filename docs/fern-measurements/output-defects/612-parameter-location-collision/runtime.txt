@@ -1,6 +1,7 @@
-Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each run serves the SDK's requests from a
-real http.server on 127.0.0.1 (no mocked transport) and asserts the path,
-query and headers each request arrived with; sync calls first, then async.
+Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each
+run serves the SDK's requests from a real http.server on 127.0.0.1 (no
+mocked transport) and asserts the path, query and headers each request
+arrived with; sync calls first, then async.
 Client: FernApi(base_url=..., branch="north", page_size=25).
 Calls: get_shelf("central", "A-12", shelf="A-11");
 list_edition_scans("central", "first", edition="second");
