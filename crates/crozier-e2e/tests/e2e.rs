@@ -109,6 +109,11 @@ mod departures_ledger;
 
 use departures_ledger::{GoldenLedger, Ledger, Observed};
 
+/// The committed inventory of worked-example values Fern writes that their own
+/// schema rejects, held per golden beside the ledger.
+#[path = "e2e/example_values_inventory.rs"]
+mod example_values_inventory;
+
 /// The ledger's contract, driven through the gates' own comparison.
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
@@ -1064,7 +1069,14 @@ fn crozier_bin() -> PathBuf {
 
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
-    Command::new(crozier_bin())
+    let mut command = Command::new(crozier_bin());
+    // Every generation records the worked-example values a schema rejects, for
+    // the comparison of its tree to hold the inventory's rows to.
+    command.env(
+        crozier::example_values::RECORD_ENV,
+        example_values_inventory::records_dir(),
+    );
+    command
 }
 
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
@@ -1150,7 +1162,19 @@ fn assert_generated_tree_matches(
             });
         observed.push((rel, 0, id.to_string()));
     }
-    let failures = ledger.check(&observed, &|_| true);
+    let mut failures = ledger.check(&observed, &|_| true);
+    let compared = |rel: &str| !c.unmatched.contains(&rel);
+    match example_values_inventory::observed_rows(
+        ledger,
+        &context,
+        expected_root,
+        out,
+        &observed,
+        &compared,
+    ) {
+        Ok(rows) => failures.extend(example_values_inventory::check(ledger, &rows, &compared)),
+        Err(found) => failures.extend(found),
+    }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     for rel in c.unmatched {
@@ -1731,6 +1755,21 @@ fn golden_tree_failures(
     failures.extend(
         ledger
             .check(&observed, &|_| true)
+            .into_iter()
+            .map(|failure| format!("{key}: {failure}")),
+    );
+    let inventory = example_values_inventory::observed_rows(
+        ledger,
+        &context,
+        expected_root,
+        out,
+        &observed,
+        &|_| true,
+    )
+    .map(|rows| example_values_inventory::check(ledger, &rows, &|_| true))
+    .unwrap_or_else(|found| found);
+    failures.extend(
+        inventory
             .into_iter()
             .map(|failure| format!("{key}: {failure}")),
     );
@@ -2973,10 +3012,13 @@ fn declared_reference_example_restrictions_hold_through_compare() {
             "/components/schemas/TrackingCode/minLength",
             serde_json::json!(100),
         ),
+        // A pattern Fern's own `tracking` placeholder satisfies too, so the
+        // `schema-rejected-name-example` repair has nothing to correct and
+        // only the declared example's unsupported assertion is in play.
         (
             "unsupported-query-assertion",
             "/components/schemas/TrackingCode/pattern",
-            serde_json::json!("^harbor-"),
+            serde_json::json!("^(harbor-[0-9]+|tracking)$"),
         ),
         (
             "constrained-target",
@@ -14086,17 +14128,45 @@ fn golden_differences(
     file_filter: Option<&str>,
     include_text_diffs: bool,
     ledger: Result<GoldenLedger, Vec<String>>,
+    source: Option<&Path>,
 ) -> Result<Vec<(String, Difference)>, String> {
     let ledger = ledger.map_err(|failures| failures.join("\n"))?;
-    let compared = parity::compare_trees(expected_root, out, file_filter, include_text_diffs)?;
+    // The parsed source document, as every other golden comparison supplies
+    // it, so a departure whose rule reads the specification applies here too.
+    let load = |spec: &Path| {
+        crozier::openapi::load(spec).map_err(|error| format!("{}: {error}", spec.display()))
+    };
+    let compared = parity::compare_trees_with_document(
+        expected_root,
+        out,
+        file_filter,
+        include_text_diffs,
+        source.map(load).transpose()?,
+    )?;
     let observed: Vec<Observed> = compared
         .departures
         .into_iter()
         .map(|departure| (departure.file, departure.location.as_number(), departure.id))
         .collect();
-    let failures = ledger.check(&observed, &|rel| {
+    let mut failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))
     });
+    // A whole-tree comparison holds the inventory of rejected example values
+    // too, as the ledger.
+    if let (None, Some(spec)) = (file_filter, source) {
+        let context = Context::from_trees(expected_root, out).with_source_document(load(spec)?);
+        match example_values_inventory::observed_rows(
+            &ledger,
+            &context,
+            expected_root,
+            out,
+            &observed,
+            &|_| true,
+        ) {
+            Ok(rows) => failures.extend(example_values_inventory::check(&ledger, &rows, &|_| true)),
+            Err(found) => failures.extend(found),
+        }
+    }
     if failures.is_empty() {
         Ok(compared.differences)
     } else {
@@ -14125,12 +14195,14 @@ fn assert_flat_golden_matches(fixture: &str) {
         return;
     };
     assert_inventoried(&golden_path(&expected_root));
+    let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
     let differences = golden_differences(
         &expected_root,
         out.path(),
         None,
         true,
         departure_ledger().golden(&golden_path(&expected_root), &[]),
+        Some(&spec),
     )
     .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
@@ -14383,12 +14455,14 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
+        let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
         let differences = golden_differences(
             &expected_root,
             out.path(),
             None,
             false,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
+            Some(&spec),
         )
         .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
@@ -14556,12 +14630,14 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
+        let (spec, _staged) = prepare_corpus_source(c);
         let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
+            Some(&spec),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -14594,12 +14670,14 @@ fn report_fixture_diffs() {
         };
         println!("\n=== {label} ===");
         let expected_root = fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR);
+        let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
         let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
+            Some(&spec),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -28080,6 +28158,335 @@ fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
         .is_some_and(|extension| extension == "whl")));
 }
 
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg, so no unrelated edit newly triggers them; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project, as for the `sdk_env_*` block above.
+/// The `schema-rejected-*` evidence notes' commands, run as committed against
+/// crozier's own generated trees: each validates Fern's committed value
+/// against its source schema with jsonschema and sees it rejected, and
+/// crozier's generated value at the same place and sees it accepted. Fern's
+/// value in both places fails the proof, and a pointer naming no schema is an
+/// input error.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_rejected_example_evidence_rejects_fern_and_accepts_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/invalid-example-values/validate.py";
+    let python = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence",
+        &["jsonschema==4.26.0".to_string()],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema");
+    let cases: [(&Corpus, &str, &str, usize, &str, &str); 5] = [
+        (
+            &DISCORD_COM,
+            "/components/schemas/SnowflakeType",
+            "src/fern/client.py",
+            9367,
+            "guild_id",
+            "crozier guild_id='0': accepted",
+        ),
+        (
+            &DISCORD_COM,
+            "/components/schemas/DefaultKeywordListUpsertRequest/properties/trigger_type",
+            "src/fern/client.py",
+            3025,
+            "trigger_type",
+            "crozier trigger_type=4: accepted",
+        ),
+        (
+            &DISCORD_COM,
+            "/paths/~1channels~1{channel_id}~1messages~1bulk-delete/post/requestBody/content/application~1json/schema/properties/messages",
+            "src/fern/client.py",
+            2154,
+            "messages",
+            "crozier messages=['0', '1']: accepted",
+        ),
+        (
+            &AUDIOBOOKSHELF,
+            "/components/schemas/imageUrl",
+            "README.md",
+            46,
+            "request",
+            "fern request='string': rejected: 'string' is not a 'uri'",
+        ),
+        (
+            &AMAZONAWS_COM_CLOUDFORMATION,
+            "/components/schemas/TypeName",
+            "src/fern/client.py",
+            7497,
+            "type_name",
+            "crozier type_name='aa::aa::aa': accepted",
+        ),
+    ];
+    let mut trees: std::collections::BTreeMap<&str, tempfile::TempDir> = Default::default();
+    for (corpus, pointer, file, line, argument, says) in cases {
+        let out = trees.entry(corpus.api).or_insert_with(|| {
+            let out = tempfile::tempdir().expect("output");
+            let (mut command, _staged) = corpus_command(corpus, out.path());
+            command.assert().success();
+            out
+        });
+        let (spec, _staged) = prepare_corpus_source(corpus);
+        let fern = format!(
+            "{}:{line}",
+            fixture_dir(corpus.api)
+                .join("expected")
+                .join(file)
+                .display()
+        );
+        let crozier = format!("{}:{line}", out.path().join(file).display());
+        let validate = |left: &str, right: &str, at: &str| {
+            Command::new(&python)
+                .arg(repo_root().join(SCRIPT))
+                .arg(&spec)
+                .arg(at)
+                .arg(left)
+                .arg(right)
+                .arg(argument)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .assert()
+        };
+        validate(&fern, &crozier, pointer)
+            .success()
+            .stdout(predicate::str::contains(says));
+        // Fern's value on both sides is no proof, and a pointer to nothing is
+        // refused as input.
+        validate(&fern, &fern, pointer).code(1);
+        validate(&fern, &crozier, "/components/schemas/NoSuchSchema").code(2);
+    }
+}
+
+/// The evidence validator over authored inputs: each format crozier's
+/// inventory reads is asserted (by the standard library where jsonschema
+/// needs an optional package) on a value it rejects and one it accepts; every
+/// input it cannot read exits 2 and recovers once corrected; and a YAML
+/// document is read where PyYAML is installed and refused where it is not.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
+    const SCRIPT: &str = "docs/departures/evidence/invalid-example-values/validate.py";
+    let bare = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence",
+        &["jsonschema==4.26.0".to_string()],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema");
+    let with_yaml = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence-yaml",
+        &[
+            "jsonschema==4.26.0".to_string(),
+            "PyYAML==6.0.3".to_string(),
+        ],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema and PyYAML");
+    let work = tempfile::tempdir().unwrap();
+    let formats = [
+        ("date", "\"15/01/2023\"", "\"2023-01-15\""),
+        (
+            "date-time",
+            "\"2024-01-15 09:30\"",
+            "\"2024-01-15T09:30:00Z\"",
+        ),
+        ("time", "\"09:30:00+99:99\"", "\"09:30:00+05:30\""),
+        ("uuid", "\"id\"", "\"d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32\""),
+        ("email", "\"email\"", "\"user@example.com\""),
+        (
+            "uri",
+            "\"http://a/b%2\"",
+            "\"https://[2001:db8::1]:8080/a?b#c\"",
+        ),
+        ("ipv4", "\"256.1.1.1\"", "\"192.0.2.1\""),
+        ("ipv6", "\"ip\"", "\"2001:db8::1\""),
+        ("hostname", "\"host_name\"", "\"example.com\""),
+    ];
+    let schemas: serde_json::Map<String, serde_json::Value> = formats
+        .iter()
+        .map(|(format, _, _)| {
+            (
+                (*format).to_string(),
+                serde_json::json!({"type": "string", "format": format}),
+            )
+        })
+        .collect();
+    let mut schemas = schemas;
+    schemas.insert("bad".to_string(), serde_json::json!({"minLength": "seven"}));
+    schemas.insert(
+        "listed".to_string(),
+        serde_json::json!({"anyOf": [{"type": "integer", "minimum": 2}]}),
+    );
+    let document = work.path().join("openapi.json");
+    std::fs::write(
+        &document,
+        serde_json::json!({"openapi": "3.1.0", "info": {"title": "t", "version": "1"},
+            "paths": {}, "components": {"schemas": schemas}})
+        .to_string(),
+    )
+    .unwrap();
+    let lines = work.path().join("lines.py");
+    let mut text = String::new();
+    for (_, fern, crozier) in formats {
+        text.push_str(&format!("    value={fern},\n    value={crozier},\n"));
+    }
+    text.push_str("    value=Kind.MEMBER,\n");
+    text.push_str("    value=(,\n");
+    text.push_str("    other=\"x\",\n");
+    text.push_str("    value=1,\n");
+    text.push_str("    value=2,\n");
+    std::fs::write(&lines, text).unwrap();
+    let at = |line: usize| format!("{}:{line}", lines.display());
+    let run = |python: &Path, source: &Path, pointer: &str, fern: &str, crozier: &str| {
+        Command::new(python)
+            .arg(repo_root().join(SCRIPT))
+            .arg(source)
+            .arg(pointer)
+            .arg(fern)
+            .arg(crozier)
+            .arg("value")
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .assert()
+    };
+    for (index, (format, _, _)) in formats.iter().enumerate() {
+        let pointer = format!("/components/schemas/{format}");
+        let (fern, crozier) = (at(2 * index + 1), at(2 * index + 2));
+        run(&bare, &document, &pointer, &fern, &crozier)
+            .success()
+            .stdout(predicate::str::contains("accepted"));
+        // The accepted value on both sides is no proof.
+        run(&bare, &document, &pointer, &crozier, &crozier).code(1);
+    }
+    let pointer = "/components/schemas/uuid";
+    let (fern, crozier) = (at(7), at(8));
+    // Each unreadable input is refused as input, naming it.
+    let not_openapi = work.path().join("not-openapi.json");
+    std::fs::write(&not_openapi, "{\"swagger\": \"2.0\"}").unwrap();
+    for (source, pointer, left, says) in [
+        (
+            &not_openapi,
+            pointer,
+            fern.clone(),
+            "is not an OpenAPI 3.0 or 3.1 document",
+        ),
+        (
+            &work.path().join("missing.json"),
+            pointer,
+            fern.clone(),
+            "No such file",
+        ),
+        (
+            &document,
+            "/components/schemas/none",
+            fern.clone(),
+            "names nothing",
+        ),
+        (
+            &document,
+            "components",
+            fern.clone(),
+            "is not a JSON pointer",
+        ),
+        (&document, pointer, at(999), "is past the end"),
+        (&document, pointer, at(19), "no literal value"),
+        (&document, pointer, at(20), "holds no keyword argument"),
+        (&document, pointer, at(21), "passes no value="),
+        (
+            &document,
+            pointer,
+            lines.display().to_string(),
+            "is not FILE:LINE",
+        ),
+        (
+            &document,
+            "/components/schemas/uuid/format",
+            fern.clone(),
+            "names no schema",
+        ),
+        (
+            &document,
+            "/components/schemas/uuid/type/0",
+            fern.clone(),
+            "names nothing",
+        ),
+        (
+            &document,
+            "/components/schemas/bad",
+            fern.clone(),
+            "is no valid schema",
+        ),
+    ] {
+        run(&bare, source, pointer, &left, &crozier)
+            .code(2)
+            .stderr(predicate::str::contains(says));
+    }
+    // A pointer reads into a list by index.
+    run(
+        &bare,
+        &document,
+        "/components/schemas/listed/anyOf/0",
+        &at(22),
+        &at(23),
+    )
+    .success();
+    // An OpenAPI 3.0 document is read under Draft 4, whose boolean
+    // `exclusiveMinimum` makes `minimum` exclusive; any other version is refused.
+    let draft_four = work.path().join("openapi-3.0.json");
+    std::fs::write(
+        &draft_four,
+        serde_json::json!({"openapi": "3.0.3", "info": {"title": "t", "version": "1"},
+            "paths": {}, "components": {"schemas": {"count": {"type": "integer",
+                "minimum": 1, "exclusiveMinimum": true}}}})
+        .to_string(),
+    )
+    .unwrap();
+    run(
+        &bare,
+        &draft_four,
+        "/components/schemas/count",
+        &at(22),
+        &at(23),
+    )
+    .success()
+    .stdout(predicate::str::contains("fern value=1: rejected"));
+    let unknown = work.path().join("openapi-3.2.json");
+    std::fs::write(
+        &unknown,
+        std::fs::read_to_string(&draft_four)
+            .unwrap()
+            .replace("3.0.3", "3.2.0"),
+    )
+    .unwrap();
+    run(
+        &bare,
+        &unknown,
+        "/components/schemas/count",
+        &at(22),
+        &at(23),
+    )
+    .code(2)
+    .stderr(predicate::str::contains(
+        "is not an OpenAPI 3.0 or 3.1 document",
+    ));
+    // A YAML document needs PyYAML; with it the same proof reads, and a
+    // document neither JSON nor YAML is refused.
+    let yaml = work.path().join("openapi.yml");
+    std::fs::write(
+        &yaml,
+        "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    uuid: {type: string, format: uuid}\n",
+    )
+    .unwrap();
+    run(&bare, &yaml, pointer, &fern, &crozier)
+        .code(2)
+        .stderr(predicate::str::contains("PyYAML is not installed"));
+    run(&with_yaml, &yaml, pointer, &fern, &crozier).success();
+    std::fs::write(&yaml, "openapi: [\n").unwrap();
+    run(&with_yaml, &yaml, pointer, &fern, &crozier)
+        .code(2)
+        .stderr(predicate::str::contains("neither JSON nor YAML"));
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]

@@ -8,6 +8,8 @@
 //! handles the line wrapping. The template layout is covered directly by render
 //! tests (see this module's `tests`), so it iterates without the full pipeline.
 
+mod example_repair;
+
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -1594,6 +1596,25 @@ fn forward_repair_map(
 }
 
 pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
+    generate_recording(ir).map(|(files, _)| files)
+}
+
+/// [`generate`], with every worked-example value a schema rejects at its line
+/// in the generated files ([`crate::example_values`]).
+///
+/// # Errors
+///
+/// As [`generate`].
+pub fn generate_recording(
+    ir: &Ir,
+) -> Result<(Vec<GeneratedFile>, Vec<crate::example_values::ExampleValue>)> {
+    example_repair::start();
+    let files = generate_files(ir)?;
+    let values = example_repair::locate(&files);
+    Ok((files, values))
+}
+
+fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let env = environment();
     let mut files = Vec::new();
     let pkg = &ir.package_name;
@@ -4769,7 +4790,7 @@ fn render_enum(
 
 /// A literal enum value as Fern's snippet writer spells it: the wire value in
 /// double quotes, with backslashes and double quotes escaped.
-fn literal_enum_value(value: &str) -> String {
+pub(super) fn literal_enum_value(value: &str) -> String {
     format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
@@ -4903,6 +4924,7 @@ fn render_discriminated_union(
         // FieldMetadata(alias="objectType"), pydantic.Field(alias="objectType")]`.
         let mut discriminant = render_field(
             &Field {
+                constraints: None,
                 example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: union.discriminant_property.clone(),
                 py_name: discriminant_field_name(union),
@@ -11502,6 +11524,7 @@ fn build_example_inner(
         }
         _ => {}
     }
+    let rejected_values = ctx.repair_example_args(ep, &mut args);
 
     let example_name = if is_async {
         format!("Async{client_name}")
@@ -11787,7 +11810,7 @@ fn build_example_inner(
         {
             untyped_arguments.insert("request".to_string());
         }
-        Some(format_documentation_example(
+        let lines = format_documentation_example(
             out,
             is_async,
             pkg,
@@ -11795,8 +11818,20 @@ fn build_example_inner(
             reference,
             ctx.datetime_precedes_tag_import,
             &untyped_arguments,
-        ))
+        );
+        let destination = if reference {
+            example_repair::Destination::Reference
+        } else {
+            example_repair::Destination::Readme
+        };
+        example_repair::record(destination, &lines, rejected_values);
+        Some(lines)
     } else {
+        example_repair::record(
+            example_repair::Destination::Docstring,
+            &out,
+            rejected_values,
+        );
         Some(out)
     }
 }
@@ -13518,6 +13553,7 @@ mod tests {
         );
 
         ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            constraints: None,
             wire_name: "search".to_string(),
             py_name: "search".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Named("SearchItem".to_string()))),
@@ -13815,6 +13851,7 @@ mod tests {
             Some(TypeRef::Named("EntryPage".to_string())),
         );
         ep.query_params = vec![QueryParam {
+            constraints: None,
             wire_name: "page".to_string(),
             py_name: "page".to_string(),
             type_ref: TypeRef::Primitive(Prim::Int),
@@ -13855,6 +13892,7 @@ mod tests {
         ep.http_method = "POST";
         ep.extensions = crate::ir::EndpointExtensions {
             idempotency_headers: vec![HeaderParam {
+                constraints: None,
                 wire_name: "X-Dedupe-Token".to_string(),
                 py_name: "dedupe_token".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14023,6 +14061,7 @@ mod tests {
         let mut first_get = endpoint(
             "/one/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
@@ -14293,6 +14332,7 @@ mod tests {
         let interp = endpoint(
             "/things/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14314,6 +14354,7 @@ mod tests {
         let converted = endpoint(
             "/things/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Named("Thing".to_string()),
@@ -14350,6 +14391,7 @@ mod tests {
         ep.request_body = Some(RequestBody::Inline(vec![
             // A required scalar → bare arg, plain json entry.
             BodyField {
+                constraints: None,
                 wire_name: "string".to_string(),
                 py_name: "string".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14374,6 +14416,7 @@ mod tests {
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
+                constraints: None,
                 wire_name: "list".to_string(),
                 py_name: "list_".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
@@ -14399,6 +14442,7 @@ mod tests {
             // An optional convert field keeps `Optional` in both its signature and
             // serialization annotation.
             BodyField {
+                constraints: None,
                 wire_name: "NestedObject".to_string(),
                 py_name: "nested_object".to_string(),
                 type_ref: TypeRef::Named("Nested".to_string()),
@@ -14478,6 +14522,7 @@ mod tests {
         assert!(!reference.contains("storage_unit"), "{reference}");
 
         ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            constraints: None,
             wire_name: "1st".to_string(),
             py_name: "f_1st".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -14518,6 +14563,7 @@ mod tests {
         ep.http_method = "POST";
         ep.request_body = Some(RequestBody::Inline(vec![
             BodyField {
+                constraints: None,
                 wire_name: "name".to_string(),
                 py_name: "name".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14541,6 +14587,7 @@ mod tests {
                 admits_only_empty_object: false,
             },
             BodyField {
+                constraints: None,
                 wire_name: "note".to_string(),
                 py_name: "note".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14652,6 +14699,7 @@ mod tests {
         let mut ep = endpoint(
             "/upload/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -14721,6 +14769,7 @@ mod tests {
         let mut i = Imports::default();
         let mut ep = endpoint("/q", vec![], None);
         ep.query_params = vec![QueryParam {
+            constraints: None,
             wire_name: "tag".to_string(),
             py_name: "tag".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
@@ -14768,6 +14817,7 @@ mod tests {
         let mut i = Imports::default();
         let mut ep = endpoint("/q", vec![], None);
         ep.query_params = vec![QueryParam {
+            constraints: None,
             wire_name: "start".to_string(),
             py_name: "start".to_string(),
             type_ref: TypeRef::Primitive(Prim::Datetime),
@@ -14842,6 +14892,7 @@ mod tests {
 
     fn model_field(name: &str, type_ref: TypeRef, required: bool) -> Field {
         Field {
+            constraints: None,
             example_source: crate::ir::FieldExampleSource::Property,
             wire_name: name.to_string(),
             py_name: name.to_string(),
@@ -14963,6 +15014,7 @@ mod tests {
             object_of("Lead", vec![("knot", named("Knot"))]),
             object_of("Knot", vec![("twist", named("Alpha"))]),
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "Alpha".to_string(),
                 module: "alpha".to_string(),
@@ -15156,6 +15208,7 @@ mod tests {
     fn example_context_resolves_literals_aliases_temporals_and_json_values() {
         let types = vec![
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "ScalarAlias".to_string(),
                 module: "scalar_alias".to_string(),
@@ -15165,6 +15218,7 @@ mod tests {
                 max_length: None,
             }),
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "AnyAlias".to_string(),
                 module: "any_alias".to_string(),
@@ -15333,6 +15387,7 @@ mod tests {
                 xml: None,
             }),
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "PayloadAlias".to_string(),
                 module: "payload_alias".to_string(),
@@ -15342,6 +15397,7 @@ mod tests {
                 max_length: None,
             }),
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "CompositeAlias".to_string(),
                 module: "composite_alias".to_string(),
@@ -15354,6 +15410,7 @@ mod tests {
                 max_length: None,
             }),
             TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "BoolAlias".to_string(),
                 module: "bool_alias".to_string(),
@@ -15665,6 +15722,7 @@ mod tests {
             docstring: None,
         });
         let alias = TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: "Label".to_string(),
             module: "label".to_string(),
@@ -15804,6 +15862,7 @@ mod tests {
         });
         let types = vec![inner, renderable, unrenderable];
         let path_param = |type_ref: TypeRef| PathParam {
+            constraints: None,
             wire_name: "id".to_string(),
             py_name: "id".to_string(),
             type_ref,
@@ -16065,6 +16124,7 @@ mod tests {
         let mut ep = endpoint(
             "/widgets/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16078,6 +16138,7 @@ mod tests {
         ep.http_method = "POST";
         ep.query_params = vec![
             QueryParam {
+                constraints: None,
                 wire_name: "tags".to_string(),
                 py_name: "tags".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
@@ -16094,6 +16155,7 @@ mod tests {
                 docstring: Some("Tags to include.".to_string()),
             },
             QueryParam {
+                constraints: None,
                 wire_name: "limit".to_string(),
                 py_name: "limit".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
@@ -16111,6 +16173,7 @@ mod tests {
             },
         ];
         ep.header_params = vec![HeaderParam {
+            constraints: None,
             wire_name: "X-Trace".to_string(),
             py_name: "trace".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -16173,6 +16236,7 @@ mod tests {
 
         ep.request_body = Some(RequestBody::Inline(vec![
             BodyField {
+                constraints: None,
                 wire_name: "when".to_string(),
                 py_name: "when".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Datetime),
@@ -16196,6 +16260,7 @@ mod tests {
                 admits_only_empty_object: false,
             },
             BodyField {
+                constraints: None,
                 wire_name: "metadata".to_string(),
                 py_name: "metadata".to_string(),
                 type_ref: TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
@@ -16245,6 +16310,7 @@ mod tests {
             let mut ep = endpoint(
                 "/conversations/{id}/schedules",
                 vec![PathParam {
+                    constraints: None,
                     wire_name: "id".to_string(),
                     py_name: "id".to_string(),
                     type_ref,
@@ -16257,6 +16323,7 @@ mod tests {
             );
             ep.http_method = "POST";
             ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+                constraints: None,
                 wire_name: "date".to_string(),
                 py_name: "date".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16332,6 +16399,7 @@ mod tests {
     #[test]
     fn referenced_request_examples_preserve_fern_importer_names() {
         let alias = TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: "EpsBearerContainer".to_string(),
             module: "eps_bearer_container".to_string(),
@@ -16350,6 +16418,7 @@ mod tests {
         }));
         ep.request_body = Some(RequestBody::Inline(vec![
             BodyField {
+                constraints: None,
                 wire_name: "epsBearerSetup".to_string(),
                 py_name: "eps_bearer_setup".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Named("EpsBearerContainer".to_string()))),
@@ -16373,6 +16442,7 @@ mod tests {
                 admits_only_empty_object: false,
             },
             BodyField {
+                constraints: None,
                 wire_name: "5gMmCauseValue".to_string(),
                 py_name: "_5g_mm_cause_value".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
@@ -16426,6 +16496,7 @@ mod tests {
         ep.request_body = Some(RequestBody::Form(FormBody {
             multipart: true,
             fields: vec![BodyField {
+                constraints: None,
                 wire_name: "binaryDataN1SmMessage".to_string(),
                 py_name: "binary_data_n1sm_message".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Bytes),
@@ -16471,6 +16542,7 @@ mod tests {
         root.docstring = Some("Root operation.".to_string());
         root.response_doc = Some("Root response.".to_string());
         root.query_params.push(QueryParam {
+            constraints: None,
             wire_name: "filter".to_string(),
             py_name: "filter".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -16496,6 +16568,7 @@ mod tests {
         ir.tag_types = vec![TagTypeDecl {
             module: "_".to_string(),
             decl: TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: "EmptyResult".to_string(),
                 module: "empty_result".to_string(),
@@ -16539,6 +16612,7 @@ mod tests {
         let mut ep = endpoint("/widgets", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
         ep.query_params = vec![
             QueryParam {
+                constraints: None,
                 wire_name: "where".to_string(),
                 py_name: "where_".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16555,6 +16629,7 @@ mod tests {
                 docstring: None,
             },
             QueryParam {
+                constraints: None,
                 wire_name: "order".to_string(),
                 py_name: "order".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16571,6 +16646,7 @@ mod tests {
                 docstring: None,
             },
             QueryParam {
+                constraints: None,
                 wire_name: "page".to_string(),
                 py_name: "page".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
@@ -16607,6 +16683,7 @@ mod tests {
         let mut ep = endpoint(
             "/events/{id}",
             vec![PathParam {
+                constraints: None,
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16621,6 +16698,7 @@ mod tests {
         ep.docstring = Some("Streams events.\nAs they arrive.".to_string());
         ep.response_doc = Some("Decoded chunks.".to_string());
         ep.query_params.push(QueryParam {
+            constraints: None,
             wire_name: "cursor".to_string(),
             py_name: "cursor".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -16637,6 +16715,7 @@ mod tests {
             docstring: Some("Starting cursor.".to_string()),
         });
         ep.header_params.push(HeaderParam {
+            constraints: None,
             wire_name: "X-Mode".to_string(),
             py_name: "mode".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -16647,6 +16726,7 @@ mod tests {
         });
         ep.request_body = Some(RequestBody::Form(FormBody {
             fields: vec![BodyField {
+                constraints: None,
                 wire_name: "filter".to_string(),
                 py_name: "filter_".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
@@ -16728,6 +16808,7 @@ mod tests {
     #[test]
     fn recursive_alias_enum_docs_and_render_failures_keep_context() {
         let alias = TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: "NodeList".to_string(),
             module: "node_list".to_string(),
@@ -17297,7 +17378,9 @@ mod tests {
             }}}
         }));
         let client = file(&files, "guilds/client.py");
-        assert!(client.contains("guild_id=\"guild_id\","), "{client}");
+        // The example stays; its value is the one the pattern accepts, where
+        // Fern passes the rejected name (`schema-rejected-name-example`).
+        assert!(client.contains("guild_id=\"0\","), "{client}");
     }
 
     #[test]

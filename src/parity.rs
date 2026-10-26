@@ -144,6 +144,10 @@ pub struct FileComparisonWithOrigins {
     pub comparison: FileComparison,
     /// Source positions retained across length-changing region replacements.
     pub unexplained_original_lines: Vec<NonZeroUsize>,
+    /// For each of crozier's lines (0-based), the reference line (0-based) the
+    /// comparison paired it with: an equal line, or one a line rule accounts
+    /// for. `None` for a line a region replaced or nothing paired.
+    pub reference_lines: Vec<Option<usize>>,
 }
 
 impl FileComparisonWithOrigins {
@@ -196,12 +200,17 @@ fn compare_file_using_regions(
 ) -> Result<FileComparisonWithOrigins, String> {
     let (crozier, reference) = (mechanics(rel, crozier), mechanics(rel, reference));
     if verdict_text(rel, &crozier) == verdict_text(rel, &reference) {
+        // Equal once leading blank lines are dropped: pair the rest from the end.
+        let (lines, others) = (crozier.split('\n').count(), reference.split('\n').count());
         return Ok(FileComparisonWithOrigins {
             comparison: FileComparison {
                 departures: Vec::new(),
                 residual: None,
             },
             unexplained_original_lines: Vec::new(),
+            reference_lines: (0..lines)
+                .map(|line| (line + others).checked_sub(lines))
+                .collect(),
         });
     }
     let fern: Vec<&str> = reference.split('\n').collect();
@@ -212,7 +221,7 @@ fn compare_file_using_regions(
         crozier: &original,
         context,
     };
-    let (lines, mut departures) = apply_regions(&pair, region_rules)?;
+    let (lines, mut departures, region_lines) = apply_regions(&pair, region_rules)?;
 
     // Line rules, inside each run of lines the alignment leaves unpaired.
     let line_rules = rules_of(|rule| rule.line);
@@ -242,10 +251,17 @@ fn compare_file_using_regions(
     };
     let mut result: Vec<&str> = Vec::with_capacity(current.len());
     let mut unexplained = BTreeSet::new();
-    let ops = align(fern.len(), current.len(), |i, j| fern[i] == current[j]);
+    let mut reference_lines = vec![None; original.len()];
+    for (origin, reference) in region_lines {
+        reference_lines[origin] = Some(reference);
+    }
+    let ops = align_lines(&fern, &current);
     let mut index = 0;
     while index < ops.len() {
-        if let Op::Equal(_, j) = ops[index] {
+        if let Op::Equal(i, j) = ops[index] {
+            if let Some(origin) = lines[j].1 {
+                reference_lines[origin] = Some(i);
+            }
             result.push(current[j]);
             index += 1;
             continue;
@@ -271,6 +287,9 @@ fn compare_file_using_regions(
                     None => (None, Some(current[added[b]])),
                 },
             };
+            if let (Op::Equal(a, _), Some((_, origin))) = (op, claimed) {
+                reference_lines[origin] = Some(removed[a]);
+            }
             if let Some((id, origin)) = claimed {
                 departures.push(FileDeparture {
                     line: NonZeroUsize::MIN.saturating_add(origin),
@@ -296,15 +315,20 @@ fn compare_file_using_regions(
             residual: (reference != applied).then(|| (reference.to_string(), applied.to_string())),
         },
         unexplained_original_lines: unexplained.into_iter().collect(),
+        reference_lines,
     })
 }
 
 type OriginLines<'a> = Vec<(&'a str, Option<usize>)>;
 
+/// Each crozier line (by origin) a region replaced, paired from the region's
+/// start with the reference line at the same place, as far as both reach.
+type RegionLines = Vec<(usize, usize)>;
+
 fn apply_regions<'a>(
     pair: &Pair<'a>,
     rules: &[(&'static str, departures::RegionRule)],
-) -> Result<(OriginLines<'a>, Vec<FileDeparture>), String> {
+) -> Result<(OriginLines<'a>, Vec<FileDeparture>, RegionLines), String> {
     let mut lines: OriginLines<'a> = pair
         .crozier
         .iter()
@@ -312,12 +336,13 @@ fn apply_regions<'a>(
         .map(|(index, line)| (*line, Some(index)))
         .collect();
     let mut applied = Vec::new();
+    let mut region_lines = Vec::new();
     let mut seen = BTreeSet::new();
     let mut claimed_reference = BTreeSet::new();
     loop {
         let current: Vec<_> = lines.iter().map(|(line, _)| *line).collect();
         if current == pair.fern {
-            return Ok((lines, applied));
+            return Ok((lines, applied, region_lines));
         }
         let current_pair = Pair {
             rel: pair.rel,
@@ -379,6 +404,15 @@ fn apply_regions<'a>(
                 }
             }
             claimed_reference.extend(reference_changes);
+            // A region's lines pair from its start, as far as the shorter side
+            // reaches: a one-line region pairs whole, a padded list's first
+            // line with Fern's.
+            region_lines.extend(
+                origins
+                    .iter()
+                    .zip(region.fern.clone())
+                    .filter_map(|((_, origin), reference)| origin.map(|o| (o, reference))),
+            );
             lines.splice(region.crozier.clone(), replacement);
             applied.push(FileDeparture {
                 line: NonZeroUsize::MIN.saturating_add(origin),
@@ -388,7 +422,7 @@ fn apply_regions<'a>(
             break;
         }
         if !changed {
-            return Ok((lines, applied));
+            return Ok((lines, applied, region_lines));
         }
     }
 }
@@ -414,13 +448,103 @@ fn rules_of<F>(shape: impl Fn(departures::Rule) -> Option<F>) -> Vec<(&'static s
 
 /// One step of an alignment of two sequences.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Op {
+pub(crate) enum Op {
     /// The left item `.0` pairs with the right item `.1`.
     Equal(usize, usize),
     /// The left item is unpaired.
     Delete(usize),
     /// The right item is unpaired.
     Insert(usize),
+}
+
+/// The most cells [`align`]'s table may hold before [`align_lines`] splits the
+/// middle at anchors first: every comparison under it aligns exactly as
+/// before, and one over it — a 20,000-line module whose worked examples
+/// differ from top to bottom — does not need gigabytes.
+const MAX_TABLE_CELLS: usize = 16_000_000;
+
+/// [`align`] of two texts' lines by equality. Where the table would exceed
+/// [`MAX_TABLE_CELLS`], the lines occurring exactly once on each side and
+/// pairing in order (the longest increasing run of them, patience-diff style)
+/// anchor the alignment, and only the gaps between anchors are aligned by
+/// table; a gap still too large is aligned positionally.
+pub(crate) fn align_lines(left: &[&str], right: &[&str]) -> Vec<Op> {
+    let (n, m) = (left.len(), right.len());
+    let pairs = |i: usize, j: usize| left[i] == right[j];
+    if n.saturating_mul(m) <= MAX_TABLE_CELLS {
+        return align(n, m, pairs);
+    }
+    let mut counts: std::collections::HashMap<&str, (usize, usize, usize, usize)> =
+        std::collections::HashMap::new();
+    for (i, line) in left.iter().enumerate() {
+        let entry = counts.entry(line).or_insert((0, 0, 0, 0));
+        entry.0 += 1;
+        entry.2 = i;
+    }
+    for (j, line) in right.iter().enumerate() {
+        let entry = counts.entry(line).or_insert((0, 0, 0, 0));
+        entry.1 += 1;
+        entry.3 = j;
+    }
+    let mut unique: Vec<(usize, usize)> = counts
+        .values()
+        .filter(|(l, r, _, _)| *l == 1 && *r == 1)
+        .map(|(_, _, i, j)| (*i, *j))
+        .collect();
+    unique.sort_unstable();
+    // The longest run of those pairs increasing on both sides.
+    let mut tails: Vec<usize> = Vec::new();
+    let mut previous = vec![None; unique.len()];
+    for (index, &(_, j)) in unique.iter().enumerate() {
+        let at = tails.partition_point(|&tail| unique[tail].1 < j);
+        if at > 0 {
+            previous[index] = Some(tails[at - 1]);
+        }
+        if at == tails.len() {
+            tails.push(index);
+        } else {
+            tails[at] = index;
+        }
+    }
+    let mut anchors = Vec::new();
+    let mut cursor = tails.last().copied();
+    while let Some(index) = cursor {
+        anchors.push(unique[index]);
+        cursor = previous[index];
+    }
+    anchors.reverse();
+    let mut ops = Vec::new();
+    let (mut i0, mut j0) = (0, 0);
+    for (i1, j1) in anchors.into_iter().chain(std::iter::once((n, m))) {
+        let (rows, cols) = (i1 - i0, j1 - j0);
+        let gap = if rows.saturating_mul(cols) <= MAX_TABLE_CELLS {
+            align(rows, cols, |i, j| pairs(i0 + i, j0 + j))
+        } else {
+            let shared = rows.min(cols);
+            let mut gap: Vec<Op> = (0..shared)
+                .flat_map(|k| {
+                    if pairs(i0 + k, j0 + k) {
+                        vec![Op::Equal(k, k)]
+                    } else {
+                        vec![Op::Delete(k), Op::Insert(k)]
+                    }
+                })
+                .collect();
+            gap.extend((shared..rows).map(Op::Delete));
+            gap.extend((shared..cols).map(Op::Insert));
+            gap
+        };
+        ops.extend(gap.into_iter().map(|op| match op {
+            Op::Equal(i, j) => Op::Equal(i0 + i, j0 + j),
+            Op::Delete(i) => Op::Delete(i0 + i),
+            Op::Insert(j) => Op::Insert(j0 + j),
+        }));
+        if i1 < n {
+            ops.push(Op::Equal(i1, j1));
+        }
+        (i0, j0) = (i1 + 1, j1 + 1);
+    }
+    ops
 }
 
 /// A longest-common-subsequence alignment of a left sequence of `n` items with
@@ -681,7 +805,7 @@ pub fn compare_trees(
 /// # Errors
 ///
 /// Reports the same filesystem and empty-reference errors as [`compare_trees`].
-pub(crate) fn compare_trees_with_document(
+pub fn compare_trees_with_document(
     reference_root: &Path,
     crozier_root: &Path,
     file_filter: Option<&str>,
@@ -1766,5 +1890,76 @@ mod tests {
         }
         assert!(checked > 1000, "only {checked} golden modules found");
         assert!(changed.is_empty(), "stripping changed: {changed:?}");
+    }
+
+    /// A pair too large for one alignment table — 5,000 lines a side, its
+    /// differences at both ends — is anchored on the lines occurring once on
+    /// each side: every equal line pairs with its counterpart, and only the
+    /// lines that differ are left unexplained.
+    #[test]
+    fn a_pair_past_the_table_bound_aligns_on_its_unique_lines() {
+        let lines = 5_000;
+        assert!(lines * lines > MAX_TABLE_CELLS);
+        let reference: Vec<String> = (0..lines).map(|k| format!("line_{k} = {k}")).collect();
+        let mut crozier = reference.clone();
+        crozier[1] = "line_1 = 'changed'".to_string();
+        crozier[lines - 2] = format!("line_{} = 'changed'", lines - 2);
+        crozier.insert(2_500, "inserted = True".to_string());
+        let compared = compare_file_with_origins(
+            &Context::default(),
+            "module.py",
+            &crozier.join("\n"),
+            &reference.join("\n"),
+        )
+        .unwrap();
+        assert!(!compared.comparison.matches());
+        let unexplained: Vec<usize> = compared
+            .unexplained_original_lines
+            .iter()
+            .map(|line| line.get() - 1)
+            .collect();
+        assert_eq!(unexplained, [1, 2_500, lines - 1]);
+        // Equal lines pair across the inserted one; changed and inserted
+        // lines pair with nothing.
+        assert_eq!(compared.reference_lines[0], Some(0));
+        assert_eq!(compared.reference_lines[2_499], Some(2_499));
+        assert_eq!(compared.reference_lines[2_501], Some(2_500));
+        assert_eq!(compared.reference_lines[lines], Some(lines - 1));
+        assert_eq!(compared.reference_lines[1], None);
+        assert_eq!(compared.reference_lines[2_500], None);
+    }
+
+    /// A gap still past the bound with no line unique to anchor on is aligned
+    /// position by position: equal positions pair, and each differing one is
+    /// a removed line beside an added one.
+    #[test]
+    fn a_gap_with_no_unique_line_is_aligned_by_position() {
+        let lines = 5_000;
+        let reference: Vec<&str> = vec!["pass"; lines];
+        let mut crozier = reference.clone();
+        crozier[0] = "first = 1";
+        crozier[lines - 1] = "last = 1";
+        let ops = align_lines(&reference, &crozier);
+        let equal = ops.iter().filter(|op| matches!(op, Op::Equal(..))).count();
+        assert_eq!(equal, lines - 2);
+        assert!(ops.contains(&Op::Delete(0)) && ops.contains(&Op::Insert(0)));
+        assert!(ops.contains(&Op::Equal(1, 1)) && ops.contains(&Op::Equal(lines - 2, lines - 2)));
+        let compared = compare_file_with_origins(
+            &Context::default(),
+            "module.py",
+            &crozier.join("\n"),
+            &reference.join("\n"),
+        )
+        .unwrap();
+        assert_eq!(compared.reference_lines[1], Some(1));
+        assert_eq!(compared.reference_lines[0], None);
+        assert_eq!(
+            compared
+                .unexplained_original_lines
+                .iter()
+                .map(|line| line.get() - 1)
+                .collect::<Vec<_>>(),
+            [0, lines - 1]
+        );
     }
 }

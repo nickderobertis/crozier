@@ -1827,6 +1827,10 @@ pub struct PathParam {
     /// an object-typed query one (measured on
     /// `docs/openapi-surface/probes/parameter-style-simple-path-object.yml`).
     pub convert: bool,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -1876,6 +1880,10 @@ pub struct QueryParam {
     pub aliased_datetime: Option<Prim>,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 impl QueryParam {
@@ -1922,6 +1930,10 @@ pub struct HeaderParam {
     pub example: Option<String>,
     /// Whether the parameter is a generated Python enum and serializes via `.value`.
     pub enum_value: bool,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 /// A resolved JSON request body. Fern renders a body one of two ways: as a single
@@ -2125,6 +2137,10 @@ pub struct BodyField {
     /// an `allOf` parent ([`BodyComposition::AllOfParent`]) is listed with its
     /// own fields first instead, in the order the fields are declared.
     pub markdown_order: usize,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -2410,6 +2426,10 @@ pub struct Field {
     /// A string property's declared `maxLength`, which that fallback samples
     /// when no `minLength` is declared and it is under ten.
     pub max_length: Option<u64>,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 /// A model field's example layers before an endpoint selects its media example.
@@ -2451,6 +2471,10 @@ pub struct AliasType {
     pub min_length: Option<u64>,
     /// A string alias's declared `maxLength`; see [`Field::max_length`].
     pub max_length: Option<u64>,
+    /// The in-scope validation keywords of the schema the value documents,
+    /// which a worked example's value must satisfy
+    /// ([`crate::example_values`]); `None` when it declares none.
+    pub constraints: Option<Box<crate::example_values::ValueConstraints>>,
 }
 
 /// A named string enum rendered as a real `enum.Enum` class (Fern's
@@ -3477,6 +3501,7 @@ fn declare_split_union_body(
     tag_types.push(TagTypeDecl {
         module: endpoint.module.clone(),
         decl: TypeDecl::Alias(AliasType {
+            constraints: None,
             name: name.clone(),
             module: naming::module_name(&name),
             target,
@@ -3640,6 +3665,7 @@ fn build_endpoint(
                     })
             };
             PathParam {
+                constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
@@ -3688,6 +3714,7 @@ fn build_endpoint(
             continue;
         }
         path_params.push(PathParam {
+            constraints: None,
             wire_name: name.to_string(),
             py_name: naming::field_name(name),
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -3860,6 +3887,9 @@ fn build_endpoint(
                     _ => None,
                 });
             QueryParam {
+                constraints: crate::example_values::ValueConstraints::of_query_parameter(
+                    p, schema, doc,
+                ),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
                 type_ref,
@@ -3929,6 +3959,7 @@ fn build_endpoint(
                     })
             };
             HeaderParam {
+                constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(header_param_stem(&p.name)),
                 type_ref,
@@ -4037,6 +4068,7 @@ fn build_endpoint(
                 } else {
                     let target = TypeRef::Union(members);
                     hoister.out.push(TypeDecl::Alias(AliasType {
+                        constraints: None,
                         reach_refs: Vec::new(),
                         name: name.clone(),
                         module: naming::module_name(&name),
@@ -4099,6 +4131,7 @@ fn build_endpoint(
                             .collect(),
                     );
                     hoister.out.push(TypeDecl::Alias(AliasType {
+                        constraints: None,
                         reach_refs: Vec::new(),
                         name: name.clone(),
                         module: naming::module_name(&name),
@@ -4414,6 +4447,7 @@ fn build_endpoint(
                 doc.idempotency_headers()
                     .into_iter()
                     .map(|header| HeaderParam {
+                        constraints: None,
                         wire_name: header.to_string(),
                         py_name: naming::field_name(header_param_stem(header)),
                         type_ref: TypeRef::Primitive(Prim::Str),
@@ -5263,7 +5297,7 @@ fn string_lengths(schema: &Schema) -> (Option<u64>, Option<u64>) {
 
 /// Fern's `getStringExampleOfLength`: one word per length up to twelve, then the
 /// twelve-letter word padded with dots.
-fn sample_string_of_length(length: u64) -> String {
+pub(crate) fn sample_string_of_length(length: u64) -> String {
     const SAMPLES: [&str; 12] = [
         "x",
         "xy",
@@ -6553,6 +6587,7 @@ fn resolve_request_body(
                             })
                             .collect();
                         hoister.out.push(TypeDecl::Alias(AliasType {
+                            constraints: None,
                             reach_refs: Vec::new(),
                             name: name.clone(),
                             module: naming::module_name(&name),
@@ -6905,6 +6940,7 @@ fn resolve_request_body(
                     .collect(),
             ));
             hoister.out.push(TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: request_body_name.clone(),
                 module: naming::module_name(&request_body_name),
@@ -7404,6 +7440,10 @@ fn hoist_inline_object(
         let optional = is_optional(prop_schema) || !spec_required;
         let type_ref = hoister.copied_prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
+            constraints: crate::example_values::ValueConstraints::of_in(
+                prop_schema,
+                hoister.schemas,
+            ),
             wire_name: prop.clone(),
             py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
             convert: hoister.needs_convert(&type_ref),
@@ -7630,6 +7670,7 @@ impl InlineHoister<'_> {
                 .collect(),
         );
         self.out.push(TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: item_name.to_string(),
             module: naming::module_name(item_name),
@@ -7935,6 +7976,7 @@ impl InlineHoister<'_> {
                         })
                         .collect();
                     self.out.push(TypeDecl::Alias(AliasType {
+                        constraints: None,
                         reach_refs: Vec::new(),
                         name: item_name.clone(),
                         module: naming::module_name(&item_name),
@@ -8010,6 +8052,7 @@ impl InlineHoister<'_> {
                     })
                     .collect();
                 self.out.push(TypeDecl::Alias(AliasType {
+                    constraints: None,
                     reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
@@ -8071,6 +8114,7 @@ impl InlineHoister<'_> {
                         .collect(),
                 );
                 self.out.push(TypeDecl::Alias(AliasType {
+                    constraints: None,
                     reach_refs: Vec::new(),
                     name: value_name.clone(),
                     module: naming::module_name(&value_name),
@@ -8125,6 +8169,10 @@ impl InlineHoister<'_> {
                 .unwrap_or(false);
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
+                constraints: crate::example_values::ValueConstraints::of_in(
+                    prop_schema,
+                    self.schemas,
+                ),
                 example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
@@ -8432,6 +8480,7 @@ impl InlineHoister<'_> {
                     .collect();
                 let variants = dedupe_union_members(variants);
                 self.out.push(TypeDecl::Alias(AliasType {
+                    constraints: None,
                     reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
@@ -8570,6 +8619,7 @@ impl InlineHoister<'_> {
                 .collect();
             let variants = dedupe_union_members(variants);
             self.out.push(TypeDecl::Alias(AliasType {
+                constraints: None,
                 reach_refs: Vec::new(),
                 name: item_name.clone(),
                 module: naming::module_name(&item_name),
@@ -8747,6 +8797,7 @@ impl InlineHoister<'_> {
             return wrap(variants.pop().expect("length checked above"));
         }
         self.out.push(TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: name.clone(),
             module: naming::module_name(&name),
@@ -9404,6 +9455,10 @@ fn hoist_form_object(
                 .then(|| collapsed_member_description(prop_schema, &type_ref))
                 .flatten();
             BodyField {
+                constraints: crate::example_values::ValueConstraints::of_in(
+                    prop_schema,
+                    hoister.schemas,
+                ),
                 wire_name: prop.clone(),
                 py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
                 type_ref,
@@ -9708,6 +9763,7 @@ fn append_request_fields(
         return;
     }
     out.extend(obj.fields.iter().map(|f| BodyField {
+        constraints: f.constraints.clone(),
         wire_name: f.wire_name.clone(),
         py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
         type_ref: f.type_ref.clone(),
@@ -11882,6 +11938,9 @@ fn append_member_fields(
             base_type_ref(prop_schema)
         };
         fields.push(Field {
+            // A union member's inline properties name no components here, so a
+            // `$ref` among them leaves its constraints out of view.
+            constraints: crate::example_values::ValueConstraints::of(prop_schema, &IndexMap::new()),
             example_source: crate::ir::FieldExampleSource::Property,
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
@@ -12032,6 +12091,7 @@ fn declared_discriminant_name(schema: &Schema) -> Option<String> {
 /// whole rather than flattening it.
 fn wrapped_value_field(type_ref: TypeRef) -> Field {
     Field {
+        constraints: None,
         example_source: crate::ir::FieldExampleSource::Property,
         wire_name: "value".to_string(),
         py_name: "value".to_string(),
@@ -12082,6 +12142,18 @@ impl Builder<'_> {
                     if alias.name == name && alias.target == TypeRef::Primitive(Prim::Str) {
                         alias.min_length = min_length;
                         alias.max_length = max_length;
+                    }
+                }
+            }
+        }
+        // Every alias keeps the keywords its worked-example values must
+        // satisfy: discord's `SnowflakeType` its `^(0|[1-9][0-9]*)$`.
+        let constraints = crate::example_values::ValueConstraints::of(schema, self.schemas);
+        if constraints.is_some() {
+            for decl in &mut self.types[before..] {
+                if let TypeDecl::Alias(alias) = decl {
+                    if alias.name == name {
+                        alias.constraints.clone_from(&constraints);
                     }
                 }
             }
@@ -12272,6 +12344,7 @@ impl Builder<'_> {
                     (false, _) => optional_type_ref(TypeRef::Union(members)),
                 };
                 self.types.push(TypeDecl::Alias(AliasType {
+                    constraints: None,
                     reach_refs,
                     name: name.to_string(),
                     module,
@@ -13239,6 +13312,7 @@ impl Builder<'_> {
                 .then(|| collapsed_member_description(prop_schema, &type_ref))
                 .flatten();
             fields.push(Field {
+                constraints: crate::example_values::ValueConstraints::of(prop_schema, self.schemas),
                 example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
@@ -13680,6 +13754,7 @@ impl Builder<'_> {
                     class_name,
                     discriminant: value.clone(),
                     fields: vec![Field {
+                        constraints: None,
                         example_source: crate::ir::FieldExampleSource::Property,
                         wire_name: "value".to_string(),
                         py_name: "value".to_string(),
@@ -15247,6 +15322,7 @@ impl Builder<'_> {
         docstring: Option<String>,
     ) {
         self.types.push(TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: name.to_string(),
             module,
@@ -17081,7 +17157,7 @@ fn string_node_admits(node: &Schema, value: &str) -> Option<bool> {
 
 /// The string keywords JSON Schema applies to a string instance. Lengths count
 /// code points, as JSON Schema does.
-fn string_keywords_admit(
+pub(crate) fn string_keywords_admit(
     value: &str,
     enum_values: Option<&[serde_json::Value]>,
     const_value: Option<&serde_json::Value>,
@@ -17091,10 +17167,7 @@ fn string_keywords_admit(
 ) -> Option<bool> {
     let length = u64::try_from(value.chars().count()).ok()?;
     let matched = match pattern {
-        Some(pattern) => fancy_regex::Regex::new(pattern)
-            .ok()?
-            .is_match(value)
-            .ok()?,
+        Some(pattern) => compiled_pattern(pattern)?.is_match(value).ok()?,
         None => true,
     };
     Some(
@@ -17105,6 +17178,24 @@ fn string_keywords_admit(
             && min_length.is_none_or(|minimum| length >= minimum)
             && max_length.is_none_or(|maximum| length <= maximum),
     )
+}
+
+/// `pattern` compiled, once per thread: a document's validation reads the
+/// same few patterns for every value it checks. `None` for one that does not
+/// compile.
+fn compiled_pattern(pattern: &str) -> Option<fancy_regex::Regex> {
+    thread_local! {
+        static COMPILED: std::cell::RefCell<
+            std::collections::HashMap<String, Option<fancy_regex::Regex>>,
+        > = std::cell::RefCell::new(std::collections::HashMap::new());
+    }
+    COMPILED.with(|compiled| {
+        compiled
+            .borrow_mut()
+            .entry(pattern.to_owned())
+            .or_insert_with(|| fancy_regex::Regex::new(pattern).ok())
+            .clone()
+    })
 }
 
 /// Whether a `not` keyword's schema admits `value`. Only the string keywords
@@ -18147,6 +18238,7 @@ mod tests {
 
     fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
         Field {
+            constraints: None,
             example_source: crate::ir::FieldExampleSource::Property,
             wire_name: name.to_string(),
             py_name: name.to_string(),
@@ -22459,6 +22551,7 @@ mod tests {
         assert!(hoister
             .reaches_url_as_scalars(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
         let unknown_union = TypeDecl::Alias(AliasType {
+            constraints: None,
             reach_refs: Vec::new(),
             name: "UnknownUnion".to_string(),
             module: "unknown_union".to_string(),

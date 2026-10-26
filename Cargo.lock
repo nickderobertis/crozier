@@ -203,6 +203,7 @@ dependencies = [
  "fancy-regex",
  "indexmap",
  "minijinja",
+ "regex-syntax",
  "schemars",
  "serde",
  "serde-saphyr",
