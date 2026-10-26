@@ -152,12 +152,25 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                     );
                     let from = cursor.get(&needle).copied().unwrap_or(0).max(from);
                     let find = format!("{own}{}", pending.value.crozier);
+                    // The Markdown writers spell an integral float without its
+                    // `.0` where another item follows (`1,` beside a last `1.0`).
+                    let integral = pending
+                        .value
+                        .crozier
+                        .strip_suffix(".0")
+                        .filter(|digits| digits.bytes().all(|b| b.is_ascii_digit() || b == b'-'))
+                        .map(|digits| format!("{own}{digits},"));
                     // A list the writer spreads over lines is found by its
                     // opening line.
                     let opening = format!("{own}[");
                     let Some(offset) = wanted[from..]
                         .iter()
-                        .position(|line| holds_at_boundary(line, &find))
+                        .position(|line| {
+                            holds_at_boundary(line, &find)
+                                || integral
+                                    .as_deref()
+                                    .is_some_and(|spelled| holds_at_boundary(line, spelled))
+                        })
                         .or_else(|| {
                             pending.value.crozier.starts_with('[').then(|| {
                                 wanted[from..].iter().position(|line| {
@@ -434,7 +447,16 @@ impl ExampleCtx<'_> {
                 // Fern writes a declared integer past 2^53 as the double nearest
                 // it; where that leaves the schema's range, the earlier
                 // `int64-example-rounded-out-of-range` departure writes it exactly.
-                if let Value::Number(number) = &value {
+                // Only an integer literal past 2^53 has a nearer double to
+                // round to.
+                let past_doubles = value.as_number().is_some_and(|number| {
+                    number
+                        .as_i64()
+                        .map(i64::unsigned_abs)
+                        .or_else(|| number.as_u64())
+                        .is_some_and(|magnitude| magnitude > 1 << 53)
+                });
+                if let (true, Value::Number(number)) = (past_doubles, &value) {
                     let rounded = crate::ir::js_integer_literal(number);
                     if rounded != *literal {
                         if let Some(Verdict::Rejected(keyword)) =
