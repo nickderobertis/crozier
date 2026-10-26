@@ -24,7 +24,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import IO, NamedTuple, Protocol
 
 REPO = Path(__file__).resolve().parents[3]
 # The certified Fern pair, from its one declaration: the pair a fixture's evidence names.
@@ -491,6 +491,27 @@ def secured(operation_security: str) -> str:
     )
 
 
+class ReachSite(Protocol):
+    """A resolved `golden-reach-sites.tsv` site: its file, and which counter regions it holds."""
+
+    @property
+    def file(self) -> str: ...
+
+    def holds(self, region: tuple[int, int, int, int]) -> bool: ...
+
+
+class ReachMeasurement(Protocol):
+    """What these proofs call of `golden-reach.py`, which loads by path, so has no importable type."""
+
+    def _llvm_tool(self, name: str) -> str: ...
+
+    def run_llvm(self, argv: list[str], stdout: IO[str] | None = None) -> None: ...
+
+    def _covered(self, export: Path, repo_root: Path) -> tuple[dict, dict]: ...
+
+    def resolve_site(self, spec: str, repo_root: Path = ...) -> ReachSite: ...
+
+
 class Run(NamedTuple):
     """One document's expected outcome: the sites that ran, those that did not, and
     `(file under src/fern, text)` pairs its generated SDK holds and lacks."""
@@ -755,7 +776,7 @@ OUTCOMES = (
 class CooccurrenceOutcomeTest(unittest.TestCase):
     """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
 
-    def generate(self, scratch: Path, document: str, reach: Any, crozier: Path) -> tuple[Path, dict, dict]:
+    def generate(self, scratch: Path, document: str, reach: ReachMeasurement, crozier: Path) -> tuple[Path, dict, dict]:
         """(the generated package, every production region, the executed ones) for one document."""
         spec = scratch / "openapi.yml"
         spec.write_text(document, encoding="utf-8")
@@ -784,7 +805,7 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
         universe, hit = reach._covered(export, REPO)
         return scratch / "sdk" / "src" / "fern", universe, hit
 
-    def ran(self, reach: Any, spec: str, universe: dict, hit: dict) -> bool:
+    def ran(self, reach: ReachMeasurement, spec: str, universe: dict, hit: dict) -> bool:
         """Whether the run executed any counter region of the site `spec` names."""
         site = reach.resolve_site(spec)
         regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(tuple(r))}
