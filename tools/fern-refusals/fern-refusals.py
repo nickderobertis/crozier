@@ -1644,9 +1644,27 @@ class ProbeChange(NamedTuple):
         return {"class": self.cls, "outcome": self.outcome, "recorded": self.recorded, "now": self.now}
 
 
-def recorded_refusal(name: str, row: dict[str, str]) -> str | None:
+class RecordedRefusal(NamedTuple):
+    """A class's committed refusal: its `classes.tsv` stage and that stage's
+    exit, and its `fern-refusal.txt` generation exit, diagnostic and pair."""
+
+    stage: str
+    stage_exit: str
+    generate_exit: str
+    diagnostic: str
+    cli: str
+    sdk: str
+
+    def describe(self) -> str:
+        return (
+            f"the {self.stage} stage exits {self.stage_exit} and the generation {self.generate_exit}, "
+            f"with `{self.diagnostic}`, at Fern CLI {self.cli} / fern-python-sdk {self.sdk}"
+        )
+
+
+def recorded_refusal(name: str, row: dict[str, str]) -> RecordedRefusal | None:
     """The refusal `name`'s committed `fern-refusal.txt` and `classes.tsv` row
-    record, in words, or `None` when the class has no record yet."""
+    record, or `None` when the class has no record yet."""
     path = REGISTRY / name / "fern-refusal.txt"
     if not path.is_file():
         return None
@@ -1655,10 +1673,13 @@ def recorded_refusal(name: str, row: dict[str, str]) -> str | None:
     needed = ("fern_cli_version", "fern_python_sdk_version", "generate_exit", "diagnostic")
     if any(": " not in line for line in lines) or not all(fields.get(key) for key in needed):
         fail(f"{name}: {rel(path)} is no refusal record (it needs {', '.join(needed)}); restore it from git")
-    return (
-        f"the {row['fern_stage']} stage exits {row['fern_exit']} and the generation {fields['generate_exit']}, "
-        f"with `{fields['diagnostic']}`, at Fern CLI {fields['fern_cli_version']} / fern-python-sdk "
-        f"{fields['fern_python_sdk_version']}"
+    return RecordedRefusal(
+        row["fern_stage"],
+        row["fern_exit"],
+        fields["generate_exit"],
+        fields["diagnostic"],
+        fields["fern_cli_version"],
+        fields["fern_python_sdk_version"],
     )
 
 
@@ -1672,8 +1693,7 @@ def changed_outcome(
     (check_exit, check_log), (generate_exit, generate_log) = check, generate
     exits = f"check exit {check_exit}, generate exit {generate_exit}"
     phrase = f"; the {stage} stage still prints the class's phrase" if stage else ""
-    if generate_exit == "0":
-        return "generates", f"Fern generates from the probe ({exits}, writing {len(tree)} files){phrase}"
+    # Any stage cut short leaves the outcome unsettled, whatever else it printed.
     overran = [name for name, status in (("check", check_exit), ("generate", generate_exit)) if status == "timeout"]
     if overran:
         stages = " and ".join(f"`fern {name}`" for name in overran)
@@ -1682,6 +1702,8 @@ def changed_outcome(
             f"unsettled: {stages} ran past the probe's {timeout}-second bound ({exits}){printed}; "
             "a run cut short says nothing about whether Fern refuses given more time or memory"
         )
+    if generate_exit == "0":
+        return "generates", f"Fern generates from the probe ({exits}, writing {len(tree)} files){phrase}"
     said = diagnostics(generate_log) or diagnostics(check_log)
     printed = f"`{said[0]}`" if said else "no diagnostic"
     return "refuses-otherwise", f"Fern refuses the probe otherwise ({exits}), printing {printed}{phrase}"
@@ -1726,19 +1748,24 @@ def probe(args: argparse.Namespace) -> int:
             "",
         )
         exit_of_stage = (check_exit if stage == "check" else generate_exit) if stage else ""
-        if not stage or exit_of_stage != generate_exit:
-            recorded = recorded_refusal(name, by_name[name])
-            if recorded is not None:
-                outcome, now = changed_outcome(
-                    (check_exit, check_log), (generate_exit, generate_log), tree, stage, args.timeout
-                )
-                print(
-                    f"fern-refusals: {name}: Fern no longer reproduces the recorded refusal ({outcome}); "
-                    f"recorded: {recorded}; now: {now}; see {rel(logs)}/{name}.*.log",
-                    file=sys.stderr,
-                    flush=True,
-                )
-                return name, ProbeChange(name, outcome, recorded, now)
+        timed_out = "timeout" in (check_exit, generate_exit)
+        recorded = recorded_refusal(name, by_name[name])
+        # The candidate's outcome against the committed one: the stage carrying
+        # the phrase, that stage's exit and the generation's, and no overrun.
+        if recorded is not None and (
+            timed_out
+            or (stage, exit_of_stage, generate_exit) != (recorded.stage, recorded.stage_exit, recorded.generate_exit)
+        ):
+            outcome, now = changed_outcome(
+                (check_exit, check_log), (generate_exit, generate_log), tree, stage, args.timeout
+            )
+            print(
+                f"fern-refusals: {name}: Fern no longer reproduces the recorded refusal ({outcome}); "
+                f"recorded: {recorded.describe()}; now: {now}; see {rel(logs)}/{name}.*.log",
+                file=sys.stderr,
+                flush=True,
+            )
+            return name, ProbeChange(name, outcome, recorded.describe(), now)
         if not stage:
             fail(
                 f"{name}: Fern printed no diagnostic matching its template over the probe "
@@ -1749,6 +1776,11 @@ def probe(args: argparse.Namespace) -> int:
             for message in diagnostics(check_log if stage == "check" else generate_log)
             if pattern.match(message)
         )
+        if timed_out:
+            fail(
+                f"{name}: Fern ran past the probe's {args.timeout}-second bound (check exit {check_exit}, "
+                f"generate exit {generate_exit}), which settles no refusal; rerun with a longer --timeout"
+            )
         if exit_of_stage != generate_exit:
             fail(
                 f"{name}: the {stage} stage exits {exit_of_stage} but the generation {generate_exit}, "

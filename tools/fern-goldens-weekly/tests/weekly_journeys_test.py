@@ -196,8 +196,8 @@ config = json.loads(pathlib.Path(os.environ["STAND_IN_FERN"]).read_text(encoding
 rule = config.get("rules", {}).get(title, {})
 with open(config["calls"], "a", encoding="utf-8") as calls:
     calls.write(json.dumps({"command": args[0], "title": title}) + "\n")
-if rule.get("hang"):
-    # A run past its caller's time bound, which ends it.
+if rule.get("hang") in (True, args[0]):
+    # A run past its caller's time bound, which ends it: every stage, or the one named.
     import time
     time.sleep(600)
 if args[0] == "check":
@@ -1032,6 +1032,25 @@ class WeeklyRunTests(unittest.TestCase):
             "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
             "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
             "about whether Fern refuses given more time or memory"
+        )
+        self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_refusal_whose_phrase_fern_prints_with_other_exits_is_a_reported_change(self) -> None:
+        said = "Default value '-createdAt' is not a valid enum value"
+        state, item = self.refusal_journey({"check": [2, said], "generate": [2, ""]})
+        now = (
+            f"Fern refuses the probe otherwise (check exit 2, generate exit 2), printing `{said}`; the check stage "
+            "still prints the class's phrase"
+        )
+        self.assert_refusal_reported(state, item, "refuses-otherwise", now)
+
+    def test_a_refusal_whose_phrase_fern_prints_before_a_stage_overruns_is_unsettled(self) -> None:
+        rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
+        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        now = (
+            "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit timeout); "
+            "the check stage still prints the class's phrase; a run cut short says nothing about whether Fern "
+            "refuses given more time or memory"
         )
         self.assert_refusal_reported(state, item, "unsettled", now)
 

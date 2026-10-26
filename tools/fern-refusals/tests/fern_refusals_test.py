@@ -910,6 +910,24 @@ class FernRuns(unittest.TestCase):
                 "Fern refuses the probe otherwise (check exit 1, generate exit 1), printing `something else`",
             ),
             (
+                "refuses-otherwise",
+                {"check_exit": "2", "check_output": f"issue: {said}", "generate_exit": "2"},
+                f"Fern refuses the probe otherwise (check exit 2, generate exit 2), printing `{said}`; the check "
+                "stage still prints the class's phrase",
+            ),
+            (
+                "unsettled",
+                {
+                    "check_exit": "1",
+                    "check_output": f"issue: {said}",
+                    "hang": str(self.root / "fern-pids"),
+                    "hang_stage": "generate",
+                },
+                "unsettled: `fern generate` ran past the probe's 3-second bound (check exit 1, generate exit "
+                "timeout); the check stage still prints the class's phrase; a run cut short says nothing about "
+                "whether Fern refuses given more time or memory",
+            ),
+            (
                 "unsettled",
                 {"hang": str(self.root / "fern-pids")},
                 "unsettled: `fern check` and `fern generate` ran past the probe's 3-second bound (check exit "
@@ -936,6 +954,26 @@ class FernRuns(unittest.TestCase):
                 )
                 self.assertEqual(record, (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8"))
                 self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
+
+    def test_a_probe_with_no_record_cut_short_after_its_phrase_records_nothing(self) -> None:
+        said = phrase(self.class_row[4])
+        result = self.script(
+            "probe",
+            self.CLASS,
+            "--timeout",
+            "3",
+            check_exit="1",
+            check_output=f"issue: {said}",
+            hang=str(self.root / "fern-pids"),
+            hang_stage="generate",
+        )
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"{self.CLASS}: Fern ran past the probe's 3-second bound (check exit 1, generate exit timeout), "
+            "which settles no refusal; rerun with a longer --timeout",
+            result.stderr,
+        )
+        self.assertFalse((self.registry / self.CLASS / "fern-refusal.txt").exists())
 
     def test_a_malformed_recorded_refusal_fails_rather_than_support_a_change(self) -> None:
         self.record_refusal()
