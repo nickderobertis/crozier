@@ -4,6 +4,14 @@
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 1 probe and 1 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 30 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 30 of the 30 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
 
+The class is a request property whose name only *normalizes* to another's.
+Parameters in different locations sharing one wire name are not refused:
+Fern's check reports them (`parameter-normalization-collision`) but its
+generation writes a callable SDK past them, which crozier matches
+([measurement](../../fern-measurements/output-defects/612-parameter-location-collision/README.md)).
+A header lifted to the client is no request property, so `Page-Size` beside a
+`page_size` query parameter generates. On one of two operations it is refused.
+
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.

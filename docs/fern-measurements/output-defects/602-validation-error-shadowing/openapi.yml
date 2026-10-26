@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: Manuscript Checker
+  version: 1.0.0
+  description: Style checks for submitted manuscripts.
+paths:
+  /manuscripts/{manuscript_id}/problems/first:
+    get:
+      operationId: getFirstProblem
+      summary: Read the first problem the checker found in a manuscript.
+      parameters:
+        - name: manuscript_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The first problem.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '422':
+          description: The manuscript has not been checked yet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+  /manuscripts/{manuscript_id}/problems/live:
+    get:
+      operationId: followProblems
+      summary: Follow problems as the checker finds them.
+      parameters:
+        - name: manuscript_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One event per problem.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '422':
+          description: The manuscript has not been checked yet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+  /manuscripts/{manuscript_id}/annotated:
+    get:
+      operationId: downloadAnnotated
+      summary: Download the manuscript with every problem marked.
+      parameters:
+        - name: manuscript_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The annotated manuscript.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '422':
+          description: The manuscript has not been checked yet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+components:
+  schemas:
+    ValidationError:
+      type: object
+      description: One style rule a manuscript line breaks.
+      required:
+        - line
+        - rule
+      properties:
+        line:
+          type: integer
+          description: The one-based line the problem is on.
+        rule:
+          type: string
+          description: The style rule broken.
+        hint:
+          type: string
+          description: How to fix it.

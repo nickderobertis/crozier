@@ -287,8 +287,8 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             // property. Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
             // (authored probe 549-request-property-name-collision); Fern CLI
             // 5.67.1 refused every such pair. The cross-location pairs below
-            // are held as 5.67.1 measured them: no probe at the new pair
-            // measures them yet.
+            // are measured at the new pair too: those Fern generates past are
+            // `generated_location_pair`'s, and the rest still refuse.
             // The rename reaches only the names Fern reserves (the body's own and
             // its `allOf` parents' own), so a path parameter the endpoint keeps
             // under its own name still collides with a grandparent's property:
@@ -331,6 +331,10 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                         && names[index] == names[other_index]
                         && !promoted(parameter)
                         && !promoted(other)
+                        && !generated_location_pair(
+                            (parameter, declared[index]),
+                            (other, declared[other_index]),
+                        )
                     {
                         let class = if parameter.name == other.name {
                             Class::RequestPropertyCamelcaseCollision
@@ -502,7 +506,16 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                 }
             }
             let mut parameter_names = std::collections::HashMap::new();
-            for name in &names {
+            // A header the client carries is no request property here either:
+            // measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a lifted
+            // `Page-Size` beside a `page_size` query parameter generates
+            // (docs/fern-measurements/output-defects/612-parameter-location-collision),
+            // where a `page-size` header on one operation is refused.
+            // `names` holds the parameters' names, then the body properties'.
+            for (index, name) in names.iter().enumerate() {
+                if op.parameters.get(index).is_some_and(promoted) {
+                    continue;
+                }
                 let identifier = crate::naming::to_snake_case(name)
                     .trim_matches('_')
                     .to_owned();
@@ -647,6 +660,35 @@ fn source_property_names(
     for member in node["allOf"].as_array().into_iter().flatten() {
         source_property_names(source, member, visited, names);
     }
+}
+
+/// Whether Fern generates past two parameters in different locations that share
+/// a request name, so neither is refused. Measured at Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3
+/// (`docs/fern-measurements/output-defects/612-parameter-location-collision/`):
+/// `fern check` reports the pair, but `fern generate` writes an SDK past it.
+/// A cookie parameter never reaches the signature, so it collides with
+/// nothing; and the importer renames a path parameter declaring no name of its
+/// own to `{name}PathParam` when a query parameter or header has its very wire
+/// name (`ir::rename_claimed_path_params`). Two names that only normalize alike
+/// (`shelf_id` beside `shelfId`) still refuse: Fern refuses them too.
+fn generated_location_pair(
+    (parameter, declared): (&crate::openapi::Parameter, bool),
+    (other, other_declared): (&crate::openapi::Parameter, bool),
+) -> bool {
+    use crate::openapi::ParameterLocation::{Cookie, Header, Path, Query};
+    let renamed_path = |path: &crate::openapi::Parameter,
+                        path_declared: bool,
+                        claimant: &crate::openapi::Parameter| {
+        path.location == Some(Path)
+            && !path_declared
+            && matches!(claimant.location, Some(Query | Header))
+            && claimant.name == path.name
+    };
+    parameter.location == Some(Cookie)
+        || other.location == Some(Cookie)
+        || renamed_path(parameter, declared, other)
+        || renamed_path(other, other_declared, parameter)
 }
 
 /// The request name a body property declares: its `x-crozier-property-name` /
@@ -1533,6 +1575,106 @@ mod tests {
         validate(&doc, &path, false, &crate::ir::build(&doc, &config))
             .err()
             .map(|error| error.to_string())
+    }
+
+    /// `validate`'s refusal line over `source`, or `None` when it generates.
+    fn document_refusal(source: &str) -> Option<String> {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("openapi.yml");
+        std::fs::write(&path, source).unwrap();
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        validate(&doc, &path, false, &crate::ir::build(&doc, &config))
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    /// (docs/fern-measurements/output-defects/612-parameter-location-collision):
+    /// Fern generates past a path parameter sharing its wire name with a query
+    /// parameter or a header, renaming the path parameter, and past any
+    /// parameter sharing a name with a cookie, which it drops. A pair the
+    /// importer does not rename is refused as before.
+    #[test]
+    fn parameters_fern_generates_past_in_different_locations_are_not_refused() {
+        let source = std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/output-defects/612-parameter-location-collision/openapi.yml",
+        ))
+        .unwrap();
+        assert_eq!(document_refusal(&source), None);
+        // A path parameter declaring its own name is not renamed, so it collides.
+        let declared = source.replacen(
+            "        - name: shelf\n          in: path\n",
+            "        - name: shelf\n          in: path\n          x-fern-parameter-name: shelf\n",
+            1,
+        );
+        assert_ne!(declared, source, "the measurement's path parameter moved");
+        let error = document_refusal(&declared).unwrap_or_default();
+        assert!(
+            error.contains(
+                "request-property-camelcase-collision: GET /branches/{branch}/shelves/{shelf} parameters \"shelf\" and \"shelf\" in different locations"
+            ),
+            "{error}"
+        );
+        // A query parameter beside a header on one operation is not renamed.
+        let query_header = source.replace("          in: cookie\n", "          in: header\n");
+        let error = document_refusal(&query_header).unwrap_or_default();
+        assert!(
+            error
+                .contains("GET /loans parameters \"patron\" and \"patron\" in different locations"),
+            "{error}"
+        );
+        // A `Page-Size` header the client carries claims no request name, but
+        // on one operation it is a request property `page_size` normalizes to.
+        let page_size = "        - $ref: '#/components/parameters/PageSizeHeader'\n";
+        let one_operation = source.replacen(page_size, "", 2);
+        assert_eq!(one_operation.matches(page_size).count(), 1);
+        let error = document_refusal(&one_operation).unwrap_or_default();
+        assert!(
+            error.contains("GET /loans parameters \"pageSize\" and \"page_size\" normalize to the same identifier"),
+            "{error}"
+        );
+        // Names that only normalize alike are not renamed either.
+        let normalized = source.replace(
+            "        - name: shelf\n          in: query\n",
+            "        - name: Shelf\n          in: query\n",
+        );
+        assert_ne!(
+            normalized, source,
+            "the measurement's query parameter moved"
+        );
+        assert!(document_refusal(&normalized).is_some());
+
+        let parameter = |name: &str, location: &str| -> crate::openapi::Parameter {
+            serde_json::from_value(serde_json::json!({"name": name, "in": location})).unwrap()
+        };
+        let pair = |a: (&str, &str, bool), b: (&str, &str, bool)| {
+            generated_location_pair((&parameter(a.0, a.1), a.2), (&parameter(b.0, b.1), b.2))
+        };
+        assert!(pair(("shelf", "path", false), ("shelf", "query", false)));
+        assert!(pair(("shelf", "header", false), ("shelf", "path", false)));
+        assert!(pair(
+            ("patron", "query", false),
+            ("patron", "cookie", false)
+        ));
+        assert!(!pair(("shelf", "path", true), ("shelf", "query", false)));
+        assert!(!pair(
+            ("patron", "query", false),
+            ("patron", "header", false)
+        ));
+        assert!(!pair(
+            ("shelf_id", "path", false),
+            ("shelfId", "query", false)
+        ));
     }
 
     #[test]

@@ -1,0 +1,31 @@
+Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each
+run serves the SDK's requests from a real http.server on 127.0.0.1 (no
+mocked transport) and asserts the path, query and headers each request
+arrived with; sync calls first, then async.
+Client: FernApi(base_url=..., branch="north", page_size=25).
+Calls: get_shelf("central", "A-12", shelf="A-11");
+list_edition_scans("central", "first", edition="second");
+list_loans(patron="p-7", page_size=10).
+Command: PYTHONDONTWRITEBYTECODE=1 python crates/crozier-e2e/tests/e2e/output_defect_journeys.py parameter-collision <sdk>/src
+
+== Fern CLI 5.163.1 / fern-python-sdk 5.41.3: fern-expected/src
+/branches/central/shelves/A-12 query={"shelf": ["A-11"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/editions/first/scans query={} headers={"Page-Size": "25", "branch": "north", "edition": "second"}
+/loans query={"page_size": ["10"], "patron": ["p-7"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/shelves/A-12 query={"shelf": ["A-11"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/editions/first/scans query={} headers={"Page-Size": "25", "branch": "north", "edition": "second"}
+/loans query={"page_size": ["10"], "patron": ["p-7"]} headers={"Page-Size": "25", "branch": "north"}
+exit 0
+
+== crozier at 80331e4bb9b7 (before this repair): crozier generate python --spec openapi.yml
+crozier: invalid OpenAPI document docs/fern-measurements/output-defects/612-parameter-location-collision/openapi.yml: request-property-camelcase-collision: GET /branches/{branch}/shelves/{shelf} parameters "shelf" and "shelf" in different locations declare the same request name "shelf"; give them distinct names
+exit 1
+
+== crozier after this repair
+/branches/central/shelves/A-12 query={"shelf": ["A-11"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/editions/first/scans query={} headers={"Page-Size": "25", "branch": "north", "edition": "second"}
+/loans query={"page_size": ["10"], "patron": ["p-7"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/shelves/A-12 query={"shelf": ["A-11"]} headers={"Page-Size": "25", "branch": "north"}
+/branches/central/editions/first/scans query={} headers={"Page-Size": "25", "branch": "north", "edition": "second"}
+/loans query={"page_size": ["10"], "patron": ["p-7"]} headers={"Page-Size": "25", "branch": "north"}
+exit 0

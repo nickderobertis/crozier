@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: Branch Library
+  version: 1.0.0
+  description: Shelves, loans and holds across a lending library's branches.
+paths:
+  /branches/{branch}/shelves/{shelf}:
+    get:
+      operationId: getShelf
+      summary: Read one shelf, optionally as another shelf's overflow.
+      parameters:
+        - $ref: '#/components/parameters/BranchHeader'
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - name: branch
+          in: path
+          required: true
+          description: The branch the shelf stands in.
+          schema:
+            type: string
+        - name: shelf
+          in: path
+          required: true
+          description: The shelf's code.
+          schema:
+            type: string
+        - name: shelf
+          in: query
+          description: The shelf this one overflows from.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The shelf.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shelf'
+  /branches/{branch}/editions/{edition}/scans:
+    get:
+      operationId: listEditionScans
+      summary: List the scanned pages of one edition, as a reader app shows them.
+      parameters:
+        - $ref: '#/components/parameters/BranchHeader'
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - name: branch
+          in: path
+          required: true
+          description: The branch that scanned the edition.
+          schema:
+            type: string
+        - name: edition
+          in: path
+          required: true
+          description: The edition scanned.
+          schema:
+            type: string
+        - name: edition
+          in: header
+          description: The edition the reader app currently shows.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The scanned pages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scan'
+  /loans:
+    get:
+      operationId: listLoans
+      summary: List a patron's loans.
+      parameters:
+        - $ref: '#/components/parameters/BranchHeader'
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - name: patron
+          in: query
+          required: true
+          description: The patron whose loans are listed.
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          description: How many loans to list.
+          schema:
+            type: integer
+        - name: patron
+          in: cookie
+          description: The signed-in patron's session.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The patron's loans.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+components:
+  parameters:
+    BranchHeader:
+      name: branch
+      in: header
+      description: The branch the caller is signed in at.
+      schema:
+        type: string
+    PageSizeHeader:
+      name: Page-Size
+      in: header
+      description: The caller's preferred page size for every list.
+      schema:
+        type: integer
+  schemas:
+    Shelf:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        overflow_of:
+          type: string
+    Scan:
+      type: object
+      required:
+        - page
+      properties:
+        page:
+          type: integer
+    Loan:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        due:
+          type: string
+          format: date

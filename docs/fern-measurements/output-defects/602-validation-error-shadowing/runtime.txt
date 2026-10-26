@@ -1,0 +1,27 @@
+Recorded 2026-10-26 with Python 3.14.7, pydantic 2.12.3, httpx 0.28.1. Each
+run serves the SDK's requests from a real http.server on 127.0.0.1 (no
+mocked transport), answering every route with a body whose `line` is a
+string where the schema declares an integer.
+Command: PYTHONDONTWRITEBYTECODE=1 python crates/crozier-e2e/tests/e2e/output_defect_journeys.py validation-error <sdk>/src
+
+== Fern CLI 5.163.1 / fern-python-sdk 5.41.3: fern-expected/src
+sync JSON: ParsingError(status_code=200) caused by ValidationError
+sync event stream: ParsingError(status_code=422) caused by ValidationError
+sync binary download: ParsingError(status_code=422) caused by ValidationError
+async JSON: ParsingError(status_code=200) caused by ValidationError
+async event stream: ParsingError(status_code=422) caused by ValidationError
+async binary download: ParsingError(status_code=422) caused by ValidationError
+exit 0
+
+== crozier at 80331e4bb9b7 (before this repair): from pydantic import ValidationError as pydantic_ValidationError, then `except ValidationError as e:`
+validation-error: NameError: name 'ValidationError' is not defined
+exit 1
+
+== crozier after this repair (`except pydantic_ValidationError as e:`)
+sync JSON: ParsingError(status_code=200) caused by ValidationError
+sync event stream: ParsingError(status_code=422) caused by ValidationError
+sync binary download: ParsingError(status_code=422) caused by ValidationError
+async JSON: ParsingError(status_code=200) caused by ValidationError
+async event stream: ParsingError(status_code=422) caused by ValidationError
+async binary download: ParsingError(status_code=422) caused by ValidationError
+exit 0
