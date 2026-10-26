@@ -28,7 +28,7 @@ for name, block in snippets:
 corrected = 'from fern import SurveyEntry_Level\nentry = SurveyEntry_Level(value=1.1)\n'
 compile(corrected, 'corrected', 'exec')
 try:
-    import fern  # noqa: F401
+    import fern  # noqa: F401 -- imported only to learn whether the certified SDK is installed
 except ImportError:
     print('certified SDK not installed: binding not checked')
 else:

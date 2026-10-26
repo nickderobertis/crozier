@@ -13668,7 +13668,13 @@ impl Builder<'_> {
                     // its payload in `value` (the hand-written
                     // `tidepool-survey-log` fixture's `SurveyEntry_Level`), while
                     // the flattened `SurveyEntry_Sighting` beside it carries it.
-                    docstring: None,
+                    // A nested discriminator keeps it: no measured tree shows
+                    // Fern dropping it there.
+                    docstring: target
+                        .discriminator
+                        .is_some()
+                        .then(|| docstring.clone())
+                        .flatten(),
                     layout: target.discriminator.as_ref().map_or(
                         UnionMemberLayout::Wrapped,
                         |discriminator| UnionMemberLayout::NestedDiscriminator {
@@ -28012,7 +28018,8 @@ components:
             union.members[1].docstring.as_deref(),
             Some("One thing a volunteer recorded.")
         );
-        // The same target with a discriminator of its own nests it instead.
+        // The same target with a discriminator of its own nests it instead, and
+        // keeps the description as before.
         let nested = build_document(document(serde_json::json!({
             "oneOf": [
                 {"$ref": "#/components/schemas/DepthCentimetres"},
@@ -28025,7 +28032,10 @@ components:
             nested.members[0].layout,
             crate::ir::UnionMemberLayout::NestedDiscriminator { .. }
         ));
-        assert_eq!(nested.members[0].docstring, None);
+        assert_eq!(
+            nested.members[0].docstring.as_deref(),
+            Some("One thing a volunteer recorded.")
+        );
     }
 
     #[test]
