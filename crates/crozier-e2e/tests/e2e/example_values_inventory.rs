@@ -635,6 +635,34 @@ fn the_documented_inventory_format_is_the_loaders() {
             disposition.as_str()
         );
     }
+    // Every keyword and format in scope, and nothing the README calls in
+    // scope beyond them.
+    for keyword in crozier::example_values::Keyword::NAMES {
+        assert!(
+            readme.contains(&format!("`{keyword}`")),
+            "the README omits `{keyword}`"
+        );
+    }
+    for format in crozier::example_values::Format::ALL {
+        assert!(
+            readme.contains(&format!("`{}`", format.as_str())),
+            "the README omits the `{}` format",
+            format.as_str()
+        );
+    }
+    let scope = readme
+        .split("A value is rejected when it fails one of these:")
+        .nth(1)
+        .and_then(|rest| rest.split("Any other keyword").next())
+        .expect("the README's in-scope list");
+    for spelled in scope.split('`').skip(1).step_by(2) {
+        assert!(
+            crozier::example_values::Keyword::NAMES.contains(&spelled)
+                || crozier::example_values::Format::parse(spelled).is_some()
+                || spelled == "true",
+            "the README calls `{spelled}` in scope, which crozier does not read"
+        );
+    }
     assert!(
         readme.contains(REGENERATE),
         "the README does not name `{REGENERATE}`"

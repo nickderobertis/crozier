@@ -163,6 +163,23 @@ pub enum Keyword {
 }
 
 impl Keyword {
+    /// Every keyword in scope, as a schema spells it.
+    pub const NAMES: [&'static str; 13] = [
+        "enum",
+        "const",
+        "pattern",
+        "minLength",
+        "maxLength",
+        "format",
+        "minimum",
+        "maximum",
+        "exclusiveMinimum",
+        "exclusiveMaximum",
+        "multipleOf",
+        "minItems",
+        "maxItems",
+    ];
+
     /// The keyword a `constraint` spelling names, as [`fmt::Display`] writes
     /// it; `None` for any other text.
     #[must_use]
@@ -1799,13 +1816,24 @@ mod tests {
             Keyword::MinItems(2),
             Keyword::MaxItems(0),
         ];
+        let mut named = std::collections::BTreeSet::new();
         for keyword in keywords {
             assert_eq!(
                 Keyword::parse(&keyword.to_string()),
                 Some(keyword.clone()),
                 "{keyword}"
             );
+            named.insert(keyword.to_string().split_once('=').unwrap().0.to_owned());
         }
+        // Every keyword the enum spells is one of `NAMES`, and every name one
+        // the enum spells.
+        assert_eq!(
+            named,
+            Keyword::NAMES
+                .iter()
+                .map(|name| (*name).to_owned())
+                .collect()
+        );
         for text in [
             "pattern",
             "minLength=-1",

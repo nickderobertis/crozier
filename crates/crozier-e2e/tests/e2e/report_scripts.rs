@@ -195,6 +195,7 @@ fn a_report_given_extra_arguments_is_refused_with_the_usage() {
 /// `$CROZIER_RECORD_EXAMPLE_INVENTORY`; the merge (`write_departures_ledger` and
 /// `write_example_values_inventory`, one run) writes the ledger and the
 /// inventory from them, failing as `$MERGE_FAILS` says.
+// llmlint: ignore[e2e_not_mocked] A real `cargo nextest` here would rebuild and rerun this whole suite inside itself, as line 39 states; only that boundary is stood in. The recording and merge it stands in for run for real in every golden comparison and in `example_values_inventory::the_merge_replaces_recorded_goldens_and_keeps_every_other`, which drives the real `merge_records`.
 const NEXTEST: &str = r#"case "$*" in
   *write_departures_ledger*write_example_values_inventory*)
     [ -z "${MERGE_FAILS:-}" ] || { echo "ledger refused: $MERGE_FAILS"; exit 100; }
