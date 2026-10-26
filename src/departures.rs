@@ -2209,9 +2209,10 @@ fn wrapped_union_member_docs_example(pair: &Pair<'_>) -> Result<Option<Region>, 
     Ok(differing_window(pair.fern, pair.crozier))
 }
 
-/// Rewrite every `wrapper(value=…)` construct of `lines` into Fern's
-/// three-line `wrapper(` / `<keyword>=,` / `)` form, whether crozier wrote it
-/// on one line or exploded it. Whether any was rewritten.
+/// Rewrite every one-line `wrapper(value=…)` construct of `lines` into Fern's
+/// three-line `wrapper(` / `<keyword>=,` / `)` form. Whether any was rewritten.
+/// Only the one-line form is the certified tree's (`tidepool-survey-log`); an
+/// exploded wrapper is left alone, so its file still fails.
 fn empty_wrapped_arguments(lines: &mut Vec<String>, wrapper: &str, keyword: &str) -> bool {
     let open = format!("{wrapper}(");
     let mut changed = false;
@@ -2220,24 +2221,6 @@ fn empty_wrapped_arguments(lines: &mut Vec<String>, wrapper: &str, keyword: &str
         let line = lines[index].clone();
         let indent = &line[..line.len() - line.trim_start().len()];
         let empty = format!("{indent}    {keyword}=,");
-        if line.ends_with(open.as_str()) {
-            // Exploded: the `value=` argument runs to the line closing the call.
-            let start = index + 1;
-            let Some(close) = (start..lines.len()).find(|at| {
-                lines[*at].starts_with(indent) && lines[*at][indent.len()..].starts_with(')')
-            }) else {
-                index += 1;
-                continue;
-            };
-            if close == start || !lines[start].starts_with(&format!("{indent}    value=")) {
-                index += 1;
-                continue;
-            }
-            lines.splice(start..close, [empty]);
-            changed = true;
-            index = start + 2;
-            continue;
-        }
         let Some(at) = line.find(&format!("{open}value=")) else {
             index += 1;
             continue;
@@ -6596,9 +6579,12 @@ mod tests {
                 })
             );
         }
-        // A payload that explodes keeps its own lines inside the wrapper.
+        // An exploded wrapper is no measured form, so it is left to fail.
         let exploded = "client.log_entry(\n    pool_id=\"poolId\",\n    request=SurveyEntry_Level(\n        value=GaugeReading(\n            gauge=\"gauge\",\n        )\n    ),\n)\n";
-        assert!(region_of(rule, "README.md", WRAPPED_FERN, exploded, &context).is_some());
+        assert_eq!(
+            region_of(rule, "README.md", WRAPPED_FERN, exploded, &context),
+            None
+        );
         // A string payload holding a parenthesis still closes at the call.
         let quoted = WRAPPED_CROZIER.replace("value=1.1", "value=\"a (b\"");
         assert!(region_of(rule, "README.md", WRAPPED_FERN, &quoted, &context).is_some());

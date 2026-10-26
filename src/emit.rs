@@ -8490,6 +8490,9 @@ impl Example {
             {
                 self.flat()
             }
+            // A payload that breaks, or a call over the width, keeps the
+            // exploded form every wrapper took before the one-line form above
+            // was measured; no certified tree yet shows Fern writing it.
             Example::Wrapped(name, value) => format!(
                 "{name}(\n{}value={}\n{})",
                 " ".repeat(indent + 4),

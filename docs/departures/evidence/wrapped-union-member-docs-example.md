@@ -39,7 +39,7 @@ The parity rule reads the wrappers off the source document: a mapping target
 that is a `oneOf` or `anyOf` of two or more references, with no properties and
 no discriminator of its own (one with a discriminator is
 [`nested-discriminator-flat-wire`](nested-discriminator-flat-wire.md)'s). In
-`README.md` and `reference.md` alone it rewrites each `Wrapper(value=…)` crozier
+`README.md` and `reference.md` alone it rewrites each one-line `Wrapper(value=…)` crozier
 writes into Fern's `Wrapper(` / `<tag>=,` / `)` and then requires the whole file
 to equal Fern's, so any other difference in either file still fails. Its unit
 tests in `src/departures.rs` show the rule refusing a neighbouring unexplained
