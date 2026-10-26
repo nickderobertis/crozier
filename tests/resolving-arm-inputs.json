@@ -11165,6 +11165,332 @@
      }
     }
    }
+  },
+  "inheritance-select": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-alt-gate": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-gate-broken": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-dangling": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Other": {
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-target-lacks": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "type": "string"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-empty-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "inheritance-blank-property-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "overlap-inheritance-and-properties": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Target": {
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat"
+      }
+     },
+     "type": "object",
+     "properties": {
+      "kind": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
   }
  },
  "cases": [
@@ -11541,6 +11867,85 @@
     "overlap-one-of-and-any-of": {
      "why": "a target declaring both composition fields",
      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union",
+   "arm": "prop_type_ref:3",
+   "branch": "prop_type_ref case 3c, is_inheritance_union_base(&target)",
+   "select": {
+    "inheritance-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    },
+    "inheritance-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    }
+   },
+   "near": {
+    "inheritance-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "inheritance-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "inheritance-target-lacks": {
+     "part": "schema.discriminator:inheritance-union: a target declaring no discriminator at all",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "inheritance-empty-mapping": {
+     "part": "schema.discriminator:inheritance-union: a discriminator with no mapping, so there is no variant list to read",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "inheritance-blank-property-name": {
+     "part": "schema.discriminator:inheritance-union: an empty propertyName",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
+   },
+   "overlap": {
+    "overlap-inheritance-and-properties": {
+     "why": "the base declares a non-empty properties map, which case 4a claims under its own selector; case 3c runs first",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
      "arms": [
       "prop_type_ref:1",
       "prop_type_ref:3"

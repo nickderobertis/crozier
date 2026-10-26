@@ -1954,6 +1954,7 @@ CONJUNCTIONS = {
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `const`",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `oneOf`",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `anyOf`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union": "one per Schema Object one of whose properties is an annotated `$ref` whose target is the base of an inheritance-style discriminated union, declaring a resolving `discriminator` mapping and no composition of its own",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a non-empty `properties` map",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `allOf`",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `additionalProperties: false`",
@@ -2372,6 +2373,11 @@ CASES: dict[str, tuple[Case, ...]] = {
             selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
         ),
         Case(
+            "3c",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union",
+        ),
+        Case(
             "4a",
             block="prop_type_ref/resolution",
             selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
@@ -2548,7 +2554,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "14f75555ff7ff98a",
-    "prop_type_ref": "e3bcdda5090809ab",
+    "prop_type_ref": "0e868a22ed809140",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }

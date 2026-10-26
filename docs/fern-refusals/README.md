@@ -116,12 +116,14 @@ caused it.
   refusals, each with its probe under
   [`../openapi-surface/fern-refusals/findings/`](../openapi-surface/fern-refusals/findings/):
   `check-only` phrases `fern check` refuses while `fern generate` writes an SDK
-  past them, and `generates` shapes neither stage objects to. crozier departs
-  from one on purpose: `parameter-normalization-collision`'s shape (parameters
-  in two locations normalizing to one name) is refused in both modes as
-  `request-property-camelcase-collision`, under the ruling that such a name
-  collision is a Fern defect crozier does not copy, since Fern writes past it
-  into Python its own message calls broken.
+  past them, and `generates` shapes neither stage objects to. crozier generates
+  `parameter-normalization-collision`'s shapes (parameters in different
+  locations sharing a name) as Fern does: a path parameter becomes
+  `{name}_path_param`, a cookie is dropped and a lifted header stays a client
+  field, so every parameter keeps its wire name and the SDK is callable
+  ([measured](../fern-measurements/output-defects/612-parameter-location-collision/README.md)).
+  A valid document Fern generates from is not refused, which retires the
+  earlier ruling that refused them as `request-property-camelcase-collision`.
 - `<class>/probe.yml` — a minimal hand-written document isolating the class.
 - `<class>/*-probe.yml` and `<class>/*-control.yml` — the class's other
   measured shapes: a `-probe` is one Fern refuses, a `-control` a near miss it

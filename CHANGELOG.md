@@ -6,6 +6,24 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.137](https://github.com/nickderobertis/crozier/compare/v0.0.136...v0.0.137) - 2026-10-26
+
+### Fixed
+
+- *(parity)* settle the type-identity output defects against Fern ([#633](https://github.com/nickderobertis/crozier/pull/633))
+
+## [0.0.136](https://github.com/nickderobertis/crozier/compare/v0.0.135...v0.0.136) - 2026-10-26
+
+### Fixed
+
+- *(parity)* settle the callable-surface output defects against Fern ([#634](https://github.com/nickderobertis/crozier/pull/634))
+
+## [0.0.135](https://github.com/nickderobertis/crozier/compare/v0.0.134...v0.0.135) - 2026-10-26
+
+### Fixed
+
+- *(parity)* write worked-example values their own schema accepts ([#630](https://github.com/nickderobertis/crozier/pull/630))
+
 ## [0.0.134](https://github.com/nickderobertis/crozier/compare/v0.0.133...v0.0.134) - 2026-10-25
 
 ### Fixed
