@@ -343,6 +343,8 @@
       ]
     },
     "docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected": {},
+    "docs/fern-measurements/output-defects/602-validation-error-shadowing/fern-expected": {},
+    "docs/fern-measurements/output-defects/612-parameter-location-collision/fern-expected": {},
     "docs/fern-measurements/output-defects/615-empty-composition-member-reference/fern-expected": {},
     "docs/fern-measurements/output-defects/617-annotated-inherited-union/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
