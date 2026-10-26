@@ -51,7 +51,10 @@ compare` (a user's migration check against their own reference SDK,
 from Fern on purpose — branding, a corrected Fern defect — is an entry of the
 compiled catalog `assets/departures.yml` with a rule in `src/departures.rs`, and
 each golden's departures are pinned line by line in
-`tests/fixtures/departures-ledger.tsv`; never normalize anywhere else. See
+`tests/fixtures/departures-ledger.tsv`; never normalize anywhere else.
+`just departures-ledger` regenerates that ledger and, in the same pass, the
+inventory of example values Fern writes that their own schema rejects
+(`docs/departures/evidence/invalid-example-values/`). See
 [`docs/departures/README.md`](docs/departures/README.md).
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,

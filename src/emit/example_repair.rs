@@ -766,9 +766,9 @@ impl ExampleCtx<'_> {
     /// Record an enum member a schema rejects. Fern's value is the enum's first
     /// member; where `pattern-narrowed-enum-example` chose another, crozier's
     /// is that one. An enum is never repaired here: a rejected member crozier
-    /// still writes is a residual, undecidable where some member satisfies the
-    /// schema but the enum's own selection could not decide it, unconstructible
-    /// where none does.
+    /// still writes is a residual, unconstructible where the enum's selection
+    /// found no member the whole schema accepts, undecidable where an in-scope
+    /// keyword was out of view.
     fn record_enum_member(
         &self,
         declaration: &crate::ir::EnumType,
@@ -805,14 +805,12 @@ impl ExampleCtx<'_> {
         let Verdict::Rejected(keyword) = combined.verdict(&wire(first)) else {
             return;
         };
+        // The enum's own selection reads the whole schema, a `not` beside the
+        // keywords in scope included: where it keeps Fern's member, no member
+        // satisfies that schema, unless an in-scope keyword was out of view.
         let disposition = if written.value != first.value {
             Disposition::Repaired
-        } else if declaration
-            .members
-            .iter()
-            .any(|member| combined.verdict(&wire(member)) == Verdict::Accepted)
-            || combined.incomplete
-        {
+        } else if combined.incomplete {
             Disposition::ResidualUndecidable
         } else {
             Disposition::ResidualUnconstructible
