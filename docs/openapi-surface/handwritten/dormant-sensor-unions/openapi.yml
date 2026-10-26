@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: Dormant Sensors
+  version: 1.0.0
+servers:
+  - url: https://sensors.example.test
+paths:
+  /sensors/{sensorId}/silence:
+    get:
+      operationId: getSilence
+      tags: [sensors]
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The sensor's silence marker.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Silence"
+  /sensors/{sensorId}/gap:
+    get:
+      operationId: getGap
+      tags: [sensors]
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The sensor's gap marker.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gap"
+  /sensors/{sensorId}/reading:
+    put:
+      operationId: putReading
+      tags: [sensors]
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reading"
+      responses:
+        "200":
+          description: The stored reading.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reading"
+  /sensors/{sensorId}/channel:
+    put:
+      operationId: putChannel
+      tags: [sensors]
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Channels"
+      responses:
+        "200":
+          description: The channel the sensor now listens on.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channels"
+components:
+  schemas:
+    Silence:
+      description: A marker that only ever holds null.
+      anyOf:
+        - type: "null"
+        - type: "null"
+    Gap:
+      oneOf:
+        - type: "null"
+        - type: "null"
+    Lull:
+      anyOf:
+        - type: "null"
+    Pitch:
+      description: Dropped in favour of the alternative's own words.
+      anyOf:
+        - type: string
+          enum: [low, high]
+    Tone:
+      description: Also dropped.
+      oneOf:
+        - type: string
+          description: How the sensor's alarm sounds.
+          enum: [chime, buzz]
+    Channel:
+      anyOf:
+        - type: string
+        - type: string
+          enum: [north, south]
+    Channels:
+      anyOf:
+        - $ref: "#/components/schemas/Channel"
+        - type: string
+          enum: [south]
+    Reading:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+        silence:
+          $ref: "#/components/schemas/Silence"
+        lull:
+          $ref: "#/components/schemas/Lull"
+        hush:
+          type: array
+          items:
+            oneOf:
+              - type: "null"
+              - type: "null"
+        void:
+          anyOf:
+            - type: "null"
+            - type: "null"
+        pitch:
+          $ref: "#/components/schemas/Pitch"
+        tone:
+          $ref: "#/components/schemas/Tone"
+        mode:
+          description: Whether the sensor is sampling.
+          anyOf:
+            - type: string
+              enum: [idle, live]

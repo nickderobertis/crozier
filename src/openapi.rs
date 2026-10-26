@@ -3252,7 +3252,7 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 /// No alternative is left once the `null`s are taken as optionality, so every
 /// later pass would otherwise render the node as an empty `typing.Union[]`,
 /// which `ruff` refuses to parse. Fern (measured at CLI 5.163.1 with
-/// `fern-python-sdk` 5.41.3 on the hand-written `dormant-sensors-null-unions`
+/// `fern-python-sdk` 5.41.3 on the hand-written `dormant-sensor-unions`
 /// fixture) generates `typing.Optional[typing.Any]` for such a node as a
 /// component alias, an object property and an array item, from one `null`
 /// alternative or several, exactly as it does for a plain `type: null`.
@@ -6729,7 +6729,7 @@ components:
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
     }
 
-    /// The `dormant-sensors-null-unions` fixture (Fern CLI 5.163.1): a
+    /// The `dormant-sensor-unions` fixture (Fern CLI 5.163.1): a
     /// `oneOf`/`anyOf` of nothing but bare `type: null` alternatives, as a
     /// component, a property and an array item, is the `type: null` Fern reads
     /// it as. An alternative that says anything more, a `type` or `properties`

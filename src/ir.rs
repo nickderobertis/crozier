@@ -8283,6 +8283,9 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let Some(member) = lone_inline_string_enum(prop_schema) {
+            return self.prop_type_ref(parent, prop, member);
+        }
         if let Some(declaration) = self.schemas.and_then(|schemas| {
             scalar_narrowed_enum_type(naming::child_class_name(parent, prop), prop_schema, schemas)
         }) {
@@ -12282,6 +12285,15 @@ impl Builder<'_> {
                     }
                     return;
                 }
+                // A lone inline string enum is that enum, under the
+                // component's name and with the member's own description: the
+                // `dormant-sensor-unions` fixture's `Pitch` (`anyOf`) and
+                // `Tone` (`oneOf`) are each Fern's `enum.StrEnum`, `Tone` keeping
+                // its member's docstring and dropping the component's.
+                if let Some(member) = lone_inline_string_enum(schema) {
+                    self.add_named(name, member);
+                    return;
+                }
                 // One inline object requiring properties beside `type: null` is
                 // the component itself, its nullability left to the use sites:
                 // the hand-written `harbor-nullable-inline-object` fixture's
@@ -13976,6 +13988,11 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A lone inline string enum alternative is the property's enum itself:
+        // Fern names it `{Owner}{Prop}`, not `{Owner}{Prop}Zero`.
+        if let Some(member) = lone_inline_string_enum(prop_schema) {
+            return self.field_type_ref(owner, prop, member);
+        }
         if let Some(declaration) = scalar_narrowed_enum_type(
             format!("{owner}{}", naming::class_name(prop)),
             prop_schema,
@@ -17824,6 +17841,28 @@ fn untyped_const_composition_values(schema: &Schema) -> Option<Vec<String>> {
 /// The string values of a string enum schema, if it is one. Public specs sometimes
 /// omit `type: string` on an enum whose values are all strings; Fern still treats
 /// that as a string enum.
+/// The one alternative of a `oneOf`/`anyOf` that declares nothing beside it,
+/// when that alternative is an inline string `enum` and nothing more.
+fn lone_inline_string_enum(schema: &Schema) -> Option<&Schema> {
+    let [member] = schema.one_of.as_deref().or(schema.any_of.as_deref())? else {
+        return None;
+    };
+    (schema.one_of.is_some() != schema.any_of.is_some()
+        && schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.nullable.is_none()
+        && schema.all_of.is_none()
+        && schema.properties.is_empty()
+        && schema.discriminator.is_none()
+        && member.reference.is_none()
+        && member.enum_values.is_some()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.all_of.is_none()
+        && string_enum_values(member).is_some())
+    .then_some(member)
+}
+
 fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
     let const_values;
     let values = if let Some(values) = schema.enum_values.as_ref() {
@@ -21525,7 +21564,7 @@ mod tests {
 
     /// A union of nothing but `null`s has no member to make optional: the
     /// eager `then_some(non_null[0])` this replaced indexed an empty list and
-    /// panicked on the `dormant-sensors-null-unions` fixture's `hush` items.
+    /// panicked on the `dormant-sensor-unions` fixture's `hush` items.
     #[test]
     fn simple_nullable_member_needs_exactly_one_non_null_alternative() {
         let member = |value: serde_json::Value| {
@@ -22878,6 +22917,81 @@ mod tests {
             .find(|endpoint| endpoint.method_name == "list_beacons")
             .expect("the paginated operation is an endpoint");
         assert!(endpoint.pagination.is_some());
+    }
+
+    /// The `dormant-sensor-unions` fixture (Fern CLI 5.163.1, fern-python-sdk
+    /// 5.41.3): a lone inline string-enum alternative is the enum itself, as a
+    /// component (`Pitch`, `Tone`) and as a property (`Reading.mode`), with the
+    /// alternative's own description and no `…Zero` class; a union of only
+    /// `null`s is `Optional[Any]`.
+    #[test]
+    fn dormant_sensor_unions_declare_lone_enum_alternatives_as_the_enum() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/dormant-sensor-unions/openapi.yml"),
+        )
+        .unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Dormant Sensors",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let enumerated = |name: &str| {
+            ir.types.iter().find_map(|decl| match decl {
+                TypeDecl::Enum(declaration) if declaration.name == name => Some(declaration),
+                _ => None,
+            })
+        };
+        let pitch = enumerated("Pitch").expect("Pitch is an enum");
+        assert_eq!(pitch.docstring, None);
+        assert_eq!(
+            enumerated("Tone").and_then(|tone| tone.docstring.as_deref()),
+            Some("How the sensor's alarm sounds.")
+        );
+        assert!(enumerated("ReadingMode").is_some());
+        for hoisted in ["PitchZero", "ToneZero", "ReadingModeZero"] {
+            assert!(
+                !ir.types.iter().any(|decl| decl.name() == hoisted),
+                "{hoisted}"
+            );
+        }
+        let silence = ir.types.iter().find_map(|decl| match decl {
+            TypeDecl::Alias(alias) if alias.name == "Silence" => Some(&alias.target),
+            _ => None,
+        });
+        assert_eq!(
+            silence,
+            Some(&TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
+        );
+    }
+
+    #[test]
+    fn lone_inline_string_enum_reads_only_a_bare_single_enum_alternative() {
+        let lone =
+            |value: serde_json::Value| super::lone_inline_string_enum(&schema(value)).is_some();
+        let pair = serde_json::json!({"type": "string", "enum": ["low", "high"]});
+        assert!(lone(serde_json::json!({"anyOf": [pair]})));
+        assert!(lone(
+            serde_json::json!({"oneOf": [pair], "description": "Dropped."})
+        ));
+        for kept in [
+            serde_json::json!({"anyOf": [pair, {"type": "integer"}]}),
+            serde_json::json!({"anyOf": [{"type": "string"}]}),
+            serde_json::json!({"anyOf": [{"type": "string", "const": "low"}]}),
+            serde_json::json!({"anyOf": [{"type": "integer", "enum": [1, 2]}]}),
+            serde_json::json!({"type": "string", "anyOf": [pair]}),
+            serde_json::json!({"nullable": true, "anyOf": [pair]}),
+            serde_json::json!({"oneOf": [pair], "anyOf": [pair]}),
+            serde_json::json!({"anyOf": [{"$ref": "#/components/schemas/Pitch"}]}),
+        ] {
+            assert!(!lone(kept.clone()), "{kept}");
+        }
     }
 
     #[test]

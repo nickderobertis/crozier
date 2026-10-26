@@ -9922,7 +9922,10 @@ impl<'a> ExampleCtx<'a> {
         // `MarimoTableDataTotalRowsOne.TOO_MANY`), except in a path, where the
         // value below is its plain string. So it is where a `str` alternative
         // before the enum already holds that value: a query parameter's
-        // `anyOf: [string, $ref Weave]` is exampled `"plain"`, not `Weave.PLAIN`.
+        // `anyOf: [string, $ref Weave]` is exampled `"plain"`, not `Weave.PLAIN`,
+        // and so is a body whose earlier alternative is an alias admitting `str`
+        // (`Union[Channel, ChannelsOne]` with `Channel = Union[str, ChannelOne]`
+        // in the `dormant-sensor-unions` fixture is exampled `"south"`).
         if !matches!(slot, Slot::Path(_)) {
             if let Some((index, name)) =
                 variants
@@ -9938,7 +9941,10 @@ impl<'a> ExampleCtx<'a> {
                         _ => None,
                     })
             {
-                if !variants[..index].contains(&TypeRef::Primitive(Prim::Str)) {
+                if !variants[..index]
+                    .iter()
+                    .any(|variant| self.admits_str(variant, &mut Vec::new()))
+                {
                     return self.named_value(&name, slot);
                 }
             }
@@ -9959,6 +9965,29 @@ impl<'a> ExampleCtx<'a> {
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
             )]),
+        }
+    }
+
+    /// Whether `t` takes a plain `str`: it is one, or an optional, union or
+    /// alias with one among what it names. `visiting` holds the aliases
+    /// entered, so a cycle of them admits nothing.
+    fn admits_str(&self, t: &TypeRef, visiting: &mut Vec<String>) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Str) => true,
+            TypeRef::Optional(inner) => self.admits_str(inner, visiting),
+            TypeRef::Union(variants) => variants
+                .iter()
+                .any(|variant| self.admits_str(variant, visiting)),
+            TypeRef::Named(name) if !visiting.contains(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => {
+                    visiting.push(name.clone());
+                    let admits = self.admits_str(&alias.target, visiting);
+                    visiting.pop();
+                    admits
+                }
+                _ => false,
+            },
+            _ => false,
         }
     }
 
@@ -15413,6 +15442,81 @@ mod tests {
             .into_documentation_dicts()
             .render(8);
         assert!(rendered.contains("\"markers\": [\n"), "{rendered}");
+    }
+
+    /// A later enum alternative is exampled by its member unless an earlier
+    /// alternative already takes a plain `str`, directly or through an alias:
+    /// the `dormant-sensor-unions` fixture's `Channels` body is `"south"`,
+    /// where Fern's `put_channel` example writes `request="south"`.
+    #[test]
+    fn a_union_body_after_a_str_admitting_alias_examples_the_plain_value() {
+        let enumeration = |name: &str, value: &str| {
+            TypeDecl::Enum(EnumType {
+                name: name.to_string(),
+                module: crate::naming::module_name(name),
+                members: vec![EnumMember {
+                    name: value.to_ascii_uppercase(),
+                    visit_param: value.to_string(),
+                    value: value.to_string(),
+                    docstring: None,
+                }]
+                .into(),
+                docstring: None,
+            })
+        };
+        let alias = |name: &str, target: TypeRef| {
+            TypeDecl::Alias(AliasType {
+                constraints: None,
+                reach_refs: Vec::new(),
+                name: name.to_string(),
+                module: crate::naming::module_name(name),
+                target,
+                docstring: None,
+                min_length: None,
+                max_length: None,
+            })
+        };
+        let named = |name: &str| TypeRef::Named(name.to_string());
+        let types = vec![
+            enumeration("ChannelOne", "north"),
+            enumeration("ChannelsOne", "south"),
+            alias(
+                "Channel",
+                TypeRef::Union(vec![TypeRef::Primitive(Prim::Str), named("ChannelOne")]),
+            ),
+            alias(
+                "Channels",
+                TypeRef::Union(vec![named("Channel"), named("ChannelsOne")]),
+            ),
+            alias("Loop", named("Loop")),
+        ];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&types, &[], &auth);
+        assert_eq!(
+            ctx.value(&named("Channels"), Slot::Plain).flat(),
+            "\"south\""
+        );
+        // Through an optional, too; an alias cycle and an `int` admit no
+        // `str`, so the later enum is exampled by its member.
+        assert_eq!(
+            ctx.union_value(
+                &[
+                    TypeRef::Optional(Box::new(named("Channel"))),
+                    named("ChannelsOne")
+                ],
+                Slot::Plain
+            )
+            .flat(),
+            "\"south\""
+        );
+        for earlier in [named("Loop"), TypeRef::Primitive(Prim::Int)] {
+            assert_eq!(
+                ctx.union_value(&[earlier.clone(), named("ChannelsOne")], Slot::Plain)
+                    .flat(),
+                "ChannelsOne.SOUTH",
+                "{earlier:?}"
+            );
+        }
     }
 
     #[test]
