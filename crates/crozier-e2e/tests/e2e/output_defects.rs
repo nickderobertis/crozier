@@ -198,7 +198,7 @@ fn sdk_env_output_defect_journeys_hold_for_crozier_and_fern() {
     let cyclic = work.path().join("cyclic.json");
     std::fs::write(
         &cyclic,
-        r##"{"components": {"schemas": {"Load": {"allOf": [{"$ref": "#/components/schemas/Kiln"}]}, "Kiln": {"allOf": [{"$ref": "#/components/schemas/Load"}]}}}}"##,
+        r##"{"components": {"schemas": {"Load": {"allOf": [{"allOf": [{"$ref": "#/components/schemas/Kiln"}]}]}, "Kiln": {"allOf": [{"$ref": "#/components/schemas/Load"}]}}}}"##,
     )
     .unwrap();
     journey(

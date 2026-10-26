@@ -76,13 +76,17 @@ def all_of_cycle(components: dict[str, Any]) -> list[str] | None:
     dispatches each base once.
     """
 
+    def references(schema: dict[str, Any]) -> list[str]:
+        """The components `schema`'s `allOf` reaches before consuming the instance, nested members included."""
+        found = []
+        for member in schema.get("allOf", []):
+            if (target := component_name(member.get("$ref"), components)) is not None:
+                found.append(target)
+            found += references(member)
+        return found
+
     def edges(name: str) -> list[str]:
-        members = components[name].get("allOf", [])
-        return [
-            target
-            for member in members
-            if isinstance(member, dict) and (target := component_name(member.get("$ref"), components)) is not None
-        ]
+        return references(components[name])
 
     done: set[str] = set()
 
