@@ -68,19 +68,19 @@ def component_name(reference: Any, components: dict[str, Any]) -> str | None:
 
 
 def all_of_cycle(components: dict[str, Any]) -> list[str] | None:
-    """A chain of components each `allOf`-referencing the next back to the first, if any.
+    """A chain of components each aliasing or `allOf`-referencing the next back to the first, if any.
 
-    The walker descends `allOf` without consuming the instance, so such a chain
-    never ends; a discriminator's mapping is not an edge, because the walker
-    dispatches each base once.
+    The walker follows an alias and descends `allOf` without consuming the
+    instance, so such a chain never ends; a discriminator's mapping is not an
+    edge, because the walker dispatches each base once.
     """
 
     def references(schema: dict[str, Any]) -> list[str]:
-        """The components `schema`'s `allOf` reaches before consuming the instance, nested members included."""
+        """The components `schema` reaches before consuming the instance: its alias and its `allOf`, nested."""
         found = []
+        if (alias := component_name(schema.get("$ref"), components)) is not None:
+            found.append(alias)
         for member in schema.get("allOf", []):
-            if (target := component_name(member.get("$ref"), components)) is not None:
-                found.append(target)
             found += references(member)
         return found
 
@@ -142,11 +142,12 @@ def shape_errors(schema: Any, components: dict[str, Any], at: str) -> list[str]:
 
 
 def resolve(schema: dict[str, Any], components: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
-    reference = schema.get("$ref")
-    if reference is None:
-        return None, schema
-    name = reference.removeprefix(REF_PREFIX)
-    return name, components[name]
+    """The component an alias chain ends at, and its schema; `read_spec` refused any cyclic chain."""
+    name = None
+    while (reference := schema.get("$ref")) is not None:
+        name = reference.removeprefix(REF_PREFIX)
+        schema = components[name]
+    return name, schema
 
 
 def schema_errors(
@@ -359,7 +360,7 @@ def read_spec(path: Path, case: str) -> dict[str, Any]:
     if errors:
         raise ValueError("; ".join(errors))
     if (cycle := all_of_cycle(schemas)) is not None:
-        raise ValueError(f"allOf references cycle through {' -> '.join(cycle)}")
+        raise ValueError(f"references cycle through {' -> '.join(cycle)}")
     return spec
 
 

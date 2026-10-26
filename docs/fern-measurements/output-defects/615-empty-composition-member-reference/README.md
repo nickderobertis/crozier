@@ -55,7 +55,7 @@ description, or a constraint), both still declare a class of their own.
 `runtime.txt` records an actual run of the certified SDK with Pydantic 2.14.1,
 and the same run over crozier's pre-repair SDK as a control. The journey
 (`crates/crozier-e2e/tests/e2e/output_defects_runtime.py 615`) drives the
-generated client over an `httpx.MockTransport`:
+generated client against a local HTTP server:
 
 - `schedule_load(kiln=Kiln(...))` sends a body that `Load` validates;
 - the returned `Load.kiln` and `Load.overflow_kiln` are instances of the `Kiln`
@@ -63,11 +63,7 @@ generated client over an `httpx.MockTransport`:
 - the controls parse as `LoadNotedKiln` and `LoadReservedKiln`;
 - `transfer_load` takes `destination` as `Kiln`.
 
-To reproduce, install `httpx` and `pydantic` in a disposable environment, convert
-`openapi.yml` to `openapi.json` (any YAML loader), and run:
-
-```sh
-python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 615 \
-  docs/fern-measurements/output-defects/615-empty-composition-member-reference/fern-expected/src \
-  openapi.json
-```
+To reproduce, run `just test-sdk-env`: its
+`sdk_env_output_defect_journeys_hold_for_crozier_and_fern` journey builds the
+environment, converts `openapi.yml` and runs the script over this tree and over
+crozier's.

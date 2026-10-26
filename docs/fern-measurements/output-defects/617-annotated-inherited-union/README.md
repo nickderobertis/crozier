@@ -56,10 +56,11 @@ The verdict rests on behaviour, so `runtime.txt` records an actual run of the
 certified SDK with Pydantic 2.14.1, and the same run over crozier's pre-repair
 SDK as a control. The journey
 (`crates/crozier-e2e/tests/e2e/output_defects_runtime.py 617`) drives the
-generated client over an `httpx.MockTransport`. For each of `matte` and `gloss`:
+generated client against a local HTTP server. For each of `matte` and `gloss`:
 
 - a payload parsed through the annotated copy yields that variant's class with
-  its `finish` value, both as `Pot.outer_coat` and through `parse_obj_as`;
+  its `finish` value, both as `Pot.outer_coat` and through Pydantic's
+  `TypeAdapter`;
 - each variant constructed and passed to `record_pot` and `recoat_pot` is sent
   in the shape the source schema validates.
 
@@ -68,14 +69,14 @@ discriminator mapping. `runtime.txt` adds an independent `jsonschema` 4.26.0
 check of the same payloads against `MatteCoat` and `GlossCoat`. Over the
 pre-repair SDK, the first parse yields `PotOuterCoat` itself.
 
-To reproduce, install `httpx`, `pydantic` and `jsonschema==4.26.0` in a
-disposable environment, convert `openapi.yml` to `openapi.json` (any YAML
-loader), and run:
+To reproduce the journey, run `just test-sdk-env`: its
+`sdk_env_output_defect_journeys_hold_for_crozier_and_fern` journey builds the
+environment, converts `openapi.yml` and runs the script over this tree and over
+crozier's. The independent check is not part of that journey; with
+`jsonschema==4.26.0` installed and `openapi.yml` converted to `openapi.json`
+(any YAML loader), run:
 
 ```sh
-python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 617 \
-  docs/fern-measurements/output-defects/617-annotated-inherited-union/fern-expected/src \
-  openapi.json
 python - openapi.json <<'PY'
 import importlib.metadata
 import json
