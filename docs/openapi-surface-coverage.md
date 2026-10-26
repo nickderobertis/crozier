@@ -3325,14 +3325,16 @@ A missing record or an unnamed candidate fails. Existing conventional arm
 searches still require their `search-incomplete` verdict. A named gap is never
 counted as proven. It
 leaves the list when the reach ledger shows the arm reached, or when a search
-decides it. `format-duration`'s `scalar_body` arm, the one row this table carried
-before, left it that way: the reach ledger re-measured over corpus row 308,
-`yourbrand-ticketing`, reaches it.
+decides it. `format-duration`'s `scalar_body` arm left it that way: the reach
+ledger re-measured over corpus row 308, `yourbrand-ticketing`, reaches it.
+`discriminator-mapping`'s `union_target` and wrapped-example arms, the last two
+rows, left it when their [bounded search](openapi-surface/witness-search-unproven-features/README.md#discriminator-mapping-arm-probe)
+was finished: no declarer the certified pair generates from executes either arm,
+so the hand-written `tidepool-survey-log` fixture covers both. No arm stands here
+today.
 
 | key | unreached arm | why it is unproven |
 |---|---|---|
-| `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv) |
-| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | `search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv) |
 
 
 #### Unproven features, named

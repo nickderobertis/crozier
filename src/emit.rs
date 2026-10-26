@@ -8326,7 +8326,9 @@ enum Example {
     /// for a positional argument. A non-empty arg list always explodes.
     Call(String, Vec<(Option<String>, Example)>),
     /// A discriminated-union wrapper holding its payload whole, `Name(value=…)`:
-    /// it always explodes, and its one argument carries no trailing comma.
+    /// its one argument carries no trailing comma, so it stays on one line when
+    /// that fits and its payload does not break (`SurveyEntry_Level(value=1.1)`
+    /// in the hand-written `tidepool-survey-log` fixture's docstring).
     Wrapped(String, Box<Example>),
     /// A list `[items]` — explodes only when an item does.
     List(Vec<Example>),
@@ -8356,7 +8358,7 @@ impl Example {
         match self {
             Example::Atom(_) => false,
             Example::Call(_, args) => !args.is_empty(),
-            Example::Wrapped(..) => true,
+            Example::Wrapped(_, value) => value.forces_multiline(),
             Example::List(items) | Example::ExplicitList(items) => {
                 items.iter().any(Example::forces_multiline)
             }
@@ -8482,6 +8484,11 @@ impl Example {
                 out.push_str(&pad);
                 out.push(')');
                 out
+            }
+            Example::Wrapped(..)
+                if !self.forces_multiline() && column + self.flat().chars().count() <= 80 =>
+            {
+                self.flat()
             }
             Example::Wrapped(name, value) => format!(
                 "{name}(\n{}value={}\n{})",
@@ -10075,8 +10082,8 @@ impl<'a> ExampleCtx<'a> {
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
                 // A wrapper holding a union whole passes its payload as `value`,
                 // the one argument Fern's docstring writer leaves without a
-                // trailing comma (the hand-written `kitchen-nested-mapping-target`
-                // fixture's `Course_Grill(value=SteakOrder(…))`).
+                // trailing comma (the hand-written `tidepool-survey-log`
+                // fixture's `SurveyEntry_Level(value=1.1)`).
                 Some(m) if m.layout.is_wrapped() => {
                     self.record_ref(&m.class_name);
                     let payload = m.fields.first().map(|field| field.type_ref.clone());
@@ -12483,6 +12490,72 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    /// A wrapper holding a union whole in `value` passes it without a trailing
+    /// comma, so it stays on one line while its payload does and fits, and
+    /// explodes once the payload does (the hand-written `tidepool-survey-log`
+    /// fixture's `SurveyEntry_Level(value=1.1)`, Fern CLI 5.163.1).
+    #[test]
+    fn a_wrapped_member_example_breaks_only_with_its_payload() {
+        let document = |first: &str, second: &str| {
+            serde_json::json!({
+                "openapi": "3.0.3",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {"/entries": {"post": {
+                    "operationId": "logEntry",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/SurveyEntry"}
+                    }}},
+                    "responses": {"204": {"description": "OK"}}
+                }}},
+                "components": {"schemas": {
+                    "SurveyEntry": {
+                        "oneOf": [
+                            {"$ref": "#/components/schemas/WaterLevel"},
+                            {"$ref": "#/components/schemas/CreatureSighting"}
+                        ],
+                        "discriminator": {"propertyName": "entryType", "mapping": {
+                            "level": "#/components/schemas/WaterLevel",
+                            "sighting": "#/components/schemas/CreatureSighting"
+                        }}
+                    },
+                    "WaterLevel": {"oneOf": [
+                        {"$ref": format!("#/components/schemas/{first}")},
+                        {"$ref": format!("#/components/schemas/{second}")}
+                    ]},
+                    "DepthCentimetres": {"type": "number"},
+                    "GaugeReading": {"type": "object", "required": ["entryType", "gauge"],
+                        "properties": {"entryType": {"type": "string"}, "gauge": {"type": "string"}}},
+                    "CreatureSighting": {"type": "object", "required": ["entryType", "species"],
+                        "properties": {"entryType": {"type": "string"}, "species": {"type": "string"}}}
+                }}
+            })
+        };
+        let client = |files: Vec<(String, String)>| {
+            files
+                .into_iter()
+                .find(|(path, _)| path.ends_with("/client.py") && path.matches('/').count() == 2)
+                .map(|(_, contents)| contents)
+                .expect("the root client is generated")
+        };
+        let scalar = client(files_for(document("DepthCentimetres", "GaugeReading")));
+        assert!(
+            scalar.contains("\n            request=SurveyEntry_Level(value=1.1),\n"),
+            "{scalar}"
+        );
+        let object = client(files_for(document("GaugeReading", "DepthCentimetres")));
+        assert!(
+            object.contains(concat!(
+                "\n            request=SurveyEntry_Level(\n",
+                "                value=GaugeReading(\n",
+                "                    entry_type=\"entryType\",\n",
+                "                    gauge=\"gauge\",\n",
+                "                )\n",
+                "            ),\n"
+            )),
+            "{object}"
+        );
     }
 
     #[test]

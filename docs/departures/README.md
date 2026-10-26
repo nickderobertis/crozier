@@ -188,7 +188,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 25 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 26 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -491,5 +491,14 @@ when the two differ.
 - **crozier writes:** The same call also passing each such optional parameter's declared example (included_schemas="public,auth", pgdelta="true"), as it and Fern both do for a JSON success body.
 - **Why:** Both calls bind; crozier's documents the values the specification declares for the operation's optional parameters, each valid for its schema, where Fern's drops them only because the success body is text.
 - **Evidence:** [`docs/departures/evidence/text-response-optional-query-examples.md`](../../docs/departures/evidence/text-response-optional-query-examples.md)
+
+### `wrapped-union-member-docs-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A discriminated union whose mapping names a oneOf or anyOf of references with no discriminator of its own, which the wrapper holds whole in value: the worked examples of README.md and reference.md.
+- **Fern writes:** The wrapper constructed with an empty argument under the mapping value as keyword (SurveyEntry_Level(level=,)).
+- **crozier writes:** The constructor its own client.py docstrings write, passing the union's example as value (SurveyEntry_Level(value=1.1)).
+- **Why:** Fern's example is not Python: the argument has no value, and the keyword is not a field of the constructor, which rejects it. Its own docstrings construct the same request through value.
+- **Evidence:** [`docs/departures/evidence/wrapped-union-member-docs-example.md`](../../docs/departures/evidence/wrapped-union-member-docs-example.md)
 
 <!-- END GENERATED CATALOG -->

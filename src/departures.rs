@@ -1715,7 +1715,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 33] = [
+pub const RULE_IDS: [&str; 34] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1749,6 +1749,7 @@ pub const RULE_IDS: [&str; 33] = [
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
     "text-response-optional-query-examples",
+    "wrapped-union-member-docs-example",
 ];
 
 /// The rule of the catalog entry `id`, if crozier has one.
@@ -1788,6 +1789,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "text-response-optional-query-examples" => Rule {
             added: Some(text_response_optional_query_examples),
+            ..none
+        },
+        "wrapped-union-member-docs-example" => Rule {
+            region: Some(wrapped_union_member_docs_example),
             ..none
         },
         "closed-empty-object-example" => Rule {
@@ -2141,6 +2146,149 @@ fn nested_wire_examples(
         }
     }
     changed
+}
+
+/// `wrapped-union-member-docs-example`: in `README.md` or `reference.md`, Fern's
+/// file is crozier's once each worked example of a wrapper whose mapping target
+/// is a union of references without a discriminator of its own is written
+/// Fern's way: `Wrapper(` and its closing line kept, the `value=` argument
+/// between them replaced by the empty `<tag>=,` Fern writes. The wrappers are
+/// read off the source document, and a union target that declares its own
+/// discriminator is `nested-discriminator-flat-wire`'s instead. The region is
+/// the two files' differing window.
+fn wrapped_union_member_docs_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let schemas = &source.components.schemas;
+    let mut wrappers = Vec::new();
+    for (name, schema) in schemas {
+        let Some(discriminator) = &schema.discriminator else {
+            continue;
+        };
+        for (tag, target) in &discriminator.mapping {
+            let Some(inner) = target.rsplit('/').next().and_then(|key| schemas.get(key)) else {
+                continue;
+            };
+            let union_of_references = inner
+                .one_of
+                .as_ref()
+                .or(inner.any_of.as_ref())
+                .is_some_and(|members| {
+                    members.len() > 1 && members.iter().all(|member| member.reference.is_some())
+                });
+            if inner.discriminator.is_none() && inner.properties.is_empty() && union_of_references {
+                wrappers.push((
+                    format!(
+                        "{}_{}",
+                        crate::naming::class_name(name),
+                        crate::naming::class_name(tag)
+                    ),
+                    crate::naming::model_field_name(tag),
+                ));
+            }
+        }
+    }
+    let mut normalized: Vec<String> = pair.crozier.iter().map(|line| (*line).to_owned()).collect();
+    let mut changed = false;
+    for (wrapper, keyword) in &wrappers {
+        changed |= empty_wrapped_arguments(&mut normalized, wrapper, keyword);
+    }
+    if !changed
+        || !normalized
+            .iter()
+            .map(String::as_str)
+            .eq(pair.fern.iter().copied())
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Rewrite every `wrapper(value=…)` construct of `lines` into Fern's
+/// three-line `wrapper(` / `<keyword>=,` / `)` form, whether crozier wrote it
+/// on one line or exploded it. Whether any was rewritten.
+fn empty_wrapped_arguments(lines: &mut Vec<String>, wrapper: &str, keyword: &str) -> bool {
+    let open = format!("{wrapper}(");
+    let mut changed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index].clone();
+        let indent = &line[..line.len() - line.trim_start().len()];
+        let empty = format!("{indent}    {keyword}=,");
+        if line.ends_with(open.as_str()) {
+            // Exploded: the `value=` argument runs to the line closing the call.
+            let start = index + 1;
+            let Some(close) = (start..lines.len()).find(|at| {
+                lines[*at].starts_with(indent) && lines[*at][indent.len()..].starts_with(')')
+            }) else {
+                index += 1;
+                continue;
+            };
+            if close == start || !lines[start].starts_with(&format!("{indent}    value=")) {
+                index += 1;
+                continue;
+            }
+            lines.splice(start..close, [empty]);
+            changed = true;
+            index = start + 2;
+            continue;
+        }
+        let Some(at) = line.find(&format!("{open}value=")) else {
+            index += 1;
+            continue;
+        };
+        let Some(end) = closing_paren(&line, at + open.len() - 1) else {
+            index += 1;
+            continue;
+        };
+        lines.splice(
+            index..=index,
+            [
+                line[..at + open.len()].to_string(),
+                empty,
+                format!("{indent}{}", &line[end..]),
+            ],
+        );
+        changed = true;
+        index += 3;
+    }
+    changed
+}
+
+/// The byte index of the `)` closing the `(` at `open` in `line`, skipping
+/// string literals; `None` when the line does not close it.
+fn closing_paren(line: &str, open: usize) -> Option<usize> {
+    let mut depth = 0usize;
+    let mut quote: Option<char> = None;
+    let mut escaped = false;
+    for (at, character) in line.char_indices().skip_while(|(at, _)| *at < open) {
+        if let Some(delimiter) = quote {
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == delimiter {
+                quote = None;
+            }
+            continue;
+        }
+        match character {
+            '"' | '\'' => quote = Some(character),
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return (character == ')').then_some(at);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 /// A renamed body argument shares a wire key with a query parameter. Fern uses
@@ -6399,6 +6547,114 @@ mod tests {
         assert_eq!(
             super::compact_python(&[" \"a b\" : '\\'c d' "]),
             "\"a b\":'\\'c d'"
+        );
+    }
+
+    /// The tide-pool survey's `SurveyEntry`: `level` names a union of two
+    /// references with no discriminator, `sighting` an object.
+    fn wrapped_union_document(inner_discriminator: bool) -> serde_json::Value {
+        let mut level = serde_json::json!({"oneOf": [
+            {"$ref": "#/components/schemas/DepthCentimetres"},
+            {"$ref": "#/components/schemas/GaugeReading"}
+        ]});
+        if inner_discriminator {
+            level["discriminator"] = serde_json::json!({"propertyName": "unit"});
+        }
+        serde_json::json!({"components": {"schemas": {
+            "SurveyEntry": {
+                "oneOf": [
+                    {"$ref": "#/components/schemas/WaterLevel"},
+                    {"$ref": "#/components/schemas/CreatureSighting"}
+                ],
+                "discriminator": {"propertyName": "entryType", "mapping": {
+                    "level": "#/components/schemas/WaterLevel",
+                    "sighting": "#/components/schemas/CreatureSighting"
+                }}
+            },
+            "WaterLevel": level,
+            "DepthCentimetres": {"type": "number"},
+            "GaugeReading": {"type": "object", "properties": {"gauge": {"type": "string"}}},
+            "CreatureSighting": {"type": "object", "properties": {"species": {"type": "string"}}}
+        }}})
+    }
+
+    const WRAPPED_FERN: &str = "client.log_entry(\n    pool_id=\"poolId\",\n    request=SurveyEntry_Level(\n        level=,\n    ),\n)\n";
+    const WRAPPED_CROZIER: &str =
+        "client.log_entry(\n    pool_id=\"poolId\",\n    request=SurveyEntry_Level(value=1.1),\n)\n";
+
+    #[test]
+    fn the_wrapped_union_member_rule_takes_only_the_empty_keyword_examples() {
+        let rule: RegionRule = wrapped_union_member_docs_example;
+        let context = source_context(wrapped_union_document(false), &[]);
+        for rel in ["README.md", "reference.md"] {
+            assert_eq!(
+                region_of(rule, rel, WRAPPED_FERN, WRAPPED_CROZIER, &context),
+                Some(Region {
+                    fern: 2..5,
+                    crozier: 2..3
+                })
+            );
+        }
+        // A payload that explodes keeps its own lines inside the wrapper.
+        let exploded = "client.log_entry(\n    pool_id=\"poolId\",\n    request=SurveyEntry_Level(\n        value=GaugeReading(\n            gauge=\"gauge\",\n        )\n    ),\n)\n";
+        assert!(region_of(rule, "README.md", WRAPPED_FERN, exploded, &context).is_some());
+        // A string payload holding a parenthesis still closes at the call.
+        let quoted = WRAPPED_CROZIER.replace("value=1.1", "value=\"a (b\"");
+        assert!(region_of(rule, "README.md", WRAPPED_FERN, &quoted, &context).is_some());
+        for (rel, fern, crozier, context) in [
+            // An adjacent unexplained difference still fails the file.
+            (
+                "README.md",
+                WRAPPED_FERN.to_string(),
+                WRAPPED_CROZIER.replace("poolId", "pool"),
+                &context,
+            ),
+            // Fern's keyword must be the mapping value.
+            (
+                "README.md",
+                WRAPPED_FERN.replace("level=,", "depth=,"),
+                WRAPPED_CROZIER.to_string(),
+                &context,
+            ),
+            // A wrapper the document does not declare.
+            (
+                "README.md",
+                WRAPPED_FERN.replace("SurveyEntry_Level", "SurveyEntry_Tide"),
+                WRAPPED_CROZIER.replace("SurveyEntry_Level", "SurveyEntry_Tide"),
+                &context,
+            ),
+            // Python files are compared as Fern writes them.
+            (
+                "src/fern/client.py",
+                WRAPPED_FERN.to_string(),
+                WRAPPED_CROZIER.to_string(),
+                &context,
+            ),
+            // Nothing to correct.
+            (
+                "README.md",
+                WRAPPED_CROZIER.to_string(),
+                WRAPPED_CROZIER.to_string(),
+                &context,
+            ),
+        ] {
+            assert_eq!(region_of(rule, rel, &fern, &crozier, context), None, "{fern}");
+        }
+        // A union target with its own discriminator is another departure's.
+        let nested = source_context(wrapped_union_document(true), &[]);
+        assert_eq!(
+            region_of(rule, "README.md", WRAPPED_FERN, WRAPPED_CROZIER, &nested),
+            None
+        );
+        assert_eq!(
+            region_of(
+                rule,
+                "README.md",
+                WRAPPED_FERN,
+                WRAPPED_CROZIER,
+                &Context::default()
+            ),
+            None
         );
     }
 
