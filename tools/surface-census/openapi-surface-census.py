@@ -2547,8 +2547,8 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "791d82643902a74a",
-    "prop_type_ref": "1a8982eda3961497",
+    "hoist_union_variant": "14f75555ff7ff98a",
+    "prop_type_ref": "e3bcdda5090809ab",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }

@@ -2028,7 +2028,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 46 rows are the 27 generator categories and the 19 scenarios later
+These 47 rows are the 27 generator categories and the 20 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2094,6 +2094,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | literal-example-dollar-escaped-in-docstring | A `$`-holding const lowered to a one-value literal; the docstring example's added backslash corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/prompt-variable/fern-expected; docs/fern-measurements/literals-mode/prompt-variable/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::dollar_docstring_correction_explains_only_the_declared_const` | `docstring-literal-dollar-escape` |
 | tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 | nested-discriminator-flat-wire | Discriminated union whose variant is itself a discriminated union: Fern's `value` wrapper classes and constructors kept; its `kind`/`value` envelope on the wire and its empty worked-example argument corrected | Fern behaviour + Fern defect | `nested-discriminator-wire` | docs/fern-measurements/examples/nested-discriminator-wire/fern-expected | `nested_discriminator_departure_keeps_every_other_byte` | `nested-discriminator-flat-wire` |
+| schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -2191,7 +2192,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 45, match 110
+by outcome: default=refuse;strict=refuse 5, departure 47, match 108
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
