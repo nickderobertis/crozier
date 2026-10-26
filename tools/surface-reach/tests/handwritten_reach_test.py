@@ -109,13 +109,21 @@ verdict = "config-gated"
 )
 
 
-# A combination's interaction branch, as the committed site table declares it for
+def site_cell(key: str) -> str:
+    """The `sites` cell the committed `golden-reach-sites.tsv` declares for `key`."""
+    with (REPO / "docs" / "openapi-surface" / "golden-reach-sites.tsv").open(encoding="utf-8", newline="") as handle:
+        return next(
+            row["sites"] for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE) if row["key"] == key
+        )
+
+
+# A combination's interaction branch, read from the committed site table for
 # `combo-map-of-nullable-values`: the arm of `base_type_ref` a map takes when it or
 # its value schema is nullable. The function holding it is measured whole through
-# `property-residual`, a feature row the site table lists it under.
+# `property-residual`, the feature row the site table lists it under.
 COMBINATION = "combo-map-of-nullable-values"
-INTERACTION = r"src/ir.rs::base_type_ref[if is_optional\(schema\) \x7c\x7c is_optional\(value\) \{]"
-CONTAINING = ("property-residual", "src/ir.rs::base_type_ref")
+INTERACTION = site_cell(COMBINATION)
+CONTAINING = ("property-residual", site_cell("property-residual"))
 COMBINATION_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
@@ -314,6 +322,7 @@ class GoldenReachInteractionTest(unittest.TestCase):
     """
 
     def test_the_interaction_arm_is_reached_only_by_the_document_declaring_both(self) -> None:
+        self.assertEqual(f"{CONTAINING[1]}[", INTERACTION[: len(CONTAINING[1]) + 1], "the branch is not inside it")
         reach = _module("golden_reach_interaction", "golden-reach.py")
         handwritten = _module("handwritten_fixtures_interaction", "handwritten-fixtures.py")
         crozier = handwritten.instrumented_crozier(REPO, reach)
