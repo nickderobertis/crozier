@@ -50,7 +50,6 @@ def check(condition: bool, message: str) -> None:
         raise Failure(message)
 
 
-# The `type` values the walker reads, each with the instances it accepts.
 ACCEPTED: dict[str, Callable[[Any], bool]] = {
     "object": lambda value: isinstance(value, dict),
     "string": lambda value: isinstance(value, str),

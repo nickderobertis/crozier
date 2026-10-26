@@ -35,7 +35,6 @@ fn case_dir(case: &str) -> PathBuf {
     repo_root().join(OUTPUT_DEFECTS_DIR).join(case)
 }
 
-/// The comparison failures of crozier's tree at `out` against the case's Fern tree.
 fn failures(case: &str, out: &Path) -> Vec<String> {
     let golden = format!("{OUTPUT_DEFECTS_DIR}/{case}/fern-expected");
     let ledger = departure_ledger()
