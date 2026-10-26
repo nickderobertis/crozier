@@ -1217,6 +1217,42 @@ def pointer_target(document: object, pointer: str) -> object | None:
     return node
 
 
+def certified_tree_digest(tree: Path) -> str:
+    """A `fern-expected/` tree's digest, streamed as `probe_artifact_digest` in `e2e.rs` streams it."""
+    stream = bytearray()
+    for relative in sorted(path.relative_to(tree).as_posix() for path in tree.rglob("*") if path.is_file()):
+        content = (tree / relative).read_bytes()
+        stream += relative.encode() + b"\0" + str(len(content)).encode() + b"\0" + content
+    return hashlib.sha256(stream).hexdigest()
+
+
+def byte_match_failures(root: Path, fixture: str) -> list[str]:
+    """Why `handwritten_fixtures_match_fern_goldens` would not byte-match `fixture`, as far as
+    the committed tree says: it compares crozier's output over `openapi.yml` against
+    `fern-expected/` only when both are present, and only a tree hashing to its declared
+    digest at the certified pair is the one Fern generated."""
+    relative = Path("docs") / "openapi-surface" / "handwritten" / fixture
+    # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
+    directory = (root if (root / relative / "openapi.yml").is_file() else REPO) / relative
+    expected = directory / "fern-expected"
+    if not (directory / "openapi.yml").is_file() or not expected.is_dir() or not any(expected.rglob("*")):
+        return ["it carries no `openapi.yml` and `fern-expected/` tree for the gate to compare"]
+    try:
+        evidence = tomllib.loads((directory / "evidence.toml").read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        return [f"its evidence.toml cannot be read ({error})"]
+    pins = root / "assets" / "scaffolding" / "metadata.json"
+    certified = json.loads((pins if pins.is_file() else REPO / pins.relative_to(root)).read_text(encoding="utf-8"))
+    failures = [
+        f"its evidence.toml `{field}` is `{evidence.get(field)}`, not the certified `{certified[pin]}`"
+        for field, pin in (("fern_cli_version", "cliVersion"), ("fern_python_sdk_version", "generatorVersion"))
+        if evidence.get(field) != certified[pin]
+    ]
+    if (actual := certified_tree_digest(expected)) != evidence.get("digest"):
+        failures.append(f"its fern-expected/ hashes to {actual}, not the digest evidence.toml declares")
+    return failures
+
+
 class MeasuredReach(Protocol):
     """What the combination contract reads of a `golden-reach.tsv` row (`golden-reach.py`'s `Reach`)."""
 
@@ -1238,7 +1274,8 @@ def combination_proof_failures(
     (a) a combination's site cell names interaction branches, or `co-occurrence`;
     (b) a `golden` row's witnesses, and a `handwritten` row's fixture, execute every
     interaction site, or the row is a named `gap`; (c) a `co-occurrence` row has
-    exactly one audit row whose witness is a golden-only declarer of the combination.
+    exactly one audit row whose witness is a golden-only declarer of the combination,
+    or, on a `handwritten` row, its fixture, byte-matched and running every named handler.
     """
     reach = load_script("tools/surface-census/golden-reach.py")
     surface = root / "docs" / "openapi-surface"
@@ -1275,6 +1312,11 @@ def combination_proof_failures(
                         "fixture whose feature-level cover proves it"
                     )
                     continue
+                failures += [
+                    f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+                    f"byte-matches: {reason}"
+                    for reason in byte_match_failures(root, witness)
+                ]
                 fixture_document = Path("docs") / "openapi-surface" / "handwritten" / witness / "openapi.yml"
                 # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
                 document_path: Path | None = (root if (root / fixture_document).is_file() else REPO) / fixture_document
@@ -12429,6 +12471,16 @@ class FinishedStateGateTests(unittest.TestCase):
                 if "object-query-type-unsupported" in row["classes"].split(","):
                     copies.append(surface / "fern-refusals/crozier-logs" / f"{row['digest']}.strict.log")
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
+        # A hand-written co-occurrence witness is held to the tree its byte-match compares.
+        with (REPO / COOCCURRENCE_AUDIT).open(encoding="utf-8") as handle:
+            audited = {row["witness"] for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+        copies += [
+            path.relative_to(REPO)
+            for name in sorted(audited)
+            if (HANDWRITTEN / name).is_dir()
+            for path in (HANDWRITTEN / name).rglob("*")
+            if path.is_file()
+        ]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
         copies += [surface / "witness-search-unproven-features" / name for name in ("README.md", "census.tsv")]
@@ -12891,6 +12943,61 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(
             f"{key}: {COOCCURRENCE_AUDIT.name}'s site `/no/such/pointer` names no node in "
             f"`{witness}`'s committed source document",
+            finished_state_failures(self.root),
+        )
+
+    def handwritten_audit_row(self) -> tuple[str, str, str]:
+        """A committed `handwritten` co-occurrence audit row: its key, fixture and line."""
+        rows = combination_rows(self.root)
+        _text, lines = self.audit_lines()
+        for line in lines[1:]:
+            key, witness = line.split("\t")[:2]
+            if rows[key].cells[3].strip("`") == "handwritten":
+                return key, witness, line
+        raise AssertionError("the committed tree audits no hand-written co-occurrence row")
+
+    def test_a_handwritten_cooccurrence_audit_row_on_its_byte_matched_fixture_passes(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        self.assertTrue((self.root / HANDWRITTEN.relative_to(REPO) / witness / "fern-expected").is_dir())
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+
+    def test_a_handwritten_audit_row_whose_fixture_does_not_byte_match_is_refused(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        expected = self.root / HANDWRITTEN.relative_to(REPO) / witness / "fern-expected"
+        client = next(path for path in sorted(expected.rglob("*.py")) if path.stat().st_size)
+        refusal = (
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            "byte-matches: "
+        )
+        # Its tree edited to no longer be the one Fern generated, then gone altogether.
+        original = client.read_bytes()
+        client.write_bytes(original + b"# not Fern's output\n")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(
+            any(f.startswith(refusal + "its fern-expected/ hashes to ") for f in failures),
+            failures,
+        )
+        client.write_bytes(original)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+        shutil.rmtree(expected)
+        self.assertIn(
+            refusal + "it carries no `openapi.yml` and `fern-expected/` tree for the gate to compare",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_handwritten_audit_row_whose_fixture_misses_a_named_handler_is_refused(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        path = "docs/openapi-surface/handwritten-reach.tsv"
+        line = next(
+            line
+            for line in (self.root / path).read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[:2] == [witness, key]
+        )
+        fixture, _key, site, _executed, total = line.split("\t")
+        self.edit(path, line, "\t".join([fixture, key, site, "0", total]))
+        self.assertIn(
+            f"{key}: its hand-written fixture `{witness}` does not execute the handler `{site}` "
+            f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv",
             finished_state_failures(self.root),
         )
 
