@@ -114,6 +114,7 @@ async def expect_parsing_error_async(label: str, call: object) -> None:
     raise AssertionError(f"{label}: a response that fails validation raised no ParsingError")
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is half of the generated SDK under test, not this script's own choice of HTTP client: its raw methods carry their own `except` clauses and parameter lists, so the journey drives it and `AsyncFernApi` alike.
 def validation_error(base_url: str) -> None:
     client = sdk.FernApi(base_url=base_url)
     expect_parsing_error("sync JSON", lambda: client.get_first_problem("ms-1"))
@@ -129,6 +130,9 @@ def validation_error(base_url: str) -> None:
     asyncio.run(run())
 
 
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
+
+
 def assert_request(index: int, path: str, query: dict[str, list[str]], headers: dict[str, str]) -> None:
     request = received[index]
     assert request.path == path, request
@@ -138,6 +142,7 @@ def assert_request(index: int, path: str, query: dict[str, list[str]], headers: 
     print(f"{request.path} query={json.dumps(query, sort_keys=True)} headers={json.dumps(headers, sort_keys=True)}")
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is half of the generated SDK under test, not this script's own choice of HTTP client: its raw methods carry their own `except` clauses and parameter lists, so the journey drives it and `AsyncFernApi` alike.
 def parameter_collision(base_url: str) -> None:
     calls = [
         lambda client: client.get_shelf("central", "A-12", shelf="A-11"),
@@ -164,6 +169,9 @@ def parameter_collision(base_url: str) -> None:
         )
         assert_request(offset + 2, "/loans", {"patron": ["p-7"], "page_size": ["10"]}, client_headers)
     assert len(received) == 6, received
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 try:
