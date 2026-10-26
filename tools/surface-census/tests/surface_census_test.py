@@ -2709,6 +2709,10 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
                 f'{audiences}\n[[covers]]\nkey = "{self.KEY}"\narm = \'{arm}\'\nverdict = "{verdict}"\n',
                 encoding="utf-8",
             )
+        # The arm sections name the ledger's `golden` rows, which a region file declares.
+        (regions / "schemas.md").write_text(
+            f"| {self.KEY} | both | scratch | golden | scratch | scratch | scratch | scratch |\n", encoding="utf-8"
+        )
         (regions / "golden-reach.tsv").write_text(
             "# golden-reach ledger: scratch\n"
             + golden_reach_script().LEDGER_HEADER
@@ -9849,8 +9853,10 @@ class RankedBacklogTests(unittest.TestCase):
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
         # Feature proof totals above exclude combinations. The arm headline
-        # explicitly describes the whole reach ledger, including combinations.
-        arm_ledger_rows = self.reach_ledger(combinations=True)
+        # describes the ledger's `golden` rows, golden combinations among them; a
+        # `gap` combination's unreached interaction branch is named with the
+        # combinations instead.
+        arm_ledger_rows = golden_reach_script().golden_ledger(self.reach_ledger(combinations=True), self.REGIONS)
         unreached = {
             (reach.key, spec) for _rank, reach in arm_ledger_rows for spec, hit, _total in reach.sites if not hit
         }

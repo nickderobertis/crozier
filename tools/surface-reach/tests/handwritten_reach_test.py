@@ -8,14 +8,18 @@ document does not, read back from the ledger the recipe writes; one document
 measured with and without the `audiences` its fixture declares; a combination
 measured at its interaction branch alone, over a document declaring both of its
 features and two declaring one each; and a cover naming an arm the site table
-does not list, refused before anything is written.
+does not list, refused before anything is written. The same three documents,
+joined by the golden ledger's own measurement, show the golden reach of the
+interaction branch the same way.
 """
 
 from __future__ import annotations
 
 import csv
+import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -287,6 +291,75 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertIn("wrong-arm: cover `format-email` arm `src/ir.rs::base_type_ref` is not a site", run.stderr)
             self.assertFalse(ledger.exists(), "a refused measurement wrote a ledger")
             self.assertFalse(ledger.with_name("gates.tsv").exists(), "a refused measurement wrote a gate ledger")
+
+
+def _module(name: str, script: str):
+    spec = importlib.util.spec_from_file_location(name, REPO / "tools" / "surface-census" / script)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault(name, module)
+    spec.loader.exec_module(module)
+    return module
+
+
+class GoldenReachInteractionTest(unittest.TestCase):
+    """The golden ledger's per-site reach at a combination's interaction branch.
+
+    Each document is one run of the instrumented crozier `just golden-reach`
+    builds, written as that measurement writes a golden test's executed regions
+    (`tests/<test>.json` beside the build's `universe.json`), then read back and
+    joined by golden-reach's own `load_coverage` and `compute`, each document the
+    one witness of the combination and of the feature row measuring the function
+    whole.
+    """
+
+    def test_the_interaction_arm_is_reached_only_by_the_document_declaring_both(self) -> None:
+        reach = _module("golden_reach_interaction", "golden-reach.py")
+        handwritten = _module("handwritten_fixtures_interaction", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
+        with tempfile.TemporaryDirectory() as temporary:
+            out = Path(temporary) / "measurement"
+            (out / "tests").mkdir(parents=True)
+            for name, labels in LABELS.items():
+                spec = Path(temporary) / f"{name}.yml"
+                spec.write_text(COMBINATION_DOCUMENT.format(labels=labels), encoding="utf-8")
+                universe, hit = handwritten.scoped_run(spec, (), crozier, profdata, llvm_cov, REPO, reach)
+                (out / "tests" / f"{name}.json").write_text(json.dumps(hit), encoding="utf-8")
+                (out / "universe.json").write_text(json.dumps(universe), encoding="utf-8")
+            (out / "provenance.json").write_text(json.dumps({"commit": "0" * 40, "tests": 3}), encoding="utf-8")
+            coverage, universe, _commit = reach.load_coverage(out)
+            census = {"rows": [], "sources": [{"fixture": name} for name in LABELS]}
+            feature, function = CONTAINING
+            for name in LABELS:
+                with self.subTest(document=name):
+                    witness = (f"fixture={name}",)
+                    table = {
+                        COMBINATION: reach.SiteRow(COMBINATION, witness, (INTERACTION,)),
+                        feature: reach.SiteRow(feature, witness, (function,)),
+                    }
+                    measured = {
+                        row.key: row
+                        for row in reach.compute(
+                            {COMBINATION: "schemas", feature: "schemas"},
+                            table,
+                            census,
+                            {other: other for other in LABELS},
+                            coverage,
+                            universe,
+                            REPO,
+                        )
+                    }
+                    self.assertEqual((name,), measured[COMBINATION].witnesses)
+                    ((_spec, executed, _total),) = measured[feature].sites
+                    self.assertGreater(executed, 0, f"{name} never ran the function holding the branch")
+                    ((spec, executed, total),) = measured[COMBINATION].sites
+                    self.assertEqual(INTERACTION, spec)
+                    self.assertGreaterEqual(total, 1)
+                    if name == "map-of-nullable-values":
+                        self.assertGreater(executed, 0, "the document declaring both features missed the branch")
+                    else:
+                        self.assertEqual(0, executed, f"{name} declares one feature, yet reached the branch")
 
 
 if __name__ == "__main__":
