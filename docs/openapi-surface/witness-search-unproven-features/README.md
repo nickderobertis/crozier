@@ -259,7 +259,8 @@ refusal below, and none of these moves either site. Counted in census rows:
   1.0.1) are refused by the certified pair.** Neither instrumented run gives
   an arm outcome. `graph-beta`'s passed 3600 seconds, and then the
   10800-second bound. `graph`'s crozier run finished within that bound, but
-  merging its profile (`llvm-profdata merge`) failed. Run directly under the
+  merging its profile (`llvm-profdata merge`) failed, and a second run passed
+  the same bound. Run directly under the
   shared lock, the certified pair refuses both: `fern generate` exits 1 with no
   files, after 1081 errors for `graph-beta` and 663 for `graph` (first,
   `Unexpected property "@odata.type"` in a request example, and a query and a
