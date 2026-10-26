@@ -34,6 +34,11 @@ import pydantic
 
 # The schemas each journey validates against; a document without them is not the measurement.
 CASE_SCHEMAS = {"615": ("Load", "Kiln"), "617": ("Coat", "MatteCoat", "GlossCoat")}
+# The names each journey reads off the generated package; an SDK without them is not this measurement's.
+CASE_EXPORTS = {
+    "615": ("FernApi", "Kiln", "Load", "LoadNotedKiln", "LoadReservedKiln"),
+    "617": ("FernApi", "PotOuterCoat", "RecoatPotRequestCoat"),
+}
 
 
 class Failure(Exception):
@@ -55,20 +60,61 @@ ACCEPTED: dict[str, Callable[[Any], bool]] = {
 REF_PREFIX = "#/components/schemas/"
 
 
+def component_name(reference: Any, components: dict[str, Any]) -> str | None:
+    """The component a local `$ref` names, or None for any other value."""
+    if not isinstance(reference, str) or not reference.startswith(REF_PREFIX):
+        return None
+    name = reference.removeprefix(REF_PREFIX)
+    return name if name in components else None
+
+
+def all_of_cycle(components: dict[str, Any]) -> list[str] | None:
+    """A chain of components each `allOf`-referencing the next back to the first, if any.
+
+    The walker descends `allOf` without consuming the instance, so such a chain
+    never ends; a discriminator's mapping is not an edge, because the walker
+    dispatches each base once.
+    """
+
+    def edges(name: str) -> list[str]:
+        members = components[name].get("allOf", [])
+        return [
+            target
+            for member in members
+            if isinstance(member, dict) and (target := component_name(member.get("$ref"), components)) is not None
+        ]
+
+    done: set[str] = set()
+
+    def visit(name: str, path: list[str]) -> list[str] | None:
+        if name in path:
+            return [*path[path.index(name) :], name]
+        if name in done:
+            return None
+        for target in edges(name):
+            if (cycle := visit(target, [*path, name])) is not None:
+                return cycle
+        done.add(name)
+        return None
+
+    for name in components:
+        if (cycle := visit(name, [])) is not None:
+            return cycle
+    return None
+
+
 def shape_errors(schema: Any, components: dict[str, Any], at: str) -> list[str]:
     """Where `schema` is not a shape `schema_errors` can walk without failing."""
     if not isinstance(schema, dict):
         return [f"{at} is not an object"]
     errors = []
-    reference = schema.get("$ref")
-    if reference is not None and (
-        not isinstance(reference, str) or reference.removeprefix(REF_PREFIX) not in components
-    ):
-        errors.append(f"{at}.$ref {reference!r} names no component schema")
-    if "type" in schema and schema["type"] not in ACCEPTED:
+    if "$ref" in schema and component_name(schema["$ref"], components) is None:
+        errors.append(f"{at}.$ref {schema['$ref']!r} names no component schema as {REF_PREFIX}<name>")
+    if "type" in schema and not (isinstance(schema["type"], str) and schema["type"] in ACCEPTED):
         errors.append(f"{at}.type {schema['type']!r} is not one of {sorted(ACCEPTED)}")
-    if not isinstance(schema.get("required", []), list):
-        errors.append(f"{at}.required is not a list")
+    required = schema.get("required", [])
+    if not (isinstance(required, list) and all(isinstance(key, str) for key in required)):
+        errors.append(f"{at}.required is not a list of property names")
     members = schema.get("allOf", [])
     if not isinstance(members, list):
         errors.append(f"{at}.allOf is not a list")
@@ -299,7 +345,8 @@ JOURNEYS = {"615": empty_member_keeps_the_reference, "617": annotated_copy_keeps
 def read_spec(path: Path, case: str) -> dict[str, Any]:
     """The measurement document, or ValueError naming what it lacks or what the walker cannot read."""
     spec = json.loads(path.read_text(encoding="utf-8"))
-    schemas = spec.get("components", {}).get("schemas") if isinstance(spec, dict) else None
+    components = spec.get("components") if isinstance(spec, dict) else None
+    schemas = components.get("schemas") if isinstance(components, dict) else None
     if not isinstance(schemas, dict):
         raise ValueError("components.schemas is not an object")
     missing = [name for name in CASE_SCHEMAS[case] if not isinstance(schemas.get(name), dict)]
@@ -308,6 +355,8 @@ def read_spec(path: Path, case: str) -> dict[str, Any]:
     errors = [error for name, schema in schemas.items() for error in shape_errors(schema, schemas, name)]
     if errors:
         raise ValueError("; ".join(errors))
+    if (cycle := all_of_cycle(schemas)) is not None:
+        raise ValueError(f"allOf references cycle through {' -> '.join(cycle)}")
     return spec
 
 
@@ -322,7 +371,7 @@ def main() -> int:
         return 2
     try:
         spec = read_spec(args.spec, args.case)
-    except (OSError, ValueError, AttributeError) as error:
+    except (OSError, ValueError) as error:
         print(
             f"cannot read {args.spec} as the {args.case} measurement document ({error}); pass the measurement as JSON",
             file=sys.stderr,
@@ -333,6 +382,14 @@ def main() -> int:
         fern = importlib.import_module("fern")
     except Exception as error:  # any import failure means the SDK input is unusable
         print(f"cannot import the fern package under {args.sdk_src} ({error!r}); regenerate the SDK", file=sys.stderr)
+        return 2
+    absent = [name for name in CASE_EXPORTS[args.case] if not hasattr(fern, name)]
+    if absent:
+        print(
+            f"the fern package under {args.sdk_src} exports no {', '.join(absent)}; "
+            f"pass the SDK generated from the {args.case} measurement",
+            file=sys.stderr,
+        )
         return 2
     recorder = Recorder()
     try:

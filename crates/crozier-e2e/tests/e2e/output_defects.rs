@@ -80,6 +80,7 @@ fn holds_line(case: &str, file: &str, fern: &str, crozier: &str) {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// `kiln` (`[$ref Kiln, {}]`) and `overflowKiln` (`[{}, $ref Kiln]`) are typed
 /// with `Kiln` itself, in the model and in the inline body's parameter, while the
 /// described and constrained members keep classes of their own.
@@ -117,6 +118,8 @@ fn an_annotated_inherited_union_keeps_its_variant_wrappers() {
         "",
     );
 }
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// Each measurement document is generated from as committed: removing it is an
 /// actionable failure that writes no SDK.
@@ -192,6 +195,34 @@ fn sdk_env_output_defect_journeys_hold_for_crozier_and_fern() {
         "Load.properties.kiln.$ref '#/components/schemas/Absent' names no component schema",
     ))
     .stderr(predicate::str::contains("Kiln.type 'array' is not one of"));
+    let cyclic = work.path().join("cyclic.json");
+    std::fs::write(
+        &cyclic,
+        r##"{"components": {"schemas": {"Load": {"allOf": [{"$ref": "#/components/schemas/Kiln"}]}, "Kiln": {"allOf": [{"$ref": "#/components/schemas/Load"}]}}}}"##,
+    )
+    .unwrap();
+    journey(
+        &python,
+        EMPTY_MEMBER,
+        &case_dir(EMPTY_MEMBER).join("fern-expected/src"),
+        &cyclic,
+    )
+    .assert()
+    .code(2)
+    .stderr(predicate::str::contains(
+        "allOf references cycle through Load -> Kiln -> Load",
+    ));
+    journey(
+        &python,
+        INHERITED_UNION,
+        &case_dir(EMPTY_MEMBER).join("fern-expected/src"),
+        &as_json(&case_dir(INHERITED_UNION).join("openapi.yml"), work.path()),
+    )
+    .assert()
+    .code(2)
+    .stderr(predicate::str::contains(
+        "exports no PotOuterCoat, RecoatPotRequestCoat",
+    ));
     for (case, removed, kept, refused) in [
         (
             EMPTY_MEMBER,
