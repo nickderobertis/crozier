@@ -102,6 +102,14 @@ mod pottery_studio_shapes;
 mod naming_clients_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The generated-model defects measured against the certified pair under
+/// `docs/fern-measurements/output-defects/`, each repaired and held to its
+/// complete Fern tree and its runtime journey.
+#[path = "e2e/output_defects.rs"]
+mod output_defects;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -726,6 +734,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
+        (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -1973,6 +1982,7 @@ const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 /// The measured parameter-lowering cases `parameter_lowering_measurements_match_fern`
 /// compares, one directory per case.
 const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
+use output_defects::OUTPUT_DEFECTS_DIR;
 
 /// The client-construction trees `clients_extensions_measurements_match_fern`
 /// compares, one directory per case, each Fern's output under a setting other
@@ -6705,6 +6715,115 @@ fn parameter_lowering_measurements_match_fern() {
         })
         .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// The measured generated-output defects under
+/// `docs/fern-measurements/output-defects/`, each a parity gap crozier repaired:
+/// every case with a committed `fern-expected/` tree is generated with crozier
+/// and compared whole. `602-validation-error-shadowing` holds a schema named
+/// `ValidationError` beside the runtime exception every raw parser catches;
+/// `612-parameter-location-collision` holds parameters in different locations
+/// that share a name. The reference-identity cases are compared by their own
+/// journeys in `e2e/output_defects.rs`, so they are named here and not replayed.
+#[test]
+fn output_defect_measurements_match_fern() {
+    let root = repo_root().join(OUTPUT_DEFECTS_DIR);
+    let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
+        .expect("the measurement directory exists")
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.join("fern-expected").is_dir())
+        .collect();
+    cases.sort();
+    let names: Vec<String> = cases
+        .iter()
+        .filter_map(|case| case.file_name())
+        .map(|name| name.to_string_lossy().into_owned())
+        .collect();
+    assert_eq!(
+        names,
+        [
+            "602-validation-error-shadowing",
+            "612-parameter-location-collision",
+            "615-empty-composition-member-reference",
+            "617-annotated-inherited-union"
+        ],
+        "the measured cases moved"
+    );
+    let failures: Vec<String> = cases
+        .iter()
+        .zip(&names)
+        .filter(|(_, name)| !output_defects::OWN_JOURNEYS.contains(&name.as_str()))
+        .flat_map(|(case, name)| {
+            let expected = case.join("fern-expected");
+            filtered_tree_failures(
+                name,
+                &golden_path(&expected),
+                &case.join("openapi.yml"),
+                &expected,
+                &[],
+            )
+        })
+        .collect();
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// crozier's SDK for each measured output defect, driven against a local HTTP
+/// server: a response failing validation raises `ParsingError` on the JSON,
+/// event-stream and binary-download paths, and every parameter sharing a name
+/// with another location reaches the server under its own wire name. Each
+/// case's `runtime.txt` records the same journey over Fern's tree.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_output_defect_sdks_parse_and_send_what_fern_does() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("crates/crozier-e2e/tests/e2e/output_defect_journeys.py");
+    Command::new(&python)
+        .arg(&script)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("required: case, sdk_src"));
+    for (case, journey) in [
+        ("602-validation-error-shadowing", "validation-error"),
+        ("612-parameter-location-collision", "parameter-collision"),
+    ] {
+        let out = tempfile::tempdir().unwrap();
+        probe_command(
+            &root.join(OUTPUT_DEFECTS_DIR).join(case).join("openapi.yml"),
+            out.path(),
+        )
+        .assert()
+        .success();
+        Command::new(&python)
+            .arg(&script)
+            .arg(journey)
+            .arg(out.path().join("missing-sdk"))
+            .assert()
+            .code(2)
+            .stderr(predicate::str::contains(
+                "must contain the generated fern package",
+            ));
+        let output = Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(journey)
+            .arg(out.path().join("src"))
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{case}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let lines = if journey == "validation-error" {
+            "ParsingError"
+        } else {
+            "/loans"
+        };
+        assert!(stdout.contains(lines), "{case}: {stdout}");
+    }
 }
 
 /// Complete certified trees for the parameter extension and serialization

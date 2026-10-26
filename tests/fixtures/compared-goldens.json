@@ -343,6 +343,10 @@
       ]
     },
     "docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected": {},
+    "docs/fern-measurements/output-defects/602-validation-error-shadowing/fern-expected": {},
+    "docs/fern-measurements/output-defects/612-parameter-location-collision/fern-expected": {},
+    "docs/fern-measurements/output-defects/615-empty-composition-member-reference/fern-expected": {},
+    "docs/fern-measurements/output-defects/617-annotated-inherited-union/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
@@ -520,6 +524,7 @@
     "docs/openapi-surface/handwritten/gallery-plaque-groups/fern-expected": {},
     "docs/openapi-surface/handwritten/garden-crown/fern-expected": {},
     "docs/openapi-surface/handwritten/gauge-public-fields/fern-expected": {},
+    "docs/openapi-surface/handwritten/glaze-ledger-coats/fern-expected": {},
     "docs/openapi-surface/handwritten/greenhouse-undiscriminated-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/greenhouse-vents/fern-expected": {},
     "docs/openapi-surface/handwritten/grid-valve-console/fern-expected": {},

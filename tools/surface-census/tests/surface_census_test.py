@@ -3902,6 +3902,8 @@ fn following() { let other = 42; }
             116: "one-hundred-and-sixteen",
             118: "one-hundred-and-eighteen",
             122: "one-hundred-and-twenty-two",
+            119: "one-hundred-and-nineteen",
+            123: "one-hundred-and-twenty-three",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -4308,6 +4310,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {
             "groupe-psa": 1
         },
@@ -4365,7 +4368,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "groupe-psa": 2
         },
         "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.discriminator:inheritance-union&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {
             "groupe-psa": 1
         },
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {
@@ -4990,7 +4993,7 @@ class ResolvingDescentTests(unittest.TestCase):
 
         A conjunction is declared only where a case of a blind region is read off
         it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
-        holds the list to. Eight declared spellings use `~>` now; the exemplar
+        holds the list to. Nine declared spellings use `~>` now; the exemplar
         these cases run the evaluator over is not one of them, and `--selector`
         refuses it by name exactly as it refuses any well-formed combination
         nobody declared.
@@ -5001,7 +5004,7 @@ class ResolvingDescentTests(unittest.TestCase):
             for selector in census.CONJUNCTIONS
             if census.RESOLVING_DESCENT in selector and selector not in combinations
         ]
-        self.assertEqual(8, len(using), f"the blind-region list spells {len(using)} with `~>`")
+        self.assertEqual(9, len(using), f"the blind-region list spells {len(using)} with `~>`")
         self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
@@ -5086,6 +5089,7 @@ ANNOTATED_REF_SELECTORS = frozenset(
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union",
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
@@ -5246,7 +5250,7 @@ NEGATION_SELECTORS = frozenset(
         "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
         "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.discriminator:inheritance-union&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
         "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
@@ -7575,7 +7579,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
         },
         {
-            "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+            "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.discriminator:inheritance-union&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
             "slug": "ptr-5",
             "branch": "prop_type_ref case 5, the resolution block's own residual",
             "select": {
@@ -7830,6 +7834,34 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             {selector for selector in NEGATION_SELECTORS if not census.is_conjunction(selector)},
             exempt,
         )
+
+    def test_annotated_ref_residual_leaves_inheritance_union_targets_to_case_3c(self) -> None:
+        """Case 5's residual negates case 3c: an inheritance-union target is 3c's alone.
+
+        The near miss in `CASES` varies only the enum member, so this is the
+        document that shows the `!schema.discriminator:inheritance-union` member
+        doing its work: the same annotated `$ref`, its target a discriminator base
+        with a mapping, counted by 3c's selector and not by the residual.
+        """
+        residual = next(case["selector"] for case in self.CASES if case["slug"] == "ptr-5")
+        inheritance = "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union"
+        reported = self.censused(
+            {
+                "inheritance-target": {
+                    "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                    "Target": {
+                        "discriminator": {"propertyName": "kind", "mapping": {"cat": "#/components/schemas/Cat"}}
+                    },
+                    "Cat": {
+                        "type": "object",
+                        "required": ["kind"],
+                        "properties": {"kind": {"type": "string", "enum": ["cat"]}},
+                    },
+                },
+            }
+        )
+        self.assertNotIn((residual, "inheritance-target"), reported)
+        self.assertEqual(1, reported.get((inheritance, "inheritance-target")))
 
     def test_property_residual_counts_closed_objects_without_properties(self) -> None:
         residual = "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array"

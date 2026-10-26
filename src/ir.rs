@@ -4307,6 +4307,7 @@ fn build_endpoint(
         &mut path_params,
         &query_params,
         &header_params,
+        global_headers,
         request_body.as_ref(),
     );
 
@@ -7475,6 +7476,11 @@ fn hoist_inline_object(
                 prop_schema
                     .description
                     .as_deref()
+                    // An annotating `allOf` member documents the argument, as it
+                    // documents a model field: the `617-annotated-inherited-union`
+                    // measurement's `recoatPot` body declares `coat: allOf: [$ref
+                    // Coat, {description}]`, and Fern documents `coat` with it.
+                    .or_else(|| described_all_of_ref(prop_schema).and_then(|(_, doc)| doc))
                     .or_else(|| {
                         scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
                             .and_then(|(_, member)| member.description.as_deref())
@@ -8308,9 +8314,20 @@ impl InlineHoister<'_> {
                     )));
                     return TypeRef::Named(name);
                 }
-                if target.one_of.is_some() || target.any_of.is_some() {
+                // A union spelled through inheritance is copied complete too, its
+                // variant wrappers coined under the annotating name and
+                // documented by the annotation, as Fern does: the
+                // `617-annotated-inherited-union` measurement's
+                // `RecoatPotRequestCoat_Matte` carries the body field's
+                // description where `Coat_Matte` carries `Coat`'s.
+                let inherited = is_inheritance_union_base(&target);
+                if target.one_of.is_some() || target.any_of.is_some() || inherited {
                     observed_arm!("prop_type_ref:3");
-                    if let Some(copy) = self.hoist_named_copy(&name, &target) {
+                    let mut copied = target.clone();
+                    if let Some(description) = description.filter(|_| inherited) {
+                        copied.description = Some(description.to_string());
+                    }
+                    if let Some(copy) = self.hoist_named_copy(&name, &copied) {
                         return copy;
                     }
                 }
@@ -8992,7 +9009,8 @@ fn nullable_enum_part(schema: &Schema, schemas: Option<&IndexMap<String, Schema>
 /// Rename each path parameter whose name a query parameter, a header or a
 /// request-body property also claims, the way Fern's importer does: to
 /// `{name}PathParam` (then `{name}PathParam2`, …), unless the parameter carries
-/// its own SDK name. A JSON or urlencoded body claims its properties (and its
+/// its own SDK name. A header the client wrapper carries (`global_headers`)
+/// still claims its name: the importer renames before the header is lifted. A JSON or urlencoded body claims its properties (and its
 /// `allOf` members') only when it is an object the importer can inline — an
 /// inline schema, or a `$ref` nothing but a request body references; any other
 /// body claims the name `body`. A multipart body always claims its properties.
@@ -9002,6 +9020,7 @@ fn rename_claimed_path_params(
     path_params: &mut [PathParam],
     query_params: &[QueryParam],
     header_params: &[HeaderParam],
+    global_headers: &std::collections::HashSet<&str>,
     request_body: Option<&RequestBody>,
 ) {
     let declared: Vec<&crate::openapi::Parameter> = op
@@ -9019,9 +9038,23 @@ fn rename_claimed_path_params(
         })
         .collect();
     let mut spread = std::collections::HashSet::new();
-    // Only the parameters the method keeps can claim a name.
+    // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    // (docs/fern-measurements/output-defects/612-parameter-location-collision):
+    // `edition` beside a header `edition` on one operation, and `branch` beside a
+    // header `branch` on every operation, both become `{name}_path_param`.
+    let lifted: std::collections::HashSet<&str> = op
+        .parameters
+        .iter()
+        .filter(|p| {
+            p.location == Some(ParameterLocation::Header)
+                && global_headers.contains(p.name.as_str())
+        })
+        .map(|p| p.sdk_name())
+        .collect();
+    // Only the parameters the method keeps, or the client carries, claim a name.
     claimed.retain(|name| {
-        query_params.iter().any(|q| q.wire_name == *name)
+        lifted.contains(name.as_str())
+            || query_params.iter().any(|q| q.wire_name == *name)
             || header_params
                 .iter()
                 .any(|h| h.wire_name == *name || h.py_name == naming::field_name(name))
@@ -13900,8 +13933,15 @@ impl Builder<'_> {
         // own rather than pointing at the referenced schema's pair. The copy is
         // documented by the annotation too: Prisma Cloud's `SearchModel.timeRange`
         // annotates `TimeRangeConfigModel` with `Time Range`, and every variant of
-        // Fern's `SearchModelTimeRange` carries that docstring.
-        if !is_map(target) && (target.one_of.is_some() || target.any_of.is_some()) {
+        // Fern's `SearchModelTimeRange` carries that docstring. A union spelled
+        // through inheritance — a base whose `discriminator.mapping` names the
+        // subtypes that `allOf` it — is a union too, and Fern copies its variant
+        // wrappers the same way rather than flattening the base's fields.
+        if !is_map(target)
+            && (target.one_of.is_some()
+                || target.any_of.is_some()
+                || is_inheritance_union_base(target))
+        {
             let mut annotated = target.clone();
             if let Some(description) = description {
                 annotated.description = Some(description.to_string());
@@ -20532,6 +20572,84 @@ mod tests {
         assert_eq!(argument("application/json"), "username");
     }
 
+    /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    /// (docs/fern-measurements/output-defects/612-parameter-location-collision):
+    /// a path parameter sharing its wire name with a query parameter, a header
+    /// on one operation or a header the client carries becomes
+    /// `{name}_path_param`, every wire name unchanged; a cookie claims nothing.
+    #[test]
+    fn path_parameters_a_query_or_header_names_take_the_path_param_suffix() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/output-defects/612-parameter-location-collision/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        assert_eq!(
+            ir.global_headers
+                .iter()
+                .map(|header| header.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["branch", "Page-Size"]
+        );
+        let endpoint = |name: &str| {
+            ir.endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == name)
+                .unwrap_or_else(|| panic!("no endpoint {name}"))
+        };
+        let path_names = |name: &str| {
+            endpoint(name)
+                .path_params
+                .iter()
+                .map(|param| (param.wire_name.as_str(), param.py_name.as_str()))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            path_names("get_shelf"),
+            [
+                ("branch", "branch_path_param"),
+                ("shelf", "shelf_path_param")
+            ]
+        );
+        let query = &endpoint("get_shelf").query_params;
+        assert_eq!(
+            (query[0].wire_name.as_str(), query[0].py_name.as_str()),
+            ("shelf", "shelf")
+        );
+        assert_eq!(
+            path_names("list_edition_scans"),
+            [
+                ("branch", "branch_path_param"),
+                ("edition", "edition_path_param")
+            ]
+        );
+        let headers = &endpoint("list_edition_scans").header_params;
+        assert_eq!(
+            (headers[0].wire_name.as_str(), headers[0].py_name.as_str()),
+            ("edition", "edition")
+        );
+        let loans = endpoint("list_loans");
+        assert_eq!(
+            loans
+                .query_params
+                .iter()
+                .map(|param| (param.wire_name.as_str(), param.py_name.as_str()))
+                .collect::<Vec<_>>(),
+            [("patron", "patron"), ("page_size", "page_size")]
+        );
+        assert!(loans.header_params.is_empty());
+    }
+
     #[test]
     fn path_parameters_follow_url_placeholder_order() {
         let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
@@ -26932,6 +27050,116 @@ components:
         })
     }
 
+    /// The `617-annotated-inherited-union` measurement (Fern CLI 5.163.1): an
+    /// annotated `$ref` to a union spelled through inheritance — a base whose
+    /// `discriminator.mapping` names the subtypes that `allOf` it — is copied
+    /// complete under the annotating name, its variant wrappers documented by
+    /// the annotation, both where a component's property annotates it
+    /// ([`Builder::use_site_copy`]) and where an inline body's does
+    /// ([`InlineHoister::prop_type_ref`]); a plain `$ref` names the base.
+    #[test]
+    fn annotated_copies_of_an_inheritance_union_keep_its_variant_wrappers() {
+        let coat = "#/components/schemas/Coat";
+        let variant = |own: &str| {
+            serde_json::json!({ "allOf": [
+                { "$ref": coat },
+                { "type": "object", "required": [own], "properties": { own: { "type": "integer" } } }
+            ] })
+        };
+        let annotated = |description: &str| serde_json::json!({ "allOf": [{ "$ref": coat }, { "description": description }] });
+        let schemas = serde_json::json!({
+            "Coat": {
+                "type": "object",
+                "description": "One coat.",
+                "required": ["finish"],
+                "properties": { "finish": { "type": "string" }, "layers": { "type": "integer" } },
+                "discriminator": { "propertyName": "finish", "mapping": {
+                    "matte": "#/components/schemas/MatteCoat",
+                    "gloss": "#/components/schemas/GlossCoat"
+                } }
+            },
+            "MatteCoat": variant("tooth"),
+            "GlossCoat": variant("sheen"),
+            "Pot": { "type": "object", "properties": {
+                "outer": annotated("Outer wall."),
+                "inner": { "$ref": coat }
+            } }
+        });
+        let body =
+            serde_json::json!({ "coat": annotated("Fresh coat."), "previous": { "$ref": coat } });
+        let (ir, _) = generate(observed_document(schemas, body));
+        let declared = || {
+            ir.types
+                .iter()
+                .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+        };
+        for (name, docstring) in [
+            ("Coat", "One coat."),
+            ("PotOuter", "Outer wall."),
+            ("MakeThingRequestCoat", "Fresh coat."),
+        ] {
+            let union = declared()
+                .find_map(|declaration| match declaration {
+                    TypeDecl::DiscriminatedUnion(union) if union.name == name => Some(union),
+                    _ => None,
+                })
+                .unwrap_or_else(|| {
+                    panic!("{name} is no discriminated union: {:?}", declarations(&ir))
+                });
+            assert_eq!(union.discriminant_property, "finish", "{name}");
+            let members: Vec<_> = union
+                .members
+                .iter()
+                .map(|member| {
+                    (
+                        member.class_name.as_str(),
+                        member.discriminant.as_str(),
+                        member.docstring.as_deref(),
+                    )
+                })
+                .collect();
+            assert_eq!(
+                members,
+                [
+                    (format!("{name}_Matte").as_str(), "matte", Some(docstring)),
+                    (format!("{name}_Gloss").as_str(), "gloss", Some(docstring)),
+                ],
+                "{name}"
+            );
+        }
+        let labels = declarations(&ir);
+        for flattened in [
+            "Object(PotOuter)",
+            "Object(MakeThingRequestCoat)",
+            "Object(PotInner)",
+        ] {
+            assert!(
+                !labels.contains(&flattened.to_string()),
+                "{flattened}: {labels:?}"
+            );
+        }
+    }
+
+    /// The hand-written fixture `glaze-ledger-coats` is the `handwritten` proof
+    /// of `prop_type_ref`'s case 3c, so its own document must take that arm:
+    /// `recoatPot`'s inline body annotates `Coat`, an inheritance-spelled union
+    /// base, and the copy it coins is a discriminated union of its own.
+    #[test]
+    fn the_inheritance_union_fixture_takes_the_annotated_copy_arm() {
+        let document: serde_json::Value = crate::yaml::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/docs/openapi-surface/handwritten/glaze-ledger-coats/openapi.yml"
+        )))
+        .expect("the fixture's document parses");
+        let (ir, observed) = generate(document);
+        assert!(observed.ran("prop_type_ref:3"), "{:?}", declarations(&ir));
+        assert!(
+            declarations(&ir).contains(&"Union(RecoatPotRequestCoat)".to_string()),
+            "{:?}",
+            declarations(&ir)
+        );
+    }
+
     /// The one call site `resolve_schema_pointer` has: an array `items` whose
     /// `$ref` is a `#/components/schemas/` pointer. `root` declares the nesting
     /// the pointer addresses and `suffix` is the segment sequence after the head,
@@ -27353,7 +27581,7 @@ components:
             .as_array()
             .expect("the file lists its cases");
         assert_eq!(
-            29,
+            30,
             cases.len(),
             "one case per selector the three passes declared"
         );
@@ -27401,10 +27629,7 @@ components:
             "every document of the shared inputs is driven by some case, and no \
              case names one the file does not write"
         );
-        assert_eq!(
-            322, drives,
-            "the number of drives the twenty-nine cases make"
-        );
+        assert_eq!(330, drives, "the number of drives the thirty cases make");
     }
 
     #[test]

@@ -1,0 +1,8 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "ac8d97b3a72a5cbaf97042b43b631c5464145dce1de711c9d4f38b347ecfb14a"
+
+[[covers]]
+key = "annotated-ref-target-inheritance-union"
+search = "docs/openapi-surface/witness-search-annotated-inheritance-union/README.md#the-search"
+verdict = "exhausted"

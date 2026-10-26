@@ -5841,7 +5841,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
     imports.add_core("parse_error", "ParsingError");
-    imports.add_from("pydantic", "ValidationError");
+    let validation_error = imports.add_from_local("pydantic", "ValidationError");
 
     let await_ = if is_async { "await " } else { "" };
     let wrapper = if is_async {
@@ -5911,7 +5911,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         format!("            raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)"),
     ]);
     lines.extend([
-        "        except ValidationError as e:".to_string(),
+        format!("        except {validation_error} as e:"),
         "            raise ParsingError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e)".to_string(),
     ]);
     lines.push(format!("        raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)"));
@@ -6590,7 +6590,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_core("api_error", "ApiError");
     imports.add_core("parse_error", "ParsingError");
-    imports.add_from("pydantic", "ValidationError");
+    let validation_error = imports.add_from_local("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
@@ -6781,7 +6781,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
-                except ValidationError as e:
+                except {validation_error} as e:
                     raise ParsingError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
                     )
@@ -6849,7 +6849,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
         imports.add_core("pydantic_utilities", "parse_obj_as");
     }
     imports.add_core("parse_error", "ParsingError");
-    imports.add_from("pydantic", "ValidationError");
+    let validation_error = imports.add_from_local("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
@@ -6914,7 +6914,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     } else {
         format!("\n{error_branches}")
     };
-    let validation_error = "\n                except ValidationError as e:\n                    raise ParsingError(\n                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e\n                    )";
+    let validation_error = format!("\n                except {validation_error} as e:\n                    raise ParsingError(\n                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e\n                    )");
     let body = format!(
         "\
 {call}
@@ -12483,6 +12483,65 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    /// The raw client of `document`, before `ruff format`.
+    fn raw_client_for(document: serde_json::Value) -> String {
+        files_for(document)
+            .into_iter()
+            .find(|(path, _)| path.ends_with("/raw_client.py") && path.matches('/').count() == 2)
+            .map(|(_, contents)| contents)
+            .expect("a root raw client")
+    }
+
+    /// A schema named `ValidationError` takes the runtime exception's name, so
+    /// every raw parser — the JSON, Server-Sent-Events and binary-download
+    /// methods, sync and async — catches the aliased pydantic exception, as
+    /// Fern writes it (docs/fern-measurements/output-defects/602-*).
+    #[test]
+    fn a_validation_error_schema_aliases_the_exception_every_raw_parser_catches() {
+        let source =
+            std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+                "docs/fern-measurements/output-defects/602-validation-error-shadowing/openapi.yml",
+            ))
+            .expect("the measurement document is committed");
+        let document: serde_json::Value =
+            crate::yaml::from_str(&source).expect("the measurement document parses");
+        let raw = raw_client_for(document.clone());
+        assert!(
+            raw.contains("from pydantic import ValidationError as pydantic_ValidationError"),
+            "{raw}"
+        );
+        assert!(
+            raw.contains(
+                "from .types.validation_error import ValidationError as types_validation_error_ValidationError"
+            ),
+            "{raw}"
+        );
+        assert_eq!(
+            raw.matches("except pydantic_ValidationError as e:").count(),
+            6,
+            "{raw}"
+        );
+        assert!(!raw.contains("except ValidationError"), "{raw}");
+        // Without the colliding schema the exception keeps its own name.
+        let renamed = serde_json::from_str(
+            &serde_json::to_string(&document)
+                .unwrap()
+                .replace("ValidationError", "StyleProblem"),
+        )
+        .unwrap();
+        let raw = raw_client_for(renamed);
+        assert!(
+            raw.contains("from pydantic import ValidationError\n"),
+            "{raw}"
+        );
+        assert_eq!(
+            raw.matches("except ValidationError as e:").count(),
+            6,
+            "{raw}"
+        );
+        assert!(!raw.contains("pydantic_ValidationError"), "{raw}");
     }
 
     #[test]

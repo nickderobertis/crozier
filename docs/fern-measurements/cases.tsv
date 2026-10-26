@@ -137,6 +137,8 @@ naming-wire/enum-extension-names-dropped-under-literals	docs/fern-measurements/l
 naming-wire/enum-header-params-stringified	docs/fern-measurements/literals-mode/enum-header-params-stringified/openapi.yml	python-enums	packaged	-
 naming-wire/ledger-batch-upload	docs/fern-measurements/naming-wire/ledger-batch-upload/openapi.yml	python-enums	packaged	-
 naming-wire/ledger-batch-upload-literals	docs/fern-measurements/naming-wire/ledger-batch-upload/openapi.yml	literals	packaged	expected:docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected
+output-defects/602-validation-error-shadowing	docs/fern-measurements/output-defects/602-validation-error-shadowing/openapi.yml	python-enums	packaged	-
+output-defects/612-parameter-location-collision	docs/fern-measurements/output-defects/612-parameter-location-collision/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-lifted-bare	docs/fern-measurements/parameter-lowering/base-path-lifted-bare/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-lifted-default	docs/fern-measurements/parameter-lowering/base-path-lifted-default/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-lifted-list	docs/fern-measurements/parameter-lowering/base-path-lifted-list/openapi.yml	python-enums	packaged	-
@@ -193,3 +195,5 @@ union-literals/thermostat-nullable-member	docs/openapi-surface/handwritten/therm
 clients-extensions/harbour-tide-desk	docs/fern-measurements/clients-extensions/harbour-tide-desk/openapi.yml	python-enums	packaged	-
 clients-extensions/harbour-chart-vault	docs/fern-measurements/clients-extensions/harbour-chart-vault/openapi.yml	python-enums	packaged	-
 clients-extensions/lighthouse-keeper-roster	docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml	python-enums	packaged	-
+output-defects/615-empty-composition-member-reference	docs/fern-measurements/output-defects/615-empty-composition-member-reference/openapi.yml	python-enums	packaged	-
+output-defects/617-annotated-inherited-union	docs/fern-measurements/output-defects/617-annotated-inherited-union/openapi.yml	python-enums	packaged	-
