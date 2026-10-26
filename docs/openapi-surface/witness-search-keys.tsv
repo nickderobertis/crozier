@@ -8,6 +8,7 @@ allof-overlapping-ref-parents-flattened	schema.allOf	schemas.md	supported
 allof-parent-request-body	mediaType.schema:allof-parent-body	bodies-media.md	supported
 allof-single-ref-empty-properties-alias	schema.allOf	schemas.md	supported
 allof-union-branch-not-schema-overrides-property	schema.allOf	schemas.md	supported
+annotated-ref-target-inheritance-union	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union	schemas.md	supported
 annotated-ref-target-string-const	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued	schemas.md	supported
 anyof-array-variant-inline-const-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued	schemas.md	supported
 anyof-array-variant-inline-enum-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued	schemas.md	supported

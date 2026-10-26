@@ -195,3 +195,5 @@ union-literals/thermostat-nullable-member	docs/openapi-surface/handwritten/therm
 clients-extensions/harbour-tide-desk	docs/fern-measurements/clients-extensions/harbour-tide-desk/openapi.yml	python-enums	packaged	-
 clients-extensions/harbour-chart-vault	docs/fern-measurements/clients-extensions/harbour-chart-vault/openapi.yml	python-enums	packaged	-
 clients-extensions/lighthouse-keeper-roster	docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml	python-enums	packaged	-
+output-defects/615-empty-composition-member-reference	docs/fern-measurements/output-defects/615-empty-composition-member-reference/openapi.yml	python-enums	packaged	-
+output-defects/617-annotated-inherited-union	docs/fern-measurements/output-defects/617-annotated-inherited-union/openapi.yml	python-enums	packaged	-

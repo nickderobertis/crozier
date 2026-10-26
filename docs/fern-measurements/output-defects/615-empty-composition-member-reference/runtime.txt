@@ -1,0 +1,15 @@
+Python 3.14.7, pydantic 2.14.1, httpx 0.28.1
+
+$ python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 615 docs/fern-measurements/output-defects/615-empty-composition-member-reference/fern-expected/src openapi.json
+Load.kiln and Load.overflow_kiln are typed with the exported Kiln
+the described and constrained controls export LoadNotedKiln and LoadReservedKiln
+schedule_load sent {"kiln": {"maxCone": 10, "name": "Annex"}, "label": "bisque", "notedKiln": {"name": "Log"}, "overflowKiln": {"name": "Shed"}, "reservedKiln": {"name": "Main", "reservedUntil": "2026-11-02"}}, which Load validates
+the returned Load holds Kiln at kiln and overflow_kiln, LoadNotedKiln and LoadReservedKiln at the controls
+transfer_load takes destination as Kiln and sends it unchanged
+exit status 0
+
+Pre-repair control: the same journey over crozier's SDK generated from this document at base 80331e4bb, before the repair. This control was recorded with the script's earlier revision, which answered over an httpx.MockTransport; the failing check asserts the same thing in both revisions. The run above was re-recorded with the current script, which answers over a local HTTP server.
+
+$ python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 615 <crozier-80331e4bb-sdk>/src openapi.json
+615: Load.kiln is typed <class 'fern.types.load_kiln.LoadKiln'>, not the exported Kiln
+exit status 1

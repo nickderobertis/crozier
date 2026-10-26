@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 721 features. By category, 503 are `golden`, 56
-`limitations`, 148 `handwritten` and 14 `gap`. Taken back from the region files,
+The walk enumerates 722 features. By category, 503 are `golden`, 56
+`limitations`, 149 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 721
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 722
 split five ways:
 
 - **502 carry byte-match evidence against a registered real-world
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **149 rest on a hand-written fixture, a weaker proof than a real
+- **150 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -116,7 +116,7 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-502 + 70 + 149 + 0 + 0 = 721.
+502 + 70 + 150 + 0 + 0 = 722.
 
 **Feature combinations are counted apart.** 91 combinations are selected
 ([the list](openapi-surface/combinations.md)): 13 are `gap`, 75 are `golden` and 3 are `handwritten`.
@@ -126,7 +126,7 @@ split five ways:
 specification, **0** are compared against a committed measurement of
 non-generation, **3** rest on a hand-written fixture, **1** remains
 unproven and **12** are decided output-insensitive: 75 + 0 + 3 + 1 + 12 = 91.
-None is among the 721 features above, and each other `gap` one is named under
+None is among the 722 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
@@ -1379,8 +1379,8 @@ can express. Three conventions that derivation applies, stated once:
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
   `hoist_union_variant` sent all three to `base_type_ref` while it still hoisted
-  a bare object with a concrete example. One-hundred-and-eighteen of the
-  one-hundred-and-twenty-two cases below survive this test; the other four name the
+  a bare object with a concrete example. One-hundred-and-nineteen of the
+  one-hundred-and-twenty-three cases below survive this test; the other four name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts
@@ -1412,7 +1412,7 @@ which count members with or without `properties`. Cases 12c and 12d use the
 stricter selectors requiring that field; the historical search counts do not
 measure those stricter cases.
 
-The conjunctions are themselves a closed list of 199, declared in
+The conjunctions are themselves a closed list of 200, declared in
 `tools/surface-census/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair. Its closing entries are the feature combinations
 [`combinations.md`](openapi-surface/combinations.md) selects, declared in the
@@ -1567,6 +1567,10 @@ script's `COMBINATIONS` with their keys and regions:
 - `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf` —
   one per Schema Object one of whose properties is an annotated `$ref` whose
   target declares `anyOf`.
+- `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union` —
+  one per Schema Object one of whose properties is an annotated `$ref` whose
+  target is the base of an inheritance-style discriminated union, declaring a
+  resolving `discriminator` mapping and no composition of its own.
 - `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty` —
   one per Schema Object one of whose properties is an annotated `$ref` whose
   target declares a non-empty `properties` map.
@@ -1737,7 +1741,7 @@ script's `COMBINATIONS` with their keys and regions:
 - `schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` —
   one per Schema Object one of whose `anyOf` members declares none of them,
   the same residual arm reached through the other union head.
-- `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` —
+- `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.discriminator:inheritance-union&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` —
   one per Schema Object one of whose properties is an annotated `$ref` whose
   target declares none of the members the arms inside `prop_type_ref`'s
   resolution gate read, which is the residual arm its closing
@@ -2383,15 +2387,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 93 | 53 | 19 | 21 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 339 | 255 | 18 | 64 | 2 | 0 | 0 | 2 |
+| [`schemas`](openapi-surface/schemas.md) | 340 | 255 | 18 | 65 | 2 | 0 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 47 | 5 | 26 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 84 | 69 | 3 | 12 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
-| **total** | **721** | **503** | **56** | **148** | **14** | **0** | **0** | **14** |
+| **total** | **722** | **503** | **56** | **149** | **14** | **0** | **0** | **14** |
 
-The walk enumerated **721** features and landed each in exactly one category:
-**503** `golden`, **56** `limitations`, **148** `handwritten`, **14** `gap`. The `gap` column splits by
+The walk enumerated **722** features and landed each in exactly one category:
+**503** `golden`, **56** `limitations`, **149** `handwritten`, **14** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2536,7 +2540,7 @@ search evidence and outstanding candidates are recorded in
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 721 rows carry 721 distinct
+**Each feature is classified exactly once.** The 722 rows carry 722 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Eighteen spec
@@ -4843,7 +4847,7 @@ the schema the annotated `$ref` denotes. So case 1's selector stops at the
 descent, whose own resolution is the arm's — a reference that resolves to nothing
 takes case 1 and none of 2 to 5. Cases 2 to 4 are then split by disjunct exactly
 as cases 8 and 12 are: `string_enum_values` reads an `enum` or a `const`, case 3's
-condition is `one_of.is_some() || any_of.is_some()`, and case 4's third clause is
+condition is `one_of.is_some() || any_of.is_some() || inherited`, and case 4's third clause is
 three disjuncts joined by `||`. Where a target satisfies two of the rows below,
 both count it and the earlier arm runs — the chain overlap
 [the exactness rule](#the-selector-grammar) permits between two listed cases.
@@ -4856,10 +4860,11 @@ both count it and the earlier arm runs — the chain overlap
 | 2b | the same over a target writing a `const`, the spelling the helper falls back to when no `enum` is written. A target writing both is read by its `enum` alone, exactly as case 7b's selector already reads one, so a target whose `enum` is not string-valued beside a string `const` is counted here and falls to cases 3 to 5 — every one of them a case of this table | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` |
 | 3a | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy`; the `oneOf` disjunct. **The code has one continuation this row does not derive:** `hoist_named_copy` returning `None` — a target whose copy declares nothing — falls through to cases 4 and 5 rather than returning, so entering this arm is not the same as taking its product | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf` |
 | 3b | the same arm's `anyOf` disjunct, which a target declaring only `anyOf` reaches identically | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf` |
+| 3c | the same arm's `is_inheritance_union_base(&target)` disjunct — a union spelled through inheritance, a base whose `discriminator.mapping` names the subtypes that `allOf` it, copied whole with its variant wrappers documented by the annotation (the `617-annotated-inherited-union` measurement). **The selector reads one thing the code does not test:** the Rust requires only a non-empty `propertyName` and `mapping`, where the predicate also requires every mapping entry to resolve, as `nested_array_element`'s case 2c records; the two disagree only on a mapping naming a component this document does not declare | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union` |
 | 4a | inside it, `!is_map(&target) && !is_bare_object(&target) && (…)` → `hoist_object_with_doc`; the `!target.properties.is_empty()` disjunct, which excludes both negated helpers on its own — each of them requires an empty `properties` map | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty` |
 | 4b | the same arm's `target.all_of.is_some()` disjunct. `is_bare_object` is excluded by the `allOf` itself; `is_map` is not, so a target declaring `allOf` beside `type: object` and a schema-valued or `true` `additionalProperties` with no properties is counted here and taken by case 5, which is a case of this table and carries its own row | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf` |
 | 4c | the same arm's `is_object_type(&target)` disjunct, on a target closing itself. That is the whole of what the disjunct adds over 4a and 4b: with no properties and no `allOf`, `!is_bare_object` needs an `additionalProperties` written and `!is_map` needs it to be `false`, and a scalar `type` beside it is the contradiction [the exactness rule](#the-selector-grammar) already excuses | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false` |
-| 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)`, selected by the *absence* of cases 2 to 4: `string_enum_values` yielding nothing, no `oneOf` or `anyOf`, and then `is_map` or `is_bare_object` or none of the three positive disjuncts above. No property is common to every target that reaches it — a `type: string`, a bare `{}`, an open map, a bare `type: object` and a `{format: date}` all do — and every way of reaching it is an emptiness test or a negation. It is the residual arm of the **resolution block alone**, so its selector is composed from that block's seven cases and from nothing above the gate: the `~>` in front of the negated members is what scopes it | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
+| 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)`, selected by the *absence* of cases 2 to 4: `string_enum_values` yielding nothing, no `oneOf` or `anyOf`, and then `is_map` or `is_bare_object` or none of the three positive disjuncts above. No property is common to every target that reaches it — a `type: string`, a bare `{}`, an open map, a bare `type: object` and a `{format: date}` all do — and every way of reaching it is an emptiness test or a negation. It is the residual arm of the **resolution block alone**, so its selector is composed from that block's eight cases and from nothing above the gate: the `~>` in front of the negated members is what scopes it | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.discriminator:inheritance-union&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
 | 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member` and the nine sibling-absence tests are the nine negated members, eight at the property and one at the member the descent reaches. Without them the arity alone counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref` |
 | 7a | `string_enum_values(prop_schema)` → a hoisted enum, over a written `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.enum:string-valued` |
 | 7b | the same over a `const`, the spelling the helper falls back to when no `enum` is written | `schema.properties>schema.const:string-valued` |

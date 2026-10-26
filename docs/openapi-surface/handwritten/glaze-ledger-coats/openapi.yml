@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: Glaze Ledger
+  version: 1.3.0
+  description: Records the glaze applied to each thrown pot.
+servers:
+  - url: https://ledger.glazeworks.example/v1
+paths:
+  /pots:
+    post:
+      operationId: recordPot
+      summary: Record a glazed pot
+      tags: [pots]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pot'
+      responses:
+        '201':
+          description: The recorded pot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pot'
+  /pots/{potId}/recoat:
+    post:
+      operationId: recoatPot
+      summary: Apply a fresh coat to a recorded pot
+      tags: [pots]
+      parameters:
+        - name: potId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [coat]
+              properties:
+                coat:
+                  allOf:
+                    - $ref: '#/components/schemas/Coat'
+                    - description: The fresh coat to apply.
+                previousCoat:
+                  $ref: '#/components/schemas/Coat'
+      responses:
+        '200':
+          description: The recoated pot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pot'
+components:
+  schemas:
+    Coat:
+      type: object
+      description: One coat of glaze, told apart by its finish.
+      required: [finish]
+      properties:
+        finish:
+          type: string
+        layers:
+          type: integer
+      discriminator:
+        propertyName: finish
+        mapping:
+          matte: '#/components/schemas/MatteCoat'
+          gloss: '#/components/schemas/GlossCoat'
+    MatteCoat:
+      allOf:
+        - $ref: '#/components/schemas/Coat'
+        - type: object
+          required: [tooth]
+          properties:
+            tooth:
+              type: integer
+    GlossCoat:
+      allOf:
+        - $ref: '#/components/schemas/Coat'
+        - type: object
+          required: [sheen]
+          properties:
+            sheen:
+              type: number
+    Pot:
+      type: object
+      required: [potter, outerCoat]
+      properties:
+        potter:
+          type: string
+        outerCoat:
+          allOf:
+            - $ref: '#/components/schemas/Coat'
+            - description: The coat on the pot's outer wall.
+        innerCoat:
+          $ref: '#/components/schemas/Coat'

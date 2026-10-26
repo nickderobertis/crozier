@@ -102,6 +102,14 @@ mod pottery_studio_shapes;
 mod naming_clients_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The generated-model defects measured against the certified pair under
+/// `docs/fern-measurements/output-defects/`, each repaired and held to its
+/// complete Fern tree and its runtime journey.
+#[path = "e2e/output_defects.rs"]
+mod output_defects;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -722,11 +730,11 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (MODELS_REFS_REMOTE_DIR, "fern-expected"),
         (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
-        (OUTPUT_DEFECTS_DIR, "fern-expected"),
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
+        (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -1974,10 +1982,7 @@ const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 /// The measured parameter-lowering cases `parameter_lowering_measurements_match_fern`
 /// compares, one directory per case.
 const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
-/// The measured generated-output defects: each case's from-scratch document
-/// and the certified pair's complete tree for it. The index in its README
-/// settles each against Fern.
-const OUTPUT_DEFECTS_DIR: &str = "docs/fern-measurements/output-defects";
+use output_defects::OUTPUT_DEFECTS_DIR;
 
 /// The client-construction trees `clients_extensions_measurements_match_fern`
 /// compares, one directory per case, each Fern's output under a setting other
@@ -6660,7 +6665,8 @@ fn parameter_lowering_measurements_match_fern() {
 /// and compared whole. `602-validation-error-shadowing` holds a schema named
 /// `ValidationError` beside the runtime exception every raw parser catches;
 /// `612-parameter-location-collision` holds parameters in different locations
-/// that share a name.
+/// that share a name. The reference-identity cases are compared by their own
+/// journeys in `e2e/output_defects.rs`, so they are named here and not replayed.
 #[test]
 fn output_defect_measurements_match_fern() {
     let root = repo_root().join(OUTPUT_DEFECTS_DIR);
@@ -6680,13 +6686,16 @@ fn output_defect_measurements_match_fern() {
         names,
         [
             "602-validation-error-shadowing",
-            "612-parameter-location-collision"
+            "612-parameter-location-collision",
+            "615-empty-composition-member-reference",
+            "617-annotated-inherited-union"
         ],
         "the measured cases moved"
     );
     let failures: Vec<String> = cases
         .iter()
         .zip(&names)
+        .filter(|(_, name)| !output_defects::OWN_JOURNEYS.contains(&name.as_str()))
         .flat_map(|(case, name)| {
             let expected = case.join("fern-expected");
             filtered_tree_failures(
