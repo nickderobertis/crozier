@@ -17169,10 +17169,7 @@ pub(crate) fn string_keywords_admit(
 ) -> Option<bool> {
     let length = u64::try_from(value.chars().count()).ok()?;
     let matched = match pattern {
-        Some(pattern) => fancy_regex::Regex::new(pattern)
-            .ok()?
-            .is_match(value)
-            .ok()?,
+        Some(pattern) => compiled_pattern(pattern)?.is_match(value).ok()?,
         None => true,
     };
     Some(
@@ -17183,6 +17180,24 @@ pub(crate) fn string_keywords_admit(
             && min_length.is_none_or(|minimum| length >= minimum)
             && max_length.is_none_or(|maximum| length <= maximum),
     )
+}
+
+/// `pattern` compiled, once per thread: a document's validation reads the
+/// same few patterns for every value it checks. `None` for one that does not
+/// compile.
+fn compiled_pattern(pattern: &str) -> Option<fancy_regex::Regex> {
+    thread_local! {
+        static COMPILED: std::cell::RefCell<
+            std::collections::HashMap<String, Option<fancy_regex::Regex>>,
+        > = std::cell::RefCell::new(std::collections::HashMap::new());
+    }
+    COMPILED.with(|compiled| {
+        compiled
+            .borrow_mut()
+            .entry(pattern.to_owned())
+            .or_insert_with(|| fancy_regex::Regex::new(pattern).ok())
+            .clone()
+    })
 }
 
 /// Whether a `not` keyword's schema admits `value`. Only the string keywords
