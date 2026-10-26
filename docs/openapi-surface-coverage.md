@@ -2831,7 +2831,7 @@ unreached by any Fern-accepted document.
 | 2 | `parameter-schema` | `parameters` | **4** | **78** | **222** | open — real-specification witness search remains open |
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
 | 4 | `allof` | `schemas` | **4** | **32** | **95** | open — real-specification witness search remains open |
-| 5 | `discriminator-mapping` | `schemas` | **3** | **223** | **32** | open — real-specification witness search remains open |
+| 5 | `discriminator-mapping` | `schemas` | **3** | **231** | **32** | open — real-specification witness search remains open |
 | 6 | `oneof-anyof-variant` | `schemas` | **3** | **79** | **3** | open — real-specification witness search remains open |
 | 7 | `parameter-in-header` | `parameters` | **3** | **20** | **72** | open — real-specification witness search remains open |
 | 8 | `media-type-multipart` | `bodies-media` | **3** | **13** | **28** | open — real-specification witness search remains open |
@@ -3140,7 +3140,7 @@ why. The changes that took the arm off:
 | 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
 | 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 28 | `not searched` — no arm search has run | `tidepool-survey-log` |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `not searched` — no arm search has run | `tidepool-survey-log` |
 | 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `not searched` — no arm search has run | `tidepool-survey-log` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |

@@ -213,66 +213,79 @@ the wrapper holds it whole in `value`.
 ## Discriminator-mapping arm probe
 
 Every one of the 899 `discriminator-mapping` declarers in
-[`census.tsv`](census.tsv) has a decision in its `arm` cell. Those cells answer
-three questions: whether the instrumented run executes
-`src/ir.rs::Builder::discriminated_union[if union_target \{]` or
-`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
-whether the document was screened for admission, and whether the certified pair
-generates from it. No document outside the four populations above was read;
-they came from the existing caches and the pinned APIs.guru archive.
+[`census.tsv`](census.tsv) has a decision in its `arm` cell for
+`src/ir.rs::Builder::discriminated_union[if union_target \{]` and
+`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`.
+The rule deciding them: a declarer whose instrumented crozier run executes
+neither arm cannot witness either arm, whatever Fern does with it, so it is
+decided `not a witness for either arm` and owes no admissibility screen and no
+certified-pair run. A declarer that executes an arm, or whose run could not be
+measured, is screened by `tools/witness-search/witness_screen.py`'s measured
+stage (licence, ref, then the certified pair), or run through the certified
+pair directly. No document outside the four populations above was read; they
+came from the existing caches and the pinned APIs.guru archive.
 
 Each declarer was generated on its own by crozier at this branch's base,
 `80331e4b`, built with the `llvm-cov` instrumentation `just handwritten-reach`
 uses, and both arm sites were read off the run's profile. A profile is written
 whether crozier generates, refuses or fails, so a refused document's row still
-records that neither site ran. Since then the branch has changed only a wrapper's
-docstring, the line breaking of its example and the self-mapped refusal below,
-and none of these moves either site. The outcomes below are counted in census
-rows:
+records that neither site ran. Since then the branch has changed only a
+wrapper's docstring, the line breaking of its example and the self-mapped
+refusal below, and none of these moves either site. Counted in census rows:
 
-- **532 generate and execute neither arm, and 31 registered rows execute
-  neither.** A document that runs no arm is no witness, so its licence and
-  certified-pair run were not reviewed.
-- **4 build every type but fail `ruff format`, executing neither arm.**
-- **329 are refused by crozier at the boundary, before any type is built.**
-  For the 68 of them whose document holds a shape from which crozier builds a
-  wrapped member, the certified pair was run under the shared generation lock
-  (one at a time, 1800-second bound). Such a shape is a mapping target that is a
-  union of references, a mapping naming its own schema, a composed union member,
-  or a mapping naming an absent schema. Those runs, with one `ruff` failure's,
-  are in [`discriminator-mapping-fern.tsv`](discriminator-mapping-fern.tsv)
-  with each refusal's first diagnostic. Fern refuses 59 and generates from 9,
-  as it does from that `ruff` failure. None of those 10 reaches either arm. None
-  has a mapping target that is a union, a mapping naming its own schema or a
-  composed member. Where a mapping names an absent schema, that ends the union
-  before any member is built (`self.schemas.get(target_key)?` or
-  `resolve_ref_from_schemas(...)?`). The other 261
-  refused documents hold none of those shapes, so neither arm can execute
-  whatever Fern does. They were not run.
-- **The two Microsoft Graph descriptions (APIs.guru `graph` and `graph-beta`,
-  25 MB and more) are decided from the document.** Their instrumented runs
-  passed 3600 seconds without finishing. Read in full, their 476 discriminator mappings hold
-  no self mapping and no absent target, and no target or member is a composed
-  union. So no wrapped member is built and neither arm can execute.
+- **896 execute neither arm.** 532 generate, 31 are registered goldens, 4
+  build every type and then fail `ruff format`, and 329 are refused by crozier
+  before any type is built. Each is not a witness for either arm. Before the
+  rule above was settled, the certified pair was also run on the 68 refused
+  rows, and on one `ruff` failure, whose documents hold a shape from which
+  crozier builds a wrapped member: a mapping target that is a union of
+  references, a mapping naming its own schema, a composed union member, or a
+  mapping naming an absent schema. Fern refuses 59 and generates from 10;
+  those runs are in [`discriminator-mapping-fern.tsv`](discriminator-mapping-fern.tsv)
+  and their cells, as evidence beyond the decision.
 - **Apple's SiriKit Cloud Media (`APIs/apple.com/sirikit-cloud-media/1.0.2`)
   executes the wrapped-example arm alone.** Its
-  `AddMediaIntentHandlingInvocation` and `UpdateMediaAffinityIntentHandlingInvocation`
-  map every `method` value to themselves. The certified pair refuses the
-  document: `Missing discriminant property ("method")` on both endpoints'
-  examples. crozier now refuses it in both modes, through the
-  `missing-discriminant-property` refusal's self-mapped shape
-  (`self-mapped-probe.yml` and its two controls under
-  [`../fern-refusals/`](../fern-refusals/shapes.tsv)).
+  `AddMediaIntentHandlingInvocation` and
+  `UpdateMediaAffinityIntentHandlingInvocation` map every `method` value to
+  themselves. Its measured screen in [`screens.jsonl`](screens.jsonl) passes
+  the ref screen and the licence screen, the latter on the APIs.guru archive's
+  CC0 grant, which does not establish Apple as publisher. The certified pair
+  refuses it: `fern check` exits 1 with `Missing discriminant property
+  ("method")` on both endpoints' examples. So it is not a witness. crozier now
+  refuses it in both modes, through the `missing-discriminant-property`
+  refusal's self-mapped shape (`self-mapped-probe.yml` and its two controls
+  under [`../fern-refusals/`](../fern-refusals/shapes.tsv)).
+- **The two Microsoft Graph descriptions (APIs.guru `graph` and `graph-beta`,
+  1.0.1) are refused by the certified pair.** Neither instrumented run gives
+  an arm outcome. `graph-beta`'s passed 3600 seconds, and then the
+  10800-second bound. `graph`'s crozier run finished within that bound, but
+  merging its profile (`llvm-profdata merge`) failed. Run directly under the
+  shared lock, the certified pair refuses both: `fern generate` exits 1 with no
+  files, after 1081 errors for `graph-beta` and 663 for `graph` (first,
+  `Unexpected property "@odata.type"` in a request example, and a query and a
+  path parameter that normalize to the same name). Those runs are in
+  [`discriminator-mapping-fern.tsv`](discriminator-mapping-fern.tsv). A
+  document the certified pair refuses cannot be a registered witness, so both
+  are decided `not a witness`, whatever their runs would execute. Read in full,
+  their 476 discriminator mappings also hold no self mapping and no absent
+  target, and no target or member is a composed union.
 
 So no admissible real document both executes either arm and generates at the
 certified pair, and the key's verdict is `exhausted`. The hand-written
 [`tidepool-survey-log`](../handwritten/tidepool-survey-log/openapi.yml) fixture
-covers both arms. It maps `level` to `WaterLevel`, a `oneOf` of a bare number and an
-object with no discriminator. Crozier byte-matches its certified-pair tree apart
-from the worked examples of `README.md` and `reference.md`. There, Fern writes
-`SurveyEntry_Level(level=,)`, which does not compile; that is the catalogued
-`fern-defect` departure
+covers both arms. It maps `level` to `WaterLevel`, a `oneOf` of a bare number
+and an object with no discriminator. Crozier byte-matches its certified-pair
+tree apart from the worked examples of `README.md` and `reference.md`. There,
+Fern writes `SurveyEntry_Level(level=,)`, which does not compile; that is the
+catalogued `fern-defect` departure
 [`wrapped-union-member-docs-example`](../../departures/evidence/wrapped-union-member-docs-example.md).
+
+The coverage index's arm table still reads `not searched` for both arms. Its
+verdict column comes from `tools/surface-census/golden-reach.py`'s
+`arm_verdict`, which reads only the golden-reach arm-search records under
+[`../golden-reach-witnesses/searches/`](../golden-reach-witnesses/searches/).
+This bounded search is not one of those records, so the generated cell does not
+see it. The arms' search is this record, which their covers cite.
 
 ## Publisher reviews after the recovered queue
 
