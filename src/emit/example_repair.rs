@@ -211,6 +211,16 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
     out
 }
 
+/// Where a list example's items came from, which decides whether it may be
+/// repaired.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Origin {
+    /// The specification spells the list out: its own, and kept.
+    Declared,
+    /// Fern's construction: repaired where its schema rejects it.
+    Constructed,
+}
+
 /// The schemas a list value documents: the list's type and constraint sets,
 /// and its items'.
 struct ListSchemas<'s> {
@@ -518,8 +528,12 @@ impl ExampleCtx<'_> {
                 };
                 let fern = literal.clone();
                 let mechanism = construction(&value, names, &lengths);
-                let declared = combined.examples.contains(&value) || mechanism.is_none();
-                let (crozier, disposition) = if declared {
+                let origin = if combined.examples.contains(&value) || mechanism.is_none() {
+                    Origin::Declared
+                } else {
+                    Origin::Constructed
+                };
+                let (crozier, disposition) = if origin == Origin::Declared {
                     (fern.clone(), Disposition::DeclaredInSpec)
                 } else {
                     match combined.choose(&value) {
@@ -543,7 +557,7 @@ impl ExampleCtx<'_> {
                         fern,
                         crozier,
                         constraint,
-                        mechanism: if declared { None } else { mechanism },
+                        mechanism: mechanism.filter(|_| origin == Origin::Constructed),
                         disposition,
                     },
                 });
@@ -554,7 +568,11 @@ impl ExampleCtx<'_> {
                     _ => return,
                 };
                 let fern = example.flat();
-                let declared = matches!(example, Example::ExplicitList(_));
+                let origin = if matches!(example, Example::ExplicitList(_)) {
+                    Origin::Declared
+                } else {
+                    Origin::Constructed
+                };
                 let (Example::List(items)
                 | Example::ExplicitList(items)
                 | Example::ReferenceList(items)) = &mut *example
@@ -580,7 +598,7 @@ impl ExampleCtx<'_> {
                     item: &item_type,
                     items: &item_sets,
                 };
-                self.repair_length(example, &lists, fern, declared, path, needles, pending);
+                self.repair_length(example, &lists, fern, origin, path, needles, pending);
             }
             Example::Call(name, call_args) => {
                 let fields = self.constructor_fields(name);
@@ -649,7 +667,7 @@ impl ExampleCtx<'_> {
         example: &mut Example,
         lists: &ListSchemas<'_>,
         fern: String,
-        declared: bool,
+        origin: Origin,
         path: &str,
         needles: &[String],
         pending: &mut Vec<Pending>,
@@ -684,10 +702,10 @@ impl ExampleCtx<'_> {
         let Verdict::Rejected(keyword) = lengths.verdict(&shape) else {
             return;
         };
-        let choice = (!declared && !items.is_empty())
+        let choice = (origin == Origin::Constructed && !items.is_empty())
             .then(|| merged(sets).list_view().choose(&shape))
             .flatten();
-        let disposition = if declared {
+        let disposition = if origin == Origin::Declared {
             Disposition::DeclaredInSpec
         } else {
             match &choice {
@@ -735,7 +753,7 @@ impl ExampleCtx<'_> {
                 },
                 fern,
                 constraint: keyword.clone(),
-                mechanism: (!declared).then_some(Mechanism::Array),
+                mechanism: (origin == Origin::Constructed).then_some(Mechanism::Array),
                 disposition,
             },
         });
