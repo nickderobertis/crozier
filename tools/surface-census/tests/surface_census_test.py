@@ -46,7 +46,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
-from typing import Any, ClassVar, NamedTuple
+from typing import Any, ClassVar, NamedTuple, Protocol
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -1207,17 +1207,31 @@ def pointer_target(document: object, pointer: str) -> object | None:
     node = document
     for token in pointer[1:].split("/"):
         token = token.replace("~1", "/").replace("~0", "~")
-        if isinstance(node, dict) and token in node:
-            node = node[token]
-        elif isinstance(node, list) and token.isdigit() and int(token) < len(node):
-            node = node[int(token)]
-        else:
-            return None
+        match node:
+            case dict() if token in node:
+                node = node[token]
+            case list() if token.isdigit() and int(token) < len(node):
+                node = node[int(token)]
+            case _:
+                return None
     return node
 
 
+class MeasuredReach(Protocol):
+    """What the combination contract reads of a `golden-reach.tsv` row (`golden-reach.py`'s `Reach`)."""
+
+    @property
+    def witnesses(self) -> tuple[str, ...]: ...
+
+    @property
+    def sites(self) -> tuple[tuple[str, int, int], ...]: ...
+
+    @property
+    def unreached_sites(self) -> int: ...
+
+
 def combination_proof_failures(
-    root: Path, ledger: dict[str, Any], covers: list[tuple[str, str, str | None]]
+    root: Path, ledger: dict[str, MeasuredReach], covers: list[tuple[str, str, str | None]]
 ) -> list[str]:
     """The combination proof contract: where each combination's proof rests.
 
@@ -1244,51 +1258,54 @@ def combination_proof_failures(
     for key in sorted(set(audit) - cooccurring):
         failures.append(f"{key}: {COOCCURRENCE_AUDIT.name} audits it, but its site cell is not `co-occurrence`")
     sources = None
-    measurements = handwritten_reach_rows(root)
+    measured_rows, found = handwritten_reach_rows(root)
+    failures += found
+    measurements = {(fixture, key, site): executed for fixture, key, site, executed, _total in measured_rows}
     for key in sorted(set(audit) & cooccurring):
         witness = audit[key].witness
         category = rows[key].cells[3].strip("`") if key in rows else "-"
-        if category == "handwritten":
-            # A hand-written combination no branch reads both features of rests on its
-            # fixture: the audit names it, and the fixture runs every named handler.
-            fixtures = {fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None}
-            if witness not in fixtures:
-                failures.append(
-                    f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not the hand-written "
-                    "fixture whose feature-level cover proves it"
-                )
-                continue
-            fixture_document = Path("docs") / "openapi-surface" / "handwritten" / witness / "openapi.yml"
-            # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
-            document_path: Path | None = (root if (root / fixture_document).is_file() else REPO) / fixture_document
-            for spec in reach.handler_specs(audit[key].handlers):
-                if measurements.get((witness, key, spec), 0) < 1:
+        match category:
+            case "handwritten":
+                # A hand-written combination no branch reads both features of rests on its
+                # fixture: the audit names it, and the fixture runs every named handler.
+                fixtures = {fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None}
+                if witness not in fixtures:
                     failures.append(
-                        f"{key}: its hand-written fixture `{witness}` does not execute the handler `{spec}` "
-                        f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv"
+                        f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not the hand-written "
+                        "fixture whose feature-level cover proves it"
                     )
-        elif category == "golden":
-            measured = ledger.get(key)
-            if measured is None or witness not in measured.witnesses:
+                    continue
+                fixture_document = Path("docs") / "openapi-surface" / "handwritten" / witness / "openapi.yml"
+                # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
+                document_path: Path | None = (root if (root / fixture_document).is_file() else REPO) / fixture_document
+                for spec in reach.handler_specs(audit[key].handlers):
+                    if measurements.get((witness, key, spec), 0) < 1:
+                        failures.append(
+                            f"{key}: its hand-written fixture `{witness}` does not execute the handler `{spec}` "
+                            f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv"
+                        )
+            case "golden":
+                measured = ledger.get(key)
+                if measured is None or witness not in measured.witnesses:
+                    failures.append(
+                        f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not a golden-only "
+                        "source the census counts declaring the combination (its golden-reach.tsv witnesses)"
+                    )
+                    continue
+                if sources is None:
+                    engine = load_script("tools/surface-census/openapi-surface-census.py")
+                    # A ledger copy carries no corpus; its witnesses' committed sources are the tree's.
+                    fixtures_root = (root if (root / "tests" / "fixtures").is_dir() else REPO) / "tests" / "fixtures"
+                    sources = {
+                        source.fixture: source.path
+                        for source in engine.acquisition_sources(fixtures_root, fixtures_root / "corpus-sources", False)
+                    }
+                document_path = sources.get(witness)
+            case _:
                 failures.append(
-                    f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not a golden-only "
-                    "source the census counts declaring the combination (its golden-reach.tsv witnesses)"
+                    f"{key}: a `co-occurrence` row stays `golden`, or `handwritten` on its fixture; it reads `{category}`"
                 )
                 continue
-            if sources is None:
-                engine = load_script("tools/surface-census/openapi-surface-census.py")
-                # A ledger copy carries no corpus; its witnesses' committed sources are the tree's.
-                fixtures_root = (root if (root / "tests" / "fixtures").is_dir() else REPO) / "tests" / "fixtures"
-                sources = {
-                    source.fixture: source.path
-                    for source in engine.acquisition_sources(fixtures_root, fixtures_root / "corpus-sources", False)
-                }
-            document_path = sources.get(witness)
-        else:
-            failures.append(
-                f"{key}: a `co-occurrence` row stays `golden`, or `handwritten` on its fixture; it reads `{category}`"
-            )
-            continue
         for spec in reach.handler_specs(audit[key].handlers):
             try:
                 reach.resolve_site(spec, root if (root / "src").is_dir() else REPO)
@@ -1307,57 +1324,51 @@ def combination_proof_failures(
                 f"`{witness}`'s committed source document"
             )
     for key, (region, cells) in sorted(rows.items()):
-        category = cells[3].strip("`")
         declared = table.get(key)
-        if category == "golden":
-            if declared is None:
-                failures.append(f"{key}: a `golden` combination row with no golden-reach-sites.tsv row")
-                continue
-            if declared.cooccurrence:
-                continue
-            measured = ledger.get(key)
-            unreached = [spec for spec, hit, _total in measured.sites if not hit] if measured else declared.sites
-            if unreached:
-                failures.append(
-                    f"{key}: a `golden` combination row ({region}.md) whose golden-only witnesses do not "
-                    f"execute its interaction site(s) {', '.join(f'`{spec}`' for spec in unreached)}; "
-                    f"reclassify it `gap` and name it {INTERACTION_UNREACHED}"
-                )
-        elif category == "handwritten":
-            fixtures = sorted({fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None})
-            if declared is None:
-                failures.append(
-                    f"{key}: a `handwritten` combination row needs its interaction sites, or `co-occurrence`, "
-                    "in golden-reach-sites.tsv"
-                )
-                continue
-            if declared.cooccurrence:
-                continue
-            for fixture in fixtures:
-                for spec in declared.sites:
-                    if measurements.get((fixture, key, spec), 0) < 1:
-                        failures.append(
-                            f"{key}: a `handwritten` combination row whose fixture `{fixture}` does not execute "
-                            f"its interaction site `{spec}` in handwritten-reach.tsv; reclassify it `gap` and "
-                            f"name it {INTERACTION_UNREACHED}"
-                        )
+        match cells[3].strip("`"):
+            case "golden":
+                if declared is None:
+                    failures.append(f"{key}: a `golden` combination row with no golden-reach-sites.tsv row")
+                    continue
+                if declared.cooccurrence:
+                    continue
+                measured = ledger.get(key)
+                unreached = [spec for spec, hit, _total in measured.sites if not hit] if measured else declared.sites
+                if unreached:
+                    failures.append(
+                        f"{key}: a `golden` combination row ({region}.md) whose golden-only witnesses do not "
+                        f"execute its interaction site(s) {', '.join(f'`{spec}`' for spec in unreached)}; "
+                        f"reclassify it `gap` and name it {INTERACTION_UNREACHED}"
+                    )
+            case "handwritten":
+                fixtures = sorted({fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None})
+                if declared is None:
+                    failures.append(
+                        f"{key}: a `handwritten` combination row needs its interaction sites, or `co-occurrence`, "
+                        "in golden-reach-sites.tsv"
+                    )
+                    continue
+                if declared.cooccurrence:
+                    continue
+                for fixture in fixtures:
+                    for spec in declared.sites:
+                        if measurements.get((fixture, key, spec), 0) < 1:
+                            failures.append(
+                                f"{key}: a `handwritten` combination row whose fixture `{fixture}` does not execute "
+                                f"its interaction site `{spec}` in handwritten-reach.tsv; reclassify it `gap` and "
+                                f"name it {INTERACTION_UNREACHED}"
+                            )
     return failures
 
 
-def handwritten_reach_rows(root: Path) -> dict[tuple[str, str, str], int]:
-    """`(fixture, key, site)` -> regions executed, from `handwritten-reach.tsv`."""
-    path = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
-    if not path.is_file():
-        return {}
-    rows = {}
-    for line in path.read_text(encoding="utf-8").splitlines()[1:]:
-        cells = line.split("\t")
-        if len(cells) == 5 and cells[3].isdigit():
-            rows[(cells[0], cells[1], cells[2])] = int(cells[3])
-    return rows
+def handwritten_reach_rows(root: Path) -> tuple[list[tuple[str, str, str, int, int]], list[str]]:
+    """`handwritten-reach.tsv`'s `(fixture, key, site, regions executed, regions)` rows, and
+    every way its header, rows or order break, read by `handwritten-fixtures.py`'s own reader."""
+    gate = load_script("tools/surface-census/handwritten-fixtures.py")
+    return gate.read_reach_ledger(root / "docs" / "openapi-surface" / "handwritten-reach.tsv")
 
 
-def interaction_unreached(root: Path, key: str, reason: str, ledger: dict[str, Any]) -> bool:
+def interaction_unreached(root: Path, key: str, reason: str, ledger: dict[str, MeasuredReach]) -> bool:
     """Admit an `interaction branch unreached` reason only as the measurement states it.
 
     It names each unreached interaction site with its counts and the run that
@@ -1371,12 +1382,13 @@ def interaction_unreached(root: Path, key: str, reason: str, ledger: dict[str, A
     if measured is not None and measured.unreached_sites:
         expected.append(reach.interaction_unreached_reason(measured.sites, reach.witnesses_phrase(measured.witnesses)))
     by_fixture: dict[str, list[tuple[str, int, int]]] = {}
-    path = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
-    if path.is_file():
-        for line in path.read_text(encoding="utf-8").splitlines()[1:]:
-            cells = line.split("\t")
-            if len(cells) == 5 and cells[1] == key and cells[3].isdigit() and cells[4].isdigit():
-                by_fixture.setdefault(cells[0], []).append((cells[2], int(cells[3]), int(cells[4])))
+    measured_rows, malformed = handwritten_reach_rows(root)
+    if malformed:
+        # A ledger whose form is broken states no measurement to restate.
+        return False
+    for fixture, measured_key, site, executed, total in measured_rows:
+        if measured_key == key:
+            by_fixture.setdefault(fixture, []).append((site, executed, total))
     for fixture, sites in sorted(by_fixture.items()):
         if any(not hit for _spec, hit, _total in sites):
             expected.append(reach.interaction_unreached_reason(tuple(sites), f"hand-written fixture `{fixture}`"))
@@ -12901,6 +12913,11 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(
             ruling_failure(f"{arm_key} arm `{arm}`", "user ruling: undated"), finished_state_failures(self.root)
         )
+        feature, _record, reason = self.add_bounded_feature_search()
+        self.edit(doc, reason, ruling)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if feature in failure])
+        self.edit(doc, ruling, malformed)
+        self.assertIn(ruling_failure(feature, malformed), finished_state_failures(self.root))
 
     def add_cover(self, key: str, search: str) -> str:
         """Append a `witness-blocked` cover to a committed fixture's evidence copy; return the fixture."""
