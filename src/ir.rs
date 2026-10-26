@@ -12082,7 +12082,7 @@ fn simple_nullable_member(schema: &Schema) -> Option<&Schema> {
         && non_null[0].one_of.is_none()
         && non_null[0].any_of.is_none()
         && string_enum_values(non_null[0]).is_none())
-    .then_some(non_null[0])
+    .then(|| non_null[0])
 }
 
 /// A `discriminator` that maps nothing over two or more inline objects none of
@@ -21521,6 +21521,27 @@ mod tests {
         assert!(mapped_builder
             .discriminated_union("Missing", "missing", &missing_target, None)
             .is_none());
+    }
+
+    /// A union of nothing but `null`s has no member to make optional: the
+    /// eager `then_some(non_null[0])` this replaced indexed an empty list and
+    /// panicked on the `dormant-sensors-null-unions` fixture's `hush` items.
+    #[test]
+    fn simple_nullable_member_needs_exactly_one_non_null_alternative() {
+        let member = |value: serde_json::Value| {
+            super::simple_nullable_member(&schema(value)).and_then(|m| m.ty.clone())
+        };
+        let none = serde_json::json!({"type": "null"});
+        assert_eq!(member(serde_json::json!({"oneOf": [none, none]})), None);
+        assert_eq!(member(serde_json::json!({"anyOf": [none]})), None);
+        assert_eq!(
+            member(serde_json::json!({"anyOf": [none, {"type": "integer"}]})),
+            Some(TypeField::Single("integer".to_string()))
+        );
+        assert_eq!(
+            member(serde_json::json!({"anyOf": [{"type": "string"}, {"type": "integer"}, none]})),
+            None
+        );
     }
 
     #[test]
