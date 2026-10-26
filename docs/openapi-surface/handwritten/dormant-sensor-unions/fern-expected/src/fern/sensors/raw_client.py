@@ -18,6 +18,7 @@ from ..types.pitch import Pitch
 from ..types.reading import Reading
 from ..types.reading_mode import ReadingMode
 from ..types.silence import Silence
+from ..types.stillness import Stillness
 from ..types.tone import Tone
 from pydantic import ValidationError
 
@@ -121,6 +122,7 @@ class RawSensorsClient:
         silence: typing.Optional[Silence] = OMIT,
         lull: typing.Optional[Lull] = OMIT,
         hush: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        stillness: typing.Optional[Stillness] = OMIT,
         void: typing.Optional[typing.Any] = OMIT,
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
@@ -139,6 +141,8 @@ class RawSensorsClient:
         lull : typing.Optional[Lull]
 
         hush : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+
+        stillness : typing.Optional[Stillness]
 
         void : typing.Optional[typing.Any]
 
@@ -165,6 +169,7 @@ class RawSensorsClient:
                 "silence": silence,
                 "lull": lull,
                 "hush": hush,
+                "stillness": stillness,
                 "void": void,
                 "pitch": pitch,
                 "tone": tone,
@@ -339,6 +344,7 @@ class AsyncRawSensorsClient:
         silence: typing.Optional[Silence] = OMIT,
         lull: typing.Optional[Lull] = OMIT,
         hush: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        stillness: typing.Optional[Stillness] = OMIT,
         void: typing.Optional[typing.Any] = OMIT,
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
@@ -357,6 +363,8 @@ class AsyncRawSensorsClient:
         lull : typing.Optional[Lull]
 
         hush : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+
+        stillness : typing.Optional[Stillness]
 
         void : typing.Optional[typing.Any]
 
@@ -383,6 +391,7 @@ class AsyncRawSensorsClient:
                 "silence": silence,
                 "lull": lull,
                 "hush": hush,
+                "stillness": stillness,
                 "void": void,
                 "pitch": pitch,
                 "tone": tone,

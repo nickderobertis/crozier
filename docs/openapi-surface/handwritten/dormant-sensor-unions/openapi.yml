@@ -99,6 +99,10 @@ components:
     Lull:
       anyOf:
         - type: "null"
+    Stillness:
+      anyOf:
+        - anyOf:
+            - type: "null"
     Pitch:
       description: Dropped in favour of the alternative's own words.
       anyOf:
@@ -136,6 +140,8 @@ components:
             oneOf:
               - type: "null"
               - type: "null"
+        stillness:
+          $ref: "#/components/schemas/Stillness"
         void:
           anyOf:
             - type: "null"

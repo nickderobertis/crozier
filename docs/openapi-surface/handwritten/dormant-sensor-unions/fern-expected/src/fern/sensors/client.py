@@ -11,6 +11,7 @@ from ..types.pitch import Pitch
 from ..types.reading import Reading
 from ..types.reading_mode import ReadingMode
 from ..types.silence import Silence
+from ..types.stillness import Stillness
 from ..types.tone import Tone
 from .raw_client import AsyncRawSensorsClient, RawSensorsClient
 
@@ -97,6 +98,7 @@ class SensorsClient:
         silence: typing.Optional[Silence] = OMIT,
         lull: typing.Optional[Lull] = OMIT,
         hush: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        stillness: typing.Optional[Stillness] = OMIT,
         void: typing.Optional[typing.Any] = OMIT,
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
@@ -115,6 +117,8 @@ class SensorsClient:
         lull : typing.Optional[Lull]
 
         hush : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+
+        stillness : typing.Optional[Stillness]
 
         void : typing.Optional[typing.Any]
 
@@ -149,6 +153,7 @@ class SensorsClient:
             silence=silence,
             lull=lull,
             hush=hush,
+            stillness=stillness,
             void=void,
             pitch=pitch,
             tone=tone,
@@ -284,6 +289,7 @@ class AsyncSensorsClient:
         silence: typing.Optional[Silence] = OMIT,
         lull: typing.Optional[Lull] = OMIT,
         hush: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        stillness: typing.Optional[Stillness] = OMIT,
         void: typing.Optional[typing.Any] = OMIT,
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
@@ -302,6 +308,8 @@ class AsyncSensorsClient:
         lull : typing.Optional[Lull]
 
         hush : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+
+        stillness : typing.Optional[Stillness]
 
         void : typing.Optional[typing.Any]
 
@@ -344,6 +352,7 @@ class AsyncSensorsClient:
             silence=silence,
             lull=lull,
             hush=hush,
+            stillness=stillness,
             void=void,
             pitch=pitch,
             tone=tone,

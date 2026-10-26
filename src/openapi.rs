@@ -3257,27 +3257,35 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 /// component alias, an object property and an array item, from one `null`
 /// alternative or several, exactly as it does for a plain `type: null`.
 fn normalize_null_only_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut fold_null_only)
+    });
+}
+
+/// [`normalize_null_only_compositions`] on one node, its alternatives folded
+/// first so a nested all-`null` union (`anyOf: [{anyOf: [{type: null}]}]`) is
+/// one too.
+fn fold_null_only(node: &mut Schema) {
+    if node.ty.is_some()
+        || node.all_of.is_some()
+        || node.one_of.is_some() == node.any_of.is_some()
+        || !node.properties.is_empty()
+    {
+        return;
+    }
+    let Some(members) = node.one_of.as_mut().or(node.any_of.as_mut()) else {
+        return;
+    };
+    members.iter_mut().for_each(fold_null_only);
     let bare_null = Schema {
         ty: Some(TypeField::Single("null".to_string())),
         ..Schema::default()
     };
-    for_each_root_schema(doc, &mut |schema| {
-        for_each_schema_in(schema, &mut |node| {
-            if node.ty.is_some()
-                || node.all_of.is_some()
-                || node.one_of.is_some() == node.any_of.is_some()
-                || !node.properties.is_empty()
-            {
-                return;
-            }
-            let members = node.one_of.as_ref().or(node.any_of.as_ref());
-            if members.is_some_and(|members| members.iter().all(|member| *member == bare_null)) {
-                node.one_of = None;
-                node.any_of = None;
-                node.ty = Some(TypeField::Single("null".to_string()));
-            }
-        });
-    });
+    if members.iter().all(|member| *member == bare_null) {
+        node.one_of = None;
+        node.any_of = None;
+        node.ty = Some(TypeField::Single("null".to_string()));
+    }
 }
 
 /// Read a `oneOf` whose branches only constrain the schema's own sibling
@@ -6731,8 +6739,8 @@ components:
 
     /// The `dormant-sensor-unions` fixture (Fern CLI 5.163.1): a
     /// `oneOf`/`anyOf` of nothing but bare `type: null` alternatives, as a
-    /// component, a property and an array item, is the `type: null` Fern reads
-    /// it as. An alternative that says anything more, a `type` or `properties`
+    /// component, a property and an array item, and nested inside another
+    /// (`Stillness`), is the `type: null` Fern reads it as. An alternative that says anything more, a `type` or `properties`
     /// beside the composition, or a second composition keeps the union.
     #[test]
     fn normalize_null_only_compositions_reads_the_union_as_null() {
@@ -6754,6 +6762,7 @@ components:
     Mixed: { anyOf: [{ type: "null" }, { type: string }] }
     Typed: { type: object, anyOf: [{ type: "null" }, { type: "null" }] }
     Both: { oneOf: [{ type: "null" }], anyOf: [{ type: "null" }] }
+    Stillness: { anyOf: [{ anyOf: [{ type: "null" }] }] }
 "##,
         );
         normalize_null_only_compositions(&mut doc);
@@ -6766,6 +6775,7 @@ components:
             ("Lull", &schemas["Lull"]),
             ("void", &reading.properties["void"]),
             ("hush", hush),
+            ("Stillness", &schemas["Stillness"]),
         ] {
             assert_eq!(node.ty, null, "{name}");
             assert!(node.one_of.is_none() && node.any_of.is_none(), "{name}");

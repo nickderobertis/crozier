@@ -6,7 +6,20 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Channel, ChannelOne, Channels, ChannelsOne, Gap, Lull, Pitch, Reading, ReadingMode, Silence, Tone
+    from .types import (
+        Channel,
+        ChannelOne,
+        Channels,
+        ChannelsOne,
+        Gap,
+        Lull,
+        Pitch,
+        Reading,
+        ReadingMode,
+        Silence,
+        Stillness,
+        Tone,
+    )
     from . import sensors
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -28,6 +41,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Reading": ".types",
     "ReadingMode": ".types",
     "Silence": ".types",
+    "Stillness": ".types",
     "Tone": ".types",
     "__version__": ".version",
     "sensors": ".sensors",
@@ -71,6 +85,7 @@ __all__ = [
     "Reading",
     "ReadingMode",
     "Silence",
+    "Stillness",
     "Tone",
     "__version__",
     "sensors",

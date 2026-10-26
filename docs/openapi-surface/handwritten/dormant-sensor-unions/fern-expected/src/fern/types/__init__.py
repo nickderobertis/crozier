@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
     from .reading import Reading
     from .reading_mode import ReadingMode
     from .silence import Silence
+    from .stillness import Stillness
     from .tone import Tone
 _dynamic_imports: typing.Dict[str, str] = {
     "Channel": ".channel",
@@ -28,6 +29,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Reading": ".reading",
     "ReadingMode": ".reading_mode",
     "Silence": ".silence",
+    "Stillness": ".stillness",
     "Tone": ".tone",
 }
 
@@ -64,5 +66,6 @@ __all__ = [
     "Reading",
     "ReadingMode",
     "Silence",
+    "Stillness",
     "Tone",
 ]

@@ -8,6 +8,7 @@ from .lull import Lull
 from .pitch import Pitch
 from .reading_mode import ReadingMode
 from .silence import Silence
+from .stillness import Stillness
 from .tone import Tone
 
 
@@ -16,6 +17,7 @@ class Reading(UniversalBaseModel):
     silence: typing.Optional[Silence] = None
     lull: typing.Optional[Lull] = None
     hush: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    stillness: typing.Optional[Stillness] = None
     void: typing.Optional[typing.Any] = None
     pitch: typing.Optional[Pitch] = None
     tone: typing.Optional[Tone] = None
