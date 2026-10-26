@@ -63,20 +63,32 @@ sort by `golden`, `file`, `line` and `argument`:
 - `out-of-scope-keyword`: only a keyword or format outside the set above
   rejects the value.
 - `residual-undecidable`: crozier cannot decide validity: a pattern it cannot
-  compile, or a `$ref` that does not resolve.
-- `residual-unconstructible`: no value satisfies every keyword, or crozier
-  cannot build one (a pattern holding a lookaround or backreference).
+  compile, a `$ref` that does not resolve, or an enum member the enum's own
+  example selection (`pattern-narrowed-enum-example`) cannot decide although
+  another member is valid.
+- `residual-unconstructible`: no value satisfies every keyword (no enum member
+  does), or crozier cannot build one: a pattern holding a lookaround or
+  backreference, a list Fern writes empty with no item to copy, or a
+  `uniqueItems` list whose padding would need distinct items crozier cannot
+  build.
 
 Every row that is not `repaired` keeps Fern's bytes.
 
 ## Mechanisms
 
-Each Fern construction a schema can reject is one `fern-defect` entry of
+Fern's constructions are a string's own name, its fixed `"string"` and
+`"value"` placeholders, a string its fallback writer sizes by the declared
+lengths, the fixed numbers `1`, `1000000` and `1.1`, a list's fixed item count,
+and an enum's first member. Each but the last is one `schema-rejected-*`
+`fern-defect` entry of
 [`assets/departures.yml`](../../../../assets/departures.yml), whose rule in
 [`src/departures/rejected_examples.rs`](../../../../src/departures/rejected_examples.rs)
 reads the parsed source document. It accounts for a line only where Fern's
 value is that construction's, a source schema rejects it, and crozier's is the
-value that schema's repair chooses.
+value that schema's repair chooses. An enum's first member is corrected, where
+it can be, by the earlier `pattern-narrowed-enum-example` entry, which its rows
+name. A value Fern did not construct — the specification's own example — names
+no mechanism.
 
 ## Regenerating it
 

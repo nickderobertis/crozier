@@ -28167,7 +28167,7 @@ fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
 /// value in both places fails the proof, and a pointer naming no schema is an
 /// input error.
 #[test]
-#[ignore = "SDK Python-environment tier (builds a venv from PyPI); run via `just test-sdk-env`"]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_rejected_example_evidence_rejects_fern_and_accepts_crozier() {
     const SCRIPT: &str = "docs/departures/evidence/invalid-example-values/validate.py";
     let python = cached_python_env(

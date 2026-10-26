@@ -321,8 +321,8 @@ fn compare_file_using_regions(
 
 type OriginLines<'a> = Vec<(&'a str, Option<usize>)>;
 
-/// Each crozier line (by origin) a region of as many reference lines replaced,
-/// with the reference line that replaced it.
+/// Each crozier line (by origin) a region replaced, paired from the region's
+/// start with the reference line at the same place, as far as both reach.
 type RegionLines = Vec<(usize, usize)>;
 
 fn apply_regions<'a>(
@@ -404,14 +404,15 @@ fn apply_regions<'a>(
                 }
             }
             claimed_reference.extend(reference_changes);
-            if region.fern.len() == region.crozier.len() {
-                region_lines.extend(
-                    origins
-                        .iter()
-                        .zip(region.fern.clone())
-                        .filter_map(|((_, origin), reference)| origin.map(|o| (o, reference))),
-                );
-            }
+            // A region's lines pair from its start, as far as the shorter side
+            // reaches: a one-line region pairs whole, a padded list's first
+            // line with Fern's.
+            region_lines.extend(
+                origins
+                    .iter()
+                    .zip(region.fern.clone())
+                    .filter_map(|((_, origin), reference)| origin.map(|o| (o, reference))),
+            );
             lines.splice(region.crozier.clone(), replacement);
             applied.push(FileDeparture {
                 line: NonZeroUsize::MIN.saturating_add(origin),

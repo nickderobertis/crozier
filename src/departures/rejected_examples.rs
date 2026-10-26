@@ -207,7 +207,7 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
 }
 
 /// One token of a Python example line.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Token<'a> {
     /// A string or number literal.
     Literal(&'a str),
@@ -609,13 +609,193 @@ fn list_argument(lines: &[&str], start: usize) -> Option<ListArgument> {
     }
 }
 
-/// Whether crozier's list item differs from Fern's only in literals a
-/// mechanism repairs, or not at all.
-fn item_holds(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
-    fern == crozier
-        || mechanism::ALL
-            .into_iter()
-            .any(|id| id != mechanism::ARRAY && indexed(id, pair, fern, crozier))
+/// An example value read as nested brackets: tokens, and bracketed groups of
+/// comma-separated elements.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Tree<'a> {
+    Token(Token<'a>),
+    Group(&'a str, Vec<Vec<Tree<'a>>>),
+}
+
+/// The comma-separated elements from `at` up to the token `close` (the end of
+/// `tokens` where `None`); `None` where the brackets do not balance. A
+/// trailing comma ends no element.
+fn elements<'a>(
+    tokens: &[Token<'a>],
+    at: &mut usize,
+    close: Option<&str>,
+) -> Option<Vec<Vec<Tree<'a>>>> {
+    let mut out = vec![Vec::new()];
+    while let Some(token) = tokens.get(*at) {
+        *at += 1;
+        match token {
+            Token::Other(other) if Some(*other) == close => {
+                out.retain(|element| !element.is_empty());
+                return Some(out);
+            }
+            Token::Other(open @ ("[" | "(" | "{")) => {
+                let closer = match *open {
+                    "[" => "]",
+                    "(" => ")",
+                    _ => "}",
+                };
+                let inner = elements(tokens, at, Some(closer))?;
+                out.last_mut()?.push(Tree::Group(open, inner));
+            }
+            Token::Other("]" | ")" | "}") => return None,
+            Token::Other(",") if close.is_some() => out.push(Vec::new()),
+            other => out.last_mut()?.push(Tree::Token(other.clone())),
+        }
+    }
+    close.is_none().then(|| {
+        out.retain(|element| !element.is_empty());
+        out
+    })
+}
+
+/// `text` read as one element's trees.
+fn tree(text: &str) -> Option<Vec<Tree<'_>>> {
+    let tokens = tokens(text)?;
+    let mut elements = elements(&tokens, &mut 0, None)?;
+    match elements.len() {
+        0 => Some(Vec::new()),
+        1 => elements.pop(),
+        _ => None,
+    }
+}
+
+/// The keyword (`name=`) or dict key (`"key": `) whose value the tree at
+/// `at` of `trees` is.
+fn keyword_before(trees: &[Tree<'_>], at: usize) -> Option<String> {
+    match trees.get(at.checked_sub(1)?)? {
+        Tree::Token(Token::Other("=")) => {
+            let name: String = trees[..at - 1]
+                .iter()
+                .rev()
+                .map_while(|tree| match tree {
+                    Tree::Token(Token::Other(c))
+                        if c.chars().all(|c| c.is_alphanumeric() || c == '_') =>
+                    {
+                        Some(*c)
+                    }
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect();
+            (!name.is_empty()).then_some(name)
+        }
+        Tree::Token(Token::Other(":")) => match trees.get(at.checked_sub(2)?)? {
+            Tree::Token(Token::Literal(key)) => match python_value(key)? {
+                Value::String(key) => Some(key),
+                _ => None,
+            },
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Whether Fern's literal and crozier's are a repair some scalar mechanism
+/// makes: Fern's that construction's value, crozier's the one its schema's
+/// repair chooses.
+fn scalar_holds(index: &Index, fern: &str, crozier: &str) -> bool {
+    let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
+        return false;
+    };
+    [
+        mechanism::NAME,
+        mechanism::PLACEHOLDER,
+        mechanism::SIZED,
+        mechanism::NUMBER,
+    ]
+    .into_iter()
+    .any(|id| {
+        index
+            .values
+            .get(&(id, key(&fern)))
+            .is_some_and(|choices| choices.contains(&key(&crozier)))
+    })
+}
+
+/// Whether crozier's value differs from Fern's only by repairs: literals a
+/// scalar mechanism repairs, and lists [`list_holds`] accounts for, at any
+/// depth.
+fn trees_hold(index: &Index, fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
+    fern.len() == crozier.len()
+        && fern
+            .iter()
+            .zip(crozier)
+            .enumerate()
+            .all(|(at, pair)| match pair {
+                (left, right) if left == right => true,
+                (Tree::Token(Token::Literal(left)), Tree::Token(Token::Literal(right))) => {
+                    scalar_holds(index, left, right)
+                }
+                (Tree::Group(open, left), Tree::Group(other, right)) if open == other => {
+                    if left.len() == right.len() {
+                        left.iter().zip(right).all(|(l, r)| trees_hold(index, l, r))
+                    } else {
+                        *open == "["
+                            && keyword_before(fern, at)
+                                .is_some_and(|keyword| list_holds(index, &keyword, left, right))
+                    }
+                }
+                _ => false,
+            })
+}
+
+/// Whether crozier's items of the list passed as `keyword` are Fern's, cut
+/// or padded to the count a source schema chooses for it: Fern's kept items
+/// hold ([`trees_hold`]), and every added one is a copy of the first or,
+/// beneath `uniqueItems`, exactly the distinct items the item schema builds.
+fn list_holds(
+    index: &Index,
+    keyword: &str,
+    fern: &[Vec<Tree<'_>>],
+    crozier: &[Vec<Tree<'_>>],
+) -> bool {
+    let (count, target) = (fern.len(), crozier.len());
+    if count == 0 || count == target {
+        return false;
+    }
+    let kept = fern
+        .iter()
+        .zip(crozier)
+        .all(|(f, c)| trees_hold(index, f, c));
+    let list = format!("{keyword}|{count}");
+    let copies = crozier[count.min(target)..]
+        .iter()
+        .all(|item| crozier.first().is_some_and(|first| item == first))
+        && index
+            .values
+            .get(&(mechanism::ARRAY, list.clone()))
+            .is_some_and(|targets| targets.contains(&target.to_string()));
+    let distinct = || {
+        let values: Option<Vec<Value>> = crozier
+            .iter()
+            .map(|item| match item.as_slice() {
+                [Tree::Token(Token::Literal(literal))] => python_value(literal),
+                _ => None,
+            })
+            .collect();
+        let Some(values) = values else {
+            return false;
+        };
+        index.unique.get(&list).is_some_and(|choices| {
+            choices.iter().any(|(length, items)| {
+                *length == target
+                    && items
+                        .distinct_items(&values[..count.min(target)], target)
+                        .is_some_and(|built| {
+                            built.iter().map(key).collect::<Vec<_>>()
+                                == values.iter().map(key).collect::<Vec<_>>()
+                        })
+            })
+        })
+    };
+    kept && (copies || distinct())
 }
 
 /// The list arguments `schema-rejected-array-length-example` accounts for:
@@ -647,55 +827,30 @@ fn array_regions(pair: &Pair<'_>, counterpart: &[Option<usize>]) -> Vec<Region> 
         if theirs.keyword != ours.keyword || count == target || count == 0 {
             continue;
         }
-        let kept = theirs
-            .items
-            .iter()
-            .zip(&ours.items)
-            .all(|(f, c)| item_holds(pair, &f.text, &c.text));
-        let list = format!("{}|{count}", ours.keyword);
-        let copies = ours.items[count.min(target)..]
-            .iter()
-            .all(|item| item.text == ours.items[0].text)
-            && index
-                .values
-                .get(&(mechanism::ARRAY, list.clone()))
-                .is_some_and(|targets| targets.contains(&target.to_string()));
-        // A `uniqueItems` list is padded with distinct items instead, exactly
-        // those the item schema's repair builds from the kept ones.
-        let distinct = || {
-            let values: Option<Vec<Value>> = ours
-                .items
-                .iter()
-                .map(|item| python_value(&item.text))
-                .collect();
-            let Some(values) = values else {
-                return false;
-            };
-            index.unique.get(&list).is_some_and(|choices| {
-                choices.iter().any(|(length, items)| {
-                    *length == target
-                        && items
-                            .distinct_items(&values[..count.min(target)], target)
-                            .is_some_and(|built| {
-                                built.iter().map(key).collect::<Vec<_>>()
-                                    == values.iter().map(key).collect::<Vec<_>>()
-                            })
-                })
-            })
+        let fern_items: Option<Vec<Vec<Tree<'_>>>> =
+            theirs.items.iter().map(|item| tree(&item.text)).collect();
+        let crozier_items: Option<Vec<Vec<Tree<'_>>>> =
+            ours.items.iter().map(|item| tree(&item.text)).collect();
+        let (Some(fern_items), Some(crozier_items)) = (fern_items, crozier_items) else {
+            continue;
         };
-        if !(kept && (copies || distinct()) && documented_example_line(pair.rel, crozier, line)) {
+        if !(list_holds(index, &ours.keyword, &fern_items, &crozier_items)
+            && documented_example_line(pair.rel, crozier, line))
+        {
+            continue;
+        }
+        let whole_list = Region {
+            fern: i..theirs.close + 1,
+            crozier: j..ours.close + 1,
+        };
+        // A list cut short, or written on one line, is the whole list.
+        if target < count || (i == theirs.close && j == ours.close) {
+            regions.push(whole_list);
             continue;
         }
         let (last, ours_last) = (&theirs.items[count - 1], &ours.items[count - 1]);
-        let whole = (i == theirs.close && j == ours.close)
-            || target < count
-            || last.first == i
-            || ours_last.first == j;
-        regions.push(if whole {
-            Region {
-                fern: i..theirs.close + 1,
-                crozier: j..ours.close + 1,
-            }
+        regions.push(if last.first == i || ours_last.first == j {
+            whole_list
         } else {
             Region {
                 fern: last.last..last.last + 1,
