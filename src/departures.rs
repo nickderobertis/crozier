@@ -2587,18 +2587,18 @@ fn schema_rejected_array_length_example(pair: &Pair<'_>) -> Result<Option<Region
 
 /// `schema-rejected-name-example`: see [`rejected_examples::holds`].
 fn schema_rejected_name_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
-    rejected_examples::holds(crate::example_values::mechanism::NAME, pair, fern, crozier)
+    rejected_examples::holds(crate::example_values::Mechanism::Name, pair, fern, crozier)
 }
 
 /// `schema-rejected-name-example` beside another difference: see [`rejected_examples::region`].
 fn schema_rejected_name_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    rejected_examples::region(crate::example_values::mechanism::NAME, pair)
+    rejected_examples::region(crate::example_values::Mechanism::Name, pair)
 }
 
 /// `schema-rejected-number-example`: see [`rejected_examples::holds`].
 fn schema_rejected_number_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     rejected_examples::holds(
-        crate::example_values::mechanism::NUMBER,
+        crate::example_values::Mechanism::Number,
         pair,
         fern,
         crozier,
@@ -2607,13 +2607,13 @@ fn schema_rejected_number_example(pair: &Pair<'_>, fern: &str, crozier: &str) ->
 
 /// `schema-rejected-number-example` beside another difference: see [`rejected_examples::region`].
 fn schema_rejected_number_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    rejected_examples::region(crate::example_values::mechanism::NUMBER, pair)
+    rejected_examples::region(crate::example_values::Mechanism::Number, pair)
 }
 
 /// `schema-rejected-placeholder-string-example`: see [`rejected_examples::holds`].
 fn schema_rejected_placeholder_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     rejected_examples::holds(
-        crate::example_values::mechanism::PLACEHOLDER,
+        crate::example_values::Mechanism::Placeholder,
         pair,
         fern,
         crozier,
@@ -2624,17 +2624,17 @@ fn schema_rejected_placeholder_string_example(pair: &Pair<'_>, fern: &str, crozi
 fn schema_rejected_placeholder_string_example_region(
     pair: &Pair<'_>,
 ) -> Result<Option<Region>, String> {
-    rejected_examples::region(crate::example_values::mechanism::PLACEHOLDER, pair)
+    rejected_examples::region(crate::example_values::Mechanism::Placeholder, pair)
 }
 
 /// `schema-rejected-sized-string-example`: see [`rejected_examples::holds`].
 fn schema_rejected_sized_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
-    rejected_examples::holds(crate::example_values::mechanism::SIZED, pair, fern, crozier)
+    rejected_examples::holds(crate::example_values::Mechanism::Sized, pair, fern, crozier)
 }
 
 /// `schema-rejected-sized-string-example` beside another difference: see [`rejected_examples::region`].
 fn schema_rejected_sized_string_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    rejected_examples::region(crate::example_values::mechanism::SIZED, pair)
+    rejected_examples::region(crate::example_values::Mechanism::Sized, pair)
 }
 
 /// Correct only a generated default rejected by a scalar use-site pattern.

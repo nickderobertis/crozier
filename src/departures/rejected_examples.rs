@@ -14,20 +14,46 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::Value;
 
 use super::{documented_example_line, high_level_client, Pair, Region};
-use crate::example_values::{mechanism, python_value, Choice, ValueConstraints, Verdict};
+use crate::example_values::{python_value, Choice, Mechanism, ValueConstraints, Verdict};
 use crate::openapi::{AdditionalProperties, OpenApi, Schema};
 
 /// What the source document's schemas let crozier write in place of Fern's
 /// constructions.
 #[derive(Debug, Default)]
 pub(super) struct Index {
-    /// For each `(mechanism, Fern's value as JSON)`, the JSON of every value
-    /// crozier may write in its place; for a list, keyed `keyword|count`, the
-    /// item counts it may pad or cut Fern's to with copies of its first item.
-    values: BTreeMap<(&'static str, String), BTreeSet<String>>,
-    /// For a `uniqueItems` list, keyed `keyword|count`: each count crozier may
-    /// pad Fern's to, with the item schema its distinct items satisfy.
-    unique: BTreeMap<String, Vec<(usize, Box<ValueConstraints>)>>,
+    /// For each scalar mechanism and Fern's value, every value crozier may
+    /// write in its place.
+    scalars: BTreeMap<(Mechanism, ValueKey), BTreeSet<ValueKey>>,
+    /// For each list Fern writes with its count of items, every count crozier
+    /// may cut or pad it to with copies of its first item.
+    lists: BTreeMap<ListKey, BTreeSet<usize>>,
+    /// For a `uniqueItems` list: each count crozier may pad Fern's to, with
+    /// the item schema its distinct items satisfy.
+    unique: BTreeMap<ListKey, Vec<(usize, Box<ValueConstraints>)>>,
+}
+
+/// A value as the index keys it: a number by its numeric value, so the `7`
+/// crozier writes for a float matches the `7.0` constructed for it.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct ValueKey(String);
+
+impl ValueKey {
+    fn of(value: &Value) -> Self {
+        Self(match value {
+            Value::Number(number) => number
+                .as_f64()
+                .map_or_else(|| number.to_string(), |n| format!("{n}")),
+            other => other.to_string(),
+        })
+    }
+}
+
+/// A list argument as Fern writes it: the keyword or key it is passed as, and
+/// its count of items.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct ListKey {
+    keyword: String,
+    count: usize,
 }
 
 /// One value a source node documents: the names Fern may spell it by, and its
@@ -159,13 +185,13 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
     let mut seen = BTreeSet::new();
     for node in nodes(source) {
         let constraints = &node.constraints;
-        let mut constructions: Vec<(&'static str, Value)> = node
+        let mut constructions: Vec<(Mechanism, Value)> = node
             .names
             .iter()
-            .map(|name| (mechanism::NAME, Value::String(name.clone())))
+            .map(|name| (Mechanism::Name, Value::String(name.clone())))
             .collect();
-        constructions.push((mechanism::PLACEHOLDER, Value::from("string")));
-        constructions.push((mechanism::PLACEHOLDER, Value::from("value")));
+        constructions.push((Mechanism::Placeholder, Value::from("string")));
+        constructions.push((Mechanism::Placeholder, Value::from("value")));
         let (min, max) = constraints
             .keywords
             .iter()
@@ -175,10 +201,10 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
                 _ => (min, max),
             });
         if let Some(sample) = crate::ir::fallback_string_sample(min, max) {
-            constructions.push((mechanism::SIZED, Value::String(sample)));
+            constructions.push((Mechanism::Sized, Value::String(sample)));
         }
         for number in [Value::from(1), Value::from(1_000_000), Value::from(1.1)] {
-            constructions.push((mechanism::NUMBER, number));
+            constructions.push((Mechanism::Number, number));
         }
         // A list's construction: Fern's one item, or two in its fallback.
         for count in [1usize, 2] {
@@ -189,18 +215,14 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
             if let Some(Choice::Constructed(Value::Array(target))) = constraints.choose(&shape) {
                 for name in &node.names {
                     for keyword in [name.clone(), crate::naming::field_name(name)] {
-                        let key = format!("{keyword}|{count}");
+                        let list = ListKey { keyword, count };
                         if constraints.unique_items && target.len() > count {
-                            index.unique.entry(key).or_default().push((
+                            index.unique.entry(list).or_default().push((
                                 target.len(),
                                 constraints.items.clone().unwrap_or_default(),
                             ));
                         } else {
-                            index
-                                .values
-                                .entry((mechanism::ARRAY, key))
-                                .or_default()
-                                .insert(target.len().to_string());
+                            index.lists.entry(list).or_default().insert(target.len());
                         }
                     }
                 }
@@ -215,10 +237,10 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
             }
             if let Some(choice) = constraints.choose(&fern) {
                 index
-                    .values
-                    .entry((id, key(&fern)))
+                    .scalars
+                    .entry((id, ValueKey::of(&fern)))
                     .or_default()
-                    .insert(key(choice.value()));
+                    .insert(ValueKey::of(choice.value()));
             }
         }
     }
@@ -299,17 +321,6 @@ fn literal_changes<'a>(fern: &'a str, crozier: &'a str) -> Option<Vec<(&'a str, 
     (!changes.is_empty()).then_some(changes)
 }
 
-/// A value as the index keys it: a number by its numeric value, so the `7`
-/// crozier writes for a float matches the `7.0` constructed for it.
-fn key(value: &Value) -> String {
-    match value {
-        Value::Number(number) => number
-            .as_f64()
-            .map_or_else(|| number.to_string(), |n| format!("{n}")),
-        other => other.to_string(),
-    }
-}
-
 /// Whether the pair's file holds worked examples: `README.md`, `reference.md`
 /// or a generated client module.
 fn example_file(rel: &str) -> bool {
@@ -319,7 +330,7 @@ fn example_file(rel: &str) -> bool {
 /// Whether the two lines differ only in literals, each of which the index
 /// says `id` repairs (a list's items share a line), read without placing the
 /// lines in a documented example.
-fn indexed(id: &'static str, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+fn indexed(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     let Some(changes) = literal_changes(fern, crozier) else {
         return false;
     };
@@ -334,16 +345,16 @@ fn indexed(id: &'static str, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool
             return false;
         };
         index
-            .values
-            .get(&(id, key(&fern_value)))
-            .is_some_and(|choices| choices.contains(&key(&crozier_value)))
+            .scalars
+            .get(&(id, ValueKey::of(&fern_value)))
+            .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier_value)))
     })
 }
 
 /// Whether `fern` and `crozier` are an example line where Fern's value is the
 /// one `id`'s construction gives, a source schema rejects it, and crozier's is
 /// the value [`ValueConstraints::choose`] picks for that schema.
-pub(super) fn holds(id: &'static str, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+pub(super) fn holds(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     example_file(pair.rel)
         && indexed(id, pair, fern, crozier)
         && documented_example_line(pair.rel, pair.fern, fern)
@@ -359,7 +370,7 @@ pub(super) struct Repairs {
     lengths: (usize, usize),
     /// A digest of Fern's lines, which no region changes.
     reference: u64,
-    pairs: Vec<(usize, usize, &'static str)>,
+    pairs: Vec<(usize, usize, Mechanism)>,
     /// The list arguments `schema-rejected-array-length-example` repairs,
     /// each with crozier's lines as they were read.
     arrays: Vec<(Region, Vec<String>)>,
@@ -442,9 +453,9 @@ fn read_repairs(pair: &Pair<'_>) -> Repairs {
         let mut foreign = false;
         for i in removed {
             let found = added[next..].iter().enumerate().find_map(|(offset, &j)| {
-                mechanism::ALL
+                Mechanism::SCALAR
                     .into_iter()
-                    .find(|id| indexed(id, pair, fern[i], crozier[j]))
+                    .find(|id| indexed(*id, pair, fern[i], crozier[j]))
                     .map(|id| (offset, j, id))
             });
             match found {
@@ -493,7 +504,7 @@ fn analysis(pair: &Pair<'_>, fresh: bool) -> Result<Repairs, String> {
 /// until none is left. A file whose only differences are repairs is left to
 /// the line rule. Replacing one line keeps every other pair's place, so the
 /// alignment is read once per file and kept until a pair no longer holds.
-pub(super) fn region(id: &'static str, pair: &Pair<'_>) -> Result<Option<Region>, String> {
+pub(super) fn region(id: Mechanism, pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if !example_file(pair.rel) || pair.fern == pair.crozier {
         return Ok(None);
     }
@@ -723,18 +734,11 @@ fn scalar_holds(index: &Index, fern: &str, crozier: &str) -> bool {
     let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
         return false;
     };
-    [
-        mechanism::NAME,
-        mechanism::PLACEHOLDER,
-        mechanism::SIZED,
-        mechanism::NUMBER,
-    ]
-    .into_iter()
-    .any(|id| {
+    Mechanism::SCALAR.into_iter().any(|id| {
         index
-            .values
-            .get(&(id, key(&fern)))
-            .is_some_and(|choices| choices.contains(&key(&crozier)))
+            .scalars
+            .get(&(id, ValueKey::of(&fern)))
+            .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier)))
     })
 }
 
@@ -783,14 +787,17 @@ fn list_holds(
         .iter()
         .zip(crozier)
         .all(|(f, c)| trees_hold(index, f, c));
-    let list = format!("{keyword}|{count}");
+    let list = ListKey {
+        keyword: keyword.to_owned(),
+        count,
+    };
     let copies = crozier[count.min(target)..]
         .iter()
         .all(|item| crozier.first().is_some_and(|first| item == first))
         && index
-            .values
-            .get(&(mechanism::ARRAY, list.clone()))
-            .is_some_and(|targets| targets.contains(&target.to_string()));
+            .lists
+            .get(&list)
+            .is_some_and(|targets| targets.contains(&target));
     let distinct = || {
         let values: Option<Vec<Value>> = crozier
             .iter()
@@ -808,8 +815,8 @@ fn list_holds(
                     && items
                         .distinct_items(&values[..count.min(target)], target)
                         .is_some_and(|built| {
-                            built.iter().map(key).collect::<Vec<_>>()
-                                == values.iter().map(key).collect::<Vec<_>>()
+                            built.iter().map(ValueKey::of).collect::<Vec<_>>()
+                                == values.iter().map(ValueKey::of).collect::<Vec<_>>()
                         })
             })
         })

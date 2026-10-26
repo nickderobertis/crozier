@@ -1891,4 +1891,75 @@ mod tests {
         assert!(checked > 1000, "only {checked} golden modules found");
         assert!(changed.is_empty(), "stripping changed: {changed:?}");
     }
+
+    /// A pair too large for one alignment table — 5,000 lines a side, its
+    /// differences at both ends — is anchored on the lines occurring once on
+    /// each side: every equal line pairs with its counterpart, and only the
+    /// lines that differ are left unexplained.
+    #[test]
+    fn a_pair_past_the_table_bound_aligns_on_its_unique_lines() {
+        let lines = 5_000;
+        assert!(lines * lines > MAX_TABLE_CELLS);
+        let reference: Vec<String> = (0..lines).map(|k| format!("line_{k} = {k}")).collect();
+        let mut crozier = reference.clone();
+        crozier[1] = "line_1 = 'changed'".to_string();
+        crozier[lines - 2] = format!("line_{} = 'changed'", lines - 2);
+        crozier.insert(2_500, "inserted = True".to_string());
+        let compared = compare_file_with_origins(
+            &Context::default(),
+            "module.py",
+            &crozier.join("\n"),
+            &reference.join("\n"),
+        )
+        .unwrap();
+        assert!(!compared.comparison.matches());
+        let unexplained: Vec<usize> = compared
+            .unexplained_original_lines
+            .iter()
+            .map(|line| line.get() - 1)
+            .collect();
+        assert_eq!(unexplained, [1, 2_500, lines - 1]);
+        // Equal lines pair across the inserted one; changed and inserted
+        // lines pair with nothing.
+        assert_eq!(compared.reference_lines[0], Some(0));
+        assert_eq!(compared.reference_lines[2_499], Some(2_499));
+        assert_eq!(compared.reference_lines[2_501], Some(2_500));
+        assert_eq!(compared.reference_lines[lines], Some(lines - 1));
+        assert_eq!(compared.reference_lines[1], None);
+        assert_eq!(compared.reference_lines[2_500], None);
+    }
+
+    /// A gap still past the bound with no line unique to anchor on is aligned
+    /// position by position: equal positions pair, and each differing one is
+    /// a removed line beside an added one.
+    #[test]
+    fn a_gap_with_no_unique_line_is_aligned_by_position() {
+        let lines = 5_000;
+        let reference: Vec<&str> = vec!["pass"; lines];
+        let mut crozier = reference.clone();
+        crozier[0] = "first = 1";
+        crozier[lines - 1] = "last = 1";
+        let ops = align_lines(&reference, &crozier);
+        let equal = ops.iter().filter(|op| matches!(op, Op::Equal(..))).count();
+        assert_eq!(equal, lines - 2);
+        assert!(ops.contains(&Op::Delete(0)) && ops.contains(&Op::Insert(0)));
+        assert!(ops.contains(&Op::Equal(1, 1)) && ops.contains(&Op::Equal(lines - 2, lines - 2)));
+        let compared = compare_file_with_origins(
+            &Context::default(),
+            "module.py",
+            &crozier.join("\n"),
+            &reference.join("\n"),
+        )
+        .unwrap();
+        assert_eq!(compared.reference_lines[1], Some(1));
+        assert_eq!(compared.reference_lines[0], None);
+        assert_eq!(
+            compared
+                .unexplained_original_lines
+                .iter()
+                .map(|line| line.get() - 1)
+                .collect::<Vec<_>>(),
+            [0, lines - 1]
+        );
+    }
 }

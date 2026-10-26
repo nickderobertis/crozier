@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use crozier::departures::Context;
-use crozier::example_values::{mechanism, Disposition, ExampleValue};
+use crozier::example_values::{Disposition, ExampleValue, Mechanism};
 
 use super::departures_ledger::{GoldenLedger, Observed};
 
@@ -101,7 +101,7 @@ pub fn parse(text: &str) -> Result<Vec<Row>, Vec<String>> {
                 "{INVENTORY}: `{line}` has no disposition of the vocabulary"
             ));
         }
-        if row.mechanism != "-" && !mechanism::NAMED.contains(&row.mechanism.as_str()) {
+        if row.mechanism != "-" && Mechanism::parse(&row.mechanism).is_none() {
             failures.push(format!(
                 "{INVENTORY}: `{line}` names no mechanism's departure"
             ));
@@ -155,7 +155,7 @@ fn recorded(out: &Path) -> Result<Vec<ExampleValue>, String> {
     };
     text.lines()
         .map(|line| {
-            ExampleValue::parse(line, &mechanism::NAMED)
+            ExampleValue::parse(line)
                 .ok_or_else(|| format!("{}: `{line}` is not a record", path.display()))
         })
         .collect()
@@ -202,7 +202,8 @@ pub fn observed_rows(
         let fern_lines: Vec<&str> = reference.split('\n').collect();
         let crozier_lines: Vec<&str> = generated.split('\n').collect();
         for value in values {
-            let Some(fern_line) = mapped.get(value.line - 1).copied().flatten() else {
+            let line = value.line.get();
+            let Some(fern_line) = mapped.get(line - 1).copied().flatten() else {
                 failures.push(format!(
                     "{rel}:{}: the comparison pairs crozier's line holding {} with no Fern line",
                     value.line, value.argument
@@ -226,16 +227,16 @@ pub fn observed_rows(
             // a one-line list's covers the items it holds, so a repaired value
             // is accounted for by a rejected-example departure on its line or,
             // for a list, anywhere in its lines.
-            let end = if value.mechanism == Some(mechanism::ARRAY) {
-                list_end(&crozier_lines, value.line - 1) + 1
+            let end = if value.mechanism == Some(Mechanism::Array) {
+                list_end(&crozier_lines, line - 1) + 1
             } else {
-                value.line
+                line
             };
             if value.disposition == Disposition::Repaired
-                && !departures.iter().any(|(file, line, id)| {
+                && !departures.iter().any(|(file, departure_line, id)| {
                     file == rel
-                        && (value.line..=end).contains(line)
-                        && mechanism::NAMED.contains(&id.as_str())
+                        && (line..=end).contains(departure_line)
+                        && Mechanism::parse(id).is_some()
                 })
             {
                 failures.push(format!(
@@ -244,7 +245,7 @@ pub fn observed_rows(
                     value.line,
                     value.crozier,
                     value.argument,
-                    value.mechanism.unwrap_or("-")
+                    value.mechanism.map_or("-", Mechanism::id)
                 ));
                 continue;
             }
@@ -255,7 +256,7 @@ pub fn observed_rows(
                 argument: value.argument.clone(),
                 fern_value: value.fern.clone(),
                 constraint: value.constraint.clone(),
-                mechanism: value.mechanism.unwrap_or("-").to_string(),
+                mechanism: value.mechanism.map_or("-", Mechanism::id).to_string(),
                 disposition: value.disposition.as_str().to_string(),
             });
         }
@@ -263,16 +264,18 @@ pub fn observed_rows(
     // And every line a rejected-example departure accounts for holds a
     // repaired value of the inventory: the departure is applied nowhere else.
     for (file, line, id) in departures {
-        if !mechanism::ALL.contains(&id.as_str()) || !compared(file) {
+        if !Mechanism::parse(id).is_some_and(|found| Mechanism::REPAIRED.contains(&found))
+            || !compared(file)
+        {
             continue;
         }
         let backed = values.iter().any(|value| {
             value.file == *file
                 && value.disposition == Disposition::Repaired
-                && (value.line == *line
-                    || value.mechanism == Some(mechanism::ARRAY)
-                        && value.line <= *line
-                        && *line <= value.line + 400)
+                && (value.line.get() == *line
+                    || value.mechanism == Some(Mechanism::Array)
+                        && value.line.get() <= *line
+                        && *line <= value.line.get() + 400)
         });
         if !backed {
             failures.push(format!(
@@ -436,7 +439,7 @@ pub fn merge_records(root: &Path, dir: &Path) -> Result<String, String> {
     for entry in entries {
         let entry = entry.map_err(|error| format!("{}: {error}", dir.display()))?;
         let golden = entry.file_name().to_string_lossy().replace('%', "/");
-        let rows = recorded.entry(golden).or_default();
+        let rows = recorded.entry(golden.clone()).or_default();
         let files = std::fs::read_dir(entry.path())
             .map_err(|error| format!("{}: {error}", entry.path().display()))?;
         for file in files {
@@ -446,10 +449,18 @@ pub fn merge_records(root: &Path, dir: &Path) -> Result<String, String> {
             let text = std::fs::read_to_string(&path)
                 .map_err(|error| format!("{}: {error}", path.display()))?;
             for line in text.lines() {
-                rows.insert(
-                    Row::parse(line)
-                        .ok_or_else(|| format!("{}: `{line}` is not a row", path.display()))?,
-                );
+                let row = Row::parse(line)
+                    .ok_or_else(|| format!("{}: `{line}` is not a row", path.display()))?;
+                // A record's directory names the golden whose rows it replaces;
+                // a row of another golden would replace the wrong ones.
+                if row.golden != *golden {
+                    return Err(format!(
+                        "{}: `{line}` is a row of {}, recorded under {golden}",
+                        path.display(),
+                        row.golden
+                    ));
+                }
+                rows.insert(row);
             }
         }
     }
@@ -530,4 +541,91 @@ fn the_inventory_format_refuses_broken_rows() {
         );
     }
     assert!(parse("golden\tfile\n").is_err());
+}
+
+/// A scratch repository whose inventory holds `rows`, after the header.
+fn scratch_inventory(rows: &[&str]) -> tempfile::TempDir {
+    let root = tempfile::tempdir().expect("scratch repository");
+    let path = root.path().join(INVENTORY);
+    std::fs::create_dir_all(path.parent().expect("a parent")).expect("mkdir");
+    let mut text = format!("{HEADER}\n");
+    for row in rows {
+        text.push_str(row);
+        text.push('\n');
+    }
+    std::fs::write(path, text).expect("write the inventory");
+    root
+}
+
+/// Record `rows` for `golden` under `dir`, as a comparison's [`record_to`]
+/// does, through that function.
+fn record(dir: &Path, golden: &str, rows: &[&str]) {
+    let rows: BTreeSet<Row> = rows
+        .iter()
+        .map(|line| Row::parse(line).expect("a row"))
+        .collect();
+    record_to(dir, &[(golden, true)], &rows).expect("record");
+}
+
+#[test]
+fn the_merge_replaces_recorded_goldens_and_keeps_every_other() {
+    let kept = "b\tREADME.md\t1\tid\t\"id\"\tformat=uuid\tschema-rejected-name-example\trepaired";
+    let stale = "a\tREADME.md\t2\tid\t\"id\"\tformat=uuid\tschema-rejected-name-example\trepaired";
+    let fresh = "a\tREADME.md\t3\tid\t\"id\"\tformat=uuid\tschema-rejected-name-example\trepaired";
+    let gone = "c\tREADME.md\t4\tid\t\"id\"\tformat=uuid\tschema-rejected-name-example\trepaired";
+    let root = scratch_inventory(&[stale, kept, gone]);
+    let records = tempfile::tempdir().unwrap();
+    // `a` is recorded with a new row, `c` with none, `b` not at all.
+    record(records.path(), "a", &[fresh]);
+    record(records.path(), "c", &[]);
+    let merged = merge_records(root.path(), records.path()).expect("merges");
+    assert_eq!(merged, format!("{HEADER}\n{fresh}\n{kept}\n"));
+    // A row recorded under another golden's directory, or a line that is no
+    // row, is refused rather than merged.
+    let misplaced = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(misplaced.path().join("b")).unwrap();
+    std::fs::write(misplaced.path().join("b/x.tsv"), format!("{fresh}\n")).unwrap();
+    assert!(merge_records(root.path(), misplaced.path())
+        .unwrap_err()
+        .contains("is a row of a, recorded under b"));
+    let broken = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(broken.path().join("a")).unwrap();
+    std::fs::write(broken.path().join("a/x.tsv"), "README.md\t3\n").unwrap();
+    assert!(merge_records(root.path(), broken.path())
+        .unwrap_err()
+        .contains("is not a row"));
+    // The recovered record merges.
+    std::fs::write(broken.path().join("a/x.tsv"), format!("{fresh}\n")).unwrap();
+    assert!(merge_records(root.path(), broken.path()).is_ok());
+}
+
+/// The inventory's README states the columns and the disposition vocabulary
+/// the loader and the recorder use, and the recipe that regenerates it.
+#[test]
+fn the_documented_inventory_format_is_the_loaders() {
+    let readme = std::fs::read_to_string(
+        crate::repo_root().join("docs/departures/evidence/invalid-example-values/README.md"),
+    )
+    .expect("the inventory's README");
+    for column in HEADER.split('\t') {
+        assert!(
+            readme.contains(&format!("| `{column}` |")),
+            "the README's column table lacks `{column}`"
+        );
+    }
+    for disposition in Disposition::ALL {
+        assert!(
+            readme.contains(&format!("- `{}`:", disposition.as_str())),
+            "the README does not define the disposition `{}`",
+            disposition.as_str()
+        );
+    }
+    assert!(
+        readme.contains(REGENERATE),
+        "the README does not name `{REGENERATE}`"
+    );
+    assert!(
+        readme.contains(RECORD_ENV),
+        "the README does not name `{RECORD_ENV}`"
+    );
 }

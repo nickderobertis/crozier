@@ -46,10 +46,31 @@ def load_document(path: Path) -> dict[str, Any]:
             import yaml  # noqa: PLC0415 - only a YAML document needs it
         except ImportError as error:
             raise InputError(f"{path} is not JSON, and PyYAML is not installed to read it") from error
-        document = yaml.safe_load(text)
-    if not isinstance(document, dict):
-        raise InputError(f"{path} is not an OpenAPI document")
+        try:
+            document = yaml.safe_load(text)
+        except yaml.YAMLError as error:
+            raise InputError(f"{path} is neither JSON nor YAML: {error}") from error
+    if not isinstance(document, dict) or not str(document.get("openapi", "")).startswith("3."):
+        raise InputError(f"{path} is not an OpenAPI 3.x document")
     return document
+
+
+def schema_at(document: dict[str, Any], pointer: str) -> object:
+    """The schema the JSON pointer names in `document`."""
+    node: object = document
+    for part in pointer.split("/")[1:] if pointer.startswith("/") else [None]:
+        if part is None:
+            raise InputError(f"{pointer} is not a JSON pointer")
+        key = part.replace("~1", "/").replace("~0", "~")
+        if isinstance(node, dict) and key in node:
+            node = node[key]
+        elif isinstance(node, list) and key.isdigit() and int(key) < len(node):
+            node = node[int(key)]
+        else:
+            raise InputError(f"{pointer} names nothing in the document")
+    if not isinstance(node, (dict, bool)):
+        raise InputError(f"{pointer} names no schema")
+    return node
 
 
 def line_value(place: str, argument: str) -> object:
@@ -69,7 +90,10 @@ def line_value(place: str, argument: str) -> object:
     if isinstance(call, ast.Call):
         for keyword in call.keywords:
             if keyword.arg == argument:
-                return ast.literal_eval(keyword.value)
+                try:
+                    return ast.literal_eval(keyword.value)
+                except (ValueError, SyntaxError) as error:
+                    raise InputError(f"{place} passes {argument}= no literal value: {lines[index]!r}") from error
     raise InputError(f"{place} passes no {argument}=: {lines[index]!r}")
 
 
@@ -84,16 +108,34 @@ def is_hostname(value: str) -> bool:
     return 0 < len(name) <= 253 and all(HOSTNAME_LABEL.fullmatch(label) for label in name.split("."))
 
 
+UNRESERVED = r"A-Za-z0-9\-._~"
+SUB_DELIMS = r"!$&'()*+,;="
+PCT_ENCODED = r"%[0-9A-Fa-f]{2}"
+PCHAR = rf"(?:[{UNRESERVED}{SUB_DELIMS}:@]|{PCT_ENCODED})"
+URI = re.compile(
+    rf"[A-Za-z][A-Za-z0-9+.-]*:"
+    rf"(?://(?:(?:[{UNRESERVED}{SUB_DELIMS}:]|{PCT_ENCODED})*@)?"
+    rf"(?:\[[0-9A-Fa-f:.]+\]|(?:[{UNRESERVED}{SUB_DELIMS}]|{PCT_ENCODED})*)(?::[0-9]*)?)?"
+    rf"(?:/?{PCHAR}*(?:/{PCHAR}*)*)"
+    rf"(?:\?(?:{PCHAR}|[/?])*)?"
+    rf"(?:#(?:{PCHAR}|[/?])*)?"
+)
+
+
 def is_uri(value: str) -> bool:
-    """RFC 3986 `URI`: a scheme, a colon, and no character a URI cannot hold."""
-    scheme, colon, rest = value.partition(":")
-    return bool(colon) and SCHEME.fullmatch(scheme) is not None and not re.search(r"[\s<>\"{}|\\^`]", rest)
+    """RFC 3986 `URI`: a scheme, then an optional authority whose host may be an
+    IP literal in brackets, a path, query and fragment of unreserved,
+    sub-delimiter and percent-encoded characters."""
+    return URI.fullmatch(value) is not None
 
 
 def is_time(value: str) -> bool:
-    """RFC 3339 `full-time`."""
+    """RFC 3339 `full-time`, its numeric offset inside a day."""
     match = TIME.fullmatch(value)
-    return match is not None and int(match[1]) < 24 and int(match[2]) < 60 and int(match[3]) <= 60
+    if match is None or int(match[1]) >= 24 or int(match[2]) >= 60 or int(match[3]) > 60:
+        return False
+    offset = match[5]
+    return offset in ("Z", "z") or (int(offset[1:3]) < 24 and int(offset[4:6]) < 60)
 
 
 def is_date_time(value: str) -> bool:
@@ -161,6 +203,7 @@ def format_checker(validator_class: type) -> jsonschema.FormatChecker:
 
 def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None:
     """Why the schema at `pointer` rejects `value`, or `None` when it accepts it."""
+    schema_at(document, pointer)
     version = str(document.get("openapi", ""))
     validator_class = (
         jsonschema.Draft202012Validator if version.startswith("3.1") else jsonschema.Draft4Validator

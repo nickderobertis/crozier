@@ -28160,6 +28160,7 @@ fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
 
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg, so no unrelated edit newly triggers them; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project, as for the `sdk_env_*` block above.
 /// The `schema-rejected-*` evidence notes' commands, run as committed against
 /// crozier's own generated trees: each validates Fern's committed value
 /// against its source schema with jsonschema and sees it rejected, and
@@ -28256,6 +28257,153 @@ fn sdk_env_rejected_example_evidence_rejects_fern_and_accepts_crozier() {
         validate(&fern, &crozier, "/components/schemas/NoSuchSchema").code(2);
     }
 }
+
+/// The evidence validator over authored inputs: each format crozier's
+/// inventory reads is asserted (by the standard library where jsonschema
+/// needs an optional package) on a value it rejects and one it accepts; every
+/// input it cannot read exits 2 and recovers once corrected; and a YAML
+/// document is read where PyYAML is installed and refused where it is not.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
+    const SCRIPT: &str = "docs/departures/evidence/invalid-example-values/validate.py";
+    let bare = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence",
+        &["jsonschema==4.26.0".to_string()],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema");
+    let with_yaml = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence-yaml",
+        &[
+            "jsonschema==4.26.0".to_string(),
+            "PyYAML==6.0.3".to_string(),
+        ],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema and PyYAML");
+    let work = tempfile::tempdir().unwrap();
+    let formats = [
+        ("date", "\"15/01/2023\"", "\"2023-01-15\""),
+        (
+            "date-time",
+            "\"2024-01-15 09:30\"",
+            "\"2024-01-15T09:30:00Z\"",
+        ),
+        ("time", "\"09:30:00+99:99\"", "\"09:30:00+05:30\""),
+        ("uuid", "\"id\"", "\"d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32\""),
+        ("email", "\"email\"", "\"user@example.com\""),
+        (
+            "uri",
+            "\"http://a/b%2\"",
+            "\"https://[2001:db8::1]:8080/a?b#c\"",
+        ),
+        ("ipv4", "\"256.1.1.1\"", "\"192.0.2.1\""),
+        ("ipv6", "\"ip\"", "\"2001:db8::1\""),
+        ("hostname", "\"host_name\"", "\"example.com\""),
+    ];
+    let schemas: serde_json::Map<String, serde_json::Value> = formats
+        .iter()
+        .map(|(format, _, _)| {
+            (
+                (*format).to_string(),
+                serde_json::json!({"type": "string", "format": format}),
+            )
+        })
+        .collect();
+    let document = work.path().join("openapi.json");
+    std::fs::write(
+        &document,
+        serde_json::json!({"openapi": "3.1.0", "info": {"title": "t", "version": "1"},
+            "paths": {}, "components": {"schemas": schemas}})
+        .to_string(),
+    )
+    .unwrap();
+    let lines = work.path().join("lines.py");
+    let mut text = String::new();
+    for (_, fern, crozier) in formats {
+        text.push_str(&format!("    value={fern},\n    value={crozier},\n"));
+    }
+    text.push_str("    value=Kind.MEMBER,\n");
+    std::fs::write(&lines, text).unwrap();
+    let at = |line: usize| format!("{}:{line}", lines.display());
+    let run = |python: &Path, source: &Path, pointer: &str, fern: &str, crozier: &str| {
+        Command::new(python)
+            .arg(repo_root().join(SCRIPT))
+            .arg(source)
+            .arg(pointer)
+            .arg(fern)
+            .arg(crozier)
+            .arg("value")
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .assert()
+    };
+    for (index, (format, _, _)) in formats.iter().enumerate() {
+        let pointer = format!("/components/schemas/{format}");
+        let (fern, crozier) = (at(2 * index + 1), at(2 * index + 2));
+        run(&bare, &document, &pointer, &fern, &crozier)
+            .success()
+            .stdout(predicate::str::contains("accepted"));
+        // The accepted value on both sides is no proof.
+        run(&bare, &document, &pointer, &crozier, &crozier).code(1);
+    }
+    let pointer = "/components/schemas/uuid";
+    let (fern, crozier) = (at(7), at(8));
+    // Each unreadable input is refused as input, naming it.
+    let not_openapi = work.path().join("not-openapi.json");
+    std::fs::write(&not_openapi, "{\"swagger\": \"2.0\"}").unwrap();
+    for (source, pointer, left, says) in [
+        (
+            &not_openapi,
+            pointer,
+            fern.clone(),
+            "is not an OpenAPI 3.x document",
+        ),
+        (
+            &work.path().join("missing.json"),
+            pointer,
+            fern.clone(),
+            "No such file",
+        ),
+        (
+            &document,
+            "/components/schemas/none",
+            fern.clone(),
+            "names nothing",
+        ),
+        (
+            &document,
+            "components",
+            fern.clone(),
+            "is not a JSON pointer",
+        ),
+        (&document, pointer, at(999), "is past the end"),
+        (&document, pointer, at(19), "no literal value"),
+    ] {
+        run(&bare, source, pointer, &left, &crozier)
+            .code(2)
+            .stderr(predicate::str::contains(says));
+    }
+    // A YAML document needs PyYAML; with it the same proof reads, and a
+    // document neither JSON nor YAML is refused.
+    let yaml = work.path().join("openapi.yml");
+    std::fs::write(
+        &yaml,
+        "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    uuid: {type: string, format: uuid}\n",
+    )
+    .unwrap();
+    run(&bare, &yaml, pointer, &fern, &crozier)
+        .code(2)
+        .stderr(predicate::str::contains("PyYAML is not installed"));
+    run(&with_yaml, &yaml, pointer, &fern, &crozier).success();
+    std::fs::write(&yaml, "openapi: [\n").unwrap();
+    run(&with_yaml, &yaml, pointer, &fern, &crozier)
+        .code(2)
+        .stderr(predicate::str::contains("neither JSON nor YAML"));
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]

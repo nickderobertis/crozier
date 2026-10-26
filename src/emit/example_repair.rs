@@ -15,7 +15,7 @@ use serde_json::Value;
 
 use super::{Example, ExampleCtx, GeneratedFile};
 use crate::example_values::{
-    mechanism, python_value, Choice, Disposition, ExampleValue, ValueConstraints, Verdict,
+    python_value, Choice, Disposition, ExampleValue, Mechanism, ValueConstraints, Verdict,
 };
 use crate::ir::{Endpoint, RequestBody, TypeDecl, TypeRef};
 
@@ -25,17 +25,17 @@ fn construction(
     value: &Value,
     names: &[String],
     lengths: &[(Option<u64>, Option<u64>)],
-) -> Option<&'static str> {
+) -> Option<Mechanism> {
     match value {
         Value::String(text) => {
             if names.iter().any(|name| name == text) {
-                Some(mechanism::NAME)
+                Some(Mechanism::Name)
             } else if text == "string" || text == "value" {
-                Some(mechanism::PLACEHOLDER)
+                Some(Mechanism::Placeholder)
             } else if lengths.iter().any(|(min, max)| {
                 crate::ir::fallback_string_sample(*min, *max).as_deref() == Some(text.as_str())
             }) {
-                Some(mechanism::SIZED)
+                Some(Mechanism::Sized)
             } else {
                 None
             }
@@ -45,7 +45,7 @@ fn construction(
             number
                 .as_f64()
                 .is_some_and(|n| fixed.contains(&n))
-                .then_some(mechanism::NUMBER)
+                .then_some(Mechanism::Number)
         }
         _ => None,
     }
@@ -57,14 +57,36 @@ pub(super) struct Pending {
     /// what precedes the value itself: `name=`, `"key": ` or nothing. The value
     /// is found on the first line holding it at or after its anchors' lines.
     needles: Vec<String>,
-    value: ExampleValue,
+    value: Finding,
+}
+
+/// A rejected value before it has a place: an [`ExampleValue`] without its
+/// file and line.
+#[derive(Clone)]
+pub(super) struct Finding {
+    argument: String,
+    fern: String,
+    crozier: String,
+    constraint: String,
+    mechanism: Option<Mechanism>,
+    disposition: Disposition,
+}
+
+/// The file an example block is written into.
+#[derive(Clone, Copy)]
+enum Destination {
+    /// A client method's docstring, in a `.py` module.
+    Docstring,
+    /// `README.md`.
+    Readme,
+    /// `reference.md`.
+    Reference,
 }
 
 /// One example block a writer produced, with its rejected values.
 struct Block {
-    /// `None` for a docstring; `Some(true)` for `reference.md`, `Some(false)`
-    /// for `README.md`.
-    markdown: Option<bool>,
+    /// Where its writer puts it.
+    destination: Destination,
     lines: Vec<String>,
     values: Vec<Pending>,
 }
@@ -87,7 +109,11 @@ pub(super) fn record(documentation: bool, reference: bool, lines: &[String], val
     BLOCKS.with(|blocks| {
         if let Some(blocks) = blocks.borrow_mut().as_mut() {
             blocks.push(Block {
-                markdown: documentation.then_some(reference),
+                destination: match (documentation, reference) {
+                    (false, _) => Destination::Docstring,
+                    (true, false) => Destination::Readme,
+                    (true, true) => Destination::Reference,
+                },
                 lines: lines.to_vec(),
                 values,
             });
@@ -118,10 +144,10 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
             continue;
         };
         for (path, lines) in &texts {
-            let belongs = match block.markdown {
-                Some(true) => path == "reference.md",
-                Some(false) => path == "README.md",
-                None => path.ends_with(".py"),
+            let belongs = match block.destination {
+                Destination::Reference => path == "reference.md",
+                Destination::Readme => path == "README.md",
+                Destination::Docstring => path.ends_with(".py"),
             };
             if !belongs || lines.len() < wanted.len() {
                 continue;
@@ -185,10 +211,16 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                         continue;
                     };
                     cursor.insert(needle, offset + 1);
+                    let value = pending.value.clone();
                     out.insert(ExampleValue {
                         file: path.clone(),
-                        line: start + offset + 1,
-                        ..pending.value.clone()
+                        line: std::num::NonZeroUsize::MIN.saturating_add(start + offset),
+                        argument: value.argument,
+                        fern: value.fern,
+                        crozier: value.crozier,
+                        constraint: value.constraint,
+                        mechanism: value.mechanism,
+                        disposition: value.disposition,
                     });
                 }
             }
@@ -464,14 +496,12 @@ impl ExampleCtx<'_> {
                         {
                             pending.push(Pending {
                                 needles: needles.to_vec(),
-                                value: ExampleValue {
-                                    file: String::new(),
-                                    line: 0,
+                                value: Finding {
                                     argument: path.to_string(),
                                     fern: rounded,
                                     crozier: literal.clone(),
                                     constraint: keyword.to_string(),
-                                    mechanism: Some(mechanism::ROUNDED),
+                                    mechanism: Some(Mechanism::Rounded),
                                     disposition: Disposition::Repaired,
                                 },
                             });
@@ -484,9 +514,7 @@ impl ExampleCtx<'_> {
                     Verdict::Undecided(Some(keyword)) => {
                         pending.push(Pending {
                             needles: needles.to_vec(),
-                            value: ExampleValue {
-                                file: String::new(),
-                                line: 0,
+                            value: Finding {
                                 argument: path.to_string(),
                                 fern: literal.clone(),
                                 crozier: literal.clone(),
@@ -521,9 +549,7 @@ impl ExampleCtx<'_> {
                 }
                 pending.push(Pending {
                     needles: needles.to_vec(),
-                    value: ExampleValue {
-                        file: String::new(),
-                        line: 0,
+                    value: Finding {
                         argument: path.to_string(),
                         fern,
                         crozier,
@@ -711,9 +737,7 @@ impl ExampleCtx<'_> {
         };
         pending.push(Pending {
             needles: needles.to_vec(),
-            value: ExampleValue {
-                file: String::new(),
-                line: 0,
+            value: Finding {
                 argument: path.to_string(),
                 crozier: if disposition == Disposition::Repaired {
                     example.flat()
@@ -722,7 +746,7 @@ impl ExampleCtx<'_> {
                 },
                 fern,
                 constraint: keyword.to_string(),
-                mechanism: (!declared).then_some(mechanism::ARRAY),
+                mechanism: (!declared).then_some(Mechanism::Array),
                 disposition,
             },
         });
@@ -817,14 +841,12 @@ impl ExampleCtx<'_> {
         };
         pending.push(Pending {
             needles: needles.to_vec(),
-            value: ExampleValue {
-                file: String::new(),
-                line: 0,
+            value: Finding {
                 argument: path.to_string(),
                 fern: spell(first),
                 crozier: literal.to_string(),
                 constraint: keyword.to_string(),
-                mechanism: Some(mechanism::ENUM_MEMBER),
+                mechanism: Some(Mechanism::EnumMember),
                 disposition,
             },
         });
@@ -869,7 +891,7 @@ impl ExampleCtx<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::example_values::{mechanism, Disposition, ExampleValue};
+    use crate::example_values::{Disposition, ExampleValue, Mechanism};
 
     /// Generate `document` as the CLI does, with every rejected example value.
     fn generated(document: serde_json::Value) -> (Vec<(String, String)>, Vec<ExampleValue>) {
@@ -968,7 +990,7 @@ mod tests {
                 ),
                 ("\"zone\"", "\"eu-1\"", "pattern=^[a-z]{2}-[0-9]$")
             );
-            assert_eq!(value.mechanism, Some(mechanism::NAME));
+            assert_eq!(value.mechanism, Some(Mechanism::Name));
             assert_eq!(value.disposition, Disposition::Repaired);
         }
     }
@@ -1039,7 +1061,7 @@ mod tests {
             assert!(
                 !values.is_empty()
                     && values.iter().all(|value| value.fern == "\"zone\""
-                        && value.mechanism == Some(mechanism::NAME)
+                        && value.mechanism == Some(Mechanism::Name)
                         && value.disposition == Disposition::Repaired),
                 "{zone}: {values:?}"
             );
@@ -1086,7 +1108,7 @@ mod tests {
             assert!(
                 count_values
                     .iter()
-                    .all(|value| value.mechanism == Some(mechanism::NUMBER)
+                    .all(|value| value.mechanism == Some(Mechanism::Number)
                         && value.disposition == Disposition::Repaired),
                 "{count}: {values:?}"
             );

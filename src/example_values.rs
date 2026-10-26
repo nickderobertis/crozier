@@ -15,7 +15,7 @@
 //! The keywords in scope are a string's `pattern`, `minLength`, `maxLength`,
 //! `enum` and `const`; a number's `minimum`, `maximum`, `exclusiveMinimum`,
 //! `exclusiveMaximum` and `multipleOf`; an array's `minItems` and `maxItems`;
-//! and the formats in [`FORMATS`]. Any other keyword or format is out of scope:
+//! and the formats [`Format`] names. Any other keyword or format is out of scope:
 //! it neither rejects a value here nor blocks a repair.
 
 use std::fmt;
@@ -26,21 +26,74 @@ use indexmap::IndexMap;
 
 use crate::openapi::{OpenApi, Schema};
 
-/// The formats whose violation rejects a value: every other format is an
+/// A `format` whose violation rejects a value; every other format is an
 /// annotation here.
-pub const FORMATS: [&str; 11] = [
-    "date",
-    "date-time",
-    "time",
-    "uuid",
-    "email",
-    "uri",
-    "ipv4",
-    "ipv6",
-    "hostname",
-    "int32",
-    "int64",
-];
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Format {
+    /// RFC 3339 `full-date`.
+    Date,
+    /// RFC 3339 `date-time`.
+    DateTime,
+    /// RFC 3339 `full-time`.
+    Time,
+    /// RFC 4122's hyphenated UUID.
+    Uuid,
+    /// An address `local@domain`.
+    Email,
+    /// RFC 3986 `URI`.
+    Uri,
+    /// A dotted-quad IPv4 address.
+    Ipv4,
+    /// An IPv6 address.
+    Ipv6,
+    /// RFC 1123 host name.
+    Hostname,
+    /// The signed 32-bit integer range.
+    Int32,
+    /// The signed 64-bit integer range.
+    Int64,
+}
+
+impl Format {
+    /// Every format in scope.
+    pub const ALL: [Format; 11] = [
+        Format::Date,
+        Format::DateTime,
+        Format::Time,
+        Format::Uuid,
+        Format::Email,
+        Format::Uri,
+        Format::Ipv4,
+        Format::Ipv6,
+        Format::Hostname,
+        Format::Int32,
+        Format::Int64,
+    ];
+
+    /// The format as a schema spells it.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Format::Date => "date",
+            Format::DateTime => "date-time",
+            Format::Time => "time",
+            Format::Uuid => "uuid",
+            Format::Email => "email",
+            Format::Uri => "uri",
+            Format::Ipv4 => "ipv4",
+            Format::Ipv6 => "ipv6",
+            Format::Hostname => "hostname",
+            Format::Int32 => "int32",
+            Format::Int64 => "int64",
+        }
+    }
+
+    /// The format in scope spelled `text`, if one is.
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|format| format.as_str() == text)
+    }
+}
 
 /// One in-scope validation keyword and its declared value.
 #[derive(Debug, Clone, PartialEq)]
@@ -55,8 +108,8 @@ pub enum Keyword {
     MinLength(u64),
     /// `maxLength`, in code points.
     MaxLength(u64),
-    /// `format`, one of [`FORMATS`].
-    Format(String),
+    /// `format`, one in scope.
+    Format(Format),
     /// `minimum`, inclusive.
     Minimum(f64),
     /// `maximum`, inclusive.
@@ -90,7 +143,7 @@ impl fmt::Display for Keyword {
             Keyword::Pattern(pattern) => write!(f, "pattern={pattern}"),
             Keyword::MinLength(n) => write!(f, "minLength={n}"),
             Keyword::MaxLength(n) => write!(f, "maxLength={n}"),
-            Keyword::Format(format) => write!(f, "format={format}"),
+            Keyword::Format(format) => write!(f, "format={}", format.as_str()),
             Keyword::Minimum(n) => write!(f, "minimum={}", number(*n)),
             Keyword::Maximum(n) => write!(f, "maximum={}", number(*n)),
             Keyword::ExclusiveMinimum(n) => write!(f, "exclusiveMinimum={}", number(*n)),
@@ -142,12 +195,12 @@ impl Keyword {
                 crate::ir::string_keywords_admit(text, None, None, None, None, Some(*n))
                     .unwrap_or(true),
             ),
-            (Keyword::Format(format), Value::String(text)) => admits(format_admits(format, text)),
-            (Keyword::Format(format), Value::Number(number)) => match format.as_str() {
-                "int32" => admits(number.as_i64().is_some_and(|n| i32::try_from(n).is_ok())),
+            (Keyword::Format(format), Value::String(text)) => admits(format_admits(*format, text)),
+            (Keyword::Format(format), Value::Number(number)) => match format {
+                Format::Int32 => admits(number.as_i64().is_some_and(|n| i32::try_from(n).is_ok())),
                 // A literal past the signed 64-bit range reads as a `u64`, or
                 // as a double where it fits neither; one inside reads as `i64`.
-                "int64" => admits(
+                Format::Int64 => admits(
                     number.is_i64()
                         || number
                             .as_f64()
@@ -427,7 +480,7 @@ impl ValueConstraints {
         }
         for keyword in &self.keywords {
             if let Keyword::Format(format) = keyword {
-                candidates.extend(format_sample(format).map(str::to_owned));
+                candidates.extend(format_sample(*format).map(str::to_owned));
             }
         }
         if let Some(found) = candidates.iter().find(|candidate| accepts(candidate)) {
@@ -580,9 +633,10 @@ impl ValueConstraints {
 
     fn construct_number(&self, fern: &serde_json::Number) -> Option<Value> {
         let value = fern.as_f64()?;
-        let integer_format = self.keywords.iter().any(|keyword| {
-            matches!(keyword, Keyword::Format(format) if format == "int32" || format == "int64")
-        });
+        let integer_format = self
+            .keywords
+            .iter()
+            .any(|keyword| matches!(keyword, Keyword::Format(Format::Int32 | Format::Int64)));
         let integer = fern.is_i64() || fern.is_u64() || (integer_format && value.fract() == 0.0);
         let mut low = f64::NEG_INFINITY;
         let mut high = f64::INFINITY;
@@ -595,12 +649,12 @@ impl ValueConstraints {
                 Keyword::Maximum(n) => high = high.min(*n),
                 Keyword::ExclusiveMaximum(n) => high = high.min(*n - step_up),
                 Keyword::MultipleOf(n) => steps.push(*n),
-                Keyword::Format(format) if format == "int32" => {
+                Keyword::Format(Format::Int32) => {
                     low = low.max(f64::from(i32::MIN));
                     high = high.min(f64::from(i32::MAX));
                 }
                 // The nearest doubles inside the signed 64-bit range.
-                Keyword::Format(format) if format == "int64" => {
+                Keyword::Format(Format::Int64) => {
                     low = low.max(-(2f64.powi(63)));
                     high = high.min(2f64.powi(63) - 1024.0);
                 }
@@ -725,12 +779,8 @@ fn own_keywords(schema: &Schema) -> Vec<Keyword> {
     if let Some(n) = schema.max_length {
         keywords.push(Keyword::MaxLength(n));
     }
-    if let Some(format) = schema
-        .format
-        .as_deref()
-        .filter(|format| FORMATS.contains(format))
-    {
-        keywords.push(Keyword::Format(format.to_owned()));
+    if let Some(format) = schema.format.as_deref().and_then(Format::parse) {
+        keywords.push(Keyword::Format(format));
     }
     // OpenAPI 3.0 spells an exclusive bound as `exclusiveMinimum: true` beside
     // `minimum`; 3.1 as the number itself.
@@ -769,38 +819,38 @@ fn own_keywords(schema: &Schema) -> Vec<Keyword> {
 
 /// A value of each string format that format accepts: the sample a constructed
 /// value starts from.
-fn format_sample(format: &str) -> Option<&'static str> {
+fn format_sample(format: Format) -> Option<&'static str> {
     Some(match format {
-        "date" => "2023-01-15",
-        "date-time" => "2024-01-15T09:30:00Z",
-        "time" => "09:30:00Z",
-        "uuid" => "d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32",
-        "email" => "user@example.com",
-        "uri" => "https://example.com",
-        "ipv4" => "192.0.2.1",
-        "ipv6" => "2001:db8::1",
-        "hostname" => "example.com",
-        _ => return None,
+        Format::Date => "2023-01-15",
+        Format::DateTime => "2024-01-15T09:30:00Z",
+        Format::Time => "09:30:00Z",
+        Format::Uuid => "d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32",
+        Format::Email => "user@example.com",
+        Format::Uri => "https://example.com",
+        Format::Ipv4 => "192.0.2.1",
+        Format::Ipv6 => "2001:db8::1",
+        Format::Hostname => "example.com",
+        Format::Int32 | Format::Int64 => return None,
     })
 }
 
-/// Whether `text` is valid in a string `format` from [`FORMATS`]; any other
-/// format admits every string.
+/// Whether `text` is valid as a string of `format`; an integer format admits
+/// every string.
 #[must_use]
-pub fn format_admits(format: &str, text: &str) -> bool {
+pub fn format_admits(format: Format, text: &str) -> bool {
     match format {
-        "date" => full_date(text),
-        "date-time" => text
+        Format::Date => full_date(text),
+        Format::DateTime => text
             .split_once(['T', 't'])
             .is_some_and(|(date, time)| full_date(date) && full_time(time)),
-        "time" => full_time(text),
-        "uuid" => uuid(text),
-        "email" => email(text),
-        "uri" => uri(text),
-        "ipv4" => ipv4(text),
-        "ipv6" => text.parse::<std::net::Ipv6Addr>().is_ok(),
-        "hostname" => hostname(text),
-        _ => true,
+        Format::Time => full_time(text),
+        Format::Uuid => uuid(text),
+        Format::Email => email(text),
+        Format::Uri => uri(text),
+        Format::Ipv4 => ipv4(text),
+        Format::Ipv6 => text.parse::<std::net::Ipv6Addr>().is_ok(),
+        Format::Hostname => hostname(text),
+        Format::Int32 | Format::Int64 => true,
     }
 }
 
@@ -1082,36 +1132,76 @@ pub fn python_value(literal: &str) -> Option<Value> {
     None
 }
 
-/// The catalog ids of the departures that repair each of Fern's constructions.
-pub mod mechanism {
+/// Fern's construction of a worked-example value a schema can reject, named
+/// by the catalog id of the departure that corrects it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Mechanism {
     /// A string written as the name of the parameter or property it fills.
-    pub const NAME: &str = "schema-rejected-name-example";
+    Name,
     /// A string written as Fern's fixed `"string"` or `"value"` placeholder.
-    pub const PLACEHOLDER: &str = "schema-rejected-placeholder-string-example";
+    Placeholder,
     /// A string Fern's IR fallback sizes by the declared lengths alone.
-    pub const SIZED: &str = "schema-rejected-sized-string-example";
+    Sized,
     /// A number written as Fern's fixed `1`, `1000000` or `1.1`.
-    pub const NUMBER: &str = "schema-rejected-number-example";
+    Number,
     /// A list written with Fern's fixed number of items.
-    pub const ARRAY: &str = "schema-rejected-array-length-example";
-    /// Every mechanism id this module's rules repair.
-    pub const ALL: [&str; 5] = [NAME, PLACEHOLDER, SIZED, NUMBER, ARRAY];
-    /// A string enum's first member, the example Fern writes for an enum,
-    /// which the earlier `pattern-narrowed-enum-example` departure corrects.
-    pub const ENUM_MEMBER: &str = "pattern-narrowed-enum-example";
+    Array,
+    /// A string enum's first member, which the earlier
+    /// `pattern-narrowed-enum-example` departure corrects.
+    EnumMember,
     /// A declared integer past 2^53 written as the double nearest it, which
     /// the earlier `int64-example-rounded-out-of-range` departure corrects.
-    pub const ROUNDED: &str = "int64-example-rounded-out-of-range";
+    Rounded,
+}
+
+impl Mechanism {
     /// Every mechanism an inventory row may name.
-    pub const NAMED: [&str; 7] = [
-        NAME,
-        PLACEHOLDER,
-        SIZED,
-        NUMBER,
-        ARRAY,
-        ENUM_MEMBER,
-        ROUNDED,
+    pub const ALL: [Mechanism; 7] = [
+        Mechanism::Name,
+        Mechanism::Placeholder,
+        Mechanism::Sized,
+        Mechanism::Number,
+        Mechanism::Array,
+        Mechanism::EnumMember,
+        Mechanism::Rounded,
     ];
+
+    /// The mechanisms the `schema-rejected-*` departures repair.
+    pub const REPAIRED: [Mechanism; 5] = [
+        Mechanism::Name,
+        Mechanism::Placeholder,
+        Mechanism::Sized,
+        Mechanism::Number,
+        Mechanism::Array,
+    ];
+
+    /// The repaired mechanisms that write one scalar.
+    pub const SCALAR: [Mechanism; 4] = [
+        Mechanism::Name,
+        Mechanism::Placeholder,
+        Mechanism::Sized,
+        Mechanism::Number,
+    ];
+
+    /// The catalog id of the departure that corrects this construction.
+    #[must_use]
+    pub fn id(self) -> &'static str {
+        match self {
+            Mechanism::Name => "schema-rejected-name-example",
+            Mechanism::Placeholder => "schema-rejected-placeholder-string-example",
+            Mechanism::Sized => "schema-rejected-sized-string-example",
+            Mechanism::Number => "schema-rejected-number-example",
+            Mechanism::Array => "schema-rejected-array-length-example",
+            Mechanism::EnumMember => "pattern-narrowed-enum-example",
+            Mechanism::Rounded => "int64-example-rounded-out-of-range",
+        }
+    }
+
+    /// The mechanism whose departure is the catalog id `id`, if one is.
+    #[must_use]
+    pub fn parse(id: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|mechanism| mechanism.id() == id)
+    }
 }
 
 /// Why an inventoried value is, or is not, written differently from Fern.
@@ -1164,7 +1254,7 @@ pub struct ExampleValue {
     /// The generated file's `/`-separated path relative to the SDK root.
     pub file: String,
     /// crozier's 1-based line in that file.
-    pub line: usize,
+    pub line: std::num::NonZeroUsize,
     /// The keyword argument and, inside a body, the dotted path to the value.
     pub argument: String,
     /// The value as Fern's construction writes it.
@@ -1173,8 +1263,8 @@ pub struct ExampleValue {
     pub crozier: String,
     /// The rejecting keyword and its declared value.
     pub constraint: String,
-    /// The catalog id of the departure covering the value's mechanism, if any.
-    pub mechanism: Option<&'static str>,
+    /// The construction the value is, where it is Fern's own.
+    pub mechanism: Option<Mechanism>,
     /// What crozier does about it.
     pub disposition: Disposition,
 }
@@ -1235,15 +1325,16 @@ impl ExampleValue {
             escape(&self.fern),
             escape(&self.crozier),
             escape(&self.constraint),
-            self.mechanism.unwrap_or("-").to_string(),
+            self.mechanism.map_or("-", Mechanism::id).to_string(),
             self.disposition.as_str().to_string(),
         ]
         .join("\t")
     }
 
-    /// The value a record line holds, given the catalog ids a mechanism names.
+    /// The value a record line holds; `None` for a line that is not one, a
+    /// line number of zero included.
     #[must_use]
-    pub fn parse(line: &str, mechanisms: &[&'static str]) -> Option<Self> {
+    pub fn parse(line: &str) -> Option<Self> {
         let fields: Vec<&str> = line.split('\t').collect();
         let [file, number, argument, fern, crozier, constraint, mechanism, disposition] =
             fields.as_slice()
@@ -1259,7 +1350,7 @@ impl ExampleValue {
             constraint: unescape(constraint),
             mechanism: match *mechanism {
                 "-" => None,
-                id => Some(*mechanisms.iter().find(|known| **known == id)?),
+                id => Some(Mechanism::parse(id)?),
             },
             disposition: Disposition::parse(disposition)?,
         })
@@ -1536,7 +1627,7 @@ mod tests {
         assert_eq!(counts.distinct_items(&[Value::from(1)], 3), None);
         let ids = constraints(serde_json::json!({"type": "string", "format": "uuid"}));
         assert_eq!(
-            ids.distinct_items(&[Value::from(format_sample("uuid").unwrap())], 2),
+            ids.distinct_items(&[Value::from(format_sample(Format::Uuid).unwrap())], 2),
             None
         );
         assert_eq!(tags.distinct_items(&[], 2), None);
