@@ -74,6 +74,8 @@ schemars = "1"
 tempfile = { workspace = true }
 thiserror = "2"
 fancy-regex = "0.16"
+# Reads a schema `pattern` to construct a worked-example value it matches.
+regex-syntax = "0.8"
 
 [dev-dependencies]
 tempfile = { workspace = true }

@@ -285,6 +285,33 @@ impl GoldenLedger {
             .collect()
     }
 
+    /// The golden whose rows account for `file`, as the ledger spells it, and
+    /// whether the inventory of compared goldens records it.
+    #[allow(
+        dead_code,
+        reason = "only crozier-e2e's inventory of example values asks; the module is shared"
+    )]
+    pub fn owner_of(&self, file: &str) -> (&str, bool) {
+        let owner = self.owner(file);
+        (&owner.golden, owner.known)
+    }
+
+    /// Every golden this comparison's rows can belong to — its own, then its
+    /// base's — with whether the inventory of compared goldens records it.
+    #[allow(
+        dead_code,
+        reason = "only crozier-e2e's inventory of example values asks; the module is shared"
+    )]
+    pub fn goldens(&self) -> Vec<(&str, bool)> {
+        let mut out = vec![(self.golden.as_str(), self.known)];
+        out.extend(
+            self.base
+                .iter()
+                .map(|(base, _)| (base.golden.as_str(), base.known)),
+        );
+        out
+    }
+
     /// Whether a row this comparison is held to names `file`.
     #[allow(
         dead_code,

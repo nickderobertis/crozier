@@ -4735,6 +4735,8 @@ fn fixture_match_count(
             (rel, std::fs::read_to_string(path).unwrap())
         })
         .collect();
+    // The source document, as the corpus gate supplies it, so a departure
+    // whose rule reads the specification applies here too.
     let context = crozier::departures::Context::from_sources(
         expected
             .iter()
@@ -4742,6 +4744,9 @@ fn fixture_match_count(
         files
             .iter()
             .map(|(rel, text)| (rel.as_str(), text.as_str())),
+    )
+    .with_source_document(
+        crozier::openapi::load(&fixture.join("openapi.yml")).expect("the fixture's document loads"),
     );
     let mut counted = std::collections::BTreeSet::new();
     let mut observed = Vec::new();

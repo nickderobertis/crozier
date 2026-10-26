@@ -1835,6 +1835,11 @@ pub struct Schema {
     /// so a correction that cannot see it must decline.
     #[serde(skip)]
     pub(crate) discarded_composition: bool,
+    /// The `allOf` members that same normalization discarded, kept so the
+    /// in-scope keywords a worked-example value must satisfy stay readable
+    /// ([`crate::example_values`]). Not a wire field; generation never reads it.
+    #[serde(skip)]
+    pub(crate) discarded_all_of: Option<Vec<Schema>>,
     /// Whether the node declares an applicator crozier never reads — `if`, or a
     /// `$dynamicRef`/`$recursiveRef` — which can still constrain an instance.
     /// Only their presence is kept, so a correction that validates a value
@@ -3218,7 +3223,9 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                     .any(Option::is_some);
                 node.one_of = None;
                 node.any_of = None;
-                node.all_of = None;
+                if let Some(members) = node.all_of.take() {
+                    node.discarded_all_of = Some(members);
+                }
             }
         });
     });

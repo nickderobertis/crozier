@@ -442,6 +442,101 @@
   reason: Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
   evidence: docs/departures/evidence/request-alias-reference-parameters.md
 
+- id: schema-rejected-name-example
+  kind: fern-defect
+  trigger: >-
+    A string parameter or property, in a worked example of `README.md`,
+    `reference.md` or a generated client's docstring, whose schema declares no
+    example Fern uses and rejects the parameter's or property's own name by a
+    `pattern`, `minLength`, `maxLength`, `enum`, `const` or a `date`,
+    `date-time`, `time`, `uuid`, `email`, `uri`, `ipv4`, `ipv6` or `hostname`
+    `format`. The comparison has the parsed source document.
+  fern: >-
+    The name as the value (discord's `guild_id="guild_id"` beneath
+    `pattern: ^(0|[1-9][0-9]*)$`).
+  crozier: >-
+    The specification's own declared example for that schema when the
+    schema accepts it, else its declared `default` when the schema accepts it,
+    else a value constructed deterministically to satisfy every in-scope
+    keyword. Where no such value exists or crozier cannot decide validity,
+    Fern's value stays. The argument, its place and every other line are
+    unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule: the API rejects the call the example shows. Validating Fern's value
+    against its source schema rejects it; crozier's is accepted.
+  evidence: docs/departures/evidence/schema-rejected-name-example.md
+
+- id: schema-rejected-number-example
+  kind: fern-defect
+  trigger: >-
+    An integer or number parameter or property, in a worked example of
+    `README.md`, `reference.md` or a generated client's docstring, whose schema
+    rejects Fern's fixed placeholder (`1`, `1000000` or `1.1`) by an `enum`,
+    `const`, `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`,
+    `multipleOf` or the `int32` or `int64` range. The comparison has the parsed
+    source document.
+  fern: >-
+    The fixed placeholder as the value (discord's `trigger_type=1` beneath
+    `enum: [4]`).
+  crozier: >-
+    The specification's own declared example for that schema when the
+    schema accepts it, else its declared `default` when the schema accepts it,
+    else a value constructed deterministically to satisfy every in-scope
+    keyword. Where no such value exists or crozier cannot decide validity,
+    Fern's value stays. The argument, its place and every other line are
+    unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule: the API rejects the call the example shows. Validating Fern's value
+    against its source schema rejects it; crozier's is accepted.
+  evidence: docs/departures/evidence/schema-rejected-number-example.md
+
+- id: schema-rejected-placeholder-string-example
+  kind: fern-defect
+  trigger: >-
+    A string in a worked example of `README.md`, `reference.md` or a
+    generated client's docstring that Fern writes as its fixed `"string"` or
+    `"value"` placeholder, whose schema rejects that placeholder by an in-scope
+    keyword or format. The comparison has the parsed source document.
+  fern: >-
+    The fixed placeholder `"string"` or `"value"` as the value.
+  crozier: >-
+    The specification's own declared example for that schema when the
+    schema accepts it, else its declared `default` when the schema accepts it,
+    else a value constructed deterministically to satisfy every in-scope
+    keyword. Where no such value exists or crozier cannot decide validity,
+    Fern's value stays. The argument, its place and every other line are
+    unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule: the API rejects the call the example shows. Validating Fern's value
+    against its source schema rejects it; crozier's is accepted.
+  evidence: docs/departures/evidence/schema-rejected-placeholder-string-example.md
+
+- id: schema-rejected-sized-string-example
+  kind: fern-defect
+  trigger: >-
+    A string in a worked example of `README.md`, `reference.md` or a
+    generated client's docstring that Fern's fallback example writer sizes by
+    the declared `minLength` or `maxLength` alone (`"apricot"` for seven),
+    whose schema rejects that sample by another in-scope keyword or format.
+    The comparison has the parsed source document.
+  fern: >-
+    The sized sample word as the value.
+  crozier: >-
+    The specification's own declared example for that schema when the
+    schema accepts it, else its declared `default` when the schema accepts it,
+    else a value constructed deterministically to satisfy every in-scope
+    keyword. Where no such value exists or crozier cannot decide validity,
+    Fern's value stays. The argument, its place and every other line are
+    unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule: the API rejects the call the example shows. Validating Fern's value
+    against its source schema rejects it; crozier's is accepted.
+  evidence: docs/departures/evidence/schema-rejected-sized-string-example.md
+
 - id: sdk-identity-header-prefix
   kind: branding
   trigger: >-

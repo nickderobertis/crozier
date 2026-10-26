@@ -20,6 +20,7 @@ use std::sync::OnceLock;
 use serde::Deserialize;
 
 mod declared_examples;
+mod rejected_examples;
 
 /// The catalog's source, as compiled into the binary.
 pub const CATALOG_SOURCE: &str = include_str!("../assets/departures.yml");
@@ -294,6 +295,7 @@ pub struct Context {
     source_enum_examples: OnceLock<Vec<SourceEnumExample>>,
     source_int64_examples: OnceLock<BTreeSet<i64>>,
     source_string_consts: OnceLock<BTreeSet<String>>,
+    source_rejected_examples: OnceLock<rejected_examples::Index>,
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
@@ -336,6 +338,7 @@ impl Context {
             source_enum_examples: OnceLock::new(),
             source_int64_examples: OnceLock::new(),
             source_string_consts: OnceLock::new(),
+            source_rejected_examples: OnceLock::new(),
             roots: None,
             reference_classes: OnceLock::from(classes(reference.iter().copied())),
             crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
@@ -379,6 +382,7 @@ impl Context {
         self.source_enum_examples = OnceLock::new();
         self.source_int64_examples = OnceLock::new();
         self.source_string_consts = OnceLock::new();
+        self.source_rejected_examples = OnceLock::new();
         self
     }
 
@@ -1709,7 +1713,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 28] = [
+pub const RULE_IDS: [&str; 32] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1733,6 +1737,10 @@ pub const RULE_IDS: [&str; 28] = [
     "readme-client-class-casing",
     "repeated-credential-example-keyword",
     "request-alias-reference-parameters",
+    "schema-rejected-name-example",
+    "schema-rejected-number-example",
+    "schema-rejected-placeholder-string-example",
+    "schema-rejected-sized-string-example",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
     "sdk-variable-docs-examples",
@@ -1847,6 +1855,26 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "stream-reference-return-type" => Rule {
             line: Some(stream_reference_return_type),
+            ..none
+        },
+        "schema-rejected-name-example" => Rule {
+            region: Some(schema_rejected_name_example_region),
+            line: Some(schema_rejected_name_example),
+            ..none
+        },
+        "schema-rejected-number-example" => Rule {
+            region: Some(schema_rejected_number_example_region),
+            line: Some(schema_rejected_number_example),
+            ..none
+        },
+        "schema-rejected-placeholder-string-example" => Rule {
+            region: Some(schema_rejected_placeholder_string_example_region),
+            line: Some(schema_rejected_placeholder_string_example),
+            ..none
+        },
+        "schema-rejected-sized-string-example" => Rule {
+            region: Some(schema_rejected_sized_string_example_region),
+            line: Some(schema_rejected_sized_string_example),
             ..none
         },
         "sdk-identity-header-prefix" => Rule {
@@ -2542,6 +2570,58 @@ fn docstring_literal_dollar_escape(pair: &Pair<'_>, fern: &str, crozier: &str) -
         && fern == crozier.replace('$', "\\\\$")
         && documented_example_line(pair.rel, pair.fern, fern)
         && documented_example_line(pair.rel, pair.crozier, crozier)
+}
+
+/// `schema-rejected-name-example`: see [`rejected_examples::holds`].
+fn schema_rejected_name_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    rejected_examples::holds(crate::example_values::mechanism::NAME, pair, fern, crozier)
+}
+
+/// `schema-rejected-name-example` beside another difference: see [`rejected_examples::region`].
+fn schema_rejected_name_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    rejected_examples::region(crate::example_values::mechanism::NAME, pair)
+}
+
+/// `schema-rejected-number-example`: see [`rejected_examples::holds`].
+fn schema_rejected_number_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    rejected_examples::holds(
+        crate::example_values::mechanism::NUMBER,
+        pair,
+        fern,
+        crozier,
+    )
+}
+
+/// `schema-rejected-number-example` beside another difference: see [`rejected_examples::region`].
+fn schema_rejected_number_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    rejected_examples::region(crate::example_values::mechanism::NUMBER, pair)
+}
+
+/// `schema-rejected-placeholder-string-example`: see [`rejected_examples::holds`].
+fn schema_rejected_placeholder_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    rejected_examples::holds(
+        crate::example_values::mechanism::PLACEHOLDER,
+        pair,
+        fern,
+        crozier,
+    )
+}
+
+/// `schema-rejected-placeholder-string-example` beside another difference: see [`rejected_examples::region`].
+fn schema_rejected_placeholder_string_example_region(
+    pair: &Pair<'_>,
+) -> Result<Option<Region>, String> {
+    rejected_examples::region(crate::example_values::mechanism::PLACEHOLDER, pair)
+}
+
+/// `schema-rejected-sized-string-example`: see [`rejected_examples::holds`].
+fn schema_rejected_sized_string_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    rejected_examples::holds(crate::example_values::mechanism::SIZED, pair, fern, crozier)
+}
+
+/// `schema-rejected-sized-string-example` beside another difference: see [`rejected_examples::region`].
+fn schema_rejected_sized_string_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    rejected_examples::region(crate::example_values::mechanism::SIZED, pair)
 }
 
 /// Correct only a generated default rejected by a scalar use-site pattern.
@@ -6800,5 +6880,138 @@ mod tests {
             "            slug=\"s\",\n            bundle=\"example_bundle\",\n",
         );
         assert!(region_of(rule, "src/acme/client.py", fern, &single, &context).is_none());
+    }
+
+    /// The rejected-example rules through the comparison engine: a client
+    /// module whose docstring example passes `keyword=fern` against crozier's
+    /// `keyword=crozier`, with `runtime` a line outside the example.
+    fn rejected_example_comparison(
+        source: &serde_json::Value,
+        (fern, crozier): (&str, &str),
+        runtime: (&str, &str),
+    ) -> crate::parity::FileComparison {
+        let module = |value: &str, code: &str| {
+            format!(
+                "class Client:\n    def read(self) -> None:\n        \"\"\"\n        Examples\n        \
+                 --------\n        from api import Api\n\n        client = Api()\n        \
+                 client.read(\n            {value}\n        )\n        \"\"\"\n        {code}\n"
+            )
+        };
+        let context = Context::default()
+            .with_source_document(serde_json::from_value(source.clone()).expect("a source"));
+        crate::parity::compare_file(
+            &context,
+            "src/api/client.py",
+            &module(crozier, runtime.1),
+            &module(fern, runtime.0),
+        )
+        .expect("the comparison runs")
+    }
+
+    /// One document declaring `schema` as the property `field` of a body model.
+    fn rejected_example_source(field: &str, schema: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Body": {
+                "type": "object",
+                "properties": {field: schema}
+            }}}
+        })
+    }
+
+    #[test]
+    fn each_rejected_example_rule_accounts_for_its_repair_and_nothing_else() {
+        let cases = [
+            (
+                "schema-rejected-name-example",
+                rejected_example_source(
+                    "guild_id",
+                    serde_json::json!({"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}),
+                ),
+                ("guild_id=\"guild_id\",", "guild_id=\"0\","),
+                "guild_id=\"guild\",",
+            ),
+            (
+                "schema-rejected-number-example",
+                rejected_example_source(
+                    "count",
+                    serde_json::json!({"type": "integer", "minimum": 5}),
+                ),
+                ("count=1,", "count=5,"),
+                "count=-1,",
+            ),
+            (
+                "schema-rejected-placeholder-string-example",
+                rejected_example_source(
+                    "labels",
+                    serde_json::json!({"type": "object",
+                        "additionalProperties": {"type": "string", "format": "uuid"}}),
+                ),
+                (
+                    "labels={\"key\": \"value\"},",
+                    "labels={\"key\": \"d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32\"},",
+                ),
+                "labels={\"key\": \"not-a-uuid\"},",
+            ),
+            (
+                "schema-rejected-sized-string-example",
+                rejected_example_source(
+                    "code",
+                    serde_json::json!({"type": "string", "minLength": 7, "pattern": "^[0-9]+$"}),
+                ),
+                ("code=\"apricot\",", "code=\"0000000\","),
+                "code=\"abcdefg\",",
+            ),
+        ];
+        for (id, source, (fern, crozier), rejected) in cases {
+            // The repair is the rule's departure, and the only one.
+            let compared = rejected_example_comparison(&source, (fern, crozier), ("pass", "pass"));
+            assert!(compared.matches(), "{id}: {:?}", compared.diff());
+            assert_eq!(
+                compared.departures.iter().map(|d| d.id).collect::<Vec<_>>(),
+                [id],
+                "{id}"
+            );
+            // A replacement the schema itself rejects is no repair.
+            let compared = rejected_example_comparison(&source, (fern, rejected), ("pass", "pass"));
+            assert!(!compared.matches(), "{id}: {rejected} was accepted");
+            // Nor is any change to a value the schema accepts.
+            let permissive = rejected_example_source(
+                source["components"]["schemas"]["Body"]["properties"]
+                    .as_object()
+                    .and_then(|properties| properties.keys().next())
+                    .expect("one property"),
+                serde_json::json!({"type": "object", "additionalProperties": true}),
+            );
+            let compared =
+                rejected_example_comparison(&permissive, (fern, crozier), ("pass", "pass"));
+            assert!(!compared.matches(), "{id}: an accepted value was replaced");
+            // Nor the same change outside the documented example.
+            let compared = rejected_example_comparison(
+                &source,
+                (fern, fern),
+                (fern.trim_end_matches(','), crozier.trim_end_matches(',')),
+            );
+            assert!(!compared.matches(), "{id}: a runtime line was excused");
+            // Nor without the source document to validate against.
+            let context = Context::default();
+            let pair_lines = ([fern], [crozier]);
+            assert!(!rejected_examples::holds(
+                crate::example_values::mechanism::ALL
+                    .into_iter()
+                    .find(|known| *known == id)
+                    .expect("a mechanism"),
+                &Pair {
+                    rel: "src/api/client.py",
+                    fern: &pair_lines.0,
+                    crozier: &pair_lines.1,
+                    context: &context,
+                },
+                fern,
+                crozier,
+            ));
+        }
     }
 }

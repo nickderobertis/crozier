@@ -184,6 +184,7 @@ fn a_stale_row_fails_naming_it() {
         None,
         true,
         loaded(root.path()).golden(GOLDEN, &[]),
+        None,
     )
     .expect_err("the stale row fails");
     assert!(
@@ -434,6 +435,7 @@ fn the_flat_and_reporter_comparison_holds_the_ledger() {
         None,
         true,
         ledger(),
+        None,
     )
     .expect("the row records the departure");
     assert!(differences.is_empty(), "{differences:?}");
@@ -444,12 +446,13 @@ fn the_flat_and_reporter_comparison_holds_the_ledger() {
         Some("client.py"),
         true,
         ledger(),
+        None,
     )
     .expect("the wrapper is outside the filter");
     assert!(differences.is_empty(), "{differences:?}");
     let drifted = output(&format!("{CROZIER_WRAPPER}x = 1\n"));
-    let differences =
-        golden_differences(&expected, drifted.path(), None, true, ledger()).expect("recorded");
+    let differences = golden_differences(&expected, drifted.path(), None, true, ledger(), None)
+        .expect("recorded");
     assert!(
         matches!(&differences[..], [(rel, crozier::parity::Difference::Text(Some(diff)))]
             if rel == WRAPPER && diff.contains("+ x = 1")),
@@ -461,6 +464,7 @@ fn the_flat_and_reporter_comparison_holds_the_ledger() {
         None,
         true,
         Err(vec!["no ledger".to_string()]),
+        None,
     );
     assert_eq!(refused, Err("no ledger".to_string()));
 }

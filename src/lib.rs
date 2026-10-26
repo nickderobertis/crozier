@@ -25,6 +25,7 @@ pub mod departures;
 pub mod document_refusals;
 pub mod emit;
 pub mod error;
+pub mod example_values;
 pub mod ir;
 mod name_refusals;
 pub mod naming;
@@ -122,7 +123,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
-    let files = emit::generate(&ir)?;
+    let (files, example_values) = emit::generate_recording(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
     // In the flat layout that tree is the output root itself.
@@ -133,7 +134,25 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         settings::Layout::Flat => emit::clean_flat_tree(&config.output)?,
     }
     emit::write_files(&config.output, &files)?;
+    record_example_values(&config.output, &example_values)?;
     Ok(files)
+}
+
+/// Write the worked-example values a schema rejects, at their lines in the
+/// tree just written to `output`, where [`example_values::RECORD_ENV`] names a
+/// directory: the golden comparisons read it to hold
+/// `docs/departures/evidence/invalid-example-values/inventory.tsv`. Without the
+/// variable nothing is written.
+fn record_example_values(
+    output: &std::path::Path,
+    values: &[example_values::ExampleValue],
+) -> Result<()> {
+    let Some(directory) = std::env::var_os(example_values::RECORD_ENV) else {
+        return Ok(());
+    };
+    let path = PathBuf::from(directory).join(example_values::record_file_name(output));
+    let text: String = values.iter().map(|value| value.render() + "\n").collect();
+    std::fs::write(&path, text).map_err(|source| Error::WriteOutput { path, source })
 }
 
 /// The names a generation run would use once crozier's defaults are filled in:

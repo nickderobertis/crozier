@@ -109,6 +109,11 @@ mod departures_ledger;
 
 use departures_ledger::{GoldenLedger, Ledger, Observed};
 
+/// The committed inventory of worked-example values Fern writes that their own
+/// schema rejects, held per golden beside the ledger.
+#[path = "e2e/example_values_inventory.rs"]
+mod example_values_inventory;
+
 /// The ledger's contract, driven through the gates' own comparison.
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
@@ -1064,7 +1069,14 @@ fn crozier_bin() -> PathBuf {
 
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
-    Command::new(crozier_bin())
+    let mut command = Command::new(crozier_bin());
+    // Every generation records the worked-example values a schema rejects, for
+    // the comparison of its tree to hold the inventory's rows to.
+    command.env(
+        crozier::example_values::RECORD_ENV,
+        example_values_inventory::records_dir(),
+    );
+    command
 }
 
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
@@ -1150,7 +1162,19 @@ fn assert_generated_tree_matches(
             });
         observed.push((rel, 0, id.to_string()));
     }
-    let failures = ledger.check(&observed, &|_| true);
+    let mut failures = ledger.check(&observed, &|_| true);
+    let compared = |rel: &str| !c.unmatched.contains(&rel);
+    match example_values_inventory::observed_rows(
+        ledger,
+        &context,
+        expected_root,
+        out,
+        &observed,
+        &compared,
+    ) {
+        Ok(rows) => failures.extend(example_values_inventory::check(ledger, &rows, &compared)),
+        Err(found) => failures.extend(found),
+    }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     for rel in c.unmatched {
@@ -1731,6 +1755,21 @@ fn golden_tree_failures(
     failures.extend(
         ledger
             .check(&observed, &|_| true)
+            .into_iter()
+            .map(|failure| format!("{key}: {failure}")),
+    );
+    let inventory = example_values_inventory::observed_rows(
+        ledger,
+        &context,
+        expected_root,
+        out,
+        &observed,
+        &|_| true,
+    )
+    .map(|rows| example_values_inventory::check(ledger, &rows, &|_| true))
+    .unwrap_or_else(|found| found);
+    failures.extend(
+        inventory
             .into_iter()
             .map(|failure| format!("{key}: {failure}")),
     );
@@ -2973,10 +3012,13 @@ fn declared_reference_example_restrictions_hold_through_compare() {
             "/components/schemas/TrackingCode/minLength",
             serde_json::json!(100),
         ),
+        // A pattern Fern's own `tracking` placeholder satisfies too, so the
+        // `schema-rejected-name-example` repair has nothing to correct and
+        // only the declared example's unsupported assertion is in play.
         (
             "unsupported-query-assertion",
             "/components/schemas/TrackingCode/pattern",
-            serde_json::json!("^harbor-"),
+            serde_json::json!("^(harbor-[0-9]+|tracking)$"),
         ),
         (
             "constrained-target",
@@ -14086,17 +14128,45 @@ fn golden_differences(
     file_filter: Option<&str>,
     include_text_diffs: bool,
     ledger: Result<GoldenLedger, Vec<String>>,
+    source: Option<&Path>,
 ) -> Result<Vec<(String, Difference)>, String> {
     let ledger = ledger.map_err(|failures| failures.join("\n"))?;
-    let compared = parity::compare_trees(expected_root, out, file_filter, include_text_diffs)?;
+    // The parsed source document, as every other golden comparison supplies
+    // it, so a departure whose rule reads the specification applies here too.
+    let load = |spec: &Path| {
+        crozier::openapi::load(spec).map_err(|error| format!("{}: {error}", spec.display()))
+    };
+    let compared = parity::compare_trees_with_document(
+        expected_root,
+        out,
+        file_filter,
+        include_text_diffs,
+        source.map(load).transpose()?,
+    )?;
     let observed: Vec<Observed> = compared
         .departures
         .into_iter()
         .map(|departure| (departure.file, departure.location.as_number(), departure.id))
         .collect();
-    let failures = ledger.check(&observed, &|rel| {
+    let mut failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))
     });
+    // A whole-tree comparison holds the inventory of rejected example values
+    // too, as the ledger.
+    if let (None, Some(spec)) = (file_filter, source) {
+        let context = Context::from_trees(expected_root, out).with_source_document(load(spec)?);
+        match example_values_inventory::observed_rows(
+            &ledger,
+            &context,
+            expected_root,
+            out,
+            &observed,
+            &|_| true,
+        ) {
+            Ok(rows) => failures.extend(example_values_inventory::check(&ledger, &rows, &|_| true)),
+            Err(found) => failures.extend(found),
+        }
+    }
     if failures.is_empty() {
         Ok(compared.differences)
     } else {
@@ -14125,12 +14195,14 @@ fn assert_flat_golden_matches(fixture: &str) {
         return;
     };
     assert_inventoried(&golden_path(&expected_root));
+    let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
     let differences = golden_differences(
         &expected_root,
         out.path(),
         None,
         true,
         departure_ledger().golden(&golden_path(&expected_root), &[]),
+        Some(&spec),
     )
     .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
@@ -14383,12 +14455,14 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
+        let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
         let differences = golden_differences(
             &expected_root,
             out.path(),
             None,
             false,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
+            Some(&spec),
         )
         .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
@@ -14556,12 +14630,14 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
+        let (spec, _staged) = prepare_corpus_source(c);
         let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
+            Some(&spec),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -14594,12 +14670,14 @@ fn report_fixture_diffs() {
         };
         println!("\n=== {label} ===");
         let expected_root = fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR);
+        let (spec, _staged) = prepare_corpus_source(flat_golden_corpus(golden));
         let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
+            Some(&spec),
         ) {
             Ok(differences) => differences,
             Err(error) => {

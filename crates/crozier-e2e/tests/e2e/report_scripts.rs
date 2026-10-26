@@ -191,17 +191,21 @@ fn a_report_given_extra_arguments_is_refused_with_the_usage() {
 }
 
 /// The stand-in for `cargo nextest`: the recording run leaves one record per
-/// golden under `$CROZIER_RECORD_DEPARTURES`; the merge (`write_departures_ledger`)
-/// writes the ledger from them, failing as `$MERGE_FAILS` says.
+/// golden under `$CROZIER_RECORD_DEPARTURES` and one example-value row under
+/// `$CROZIER_RECORD_EXAMPLE_INVENTORY`; the merge (`write_departures_ledger` and
+/// `write_example_values_inventory`, one run) writes the ledger and the
+/// inventory from them, failing as `$MERGE_FAILS` says.
 const NEXTEST: &str = r#"case "$*" in
-  *write_departures_ledger*)
+  *write_departures_ledger*write_example_values_inventory*)
     [ -z "${MERGE_FAILS:-}" ] || { echo "ledger refused: $MERGE_FAILS"; exit 100; }
-    { printf 'golden\tfile\tline\tdeparture\n'; cat "$CROZIER_RECORD_DEPARTURES"/*; } > tests/fixtures/departures-ledger.tsv ;;
+    { printf 'golden\tfile\tline\tdeparture\n'; cat "$CROZIER_RECORD_DEPARTURES"/*; } > tests/fixtures/departures-ledger.tsv
+    { printf 'golden\tfile\tline\targument\tfern_value\tconstraint\tmechanism\tdisposition\n'; cat "$CROZIER_RECORD_EXAMPLE_INVENTORY"/*; } > docs/departures/evidence/invalid-example-values/inventory.tsv ;;
   *)
     [ "${CROZIER_REQUIRE_CORPUS:-}" = 1 ] || { echo "recorded without CROZIER_REQUIRE_CORPUS"; exit 100; }
     [ -z "${RECORD_FAILS:-}" ] || { echo "comparison failed: $RECORD_FAILS"; exit 100; }
     printf 'petstore\tREADME.md\t1\tbranding\n' > "$CROZIER_RECORD_DEPARTURES/petstore"
-    printf 'plantstore\tREADME.md\t1\tbranding\n' > "$CROZIER_RECORD_DEPARTURES/plantstore" ;;
+    printf 'plantstore\tREADME.md\t1\tbranding\n' > "$CROZIER_RECORD_DEPARTURES/plantstore"
+    printf 'petstore\tREADME.md\t9\tpet_id\t"pet_id"\tformat=uuid\tschema-rejected-name-example\trepaired\n' > "$CROZIER_RECORD_EXAMPLE_INVENTORY/petstore" ;;
 esac
 "#;
 
@@ -217,6 +221,13 @@ fn departures_ledger(env: &str) -> Run {
                 "golden\tfile\tline\tdeparture\n",
             )
             .unwrap();
+            std::fs::create_dir_all(root.join("docs/departures/evidence/invalid-example-values"))
+                .unwrap();
+            std::fs::write(
+                root.join("docs/departures/evidence/invalid-example-values/inventory.tsv"),
+                "golden\tfile\tline\targument\tfern_value\tconstraint\tmechanism\tdisposition\n",
+            )
+            .unwrap();
         },
     )
 }
@@ -230,8 +241,19 @@ fn the_ledger_is_recorded_then_merged_and_its_rows_reported() {
         "golden\tfile\tline\tdeparture\npetstore\tREADME.md\t1\tbranding\nplantstore\tREADME.md\t1\tbranding\n"
     );
     assert_eq!(
+        std::fs::read_to_string(
+            run.root
+                .path()
+                .join("docs/departures/evidence/invalid-example-values/inventory.tsv")
+        )
+        .unwrap(),
+        "golden\tfile\tline\targument\tfern_value\tconstraint\tmechanism\tdisposition\n\
+         petstore\tREADME.md\t9\tpet_id\t\"pet_id\"\tformat=uuid\tschema-rejected-name-example\trepaired\n"
+    );
+    assert_eq!(
         run.stdout,
-        "departures-ledger: wrote tests/fixtures/departures-ledger.tsv (2 rows)\n"
+        "departures-ledger: wrote tests/fixtures/departures-ledger.tsv (2 rows) and \
+         docs/departures/evidence/invalid-example-values/inventory.tsv (1 rows)\n"
     );
     let calls: Vec<_> = run.calls.lines().collect();
     assert_eq!(calls.len(), 2, "{}", run.calls);
@@ -249,7 +271,8 @@ fn the_ledger_is_recorded_then_merged_and_its_rows_reported() {
     );
     assert!(
         calls[1].contains("--run-ignored only")
-            && calls[1].contains("test(=departures_ledger_gate::write_departures_ledger)"),
+            && calls[1].contains("test(=departures_ledger_gate::write_departures_ledger)")
+            && calls[1].contains("test(=example_values_inventory::write_example_values_inventory)"),
         "{}",
         calls[1]
     );
@@ -293,7 +316,7 @@ fn a_refused_merge_fails_with_its_log_and_the_fix() {
     );
     assert!(
         run.stderr
-            .contains("departures-ledger: the merged ledger was refused (above)"),
+            .contains("departures-ledger: the merged ledger or inventory was refused (above)"),
         "{}",
         run.stderr
     );
