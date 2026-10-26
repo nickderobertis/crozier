@@ -2006,6 +2006,13 @@ docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core
 docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	README.md	44	wrapped-union-member-docs-example
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	reference.md	24	wrapped-union-member-docs-example
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tram-route-query/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tram-route-query/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tram-route-query/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

@@ -37,11 +37,11 @@ inline-anyof-variants	anyof-array-variant-anyof-nullable-item	src/ir.rs::InlineH
 inline-anyof-variants	anyof-array-variant-closed-object-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	14	14
 inline-anyof-variants	anyof-array-variant-composed-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	14	14
 inline-anyof-variants	anyof-array-variant-oneof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
-inline-anyof-variants	anyof-oneof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	48	67
+inline-anyof-variants	anyof-oneof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	49	68
 inline-body-readonly-own-overlap	request-body-content	src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]	4	5
 inline-oneof-variants	annotated-ref-shape	src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]	15	16
-inline-oneof-variants	oneof-anyof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	48	67
-inline-oneof-variants	oneof-array-variant-anyof-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	44	44
+inline-oneof-variants	oneof-anyof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	49	68
+inline-oneof-variants	oneof-array-variant-anyof-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	45	45
 inline-oneof-variants	oneof-array-variant-closed-object-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	14	14
 inline-oneof-variants	oneof-closed-empty-object-variant	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	12	12
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
@@ -107,11 +107,13 @@ slashless-json-response	media-type-malformed-key	src/ir.rs::has_dispatchable_med
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
 stream-condition-union-body	fern-streaming-extension	src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]	3	3
 streaming-extension-terminator	fern-streaming-extension	src/emit.rs::sse_end[=\x7cend\x7c format!]	3	3
-survey-map-value-union	additional-properties-schema	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	47	47
-survey-map-value-union	anyof-map-variant-anyof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	47	47
-survey-map-value-union	anyof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	47	47
-survey-map-value-union	oneof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	47	47
+survey-map-value-union	additional-properties-schema	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
+survey-map-value-union	anyof-map-variant-anyof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
+survey-map-value-union	anyof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
+survey-map-value-union	oneof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
 thermostat-nullable-member	nullable	src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]	2	2
+tidepool-survey-log	discriminator-mapping	src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	18	20
+tidepool-survey-log	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if union_target \{]	24	27
 transcript-format-part	media-type-multipart	src/ir.rs::nullable_enum_part[    member$]	6	6
 union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
 verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1

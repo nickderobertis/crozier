@@ -2173,13 +2173,14 @@ fn wrapped_union_member_docs_example(pair: &Pair<'_>) -> Result<Option<Region>, 
             let Some(inner) = target.rsplit('/').next().and_then(|key| schemas.get(key)) else {
                 continue;
             };
-            let union_of_references = inner
-                .one_of
-                .as_ref()
-                .or(inner.any_of.as_ref())
-                .is_some_and(|members| {
-                    members.len() > 1 && members.iter().all(|member| member.reference.is_some())
-                });
+            let union_of_references =
+                inner
+                    .one_of
+                    .as_ref()
+                    .or(inner.any_of.as_ref())
+                    .is_some_and(|members| {
+                        members.len() > 1 && members.iter().all(|member| member.reference.is_some())
+                    });
             if inner.discriminator.is_none() && inner.properties.is_empty() && union_of_references {
                 wrappers.push((
                     format!(
@@ -6638,7 +6639,11 @@ mod tests {
                 &context,
             ),
         ] {
-            assert_eq!(region_of(rule, rel, &fern, &crozier, context), None, "{fern}");
+            assert_eq!(
+                region_of(rule, rel, &fern, &crozier, context),
+                None,
+                "{fern}"
+            );
         }
         // A union target with its own discriminator is another departure's.
         let nested = source_context(wrapped_union_document(true), &[]);

@@ -13,7 +13,9 @@ The fractional optional request property, the three examples beside a `$ref`
 and the empty-object arm are decided output-insensitive, not proven. After the
 [renewed bounds](#remaining-bounds-after-the-source-repairs), the array-null
 key and the outside-enum and string-const arms rest on hand-written fixtures.
-`discriminator-mapping`'s two arms keep their incomplete search outcome below.
+`discriminator-mapping`'s two arms were screened over every declarer
+([arm probe](#discriminator-mapping-arm-probe)); none is a witness, so they
+rest on the hand-written `tidepool-survey-log` fixture.
 
 ## The search
 
@@ -102,13 +104,14 @@ not non-generation proofs: the resumed bound for remaining Fern candidates is
 ## Verdicts
 
 `search-incomplete` describes the bounded populations, not eligibility for a
-hand-written cover. Pending candidates must be resolved before a
+hand-written cover. `discriminator-mapping` alone reads `exhausted`: every one
+of its declarers has a decision. Pending candidates must be resolved before a
 `none-registrable` renewed-search line can be written. The census count below
 is document/key rows, not a count of distinct APIs or successful witnesses.
 
 | key | verdict | declaring documents | registration status |
 |---|---|---|---|
-| `discriminator-mapping` | `search-incomplete` | 899 | outstanding: screen and parity/reach review not complete |
+| `discriminator-mapping` | `exhausted` | 899 | every declarer decided ([arm probe](#discriminator-mapping-arm-probe)): no admissible real document executes either arm and generates at the certified pair; admitted lower-proof `tidepool-survey-log` fixture covering `src/ir.rs::Builder::discriminated_union[if union_target \{]` and `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
 | `oneof-string-const-variant` | `search-incomplete` | 70 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `compass-choice` fixture |
 | `property-map-value-enum` | `search-incomplete` | 106 | registered: corpus row 3003, `fletch-mcp`; complete certified-pair SDK byte-match, arm reach measured ([map-value search](#map-value-branch-search)) |
 | `property-map-value-oneof` | `search-incomplete` | 83 | no admissible real document reaches the arm and byte-matches at the certified pair ([map-value search](#map-value-branch-search)); admitted lower-proof `shelf-labels-map-variants` fixture covering `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` |
@@ -191,17 +194,85 @@ Excluding renamed sites, four covers were removed: `discriminator-mapping`'s
 `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
 and `oneof-string-const-variant`'s
 `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]`.
-The first already has registered golden reach; the other three remain in this
-search. This inventory does not count renamed handling sites as lost proof.
+The first already has registered golden reach; the other three were searched
+here, and each now rests on a hand-written fixture. This inventory does not count renamed handling sites as lost proof.
 
 ## Pending nested-mapping defect
 
 The from-scratch [nested discriminator measurement](../../fern-measurements/examples/nested-discriminator-wire/README.md)
 executes the certified SDK against its source schema: the SDK emits a nested
 `value` envelope where the schema requires a flat object and rejects a valid
-flat response; its README example also fails compilation. This is a documented
-Fern runtime defect pending a separate crozier repair, not a byte-matched arm
-proof. Neither nested mapping arm leaves the named unproven list on this evidence.
+flat response; its README example also fails compilation. That defect is now
+the catalogued departure
+[`nested-discriminator-flat-wire`](../../departures/evidence/nested-discriminator-flat-wire.md).
+It bears on a mapping target that is a union with a discriminator of its own,
+which the `union_target` arm lays out as a nested discriminator. The arm
+probe below covers both arms with a target that has no discriminator, so
+the wrapper holds it whole in `value`.
+
+## Discriminator-mapping arm probe
+
+Every one of the 899 `discriminator-mapping` declarers in
+[`census.tsv`](census.tsv) has a decision in its `arm` cell. Those cells answer
+three questions: whether the instrumented run executes
+`src/ir.rs::Builder::discriminated_union[if union_target \{]` or
+`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
+whether the document was screened for admission, and whether the certified pair
+generates from it. No document outside the four populations above was read;
+they came from the existing caches and the pinned APIs.guru archive.
+
+Each declarer was generated on its own by crozier at this branch's base,
+`80331e4b`, built with the `llvm-cov` instrumentation `just handwritten-reach`
+uses, and both arm sites were read off the run's profile. A profile is written
+whether crozier generates, refuses or fails, so a refused document's row still
+records that neither site ran. Since then the branch has changed only a wrapper's
+docstring, the line breaking of its example and the self-mapped refusal below,
+and none of these moves either site. The outcomes below are counted in census
+rows:
+
+- **532 generate and execute neither arm, and 31 registered rows execute
+  neither.** A document that runs no arm is no witness, so its licence and
+  certified-pair run were not reviewed.
+- **4 build every type but fail `ruff format`, executing neither arm.**
+- **329 are refused by crozier at the boundary, before any type is built.**
+  For the 68 of them whose document holds a shape from which crozier builds a
+  wrapped member, the certified pair was run under the shared generation lock
+  (one at a time, 1800-second bound). Such a shape is a mapping target that is a
+  union of references, a mapping naming its own schema, a composed union member,
+  or a mapping naming an absent schema. Those runs, with one `ruff` failure's,
+  are in [`discriminator-mapping-fern.tsv`](discriminator-mapping-fern.tsv)
+  with each refusal's first diagnostic. Fern refuses 59 and generates from 9,
+  as it does from that `ruff` failure. None of those 10 reaches either arm. None
+  has a mapping target that is a union, a mapping naming its own schema or a
+  composed member. Where a mapping names an absent schema, that ends the union
+  before any member is built (`self.schemas.get(target_key)?` or
+  `resolve_ref_from_schemas(...)?`). The other 261
+  refused documents hold none of those shapes, so neither arm can execute
+  whatever Fern does. They were not run.
+- **The two Microsoft Graph descriptions (APIs.guru `graph` and `graph-beta`,
+  25 MB and more) are decided from the document.** Their instrumented runs
+  passed 3600 seconds without finishing. Read in full, their 476 discriminator mappings hold
+  no self mapping and no absent target, and no target or member is a composed
+  union. So no wrapped member is built and neither arm can execute.
+- **Apple's SiriKit Cloud Media (`APIs/apple.com/sirikit-cloud-media/1.0.2`)
+  executes the wrapped-example arm alone.** Its
+  `AddMediaIntentHandlingInvocation` and `UpdateMediaAffinityIntentHandlingInvocation`
+  map every `method` value to themselves. The certified pair refuses the
+  document: `Missing discriminant property ("method")` on both endpoints'
+  examples. crozier now refuses it in both modes, through the
+  `missing-discriminant-property` refusal's self-mapped shape
+  (`self-mapped-probe.yml` and its two controls under
+  [`../fern-refusals/`](../fern-refusals/shapes.tsv)).
+
+So no admissible real document both executes either arm and generates at the
+certified pair, and the key's verdict is `exhausted`. The hand-written
+[`tidepool-survey-log`](../handwritten/tidepool-survey-log/openapi.yml) fixture
+covers both arms. It maps `level` to `WaterLevel`, a `oneOf` of a bare number and an
+object with no discriminator. Crozier byte-matches its certified-pair tree apart
+from the worked examples of `README.md` and `reference.md`. There, Fern writes
+`SurveyEntry_Level(level=,)`, which does not compile; that is the catalogued
+`fern-defect` departure
+[`wrapped-union-member-docs-example`](../../departures/evidence/wrapped-union-member-docs-example.md).
 
 ## Publisher reviews after the recovered queue
 

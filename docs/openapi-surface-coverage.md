@@ -137,18 +137,18 @@ provenance and records scoped updates beside their rows.
 
 - **979 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
-- **112 are reached only by a hand-written fixture.** Each arm-level
-  cover executes the site and byte-matches the certified tree. Thus each of the 112 is still one of the 119 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 48 read `exhausted`, 64 read `search-incomplete` and 0 read `config-gated`.
+- **114 are reached only by a hand-written fixture.** Each arm-level
+  cover executes the site and byte-matches the certified tree. Thus each of the 114 is still one of the 119 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 50 read `exhausted`, 64 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
   The keys are `enum-empty-identifier-member`, `enum-leading-digit-identifier`, `enum-leading-zero-member`, `mutually-recursive-graph`, `recursive-graph`.
 - **0 are decided output-insensitive**, with identical complete
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
-- **2 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
+- **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-979 + 112 + 5 + 0 + 2 = 1098. Fourteen sites left the table with the two functions
+979 + 114 + 5 + 0 + 0 = 1098. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2028,7 +2028,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 47 rows are the 27 generator categories and the 20 scenarios later
+These 48 rows are the 27 generator categories and the 21 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2094,6 +2094,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | literal-example-dollar-escaped-in-docstring | A `$`-holding const lowered to a one-value literal; the docstring example's added backslash corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/prompt-variable/fern-expected; docs/fern-measurements/literals-mode/prompt-variable/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::dollar_docstring_correction_explains_only_the_declared_const` | `docstring-literal-dollar-escape` |
 | tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 | nested-discriminator-flat-wire | Discriminated union whose variant is itself a discriminated union: Fern's `value` wrapper classes and constructors kept; its `kind`/`value` envelope on the wire and its empty worked-example argument corrected | Fern behaviour + Fern defect | `nested-discriminator-wire` | docs/fern-measurements/examples/nested-discriminator-wire/fern-expected | `nested_discriminator_departure_keeps_every_other_byte` | `nested-discriminator-flat-wire` |
+| wrapped-union-member-docs-example | Discriminator mapping target that is a union of references, not all objects, with no discriminator of its own, held whole as the wrapper's `value`; the README and reference.md worked examples' empty mapping-value argument corrected | Fern behaviour + Fern defect | `discriminator-mapping-arms` | docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected | `handwritten_fixtures_match_fern_goldens` | `wrapped-union-member-docs-example` |
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
 
 Additional boundaries of these rows are held by the same gate: the
@@ -3139,8 +3140,8 @@ why. The changes that took the arm off:
 | 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
 | 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 28 | `not searched` — no arm search has run | — |
-| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `not searched` — no arm search has run | — |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 28 | `not searched` — no arm search has run | `tidepool-survey-log` |
+| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `not searched` — no arm search has run | `tidepool-survey-log` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |

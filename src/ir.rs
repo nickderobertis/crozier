@@ -27997,7 +27997,10 @@ components:
         let union = union_of(&ir);
         let level = &union.members[0];
         assert_eq!(level.class_name, "SurveyEntry_Level");
-        assert!(matches!(level.layout, crate::ir::UnionMemberLayout::Wrapped));
+        assert!(matches!(
+            level.layout,
+            crate::ir::UnionMemberLayout::Wrapped
+        ));
         assert_eq!(level.fields.len(), 1);
         assert_eq!(level.fields[0].wire_name, "value");
         assert_eq!(
