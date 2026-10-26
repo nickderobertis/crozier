@@ -442,6 +442,31 @@
   reason: Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
   evidence: docs/departures/evidence/request-alias-reference-parameters.md
 
+- id: schema-rejected-array-length-example
+  kind: fern-defect
+  trigger: >-
+    A list in a worked example of `README.md`, `reference.md` or a generated
+    client's docstring that Fern writes with its fixed number of items (one, or
+    two in its fallback example writer), whose schema's `minItems` or
+    `maxItems` rejects that count. The comparison has the parsed source
+    document.
+  fern: >-
+    The list with Fern's fixed number of items (discord's
+    `messages=["messages"]` beneath `minItems: 2`).
+  crozier: >-
+    The specification's own declared example for that schema when the schema
+    accepts it, else its declared `default` when the schema accepts it, else
+    Fern's items cut to `maxItems` or padded to `minItems` with copies of the
+    first item, or, beneath `uniqueItems: true`, with pairwise-distinct items
+    the item schema accepts. Where no such items can be built, or Fern writes
+    the list empty and has no item to copy, Fern's value stays. The argument,
+    its place and every other line are unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule: the API rejects the call the example shows. Validating Fern's value
+    against its source schema rejects it; crozier's is accepted.
+  evidence: docs/departures/evidence/schema-rejected-array-length-example.md
+
 - id: schema-rejected-name-example
   kind: fern-defect
   trigger: >-

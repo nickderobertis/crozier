@@ -152,9 +152,21 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                     );
                     let from = cursor.get(&needle).copied().unwrap_or(0).max(from);
                     let find = format!("{own}{}", pending.value.crozier);
+                    // A list the writer spreads over lines is found by its
+                    // opening line.
+                    let opening = format!("{own}[");
                     let Some(offset) = wanted[from..]
                         .iter()
                         .position(|line| holds_at_boundary(line, &find))
+                        .or_else(|| {
+                            pending.value.crozier.starts_with('[').then(|| {
+                                wanted[from..].iter().position(|line| {
+                                    !own.is_empty()
+                                        && line.ends_with('[')
+                                        && holds_at_boundary(line, &opening)
+                                })
+                            })?
+                        })
                         .map(|found| from + found)
                     else {
                         continue;
@@ -170,6 +182,15 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
         }
     }
     out.into_iter().collect()
+}
+
+/// The schemas a list value documents: the list's type and constraint sets,
+/// and its items'.
+struct ListSchemas<'s> {
+    list: &'s TypeRef,
+    sets: &'s [&'s ValueConstraints],
+    item: &'s TypeRef,
+    items: &'s [&'s ValueConstraints],
 }
 
 /// Whether `needle` occurs in `line` where no identifier character precedes
@@ -377,6 +398,22 @@ impl ExampleCtx<'_> {
         let sets: Vec<ValueConstraints> = sets.into_iter().cloned().collect();
         let sets: Vec<&ValueConstraints> = sets.iter().collect();
         let resolved = self.resolved(t).clone();
+        if let (Example::Atom(literal), TypeRef::Named(name)) = (&*example, &resolved) {
+            if let Some(TypeDecl::Enum(declaration)) = self.find(name) {
+                if !sets.is_empty() {
+                    let combined = merged(&sets);
+                    self.record_enum_member(
+                        declaration,
+                        literal,
+                        &combined,
+                        path,
+                        needles,
+                        pending,
+                    );
+                }
+                return;
+            }
+        }
         match example {
             Example::Atom(literal) => {
                 if sets.is_empty() {
@@ -448,10 +485,18 @@ impl ExampleCtx<'_> {
                     },
                 });
             }
-            Example::List(items) | Example::ExplicitList(items) | Example::ReferenceList(items) => {
+            Example::List(_) | Example::ExplicitList(_) | Example::ReferenceList(_) => {
                 let item_type = match &resolved {
                     TypeRef::List(inner) | TypeRef::Set(inner) => (**inner).clone(),
                     _ => return,
+                };
+                let fern = example.flat();
+                let declared = matches!(example, Example::ExplicitList(_));
+                let (Example::List(items)
+                | Example::ExplicitList(items)
+                | Example::ReferenceList(items)) = &mut *example
+                else {
+                    return;
                 };
                 let item_sets: Vec<&ValueConstraints> =
                     sets.iter().filter_map(|set| set.items.as_deref()).collect();
@@ -466,6 +511,13 @@ impl ExampleCtx<'_> {
                         pending,
                     );
                 }
+                let lists = ListSchemas {
+                    list: &resolved,
+                    sets: &sets,
+                    item: &item_type,
+                    items: &item_sets,
+                };
+                self.repair_length(example, &lists, fern, declared, path, needles, pending);
             }
             Example::Call(name, call_args) => {
                 let fields = self.constructor_fields(name);
@@ -516,6 +568,220 @@ impl ExampleCtx<'_> {
             }
             Example::Wrapped(..) => {}
         }
+    }
+
+    /// Repair and record a list whose item count its schema's `minItems` or
+    /// `maxItems` rejects, after its items were walked. Fern's list is its
+    /// construction (one item, two in its fallback, none where it can write no
+    /// item); crozier writes the declared example, else the default, each
+    /// where the schema accepts it, else Fern's items cut to `maxItems` or
+    /// padded to `minItems` with copies of the first. A list the specification
+    /// spells out is its own; an empty one has no item to copy.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "a list's place is its example, schemas, Fern's spelling, path and needles"
+    )]
+    fn repair_length(
+        &mut self,
+        example: &mut Example,
+        lists: &ListSchemas<'_>,
+        fern: String,
+        declared: bool,
+        path: &str,
+        needles: &[String],
+        pending: &mut Vec<Pending>,
+    ) {
+        let (t, sets) = (lists.list, lists.sets);
+        let (Example::List(items) | Example::ExplicitList(items) | Example::ReferenceList(items)) =
+            &mut *example
+        else {
+            return;
+        };
+        let lengths = ValueConstraints {
+            keywords: sets
+                .iter()
+                .flat_map(|set| set.keywords.iter())
+                .filter(|keyword| {
+                    matches!(
+                        keyword,
+                        crate::example_values::Keyword::MinItems(_)
+                            | crate::example_values::Keyword::MaxItems(_)
+                    )
+                })
+                .cloned()
+                .collect(),
+            examples: sets
+                .iter()
+                .flat_map(|set| set.examples.iter().cloned())
+                .collect(),
+            default: sets.iter().find_map(|set| set.default.clone()),
+            ..ValueConstraints::default()
+        };
+        let shape = Value::Array(vec![Value::Null; items.len()]);
+        let Verdict::Rejected(keyword) = lengths.verdict(&shape) else {
+            return;
+        };
+        let choice = (!declared && !items.is_empty())
+            .then(|| merged(sets).choose(&shape))
+            .flatten();
+        let disposition = if declared {
+            Disposition::DeclaredInSpec
+        } else {
+            match &choice {
+                Some(Choice::Constructed(Value::Array(target))) => {
+                    let target = target.len();
+                    if target <= items.len() {
+                        items.truncate(target);
+                        Disposition::Repaired
+                    } else if sets.iter().any(|set| set.unique_items) {
+                        match self.distinct_items(items, lists, target) {
+                            Some(padding) => {
+                                items.extend(padding);
+                                Disposition::Repaired
+                            }
+                            None => Disposition::ResidualUnconstructible,
+                        }
+                    } else {
+                        let first = items[0].clone();
+                        items.resize(target, first);
+                        Disposition::Repaired
+                    }
+                }
+                Some(chosen) => match self.value_from_example(t, &chosen.value().to_string()) {
+                    Some(
+                        rendered @ (Example::List(_)
+                        | Example::ExplicitList(_)
+                        | Example::ReferenceList(_)),
+                    ) => {
+                        *example = rendered;
+                        Disposition::Repaired
+                    }
+                    _ => Disposition::ResidualUnconstructible,
+                },
+                None => Disposition::ResidualUnconstructible,
+            }
+        };
+        pending.push(Pending {
+            needles: needles.to_vec(),
+            value: ExampleValue {
+                file: String::new(),
+                line: 0,
+                argument: path.to_string(),
+                crozier: if disposition == Disposition::Repaired {
+                    example.flat()
+                } else {
+                    fern.clone()
+                },
+                fern,
+                constraint: keyword.to_string(),
+                mechanism: (!declared).then_some(mechanism::ARRAY),
+                disposition,
+            },
+        });
+    }
+
+    /// The items that pad a `uniqueItems` list of scalars to `target`, each
+    /// pairwise distinct and accepted by the item schema
+    /// ([`ValueConstraints::distinct_items`]), as the writer spells them;
+    /// `None` where its items are not all scalars or no such values exist.
+    fn distinct_items(
+        &mut self,
+        items: &[Example],
+        lists: &ListSchemas<'_>,
+        target: usize,
+    ) -> Option<Vec<Example>> {
+        let kept: Vec<Value> = items
+            .iter()
+            .map(|item| match item {
+                Example::Atom(literal) => python_value(literal),
+                _ => None,
+            })
+            .collect::<Option<_>>()?;
+        let aliased = self.alias_constraints(lists.item);
+        let mut sets: Vec<&ValueConstraints> = lists.items.to_vec();
+        sets.extend(aliased.iter());
+        let values = merged(&sets).distinct_items(&kept, target)?;
+        let resolved = self.resolved(lists.item).clone();
+        values[kept.len()..]
+            .iter()
+            .map(|value| {
+                match self
+                    .without_recording(|ctx| ctx.value_from_example(&resolved, &value.to_string()))
+                {
+                    Some(atom @ Example::Atom(_)) => Some(atom),
+                    _ => None,
+                }
+            })
+            .collect()
+    }
+
+    /// Record an enum member a schema rejects. Fern's value is the enum's first
+    /// member; where `pattern-narrowed-enum-example` chose another, crozier's
+    /// is that one. An enum is never repaired here: a rejected member crozier
+    /// still writes is a residual, undecidable where some member satisfies the
+    /// schema but the enum's own selection could not decide it, unconstructible
+    /// where none does.
+    fn record_enum_member(
+        &self,
+        declaration: &crate::ir::EnumType,
+        literal: &str,
+        combined: &ValueConstraints,
+        path: &str,
+        needles: &[String],
+        pending: &mut Vec<Pending>,
+    ) {
+        let literals = self.enum_type == crate::settings::EnumType::Literals;
+        let spell = |member: &crate::ir::EnumMember| {
+            if literals {
+                let text = super::literal_enum_value(&member.value);
+                if self.documentation {
+                    text.replace('\'', "\\'")
+                } else {
+                    text
+                }
+            } else {
+                format!("{}.{}", declaration.name, member.name)
+            }
+        };
+        let Some(first) = declaration.members.first() else {
+            return;
+        };
+        let wire = |member: &crate::ir::EnumMember| Value::String(member.value.clone());
+        let Some(written) = declaration
+            .members
+            .iter()
+            .find(|member| spell(member) == literal)
+        else {
+            return;
+        };
+        let Verdict::Rejected(keyword) = combined.verdict(&wire(first)) else {
+            return;
+        };
+        let disposition = if written.value != first.value {
+            Disposition::Repaired
+        } else if declaration
+            .members
+            .iter()
+            .any(|member| combined.verdict(&wire(member)) == Verdict::Accepted)
+            || combined.incomplete
+        {
+            Disposition::ResidualUndecidable
+        } else {
+            Disposition::ResidualUnconstructible
+        };
+        pending.push(Pending {
+            needles: needles.to_vec(),
+            value: ExampleValue {
+                file: String::new(),
+                line: 0,
+                argument: path.to_string(),
+                fern: spell(first),
+                crozier: literal.to_string(),
+                constraint: keyword.to_string(),
+                mechanism: Some(mechanism::ENUM_MEMBER),
+                disposition,
+            },
+        });
     }
 
     /// The fields a constructor named `name` takes, its bases' first.

@@ -1715,7 +1715,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 32] = [
+pub const RULE_IDS: [&str; 33] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1739,6 +1739,7 @@ pub const RULE_IDS: [&str; 32] = [
     "readme-client-class-casing",
     "repeated-credential-example-keyword",
     "request-alias-reference-parameters",
+    "schema-rejected-array-length-example",
     "schema-rejected-name-example",
     "schema-rejected-number-example",
     "schema-rejected-placeholder-string-example",
@@ -1857,6 +1858,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "stream-reference-return-type" => Rule {
             line: Some(stream_reference_return_type),
+            ..none
+        },
+        "schema-rejected-array-length-example" => Rule {
+            region: Some(schema_rejected_array_length_example),
             ..none
         },
         "schema-rejected-name-example" => Rule {
@@ -2572,6 +2577,12 @@ fn docstring_literal_dollar_escape(pair: &Pair<'_>, fern: &str, crozier: &str) -
         && fern == crozier.replace('$', "\\\\$")
         && documented_example_line(pair.rel, pair.fern, fern)
         && documented_example_line(pair.rel, pair.crozier, crozier)
+}
+
+/// `schema-rejected-array-length-example`: see
+/// [`rejected_examples::array_region`].
+fn schema_rejected_array_length_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    rejected_examples::array_region(pair)
 }
 
 /// `schema-rejected-name-example`: see [`rejected_examples::holds`].
@@ -6958,6 +6969,16 @@ mod tests {
                 "labels={\"key\": \"not-a-uuid\"},",
             ),
             (
+                "schema-rejected-array-length-example",
+                rejected_example_source(
+                    "tags",
+                    serde_json::json!({"type": "array", "minItems": 3,
+                        "items": {"type": "string"}}),
+                ),
+                ("tags=[\"tags\"],", "tags=[\"tags\", \"tags\", \"tags\"],"),
+                "tags=[\"tags\", \"tags\"],",
+            ),
+            (
                 "schema-rejected-sized-string-example",
                 rejected_example_source(
                     "code",
@@ -6998,22 +7019,76 @@ mod tests {
             );
             assert!(!compared.matches(), "{id}: a runtime line was excused");
             // Nor without the source document to validate against.
-            let context = Context::default();
-            let pair_lines = ([fern], [crozier]);
-            assert!(!rejected_examples::holds(
-                crate::example_values::mechanism::ALL
-                    .into_iter()
-                    .find(|known| *known == id)
-                    .expect("a mechanism"),
-                &Pair {
-                    rel: "src/api/client.py",
-                    fern: &pair_lines.0,
-                    crozier: &pair_lines.1,
-                    context: &context,
-                },
-                fern,
-                crozier,
-            ));
+            let compared = rejected_example_comparison(
+                &serde_json::json!({"openapi": "3.1.0", "info": {"title": "Api", "version": "1"},
+                    "paths": {}}),
+                (fern, crozier),
+                ("pass", "pass"),
+            );
+            assert!(!compared.matches(), "{id}: excused without its schema");
         }
+    }
+
+    /// A list `reference.md` spreads over lines: only its added items are the
+    /// array departure's region, so its first item's repair stays a line of
+    /// its own; distinct padding under `uniqueItems` is the item schema's own.
+    #[test]
+    fn a_list_over_several_lines_is_padded_by_its_added_items_alone() {
+        let source = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Body": {"type": "object", "properties": {
+                "ids": {"type": "array", "minItems": 2, "uniqueItems": true,
+                    "items": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}}
+            }}}}
+        });
+        let page = |items: &[&str]| {
+            let mut lines = vec![
+                "```python".to_string(),
+                "client.read(".to_string(),
+                "    ids=[".to_string(),
+            ];
+            let last = items.len() - 1;
+            for (index, item) in items.iter().enumerate() {
+                lines.push(format!(
+                    "        {item}{}",
+                    if index < last { "," } else { "" }
+                ));
+            }
+            lines.extend([
+                "    ],".to_string(),
+                ")".to_string(),
+                "```".to_string(),
+                String::new(),
+            ]);
+            lines.join("\n")
+        };
+        let context = Context::default()
+            .with_source_document(serde_json::from_value(source).expect("a source"));
+        let compare = |crozier: &[&str]| {
+            crate::parity::compare_file(
+                &context,
+                "reference.md",
+                &page(crozier),
+                &page(&["\"ids\""]),
+            )
+            .expect("the comparison runs")
+        };
+        let compared = compare(&["\"0\"", "\"1\""]);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(
+            compared
+                .departures
+                .iter()
+                .map(|d| (d.line.get(), d.id))
+                .collect::<Vec<_>>(),
+            [(4, "schema-rejected-array-length-example")]
+        );
+        // A repeated item, or a distinct one the item schema rejects, is not
+        // the padding a `uniqueItems` list takes.
+        let dup = compare(&["\"0\"", "\"0\""]);
+        assert!(!dup.matches(), "{:?}", dup.departures);
+        assert!(!compare(&["\"0\"", "\"x\""]).matches());
     }
 }

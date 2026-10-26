@@ -3887,14 +3887,9 @@ fn build_endpoint(
                     _ => None,
                 });
             QueryParam {
-                constraints: schema
-                    .and_then(|schema| {
-                        crate::example_values::ValueConstraints::of(schema, &doc.components.schemas)
-                    })
-                    .map(|mut constraints| {
-                        constraints.examples.splice(0..0, p.example.iter().cloned());
-                        constraints
-                    }),
+                constraints: crate::example_values::ValueConstraints::of_query_parameter(
+                    p, schema, doc,
+                ),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
                 type_ref,
@@ -7445,9 +7440,10 @@ fn hoist_inline_object(
         let optional = is_optional(prop_schema) || !spec_required;
         let type_ref = hoister.copied_prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
-            constraints: hoister.schemas.and_then(|schemas| {
-                crate::example_values::ValueConstraints::of(prop_schema, schemas)
-            }),
+            constraints: crate::example_values::ValueConstraints::of_in(
+                prop_schema,
+                hoister.schemas,
+            ),
             wire_name: prop.clone(),
             py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
             convert: hoister.needs_convert(&type_ref),
@@ -8173,9 +8169,10 @@ impl InlineHoister<'_> {
                 .unwrap_or(false);
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
-                constraints: self.schemas.and_then(|schemas| {
-                    crate::example_values::ValueConstraints::of(prop_schema, schemas)
-                }),
+                constraints: crate::example_values::ValueConstraints::of_in(
+                    prop_schema,
+                    self.schemas,
+                ),
                 example_source: crate::ir::FieldExampleSource::Property,
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
@@ -9458,9 +9455,10 @@ fn hoist_form_object(
                 .then(|| collapsed_member_description(prop_schema, &type_ref))
                 .flatten();
             BodyField {
-                constraints: hoister.schemas.and_then(|schemas| {
-                    crate::example_values::ValueConstraints::of(prop_schema, schemas)
-                }),
+                constraints: crate::example_values::ValueConstraints::of_in(
+                    prop_schema,
+                    hoister.schemas,
+                ),
                 wire_name: prop.clone(),
                 py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
                 type_ref,

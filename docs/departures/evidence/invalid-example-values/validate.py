@@ -5,7 +5,11 @@ Reads the keyword argument ARGUMENT from one line of Fern's committed tree and
 from the same place in crozier's generated tree, and validates each value
 against the schema at POINTER in the source document SOURCE with jsonschema
 (format assertions on): an OpenAPI 3.1 document under Draft 2020-12, a 3.0 one
-under Draft 4, whose `exclusiveMinimum: true` it shares.
+under Draft 4, whose `exclusiveMinimum: true` it shares. jsonschema asserts some
+formats only with optional packages installed; for the formats crozier's
+inventory reads (`date`, `date-time`, `time`, `uuid`, `email`, `uri`, `ipv4`,
+`ipv6`, `hostname`) any it cannot assert is asserted here with the standard
+library, by the RFC each format names.
 
 Exit 0 prints both verdicts when Fern's value is rejected and crozier's is
 accepted; exit 1 prints them when not; exit 2 reports invalid input on stderr.
@@ -15,8 +19,12 @@ from __future__ import annotations
 
 import argparse
 import ast
+import datetime
+import ipaddress
 import json
+import re
 import sys
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +73,92 @@ def line_value(place: str, argument: str) -> object:
     raise InputError(f"{place} passes no {argument}=: {lines[index]!r}")
 
 
+HOSTNAME_LABEL = re.compile(r"(?!-)[A-Za-z0-9-]{1,63}(?<!-)")
+SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*")
+TIME = re.compile(r"(\d{2}):(\d{2}):(\d{2})(\.\d+)?([Zz]|[+-]\d{2}:\d{2})")
+
+
+def is_hostname(value: str) -> bool:
+    """RFC 1123: dot-separated labels of letters, digits and inner hyphens."""
+    name = value.removesuffix(".")
+    return 0 < len(name) <= 253 and all(HOSTNAME_LABEL.fullmatch(label) for label in name.split("."))
+
+
+def is_uri(value: str) -> bool:
+    """RFC 3986 `URI`: a scheme, a colon, and no character a URI cannot hold."""
+    scheme, colon, rest = value.partition(":")
+    return bool(colon) and SCHEME.fullmatch(scheme) is not None and not re.search(r"[\s<>\"{}|\\^`]", rest)
+
+
+def is_time(value: str) -> bool:
+    """RFC 3339 `full-time`."""
+    match = TIME.fullmatch(value)
+    return match is not None and int(match[1]) < 24 and int(match[2]) < 60 and int(match[3]) <= 60
+
+
+def is_date_time(value: str) -> bool:
+    """RFC 3339 `date-time`."""
+    date, separator, time = value.partition("T") if "T" in value else value.partition("t")
+    try:
+        datetime.date.fromisoformat(date)
+    except ValueError:
+        return False
+    return bool(separator) and len(date) == 10 and is_time(time)
+
+
+def is_date(value: str) -> bool:
+    """RFC 3339 `full-date`."""
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return len(value) == 10
+
+
+def is_uuid(value: str) -> bool:
+    """RFC 4122's hyphenated form."""
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        return False
+    return len(value) == 36 and all(value[i] == "-" for i in (8, 13, 18, 23))
+
+
+def is_ip(version: int):
+    """An IP address of `version` in its textual form."""
+
+    def check(value: str) -> bool:
+        try:
+            return ipaddress.ip_address(value).version == version
+        except ValueError:
+            return False
+
+    return check
+
+
+STANDARD_LIBRARY_FORMATS = {
+    "date": is_date,
+    "date-time": is_date_time,
+    "time": is_time,
+    "uuid": is_uuid,
+    "uri": is_uri,
+    "ipv4": is_ip(4),
+    "ipv6": is_ip(6),
+    "hostname": is_hostname,
+}
+
+
+def format_checker(validator_class: type) -> jsonschema.FormatChecker:
+    """jsonschema's checker, with each in-scope format it cannot assert added."""
+    checker = validator_class.FORMAT_CHECKER
+    added = jsonschema.FormatChecker(list(checker.checkers))
+    added.checkers = dict(checker.checkers)
+    for name, check in STANDARD_LIBRARY_FORMATS.items():
+        if name not in added.checkers:
+            added.checks(name)(lambda value, check=check: not isinstance(value, str) or check(value))
+    return added
+
+
 def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None:
     """Why the schema at `pointer` rejects `value`, or `None` when it accepts it."""
     version = str(document.get("openapi", ""))
@@ -79,7 +173,7 @@ def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None
     validator = validator_class(
         {"$ref": f"urn:source#{pointer}"},
         registry=registry,
-        format_checker=validator_class.FORMAT_CHECKER,
+        format_checker=format_checker(validator_class),
     )
     error = jsonschema.exceptions.best_match(validator.iter_errors(value))
     return None if error is None else error.message

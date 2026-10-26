@@ -28160,6 +28160,103 @@ fn sdk_env_native_refusal_evaluation_chains_artifacts_and_recovers() {
 
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// The `schema-rejected-*` evidence notes' commands, run as committed against
+/// crozier's own generated trees: each validates Fern's committed value
+/// against its source schema with jsonschema and sees it rejected, and
+/// crozier's generated value at the same place and sees it accepted. Fern's
+/// value in both places fails the proof, and a pointer naming no schema is an
+/// input error.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI); run via `just test-sdk-env`"]
+fn sdk_env_rejected_example_evidence_rejects_fern_and_accepts_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/invalid-example-values/validate.py";
+    let python = cached_python_env(
+        &python_env_root(),
+        "crozier-invalid-example-evidence",
+        &["jsonschema==4.26.0".to_string()],
+        uv_available(),
+    )
+    .expect("an environment holding jsonschema");
+    let cases: [(&Corpus, &str, &str, usize, &str, &str); 5] = [
+        (
+            &DISCORD_COM,
+            "/components/schemas/SnowflakeType",
+            "src/fern/client.py",
+            9367,
+            "guild_id",
+            "crozier guild_id='0': accepted",
+        ),
+        (
+            &DISCORD_COM,
+            "/components/schemas/DefaultKeywordListUpsertRequest/properties/trigger_type",
+            "src/fern/client.py",
+            3025,
+            "trigger_type",
+            "crozier trigger_type=4: accepted",
+        ),
+        (
+            &DISCORD_COM,
+            "/paths/~1channels~1{channel_id}~1messages~1bulk-delete/post/requestBody/content/application~1json/schema/properties/messages",
+            "src/fern/client.py",
+            2154,
+            "messages",
+            "crozier messages=['0', '1']: accepted",
+        ),
+        (
+            &AUDIOBOOKSHELF,
+            "/components/schemas/imageUrl",
+            "README.md",
+            46,
+            "request",
+            "fern request='string': rejected: 'string' is not a 'uri'",
+        ),
+        (
+            &AMAZONAWS_COM_CLOUDFORMATION,
+            "/components/schemas/TypeName",
+            "src/fern/client.py",
+            7497,
+            "type_name",
+            "crozier type_name='aa::aa::aa': accepted",
+        ),
+    ];
+    let mut trees: std::collections::BTreeMap<&str, tempfile::TempDir> = Default::default();
+    for (corpus, pointer, file, line, argument, says) in cases {
+        let out = trees.entry(corpus.api).or_insert_with(|| {
+            let out = tempfile::tempdir().expect("output");
+            let (mut command, _staged) = corpus_command(corpus, out.path());
+            command.assert().success();
+            out
+        });
+        let (spec, _staged) = prepare_corpus_source(corpus);
+        let fern = format!(
+            "{}:{line}",
+            fixture_dir(corpus.api)
+                .join("expected")
+                .join(file)
+                .display()
+        );
+        let crozier = format!("{}:{line}", out.path().join(file).display());
+        let validate = |left: &str, right: &str, at: &str| {
+            Command::new(&python)
+                .arg(repo_root().join(SCRIPT))
+                .arg(&spec)
+                .arg(at)
+                .arg(left)
+                .arg(right)
+                .arg(argument)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .assert()
+        };
+        validate(&fern, &crozier, pointer)
+            .success()
+            .stdout(predicate::str::contains(says));
+        // Fern's value on both sides is no proof, and a pointer to nothing is
+        // refused as input.
+        validate(&fern, &fern, pointer).code(1);
+        validate(&fern, &crozier, "/components/schemas/NoSuchSchema").code(2);
+    }
+}
+
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {

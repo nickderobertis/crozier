@@ -101,7 +101,7 @@ pub fn parse(text: &str) -> Result<Vec<Row>, Vec<String>> {
                 "{INVENTORY}: `{line}` has no disposition of the vocabulary"
             ));
         }
-        if row.mechanism != "-" && !mechanism::ALL.contains(&row.mechanism.as_str()) {
+        if row.mechanism != "-" && !mechanism::NAMED.contains(&row.mechanism.as_str()) {
             failures.push(format!(
                 "{INVENTORY}: `{line}` names no mechanism's departure"
             ));
@@ -155,7 +155,7 @@ fn recorded(out: &Path) -> Result<Vec<ExampleValue>, String> {
     };
     text.lines()
         .map(|line| {
-            ExampleValue::parse(line, &mechanism::ALL)
+            ExampleValue::parse(line, &mechanism::NAMED)
                 .ok_or_else(|| format!("{}: `{line}` is not a record", path.display()))
         })
         .collect()
@@ -200,6 +200,7 @@ pub fn observed_rows(
             }
         };
         let fern_lines: Vec<&str> = reference.split('\n').collect();
+        let crozier_lines: Vec<&str> = generated.split('\n').collect();
         for value in values {
             let Some(fern_line) = mapped.get(value.line - 1).copied().flatten() else {
                 failures.push(format!(
@@ -208,7 +209,10 @@ pub fn observed_rows(
                 ));
                 continue;
             };
-            if !fern_lines[fern_line].contains(&value.fern) {
+            if !fern_lines[fern_line].contains(&value.fern)
+                && !compact(&fern_lines[fern_line..=list_end(&fern_lines, fern_line)].join("\n"))
+                    .contains(&compact(&value.fern))
+            {
                 failures.push(format!(
                     "{rel}:{}: Fern's line {} does not hold {} for {}",
                     value.line,
@@ -218,9 +222,20 @@ pub fn observed_rows(
                 ));
                 continue;
             }
+            // A list's departure stands on the line its added items begin, and
+            // a one-line list's covers the items it holds, so a repaired value
+            // is accounted for by a rejected-example departure on its line or,
+            // for a list, anywhere in its lines.
+            let end = if value.mechanism == Some(mechanism::ARRAY) {
+                list_end(&crozier_lines, value.line - 1) + 1
+            } else {
+                value.line
+            };
             if value.disposition == Disposition::Repaired
                 && !departures.iter().any(|(file, line, id)| {
-                    file == rel && *line == value.line && Some(id.as_str()) == value.mechanism
+                    file == rel
+                        && (value.line..=end).contains(line)
+                        && mechanism::NAMED.contains(&id.as_str())
                 })
             {
                 failures.push(format!(
@@ -250,6 +265,71 @@ pub fn observed_rows(
     } else {
         Err(failures)
     }
+}
+
+/// `text` with whitespace outside string literals and a comma before a
+/// closing bracket dropped: a list spread over lines and its one-line
+/// spelling read alike.
+fn compact(text: &str) -> String {
+    let mut out = String::new();
+    let mut quote = None;
+    let mut escaped = false;
+    for character in text.chars() {
+        if let Some(delimiter) = quote {
+            out.push(character);
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == delimiter {
+                quote = None;
+            }
+        } else if matches!(character, '"' | '\'') {
+            quote = Some(character);
+            out.push(character);
+        } else if matches!(character, ')' | ']' | '}') && out.ends_with(',') {
+            out.pop();
+            out.push(character);
+        } else if !character.is_whitespace() {
+            out.push(character);
+        }
+    }
+    out
+}
+
+/// The 0-based line the bracket the line `start` first opens closes on, or
+/// `start` when it opens none or never closes.
+fn list_end(lines: &[&str], start: usize) -> usize {
+    let (mut depth, mut quote, mut escaped, mut opened) = (0usize, None, false, false);
+    for (index, line) in lines.iter().enumerate().skip(start) {
+        for character in line.chars() {
+            if let Some(delimiter) = quote {
+                if escaped {
+                    escaped = false;
+                } else if character == '\\' {
+                    escaped = true;
+                } else if character == delimiter {
+                    quote = None;
+                }
+                continue;
+            }
+            match character {
+                '"' | '\'' => quote = Some(character),
+                '[' | '(' | '{' => {
+                    depth += 1;
+                    opened = true;
+                }
+                ']' | ')' | '}' => {
+                    depth = depth.saturating_sub(1);
+                    if opened && depth == 0 {
+                        return index;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    start
 }
 
 /// Hold `observed`, a comparison's rows over the files `compared` admits, to

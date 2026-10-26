@@ -4790,7 +4790,7 @@ fn render_enum(
 
 /// A literal enum value as Fern's snippet writer spells it: the wire value in
 /// double quotes, with backslashes and double quotes escaped.
-fn literal_enum_value(value: &str) -> String {
+pub(super) fn literal_enum_value(value: &str) -> String {
     format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
@@ -17369,7 +17369,9 @@ mod tests {
             }}}
         }));
         let client = file(&files, "guilds/client.py");
-        assert!(client.contains("guild_id=\"guild_id\","), "{client}");
+        // The example stays; its value is the one the pattern accepts, where
+        // Fern passes the rejected name (`schema-rejected-name-example`).
+        assert!(client.contains("guild_id=\"0\","), "{client}");
     }
 
     #[test]

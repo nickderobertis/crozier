@@ -223,6 +223,10 @@ pub struct ValueConstraints {
     pub examples: Vec<Value>,
     /// The schema's declared `default`.
     pub default: Option<Value>,
+    /// Whether an array declares `uniqueItems: true`. Out of scope as a
+    /// keyword that rejects a value, it still bounds a repair: crozier never
+    /// pads such an array with an item it already holds.
+    pub unique_items: bool,
     /// Whether an in-scope keyword may bind the value out of view: behind a
     /// reference that does not resolve, or past the depth followed. A value
     /// can still be rejected, but never accepted, by an incomplete view.
@@ -250,6 +254,27 @@ impl ValueConstraints {
         if let Some(example) = &parameter.example {
             constraints.examples.insert(0, example.clone());
         }
+        Some(constraints)
+    }
+
+    /// [`Self::of`] where the components may be out of view: `None` then.
+    #[must_use]
+    pub fn of_in(schema: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> Option<Box<Self>> {
+        Self::of(schema, schemas?)
+    }
+
+    /// [`Self::of_parameter`] for a query parameter read through `schema`, the
+    /// one its other readings take (a one-or-many composition's array).
+    #[must_use]
+    pub fn of_query_parameter(
+        parameter: &crate::openapi::Parameter,
+        schema: Option<&Schema>,
+        doc: &OpenApi,
+    ) -> Option<Box<Self>> {
+        let mut constraints = Self::of(schema?, &doc.components.schemas)?;
+        constraints
+            .examples
+            .splice(0..0, parameter.example.iter().cloned());
         Some(constraints)
     }
 
@@ -283,6 +308,7 @@ impl ValueConstraints {
         // load normalization discarded is still read, below.
         self.incomplete |= schema.unresolved_reference;
         self.keywords.extend(own_keywords(schema));
+        self.unique_items |= schema.unique_items == Some(true);
         if let Some(items) = &schema.items {
             let mut inner = self.items.take().map_or_else(Self::default, |boxed| *boxed);
             inner.collect(items, schemas, depth + 1);
@@ -432,6 +458,109 @@ impl ValueConstraints {
             return None;
         };
         accepts(&resized).then_some(Value::String(resized))
+    }
+
+    /// `count` pairwise-distinct values these item keywords accept: `kept`
+    /// first (themselves distinct and accepted), then values built from the
+    /// first of them, deterministically — the strings a `pattern` matches, an
+    /// `enum`'s members, numbered variants of a string with neither within its
+    /// lengths, or numbers stepped up within the bounds and onto any
+    /// `multipleOf` grid. `None` where `kept` is empty, holds anything but
+    /// strings or numbers, or not enough such values are found.
+    #[must_use]
+    pub fn distinct_items(&self, kept: &[Value], count: usize) -> Option<Vec<Value>> {
+        let accepted = |value: &Value| self.verdict(value) == Verdict::Accepted;
+        let mut out: Vec<Value> = Vec::new();
+        for value in kept.iter().take(count) {
+            if !accepted(value) || out.iter().any(|seen| json_equal(seen, value)) {
+                return None;
+            }
+            out.push(value.clone());
+        }
+        let first = kept.first()?;
+        let candidates: Box<dyn Iterator<Item = Value>> = match first {
+            Value::String(text) => {
+                let pattern = self.keywords.iter().find_map(|keyword| match keyword {
+                    Keyword::Pattern(pattern) => Some(pattern.clone()),
+                    _ => None,
+                });
+                let members: Vec<Value> = self
+                    .keywords
+                    .iter()
+                    .flat_map(|keyword| match keyword {
+                        Keyword::Enum(values) => values.clone(),
+                        Keyword::Const(value) => vec![value.clone()],
+                        _ => Vec::new(),
+                    })
+                    .collect();
+                let (min, max) = self.lengths();
+                if let Some(pattern) = pattern {
+                    Box::new(pattern_samples(&pattern, min, max).map(Value::String))
+                } else if !members.is_empty() {
+                    Box::new(members.into_iter())
+                } else if self
+                    .keywords
+                    .iter()
+                    .any(|keyword| matches!(keyword, Keyword::Format(_)))
+                {
+                    return None;
+                } else {
+                    let text = text.clone();
+                    Box::new((2..=count + 64).map(move |n| {
+                        let suffix = n.to_string();
+                        let room = max.map_or(usize::MAX, |max| {
+                            usize::try_from(max)
+                                .unwrap_or(usize::MAX)
+                                .saturating_sub(suffix.len())
+                        });
+                        Value::String(format!(
+                            "{}{suffix}",
+                            text.chars().take(room).collect::<String>()
+                        ))
+                    }))
+                }
+            }
+            Value::Number(number) => {
+                let start = number.as_f64()?;
+                let integer = number.is_i64() || number.is_u64();
+                let step = self
+                    .keywords
+                    .iter()
+                    .find_map(|keyword| match keyword {
+                        Keyword::MultipleOf(step) => {
+                            Some(if integer { lcm_step(*step) } else { *step })
+                        }
+                        _ => None,
+                    })
+                    .unwrap_or(1.0);
+                Box::new((1..=count + 64).filter_map(move |n| {
+                    #[allow(clippy::cast_precision_loss, reason = "a handful of steps")]
+                    let value = start + step * n as f64;
+                    if integer {
+                        #[allow(
+                            clippy::cast_possible_truncation,
+                            reason = "integral by construction"
+                        )]
+                        Some(Value::from(value.round() as i64))
+                    } else {
+                        serde_json::Number::from_f64(value).map(Value::Number)
+                    }
+                }))
+            }
+            _ => return None,
+        };
+        for candidate in candidates {
+            if out.len() >= count {
+                break;
+            }
+            if same_kind(&candidate, first)
+                && accepted(&candidate)
+                && !out.iter().any(|seen| json_equal(seen, &candidate))
+            {
+                out.push(candidate);
+            }
+        }
+        (out.len() == count).then_some(out)
     }
 
     /// The tightest declared `minLength` and `maxLength`.
@@ -957,8 +1086,13 @@ pub mod mechanism {
     pub const NUMBER: &str = "schema-rejected-number-example";
     /// A list written with Fern's fixed number of items.
     pub const ARRAY: &str = "schema-rejected-array-length-example";
-    /// Every mechanism id.
+    /// Every mechanism id this module's rules repair.
     pub const ALL: [&str; 5] = [NAME, PLACEHOLDER, SIZED, NUMBER, ARRAY];
+    /// A string enum's first member, the example Fern writes for an enum,
+    /// which the earlier `pattern-narrowed-enum-example` departure corrects.
+    pub const ENUM_MEMBER: &str = "pattern-narrowed-enum-example";
+    /// Every mechanism an inventory row may name.
+    pub const NAMED: [&str; 6] = [NAME, PLACEHOLDER, SIZED, NUMBER, ARRAY, ENUM_MEMBER];
 }
 
 /// Why an inventoried value is, or is not, written differently from Fern.
@@ -1350,6 +1484,33 @@ mod tests {
                 "{schema}: {choice:?}"
             );
         }
+    }
+
+    #[test]
+    fn distinct_items_are_deterministic_accepted_and_never_repeat() {
+        let snowflake = constraints(serde_json::json!({"$ref": "#/components/schemas/Snowflake"}));
+        assert_eq!(
+            snowflake.distinct_items(&[Value::from("0")], 3),
+            Some(vec![Value::from("0"), Value::from("1"), Value::from("10")])
+        );
+        let tags = constraints(serde_json::json!({"type": "string", "maxLength": 4}));
+        assert_eq!(
+            tags.distinct_items(&[Value::from("tags")], 2),
+            Some(vec![Value::from("tags"), Value::from("tag2")])
+        );
+        let counts = constraints(serde_json::json!({"type": "integer", "maximum": 2}));
+        assert_eq!(
+            counts.distinct_items(&[Value::from(1)], 2),
+            Some(vec![Value::from(1), Value::from(2)])
+        );
+        // Not enough distinct values, a format, or no first item: no padding.
+        assert_eq!(counts.distinct_items(&[Value::from(1)], 3), None);
+        let ids = constraints(serde_json::json!({"type": "string", "format": "uuid"}));
+        assert_eq!(
+            ids.distinct_items(&[Value::from(format_sample("uuid").unwrap())], 2),
+            None
+        );
+        assert_eq!(tags.distinct_items(&[], 2), None);
     }
 
     #[test]
