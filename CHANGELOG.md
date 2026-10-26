@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.135](https://github.com/nickderobertis/crozier/compare/v0.0.134...v0.0.135) - 2026-10-26
+
+### Fixed
+
+- *(parity)* write worked-example values their own schema accepts ([#630](https://github.com/nickderobertis/crozier/pull/630))
+
 ## [0.0.134](https://github.com/nickderobertis/crozier/compare/v0.0.133...v0.0.134) - 2026-10-25
 
 ### Fixed
