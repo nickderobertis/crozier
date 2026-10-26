@@ -670,18 +670,14 @@ impl ValueConstraints {
             Value::Number(number) => {
                 let start = number.as_f64()?;
                 let integer = number.is_i64() || number.is_u64();
-                let step = self
-                    .keywords
-                    .iter()
-                    .find_map(|keyword| match keyword {
-                        Keyword::MultipleOf(step) => Some(if integer {
-                            lcm_step(step.get())
-                        } else {
-                            step.get()
-                        }),
-                        _ => None,
-                    })
-                    .unwrap_or(1.0);
+                let step = match self.keywords.iter().find_map(|keyword| match keyword {
+                    Keyword::MultipleOf(step) => Some(step.get()),
+                    _ => None,
+                }) {
+                    Some(step) if integer => integer_multiple(step)?,
+                    Some(step) => step,
+                    None => 1.0,
+                };
                 Box::new((1..=count + 64).filter_map(move |n| {
                     #[allow(clippy::cast_precision_loss, reason = "a handful of steps")]
                     let value = start + step * n as f64;
@@ -777,7 +773,11 @@ impl ValueConstraints {
         }
         let mut candidate = value.clamp(low.min(high), high.max(low));
         if let Some(step) = steps.first().copied().filter(|step| *step > 0.0) {
-            let unit = if integer { lcm_step(step) } else { step };
+            let unit = if integer {
+                integer_multiple(step)?
+            } else {
+                step
+            };
             candidate = (candidate / unit).ceil() * unit;
             if candidate > high {
                 candidate = (high / unit).floor() * unit;
@@ -814,17 +814,18 @@ impl ValueConstraints {
     }
 }
 
-/// The smallest integer multiple of `step`: an integer instance of a
-/// fractional `multipleOf` is a multiple of its integer multiples.
-fn lcm_step(step: f64) -> f64 {
+/// The smallest integer multiple of `step` among its first thousand: an
+/// integer instance of a fractional `multipleOf` is a multiple of its integer
+/// multiples. `None` where none of those is an integer.
+fn integer_multiple(step: f64) -> Option<f64> {
     let mut unit = step;
     for _ in 0..1000 {
         if (unit - unit.round()).abs() < 1e-9 {
-            return unit.round().max(1.0);
+            return Some(unit.round().max(1.0));
         }
         unit += step;
     }
-    step.ceil()
+    None
 }
 
 /// Whether two values are the same JSON kind, numbers of either form alike.

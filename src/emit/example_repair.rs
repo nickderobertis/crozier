@@ -1149,6 +1149,68 @@ mod tests {
         );
     }
 
+    /// A document posting one body list `ids` under `items`, with
+    /// `minItems: 2` and `uniqueItems: true`.
+    fn unique_list_document(items: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/batches": {"post": {
+                "operationId": "createBatch",
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"type": "object", "required": ["ids"], "properties": {
+                        "ids": {"type": "array", "minItems": 2, "uniqueItems": true,
+                            "items": items}
+                    }}
+                }}},
+                "responses": {"204": {"description": "Stored"}}
+            }}}
+        })
+    }
+
+    /// The `ids=` line of the generated client's docstring example.
+    fn ids_line(files: &[(String, String)]) -> String {
+        files
+            .iter()
+            .find(|(path, _)| path == "src/api/client.py")
+            .and_then(|(_, client)| client.lines().find(|line| line.trim().starts_with("ids=")))
+            .expect("an ids argument")
+            .trim()
+            .to_owned()
+    }
+
+    #[test]
+    fn a_unique_list_is_padded_with_distinct_items_or_left_a_residual() {
+        let (files, values) = generated(unique_list_document(
+            serde_json::json!({"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}),
+        ));
+        assert_eq!(ids_line(&files), "ids=[\"0\", \"1\"],");
+        let lists: Vec<_> = values
+            .iter()
+            .filter(|value| value.finding.mechanism == Some(Mechanism::Array))
+            .collect();
+        assert!(!lists.is_empty());
+        assert!(lists.iter().all(|value| value.finding.fern == "[\"ids\"]"
+            && value.finding.disposition == Disposition::Repaired));
+        // A uuid item has one constructed value, so no distinct second item:
+        // the list keeps its one repaired item and is a residual.
+        let (files, values) = generated(unique_list_document(
+            serde_json::json!({"type": "string", "format": "uuid"}),
+        ));
+        assert_eq!(
+            ids_line(&files),
+            "ids=[\"d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32\"],"
+        );
+        let lists: Vec<_> = values
+            .iter()
+            .filter(|value| value.finding.mechanism == Some(Mechanism::Array))
+            .collect();
+        assert!(!lists.is_empty());
+        assert!(lists.iter().all(|value| value.finding.disposition
+            == Disposition::ResidualUnconstructible
+            && value.finding.crozier == value.finding.fern));
+    }
+
     #[test]
     fn a_value_crozier_cannot_satisfy_stays_fern_s_and_is_recorded_as_a_residual() {
         let (files, values) = generated(document(

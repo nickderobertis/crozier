@@ -25,7 +25,7 @@ pub(super) struct Index {
     /// crozier may write in its place. A list's items and a map's values are
     /// keyed by the argument that passes them and by the empty argument, an
     /// item written on a line of its own.
-    scalars: BTreeMap<(Mechanism, String, ValueKey), BTreeSet<ValueKey>>,
+    scalars: BTreeMap<(Mechanism, Argument, ValueKey), BTreeSet<ValueKey>>,
     /// For each list Fern writes with its count of items, every count crozier
     /// may cut or pad it to with copies of its first item.
     lists: BTreeMap<ListKey, BTreeSet<usize>>,
@@ -50,6 +50,16 @@ impl ValueKey {
     }
 }
 
+/// What a worked example passes a value as.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum Argument {
+    /// A keyword argument, a model field or a JSON body's key.
+    Named(String),
+    /// A list's item or a map's value written on a line of its own, whose
+    /// argument stands on an earlier line.
+    Contained,
+}
+
 /// A list argument as Fern writes it: the keyword or key it is passed as, and
 /// its count of items.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -63,14 +73,14 @@ struct ListKey {
 struct Node {
     names: Vec<String>,
     /// The arguments a worked example passes the value as.
-    arguments: BTreeSet<String>,
+    arguments: BTreeSet<Argument>,
     constraints: Box<ValueConstraints>,
 }
 
 /// The keywords and keys a value of the wire name `name` is passed as: the
 /// name itself (a JSON body's key) and each Python spelling the generator
 /// gives an argument or field of it.
-fn arguments_of(name: &str) -> BTreeSet<String> {
+fn arguments_of(name: &str) -> BTreeSet<Argument> {
     [
         name.to_owned(),
         crate::naming::field_name(name),
@@ -78,6 +88,7 @@ fn arguments_of(name: &str) -> BTreeSet<String> {
         crate::naming::model_field_name(name),
     ]
     .into_iter()
+    .map(Argument::Named)
     .collect()
 }
 
@@ -90,7 +101,7 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
     fn walk(
         schema: &Schema,
         names: &[String],
-        arguments: &BTreeSet<String>,
+        arguments: &BTreeSet<Argument>,
         schemas: &indexmap::IndexMap<String, Schema>,
         out: &mut Vec<Node>,
         depth: usize,
@@ -114,7 +125,7 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
     fn walk_inside(
         schema: &Schema,
         names: &[String],
-        arguments: &BTreeSet<String>,
+        arguments: &BTreeSet<Argument>,
         schemas: &indexmap::IndexMap<String, Schema>,
         out: &mut Vec<Node>,
         depth: usize,
@@ -137,7 +148,7 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
             );
         }
         let mut contained = arguments.clone();
-        contained.insert(String::new());
+        contained.insert(Argument::Contained);
         if let Some(items) = &schema.items {
             walk(items, names, &contained, schemas, out, depth + 1);
         }
@@ -185,12 +196,15 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
         let names = vec![parameter.name.clone(), camel];
         let mut arguments = arguments_of(&parameter.name);
         arguments.extend(arguments_of(parameter.sdk_name()));
-        arguments.insert(crate::naming::field_name(crate::ir::header_param_stem(
-            &parameter.name,
+        arguments.insert(Argument::Named(crate::naming::field_name(
+            crate::ir::header_param_stem(&parameter.name),
         )));
         // A path parameter named like a body property it spreads beside takes
         // a trailing underscore.
-        arguments.insert(format!("{}_", crate::naming::field_name(&parameter.name)));
+        arguments.insert(Argument::Named(format!(
+            "{}_",
+            crate::naming::field_name(&parameter.name)
+        )));
         if let Some(constraints) = ValueConstraints::of_parameter(parameter, source) {
             out.push(Node {
                 names: names.clone(),
@@ -211,7 +225,9 @@ fn nodes(source: &OpenApi) -> Vec<Node> {
                 .into_iter()
                 .filter_map(|(_, op)| op.request_body.as_ref())
         }));
-    let request: BTreeSet<String> = ["request".to_string()].into_iter().collect();
+    let request: BTreeSet<Argument> = [Argument::Named("request".to_string())]
+        .into_iter()
+        .collect();
     for body in bodies {
         for schema in body
             .content
@@ -390,7 +406,7 @@ fn literal_changes<'a>(fern: &'a str, crozier: &'a str) -> Option<Vec<Change<'a>
 /// One literal two lines differ in, with the arguments its line passes it as.
 #[derive(Debug, PartialEq, Eq)]
 struct Change<'a> {
-    arguments: Vec<String>,
+    arguments: Vec<Argument>,
     fern: &'a str,
     crozier: &'a str,
 }
@@ -400,7 +416,7 @@ struct Change<'a> {
 /// keyword of the bracket it stands in on this line, or, where that bracket
 /// opens on an earlier line, the empty argument every list's items and map's
 /// values are keyed by too.
-fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<String> {
+fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<Argument> {
     let before: Vec<&Token<'_>> = tokens[..at]
         .iter()
         .filter(|token| !matches!(token, Token::Other(" ")))
@@ -420,7 +436,10 @@ fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<String> {
         (!name.is_empty()).then_some(name)
     };
     if let Some(Token::Other("=")) = before.last() {
-        return keyword(before.len() - 1).into_iter().collect();
+        return keyword(before.len() - 1)
+            .map(Argument::Named)
+            .into_iter()
+            .collect();
     }
     let mut out = Vec::new();
     if let (Some(Token::Other(":")), Some(Token::Literal(key))) = (
@@ -428,7 +447,7 @@ fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<String> {
         before.len().checked_sub(2).map(|k| before[k]),
     ) {
         if let Some(Value::String(key)) = python_value(key) {
-            out.push(key);
+            out.push(Argument::Named(key));
         }
     }
     let mut depth = 0usize;
@@ -451,7 +470,7 @@ fn arguments_at(tokens: &[Token<'_>], at: usize) -> Vec<String> {
     }
     // Only where the line names no argument around the literal does it stand
     // on a line of its own, an item or entry of an argument named above.
-    out.push(enclosing.unwrap_or_default());
+    out.push(enclosing.map_or(Argument::Contained, Argument::Named));
     out
 }
 
@@ -480,7 +499,7 @@ fn indexed(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
 impl Index {
     /// Whether crozier's literal is a value `id`'s repair writes in place of
     /// Fern's for a schema one of `arguments` documents.
-    fn scalar(&self, id: Mechanism, arguments: &[String], fern: &str, crozier: &str) -> bool {
+    fn scalar(&self, id: Mechanism, arguments: &[Argument], fern: &str, crozier: &str) -> bool {
         let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
             return false;
         };
@@ -884,7 +903,7 @@ fn keyword_before(trees: &[Tree<'_>], at: usize) -> Option<String> {
 /// Whether Fern's literal and crozier's are a repair some scalar mechanism
 /// makes: Fern's that construction's value, crozier's the one its schema's
 /// repair chooses.
-fn scalar_holds(index: &Index, arguments: &[String], fern: &str, crozier: &str) -> bool {
+fn scalar_holds(index: &Index, arguments: &[Argument], fern: &str, crozier: &str) -> bool {
     Mechanism::SCALAR
         .into_iter()
         .any(|id| index.scalar(id, arguments, fern, crozier))
@@ -902,8 +921,9 @@ fn trees_hold(index: &Index, passed: &str, fern: &[Tree<'_>], crozier: &[Tree<'_
             .all(|(at, pair)| match pair {
                 (left, right) if left == right => true,
                 (Tree::Token(Token::Literal(left)), Tree::Token(Token::Literal(right))) => {
-                    let arguments =
-                        vec![keyword_before(fern, at).unwrap_or_else(|| passed.to_owned())];
+                    let arguments = vec![Argument::Named(
+                        keyword_before(fern, at).unwrap_or_else(|| passed.to_owned()),
+                    )];
                     scalar_holds(index, &arguments, left, right)
                 }
                 (Tree::Group(open, left), Tree::Group(other, right)) if open == other => {
@@ -1073,7 +1093,7 @@ mod tests {
     use super::*;
 
     /// The literals two lines differ in, each with the arguments it is read as.
-    fn changes(fern: &str, crozier: &str) -> Option<Vec<(Vec<String>, String, String)>> {
+    fn changes(fern: &str, crozier: &str) -> Option<Vec<(Vec<Argument>, String, String)>> {
         literal_changes(fern, crozier).map(|changes| {
             changes
                 .into_iter()
@@ -1088,8 +1108,18 @@ mod tests {
         })
     }
 
-    fn strings(items: &[&str]) -> Vec<String> {
-        items.iter().map(|item| (*item).to_owned()).collect()
+    /// The arguments `items` name, the empty one a contained value's.
+    fn strings(items: &[&str]) -> Vec<Argument> {
+        items
+            .iter()
+            .map(|item| {
+                if item.is_empty() {
+                    Argument::Contained
+                } else {
+                    Argument::Named((*item).to_owned())
+                }
+            })
+            .collect()
     }
 
     #[test]
