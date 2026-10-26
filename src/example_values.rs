@@ -126,6 +126,33 @@ pub enum Keyword {
     MaxItems(u64),
 }
 
+impl Keyword {
+    /// The keyword a `constraint` spelling names, as [`fmt::Display`] writes
+    /// it; `None` for any other text.
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Self> {
+        let (name, value) = text.split_once('=')?;
+        let number = || value.parse::<f64>().ok().filter(|n| n.is_finite());
+        let count = || value.parse::<u64>().ok();
+        Some(match name {
+            "enum" => Keyword::Enum(serde_json::from_str(value).ok()?),
+            "const" => Keyword::Const(serde_json::from_str(value).ok()?),
+            "pattern" => Keyword::Pattern(value.to_owned()),
+            "minLength" => Keyword::MinLength(count()?),
+            "maxLength" => Keyword::MaxLength(count()?),
+            "format" => Keyword::Format(Format::parse(value)?),
+            "minimum" => Keyword::Minimum(number()?),
+            "maximum" => Keyword::Maximum(number()?),
+            "exclusiveMinimum" => Keyword::ExclusiveMinimum(number()?),
+            "exclusiveMaximum" => Keyword::ExclusiveMaximum(number()?),
+            "multipleOf" => Keyword::MultipleOf(number()?),
+            "minItems" => Keyword::MinItems(count()?),
+            "maxItems" => Keyword::MaxItems(count()?),
+            _ => return None,
+        })
+    }
+}
+
 impl fmt::Display for Keyword {
     /// The keyword as the inventory's `constraint` column spells it:
     /// `pattern=^(0|[1-9][0-9]*)$`, `minLength=7`, `enum=["a","b"]`.
@@ -230,10 +257,28 @@ impl Keyword {
     }
 }
 
-/// JSON Schema equality: numbers compare by value, so `1` equals `1.0`.
+/// JSON Schema equality: numbers compare by value — integers exactly, so `1`
+/// equals `1.0` and no two integers past 2^53 are confused — and arrays and
+/// objects by their members' equality.
 fn json_equal(left: &Value, right: &Value) -> bool {
+    let integer = |n: &serde_json::Number| {
+        n.as_i64()
+            .map(i128::from)
+            .or_else(|| n.as_u64().map(i128::from))
+    };
     match (left, right) {
-        (Value::Number(a), Value::Number(b)) => a.as_f64() == b.as_f64(),
+        (Value::Number(a), Value::Number(b)) => match (integer(a), integer(b)) {
+            (Some(a), Some(b)) => a == b,
+            _ => a.as_f64() == b.as_f64(),
+        },
+        (Value::Array(a), Value::Array(b)) => {
+            a.len() == b.len() && a.iter().zip(b).all(|(a, b)| json_equal(a, b))
+        }
+        (Value::Object(a), Value::Object(b)) => {
+            a.len() == b.len()
+                && a.iter()
+                    .all(|(key, value)| b.get(key).is_some_and(|other| json_equal(value, other)))
+        }
         _ => left == right,
     }
 }
@@ -309,6 +354,18 @@ impl ValueConstraints {
             constraints.examples.insert(0, example.clone());
         }
         Some(constraints)
+    }
+
+    /// These constraints as a list's length reads them: without its items' or
+    /// map values' own, which a list of placeholder items is not checked
+    /// against.
+    #[must_use]
+    pub fn list_view(&self) -> Self {
+        Self {
+            items: None,
+            values: None,
+            ..self.clone()
+        }
     }
 
     /// [`Self::of`] where the components may be out of view: `None` then.
@@ -1104,10 +1161,10 @@ fn pick(ranges: &[(char, char)]) -> Option<char> {
         .or_else(|| ranges.first().map(|(start, _)| *start))
 }
 
-/// A worked-example value as Python source spells it, read as the JSON value
-/// it stands for: a string literal, a number, `True` or `False`, or a list of
-/// those. `None` for anything else (a constructor call, a member access, a
-/// bytes literal, `None` itself).
+/// A worked-example scalar as Python source spells it, read as the JSON value
+/// it stands for: a string literal, a number, `True` or `False`. `None` for
+/// anything else (a list, a constructor call, a member access, a bytes
+/// literal, `None` itself).
 #[must_use]
 pub fn python_value(literal: &str) -> Option<Value> {
     let literal = literal.trim();
@@ -1248,13 +1305,9 @@ impl Disposition {
     }
 }
 
-/// One worked-example value a schema rejects, where crozier wrote it.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ExampleValue {
-    /// The generated file's `/`-separated path relative to the SDK root.
-    pub file: String,
-    /// crozier's 1-based line in that file.
-    pub line: std::num::NonZeroUsize,
+/// One worked-example value a schema rejects, wherever it stands.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Finding {
     /// The keyword argument and, inside a body, the dotted path to the value.
     pub argument: String,
     /// The value as Fern's construction writes it.
@@ -1262,11 +1315,22 @@ pub struct ExampleValue {
     /// The value as crozier writes it: `fern` unless repaired.
     pub crozier: String,
     /// The rejecting keyword and its declared value.
-    pub constraint: String,
+    pub constraint: Keyword,
     /// The construction the value is, where it is Fern's own.
     pub mechanism: Option<Mechanism>,
     /// What crozier does about it.
     pub disposition: Disposition,
+}
+
+/// A [`Finding`] at the line crozier wrote it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExampleValue {
+    /// The generated file's `/`-separated path relative to the SDK root.
+    pub file: String,
+    /// crozier's 1-based line in that file.
+    pub line: std::num::NonZeroUsize,
+    /// The value, its constraint and what crozier does about it.
+    pub finding: Finding,
 }
 
 /// The record a recording `crozier generate` writes: the environment variable
@@ -1318,21 +1382,22 @@ impl ExampleValue {
     /// The value as one tab-separated record line.
     #[must_use]
     pub fn render(&self) -> String {
+        let finding = &self.finding;
         [
             escape(&self.file),
             self.line.to_string(),
-            escape(&self.argument),
-            escape(&self.fern),
-            escape(&self.crozier),
-            escape(&self.constraint),
-            self.mechanism.map_or("-", Mechanism::id).to_string(),
-            self.disposition.as_str().to_string(),
+            escape(&finding.argument),
+            escape(&finding.fern),
+            escape(&finding.crozier),
+            escape(&finding.constraint.to_string()),
+            finding.mechanism.map_or("-", Mechanism::id).to_string(),
+            finding.disposition.as_str().to_string(),
         ]
         .join("\t")
     }
 
     /// The value a record line holds; `None` for a line that is not one, a
-    /// line number of zero included.
+    /// line number of zero or a constraint no keyword spells included.
     #[must_use]
     pub fn parse(line: &str) -> Option<Self> {
         let fields: Vec<&str> = line.split('\t').collect();
@@ -1344,15 +1409,17 @@ impl ExampleValue {
         Some(Self {
             file: unescape(file),
             line: number.parse().ok()?,
-            argument: unescape(argument),
-            fern: unescape(fern),
-            crozier: unescape(crozier),
-            constraint: unescape(constraint),
-            mechanism: match *mechanism {
-                "-" => None,
-                id => Some(Mechanism::parse(id)?),
+            finding: Finding {
+                argument: unescape(argument),
+                fern: unescape(fern),
+                crozier: unescape(crozier),
+                constraint: Keyword::parse(&unescape(constraint))?,
+                mechanism: match *mechanism {
+                    "-" => None,
+                    id => Some(Mechanism::parse(id)?),
+                },
+                disposition: Disposition::parse(disposition)?,
             },
-            disposition: Disposition::parse(disposition)?,
         })
     }
 }
@@ -1666,6 +1733,51 @@ mod tests {
         }));
         assert_eq!(c.verdict(&Value::from("0")), Verdict::Undecided(None));
         assert_eq!(c.choose(&Value::from("id")), None);
+    }
+
+    #[test]
+    fn every_keyword_reads_back_as_it_is_written() {
+        let keywords = [
+            Keyword::Enum(vec![Value::from("a"), Value::from(2)]),
+            Keyword::Const(Value::from("x=y")),
+            Keyword::Pattern("^a=b\\t$".to_string()),
+            Keyword::MinLength(3),
+            Keyword::MaxLength(4),
+            Keyword::Format(Format::DateTime),
+            Keyword::Minimum(-2.5),
+            Keyword::Maximum(10.0),
+            Keyword::ExclusiveMinimum(0.0),
+            Keyword::ExclusiveMaximum(1e3),
+            Keyword::MultipleOf(0.25),
+            Keyword::MinItems(2),
+            Keyword::MaxItems(0),
+        ];
+        for keyword in keywords {
+            assert_eq!(
+                Keyword::parse(&keyword.to_string()),
+                Some(keyword.clone()),
+                "{keyword}"
+            );
+        }
+        for text in ["pattern", "minLength=-1", "format=snowflake", "tooLong=3"] {
+            assert_eq!(Keyword::parse(text), None, "{text}");
+        }
+    }
+
+    #[test]
+    fn integers_past_doubles_and_nested_values_compare_exactly() {
+        let near = serde_json::from_str::<Value>("9007199254740993").unwrap();
+        let rounded = serde_json::from_str::<Value>("9007199254740992").unwrap();
+        assert!(!json_equal(&near, &rounded));
+        assert!(json_equal(&Value::from(1), &Value::from(1.0)));
+        assert!(json_equal(
+            &serde_json::json!({"a": [1, 2.0]}),
+            &serde_json::json!({"a": [1.0, 2]})
+        ));
+        assert!(!json_equal(
+            &serde_json::json!([1]),
+            &serde_json::json!([1, 1])
+        ));
     }
 
     #[test]

@@ -11819,10 +11819,19 @@ fn build_example_inner(
             ctx.datetime_precedes_tag_import,
             &untyped_arguments,
         );
-        example_repair::record(true, reference, &lines, rejected_values);
+        let destination = if reference {
+            example_repair::Destination::Reference
+        } else {
+            example_repair::Destination::Readme
+        };
+        example_repair::record(destination, &lines, rejected_values);
         Some(lines)
     } else {
-        example_repair::record(false, reference, &out, rejected_values);
+        example_repair::record(
+            example_repair::Destination::Docstring,
+            &out,
+            rejected_values,
+        );
         Some(out)
     }
 }

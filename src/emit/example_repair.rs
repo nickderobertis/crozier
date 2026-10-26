@@ -15,7 +15,7 @@ use serde_json::Value;
 
 use super::{Example, ExampleCtx, GeneratedFile};
 use crate::example_values::{
-    python_value, Choice, Disposition, ExampleValue, Mechanism, ValueConstraints, Verdict,
+    python_value, Choice, Disposition, ExampleValue, Finding, Mechanism, ValueConstraints, Verdict,
 };
 use crate::ir::{Endpoint, RequestBody, TypeDecl, TypeRef};
 
@@ -60,21 +60,9 @@ pub(super) struct Pending {
     value: Finding,
 }
 
-/// A rejected value before it has a place: an [`ExampleValue`] without its
-/// file and line.
-#[derive(Clone)]
-pub(super) struct Finding {
-    argument: String,
-    fern: String,
-    crozier: String,
-    constraint: String,
-    mechanism: Option<Mechanism>,
-    disposition: Disposition,
-}
-
 /// The file an example block is written into.
 #[derive(Clone, Copy)]
-enum Destination {
+pub(super) enum Destination {
     /// A client method's docstring, in a `.py` module.
     Docstring,
     /// `README.md`.
@@ -102,18 +90,14 @@ pub(super) fn start() {
 }
 
 /// Record a finished block, if recording.
-pub(super) fn record(documentation: bool, reference: bool, lines: &[String], values: Vec<Pending>) {
+pub(super) fn record(destination: Destination, lines: &[String], values: Vec<Pending>) {
     if values.is_empty() {
         return;
     }
     BLOCKS.with(|blocks| {
         if let Some(blocks) = blocks.borrow_mut().as_mut() {
             blocks.push(Block {
-                destination: match (documentation, reference) {
-                    (false, _) => Destination::Docstring,
-                    (true, false) => Destination::Readme,
-                    (true, true) => Destination::Reference,
-                },
+                destination,
                 lines: lines.to_vec(),
                 values,
             });
@@ -128,7 +112,7 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
     let blocks = BLOCKS
         .with(|blocks| blocks.borrow_mut().take())
         .unwrap_or_default();
-    let mut out = std::collections::BTreeSet::new();
+    let mut out: Vec<ExampleValue> = Vec::new();
     let texts: Vec<(String, Vec<&str>)> = files
         .iter()
         .map(|file| {
@@ -211,22 +195,21 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                         continue;
                     };
                     cursor.insert(needle, offset + 1);
-                    let value = pending.value.clone();
-                    out.insert(ExampleValue {
+                    out.push(ExampleValue {
                         file: path.clone(),
                         line: std::num::NonZeroUsize::MIN.saturating_add(start + offset),
-                        argument: value.argument,
-                        fern: value.fern,
-                        crozier: value.crozier,
-                        constraint: value.constraint,
-                        mechanism: value.mechanism,
-                        disposition: value.disposition,
+                        finding: pending.value.clone(),
                     });
                 }
             }
         }
     }
-    out.into_iter().collect()
+    // A block written twice in one file is one set of values.
+    out.sort_by(|a, b| {
+        (&a.file, a.line, &a.finding.argument).cmp(&(&b.file, b.line, &b.finding.argument))
+    });
+    out.dedup_by(|a, b| a.render() == b.render());
+    out
 }
 
 /// The schemas a list value documents: the list's type and constraint sets,
@@ -352,7 +335,14 @@ fn merged(sets: &[&ValueConstraints]) -> ValueConstraints {
             out.default.clone_from(&set.default);
         }
         out.incomplete |= set.incomplete;
+        out.unique_items |= set.unique_items;
     }
+    let nested = |part: fn(&ValueConstraints) -> Option<&ValueConstraints>| {
+        let parts: Vec<&ValueConstraints> = sets.iter().filter_map(|set| part(set)).collect();
+        (!parts.is_empty()).then(|| Box::new(merged(&parts)))
+    };
+    out.items = nested(|set| set.items.as_deref());
+    out.values = nested(|set| set.values.as_deref());
     out
 }
 
@@ -500,7 +490,7 @@ impl ExampleCtx<'_> {
                                     argument: path.to_string(),
                                     fern: rounded,
                                     crozier: literal.clone(),
-                                    constraint: keyword.to_string(),
+                                    constraint: keyword.clone(),
                                     mechanism: Some(Mechanism::Rounded),
                                     disposition: Disposition::Repaired,
                                 },
@@ -518,14 +508,14 @@ impl ExampleCtx<'_> {
                                 argument: path.to_string(),
                                 fern: literal.clone(),
                                 crozier: literal.clone(),
-                                constraint: keyword.to_string(),
+                                constraint: keyword.clone(),
                                 mechanism: construction(&value, names, &lengths),
                                 disposition: Disposition::ResidualUndecidable,
                             },
                         });
                         return;
                     }
-                    Verdict::Rejected(keyword) => keyword.to_string(),
+                    Verdict::Rejected(keyword) => keyword,
                 };
                 let fern = literal.clone();
                 let mechanism = construction(&value, names, &lengths);
@@ -696,7 +686,7 @@ impl ExampleCtx<'_> {
             return;
         };
         let choice = (!declared && !items.is_empty())
-            .then(|| merged(sets).choose(&shape))
+            .then(|| merged(sets).list_view().choose(&shape))
             .flatten();
         let disposition = if declared {
             Disposition::DeclaredInSpec
@@ -745,7 +735,7 @@ impl ExampleCtx<'_> {
                     fern.clone()
                 },
                 fern,
-                constraint: keyword.to_string(),
+                constraint: keyword.clone(),
                 mechanism: (!declared).then_some(Mechanism::Array),
                 disposition,
             },
@@ -845,7 +835,7 @@ impl ExampleCtx<'_> {
                 argument: path.to_string(),
                 fern: spell(first),
                 crozier: literal.to_string(),
-                constraint: keyword.to_string(),
+                constraint: keyword.clone(),
                 mechanism: Some(Mechanism::EnumMember),
                 disposition,
             },
@@ -979,19 +969,26 @@ mod tests {
             true,
         ));
         assert_eq!(docstring_arguments(&files), ["zone=\"eu-1\",", "count=1,"]);
-        let zone: Vec<&ExampleValue> = values.iter().filter(|v| v.argument == "zone").collect();
+        let zone: Vec<&ExampleValue> = values
+            .iter()
+            .filter(|v| v.finding.argument == "zone")
+            .collect();
         assert!(!zone.is_empty());
         for value in zone {
             assert_eq!(
                 (
-                    value.fern.as_str(),
-                    value.crozier.as_str(),
-                    value.constraint.as_str()
+                    value.finding.fern.as_str(),
+                    value.finding.crozier.as_str(),
+                    value.finding.constraint.to_string()
                 ),
-                ("\"zone\"", "\"eu-1\"", "pattern=^[a-z]{2}-[0-9]$")
+                (
+                    "\"zone\"",
+                    "\"eu-1\"",
+                    "pattern=^[a-z]{2}-[0-9]$".to_string()
+                )
             );
-            assert_eq!(value.mechanism, Some(Mechanism::Name));
-            assert_eq!(value.disposition, Disposition::Repaired);
+            assert_eq!(value.finding.mechanism, Some(Mechanism::Name));
+            assert_eq!(value.finding.disposition, Disposition::Repaired);
         }
     }
 
@@ -1060,9 +1057,9 @@ mod tests {
             assert_eq!(docstring_arguments(&files)[0], expected, "{zone}");
             assert!(
                 !values.is_empty()
-                    && values.iter().all(|value| value.fern == "\"zone\""
-                        && value.mechanism == Some(Mechanism::Name)
-                        && value.disposition == Disposition::Repaired),
+                    && values.iter().all(|value| value.finding.fern == "\"zone\""
+                        && value.finding.mechanism == Some(Mechanism::Name)
+                        && value.finding.disposition == Disposition::Repaired),
                 "{zone}: {values:?}"
             );
         }
@@ -1103,13 +1100,16 @@ mod tests {
                 false,
             ));
             assert_eq!(docstring_arguments(&files)[1], expected, "{count}");
-            let count_values: Vec<_> = values.iter().filter(|v| v.argument == "count").collect();
+            let count_values: Vec<_> = values
+                .iter()
+                .filter(|v| v.finding.argument == "count")
+                .collect();
             assert!(!count_values.is_empty(), "{count}");
             assert!(
                 count_values
                     .iter()
-                    .all(|value| value.mechanism == Some(Mechanism::Number)
-                        && value.disposition == Disposition::Repaired),
+                    .all(|value| value.finding.mechanism == Some(Mechanism::Number)
+                        && value.finding.disposition == Disposition::Repaired),
                 "{count}: {values:?}"
             );
         }
@@ -1141,8 +1141,8 @@ mod tests {
         ));
         assert_eq!(docstring_arguments(&files)[0], "zone=\"zone\",");
         assert!(!values.is_empty());
-        assert!(values.iter().all(|value| value.disposition
+        assert!(values.iter().all(|value| value.finding.disposition
             == Disposition::ResidualUnconstructible
-            && value.crozier == value.fern));
+            && value.finding.crozier == value.finding.fern));
     }
 }

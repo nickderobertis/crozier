@@ -209,10 +209,11 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
         // A list's construction: Fern's one item, or two in its fallback.
         for count in [1usize, 2] {
             let shape = Value::Array(vec![Value::Null; count]);
-            if !matches!(constraints.verdict(&shape), Verdict::Rejected(_)) {
+            let list_view = constraints.list_view();
+            if !matches!(list_view.verdict(&shape), Verdict::Rejected(_)) {
                 continue;
             }
-            if let Some(Choice::Constructed(Value::Array(target))) = constraints.choose(&shape) {
+            if let Some(Choice::Constructed(Value::Array(target))) = list_view.choose(&shape) {
                 for name in &node.names {
                     for keyword in [name.clone(), crate::naming::field_name(name)] {
                         let list = ListKey { keyword, count };

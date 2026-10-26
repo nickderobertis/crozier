@@ -150,8 +150,10 @@ pub fn records_dir() -> &'static Path {
 /// recorded none.
 fn recorded(out: &Path) -> Result<Vec<ExampleValue>, String> {
     let path = records_dir().join(crozier::example_values::record_file_name(out));
-    let Ok(text) = std::fs::read_to_string(&path) else {
-        return Ok(Vec::new());
+    let text = match std::fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(format!("{}: {error}", path.display())),
     };
     text.lines()
         .map(|line| {
@@ -184,11 +186,17 @@ pub fn observed_rows(
     let mut rows = BTreeSet::new();
     let mut failures = Vec::new();
     for (rel, values) in by_file {
-        let (Ok(generated), Ok(reference)) = (
-            std::fs::read_to_string(out.join(rel)),
-            std::fs::read_to_string(expected_root.join(rel)),
-        ) else {
-            continue;
+        let read = |path: std::path::PathBuf| {
+            std::fs::read_to_string(&path).map_err(|error| format!("{}: {error}", path.display()))
+        };
+        let (generated, reference) = match (read(out.join(rel)), read(expected_root.join(rel))) {
+            (Ok(generated), Ok(reference)) => (generated, reference),
+            (Err(error), _) | (_, Err(error)) => {
+                failures.push(format!(
+                    "{rel}: a recorded value's file cannot be read: {error}"
+                ));
+                continue;
+            }
         };
         let mapped = match crozier::parity::compare_file_with_origins(
             context, rel, &generated, &reference,
@@ -206,20 +214,20 @@ pub fn observed_rows(
             let Some(fern_line) = mapped.get(line - 1).copied().flatten() else {
                 failures.push(format!(
                     "{rel}:{}: the comparison pairs crozier's line holding {} with no Fern line",
-                    value.line, value.argument
+                    value.line, value.finding.argument
                 ));
                 continue;
             };
-            if !fern_lines[fern_line].contains(&value.fern)
+            if !fern_lines[fern_line].contains(&value.finding.fern)
                 && !compact(&fern_lines[fern_line..=list_end(&fern_lines, fern_line)].join("\n"))
-                    .contains(&compact(&value.fern))
+                    .contains(&compact(&value.finding.fern))
             {
                 failures.push(format!(
                     "{rel}:{}: Fern's line {} does not hold {} for {}",
                     value.line,
                     fern_line + 1,
-                    value.fern,
-                    value.argument
+                    value.finding.fern,
+                    value.finding.argument
                 ));
                 continue;
             }
@@ -227,12 +235,12 @@ pub fn observed_rows(
             // a one-line list's covers the items it holds, so a repaired value
             // is accounted for by a rejected-example departure on its line or,
             // for a list, anywhere in its lines.
-            let end = if value.mechanism == Some(Mechanism::Array) {
+            let end = if value.finding.mechanism == Some(Mechanism::Array) {
                 list_end(&crozier_lines, line - 1) + 1
             } else {
                 line
             };
-            if value.disposition == Disposition::Repaired
+            if value.finding.disposition == Disposition::Repaired
                 && !departures.iter().any(|(file, departure_line, id)| {
                     file == rel
                         && (line..=end).contains(departure_line)
@@ -243,9 +251,9 @@ pub fn observed_rows(
                     "{rel}:{}: crozier writes {} for {}, but no `{}` departure accounts for it \
                      against the source document",
                     value.line,
-                    value.crozier,
-                    value.argument,
-                    value.mechanism.map_or("-", Mechanism::id)
+                    value.finding.crozier,
+                    value.finding.argument,
+                    value.finding.mechanism.map_or("-", Mechanism::id)
                 ));
                 continue;
             }
@@ -253,11 +261,15 @@ pub fn observed_rows(
                 golden: ledger.owner_of(rel).0.to_string(),
                 file: rel.to_string(),
                 line: fern_line + 1,
-                argument: value.argument.clone(),
-                fern_value: value.fern.clone(),
-                constraint: value.constraint.clone(),
-                mechanism: value.mechanism.map_or("-", Mechanism::id).to_string(),
-                disposition: value.disposition.as_str().to_string(),
+                argument: value.finding.argument.clone(),
+                fern_value: value.finding.fern.clone(),
+                constraint: value.finding.constraint.to_string(),
+                mechanism: value
+                    .finding
+                    .mechanism
+                    .map_or("-", Mechanism::id)
+                    .to_string(),
+                disposition: value.finding.disposition.as_str().to_string(),
             });
         }
     }
@@ -271,9 +283,9 @@ pub fn observed_rows(
         }
         let backed = values.iter().any(|value| {
             value.file == *file
-                && value.disposition == Disposition::Repaired
+                && value.finding.disposition == Disposition::Repaired
                 && (value.line.get() == *line
-                    || value.mechanism == Some(Mechanism::Array)
+                    || value.finding.mechanism == Some(Mechanism::Array)
                         && value.line.get() <= *line
                         && *line <= value.line.get() + 400)
         });
@@ -431,8 +443,11 @@ fn record_to(dir: &Path, goldens: &[(&str, bool)], rows: &BTreeSet<Row>) -> Resu
 /// golden's rows become exactly what its comparisons recorded; every other
 /// golden keeps its rows. Returns the merged text.
 pub fn merge_records(root: &Path, dir: &Path) -> Result<String, String> {
-    let text =
-        std::fs::read_to_string(root.join(INVENTORY)).unwrap_or_else(|_| format!("{HEADER}\n"));
+    let text = match std::fs::read_to_string(root.join(INVENTORY)) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => format!("{HEADER}\n"),
+        Err(error) => return Err(format!("{INVENTORY}: {error}")),
+    };
     let current = parse(&text).map_err(|failures| failures.join("\n"))?;
     let mut recorded: BTreeMap<String, BTreeSet<Row>> = BTreeMap::new();
     let entries = std::fs::read_dir(dir).map_err(|error| format!("{}: {error}", dir.display()))?;

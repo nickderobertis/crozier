@@ -1837,7 +1837,8 @@ pub struct Schema {
     pub(crate) discarded_composition: bool,
     /// The `allOf` members that same normalization discarded, kept so the
     /// in-scope keywords a worked-example value must satisfy stay readable
-    /// ([`crate::example_values`]). Not a wire field; generation never reads it.
+    /// ([`crate::example_values`]). Not a wire field; nothing but those
+    /// constraints reads it.
     #[serde(skip)]
     pub(crate) discarded_all_of: Option<Vec<Schema>>,
     /// Whether the node declares an applicator crozier never reads — `if`, or a
