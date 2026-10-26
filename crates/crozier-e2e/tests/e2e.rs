@@ -28313,6 +28313,12 @@ fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
             )
         })
         .collect();
+    let mut schemas = schemas;
+    schemas.insert("bad".to_string(), serde_json::json!({"minLength": "seven"}));
+    schemas.insert(
+        "listed".to_string(),
+        serde_json::json!({"anyOf": [{"type": "integer", "minimum": 2}]}),
+    );
     let document = work.path().join("openapi.json");
     std::fs::write(
         &document,
@@ -28327,6 +28333,10 @@ fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
         text.push_str(&format!("    value={fern},\n    value={crozier},\n"));
     }
     text.push_str("    value=Kind.MEMBER,\n");
+    text.push_str("    value=(,\n");
+    text.push_str("    other=\"x\",\n");
+    text.push_str("    value=1,\n");
+    text.push_str("    value=2,\n");
     std::fs::write(&lines, text).unwrap();
     let at = |line: usize| format!("{}:{line}", lines.display());
     let run = |python: &Path, source: &Path, pointer: &str, fern: &str, crozier: &str| {
@@ -28359,7 +28369,7 @@ fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
             &not_openapi,
             pointer,
             fern.clone(),
-            "is not an OpenAPI 3.x document",
+            "is not an OpenAPI 3.0 or 3.1 document",
         ),
         (
             &work.path().join("missing.json"),
@@ -28381,11 +28391,85 @@ fn sdk_env_rejected_example_validator_asserts_formats_and_refuses_bad_input() {
         ),
         (&document, pointer, at(999), "is past the end"),
         (&document, pointer, at(19), "no literal value"),
+        (&document, pointer, at(20), "holds no keyword argument"),
+        (&document, pointer, at(21), "passes no value="),
+        (
+            &document,
+            pointer,
+            lines.display().to_string(),
+            "is not FILE:LINE",
+        ),
+        (
+            &document,
+            "/components/schemas/uuid/format",
+            fern.clone(),
+            "names no schema",
+        ),
+        (
+            &document,
+            "/components/schemas/uuid/type/0",
+            fern.clone(),
+            "names nothing",
+        ),
+        (
+            &document,
+            "/components/schemas/bad",
+            fern.clone(),
+            "is no valid schema",
+        ),
     ] {
         run(&bare, source, pointer, &left, &crozier)
             .code(2)
             .stderr(predicate::str::contains(says));
     }
+    // A pointer reads into a list by index.
+    run(
+        &bare,
+        &document,
+        "/components/schemas/listed/anyOf/0",
+        &at(22),
+        &at(23),
+    )
+    .success();
+    // An OpenAPI 3.0 document is read under Draft 4, whose boolean
+    // `exclusiveMinimum` makes `minimum` exclusive; any other version is refused.
+    let draft_four = work.path().join("openapi-3.0.json");
+    std::fs::write(
+        &draft_four,
+        serde_json::json!({"openapi": "3.0.3", "info": {"title": "t", "version": "1"},
+            "paths": {}, "components": {"schemas": {"count": {"type": "integer",
+                "minimum": 1, "exclusiveMinimum": true}}}})
+        .to_string(),
+    )
+    .unwrap();
+    run(
+        &bare,
+        &draft_four,
+        "/components/schemas/count",
+        &at(22),
+        &at(23),
+    )
+    .success()
+    .stdout(predicate::str::contains("fern value=1: rejected"));
+    let unknown = work.path().join("openapi-3.2.json");
+    std::fs::write(
+        &unknown,
+        std::fs::read_to_string(&draft_four)
+            .unwrap()
+            .replace("3.0.3", "3.2.0"),
+    )
+    .unwrap();
+    run(
+        &bare,
+        &unknown,
+        "/components/schemas/count",
+        &at(22),
+        &at(23),
+    )
+    .code(2)
+    .stderr(predicate::str::contains(
+        "is not an OpenAPI 3.0 or 3.1 document",
+    ));
     // A YAML document needs PyYAML; with it the same proof reads, and a
     // document neither JSON nor YAML is refused.
     let yaml = work.path().join("openapi.yml");

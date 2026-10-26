@@ -36,6 +36,9 @@ class InputError(ValueError):
     """An argument or file the validation cannot read."""
 
 
+OPENAPI_VERSION = re.compile(r"3\.[01]\.\d+")
+
+
 def load_document(path: Path) -> dict[str, Any]:
     """The source document, read as JSON, or as YAML where PyYAML is present."""
     text = path.read_text(encoding="utf-8")
@@ -50,24 +53,25 @@ def load_document(path: Path) -> dict[str, Any]:
             document = yaml.safe_load(text)
         except yaml.YAMLError as error:
             raise InputError(f"{path} is neither JSON nor YAML: {error}") from error
-    if not isinstance(document, dict) or not str(document.get("openapi", "")).startswith("3."):
-        raise InputError(f"{path} is not an OpenAPI 3.x document")
+    if not isinstance(document, dict) or not OPENAPI_VERSION.fullmatch(str(document.get("openapi", ""))):
+        raise InputError(f"{path} is not an OpenAPI 3.0 or 3.1 document")
     return document
 
 
 def schema_at(document: dict[str, Any], pointer: str) -> object:
     """The schema the JSON pointer names in `document`."""
+    if not pointer.startswith("/"):
+        raise InputError(f"{pointer} is not a JSON pointer")
     node: object = document
-    for part in pointer.split("/")[1:] if pointer.startswith("/") else [None]:
-        if part is None:
-            raise InputError(f"{pointer} is not a JSON pointer")
+    for part in pointer.split("/")[1:]:
         key = part.replace("~1", "/").replace("~0", "~")
-        if isinstance(node, dict) and key in node:
-            node = node[key]
-        elif isinstance(node, list) and key.isdigit() and int(key) < len(node):
-            node = node[int(key)]
-        else:
-            raise InputError(f"{pointer} names nothing in the document")
+        match node:
+            case dict() if key in node:
+                node = node[key]
+            case list() if key.isdigit() and int(key) < len(node):
+                node = node[int(key)]
+            case _:
+                raise InputError(f"{pointer} names nothing in the document")
     if not isinstance(node, (dict, bool)):
         raise InputError(f"{pointer} names no schema")
     return node
@@ -203,7 +207,7 @@ def format_checker(validator_class: type) -> jsonschema.FormatChecker:
 
 def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None:
     """Why the schema at `pointer` rejects `value`, or `None` when it accepts it."""
-    schema_at(document, pointer)
+    schema = schema_at(document, pointer)
     version = str(document.get("openapi", ""))
     validator_class = (
         jsonschema.Draft202012Validator if version.startswith("3.1") else jsonschema.Draft4Validator
@@ -213,6 +217,10 @@ def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None
     )
     resource = referencing.Resource.from_contents(document, default_specification=specification)
     registry = referencing.Registry().with_resource("urn:source", resource)
+    try:
+        validator_class.check_schema(schema)
+    except jsonschema.exceptions.SchemaError as error:
+        raise InputError(f"{pointer} is no valid schema: {error.message}") from error
     validator = validator_class(
         {"$ref": f"urn:source#{pointer}"},
         registry=registry,
@@ -237,7 +245,13 @@ def main(argv: list[str]) -> int:
             "crozier": line_value(arguments.crozier, arguments.argument),
         }
         verdicts = {side: verdict(document, arguments.pointer, value) for side, value in values.items()}
-    except (InputError, OSError, referencing.exceptions.Unresolvable) as error:
+    except (
+        InputError,
+        OSError,
+        referencing.exceptions.Unresolvable,
+        jsonschema.exceptions.SchemaError,
+        re.error,
+    ) as error:
         print(f"validate.py: {error}", file=sys.stderr)
         return 2
     for side, value in values.items():

@@ -377,7 +377,8 @@ pub(super) struct Repairs {
     foreign: bool,
 }
 
-/// A digest of `lines`.
+/// A digest of Fern's side of a pair, which no region changes: a cached
+/// analysis is reused only for the same reference file.
 fn digest(lines: &[&str]) -> u64 {
     use std::hash::{Hash, Hasher};
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
@@ -644,7 +645,18 @@ fn list_argument(lines: &[&str], start: usize) -> Option<ListArgument> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Tree<'a> {
     Token(Token<'a>),
-    Group(&'a str, Vec<Vec<Tree<'a>>>),
+    Group(Bracket, Vec<Vec<Tree<'a>>>),
+}
+
+/// The bracket a group opens with.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Bracket {
+    /// `[`, a list.
+    Square,
+    /// `(`, a call or tuple.
+    Round,
+    /// `{`, a dict.
+    Curly,
 }
 
 /// The comma-separated elements from `at` up to the token `close` (the end of
@@ -664,13 +676,13 @@ fn elements<'a>(
                 return Some(out);
             }
             Token::Other(open @ ("[" | "(" | "{")) => {
-                let closer = match *open {
-                    "[" => "]",
-                    "(" => ")",
-                    _ => "}",
+                let (bracket, closer) = match *open {
+                    "[" => (Bracket::Square, "]"),
+                    "(" => (Bracket::Round, ")"),
+                    _ => (Bracket::Curly, "}"),
                 };
                 let inner = elements(tokens, at, Some(closer))?;
-                out.last_mut()?.push(Tree::Group(open, inner));
+                out.last_mut()?.push(Tree::Group(bracket, inner));
             }
             Token::Other("]" | ")" | "}") => return None,
             Token::Other(",") if close.is_some() => out.push(Vec::new()),
@@ -683,7 +695,8 @@ fn elements<'a>(
     })
 }
 
-/// `text` read as one element's trees.
+/// One list item's trees; `None` where its brackets do not balance or it
+/// holds more than one top-level element.
 fn tree(text: &str) -> Option<Vec<Tree<'_>>> {
     let tokens = tokens(text)?;
     let mut elements = elements(&tokens, &mut 0, None)?;
@@ -760,7 +773,7 @@ fn trees_hold(index: &Index, fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
                     if left.len() == right.len() {
                         left.iter().zip(right).all(|(l, r)| trees_hold(index, l, r))
                     } else {
-                        *open == "["
+                        *open == Bracket::Square
                             && keyword_before(fern, at)
                                 .is_some_and(|keyword| list_holds(index, &keyword, left, right))
                     }
@@ -869,7 +882,6 @@ fn array_regions(pair: &Pair<'_>, counterpart: &[Option<usize>]) -> Vec<Region> 
             fern: i..theirs.close + 1,
             crozier: j..ours.close + 1,
         };
-        // A list cut short, or written on one line, is the whole list.
         if target < count || (i == theirs.close && j == ours.close) {
             regions.push(whole_list);
             continue;
