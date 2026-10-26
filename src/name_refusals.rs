@@ -511,8 +511,9 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             // `Page-Size` beside a `page_size` query parameter generates
             // (docs/fern-measurements/output-defects/612-parameter-location-collision),
             // where a `page-size` header on one operation is refused.
-            for (parameter, name) in op.parameters.iter().zip(&names) {
-                if promoted(parameter) {
+            // `names` holds the parameters' names, then the body properties'.
+            for (index, name) in names.iter().enumerate() {
+                if op.parameters.get(index).is_some_and(promoted) {
                     continue;
                 }
                 let identifier = crate::naming::to_snake_case(name)
