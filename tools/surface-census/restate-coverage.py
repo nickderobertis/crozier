@@ -197,18 +197,81 @@ def combination_categories(root: Path) -> tuple[Counter[str], int]:
     return categories, settled
 
 
+COMBINATION_PROOF_SENTENCE = r"\*\*Combinations by proof\.\*\*.*?= \d+\."
+
+
+class ProofSplit(NamedTuple):
+    real: int
+    measured: int
+    handwritten: int
+    unproven: int
+    decided: int
+
+
+def combination_proofs(root: Path) -> ProofSplit:
+    """Split the combination rows by the proof each rests on.
+
+    A `golden` row is a real-specification byte-match only when the reach
+    ledger names a golden-only witness for it; one with none, or with no ledger
+    row, is unproven. A `limitations` row and an undecided `UNREACHABLE` gap
+    rest on a committed measurement of non-generation; a gap the shared table
+    decides is neither proven nor unproven; every other gap is unproven.
+    """
+    parser = reader()
+    decided = decided_keys(root)
+    surface = root / "docs/openapi-surface"
+    try:
+        ledger = reader("golden-reach.py").read_ledger(surface / "golden-reach.tsv")
+    except SystemExit as error:
+        raise ValueError(str(error)) from error
+    witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
+    split: Counter[str] = Counter()
+    for name in parser.region_files(root / "docs/openapi-surface-coverage.md"):
+        for cells in parser.region_rows((surface / name).read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            if not key.startswith(parser.COMBINATION_PREFIX):
+                continue
+            category = cells[3].strip("`")
+            settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
+            match category:
+                case "golden":
+                    split["real" if key in witnessed else "unproven"] += 1
+                case "handwritten":
+                    split["handwritten"] += 1
+                case "limitations":
+                    split["measured"] += 1
+                case _ if key in decided:
+                    split["decided"] += 1
+                case _ if settlement == Settlement.UNREACHABLE:
+                    split["measured"] += 1
+                case _:
+                    split["unproven"] += 1
+    return ProofSplit(*(split[field] for field in ProofSplit._fields))
+
+
 def restate_combinations(root: Path, text: str) -> str:
-    """Restate only the combination sentence; category vocabulary comes from rows."""
+    """Restate only the combination sentences; category vocabulary comes from rows."""
     categories, decided = combination_categories(root)
     parts = [f"{count} are `{category}`" for category, count in sorted(categories.items())]
     counts = ", ".join(parts[:-1]) + " and " + parts[-1] if len(parts) > 1 else parts[0]
-    return substitute(
+    text = substitute(
         text,
         COMBINATION_SENTENCE,
         f"**Feature combinations are counted apart.** {sum(categories.values())} combinations are selected\n"
         f"([the list](openapi-surface/combinations.md)): {counts}.\n"
         f"{decided} of the `gap` ones {'is' if decided == 1 else 'are'} decided output-insensitive in\n"
         "[the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.",
+    )
+    split = combination_proofs(root)
+    return substitute(
+        text,
+        COMBINATION_PROOF_SENTENCE,
+        f"**Combinations by proof.** **{split.real}** are byte-matched against a registered real\n"
+        f"specification, **{split.measured}** are compared against a committed measurement of\n"
+        f"non-generation, **{split.handwritten}** rest on a hand-written fixture, **{split.unproven}** "
+        f"{'remains' if split.unproven == 1 else 'remain'}\nunproven and **{split.decided}** "
+        f"{'is' if split.decided == 1 else 'are'} decided output-insensitive: "
+        f"{' + '.join(map(str, split))} = {sum(split)}.",
     )
 
 

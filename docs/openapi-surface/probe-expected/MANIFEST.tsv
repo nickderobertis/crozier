@@ -93,6 +93,7 @@ param-content-path	absent-tree	discards	docs/openapi-surface/probe-expected/para
 parameter-style-form-cookie-scalar	absent-tree	discards	docs/openapi-surface/probe-expected/parameter-style-form-cookie-scalar	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 parameter-style-matrix-path-scalar	absent-tree	discards	docs/openapi-surface/probe-expected/parameter-style-matrix-path-scalar	—	44113042e41056f2d5197f31f027e2df033252a85165e782ee662ae87d534891
 parameter-style-simple-path-object	absent-tree	discards	docs/openapi-surface/probe-expected/parameter-style-simple-path-object	—	6eb8da5fe26b8f51e0782dd245249830141bb1cf9a0ce73c3d97d02aee42d7cf
+pharmacy-nullable-scalar-unions	absent-tree	measured	docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions	—	87a0c9cef823cee4e3b97319f077caffa829c791614e5f7f58b4d88300c9e9ee
 pipeDelimited-array	absent-tree	discards	docs/openapi-surface/probe-expected/pipeDelimited-array	—	eb3374752db872ff6a1885770b73c99dd0450ff8c3d684c815ca5eab7bba21e2
 pipeDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/pipeDelimited-object	—	40385b2cd0f0da666d23940a1d640e04eb5c3e7a73c1a5339594057ec3c57928
 property-sole-anyof-closed-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-anyof-closed-object-member	—	35a94a3296a3ee4014f7952a945179d79360fcd460bce0128bb2d8b80c6a102a
