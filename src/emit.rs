@@ -12559,7 +12559,39 @@ mod tests {
             )),
             "{object}"
         );
+        // A flat payload stays on one line while the call fits the width, and
+        // explodes one character past it: the mapping value names the wrapper.
+        let keyed = |key: &str| {
+            let mut document = document("DepthCentimetres", "GaugeReading");
+            let mapping =
+                &mut document["components"]["schemas"]["SurveyEntry"]["discriminator"]["mapping"];
+            mapping["level"].take();
+            *mapping = serde_json::json!({
+                key: "#/components/schemas/WaterLevel",
+                "sighting": "#/components/schemas/CreatureSighting"
+            });
+            client(files_for(document))
+        };
+        let fits = format!("l{}", "v".repeat(WRAPPED_FIT - 1));
+        let fitting = keyed(&fits);
+        let class = format!("SurveyEntry_L{}", "v".repeat(WRAPPED_FIT - 1));
+        assert!(
+            fitting.contains(&format!("\n            request={class}(value=1.1),\n")),
+            "{fitting}"
+        );
+        let exploded = keyed(&format!("{fits}v"));
+        assert!(
+            exploded.contains(&format!(
+                "\n            request={class}v(\n                value=1.1\n            ),\n"
+            )),
+            "{exploded}"
+        );
     }
+
+    /// The longest mapping value whose wrapper keeps the example
+    /// `    request=SurveyEntry_<Value>(value=1.1)` within 80 columns, as it is
+    /// written before the docstring indents it.
+    const WRAPPED_FIT: usize = 45;
 
     #[test]
     fn the_ir_fallback_example_sizes_strings_by_their_declared_lengths() {
