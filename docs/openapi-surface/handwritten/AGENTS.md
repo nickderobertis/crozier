@@ -140,6 +140,26 @@ fixture	key	site	setting	regions_executed	regions
 `setting` is `audiences=<name>[,<name>…]` for the run with them and `-` for
 the run without. This pair is the measured gate a `config-gated` record cites.
 
+## `handwritten-byte-match.tsv`
+
+[`../handwritten-byte-match.tsv`](../handwritten-byte-match.tsv), tab-separated
+with one header line, sorted by `fixture`:
+
+```
+fixture	openapi_sha256	fern_expected_digest
+```
+
+One row per fixture
+[`../combination-cooccurrence.tsv`](../combination-cooccurrence.tsv) names as a
+`witness` that the gate below byte-matched: the SHA-256 of the `openapi.yml` it
+generated from and the digest of the `fern-expected/` tree it compared against.
+Only that gate writes it — `CROZIER_UPDATE_HANDWRITTEN_MATCHES=1 cargo test -p
+crozier-e2e --test e2e handwritten_fixtures_match_fern_goldens` — and it fails
+while the committed file differs from what it derives. A `handwritten`
+co-occurrence row stands only while its witness has a row at its current bytes,
+so a new hand-written audit row, or an edit to its fixture, regenerates this
+file in the same change.
+
 ## The gate
 
 `handwritten_fixtures_match_fern_goldens` in

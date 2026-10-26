@@ -1164,6 +1164,10 @@ INTERACTION_UNREACHED = "`interaction branch unreached`"
 # tables: the date of the ruling and its text.
 USER_RULING = re.compile(r"(?:`user ruling`|user ruling) — (?P<date>\d{4}-\d{2}-\d{2}): (?P<text>\S.*)")
 COOCCURRENCE_AUDIT = Path("docs") / "openapi-surface" / "combination-cooccurrence.tsv"
+# What `handwritten_fixtures_match_fern_goldens` byte-matched, at the bytes it compared:
+# one row per audited hand-written witness, written and held current by that gate.
+BYTE_MATCHES = Path("docs") / "openapi-surface" / "handwritten-byte-match.tsv"
+BYTE_MATCHES_HEADER = "fixture\topenapi_sha256\tfern_expected_digest"
 
 
 def user_ruling(reason: str) -> bool | None:
@@ -1227,10 +1231,14 @@ def certified_tree_digest(tree: Path) -> str:
 
 
 def byte_match_failures(root: Path, fixture: str) -> list[str]:
-    """Why `handwritten_fixtures_match_fern_goldens` would not byte-match `fixture`, as far as
-    the committed tree says: it compares crozier's output over `openapi.yml` against
-    `fern-expected/` only when both are present, and only a tree hashing to its declared
-    digest at the certified pair is the one Fern generated."""
+    """Why `fixture` is not one `handwritten_fixtures_match_fern_goldens` byte-matched.
+
+    That gate compares crozier's output over `openapi.yml` against `fern-expected/`,
+    and records in `BYTE_MATCHES` each audited witness it matched with the SHA-256 of
+    the document and the digest of the tree it compared; it fails while that record
+    is stale. So the fixture is byte-matched only at a recorded row whose hashes are
+    its current bytes, its tree hashing to its declared digest at the certified pair.
+    """
     relative = Path("docs") / "openapi-surface" / "handwritten" / fixture
     # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
     directory = (root if (root / relative / "openapi.yml").is_file() else REPO) / relative
@@ -1250,6 +1258,17 @@ def byte_match_failures(root: Path, fixture: str) -> list[str]:
     ]
     if (actual := certified_tree_digest(expected)) != evidence.get("digest"):
         failures.append(f"its fern-expected/ hashes to {actual}, not the digest evidence.toml declares")
+    record = root / BYTE_MATCHES if (root / BYTE_MATCHES).is_file() else REPO / BYTE_MATCHES
+    lines = record.read_text(encoding="utf-8").splitlines() if record.is_file() else []
+    if lines[:1] != [BYTE_MATCHES_HEADER]:
+        return [*failures, f"{BYTE_MATCHES.name} is missing or its header is not `{BYTE_MATCHES_HEADER}`"]
+    current = "\t".join([fixture, hashlib.sha256((directory / "openapi.yml").read_bytes()).hexdigest(), actual])
+    if current not in lines[1:]:
+        failures.append(
+            f"{BYTE_MATCHES.name} records no byte-match of its current openapi.yml and fern-expected/; "
+            "crozier's output over them is unproven until handwritten_fixtures_match_fern_goldens "
+            "matches them and rewrites the record"
+        )
     return failures
 
 
@@ -12456,6 +12475,7 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
         copies += [surface / name for name in ("golden-reach-sites.tsv", "handwritten-reach.tsv")]
         copies += [COOCCURRENCE_AUDIT] if (REPO / COOCCURRENCE_AUDIT).is_file() else []
+        copies += [BYTE_MATCHES] if (REPO / BYTE_MATCHES).is_file() else []
         dispositions = REPO / surface / "output-insensitive.tsv"
         if dispositions.exists():
             copies += [surface / "output-insensitive.tsv", Path("assets/scaffolding/metadata.json")]
@@ -12984,6 +13004,30 @@ class FinishedStateGateTests(unittest.TestCase):
             refusal + "it carries no `openapi.yml` and `fern-expected/` tree for the gate to compare",
             finished_state_failures(self.root),
         )
+
+    def test_a_handwritten_audit_row_whose_document_no_longer_byte_matches_is_refused(self) -> None:
+        """A changed `openapi.yml` changes crozier's SDK while `fern-expected/` and its digest stay
+        Fern's: the recorded byte-match was of the old document, so the witness is refused."""
+        key, witness, _line = self.handwritten_audit_row()
+        fixture = self.root / HANDWRITTEN.relative_to(REPO) / witness
+        tree = certified_tree_digest(fixture / "fern-expected")
+        document = fixture / "openapi.yml"
+        original = document.read_text(encoding="utf-8")
+        # A renamed operationId renames the generated client method, so crozier's output differs.
+        operation = re.search(r'"operationId": "([^"]+)"', original)
+        assert operation is not None, "the audited fixture's document declares no operationId"
+        renamed = f'"operationId": "{operation.group(1)}_renamed"'
+        document.write_text(original.replace(operation.group(0), renamed, 1), encoding="utf-8", newline="\n")
+        self.assertEqual(tree, certified_tree_digest(fixture / "fern-expected"))
+        self.assertIn(
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            f"byte-matches: {BYTE_MATCHES.name} records no byte-match of its current openapi.yml and "
+            "fern-expected/; crozier's output over them is unproven until handwritten_fixtures_match_fern_goldens "
+            "matches them and rewrites the record",
+            finished_state_failures(self.root),
+        )
+        document.write_text(original, encoding="utf-8", newline="\n")
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
 
     def test_a_handwritten_audit_row_whose_fixture_misses_a_named_handler_is_refused(self) -> None:
         key, witness, _line = self.handwritten_audit_row()
