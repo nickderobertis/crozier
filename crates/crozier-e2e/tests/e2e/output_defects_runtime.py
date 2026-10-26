@@ -23,8 +23,9 @@ import importlib
 import json
 import sys
 import typing
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import httpx
 
@@ -76,7 +77,7 @@ def schema_errors(
         "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
     }
     if kind is not None and not accepted[kind](instance):
-        return errors + [f"{at}: {instance!r} is not {kind}"]
+        return [*errors, f"{at}: {instance!r} is not {kind}"]
     if isinstance(instance, dict):
         errors += [f"{at}: missing {key}" for key in schema.get("required", []) if key not in instance]
         for key, property_schema in schema.get("properties", {}).items():
@@ -133,7 +134,9 @@ def empty_member_keeps_the_reference(fern: Any, spec: dict[str, Any], say: Calla
         reserved_kiln=fern.LoadReservedKiln(name="Main", reserved_until="2026-11-02"),
     )
     check(recorder.sent[-1] == payload, f"schedule_load sent {recorder.sent[-1]!r}")
-    errors = schema_errors(recorder.sent[-1], {"$ref": "#/components/schemas/Load"}, spec["components"]["schemas"], "body", frozenset())
+    errors = schema_errors(
+        recorder.sent[-1], {"$ref": "#/components/schemas/Load"}, spec["components"]["schemas"], "body", frozenset()
+    )
     check(not errors, "; ".join(errors))
     say(f"schedule_load sent {json.dumps(recorder.sent[-1], sort_keys=True)}, which Load validates")
     for field in ("kiln", "overflow_kiln"):
@@ -179,7 +182,9 @@ def annotated_copy_keeps_the_variants(fern: Any, spec: dict[str, Any], say: Call
         pot = pots.record_pot(potter="Ines", outer_coat=copy_class(**arguments))
         sent = recorder.sent[-1]
         check(sent == {"potter": "Ines", "outerCoat": wire}, f"record_pot sent {sent!r}")
-        errors = schema_errors(sent["outerCoat"], {"$ref": "#/components/schemas/Coat"}, schemas, "outerCoat", frozenset())
+        errors = schema_errors(
+            sent["outerCoat"], {"$ref": "#/components/schemas/Coat"}, schemas, "outerCoat", frozenset()
+        )
         check(not errors, "; ".join(errors))
         say(f"PotOuterCoat_{suffix} is sent as {json.dumps(sent['outerCoat'], sort_keys=True)}, which Coat validates")
         check(
@@ -195,9 +200,13 @@ def annotated_copy_keeps_the_variants(fern: Any, spec: dict[str, Any], say: Call
         check(sent == {"coat": wire}, f"recoat_pot sent {sent!r}")
         errors = schema_errors(sent["coat"], {"$ref": "#/components/schemas/Coat"}, schemas, "coat", frozenset())
         check(not errors, "; ".join(errors))
-        say(f"RecoatPotRequestCoat_{suffix} is sent as {json.dumps(sent['coat'], sort_keys=True)}, which Coat validates")
+        say(
+            f"RecoatPotRequestCoat_{suffix} is sent as {json.dumps(sent['coat'], sort_keys=True)}, which Coat validates"
+        )
         parsed = fern.core.pydantic_utilities.parse_obj_as(fern.RecoatPotRequestCoat, wire)
-        check(type(parsed) is body_class, f"{wire!r} parsed as {type(parsed).__name__}, not RecoatPotRequestCoat_{suffix}")
+        check(
+            type(parsed) is body_class, f"{wire!r} parsed as {type(parsed).__name__}, not RecoatPotRequestCoat_{suffix}"
+        )
         say(f"{json.dumps(wire, sort_keys=True)} parses as RecoatPotRequestCoat_{suffix}")
 
 
@@ -217,7 +226,10 @@ def main() -> int:
         spec = json.loads(args.spec.read_text(encoding="utf-8"))
         spec["components"]["schemas"]
     except (OSError, ValueError, TypeError, KeyError) as error:
-        print(f"cannot read {args.spec} as an OpenAPI document with components ({error}); pass the measurement as JSON", file=sys.stderr)
+        print(
+            f"cannot read {args.spec} as an OpenAPI document with components ({error}); pass the measurement as JSON",
+            file=sys.stderr,
+        )
         return 2
     sys.path.insert(0, str(args.sdk_src.resolve()))
     fern = importlib.import_module("fern")
