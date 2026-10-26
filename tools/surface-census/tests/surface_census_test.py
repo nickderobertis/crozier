@@ -1266,7 +1266,7 @@ def combination_proof_failures(
         category = rows[key].cells[3].strip("`") if key in rows else "-"
         match category:
             case "handwritten":
-                # A hand-written combination no branch reads both features of rests on its
+                # A hand-written combination no measured branch joins both features of rests on its
                 # fixture: the audit names it, and the fixture runs every named handler.
                 fixtures = {fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None}
                 if witness not in fixtures:

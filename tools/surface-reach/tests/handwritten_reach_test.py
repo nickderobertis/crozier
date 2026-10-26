@@ -18,11 +18,13 @@ from __future__ import annotations
 import csv
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any, NamedTuple
 
 REPO = Path(__file__).resolve().parents[3]
 # The certified Fern pair, from its one declaration: the pair a fixture's evidence names.
@@ -369,6 +371,447 @@ class GoldenReachInteractionTest(unittest.TestCase):
                         self.assertGreater(executed, 0, "the document declaring both features missed the branch")
                     else:
                         self.assertEqual(0, executed, f"{name} declares one feature, yet reached the branch")
+
+
+ECHO_FLAG = r"src/emit.rs::append_request_call_args[=^ {28}&& ep\.body_response_same_ref$]"
+ECHO_ARM = site_cell("combo-echo-body-effective-anonymous")
+
+
+# A co-occurrence row whose two features meet in one condition, but whose
+# qualifying outcome no counter region's execution implies, is held to an
+# outcome proof instead: `combination-cooccurrence.tsv`'s `why_no_branch` for
+# each key below names this test. Each case runs the instrumented crozier over
+# a from-scratch document declaring both features and over a control declaring
+# one, and asserts which operands of that condition ran and what each generated.
+def operation_document(paths: str, components: str = "", security: str = "") -> str:
+    return (
+        "openapi: 3.0.3\ninfo:\n  title: sample\n  version: 1.0.0\n"
+        + security
+        + "paths:\n"
+        + paths
+        + ("components:\n" + components if components else "")
+    )
+
+
+def responses(content: str) -> str:
+    return (
+        "  /archive:\n    get:\n      operationId: getArchive\n      responses:\n"
+        '        "200":\n          description: ok\n          content:\n' + content
+    )
+
+
+def optional_body(schema: str) -> str:
+    return (
+        "  /labels:\n    post:\n      operationId: setLabels\n      requestBody:\n        required: false\n"
+        "        content:\n          application/json:\n            schema:\n"
+        + schema
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+OPTIONAL_BODY_SCHEMAS = (
+    "    Labels:\n      type: object\n      additionalProperties:\n        type: string\n"
+    "    Pick:\n      oneOf:\n        - type: string\n        - type: integer\n"
+)
+ECHO_PATHS = (
+    "  /kennels:\n    post:\n      operationId: createKennel\n      requestBody:\n        content:\n"
+    "          application/xml:\n            schema:\n              type: object\n"
+    '          application/json:\n            schema:\n              $ref: "#/components/schemas/Kennel"\n'
+    '      responses:\n        "200":\n          description: ok\n          content:\n            application/json:\n'
+    '              schema:\n                $ref: "#/components/schemas/Kennel"\n'
+)
+KENNEL = "    Kennel:\n      type: object\n      properties:\n        name:\n          type: string\n"
+BEARER = "  securitySchemes:\n    bearerAuth:\n      type: http\n      scheme: bearer\n"
+ENTRY = (
+    '  /entries:\n    get:\n      operationId: getEntry\n      responses:\n        "200":\n'
+    "          description: ok\n          content:\n            application/json:\n              schema:\n"
+    '                $ref: "#/components/schemas/Entry"\n'
+)
+
+
+def entry_schemas(memo: str) -> str:
+    return (
+        "    Entry:\n      type: object\n      required: [memo]\n      properties:\n        memo:\n"
+        "          description: A note kept beside the entry.\n          allOf:\n"
+        '            - $ref: "#/components/schemas/Memo"\n            - description: The wording.\n'
+        "    Memo:\n      type: string\n" + memo
+    )
+
+
+def parcel_query(schema: str) -> str:
+    return (
+        "  /parcels:\n    get:\n      operationId: findParcels\n      parameters:\n        - name: code\n"
+        "          in: query\n          required: true\n          example: param-sample\n          schema:\n"
+        + schema
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def craft_path(target: str) -> str:
+    return (
+        "  /craft/{kind}:\n    get:\n      operationId: listCraft\n      parameters:\n        - name: kind\n"
+        f'          in: path\n          required: true\n          schema:\n            $ref: "#/components/schemas/{target}"\n'
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+CRAFT = (
+    "    Kind:\n      type: string\n      enum: [glider, balloon]\n"
+    "    Slot:\n      type: object\n      properties:\n        bay:\n          type: string\n"
+)
+
+
+def watch(method_name: str) -> str:
+    return (
+        "  /widgets/watch:\n    post:\n      operationId: watchEvents\n"
+        + method_name
+        + "      x-fern-streaming:\n        format: sse\n"
+        '        response: { $ref: "#/components/schemas/Event" }\n'
+        '        response-stream: { $ref: "#/components/schemas/Event" }\n'
+        "        stream-condition: $request.stream\n      requestBody:\n        required: true\n"
+        "        content:\n          application/json:\n            schema:\n"
+        '              $ref: "#/components/schemas/WatchFilter"\n      responses:\n        "200":\n'
+        "          description: events\n          content:\n            application/json:\n"
+        '              schema: { $ref: "#/components/schemas/Event" }\n            text/event-stream:\n'
+        '              schema: { $ref: "#/components/schemas/Event" }\n'
+    )
+
+
+WATCH = (
+    "    WatchFilter:\n      type: object\n      properties:\n        stream:\n          type: boolean\n"
+    "    Event:\n      type: object\n      properties:\n        kind:\n          type: string\n"
+)
+
+
+def secured(operation_security: str) -> str:
+    return (
+        "  /vaults:\n    get:\n      operationId: listVaults\n"
+        + operation_security
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+class Run(NamedTuple):
+    """One document's expected outcome: the sites that ran, those that did not, and
+    `(file under src/fern, text)` pairs its generated SDK holds and lacks."""
+
+    document: str
+    ran: tuple[str, ...] = ()
+    skipped: tuple[str, ...] = ()
+    holds: tuple[tuple[str, str], ...] = ()
+    lacks: tuple[tuple[str, str], ...] = ()
+
+
+class Outcome(NamedTuple):
+    key: str
+    both: Run
+    control: Run
+
+
+BINARY = "src/ir.rs::is_binary_response"
+JSON_OPERAND = BINARY + r'[=^ {16}&& !resp\.content\.contains_key\("application/json"\)$]'
+SCHEMA_DISJUNCT = BINARY + r"[=^ {16}\x7c\x7c resp\.content\.values\(\)\.any]"
+FORMAT_OPERAND = BINARY + r'[=^ {28}&& schema\.format\.as_deref\(\) == Some\("binary"\)$]'
+TEXT_OPERAND = BINARY + r"[=is_text_response_media\(media_type\)$]"
+PASSED_WHOLE = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c passed_whole$]"
+INLINE_MAP = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c is_map\(schema\)$]"
+TARGET_NULLABLE = r"src/ir.rs::Builder::collect_fields[=\.is_some_and\(\x7ctarget\x7c schema_accepts_none\(target, self\.schemas\)\);$]"
+NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required;$]"
+SCHEMA_EXAMPLE = r"src/ir.rs::parameter_example_value[=parameter\.schema\.as_ref\(\)\.and_then\(schema_example\)]"
+URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}&& !hoister\.reaches_url_as_scalars\(&type_ref\),$]"
+NAMED_STREAM = r"src/ir.rs::stream_condition_method_names[if op\.sdk_method_name\(\)\.is_some\(\) \{]"
+ID_STREAM = r"src/ir.rs::stream_condition_method_names[\} else if !id\.is_empty\(\) \{]"
+UNAUTHENTICATED = r"src/ir.rs::all_operations_authenticated[if !authed \{]"
+CLIENT, RAW = "client.py", "raw_client.py"
+STREAMS = "typing.Iterator[bytes]"
+# The constructor's bearer credential, optional; `async_token` is optional always.
+OPTIONAL_TOKEN = "        token: typing.Optional["
+
+OUTCOMES = (
+    # Required non-OAuth security holds the echo flag false: the guard reads it, the
+    # echo operand after it never runs, and the header the anonymous echo drops stays.
+    Outcome(
+        "combo-echo-body-effective-non-oauth-required",
+        Run(
+            operation_document(ECHO_PATHS, BEARER + "  schemas:\n" + KENNEL, "security:\n  - bearerAuth: []\n"),
+            ran=(ECHO_FLAG,),
+            skipped=(ECHO_ARM,),
+            holds=((RAW, '"content-type": "application/json"'),),
+        ),
+        Run(
+            operation_document(ECHO_PATHS, "  schemas:\n" + KENNEL),
+            ran=(ECHO_FLAG, ECHO_ARM),
+            lacks=((RAW, '"content-type"'),),
+        ),
+    ),
+    # A download first beside JSON: `!json` reads false, so the binary-schema
+    # disjunct runs, and the method returns JSON where a download alone streams.
+    Outcome(
+        "combo-success-json-beside-download",
+        Run(
+            operation_document(
+                responses(
+                    "            application/octet-stream: {}\n            application/json:\n              schema:\n                type: object\n"
+                )
+            ),
+            ran=(JSON_OPERAND, SCHEMA_DISJUNCT),
+            lacks=((CLIENT, STREAMS),),
+        ),
+        Run(
+            operation_document(responses("            application/octet-stream: {}\n")),
+            ran=(JSON_OPERAND,),
+            skipped=(SCHEMA_DISJUNCT,),
+            holds=((CLIENT, STREAMS),),
+        ),
+    ),
+    # A binary schema beside JSON: `!json` reads false and the binary-schema
+    # disjunct decides, streaming where the same media without the schema does not.
+    Outcome(
+        "combo-success-json-beside-binary-schema",
+        Run(
+            operation_document(
+                responses(
+                    "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema:\n                type: string\n                format: binary\n"
+                )
+            ),
+            ran=(JSON_OPERAND, FORMAT_OPERAND),
+            holds=((CLIENT, STREAMS),),
+        ),
+        Run(
+            operation_document(
+                responses(
+                    "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema: {}\n"
+                )
+            ),
+            ran=(JSON_OPERAND,),
+            skipped=(FORMAT_OPERAND,),
+            lacks=((CLIENT, STREAMS),),
+        ),
+    ),
+    # Text first beside a download: the text operand of `download_first` reads it, so
+    # `!json` never runs and the method returns `str` where the download streams.
+    Outcome(
+        "combo-success-text-beside-download",
+        Run(
+            operation_document(
+                responses(
+                    "            text/plain:\n              schema:\n                type: string\n            application/octet-stream: {}\n"
+                )
+            ),
+            ran=(TEXT_OPERAND,),
+            skipped=(JSON_OPERAND,),
+            holds=((CLIENT, "-> str:"),),
+        ),
+        Run(
+            operation_document(responses("            application/octet-stream: {}\n")),
+            ran=(JSON_OPERAND,),
+            skipped=(TEXT_OPERAND,),
+            holds=((CLIENT, STREAMS),),
+        ),
+    ),
+    # An optional body naming a map is passed whole: `passed_whole` reads true, the
+    # inline-map operand after it never runs, and the request argument is required.
+    Outcome(
+        "combo-optional-ref-map-body",
+        Run(
+            operation_document(
+                optional_body('              $ref: "#/components/schemas/Labels"\n'),
+                "  schemas:\n" + OPTIONAL_BODY_SCHEMAS,
+            ),
+            ran=(PASSED_WHOLE,),
+            skipped=(INLINE_MAP,),
+            holds=((CLIENT, "*, request: Labels,"),),
+        ),
+        Run(
+            operation_document(
+                optional_body(
+                    "              type: object\n              additionalProperties:\n                type: string\n"
+                )
+            ),
+            ran=(PASSED_WHOLE, INLINE_MAP),
+            holds=((CLIENT, "request: typing.Optional["),),
+        ),
+    ),
+    Outcome(
+        "combo-optional-ref-union-body",
+        Run(
+            operation_document(
+                optional_body('              $ref: "#/components/schemas/Pick"\n'),
+                "  schemas:\n" + OPTIONAL_BODY_SCHEMAS,
+            ),
+            ran=(PASSED_WHOLE,),
+            skipped=(INLINE_MAP,),
+            holds=((CLIENT, "*, request: Pick,"),),
+        ),
+        Run(
+            operation_document(
+                optional_body(
+                    "              type: object\n              additionalProperties:\n                type: string\n"
+                )
+            ),
+            ran=(PASSED_WHOLE, INLINE_MAP),
+            holds=((CLIENT, "request: typing.Optional["),),
+        ),
+    ),
+    # An annotated reference to a nullable target reads the target's nullability, so
+    # the required property is optional without consulting `required` at all.
+    Outcome(
+        "combo-annotated-ref-to-nullable-target",
+        Run(
+            operation_document(ENTRY, "  schemas:\n" + entry_schemas("      nullable: true\n")),
+            ran=(TARGET_NULLABLE,),
+            skipped=(NOT_REQUIRED,),
+            holds=(("types/entry.py", "memo: typing.Optional[str]"),),
+        ),
+        Run(
+            operation_document(ENTRY, "  schemas:\n" + entry_schemas("")),
+            ran=(TARGET_NULLABLE, NOT_REQUIRED),
+            holds=(("types/entry.py", "memo: str ="),),
+        ),
+    ),
+    # A parameter example beside a `$ref` schema is filtered out, so the referenced
+    # schema's example is read instead; beside an inline string it is kept.
+    Outcome(
+        "combo-param-example-beside-ref-schema",
+        Run(
+            operation_document(
+                parcel_query('            $ref: "#/components/schemas/Code"\n'),
+                "  schemas:\n    Code:\n      type: string\n      example: ref-sample\n",
+            ),
+            ran=(SCHEMA_EXAMPLE,),
+            holds=((CLIENT, 'code="ref-sample"'),),
+        ),
+        Run(
+            operation_document(parcel_query("            type: string\n            example: ref-sample\n")),
+            skipped=(SCHEMA_EXAMPLE,),
+            holds=((CLIENT, 'code="param-sample"'),),
+        ),
+    ),
+    # A path parameter naming a string enum needs no conversion, so the scalar test
+    # after `needs_convert` never runs and the value is interpolated as it is.
+    Outcome(
+        "combo-path-param-ref-string-enum",
+        Run(
+            operation_document(craft_path("Kind"), "  schemas:\n" + CRAFT),
+            skipped=(URL_SCALARS,),
+            holds=((RAW, "encode_path_param(kind)"),),
+        ),
+        Run(
+            operation_document(craft_path("Slot"), "  schemas:\n" + CRAFT),
+            ran=(URL_SCALARS,),
+            holds=((RAW, "convert_and_respect_annotation_metadata(object_=kind"),),
+        ),
+    ),
+    # A stream-condition operation naming its method takes the method-name arm, not
+    # the operationId one, and names its streaming half from the method name.
+    Outcome(
+        "combo-streaming-method-name",
+        Run(
+            operation_document(watch("      x-fern-sdk-method-name: watch\n"), "  schemas:\n" + WATCH),
+            ran=(NAMED_STREAM,),
+            skipped=(ID_STREAM,),
+            holds=((CLIENT, "def watch_stream("),),
+        ),
+        Run(
+            operation_document(watch(""), "  schemas:\n" + WATCH),
+            ran=(ID_STREAM,),
+            skipped=(NAMED_STREAM,),
+            holds=((CLIENT, "def watch_events_stream("),),
+        ),
+    ),
+    # An operation's own security replaces the document's: over an unauthenticated
+    # document it leaves the API authenticated, so the credential stays required.
+    Outcome(
+        "combo-document-operation-security",
+        Run(
+            operation_document(secured("      security:\n        - bearerAuth: []\n"), BEARER, "security: []\n"),
+            skipped=(UNAUTHENTICATED,),
+            lacks=((CLIENT, OPTIONAL_TOKEN),),
+        ),
+        Run(
+            operation_document(secured(""), BEARER, "security: []\n"),
+            ran=(UNAUTHENTICATED,),
+            holds=((CLIENT, OPTIONAL_TOKEN),),
+        ),
+    ),
+    # An operation's empty list replaces the document's requirement, so the API is
+    # not wholly authenticated and the credential becomes optional.
+    Outcome(
+        "combo-document-security-security-empty",
+        Run(
+            operation_document(secured("      security: []\n"), BEARER, "security:\n  - bearerAuth: []\n"),
+            ran=(UNAUTHENTICATED,),
+            holds=((CLIENT, OPTIONAL_TOKEN),),
+        ),
+        Run(
+            operation_document(secured(""), BEARER, "security:\n  - bearerAuth: []\n"),
+            skipped=(UNAUTHENTICATED,),
+            lacks=((CLIENT, OPTIONAL_TOKEN),),
+        ),
+    ),
+)
+
+
+class CooccurrenceOutcomeTest(unittest.TestCase):
+    """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
+
+    def generate(self, scratch: Path, document: str, reach: Any, crozier: Path) -> tuple[Path, dict, dict]:
+        """(the generated package, every production region, the executed ones) for one document."""
+        spec = scratch / "openapi.yml"
+        spec.write_text(document, encoding="utf-8")
+        raw = scratch / "profile"
+        raw.mkdir()
+        run = subprocess.run(
+            [
+                *(str(crozier), "generate", "python", "--spec", str(spec), "--output", str(scratch / "sdk")),
+                *("--package-name", "fern", "--project-name", "default_package_name"),
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
+        )
+        self.assertEqual(0, run.returncode, run.stderr)
+        merged, export = raw / "merged.profdata", raw / "export.json"
+        reach.run_llvm(
+            [reach._llvm_tool("llvm-profdata"), "merge", "-sparse", *map(str, raw.glob("*.profraw")), "-o", str(merged)]
+        )
+        with export.open("w", encoding="utf-8") as sink:
+            reach.run_llvm(
+                [reach._llvm_tool("llvm-cov"), "export", "-format=text", f"-instr-profile={merged}", str(crozier)],
+                stdout=sink,
+            )
+        universe, hit = reach._covered(export, REPO)
+        return scratch / "sdk" / "src" / "fern", universe, hit
+
+    def ran(self, reach: Any, spec: str, universe: dict, hit: dict) -> bool:
+        """Whether the run executed any counter region of the site `spec` names."""
+        site = reach.resolve_site(spec)
+        regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(tuple(r))}
+        self.assertTrue(regions, f"{spec} spans no counter region")
+        return bool(regions & {tuple(r) for r in hit.get(site.file, [])})
+
+    def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
+        reach = _module("golden_reach_outcomes", "golden-reach.py")
+        handwritten = _module("handwritten_fixtures_outcomes", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        audited, _failures = reach.read_cooccurrence()
+        for outcome in OUTCOMES:
+            self.assertIn(outcome.key, audited, "an outcome-proven row is not a co-occurrence row")
+            self.assertIn(
+                type(self).__name__, audited[outcome.key].why_no_branch, "its audit row cites no outcome proof"
+            )
+            for label, expected in (("both features", outcome.both), ("one feature", outcome.control)):
+                with self.subTest(key=outcome.key, document=label), tempfile.TemporaryDirectory() as temporary:
+                    package, universe, hit = self.generate(Path(temporary), expected.document, reach, crozier)
+                    for spec in expected.ran:
+                        self.assertTrue(self.ran(reach, spec, universe, hit), f"{spec} did not run")
+                    for spec in expected.skipped:
+                        self.assertFalse(self.ran(reach, spec, universe, hit), f"{spec} ran")
+                    for name, text in expected.holds:
+                        self.assertIn(text, (package / name).read_text(encoding="utf-8"), name)
+                    for name, text in expected.lacks:
+                        self.assertNotIn(text, (package / name).read_text(encoding="utf-8"), name)
 
 
 if __name__ == "__main__":

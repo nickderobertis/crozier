@@ -212,7 +212,7 @@ class ProofSplit(NamedTuple):
     blocked: int = 0
     # Of `unproven`, the rows the named table leaves unproven by the user's ruling.
     ruled: int = 0
-    # Of `handwritten`, the rows no crozier branch reads both features of, which
+    # Of `handwritten`, the rows no measured crozier branch joins both features of, which
     # rest on their fixture apart from real-specification co-occurrence.
     together: int = 0
 
@@ -250,8 +250,8 @@ def combination_proofs(root: Path) -> ProofSplit:
 
     A `golden` row is a real-specification byte-match only when the reach ledger
     names a golden-only witness for it and reports every interaction site reached;
-    one whose site cell is `co-occurrence` is counted apart, since no crozier
-    branch reads both its features. One with no witness, no ledger row or an
+    one whose site cell is `co-occurrence` is counted apart, since no measured
+    crozier branch joins both its features. One with no witness, no ledger row or an
     unreached interaction site is unproven. A `limitations` row and an undecided
     `UNREACHABLE` gap rest on a committed measurement of non-generation; a gap the
     shared table decides is neither proven nor unproven; every other gap is unproven.
@@ -327,7 +327,7 @@ def restate_combinations(root: Path, text: str) -> str:
         f"**{split.real}** are byte-matched against a registered real specification at their\n"
         f"interaction branch, **{split.cooccurrence}** "
         f"{'is a byte-matched co-occurrence' if split.cooccurrence == 1 else 'are byte-matched co-occurrences'}, "
-        "where no crozier branch reads both features\n"
+        "where no measured crozier branch joins both features\n"
         "([the audit](openapi-surface/combination-cooccurrence.tsv)), "
         f"**{split.measured}** {'is' if split.measured == 1 else 'are'} compared against a committed measurement of\n"
         f"non-generation, **{split.handwritten}** rest on a hand-written fixture "

@@ -990,7 +990,7 @@ class ReportTests(unittest.TestCase):
         self.assertTrue(reach.cooccurrence)
         self.assertEqual(("demo-a",), reach.witnesses)
         self.assertIn(
-            "reach: co-occurrence — no crozier branch reads both features", self.cells()["combo-demo-pair"][5]
+            "reach: co-occurrence — no measured crozier branch joins both features", self.cells()["combo-demo-pair"][5]
         )
 
     def test_cooccurrence_on_a_feature_row_is_refused(self) -> None:

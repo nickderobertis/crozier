@@ -985,7 +985,7 @@ def interaction_sites(
     A combination is proven at the branch where its two features meet, so a
     fixture proving one is measured there: each arm site
     `golden-reach-sites.tsv` declares for the cover's key. Where its cell is
-    `co-occurrence`, no branch reads both, and the fixture is measured at every
+    `co-occurrence`, no measured branch joins both, and the fixture is measured at every
     handling function `combination-cooccurrence.tsv` names for each feature.
     """
     reach = golden_reach()

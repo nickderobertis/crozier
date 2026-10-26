@@ -122,9 +122,10 @@ region_rows = _region_keys_module().region_rows
 
 # A feature combination's key prefix (`docs/openapi-surface/combinations.md`).
 COMBINATION_PREFIX = "combo-"
-# The site cell of a combination row no crozier branch reads both features of: its
-# features meet only in the document, and `combination-cooccurrence.tsv` audits which
-# functions handle each. Admitted on a combination row alone.
+# The site cell of a combination row no measured crozier branch joins both features
+# of: no condition reads both, or one does but no counter region's execution implies
+# both hold. `combination-cooccurrence.tsv` audits which functions handle each feature
+# and why. Admitted on a combination row alone.
 COOCCURRENCE = "co-occurrence"
 
 
@@ -253,8 +254,8 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
 
     One row per `co-occurrence` combination, sorted by key, every cell filled: the
     witness declaring the combination, the JSON Pointer where both features occur in
-    its committed document, each feature's handling functions and why no condition
-    in them reads both.
+    its committed document, each feature's handling functions and why no measured
+    branch in them joins both.
     """
     if not path.is_file():
         return {}, [f"{path.name}: missing — restore it from git"]
@@ -850,7 +851,7 @@ def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
         note += f"; arm search [record]({SEARCHES}/{reach.key}.md)"
     if reach.cooccurrence:
         return (
-            f"{CELL_PREFIX} {COOCCURRENCE} — no crozier branch reads both features, as "
+            f"{CELL_PREFIX} {COOCCURRENCE} — no measured crozier branch joins both features, as "
             f"[the co-occurrence audit](combination-cooccurrence.tsv) records; {_witness_phrase(reach)}{note} "
             f"([ledger](golden-reach.tsv) rank {rank})"
         )
