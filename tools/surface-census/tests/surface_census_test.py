@@ -18641,6 +18641,63 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         self.assertEqual(original, self.index.read_text(encoding="utf-8"))
 
+    def test_combination_proof_split_moves_each_row_to_the_bucket_its_evidence_names(self) -> None:
+        def stated() -> list[int]:
+            flat = " ".join(self.index.read_text(encoding="utf-8").split())
+            found = matched(re.search(r"\*\*Combinations by proof\.\*\*.*?: ([\d +]+) = (\d+)\.", flat))
+            return [int(n) for n in found[1].split(" + ")]
+
+        def moves(edits: list[tuple[Path, str, str]], expected: list[int]) -> None:
+            saved = {path: path.read_text(encoding="utf-8") for path, _old, _new in edits}
+            for path, old, new in edits:
+                text = path.read_text(encoding="utf-8")
+                self.assertEqual(1, text.count(old), old)
+                path.write_text(text.replace(old, new), encoding="utf-8")
+            self.assertEqual(1, self.run_restater("--combinations-only").returncode, edits)
+            written = self.run_restater("--combinations-only", "--write")
+            self.assertEqual(0, written.returncode, written.stderr)
+            self.assertEqual(expected, stated(), edits)
+            for path, text in saved.items():
+                path.write_text(text, encoding="utf-8")
+            self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+            self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        original = self.index.read_text(encoding="utf-8")
+        real, measured, weak, unproven, decided = stated()
+        surface = self.root / "docs/openapi-surface"
+        registry = surface / "output-insensitive.tsv"
+        decision = next(
+            line
+            for line in registry.read_text(encoding="utf-8").splitlines()
+            if line.startswith("combo-") and line.split("\t")[1] == "-"
+        )
+        key = decision.split("\t")[0]
+        region, row = next(
+            (path, line)
+            for path in sorted(surface.glob("*.md"))
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.startswith(f"| {key} |")
+        )
+        self.assertIn(" | gap | ", row)
+        self.assertIn(" | FIXTURE — ", row)
+        withdrawn = (registry, decision + "\n", "")
+        # A decided gap whose decision is withdrawn is unproven, or rests on a
+        # committed measurement once it is UNREACHABLE or a limitations row.
+        moves([withdrawn], [real, measured, weak, unproven + 1, decided - 1])
+        unreachable = (region, row, row.replace(" | FIXTURE — ", " | UNREACHABLE — ", 1))
+        moves([withdrawn, unreachable], [real, measured + 1, weak, unproven, decided - 1])
+        limitations = (region, row, row.replace(" | gap | ", " | limitations | ", 1))
+        moves([withdrawn, limitations], [real, measured + 1, weak, unproven, decided - 1])
+        # A golden combination the reach ledger carries no row for is unproven.
+        ledger = surface / "golden-reach.tsv"
+        golden = next(
+            line
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[1:2] and line.split("\t")[1].startswith("combo-") and line.split("\t")[6] != "-"
+        )
+        moves([(ledger, golden + "\n", "")], [real - 1, measured, weak, unproven + 1, decided])
+
     def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
