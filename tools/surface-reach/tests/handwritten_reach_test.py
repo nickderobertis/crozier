@@ -5,8 +5,10 @@ The recipe builds crozier instrumented and runs it over each hand-written
 fixture's `openapi.yml` alone, so this is its journey rather than a mock of it:
 two fixtures covering the same arm, one whose document takes it and one whose
 document does not, read back from the ledger the recipe writes; one document
-measured with and without the `audiences` its fixture declares; and a cover
-naming an arm the site table does not list, refused before anything is written.
+measured with and without the `audiences` its fixture declares; a combination
+measured at its interaction branch alone, over a document declaring both of its
+features and two declaring one each; and a cover naming an arm the site table
+does not list, refused before anything is written.
 """
 
 from __future__ import annotations
@@ -103,6 +105,56 @@ verdict = "config-gated"
 )
 
 
+# A combination's interaction branch, as the committed site table declares it for
+# `combo-map-of-nullable-values`: the arm of `base_type_ref` a map takes when it or
+# its value schema is nullable. The function holding it is measured whole through
+# `property-residual`, a feature row the site table lists it under.
+COMBINATION = "combo-map-of-nullable-values"
+INTERACTION = r"src/ir.rs::base_type_ref[if is_optional\(schema\) \x7c\x7c is_optional\(value\) \{]"
+CONTAINING = ("property-residual", "src/ir.rs::base_type_ref")
+COMBINATION_DOCUMENT = """openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+paths:
+  /labels:
+    get:
+      operationId: getLabels
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Labels"
+components:
+  schemas:
+    Labels:
+{labels}"""
+# Both features; the map without a nullable value; a nullable value with no map.
+LABELS = {
+    "map-of-nullable-values": "      type: object\n      additionalProperties:\n        type: string\n        nullable: true\n",
+    "map-of-plain-values": "      type: object\n      additionalProperties:\n        type: string\n",
+    "nullable-value-alone": "      type: string\n      nullable: true\n",
+}
+COMBINATION_EVIDENCE = (
+    PAIR_EVIDENCE
+    + """digest = "{zero}"
+
+[[covers]]
+key = "{key}"
+search = "docs/openapi-surface/witness-search-schema-combinations-models-unions-refs/README.md#verdicts"
+verdict = "exhausted"
+
+[[covers]]
+key = "{feature}"
+arm = '{arm}'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/{feature}.md#witness-search-exhaustive"
+verdict = "exhausted"
+"""
+)
+
+
 class HandwrittenReachRecipeTest(unittest.TestCase):
     def fixture(self, base: Path, name: str, email: bool, arm: str = ARM) -> None:
         directory = base / name
@@ -188,6 +240,43 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                 ],
                 gates[1:],
             )
+
+    def test_a_combination_is_measured_reached_only_where_both_features_meet(self) -> None:
+        """Each document runs the function holding the interaction branch; only the one
+        declaring both features executes the branch itself."""
+        with tempfile.TemporaryDirectory() as temporary:
+            base, ledger = Path(temporary) / "handwritten", Path(temporary) / "reach.tsv"
+            for name, labels in LABELS.items():
+                directory = base / name
+                directory.mkdir(parents=True)
+                (directory / "openapi.yml").write_text(COMBINATION_DOCUMENT.format(labels=labels), encoding="utf-8")
+                (directory / "evidence.toml").write_text(
+                    COMBINATION_EVIDENCE.format(
+                        zero="0" * 64, key=COMBINATION, feature=CONTAINING[0], arm=CONTAINING[1]
+                    ),
+                    encoding="utf-8",
+                )
+            run = self.run_recipe(base, ledger)
+            self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+            with ledger.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.reader(handle, delimiter="\t"))
+            self.assertEqual(HEADER, rows[0])
+            measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
+            self.assertEqual(
+                {(name, key, site) for name in LABELS for key, site in ((COMBINATION, INTERACTION), CONTAINING)},
+                set(measured),
+                "the recipe did not measure each fixture at the interaction site and the containing function",
+            )
+            for name in LABELS:
+                with self.subTest(document=name):
+                    executed, total = measured[(name, *CONTAINING)]
+                    self.assertGreater(executed, 0, f"{name} never ran the function holding the branch")
+                    executed, total = measured[(name, COMBINATION, INTERACTION)]
+                    self.assertGreaterEqual(total, 1)
+                    if name == "map-of-nullable-values":
+                        self.assertGreater(executed, 0, "the document declaring both features missed the branch")
+                    else:
+                        self.assertEqual(0, executed, f"{name} declares one feature, yet reached the branch")
 
     def test_a_cover_naming_an_unlisted_site_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

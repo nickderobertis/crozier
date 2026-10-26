@@ -923,19 +923,82 @@ class ReportTests(unittest.TestCase):
         row = f"| {key} | both | Demo Object.combined | golden | census `demo.flag`: `demo-a` (1) | {sites_cell} |  |  |\n"
         path.write_text(path.read_text(encoding="utf-8") + row, encoding="utf-8", newline="\n")
 
-    def test_a_combination_row_pending_measurement_waits_outside_the_ledger(self) -> None:
-        cell = f"{golden_reach.PENDING_REACH} — enters the ledger at the next measurement"
-        self.add_region_row("combo-demo-pair", cell)
-        run = self.run_report("--write")
-        self.assertEqual(0, run.returncode, run.stderr)
-        self.assertNotIn("combo-demo-pair", (self.repo / "docs" / "openapi-surface" / "golden-reach.tsv").read_text())
-        self.assertEqual(cell, self.cells()["combo-demo-pair"][5])
-
-    def test_a_non_combination_row_claiming_to_be_pending_still_needs_its_site_row(self) -> None:
-        self.add_region_row("flag-pair", f"{golden_reach.PENDING_REACH} — not a combination")
+    def test_a_combination_row_claiming_a_pending_measurement_still_needs_its_site_row(self) -> None:
+        self.add_region_row("combo-demo-pair", "reach: `pending measurement` — enters the ledger later")
         run = self.run_report()
         self.assertNotEqual(0, run.returncode)
-        self.assertIn("missing ['flag-pair']", run.stderr)
+        self.assertIn("missing ['combo-demo-pair']", run.stderr)
+
+    def add_combination(self, key: str, category: str, sites: str, cells: str = " |  |  |  |") -> None:
+        """A combination's region row and its site-table row, declared by `demo-a`."""
+        path = self.repo / "docs" / "openapi-surface" / "demo.md"
+        row = f"| `{key}` | both | Combination — demo | {category} | census `demo.flag`: `demo-a` (1){cells}\n"
+        path.write_text(path.read_text(encoding="utf-8") + row, encoding="utf-8", newline="\n")
+        table = self.repo / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
+        table.write_text(
+            table.read_text(encoding="utf-8") + f"{key}\tdemo.flag\t{sites}\t\n", encoding="utf-8", newline="\n"
+        )
+
+    def test_a_combination_is_measured_at_its_interaction_branch_alone(self) -> None:
+        """`demo-a` runs `handles` but never its `else` arm: the arm reads unreached."""
+        self.add_combination("combo-demo-pair", "golden", r"src/demo.rs::handles[\} else \{]")
+        self.assertEqual(0, self.run_report("--write").returncode)
+        ledger = {
+            r.key: r for _rank, r in golden_reach.read_ledger(self.repo / "docs/openapi-surface/golden-reach.tsv")
+        }
+        self.assertEqual(((r"src/demo.rs::handles[\} else \{]", 0, 1),), ledger["combo-demo-pair"].sites)
+        self.assertEqual(
+            r"`interaction branch unreached` — unreached `src/demo.rs::handles[\} else \{]` 0/1 by "
+            "golden-only witness `demo-a`",
+            golden_reach.interaction_unreached_reason(
+                ledger["combo-demo-pair"].sites, golden_reach.witnesses_phrase(ledger["combo-demo-pair"].witnesses)
+            ),
+        )
+
+    def test_a_gap_combination_the_site_table_lists_stays_measured_and_keeps_its_cells(self) -> None:
+        self.add_combination(
+            "combo-demo-gap",
+            "gap",
+            r"src/demo.rs::handles[if flag \{]",
+            " | `src/demo.rs` 1 — `handles` | x | `FIXTURE` x |",
+        )
+        self.assertEqual(0, self.run_report("--write").returncode)
+        ledger = {
+            r.key: r for _rank, r in golden_reach.read_ledger(self.repo / "docs/openapi-surface/golden-reach.tsv")
+        }
+        self.assertEqual(((r"src/demo.rs::handles[if flag \{]", 1, 1),), ledger["combo-demo-gap"].sites)
+        self.assertEqual("`src/demo.rs` 1 — `handles`", self.cells()["combo-demo-gap"][5])
+        self.assertNotIn("combo-demo-gap", golden_reach.golden_rows(self.repo / "docs/openapi-surface"))
+
+    def test_a_combination_naming_a_whole_function_or_none_is_refused_by_key(self) -> None:
+        for sites in ("src/demo.rs::handles", "none"):
+            with self.subTest(sites=sites):
+                self.tearDown()
+                self.setUp()
+                self.add_combination("combo-demo-pair", "golden", sites)
+                run = self.run_report()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn("combo-demo-pair: ", run.stderr)
+
+    def test_a_cooccurrence_combination_is_ledgered_and_celled_as_one(self) -> None:
+        self.add_combination("combo-demo-pair", "golden", "co-occurrence")
+        self.assertEqual(0, self.run_report("--write").returncode, self.run_report().stderr)
+        ledger_path = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        line = next(row for row in ledger_path.read_text(encoding="utf-8").splitlines() if "\tcombo-demo-pair\t" in row)
+        self.assertEqual("co-occurrence", line.split("\t")[8])
+        reach = {r.key: r for _rank, r in golden_reach.read_ledger(ledger_path)}["combo-demo-pair"]
+        self.assertTrue(reach.cooccurrence)
+        self.assertEqual(("demo-a",), reach.witnesses)
+        self.assertIn(
+            "reach: co-occurrence — no crozier branch reads both features", self.cells()["combo-demo-pair"][5]
+        )
+
+    def test_cooccurrence_on_a_feature_row_is_refused(self) -> None:
+        table = self.repo / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
+        table.write_text(SITES.replace("\tnone\t", "\tco-occurrence\t"), encoding="utf-8", newline="\n")
+        run = self.run_report()
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("(flag-unread) reads `co-occurrence`, which only a combination row may", run.stderr)
 
     def test_a_combination_row_whose_cell_is_not_pending_still_needs_its_site_row(self) -> None:
         self.add_region_row("combo-demo-pair", "reach: measured elsewhere")

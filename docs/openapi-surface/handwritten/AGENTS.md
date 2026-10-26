@@ -65,11 +65,21 @@ These keys, and nothing else:
   - `search` (string): `<repo-relative path>#<anchor>` of the committed search
     record whose verdict the cover cites. The anchor is GitHub's for a heading of
     that file, and the record is that heading's section.
-  - `verdict` (string): `exhausted`, `search-incomplete` or `config-gated`, the
-    verdict that record states for this key: every table line of the section
-    whose first cell is the key states it, and no other outcome. An arm-level
-    cover's record also names its arm in a code span. A `config-gated` cover is
-    arm-level, and its fixture declares the setting its record says gates the arm.
+  - `verdict` (string): `exhausted`, `search-incomplete`, `config-gated` or
+    `witness-blocked`. For the first three it is the verdict that record states
+    for this key: every table line of the section whose first cell is the key
+    states it, and no other outcome. An arm-level cover's record also names its
+    arm in a code span. A `config-gated` cover is arm-level, and its fixture
+    declares the setting its record says gates the arm.
+  - `witness-blocked` is admitted only on a feature-level cover of a `combo-`
+    key: the search found admissible real declarers of the combination, but
+    unrelated residuals keep their goldens from byte-matching. Its `search`
+    section has a table line per blocked declarer,
+    `| key | candidate | files still mismatched | unrelated shapes |`, whose first
+    cell is the key, naming each blocked admissible declarer, and each named
+    candidate is a declarer of the key in the `census.tsv` beside that record.
+    The coverage index counts such a row as hand-written and states that it is
+    witness-blocked.
   - `renewed` (string): required exactly when `verdict` is `search-incomplete`.
     The repo-relative path of a renewed-search record with a table line whose
     first cell is the key and one of whose cells reads `none-registrable`.
@@ -107,9 +117,14 @@ header line, sorted by `fixture`, then `key`, then `site`:
 fixture	key	site	regions_executed	regions
 ```
 
-One row per arm-level cover, measured by an instrumented crozier run over that
-fixture's `openapi.yml` alone, the way `tools/surface-census/golden-reach.py measure` scopes
-one golden test. `just handwritten-reach` writes it; like `just golden-reach`
+One row per arm-level cover, and one per interaction site of each feature-level
+cover on a `combo-` key — each arm site
+[`../golden-reach-sites.tsv`](../golden-reach-sites.tsv) declares for that key,
+the branch where the combination's two features meet. Each is measured by an
+instrumented crozier run over that fixture's `openapi.yml` alone, the way
+`tools/surface-census/golden-reach.py measure` scopes one golden test. A
+`handwritten` combination row stands only while its fixture executes every one
+of its interaction sites (`regions_executed` of at least 1). `just handwritten-reach` writes it; like `just golden-reach`
 it stays outside `just check`. `golden-reach.tsv` and the golden-only tier never
 read a fixture.
 
@@ -132,7 +147,8 @@ the run without. This pair is the measured gate a `config-gated` record cites.
 fixtures by listing this directory and nothing else, and holds each to every
 rule above, naming the fixture and the rule it breaks. It also holds the two
 directions: every `handwritten` row has a feature-level cover, every
-`handwritten-reach.tsv` row names a live cover, and an arm-level cover goes once
+`handwritten-reach.tsv` row names a live arm-level cover or a combination
+cover's interaction site, every such interaction site has its row, and an arm-level cover goes once
 `golden-reach.tsv` reports its arm reached by a real specification.
 `tools/surface-census/handwritten-fixtures.py gate` reads the documents; the test adds the
 digest, the pin and crozier's byte-match. A divergence is repaired in `src/`,

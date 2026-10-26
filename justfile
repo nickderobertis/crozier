@@ -329,8 +329,9 @@ residual-attribution:
     cargo build --locked -q
     python3 tools/surface-census/residual-attribution.py
 
-# Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
-# how many regions of its arm an instrumented crozier run over that fixture's
+# Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md),
+# and per interaction site of its feature-level cover on a combination key:
+# how many regions of that site an instrumented crozier run over that fixture's
 # openapi.yml alone executes, one run per fixture as `golden-reach` scopes one
 # golden test. Writes docs/openapi-surface/handwritten-reach.tsv, and for a
 # fixture declaring a setting, its arms with and without it into
