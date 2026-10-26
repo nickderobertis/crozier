@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.136](https://github.com/nickderobertis/crozier/compare/v0.0.135...v0.0.136) - 2026-10-26
+
+### Fixed
+
+- *(parity)* settle the callable-surface output defects against Fern ([#634](https://github.com/nickderobertis/crozier/pull/634))
+
 ## [0.0.135](https://github.com/nickderobertis/crozier/compare/v0.0.134...v0.0.135) - 2026-10-26
 
 ### Fixed
