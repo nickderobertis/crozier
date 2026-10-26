@@ -847,6 +847,96 @@ class FernRuns(unittest.TestCase):
             result.stderr,
         )
 
+    def record_refusal(self) -> str:
+        """The class's committed refusal, as `probe` wrote it at an older pair."""
+        said = phrase(self.class_row[4])
+        record = (
+            "fern_cli_version: 0.1.0\nfern_python_sdk_version: 0.2.0\n"  # certified-pair: stand-in (an older pair)
+            f"generate_exit: 1\ndiagnostic: {said}\noutput_tree: none\n"
+        )
+        (self.registry / self.CLASS / "fern-refusal.txt").write_text(record, encoding="utf-8")
+        self.class_row[2:4] = ["check", "1"]
+        write_rows(self.registry / "classes.tsv", [rows(self.registry / "classes.tsv")[0], self.class_row])
+        return record
+
+    def changes(self) -> list[dict[str, str]]:
+        return [json.loads(line) for line in (self.root / "changes.jsonl").read_text(encoding="utf-8").splitlines()]
+
+    def test_a_probe_reproducing_its_recorded_refusal_rewrites_it_at_the_pair(self) -> None:
+        self.record_refusal()
+        said = phrase(self.class_row[4])
+        result = self.script(
+            "probe",
+            self.CLASS,
+            "--changes",
+            str(self.root / "changes.jsonl"),
+            check_exit="1",
+            check_output=f"issue: {said}",
+            generate_exit="1",
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 probe(s) recorded\n", result.stdout)
+        self.assertEqual([], self.changes())
+        refusal = (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8")
+        self.assertIn(f"fern_cli_version: {CERTIFIED['cliVersion']}\n", refusal)
+
+    def test_a_probe_no_longer_reproducing_its_recorded_refusal_is_reported_and_keeps_the_record(self) -> None:
+        recorded = (
+            f"the check stage exits 1 and the generation 1, with `{phrase(self.class_row[4])}`, "
+            "at Fern CLI 0.1.0 / fern-python-sdk 0.2.0"
+        )
+        cases = [
+            (
+                "generates",
+                {"generate_exit": "0", "generate_files": "3"},
+                "Fern generates from the probe (check exit 0, generate exit 0, writing 3 files)",
+            ),
+            (
+                "refuses-otherwise",
+                {"check_exit": "1", "check_output": "issue: something else", "generate_exit": "1"},
+                "Fern refuses the probe otherwise (check exit 1, generate exit 1), printing `something else`",
+            ),
+            (
+                "unsettled",
+                {"hang": str(self.root / "fern-pids")},
+                "unsettled: `fern check` and `fern generate` ran past the probe's 3-second bound (check exit "
+                "timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short "
+                "says nothing about whether Fern refuses given more time or memory",
+            ),
+        ]
+        for outcome, fern, now in cases:
+            with self.subTest(outcome=outcome):
+                record = self.record_refusal()
+                # The bound is the probe's own, or the override the weekly run's harness sets.
+                self.env["CROZIER_FERN_REFUSALS_PROBE_TIMEOUT"] = "3"
+                result = self.script("probe", self.CLASS, "--changes", str(self.root / "changes.jsonl"), **fern)
+                self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual(
+                    [{"class": self.CLASS, "outcome": outcome, "recorded": recorded, "now": now}], self.changes()
+                )
+                self.assertIn(
+                    f"{self.CLASS}: Fern no longer reproduces the recorded refusal ({outcome})", result.stderr
+                )
+                self.assertEqual(
+                    "fern-refusals: 0 probe(s) recorded, 1 no longer reproducing the recorded refusal\n", result.stdout
+                )
+                self.assertEqual(record, (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8"))
+                self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
+
+    def test_a_probe_without_its_document_fails_and_reports_no_change(self) -> None:
+        self.record_refusal()
+        (self.registry / self.CLASS / "probe.yml").unlink()
+        result = self.script("probe", self.CLASS, "--changes", str(self.root / "changes.jsonl"))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(
+            f"{self.CLASS}: no probe document docs/fern-refusals/{self.CLASS}/probe.yml; restore it from git",
+            result.stderr,
+        )
+        self.assertEqual([], self.changes())
+        self.assertEqual([], self.calls_made())
+
     def test_a_run_past_its_timeout_is_ended_with_every_process_it_started(self) -> None:
         pids = self.root / "fern-pids"
         result = self.script("probe", self.CLASS, "--timeout", "3", hang=str(pids))

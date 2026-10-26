@@ -546,10 +546,19 @@ class FernReferencesTests(unittest.TestCase):
         result = self.run_tool("generate", "refusals")
 
         self.assertEqual(result.returncode, 0, result.stderr)
+        changes = self.root / ".local/fern-references/refusals/probe.zeta.changes.jsonl"
         self.assertEqual(
             sorted(tuple(call["argv"]) for call in self.delegate_calls()),
-            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "zeta")],
+            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "--changes", str(changes), "zeta")],
         )
+        # A probe that no longer reproduces its recorded refusal is reported, not failed;
+        # the report a previous run left is gone before the probe runs.
+        changes.write_text('{"class": "zeta"}\n', encoding="utf-8")
+        self.env["DELEGATE_EXIT"] = "3"
+        changed = self.run_tool("generate", "refusals", "zeta")
+        self.assertEqual(changed.returncode, 0, changed.stderr)
+        self.assertIn("refusals zeta: Fern no longer reproduces the recorded refusal, which is kept", changed.stderr)
+        self.assertFalse(changes.exists())
         self.env["DELEGATE_EXIT"] = "4"
         failed = self.run_tool("generate", "refusals", "zeta")
         self.assertEqual(failed.returncode, 1)
