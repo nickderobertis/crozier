@@ -27,6 +27,8 @@ use super::{
 pub(crate) const OUTPUT_DEFECTS_DIR: &str = "docs/fern-measurements/output-defects";
 const EMPTY_MEMBER: &str = "615-empty-composition-member-reference";
 const INHERITED_UNION: &str = "617-annotated-inherited-union";
+/// The cases these journeys hold whole, which the directory-wide comparison skips.
+pub(crate) const OWN_JOURNEYS: [&str; 2] = [EMPTY_MEMBER, INHERITED_UNION];
 const RUNTIME: &str = "crates/crozier-e2e/tests/e2e/output_defects_runtime.py";
 
 fn case_dir(case: &str) -> PathBuf {
@@ -49,7 +51,6 @@ fn failures(case: &str, out: &Path) -> Vec<String> {
     )
 }
 
-/// Generate `spec` with crozier into `out`, as the measurement was generated.
 fn generate(spec: &Path, out: &Path) {
     probe_command(spec, out).assert().success();
 }
@@ -130,7 +131,6 @@ fn a_missing_measurement_document_fails_without_writing() {
     assert!(!out.exists(), "a missing document writes no SDK");
 }
 
-/// `spec` as the JSON document the runtime journey reads.
 fn as_json(spec: &Path, dir: &Path) -> PathBuf {
     let value: serde_json::Value =
         crate::yaml::from_str(&std::fs::read_to_string(spec).unwrap()).expect("a YAML document");
@@ -139,7 +139,6 @@ fn as_json(spec: &Path, dir: &Path) -> PathBuf {
     path
 }
 
-/// The runtime journey over the SDK whose `src/` is `src`, generated from `spec`.
 fn journey(python: &Path, case: &str, src: &Path, spec: &Path) -> Command {
     let mut command = Command::new(python);
     command

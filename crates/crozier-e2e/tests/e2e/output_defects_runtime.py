@@ -4,8 +4,8 @@ Usage: output_defects_runtime.py CASE SDK_SRC SPEC_JSON. CASE is `615` (the
 empty-composition-member document) or `617` (the annotated inherited-union
 document); SDK_SRC is the generated SDK's `src/` directory holding the `fern`
 package; SPEC_JSON is the measurement's `openapi.yml` as JSON. Every request goes
-to an httpx.MockTransport that answers with the payload the journey chose, so
-each step reads what the public client really sends and returns.
+over a socket to a local HTTP server that answers with the payload the journey
+chose, so each step reads what the public client really sends and returns.
 
 615 holds that a field composed of `$ref Kiln` and an empty `{}` member accepts
 and returns `Kiln` itself, the class the package exports under that name, while
@@ -19,17 +19,19 @@ Exit 0 prints one line per step; exit 1 names the first step that failed; exit
 """
 
 import argparse
+import contextlib
+import http.server
 import importlib
 import json
 import sys
+import threading
 import typing
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
-import httpx
-
-BASE_URL = "https://measurement.invalid"
+# The schemas each journey validates against; a document without them is not the measurement.
+CASE_SCHEMAS = {"615": ("Load", "Kiln"), "617": ("Coat", "MatteCoat", "GlossCoat")}
 
 
 class Failure(Exception):
@@ -87,22 +89,54 @@ def schema_errors(
 
 
 class Recorder:
-    """An httpx transport answering every request with `reply`, keeping the bodies sent."""
+    """What the local server answers with (`reply`) and the JSON bodies it received."""
 
     def __init__(self) -> None:
         self.sent: list[dict[str, Any]] = []
         self.reply: Any = None
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
-        self.sent.append(json.loads(request.content))
-        return httpx.Response(200, json=self.reply)
+
+@contextlib.contextmanager
+def serving(recorder: Recorder) -> Iterator[str]:
+    """A local HTTP server answering every request from `recorder`; yields its base URL."""
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def answer(self) -> None:
+            length = int(self.headers.get("Content-Length", "0"))
+            recorder.sent.append(json.loads(self.rfile.read(length)))
+            body = json.dumps(recorder.reply).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        do_POST = do_PUT = do_PATCH = answer
+
+        def log_message(self, format: str, *args: Any) -> None:
+            pass
+
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{httpd.server_address[1]}"
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
 
 
-def client(fern: Any, recorder: Recorder) -> Any:
-    return fern.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=httpx.MockTransport(recorder)))
+class Variant(NamedTuple):
+    """One inherited variant: its tag, its wire payload, and its constructor arguments."""
+
+    tag: str
+    wire: dict[str, Any]
+    arguments: dict[str, Any]
 
 
-def empty_member_keeps_the_reference(fern: Any, spec: dict[str, Any], say: Callable[[str], None]) -> None:
+def empty_member_keeps_the_reference(
+    fern: Any, spec: dict[str, Any], base_url: str, recorder: Recorder, say: Callable[[str], None]
+) -> None:
     kiln_class = fern.Kiln
     hints = typing.get_type_hints(fern.Load)
     check(hints["kiln"] is kiln_class, f"Load.kiln is typed {hints['kiln']!r}, not the exported Kiln")
@@ -115,8 +149,7 @@ def empty_member_keeps_the_reference(fern: Any, spec: dict[str, Any], say: Calla
         check(getattr(fern, control) is not kiln_class, f"{control} is Kiln itself")
     say("the described and constrained controls export LoadNotedKiln and LoadReservedKiln")
 
-    recorder = Recorder()
-    loads = client(fern, recorder).loads
+    loads = fern.FernApi(base_url=base_url).loads
     payload = {
         "label": "bisque",
         "kiln": {"name": "Annex", "maxCone": 10},
@@ -159,15 +192,18 @@ def empty_member_keeps_the_reference(fern: Any, spec: dict[str, Any], say: Calla
     say("transfer_load takes destination as Kiln and sends it unchanged")
 
 
-def annotated_copy_keeps_the_variants(fern: Any, spec: dict[str, Any], say: Callable[[str], None]) -> None:
+VARIANTS = (
+    Variant("matte", {"finish": "matte", "layers": 2, "tooth": 3}, {"layers": 2, "tooth": 3}),
+    Variant("gloss", {"finish": "gloss", "layers": 1, "sheen": 0.8}, {"layers": 1, "sheen": 0.8}),
+)
+
+
+def annotated_copy_keeps_the_variants(
+    fern: Any, spec: dict[str, Any], base_url: str, recorder: Recorder, say: Callable[[str], None]
+) -> None:
     schemas = spec["components"]["schemas"]
-    variants = {
-        "matte": ({"finish": "matte", "layers": 2, "tooth": 3}, {"layers": 2, "tooth": 3}),
-        "gloss": ({"finish": "gloss", "layers": 1, "sheen": 0.8}, {"layers": 1, "sheen": 0.8}),
-    }
-    recorder = Recorder()
-    pots = client(fern, recorder).pots
-    for tag, (wire, arguments) in variants.items():
+    pots = fern.FernApi(base_url=base_url).pots
+    for tag, wire, arguments in VARIANTS:
         suffix = tag.capitalize()
         parsed = fern.core.pydantic_utilities.parse_obj_as(fern.PotOuterCoat, wire)
         check(
@@ -213,6 +249,18 @@ def annotated_copy_keeps_the_variants(fern: Any, spec: dict[str, Any], say: Call
 JOURNEYS = {"615": empty_member_keeps_the_reference, "617": annotated_copy_keeps_the_variants}
 
 
+def read_spec(path: Path, case: str) -> dict[str, Any]:
+    """The measurement document, or ValueError naming what it lacks."""
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    schemas = spec.get("components", {}).get("schemas") if isinstance(spec, dict) else None
+    if not isinstance(schemas, dict):
+        raise ValueError("components.schemas is not an object")
+    missing = [name for name in CASE_SCHEMAS[case] if not isinstance(schemas.get(name), dict)]
+    if missing:
+        raise ValueError(f"components.schemas lacks {', '.join(missing)}")
+    return spec
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("case", choices=sorted(JOURNEYS))
@@ -223,19 +271,24 @@ def main() -> int:
         print(f"{args.sdk_src} must contain the generated fern package; pass the SDK's src/ directory", file=sys.stderr)
         return 2
     try:
-        spec = json.loads(args.spec.read_text(encoding="utf-8"))
-        spec["components"]["schemas"]
-    except (OSError, ValueError, TypeError, KeyError) as error:
+        spec = read_spec(args.spec, args.case)
+    except (OSError, ValueError, AttributeError) as error:
         print(
-            f"cannot read {args.spec} as an OpenAPI document with components ({error}); pass the measurement as JSON",
+            f"cannot read {args.spec} as the {args.case} measurement document ({error}); pass the measurement as JSON",
             file=sys.stderr,
         )
         return 2
     sys.path.insert(0, str(args.sdk_src.resolve()))
-    fern = importlib.import_module("fern")
-    importlib.import_module("fern.core.pydantic_utilities")
     try:
-        JOURNEYS[args.case](fern, spec, print)
+        fern = importlib.import_module("fern")
+        importlib.import_module("fern.core.pydantic_utilities")
+    except Exception as error:  # any import failure means the SDK input is unusable
+        print(f"cannot import the fern package under {args.sdk_src} ({error!r}); regenerate the SDK", file=sys.stderr)
+        return 2
+    recorder = Recorder()
+    try:
+        with serving(recorder) as base_url:
+            JOURNEYS[args.case](fern, spec, base_url, recorder, say=print)
     except Failure as failure:
         print(f"{args.case}: {failure}", file=sys.stderr)
         return 1

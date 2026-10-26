@@ -6665,9 +6665,8 @@ fn parameter_lowering_measurements_match_fern() {
 /// and compared whole. `602-validation-error-shadowing` holds a schema named
 /// `ValidationError` beside the runtime exception every raw parser catches;
 /// `612-parameter-location-collision` holds parameters in different locations
-/// that share a name; `615-empty-composition-member-reference` and
-/// `617-annotated-inherited-union` hold the reference shapes whose own
-/// journeys live in `e2e/output_defects.rs`.
+/// that share a name. The reference-identity cases are compared by their own
+/// journeys in `e2e/output_defects.rs`, so they are named here and not replayed.
 #[test]
 fn output_defect_measurements_match_fern() {
     let root = repo_root().join(OUTPUT_DEFECTS_DIR);
@@ -6696,6 +6695,7 @@ fn output_defect_measurements_match_fern() {
     let failures: Vec<String> = cases
         .iter()
         .zip(&names)
+        .filter(|(_, name)| !output_defects::OWN_JOURNEYS.contains(&name.as_str()))
         .flat_map(|(case, name)| {
             let expected = case.join("fern-expected");
             filtered_tree_failures(

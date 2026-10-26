@@ -7493,6 +7493,34 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             exempt,
         )
 
+    def test_annotated_ref_residual_leaves_inheritance_union_targets_to_case_3c(self) -> None:
+        """Case 5's residual negates case 3c: an inheritance-union target is 3c's alone.
+
+        The near miss in `CASES` varies only the enum member, so this is the
+        document that shows the `!schema.discriminator:inheritance-union` member
+        doing its work: the same annotated `$ref`, its target a discriminator base
+        with a mapping, counted by 3c's selector and not by the residual.
+        """
+        residual = next(case["selector"] for case in self.CASES if case["slug"] == "ptr-5")
+        inheritance = "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union"
+        reported = self.censused(
+            {
+                "inheritance-target": {
+                    "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                    "Target": {
+                        "discriminator": {"propertyName": "kind", "mapping": {"cat": "#/components/schemas/Cat"}}
+                    },
+                    "Cat": {
+                        "type": "object",
+                        "required": ["kind"],
+                        "properties": {"kind": {"type": "string", "enum": ["cat"]}},
+                    },
+                },
+            }
+        )
+        self.assertNotIn((residual, "inheritance-target"), reported)
+        self.assertEqual(1, reported.get((inheritance, "inheritance-target")))
+
     def test_property_residual_counts_closed_objects_without_properties(self) -> None:
         residual = "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array"
         reported = self.censused(

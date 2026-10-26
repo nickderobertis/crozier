@@ -3213,7 +3213,10 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// it, so `allOf: [$ref Kiln, {}]` is `Kiln` itself rather than a copied model.
 /// Dropping it here is what lets every single-reference reader see the one
 /// member left. A `oneOf`/`anyOf` `{}` member is an alternative that admits
-/// anything and is kept.
+/// anything and is kept. An `allOf` of nothing but `{}` members becomes no
+/// `allOf` at all: the node left is the bare schema every reader already lowers
+/// as an unconstrained value, so the unit test's structural assertion is the
+/// whole of that case's behaviour.
 fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
