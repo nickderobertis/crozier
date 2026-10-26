@@ -447,7 +447,7 @@ fn rules_of<F>(shape: impl Fn(departures::Rule) -> Option<F>) -> Vec<(&'static s
 
 /// One step of an alignment of two sequences.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Op {
+pub(crate) enum Op {
     /// The left item `.0` pairs with the right item `.1`.
     Equal(usize, usize),
     /// The left item is unpaired.
@@ -467,7 +467,7 @@ const MAX_TABLE_CELLS: usize = 16_000_000;
 /// pairing in order (the longest increasing run of them, patience-diff style)
 /// anchor the alignment, and only the gaps between anchors are aligned by
 /// table; a gap still too large is aligned positionally.
-fn align_lines(left: &[&str], right: &[&str]) -> Vec<Op> {
+pub(crate) fn align_lines(left: &[&str], right: &[&str]) -> Vec<Op> {
     let (n, m) = (left.len(), right.len());
     let pairs = |i: usize, j: usize| left[i] == right[j];
     if n.saturating_mul(m) <= MAX_TABLE_CELLS {

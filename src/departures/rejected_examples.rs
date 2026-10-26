@@ -294,65 +294,111 @@ pub(super) fn holds(id: &'static str, pair: &Pair<'_>, fern: &str, crozier: &str
         && documented_example_line(pair.rel, pair.crozier, crozier)
 }
 
+/// The repairs of one file pair, as aligned when last read: each Fern and
+/// crozier line pair a mechanism repairs, and whether any other difference
+/// stands beside them.
+#[derive(Debug, Clone, Default)]
+pub(super) struct Repairs {
+    /// The lengths of the two sides the alignment was read at.
+    lengths: (usize, usize),
+    pairs: Vec<(usize, usize, &'static str)>,
+    foreign: bool,
+}
+
+/// Align the pair as the engine does and read its repairs: inside each run of
+/// differing lines, a Fern line and a crozier line pair as a repair where they
+/// differ only in literals some mechanism repairs; every other line in the run
+/// is a foreign difference.
+fn read_repairs(pair: &Pair<'_>) -> Repairs {
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    let mut repairs = Repairs {
+        lengths: (fern.len(), crozier.len()),
+        ..Repairs::default()
+    };
+    let ops = crate::parity::align_lines(fern, crozier);
+    let mut index = 0;
+    while index < ops.len() {
+        if matches!(ops[index], crate::parity::Op::Equal(..)) {
+            index += 1;
+            continue;
+        }
+        let (mut removed, mut added) = (Vec::new(), Vec::new());
+        while let Some(op) = ops.get(index) {
+            match *op {
+                crate::parity::Op::Delete(i) => removed.push(i),
+                crate::parity::Op::Insert(j) => added.push(j),
+                crate::parity::Op::Equal(..) => break,
+            }
+            index += 1;
+        }
+        let mut next = 0;
+        for i in removed {
+            let found = added[next..].iter().enumerate().find_map(|(offset, &j)| {
+                mechanism::ALL
+                    .into_iter()
+                    .find(|id| indexed(id, pair, fern[i], crozier[j]))
+                    .map(|id| (offset, j, id))
+            });
+            match found {
+                Some((offset, j, id)) => {
+                    repairs.foreign |= offset > 0;
+                    repairs.pairs.push((i, j, id));
+                    next += offset + 1;
+                }
+                None => repairs.foreign = true,
+            }
+        }
+        repairs.foreign |= next < added.len();
+    }
+    repairs
+}
+
 /// The same departure as a one-line region, for a file where another
 /// difference stands beside the repairs: a region rule that holds the rest of
 /// the file to Fern's (as `multipart-object-required-file-example` does) sees
 /// a repair as a difference of its own, and region rules apply before line
-/// rules. The first line `id` repairs in the run of lines from the file's
-/// start, or else from its end, that holds nothing but equal lines and
-/// repairs, is replaced; the engine repeats until none is left. A file whose
-/// only differences are repairs is left to the line rule.
+/// rules. The first line pair `id` repairs is replaced; the engine repeats
+/// until none is left. A file whose only differences are repairs is left to
+/// the line rule. Replacing one line keeps every other pair's place, so the
+/// alignment is read once per file and kept until a pair no longer holds.
 pub(super) fn region(id: &'static str, pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if !example_file(pair.rel) {
+    if !example_file(pair.rel) || pair.fern == pair.crozier {
         return Ok(None);
     }
-    let (fern, crozier) = (pair.fern, pair.crozier);
-    let shared = fern.len().min(crozier.len());
-    let repaired_by = |i: usize, j: usize| {
-        mechanism::ALL
-            .into_iter()
-            .find(|known| indexed(known, pair, fern[i], crozier[j]))
-    };
-    let mut first = None;
-    let mut foreign = fern.len() != crozier.len();
-    for k in 0..shared {
-        if fern[k] == crozier[k] {
-            continue;
+    let lengths = (pair.fern.len(), pair.crozier.len());
+    let mut cache = pair
+        .context
+        .rejected_example_repairs
+        .lock()
+        .map_err(|_| "the rejected-example cache was poisoned".to_string())?;
+    for attempt in 0..2 {
+        let repairs = match cache.get(pair.rel) {
+            Some(repairs) if attempt == 0 && repairs.lengths == lengths => repairs.clone(),
+            _ => {
+                let repairs = read_repairs(pair);
+                cache.insert(pair.rel.to_string(), repairs.clone());
+                repairs
+            }
+        };
+        if !repairs.foreign {
+            return Ok(None);
         }
-        match repaired_by(k, k) {
-            Some(found) if found == id && first.is_none() => first = Some((k, k)),
+        let pending = repairs
+            .pairs
+            .iter()
+            .find(|(i, j, found)| *found == id && pair.fern[*i] != pair.crozier[*j]);
+        match pending {
+            None => return Ok(None),
+            Some(&(i, j, _)) if holds(id, pair, pair.fern[i], pair.crozier[j]) => {
+                return Ok(Some(Region {
+                    fern: i..i + 1,
+                    crozier: j..j + 1,
+                }));
+            }
             Some(_) => {}
-            None => {
-                foreign = true;
-                break;
-            }
         }
     }
-    if !foreign {
-        return Ok(None);
-    }
-    if first.is_none() {
-        for k in 0..shared {
-            let (i, j) = (fern.len() - 1 - k, crozier.len() - 1 - k);
-            if fern[i] == crozier[j] {
-                continue;
-            }
-            match repaired_by(i, j) {
-                Some(found) if found == id => {
-                    first = Some((i, j));
-                    break;
-                }
-                Some(_) => {}
-                None => break,
-            }
-        }
-    }
-    Ok(first
-        .filter(|&(i, j)| holds(id, pair, fern[i], crozier[j]))
-        .map(|(i, j)| Region {
-            fern: i..i + 1,
-            crozier: j..j + 1,
-        }))
+    Ok(None)
 }
 
 #[cfg(test)]
