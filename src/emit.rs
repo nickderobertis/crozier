@@ -12500,7 +12500,7 @@ mod tests {
     /// explodes once the payload does (the hand-written `tidepool-survey-log`
     /// fixture's `SurveyEntry_Level(value=1.1)`, Fern CLI 5.163.1).
     #[test]
-    fn a_wrapped_member_example_breaks_only_with_its_payload() {
+    fn a_wrapped_member_example_breaks_with_its_payload_or_past_the_width() {
         let document = |first: &str, second: &str| {
             serde_json::json!({
                 "openapi": "3.0.3",
