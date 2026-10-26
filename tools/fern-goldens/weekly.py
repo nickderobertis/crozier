@@ -81,6 +81,8 @@ FERN_REFERENCES_LOGS = Path(".local/fern-references")
 # Where `fern-references.py generate refusals` has each class's probe report an
 # outcome that no longer matches its recorded refusal.
 REFUSAL_CHANGES = FERN_REFERENCES_LOGS / "refusals"
+# How `fern-refusals.py probe` says a probe changed: `unsettled` is a run past its bound.
+REFUSAL_OUTCOMES = ("generates", "refuses-otherwise", "unsettled")
 NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
@@ -1372,6 +1374,11 @@ def refusal_change(path: Path, item: str) -> str | None:
             raise WeeklyError(f"{where} is no JSON object; read the item's log and fix fern-refusals.py probe")
         if record.get("class") == item:
             outcome, recorded, now = (field_of(record, key, str, where) for key in ("outcome", "recorded", "now"))
+            if outcome not in REFUSAL_OUTCOMES or not recorded or not now:
+                raise WeeklyError(
+                    f"{where}: a change is one of {', '.join(REFUSAL_OUTCOMES)} with what was recorded and what "
+                    "Fern did now; read the item's log and fix fern-refusals.py probe"
+                )
             return f"{outcome}: recorded: {recorded}; now: {now}"
     return None
 

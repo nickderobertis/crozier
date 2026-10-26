@@ -1650,11 +1650,15 @@ def recorded_refusal(name: str, row: dict[str, str]) -> str | None:
     path = REGISTRY / name / "fern-refusal.txt"
     if not path.is_file():
         return None
-    fields = dict(line.split(": ", 1) for line in path.read_text(encoding="utf-8").splitlines() if ": " in line)
+    lines = path.read_text(encoding="utf-8").splitlines()
+    fields = dict(line.split(": ", 1) for line in lines if ": " in line)
+    needed = ("fern_cli_version", "fern_python_sdk_version", "generate_exit", "diagnostic")
+    if any(": " not in line for line in lines) or not all(fields.get(key) for key in needed):
+        fail(f"{name}: {rel(path)} is no refusal record (it needs {', '.join(needed)}); restore it from git")
     return (
-        f"the {row['fern_stage']} stage exits {row['fern_exit']} and the generation "
-        f"{fields.get('generate_exit', '?')}, with `{fields.get('diagnostic', '?')}`, at Fern CLI "
-        f"{fields.get('fern_cli_version', '?')} / fern-python-sdk {fields.get('fern_python_sdk_version', '?')}"
+        f"the {row['fern_stage']} stage exits {row['fern_exit']} and the generation {fields['generate_exit']}, "
+        f"with `{fields['diagnostic']}`, at Fern CLI {fields['fern_cli_version']} / fern-python-sdk "
+        f"{fields['fern_python_sdk_version']}"
     )
 
 

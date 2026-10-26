@@ -833,6 +833,47 @@ class DecisionRecordTests(unittest.TestCase):
             self.assertIn(message, str(raised.exception))
 
 
+class RefusalChangeTests(unittest.TestCase):
+    """The report `fern-refusals.py probe --changes` writes is read at the shard's
+    boundary: a change it states names its outcome, record and new result, and
+    anything else fails the item rather than pass as a change."""
+
+    def read(self, text: str | None, item: str = "heap-exhausted") -> str | None:
+        with tempfile.TemporaryDirectory() as scratch:
+            path = Path(scratch) / "probe.heap-exhausted.changes.jsonl"
+            if text is not None:
+                path.write_text(text, encoding="utf-8")
+            return weekly.refusal_change(path, item)
+
+    def test_a_reported_change_is_one_line_and_no_report_is_no_change(self) -> None:
+        line = {
+            "class": "heap-exhausted",
+            "outcome": "unsettled",
+            "recorded": "the check stage …",
+            "now": "unsettled: …",
+        }
+        other = {**line, "class": "other"}
+        text = json.dumps(other) + "\n" + json.dumps(line) + "\n"
+        self.assertEqual("unsettled: recorded: the check stage …; now: unsettled: …", self.read(text))
+        self.assertIsNone(self.read(None))
+        self.assertIsNone(self.read(""))
+        self.assertIsNone(self.read(json.dumps(other) + "\n"))
+
+    def test_a_malformed_report_is_refused(self) -> None:
+        line = {"class": "heap-exhausted", "outcome": "generates", "recorded": "r", "now": "n"}
+        for message, text in (
+            ("is no JSON object", "not json\n"),
+            ("is no JSON object", "[1]\n"),
+            ("`now` must be str", json.dumps({**line, "now": 3})),
+            ("`recorded` must be str", json.dumps({key: value for key, value in line.items() if key != "recorded"})),
+            ("a change is one of generates, refuses-otherwise, unsettled", json.dumps({**line, "outcome": "vanished"})),
+            ("a change is one of", json.dumps({**line, "now": ""})),
+        ):
+            with self.subTest(text=text), self.assertRaises(weekly.WeeklyError) as raised:
+                self.read(text)
+            self.assertIn(message, str(raised.exception))
+
+
 class TitleTests(unittest.TestCase):
     def test_the_pull_request_title_is_a_conventional_commit_naming_both_versions(self) -> None:
         decision = weekly.Decision(weekly.Pair("5.170.0", "5.42.0"), True, "digest")

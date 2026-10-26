@@ -77,6 +77,18 @@ class RuffFingerprint(TypedDict):
     ruff_summary: str
 
 
+class ShardItem(TypedDict):
+    """One item of a shard's `result.json`, as `weekly.py shard` writes it."""
+
+    family: str
+    item: str
+    status: str
+    detail: str
+    seconds: float
+    changed: list[str]
+    log: str
+
+
 class Registration(TypedDict):
     """A `known-fern-failure.json`, as `fern-goldens` validates it."""
 
@@ -957,7 +969,7 @@ class WeeklyRunTests(unittest.TestCase):
         record = self.remote_file("fern-goldens/update", "docs/fern-refusals/lantern-refused/fern-refusal.txt")
         self.assertIn("diagnostic: Lantern 'harbour' cannot be lit", record)
 
-    def refusal_journey(self, rule: Mapping[str, object], **env: str) -> tuple[Journey, dict[str, Any]]:
+    def refusal_journey(self, rule: Mapping[str, object], **env: str) -> tuple[Journey, ShardItem]:
         """A full run whose stood-in Fern answers the refusal class's probe by
         `rule`, and the class's item as its shard recorded it."""
         self.publish_seed()
@@ -968,10 +980,10 @@ class WeeklyRunTests(unittest.TestCase):
         self.stand_in({"trees": str(trees), "rules": {"probe": rule}})
         state = self.run_workflow(**env)
         shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
-        items = json.loads(shard.read_text(encoding="utf-8"))["items"]
+        items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
         return state, next(entry for entry in items if (entry["family"], entry["item"]) == ("refusals", REFUSAL_CLASS))
 
-    def assert_refusal_reported(self, state: Journey, item: dict[str, Any], outcome: str, now: str) -> None:
+    def assert_refusal_reported(self, state: Journey, item: ShardItem, outcome: str, now: str) -> None:
         """The changed refusal is no generation failure: assembled, decided a diff
         and listed in the pull request beside the rest, its record kept."""
         recorded = (

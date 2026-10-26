@@ -885,11 +885,24 @@ class FernRuns(unittest.TestCase):
             f"the check stage exits 1 and the generation 1, with `{phrase(self.class_row[4])}`, "
             "at Fern CLI 0.1.0 / fern-python-sdk 0.2.0"
         )
+        said = phrase(self.class_row[4])
         cases = [
             (
                 "generates",
                 {"generate_exit": "0", "generate_files": "3"},
                 "Fern generates from the probe (check exit 0, generate exit 0, writing 3 files)",
+            ),
+            (
+                "generates",
+                {"check_exit": "1", "check_output": f"issue: {said}", "generate_exit": "0", "generate_files": "2"},
+                "Fern generates from the probe (check exit 1, generate exit 0, writing 2 files); the check stage "
+                "still prints the class's phrase",
+            ),
+            (
+                "refuses-otherwise",
+                {"check_exit": "1", "check_output": f"issue: {said}", "generate_exit": "2"},
+                f"Fern refuses the probe otherwise (check exit 1, generate exit 2), printing `{said}`; the check "
+                "stage still prints the class's phrase",
             ),
             (
                 "refuses-otherwise",
@@ -905,7 +918,7 @@ class FernRuns(unittest.TestCase):
             ),
         ]
         for outcome, fern, now in cases:
-            with self.subTest(outcome=outcome):
+            with self.subTest(outcome=outcome, now=now):
                 record = self.record_refusal()
                 # The bound is the probe's own, or the override the weekly run's harness sets.
                 self.env["CROZIER_FERN_REFUSALS_PROBE_TIMEOUT"] = "3"
@@ -923,6 +936,21 @@ class FernRuns(unittest.TestCase):
                 )
                 self.assertEqual(record, (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8"))
                 self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
+
+    def test_a_malformed_recorded_refusal_fails_rather_than_support_a_change(self) -> None:
+        self.record_refusal()
+        record = self.registry / self.CLASS / "fern-refusal.txt"
+        for text in ("generate_exit: 1\n", "fern_cli_version: 0.1.0\nnot a field\n"):
+            with self.subTest(text=text):
+                record.write_text(text, encoding="utf-8")
+                result = self.script("probe", self.CLASS, "--changes", str(self.root / "changes.jsonl"))
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn(
+                    f"{self.CLASS}: docs/fern-refusals/{self.CLASS}/fern-refusal.txt is no refusal record",
+                    result.stderr,
+                )
+                self.assertEqual([], self.changes())
+                self.assertEqual(text, record.read_text(encoding="utf-8"))
 
     def test_a_probe_without_its_document_fails_and_reports_no_change(self) -> None:
         self.record_refusal()
