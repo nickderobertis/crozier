@@ -27045,6 +27045,26 @@ components:
         }
     }
 
+    /// The hand-written fixture `glaze-ledger-coats` is the `handwritten` proof
+    /// of `prop_type_ref`'s case 3c, so its own document must take that arm:
+    /// `recoatPot`'s inline body annotates `Coat`, an inheritance-spelled union
+    /// base, and the copy it coins is a discriminated union of its own.
+    #[test]
+    fn the_inheritance_union_fixture_takes_the_annotated_copy_arm() {
+        let document: serde_json::Value = crate::yaml::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/docs/openapi-surface/handwritten/glaze-ledger-coats/openapi.yml"
+        )))
+        .expect("the fixture's document parses");
+        let (ir, observed) = generate(document);
+        assert!(observed.ran("prop_type_ref:3"), "{:?}", declarations(&ir));
+        assert!(
+            declarations(&ir).contains(&"Union(RecoatPotRequestCoat)".to_string()),
+            "{:?}",
+            declarations(&ir)
+        );
+    }
+
     /// The one call site `resolve_schema_pointer` has: an array `items` whose
     /// `$ref` is a `#/components/schemas/` pointer. `root` declares the nesting
     /// the pointer addresses and `suffix` is the segment sequence after the head,
