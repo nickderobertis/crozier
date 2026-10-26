@@ -1195,7 +1195,7 @@ def ruling_failure(where: str, reason: str) -> str:
     )
 
 
-def cooccurrence_audit(root: Path) -> tuple[dict[str, dict[str, str]], list[str]]:
+def cooccurrence_audit(root: Path) -> tuple[dict, list[str]]:
     """`combination-cooccurrence.tsv` as `key -> row`, and what its form breaks (`golden-reach.py`)."""
     return load_script("tools/surface-census/golden-reach.py").read_cooccurrence(root / COOCCURRENCE_AUDIT)
 
@@ -1246,7 +1246,7 @@ def combination_proof_failures(
     sources = None
     measurements = handwritten_reach_rows(root)
     for key in sorted(set(audit) & cooccurring):
-        witness = audit[key]["witness"]
+        witness = audit[key].witness
         category = rows[key].cells[3].strip("`") if key in rows else "-"
         if category == "handwritten":
             # A hand-written combination no branch reads both features of rests on its
@@ -1261,7 +1261,7 @@ def combination_proof_failures(
             fixture_document = Path("docs") / "openapi-surface" / "handwritten" / witness / "openapi.yml"
             # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
             document_path: Path | None = (root if (root / fixture_document).is_file() else REPO) / fixture_document
-            for spec in reach.handler_specs(audit[key]["handlers"]):
+            for spec in reach.handler_specs(audit[key].handlers):
                 if measurements.get((witness, key, spec), 0) < 1:
                     failures.append(
                         f"{key}: its hand-written fixture `{witness}` does not execute the handler `{spec}` "
@@ -1289,7 +1289,7 @@ def combination_proof_failures(
                 f"{key}: a `co-occurrence` row stays `golden`, or `handwritten` on its fixture; it reads `{category}`"
             )
             continue
-        for spec in reach.handler_specs(audit[key]["handlers"]):
+        for spec in reach.handler_specs(audit[key].handlers):
             try:
                 reach.resolve_site(spec, root if (root / "src").is_dir() else REPO)
             except SystemExit as error:
@@ -1301,9 +1301,9 @@ def combination_proof_failures(
             document = engine.load_document(document_path) if document_path is not None else None
         except (engine.DocumentError, SystemExit, ValueError):
             document = None
-        if document is None or pointer_target(document, audit[key]["site"]) is None:
+        if document is None or pointer_target(document, audit[key].site) is None:
             failures.append(
-                f"{key}: {COOCCURRENCE_AUDIT.name}'s site `{audit[key]['site']}` names no node in "
+                f"{key}: {COOCCURRENCE_AUDIT.name}'s site `{audit[key].site}` names no node in "
                 f"`{witness}`'s committed source document"
             )
     for key, (region, cells) in sorted(rows.items()):

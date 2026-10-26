@@ -957,8 +957,28 @@ def gate(root: Path) -> dict[str, Any]:
     }
 
 
+class CombinationSites(Protocol):
+    """What a combination cover is measured at: a `golden-reach-sites.tsv` row's
+    arm sites, or whether its cell is `co-occurrence`."""
+
+    @property
+    def sites(self) -> tuple[str, ...]: ...
+
+    @property
+    def cooccurrence(self) -> bool: ...
+
+
+class CooccurrenceHandlers(Protocol):
+    """A `combination-cooccurrence.tsv` row's `handlers` cell."""
+
+    @property
+    def handlers(self) -> str: ...
+
+
 def interaction_sites(
-    fixtures: Mapping[str, Fixture], sites: Mapping[str, Any], audit: Mapping[str, Mapping[str, str]]
+    fixtures: Mapping[str, Fixture],
+    sites: Mapping[str, CombinationSites],
+    audit: Mapping[str, CooccurrenceHandlers],
 ) -> list[tuple[str, str, str]]:
     """`(fixture, key, site)` for each site a feature-level combination cover is measured at.
 
@@ -976,7 +996,7 @@ def interaction_sites(
                 continue
             row = sites[cover.key]
             named = (
-                reach.handler_specs(audit[cover.key]["handlers"])
+                reach.handler_specs(audit[cover.key].handlers)
                 if row.cooccurrence and cover.key in audit
                 else list(row.sites)
             )

@@ -238,7 +238,17 @@ COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
 COOCCURRENCE_COLUMNS = ("key", "witness", "site", "handlers", "why_no_branch")
 
 
-def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, dict[str, str]], list[str]]:
+class CooccurrenceAudit(NamedTuple):
+    """One `combination-cooccurrence.tsv` row, its cells in column order."""
+
+    key: str
+    witness: str
+    site: str
+    handlers: str
+    why_no_branch: str
+
+
+def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, CooccurrenceAudit], list[str]]:
     """`combination-cooccurrence.tsv` as `key -> row`, and every way its form is broken.
 
     One row per `co-occurrence` combination, sorted by key, every cell filled: the
@@ -251,7 +261,7 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, dict[s
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != COOCCURRENCE_COLUMNS:
         return {}, [f"{path.name}: the header line must be exactly {'<TAB>'.join(COOCCURRENCE_COLUMNS)}"]
-    rows: dict[str, dict[str, str]] = {}
+    rows: dict[str, CooccurrenceAudit] = {}
     failures = []
     keys = []
     for number, line in enumerate(lines[1:], start=2):
@@ -262,7 +272,7 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, dict[s
             continue
         if cells[0] in rows:
             failures.append(f"{cells[0]}: {path.name} audits it twice")
-        rows[cells[0]] = dict(zip(COOCCURRENCE_COLUMNS, cells, strict=True))
+        rows[cells[0]] = CooccurrenceAudit(*cells)
     if keys != sorted(keys):
         failures.append(f"{path.name}: rows are not sorted by key")
     return rows, failures
