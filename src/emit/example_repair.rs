@@ -1247,8 +1247,6 @@ mod tests {
                     .all(|value| value.finding.disposition == Disposition::Repaired),
                 "{items}: {lists:?}"
             );
-            // Padded to `minItems`, every item accepted by the item schema,
-            // no item a duplicate of another.
             assert_eq!(written.len(), 2, "{items}: {written:?}");
             for item in &written {
                 assert_eq!(
