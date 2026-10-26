@@ -872,6 +872,10 @@ class RefusalChangeTests(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(weekly.WeeklyError) as raised:
                 self.read(text)
             self.assertIn(message, str(raised.exception))
+        # A report that is there but cannot be read is no "no change".
+        with tempfile.TemporaryDirectory() as scratch, self.assertRaises(weekly.WeeklyError) as raised:
+            weekly.refusal_change(Path(scratch), "heap-exhausted")
+        self.assertIn("cannot read", str(raised.exception))
 
 
 class TitleTests(unittest.TestCase):

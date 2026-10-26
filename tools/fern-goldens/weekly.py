@@ -1362,8 +1362,11 @@ def refusal_change(path: Path, item: str) -> str | None:
     or `None` when its probe reproduced the recorded refusal."""
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError:
+    except FileNotFoundError:
         return None
+    except OSError as error:
+        # A report that is there but unreadable must not pass as no change.
+        raise WeeklyError(f"cannot read {path.name} ({error}); read the item's log") from None
     for line in lines:
         where = f"{path.name}: {line!r}"
         try:

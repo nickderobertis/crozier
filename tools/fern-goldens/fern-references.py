@@ -1204,12 +1204,31 @@ def generate_refusal(item: str, pair: Pair) -> None:
         log = logs / f"probe.{item}.log"
         argv = ["python3", tool, "probe", "--jobs", "1", "--changes", str(changes), item]
         if run_script(argv, log, pair, tolerated=(0, PROBE_CHANGED_EXIT)) == PROBE_CHANGED_EXIT:
+            if not reports_class(changes, item):
+                raise ReferenceError(
+                    f"`fern-refusals.py probe` exited {PROBE_CHANGED_EXIT}, which reports a changed refusal, but "
+                    f"{rel(changes)} does not name {item}; see {rel(log)}"
+                )
             print(
                 f"fern-references: refusals {item}: Fern no longer reproduces the recorded refusal, which is "
                 f"kept; {rel(changes)} says how, and {rel(log)} has the run",
                 file=sys.stderr,
                 flush=True,
             )
+
+
+def reports_class(changes: Path, item: str) -> bool:
+    """Whether a `--changes` report holds a JSON object for class `item`."""
+    try:
+        lines = changes.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    for line in lines:
+        with contextlib.suppress(ValueError):
+            record = json.loads(line)
+            if isinstance(record, dict) and record.get("class") == item:
+                return True
+    return False
 
 
 def refusal_changes(item: str) -> Path:
