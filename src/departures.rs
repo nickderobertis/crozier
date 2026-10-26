@@ -6945,6 +6945,7 @@ mod tests {
                 ),
                 ("guild_id=\"guild_id\",", "guild_id=\"0\","),
                 "guild_id=\"guild\",",
+                ("guild_id=\"7\",", "guild_id=\"abc\","),
             ),
             (
                 "schema-rejected-number-example",
@@ -6954,6 +6955,7 @@ mod tests {
                 ),
                 ("count=1,", "count=5,"),
                 "count=-1,",
+                ("count=6,", "count=2,"),
             ),
             (
                 "schema-rejected-placeholder-string-example",
@@ -6967,16 +6969,27 @@ mod tests {
                     "labels={\"key\": \"d5e9c84f-c2b2-4bf4-b4b0-7ffd7a9ffc32\"},",
                 ),
                 "labels={\"key\": \"not-a-uuid\"},",
+                (
+                    "labels={\"key\": \"00000000-0000-4000-8000-000000000000\"},",
+                    "labels={\"key\": \"nope\"},",
+                ),
             ),
             (
                 "schema-rejected-array-length-example",
                 rejected_example_source(
                     "tags",
-                    serde_json::json!({"type": "array", "minItems": 3,
+                    serde_json::json!({"type": "array", "minItems": 4,
                         "items": {"type": "string"}}),
                 ),
-                ("tags=[\"tags\"],", "tags=[\"tags\", \"tags\", \"tags\"],"),
+                (
+                    "tags=[\"tags\"],",
+                    "tags=[\"tags\", \"tags\", \"tags\", \"tags\"],",
+                ),
                 "tags=[\"tags\", \"tags\"],",
+                (
+                    "tags=[\"tags\", \"tags\", \"tags\", \"tags\", \"tags\"],",
+                    "tags=[\"tags\", \"tags\", \"tags\"],",
+                ),
             ),
             (
                 "schema-rejected-sized-string-example",
@@ -6986,9 +6999,10 @@ mod tests {
                 ),
                 ("code=\"apricot\",", "code=\"0000000\","),
                 "code=\"abcdefg\",",
+                ("code=\"1234567\",", "code=\"abcdefg\","),
             ),
         ];
-        for (id, source, (fern, crozier), rejected) in cases {
+        for (id, source, (fern, crozier), rejected, (other_valid, unconstructed)) in cases {
             // The repair is the rule's departure, and the only one.
             let compared = rejected_example_comparison(&source, (fern, crozier), ("pass", "pass"));
             assert!(compared.matches(), "{id}: {:?}", compared.diff());
@@ -7000,6 +7014,17 @@ mod tests {
             // A replacement the schema itself rejects is no repair.
             let compared = rejected_example_comparison(&source, (fern, rejected), ("pass", "pass"));
             assert!(!compared.matches(), "{id}: {rejected} was accepted");
+            // Nor one the schema accepts that its repair does not choose.
+            let compared =
+                rejected_example_comparison(&source, (fern, other_valid), ("pass", "pass"));
+            assert!(!compared.matches(), "{id}: {other_valid} was not chosen");
+            // Nor a rejected Fern value its construction does not give.
+            let compared =
+                rejected_example_comparison(&source, (unconstructed, crozier), ("pass", "pass"));
+            assert!(
+                !compared.matches(),
+                "{id}: Fern never writes {unconstructed}"
+            );
             // Nor is any change to a value the schema accepts.
             let permissive = rejected_example_source(
                 source["components"]["schemas"]["Body"]["properties"]

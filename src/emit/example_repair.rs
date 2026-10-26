@@ -1211,6 +1211,80 @@ mod tests {
             && value.finding.crozier == value.finding.fern));
     }
 
+    /// The items of the generated `ids=[...]` example, read back as JSON.
+    fn ids_items(files: &[(String, String)]) -> Vec<serde_json::Value> {
+        let line = ids_line(files);
+        let list = line
+            .strip_prefix("ids=")
+            .and_then(|rest| rest.strip_suffix(','))
+            .expect("an ids list");
+        serde_json::from_str(list).expect("a JSON-compatible list")
+    }
+
+    #[test]
+    fn unique_list_padding_is_pairwise_distinct_and_each_item_accepted_or_a_residual() {
+        use crate::example_values::{ValueConstraints, Verdict};
+        let item_schemas = [
+            serde_json::json!({"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}),
+            serde_json::json!({"type": "string", "minLength": 6}),
+            serde_json::json!({"type": "integer", "minimum": 10, "maximum": 20}),
+        ];
+        for items in item_schemas {
+            let (files, values) = generated(unique_list_document(items.clone()));
+            let written = ids_items(&files);
+            let item_schema: crate::openapi::Schema =
+                serde_json::from_value(items.clone()).expect("an item schema");
+            let constraints = ValueConstraints::of(&item_schema, &indexmap::IndexMap::new())
+                .expect("in-scope item keywords");
+            let lists: Vec<_> = values
+                .iter()
+                .filter(|value| value.finding.mechanism == Some(Mechanism::Array))
+                .collect();
+            assert!(!lists.is_empty(), "{items}");
+            assert!(
+                lists
+                    .iter()
+                    .all(|value| value.finding.disposition == Disposition::Repaired),
+                "{items}: {lists:?}"
+            );
+            // Padded to `minItems`, every item accepted by the item schema,
+            // no item a duplicate of another.
+            assert_eq!(written.len(), 2, "{items}: {written:?}");
+            for item in &written {
+                assert_eq!(
+                    constraints.verdict(item),
+                    Verdict::Accepted,
+                    "{items}: {item}"
+                );
+            }
+            for (at, item) in written.iter().enumerate() {
+                assert!(!written[at + 1..].contains(item), "{items}: {written:?}");
+            }
+        }
+        // Items with one admissible value, or a format crozier builds one
+        // value for, cannot be distinct: Fern's list length stays, recorded
+        // residual-unconstructible.
+        for items in [
+            serde_json::json!({"type": "string", "pattern": "^x$"}),
+            serde_json::json!({"type": "string", "format": "uuid"}),
+            serde_json::json!({"type": "string", "format": "email"}),
+        ] {
+            let (files, values) = generated(unique_list_document(items.clone()));
+            assert_eq!(ids_items(&files).len(), 1, "{items}");
+            let lists: Vec<_> = values
+                .iter()
+                .filter(|value| value.finding.mechanism == Some(Mechanism::Array))
+                .collect();
+            assert!(!lists.is_empty(), "{items}");
+            assert!(
+                lists.iter().all(|value| value.finding.disposition
+                    == Disposition::ResidualUnconstructible
+                    && value.finding.crozier == value.finding.fern),
+                "{items}: {lists:?}"
+            );
+        }
+    }
+
     #[test]
     fn a_value_crozier_cannot_satisfy_stays_fern_s_and_is_recorded_as_a_residual() {
         let (files, values) = generated(document(
