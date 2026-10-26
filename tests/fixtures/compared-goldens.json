@@ -343,6 +343,8 @@
       ]
     },
     "docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected": {},
+    "docs/fern-measurements/output-defects/615-empty-composition-member-reference/fern-expected": {},
+    "docs/fern-measurements/output-defects/617-annotated-inherited-union/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},

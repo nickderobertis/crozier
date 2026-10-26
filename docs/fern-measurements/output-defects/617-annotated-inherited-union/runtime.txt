@@ -1,0 +1,24 @@
+Python 3.14.7, pydantic 2.14.1, httpx 0.28.1
+
+$ python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 617 docs/fern-measurements/output-defects/617-annotated-inherited-union/fern-expected/src openapi.json
+PotOuterCoat_Matte is sent as {"finish": "matte", "layers": 2, "tooth": 3}, which Coat validates
+outerCoat {"finish": "matte", "layers": 2, "tooth": 3} parses as PotOuterCoat_Matte with finish 'matte'
+RecoatPotRequestCoat_Matte is sent as {"finish": "matte", "layers": 2, "tooth": 3}, which Coat validates
+{"finish": "matte", "layers": 2, "tooth": 3} parses as RecoatPotRequestCoat_Matte
+PotOuterCoat_Gloss is sent as {"finish": "gloss", "layers": 1, "sheen": 0.8}, which Coat validates
+outerCoat {"finish": "gloss", "layers": 1, "sheen": 0.8} parses as PotOuterCoat_Gloss with finish 'gloss'
+RecoatPotRequestCoat_Gloss is sent as {"finish": "gloss", "layers": 1, "sheen": 0.8}, which Coat validates
+{"finish": "gloss", "layers": 1, "sheen": 0.8} parses as RecoatPotRequestCoat_Gloss
+exit status 0
+
+Pre-repair control: the same journey over crozier's SDK generated from this document at base 80331e4bb, before the repair.
+
+$ python crates/crozier-e2e/tests/e2e/output_defects_runtime.py 617 <crozier-80331e4bb-sdk>/src openapi.json
+617: {'finish': 'matte', 'layers': 2, 'tooth': 3} parsed through PotOuterCoat as PotOuterCoat, not PotOuterCoat_Matte
+exit status 1
+
+Independent check of the wire payloads above against the subtype the discriminator mapping names (the command is in README.md):
+
+jsonschema 4.26.0: {"finish": "matte", "layers": 2, "tooth": 3} is valid against MatteCoat
+jsonschema 4.26.0: {"finish": "gloss", "layers": 1, "sheen": 0.8} is valid against GlossCoat
+exit status 0

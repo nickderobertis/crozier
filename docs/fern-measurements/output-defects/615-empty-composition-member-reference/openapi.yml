@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Kiln Loading Board
+  version: 2.1.0
+  description: Assigns bisque and glaze loads to the studio's kilns.
+servers:
+  - url: https://loading.kilnworks.example/v2
+paths:
+  /loads:
+    post:
+      operationId: scheduleLoad
+      summary: Schedule a load
+      tags: [loads]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Load'
+      responses:
+        '201':
+          description: The scheduled load.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Load'
+  /loads/{loadId}/transfer:
+    post:
+      operationId: transferLoad
+      summary: Move a load to another kiln
+      tags: [loads]
+      parameters:
+        - name: loadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [destination]
+              properties:
+                destination:
+                  allOf:
+                    - $ref: '#/components/schemas/Kiln'
+                    - {}
+                fallback:
+                  allOf:
+                    - $ref: '#/components/schemas/Kiln'
+                    - description: Kiln to use when the destination is full.
+      responses:
+        '200':
+          description: The moved load.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Load'
+components:
+  schemas:
+    Kiln:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        maxCone:
+          type: integer
+    Load:
+      type: object
+      required: [label, kiln]
+      properties:
+        label:
+          type: string
+        kiln:
+          allOf:
+            - $ref: '#/components/schemas/Kiln'
+            - {}
+        overflowKiln:
+          allOf:
+            - {}
+            - $ref: '#/components/schemas/Kiln'
+        usualKiln:
+          $ref: '#/components/schemas/Kiln'
+        soloKiln:
+          allOf:
+            - $ref: '#/components/schemas/Kiln'
+        notedKiln:
+          allOf:
+            - $ref: '#/components/schemas/Kiln'
+            - description: Kiln named in the firing log.
+        reservedKiln:
+          allOf:
+            - $ref: '#/components/schemas/Kiln'
+            - type: object
+              required: [reservedUntil]
+              properties:
+                reservedUntil:
+                  type: string

@@ -7475,6 +7475,11 @@ fn hoist_inline_object(
                 prop_schema
                     .description
                     .as_deref()
+                    // An annotating `allOf` member documents the argument, as it
+                    // documents a model field: the `617-annotated-inherited-union`
+                    // measurement's `recoatPot` body declares `coat: allOf: [$ref
+                    // Coat, {description}]`, and Fern documents `coat` with it.
+                    .or_else(|| described_all_of_ref(prop_schema).and_then(|(_, doc)| doc))
                     .or_else(|| {
                         scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
                             .and_then(|(_, member)| member.description.as_deref())
@@ -8308,9 +8313,20 @@ impl InlineHoister<'_> {
                     )));
                     return TypeRef::Named(name);
                 }
-                if target.one_of.is_some() || target.any_of.is_some() {
+                // A union spelled through inheritance is copied complete too, its
+                // variant wrappers coined under the annotating name and
+                // documented by the annotation, as Fern does: the
+                // `617-annotated-inherited-union` measurement's
+                // `RecoatPotRequestCoat_Matte` carries the body field's
+                // description where `Coat_Matte` carries `Coat`'s.
+                let inherited = is_inheritance_union_base(&target);
+                if target.one_of.is_some() || target.any_of.is_some() || inherited {
                     observed_arm!("prop_type_ref:3");
-                    if let Some(copy) = self.hoist_named_copy(&name, &target) {
+                    let mut copied = target.clone();
+                    if let Some(description) = description.filter(|_| inherited) {
+                        copied.description = Some(description.to_string());
+                    }
+                    if let Some(copy) = self.hoist_named_copy(&name, &copied) {
                         return copy;
                     }
                 }
@@ -13900,8 +13916,15 @@ impl Builder<'_> {
         // own rather than pointing at the referenced schema's pair. The copy is
         // documented by the annotation too: Prisma Cloud's `SearchModel.timeRange`
         // annotates `TimeRangeConfigModel` with `Time Range`, and every variant of
-        // Fern's `SearchModelTimeRange` carries that docstring.
-        if !is_map(target) && (target.one_of.is_some() || target.any_of.is_some()) {
+        // Fern's `SearchModelTimeRange` carries that docstring. A union spelled
+        // through inheritance — a base whose `discriminator.mapping` names the
+        // subtypes that `allOf` it — is a union too, and Fern copies its variant
+        // wrappers the same way rather than flattening the base's fields.
+        if !is_map(target)
+            && (target.one_of.is_some()
+                || target.any_of.is_some()
+                || is_inheritance_union_base(target))
+        {
             let mut annotated = target.clone();
             if let Some(description) = description {
                 annotated.description = Some(description.to_string());
@@ -26930,6 +26953,96 @@ components:
             } } },
             "components": { "schemas": schemas }
         })
+    }
+
+    /// The `617-annotated-inherited-union` measurement (Fern CLI 5.163.1): an
+    /// annotated `$ref` to a union spelled through inheritance — a base whose
+    /// `discriminator.mapping` names the subtypes that `allOf` it — is copied
+    /// complete under the annotating name, its variant wrappers documented by
+    /// the annotation, both where a component's property annotates it
+    /// ([`Builder::use_site_copy`]) and where an inline body's does
+    /// ([`InlineHoister::prop_type_ref`]); a plain `$ref` names the base.
+    #[test]
+    fn annotated_copies_of_an_inheritance_union_keep_its_variant_wrappers() {
+        let coat = "#/components/schemas/Coat";
+        let variant = |own: &str| {
+            serde_json::json!({ "allOf": [
+                { "$ref": coat },
+                { "type": "object", "required": [own], "properties": { own: { "type": "integer" } } }
+            ] })
+        };
+        let annotated = |description: &str| serde_json::json!({ "allOf": [{ "$ref": coat }, { "description": description }] });
+        let schemas = serde_json::json!({
+            "Coat": {
+                "type": "object",
+                "description": "One coat.",
+                "required": ["finish"],
+                "properties": { "finish": { "type": "string" }, "layers": { "type": "integer" } },
+                "discriminator": { "propertyName": "finish", "mapping": {
+                    "matte": "#/components/schemas/MatteCoat",
+                    "gloss": "#/components/schemas/GlossCoat"
+                } }
+            },
+            "MatteCoat": variant("tooth"),
+            "GlossCoat": variant("sheen"),
+            "Pot": { "type": "object", "properties": {
+                "outer": annotated("Outer wall."),
+                "inner": { "$ref": coat }
+            } }
+        });
+        let body =
+            serde_json::json!({ "coat": annotated("Fresh coat."), "previous": { "$ref": coat } });
+        let (ir, _) = generate(observed_document(schemas, body));
+        let declared = || {
+            ir.types
+                .iter()
+                .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+        };
+        for (name, docstring) in [
+            ("Coat", "One coat."),
+            ("PotOuter", "Outer wall."),
+            ("MakeThingRequestCoat", "Fresh coat."),
+        ] {
+            let union = declared()
+                .find_map(|declaration| match declaration {
+                    TypeDecl::DiscriminatedUnion(union) if union.name == name => Some(union),
+                    _ => None,
+                })
+                .unwrap_or_else(|| {
+                    panic!("{name} is no discriminated union: {:?}", declarations(&ir))
+                });
+            assert_eq!(union.discriminant_property, "finish", "{name}");
+            let members: Vec<_> = union
+                .members
+                .iter()
+                .map(|member| {
+                    (
+                        member.class_name.as_str(),
+                        member.discriminant.as_str(),
+                        member.docstring.as_deref(),
+                    )
+                })
+                .collect();
+            assert_eq!(
+                members,
+                [
+                    (format!("{name}_Matte").as_str(), "matte", Some(docstring)),
+                    (format!("{name}_Gloss").as_str(), "gloss", Some(docstring)),
+                ],
+                "{name}"
+            );
+        }
+        let labels = declarations(&ir);
+        for flattened in [
+            "Object(PotOuter)",
+            "Object(MakeThingRequestCoat)",
+            "Object(PotInner)",
+        ] {
+            assert!(
+                !labels.contains(&flattened.to_string()),
+                "{flattened}: {labels:?}"
+            );
+        }
     }
 
     /// The one call site `resolve_schema_pointer` has: an array `items` whose

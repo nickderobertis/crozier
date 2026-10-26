@@ -3207,9 +3207,19 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// `ApplicationCommandHandler` writes `{type: integer, oneOf: [], format: int32}`
 /// and Fern generates the plain `int` its `type` names, so the list is discarded
 /// here rather than guarded against at each use site.
+///
+/// An `allOf` member written as a bare `{}` goes first, for the same reason: it
+/// adds nothing to the conjunction, and Fern (measured at CLI 5.163.1) ignores
+/// it, so `allOf: [$ref Kiln, {}]` is `Kiln` itself rather than a copied model.
+/// Dropping it here is what lets every single-reference reader see the one
+/// member left. A `oneOf`/`anyOf` `{}` member is an alternative that admits
+/// anything and is kept.
 fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
+            if let Some(members) = node.all_of.as_mut() {
+                members.retain(|member| *member != Schema::default());
+            }
             for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
                 if members.as_ref().is_some_and(Vec::is_empty) {
                     *members = None;
@@ -6679,6 +6689,60 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    /// The `615-empty-composition-member-reference` measurement (Fern CLI
+    /// 5.163.1): a bare `{}` `allOf` member is dropped wherever it stands, so
+    /// the one `$ref` left is a sole reference; an annotating or constraining
+    /// member stays, and so does a `{}` alternative of a `oneOf`/`anyOf`.
+    #[test]
+    fn normalize_empty_compositions_drops_bare_all_of_members() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Kiln: { type: object, properties: { name: { type: string } } }
+    Load:
+      type: object
+      properties:
+        after: { allOf: [{ $ref: '#/components/schemas/Kiln' }, {}] }
+        before: { allOf: [{}, { $ref: '#/components/schemas/Kiln' }, {}] }
+        noted: { allOf: [{ $ref: '#/components/schemas/Kiln' }, { description: Logged. }] }
+        reserved: { allOf: [{ $ref: '#/components/schemas/Kiln' }, { required: [name] }] }
+        alone: { allOf: [{}] }
+        anything: { oneOf: [{ $ref: '#/components/schemas/Kiln' }, {}] }
+        either: { anyOf: [{}, { type: string }] }
+"##,
+        );
+        normalize_empty_compositions(&mut doc);
+        let load = &doc.components.schemas["Load"];
+        let members = |name: &str| load.properties[name].all_of.as_ref().map(Vec::len);
+        for sole in ["after", "before"] {
+            let all_of = load.properties[sole].all_of.as_deref().expect("allOf kept");
+            assert_eq!(all_of.len(), 1, "{sole}");
+            assert_eq!(
+                all_of[0].reference.as_deref(),
+                Some("#/components/schemas/Kiln")
+            );
+        }
+        assert_eq!(members("noted"), Some(2));
+        assert_eq!(members("reserved"), Some(2));
+        assert_eq!(
+            members("alone"),
+            None,
+            "an allOf of only `{{}}` is no allOf"
+        );
+        assert_eq!(
+            load.properties["anything"].one_of.as_ref().map(Vec::len),
+            Some(2)
+        );
+        assert_eq!(
+            load.properties["either"].any_of.as_ref().map(Vec::len),
+            Some(2)
+        );
     }
 
     /// free5gc's `GlobalRanNodeId` and sigstore-rekor's DSSE branch (measured at

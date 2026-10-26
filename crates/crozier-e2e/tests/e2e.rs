@@ -102,6 +102,14 @@ mod pottery_studio_shapes;
 mod naming_clients_shapes;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The generated-model defects measured against the certified pair under
+/// `docs/fern-measurements/output-defects/`, each repaired and held to its
+/// complete Fern tree and its runtime journey.
+#[path = "e2e/output_defects.rs"]
+mod output_defects;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -726,6 +734,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
+        (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
