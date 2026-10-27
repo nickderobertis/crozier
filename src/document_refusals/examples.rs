@@ -90,7 +90,15 @@ struct Doc<'a> {
 /// control; Asana's `due_at`, `2019-09-15T02:06:58.147Z`). crozier's parser
 /// reads both as one string, so the plain ones are found in the source.
 fn plain_timestamps(root: &Value, text: &str) -> HashSet<*const Value> {
-    plain_timestamp_paths(text)
+    // A document the parser refuses was read through `crate::yaml::from_str`'s
+    // repair, so its events are read from the repaired text too.
+    let (mut paths, complete) = plain_timestamp_paths(text);
+    if !complete {
+        if let Some(repaired) = crate::yaml::reindented(text) {
+            paths = plain_timestamp_paths(&repaired).0;
+        }
+    }
+    paths
         .iter()
         .filter_map(|path| {
             path.iter().try_fold(root, |node, step| match node {
@@ -149,8 +157,9 @@ struct Recording {
 }
 
 /// The paths (mapping keys and sequence indices) of every plain timestamp
-/// scalar in `text`'s first document; see [`plain_timestamps`].
-fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
+/// scalar in `text`'s first document, and whether the parser read it to the
+/// end rather than stopping at an error; see [`plain_timestamps`].
+fn plain_timestamp_paths(text: &str) -> (Vec<Vec<String>>, bool) {
     use serde_saphyr::granit_parser::{Event, Parser, ScalarStyle};
     static TIMESTAMP: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
     let timestamp = TIMESTAMP.get_or_init(|| {
@@ -202,7 +211,12 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
     };
     let merging = |frame: Option<&Frame>| matches!(frame, Some(Frame::Map(Entry::Value(Some(key)), _)) if key == "<<");
     let mut parser = Parser::new_from_str(text);
-    while let Some(Ok((event, _span))) = parser.next_event() {
+    let mut complete = true;
+    while let Some(next) = parser.next_event() {
+        let Ok((event, _span)) = next else {
+            complete = false;
+            break;
+        };
         if in_key > 0 {
             match event {
                 Event::MappingStart(..) | Event::SequenceStart(..) => in_key += 1,
@@ -330,7 +344,7 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
             _ => {}
         }
     }
-    found
+    (found, complete)
 }
 
 fn str_of<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
@@ -1900,6 +1914,24 @@ mod tests {
                 "{placement}"
             );
         }
+    }
+
+    #[test]
+    fn a_plain_timestamp_after_a_repaired_scalar_is_still_found() {
+        // The parser refuses `note`'s continuation at its key's column; the
+        // document is read repaired, and so are its plain timestamps.
+        let text = "thing:\n  note: \"one\n  two\"\n  at: 2001-02-03T04:05:06Z\n  quoted: '2001-02-03T04:05:06Z'\n";
+        let root = yaml(text);
+        assert_eq!(root["thing"]["note"], "one two");
+        let plain = plain_timestamps(&root, text);
+        assert!(plain.contains(&std::ptr::from_ref(&root["thing"]["at"])));
+        assert!(!plain.contains(&std::ptr::from_ref(&root["thing"]["quoted"])));
+        // A document neither read can repair keeps what was read before its error.
+        let broken = "at: 2001-02-03T04:05:06Z\nlater: [\n";
+        assert_eq!(
+            plain_timestamp_paths(broken),
+            (vec![vec!["at".to_owned()]], false)
+        );
     }
 
     #[test]

@@ -11604,7 +11604,9 @@ fn discriminant_strips(
     strips
 }
 
-fn document_discriminant_strips(doc: &OpenApi) -> std::collections::HashMap<String, String> {
+pub(crate) fn document_discriminant_strips(
+    doc: &OpenApi,
+) -> std::collections::HashMap<String, String> {
     let standalone = standalone_referenced_classes(doc);
     let mut strips = discriminant_strips(&doc.components.schemas, &standalone);
     for item in doc.paths.values().chain(doc.webhooks.values()) {
