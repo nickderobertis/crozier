@@ -91,7 +91,8 @@ and which the CLI journey generates identically in both modes:
 [`type: object` without `properties`](evaluation-logs/fern-untyped-object-body.log),
 [a colliding component declared first](evaluation-logs/fern-union-collision-declared-first.log),
 [a string whose only other union member is the null type, named nothing](evaluation-logs/fern-nullable-string-union-collision-control.log)
-(RS-Server's `Item.collection` beside `ItemCollection`),
+(RS-Server's `Item.collection` beside `ItemCollection`;
+[record](rs-server-collision-parity.md)),
 [an unreferenced colliding scalar](evaluation-logs/fern-unreferenced-scalar-collision.log),
 [a map under a success response](evaluation-logs/fern-success-string-map.log) and
 [a schema-level map on an error](evaluation-logs/fern-error-schema-level-map.log).
