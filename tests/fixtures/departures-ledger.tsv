@@ -848,6 +848,11 @@ docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes-literals/kiln-annotated-body/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/schema-shapes-literals/kiln-annotated-body/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes-literals/kiln-annotated-body/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

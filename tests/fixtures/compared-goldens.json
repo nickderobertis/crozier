@@ -365,6 +365,7 @@
     "docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected": {},
+    "docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-annotated-body/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-array-mode/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-array-variants/fern-expected": {},

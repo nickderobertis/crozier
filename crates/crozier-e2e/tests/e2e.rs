@@ -110,6 +110,11 @@ mod naming_clients_shapes;
 mod output_defects;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// Documents the certified pair generates from that crozier used to refuse,
+/// under `docs/fern-measurements/refusal-parity/`.
+#[path = "e2e/refusal_parity.rs"]
+mod refusal_parity;
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -735,6 +740,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
+        (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
