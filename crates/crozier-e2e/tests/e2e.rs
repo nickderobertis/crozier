@@ -7275,6 +7275,75 @@ fn wrapped_union_member_departure_rejects_unexplained_complete_tree_differences(
     }
 }
 
+const WRAPPED_MEMBER_EVIDENCE: &str =
+    "docs/departures/evidence/wrapped-union-member-docs-example.py";
+
+/// The `wrapped-union-member-docs-example` evidence script, run as its note
+/// runs it without the certified SDK installed: it finds the three certified
+/// examples, shows each fails to compile, and says it did not bind.
+#[test]
+fn wrapped_union_member_evidence_shows_the_certified_examples_do_not_compile() {
+    let Some(python) = python_interpreter() else {
+        eprintln!("skipping: no python3/python on PATH");
+        return;
+    };
+    let run = std::process::Command::new(python)
+        .arg("-I")
+        .arg(repo_root().join(WRAPPED_MEMBER_EVIDENCE))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        stdout.matches("certified example does not compile").count(),
+        3,
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("certified SDK not installed: binding not checked"),
+        "{stdout}"
+    );
+}
+
+/// The same script with the unedited certified SDK importable binds the
+/// constructor crozier writes, serializes it with its tag, and shows the
+/// certified tree's keyword rejected by that SDK.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_wrapped_union_member_evidence_binds_the_corrected_constructor() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let run = std::process::Command::new(&python)
+        .arg(root.join(WRAPPED_MEMBER_EVIDENCE))
+        .env(
+            "PYTHONPATH",
+            root.join("docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected/src"),
+        )
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout.contains("corrected: {'value': 1.1, 'entryType': 'level'}"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("certified keyword rejected by the certified SDK: ValidationError"),
+        "{stdout}"
+    );
+    assert!(!stdout.contains("binding not checked"), "{stdout}");
+}
+
 #[test]
 fn parameter_departures_reject_unexplained_complete_tree_differences() {
     fn copy_tree(source: &Path, target: &Path) {
