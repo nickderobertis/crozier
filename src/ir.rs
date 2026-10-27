@@ -11997,10 +11997,12 @@ fn reads_dangling_targets(
 
 /// Every component union's wrapper that carries a `oneOf` member's fields in
 /// place of Fern's `value: typing.Any` (see [`dangling_target_member`]): the
-/// wrapper's class name and its discriminant value. The
+/// wrapper's class name, its discriminant value and its fields' Python names. The
 /// `dangling-mapping-variant-fields` departure's rule reads them off the source
 /// document.
-pub(crate) fn dangling_mapping_wrappers(doc: &crate::openapi::OpenApi) -> Vec<(String, String)> {
+pub(crate) fn dangling_mapping_wrappers(
+    doc: &crate::openapi::OpenApi,
+) -> Vec<(String, String, Vec<String>)> {
     let schemas = &doc.components.schemas;
     let mut wrappers = Vec::new();
     for (name, schema) in schemas {
@@ -12011,25 +12013,31 @@ pub(crate) fn dangling_mapping_wrappers(doc: &crate::openapi::OpenApi) -> Vec<(S
             continue;
         }
         for (value, reference) in &discriminator.mapping {
-            if names_no_component(reference, schemas)
-                && dangling_target_member(
-                    variants,
-                    &discriminator.mapping,
-                    &discriminator.property_name,
-                    value,
-                    schemas,
-                )
-                .is_some()
-            {
-                wrappers.push((
-                    format!(
-                        "{}_{}",
-                        naming::class_name(name),
-                        discriminant_class_name(value)
-                    ),
-                    value.clone(),
-                ));
+            if !names_no_component(reference, schemas) {
+                continue;
             }
+            let Some((class, member)) = dangling_target_member(
+                variants,
+                &discriminator.mapping,
+                &discriminator.property_name,
+                value,
+                schemas,
+            ) else {
+                continue;
+            };
+            let fields = member_fields(member, &discriminator.property_name, schemas, Some(&class))
+                .into_iter()
+                .map(|field| field.py_name)
+                .collect();
+            wrappers.push((
+                format!(
+                    "{}_{}",
+                    naming::class_name(name),
+                    discriminant_class_name(value)
+                ),
+                value.clone(),
+                fields,
+            ));
         }
     }
     wrappers
@@ -29572,7 +29580,11 @@ components:
         };
         assert_eq!(
             dangling_mapping_wrappers(&document("METEOR")),
-            [("Reading_Meteor".to_string(), "METEOR".to_string())]
+            [(
+                "Reading_Meteor".to_string(),
+                "METEOR".to_string(),
+                vec!["trail".to_string(), "brightness".to_string()]
+            )]
         );
         assert!(dangling_mapping_wrappers(&document("SHOOTING_STAR")).is_empty());
         let schemas = document("METEOR").components.schemas;

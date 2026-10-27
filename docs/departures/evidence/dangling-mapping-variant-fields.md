@@ -63,8 +63,9 @@ METEOR: parsed into Reading_Meteor and posted back as {"brightness": -3.5, "kind
 ## What the rule admits
 
 The rule reads the wrappers off the source document
-(`crate::ir::dangling_mapping_wrappers`). For each, it rewrites crozier's class
-Fern's way: `value: typing.Any` in place of the docstring and fields, and the
+(`crate::ir::dangling_mapping_wrappers`), each with the fields the member
+lends it. A wrapper whose fields are not exactly those, in order, is not the
+construct. For each, it rewrites crozier's class Fern's way: `value: typing.Any` in place of the docstring and fields, and the
 configuration without `extra`. It also drops the wrapper's own
 `update_forward_refs` call, and every single-name import only those lines used.
 It accounts for the file only when the result is Fern's file exactly. The

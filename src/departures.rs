@@ -1988,8 +1988,8 @@ fn dangling_mapping_variant_fields(pair: &Pair<'_>) -> Result<Option<Region>, St
     }
     let mut lines: Vec<String> = pair.crozier.iter().map(|line| (*line).to_owned()).collect();
     let mut removed = Vec::new();
-    for (wrapper, value) in crate::ir::dangling_mapping_wrappers(source) {
-        removed.extend(any_valued_wrapper(&mut lines, &wrapper, &value));
+    for (wrapper, value, fields) in crate::ir::dangling_mapping_wrappers(source) {
+        removed.extend(any_valued_wrapper(&mut lines, &wrapper, &value, &fields));
     }
     if removed.is_empty() {
         return Ok(None);
@@ -2008,9 +2008,14 @@ fn dangling_mapping_variant_fields(pair: &Pair<'_>) -> Result<Option<Region>, St
 /// Rewrite crozier's `wrapper` class as Fern writes a wrapper holding an unknown
 /// `value`, and drop its own `update_forward_refs` call, returning the lines
 /// taken out. Nothing changes, and nothing is returned, unless the class is an
-/// optional docstring, the tag's `Literal` line, its fields and the pydantic
-/// configuration.
-fn any_valued_wrapper(lines: &mut Vec<String>, wrapper: &str, value: &str) -> Vec<String> {
+/// optional docstring, the tag's `Literal` line, exactly the member's `fields`
+/// in order and the pydantic configuration.
+fn any_valued_wrapper(
+    lines: &mut Vec<String>,
+    wrapper: &str,
+    value: &str,
+    fields: &[String],
+) -> Vec<String> {
     let header = format!("class {wrapper}(UniversalBaseModel):");
     let Some(class) = lines.iter().position(|line| *line == header) else {
         return Vec::new();
@@ -2042,6 +2047,21 @@ fn any_valued_wrapper(lines: &mut Vec<String>, wrapper: &str, value: &str) -> Ve
     };
     // The fields sit between the tag and the blank line before the configuration.
     if !tag_line || config < tag + 3 || !lines[config - 1].is_empty() {
+        return Vec::new();
+    }
+    // Each field opens at the class's indent with `name:`; its continuation
+    // lines sit deeper.
+    let declared: Vec<&str> = lines[tag + 1..config - 1]
+        .iter()
+        .filter_map(|line| line.strip_prefix("    "))
+        .filter(|line| !line.starts_with(' ') && !line.starts_with(']'))
+        .map(|line| line.split_once(':').map_or(line, |(name, _)| name))
+        .collect();
+    if !declared
+        .iter()
+        .copied()
+        .eq(fields.iter().map(String::as_str))
+    {
         return Vec::new();
     }
     let mut config_lines: Vec<String> = lines[config..end]
@@ -7719,6 +7739,18 @@ update_forward_refs(
                 rel,
                 DANGLING_FERN,
                 &still_used,
+                &dangling
+            ),
+            None
+        );
+        // Nor are fields other than the member's: the departure is its fields.
+        let renamed = DANGLING_CROZIER.replace("    trail:", "    path:");
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &renamed,
                 &dangling
             ),
             None
