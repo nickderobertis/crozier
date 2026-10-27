@@ -4367,10 +4367,13 @@ fn build_endpoint(
     // marimo-plugins' `read_marimo_chatbot_send_prompt_output` answers
     // `$ref: marimo-chatbot.send_prompt.output`, a `{}` component, and its golden
     // guards the empty body exactly as for a bare `{}`.
+    // A union mapping a value to a bare schema name is `typing.Any` as well,
+    // and Fern guards its empty body the same way: the openapi-generator AllOf
+    // sample's `GET /person/display/{personId}` answers that `Person`.
     let success_names_unknown = success_response_schema(op)
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(is_unknown);
+        .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema));
     let has_parameters =
         !path_params.is_empty() || !query_params.is_empty() || !header_params.is_empty();
     let body_collapses_to_type_reference = !has_parameters
@@ -6765,9 +6768,13 @@ fn resolve_request_body(
         // `UpdateStudentRequest` is `Union[Any]` and the golden passes the
         // declared `{"transition_date": …}`. Under wildcard (`*/*`) media it
         // sends no content-type header, as an inline union does: Apideck's
-        // proxy verbs with their `anyOf` payloads named as components.
-        if target.one_of.is_some() || target.any_of.is_some() {
-            let mut body = single(TypeRef::Named(class), required, true, true);
+        // proxy verbs with their `anyOf` payloads named as components. A union
+        // mapping a value to a bare schema name is `typing.Any` and is sent as
+        // it is, in either spelling: the hand-written `orchard-crate-labels`
+        // document's `Label` and `Crate`.
+        if target.one_of.is_some() || target.any_of.is_some() || bare_name_mapped_union(target) {
+            let convert = !bare_name_mapped_union(target);
+            let mut body = single(TypeRef::Named(class), required, convert, true);
             if let RequestBody::Single(single) = &mut body {
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
@@ -10188,18 +10195,18 @@ fn has_bodyless_success(op: &Operation) -> bool {
                     .any(|media| media.schema.is_some()))
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
-    // A bodyless `200`/`201`/`202` beside a success body is not an empty-body case: it
-    // reports that the write was accepted, and Fern still types the method by the
-    // body the primary response declares. A contentless `200` beside a typed
+    // A bodyless success other than `204` beside a success body is not an
+    // empty-body case: it reports that the write was accepted, and Fern still
+    // types the method by the body the primary response declares. Fern CLI
+    // 5.163.1 measures `203`, `205`–`208`, `226` and `299` alike, and the
+    // ToolJet Teams document's `addMultipleTeamMembers` answers a typed `200`
+    // beside a bodyless `207`. A contentless `200` beside a typed
     // `201` stays non-optional too (the hand-written fixture
     // `contentless-created-success`, byte-compared by
     // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`). EN 18222's `updateDPPById` returns
     // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
-        || success_response_schema(op).is_some()
-            && codes
-                .iter()
-                .all(|code| matches!(*code, "200" | "201" | "202")))
+        || success_response_schema(op).is_some() && codes.iter().all(|code| *code != "204"))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
@@ -11731,18 +11738,26 @@ fn collect_discriminant_strips(
         // `type`, and Fern's `UsLocalAccountIdentification` has no `type` field).
         // A mapping to bare names Fern cannot resolve leaves the union unknown and
         // every member its own plain model, tag and all (Hasura's
-        // `FunctionReturnType`).
+        // `FunctionReturnType`). Under a `oneOf` that only goes for the members
+        // named bare: a member the same mapping names by reference still loses
+        // its tag, as `ImageAsset` does beside a bare `TextAsset: TextAsset` in
+        // the `discriminant-value-unsuitable` class's bare-name control.
         let resolvable = discriminator.is_none_or(|discriminator| {
-            discriminator
-                .mapping
-                .values()
-                .all(|target| target.contains('/'))
+            schema.one_of.is_some()
+                || discriminator
+                    .mapping
+                    .values()
+                    .all(|target| target.contains('/'))
         });
         if resolvable && (schema.one_of.is_some() || is_inheritance_union_base(schema)) {
             // Only a `oneOf` union or an inheritance base reaches here, so the
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
-                for reference in discriminator.mapping.values() {
+                for reference in discriminator
+                    .mapping
+                    .values()
+                    .filter(|target| target.contains('/'))
+                {
                     // Fern hoists the tag onto the union wrapper and drops it from
                     // the member model it consumed — unless that member is also
                     // referenced somewhere on its own, where the standalone model
@@ -11798,6 +11813,20 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
         && schema.any_of.is_none()
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             !discriminator.property_name.is_empty() && !discriminator.mapping.is_empty()
+        })
+}
+
+/// Whether a discriminated union — a `oneOf` or an inheritance base — maps a
+/// value to a bare schema name rather than a reference. Fern cannot resolve
+/// that target, so the union is its unknown type and it never reads the
+/// discriminant at all.
+pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
+    (schema.one_of.is_some() || is_inheritance_union_base(schema))
+        && schema.discriminator.as_ref().is_some_and(|discriminator| {
+            discriminator
+                .mapping
+                .values()
+                .any(|target| !target.contains('/'))
         })
 }
 
@@ -12217,14 +12246,9 @@ impl Builder<'_> {
         // Fern cannot resolve, and the union is its unknown type: Hasura's
         // `FunctionReturnType` maps `table` to `TableFunctionResponse` and is
         // `typing.Any`, its members plain models keeping their `type` enums.
-        if schema.one_of.is_some()
-            && schema.discriminator.as_ref().is_some_and(|discriminator| {
-                discriminator
-                    .mapping
-                    .values()
-                    .any(|target| !target.contains('/'))
-            })
-        {
+        // The inheritance spelling is the same union: the openapi-generator
+        // AllOf sample's `Person` maps `c` to `Child` and is `typing.Any` too.
+        if bare_name_mapped_union(schema) {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
@@ -20841,6 +20865,77 @@ mod tests {
         assert!(!super::has_bodyless_success(&ranged));
     }
 
+    /// A bodyless success other than `204` beside a typed `200` leaves the
+    /// method typed by that body: Fern CLI 5.163.1 measures `203`, `205`–`208`,
+    /// `226` and `299` alike, and the ToolJet Teams document answers a typed
+    /// `200` beside a bodyless `207`. A `204` beside it still may be empty.
+    #[test]
+    fn only_a_bodyless_204_beside_a_typed_success_may_be_empty() {
+        let typed = serde_json::json!({ "content": {
+            "application/json": { "schema": { "type": "integer" } }
+        } });
+        for code in [
+            "200", "201", "202", "203", "205", "206", "207", "208", "226", "299",
+        ] {
+            let mut responses = serde_json::json!({ "200": typed });
+            responses[code] = serde_json::json!({ "description": "bodyless" });
+            if code == "200" {
+                responses["201"] = typed.clone();
+            }
+            let op = operation(serde_json::json!({ "responses": responses }));
+            assert!(!super::has_bodyless_success(&op), "{code}");
+        }
+        let no_content = operation(serde_json::json!({ "responses": {
+            "200": typed, "204": { "description": "nothing" }
+        } }));
+        assert!(super::has_bodyless_success(&no_content));
+        // With no typed body, any bodyless success is the empty case.
+        let alone = operation(serde_json::json!({ "responses": {
+            "207": { "description": "bodyless" }
+        } }));
+        assert!(super::has_bodyless_success(&alone));
+    }
+
+    /// A union whose mapping names a target by bare schema name, in either
+    /// spelling, is one Fern cannot resolve; a mapping of references only, an
+    /// empty one, or an `anyOf` beside the discriminator is not that union.
+    #[test]
+    fn a_bare_name_mapped_union_is_either_spelling_with_one_bare_target() {
+        let union = |extra: serde_json::Value, mapping: serde_json::Value| {
+            let mut value = serde_json::json!({
+                "type": "object",
+                "discriminator": { "propertyName": "@kind", "mapping": mapping }
+            });
+            value
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            schema(value)
+        };
+        let mixed = serde_json::json!({ "apple": "#/components/schemas/Apple", "pear": "Pear" });
+        let pointers = serde_json::json!({ "apple": "#/components/schemas/Apple" });
+        let one_of = serde_json::json!({ "oneOf": [{ "$ref": "#/components/schemas/Apple" }] });
+        let any_of = serde_json::json!({ "anyOf": [{ "$ref": "#/components/schemas/Apple" }] });
+        assert!(super::bare_name_mapped_union(&union(
+            serde_json::json!({}),
+            mixed.clone()
+        )));
+        assert!(super::bare_name_mapped_union(&union(
+            one_of.clone(),
+            mixed.clone()
+        )));
+        assert!(!super::bare_name_mapped_union(&union(any_of, mixed)));
+        assert!(!super::bare_name_mapped_union(&union(
+            serde_json::json!({}),
+            pointers.clone()
+        )));
+        assert!(!super::bare_name_mapped_union(&union(one_of, pointers)));
+        assert!(!super::bare_name_mapped_union(&union(
+            serde_json::json!({}),
+            serde_json::json!({})
+        )));
+    }
+
     #[test]
     fn request_reference_helpers_cover_absent_mismatched_and_reused_schemas() {
         let codegen_named = operation(serde_json::json!({
@@ -27894,6 +27989,67 @@ components:
                 _ => None,
             })
             .unwrap_or_else(|| panic!("{name} is an object model"))
+    }
+
+    /// The hand-written `orchard-crate-labels` shape (Fern CLI 5.163.1): an
+    /// inheritance base mapping `pear` to the bare name `PearCrate` is
+    /// `typing.Any`, so the endpoint answering it guards an empty body; under a
+    /// `oneOf` mapping `sticker` to the bare `StickerLabel`, the member named by
+    /// reference loses its `$label` tag and the one named bare keeps it.
+    #[test]
+    fn a_bare_name_mapping_lowers_either_union_spelling_to_any() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Orchard", "version": "1"},
+            "paths": {"/crates/{crateId}": {"get": {
+                "operationId": "getCrate",
+                "parameters": [{"name": "crateId", "in": "path", "required": true,
+                    "schema": {"type": "string"}}],
+                "responses": {"200": {"description": "ok", "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Crate"}}}}}
+            }}},
+            "components": {"schemas": {
+                "Crate": {
+                    "type": "object",
+                    "discriminator": {"propertyName": "@kind", "mapping": {
+                        "apple": "#/components/schemas/AppleCrate", "pear": "PearCrate"}},
+                    "properties": {"@kind": {"type": "string"}, "id": {"type": "string"}}
+                },
+                "AppleCrate": {"allOf": [{"$ref": "#/components/schemas/Crate"},
+                    {"type": "object", "properties": {"variety": {"type": "string"}}}]},
+                "PearCrate": {"allOf": [{"$ref": "#/components/schemas/Crate"},
+                    {"type": "object", "properties": {"ripeness": {"type": "integer"}}}]},
+                "Label": {
+                    "oneOf": [{"$ref": "#/components/schemas/StampLabel"},
+                        {"$ref": "#/components/schemas/StickerLabel"}],
+                    "discriminator": {"propertyName": "$label", "mapping": {
+                        "stamp": "#/components/schemas/StampLabel", "sticker": "StickerLabel"}}
+                },
+                "StampLabel": {"type": "object", "required": ["$label"], "properties": {
+                    "$label": {"type": "string"}, "inkColour": {"type": "string"}}},
+                "StickerLabel": {"type": "object", "required": ["$label"], "properties": {
+                    "$label": {"type": "string"}, "widthMm": {"type": "integer"}}}
+            }}
+        }));
+        for name in ["Crate", "Label"] {
+            assert!(
+                ir.types.iter().any(|decl| matches!(decl,
+                    TypeDecl::Alias(alias) if alias.name == name
+                        && alias.target == TypeRef::Primitive(Prim::Any))),
+                "{name} is not an alias of Any"
+            );
+        }
+        let endpoint = &ir.endpoints[0];
+        assert!(endpoint.response_may_be_empty && endpoint.response_names_unknown);
+        let wires = |name| -> Vec<&str> {
+            object_decl(&ir, name)
+                .fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect()
+        };
+        assert_eq!(wires("StampLabel"), ["inkColour"]);
+        assert_eq!(wires("StickerLabel"), ["$label", "widthMm"]);
+        assert_eq!(wires("PearCrate"), ["ripeness"]);
     }
 
     fn field_shape(object: &ObjectType) -> Vec<(&str, bool)> {
