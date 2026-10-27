@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.142](https://github.com/nickderobertis/crozier/compare/v0.0.141...v0.0.142) - 2026-10-27
+
+### Fixed
+
+- *(parity)* generate from the ten documents Fern generates from and crozier refused ([#653](https://github.com/nickderobertis/crozier/pull/653))
+
 ## [0.0.141](https://github.com/nickderobertis/crozier/compare/v0.0.140...v0.0.141) - 2026-10-27
 
 ### Fixed
