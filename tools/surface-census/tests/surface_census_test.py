@@ -13085,6 +13085,8 @@ class FinishedStateGateTests(unittest.TestCase):
         self.edit("docs/openapi-surface-coverage.md", ruling, malformed)
         self.assertIn(ruling_failure(key, malformed), finished_state_failures(self.root))
         doc = "docs/openapi-surface-coverage.md"
+        # The committed arms table may be empty, so name the bounded gap to rule on.
+        self.name_the_bounded_gap()
         body = (self.root / doc).read_text(encoding="utf-8").split(NAMED_GAPS_HEADING, 1)[1].split("\n#", 1)[0]
         line = next(line for line in body.splitlines() if line.startswith("| `") and table_cells(line, 3))
         cells = table_cells(line, 3)
