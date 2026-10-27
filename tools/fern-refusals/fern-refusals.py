@@ -1628,6 +1628,8 @@ def check(_args: argparse.Namespace) -> int:
 # `probe`'s exit status when every probe ran and at least one no longer
 # reproduces its recorded refusal: each such change is reported, not recorded.
 CHANGED_EXIT = 3
+# An exit status a settled refusal records.
+STATUS = re.compile(r"0|-?[1-9][0-9]*")
 ProbeOutcome = Literal["generates", "refuses-otherwise", "unsettled"]
 
 
@@ -1673,6 +1675,13 @@ def recorded_refusal(name: str, row: dict[str, str]) -> RecordedRefusal | None:
     needed = ("fern_cli_version", "fern_python_sdk_version", "generate_exit", "diagnostic")
     if any(": " not in line for line in lines) or not all(fields.get(key) for key in needed):
         fail(f"{name}: {rel(path)} is no refusal record (it needs {', '.join(needed)}); restore it from git")
+    # A record is a settled refusal: each exit a status, never `timeout`.
+    exits = (fields["generate_exit"], row["fern_exit"])
+    if row["fern_stage"] not in ("check", "generate") or not all(STATUS.fullmatch(code) for code in exits):
+        fail(
+            f"{name}: its record's generate_exit {exits[0]!r} and classes.tsv's fern_stage {row['fern_stage']!r} "
+            f"and fern_exit {exits[1]!r} must be a stage and exit statuses; restore them from git"
+        )
     return RecordedRefusal(
         row["fern_stage"],
         row["fern_exit"],

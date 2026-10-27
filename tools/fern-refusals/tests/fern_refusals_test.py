@@ -955,6 +955,39 @@ class FernRuns(unittest.TestCase):
                 self.assertEqual(record, (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8"))
                 self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
 
+    def test_one_run_records_reproduced_probes_reports_changed_ones_and_fails_on_one_that_cannot_run(self) -> None:
+        """Several classes in one `probe`: the one Fern still refuses as recorded
+        is rewritten, the one it refuses otherwise keeps its record and is
+        reported, and a class whose probe cannot run makes the run fail while the
+        others' outcomes still stand."""
+        self.record_refusal()
+        other, missing = "default-not-enum-value", "default-not-valid-for-type"
+        classes = rows(REGISTRY / "classes.tsv")
+        extra = [row for row in classes[1:] if row[0] in (other, missing)]
+        write_rows(self.registry / "classes.tsv", [classes[0], *sorted([self.class_row, *extra])])
+        (self.registry / other).mkdir()
+        shutil.copy(REGISTRY / other / "probe.yml", self.registry / other / "probe.yml")
+        kept = (
+            "fern_cli_version: 0.1.0\nfern_python_sdk_version: 0.2.0\n"  # certified-pair: stand-in (an older pair)
+            "generate_exit: 1\ndiagnostic: d\noutput_tree: none\n"
+        )
+        (self.registry / other / "fern-refusal.txt").write_text(kept, encoding="utf-8")
+        said = phrase(self.class_row[4])
+        fern = {"check_exit": "1", "check_output": f"issue: {said}", "generate_exit": "1"}
+        changes = str(self.root / "changes.jsonl")
+        result = None
+        for named, code in (((self.CLASS, other), 3), ((self.CLASS, other, missing), 1)):
+            with self.subTest(named=named):
+                result = self.script("probe", *named, "--changes", changes, **fern)
+                self.assertEqual(result.returncode, code, result.stdout + result.stderr)
+                self.assertEqual([(other, "refuses-otherwise")], [(c["class"], c["outcome"]) for c in self.changes()])
+                self.assertEqual(kept, (self.registry / other / "fern-refusal.txt").read_text(encoding="utf-8"))
+                refusal = (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8")
+                self.assertIn(f"fern_cli_version: {CERTIFIED['cliVersion']}\n", refusal)
+        assert result is not None
+        self.assertIn(f"1 probe(s) not recorded, each explained above: {missing}", result.stderr)
+        self.assertIn(f"{missing}: no probe document", result.stderr)
+
     def test_a_probe_with_no_record_cut_short_after_its_phrase_records_nothing(self) -> None:
         said = phrase(self.class_row[4])
         result = self.script(
@@ -978,14 +1011,22 @@ class FernRuns(unittest.TestCase):
     def test_a_malformed_recorded_refusal_fails_rather_than_support_a_change(self) -> None:
         self.record_refusal()
         record = self.registry / self.CLASS / "fern-refusal.txt"
-        for text in ("generate_exit: 1\n", "fern_cli_version: 0.1.0\nnot a field\n"):
+        valid = record.read_text(encoding="utf-8")
+        for text in (
+            "generate_exit: 1\n",
+            "fern_cli_version: 0.1.0\nnot a field\n",
+            valid.replace("generate_exit: 1", "generate_exit: garbage"),
+            valid.replace("generate_exit: 1", "generate_exit: timeout"),
+        ):
             with self.subTest(text=text):
                 record.write_text(text, encoding="utf-8")
                 result = self.script("probe", self.CLASS, "--changes", str(self.root / "changes.jsonl"))
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-                self.assertIn(
-                    f"{self.CLASS}: docs/fern-refusals/{self.CLASS}/fern-refusal.txt is no refusal record",
+                self.assertRegex(
                     result.stderr,
+                    f"{self.CLASS}: (docs/fern-refusals/{self.CLASS}/fern-refusal.txt is no refusal record|its "
+                    "record's generate_exit '(garbage|timeout)' and classes.tsv's fern_stage 'check' and fern_exit "
+                    "'1' must be a stage and exit statuses)",
                 )
                 self.assertEqual([], self.changes())
                 self.assertEqual(text, record.read_text(encoding="utf-8"))

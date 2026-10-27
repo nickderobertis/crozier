@@ -994,6 +994,8 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(("refusal-changed", detail), (item["status"], item["detail"]))
         self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
         self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        timings = (state.artifacts / "bundle/files" / TIMINGS).read_text(encoding="utf-8")
+        self.assertIn(f"refusals\t{REFUSAL_CLASS}\t{item['seconds']:.1f}\n", timings, "its run is a measurement")
         self.assertEqual("diff", state.outcome(), state.ran("decide").stderr + self.summary())
         self.assertEqual({}, state.failing(), "crozier still refuses the probe its record says Fern refuses")
         self.assertEqual([{"item": REFUSAL_CLASS, "detail": detail}], state.recorded()["refusals_changed"])
@@ -1053,6 +1055,31 @@ class WeeklyRunTests(unittest.TestCase):
             "refuses given more time or memory"
         )
         self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_changed_refusal_report_naming_no_outcome_fails_its_item_and_the_assembly(self) -> None:
+        """A report the probe's delegate wrote that names the class but no
+        outcome `weekly.py` knows is no change: the item fails and nothing is
+        published. The delegate is stood in, as only it can write such a report."""
+        write_executable(
+            self.seed / "tools/fern-refusals/fern-refusals.py",
+            r"""
+            #!/usr/bin/env python3
+            import json, pathlib, sys
+
+            args = sys.argv[1:]
+            report = {"class": args[-1], "outcome": "vanished", "recorded": "r", "now": "n"}
+            pathlib.Path(args[args.index("--changes") + 1]).write_text(json.dumps(report) + "\n", encoding="utf-8")
+            sys.exit(3)
+            """,
+        )
+        state, item = self.refusal_journey(self.refusal_rule)
+        self.assertEqual("failed", item["status"])
+        self.assertIn("a change is one of generates, refuses-otherwise, unsettled", item["detail"])
+        self.assertEqual([1], [shard.returncode for shard in state.shards])
+        self.assertEqual(1, state.ran("assemble").returncode)
+        self.assertIn(f"refusals {REFUSAL_CLASS}: generation failed", state.ran("assemble").stderr)
+        self.assertIsNone(state.decide)
+        self.assert_untouched()
 
     def test_a_refusal_probe_that_could_not_run_fails_its_item_and_the_assembly(self) -> None:
         (self.seed / "docs/fern-refusals" / REFUSAL_CLASS / "probe.yml").unlink()
