@@ -143,6 +143,9 @@ final source; that merge brought no `src/` change):
 
 - `docs/openapi-surface/golden-reach.tsv` and the golden rows' reach cells,
   with the census JSON they join: `just golden-reach` over 274 golden tests.
+  The reach ranking in `docs/openapi-surface-coverage.md` is restated from
+  that ledger, and `golden-reach-witnesses/outstanding.tsv` is
+  `golden-reach-search.py outstanding` over the same tree.
 - `docs/openapi-surface/handwritten-reach.tsv`: `just handwritten-reach`,
   which left it unchanged.
 - The arm counts and arm table in `docs/openapi-surface-coverage.md`:
