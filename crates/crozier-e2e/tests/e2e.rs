@@ -2786,8 +2786,7 @@ fn handwritten_fixtures_match_fern_goldens() {
     } else if std::fs::read_to_string(&path).unwrap_or_default() != derived {
         failures.push(format!(
             "{HANDWRITTEN_MATCHES} is not the record of the audited fixtures this gate byte-matched, \
-             at their current bytes; regenerate it with `CROZIER_UPDATE_HANDWRITTEN_MATCHES=1 cargo \
-             test -p crozier-e2e --test e2e handwritten_fixtures_match_fern_goldens` and commit it"
+             at their current bytes; regenerate it with `just handwritten-byte-match` and commit it"
         ));
     }
     assert!(
