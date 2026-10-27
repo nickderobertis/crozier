@@ -2354,8 +2354,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 291 sources. The walk reads the
-  **274** registered sources, of which **274** carry a committed golden; the 17
+  acquires 292 sources. The walk reads the
+  **275** registered sources, of which **275** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
