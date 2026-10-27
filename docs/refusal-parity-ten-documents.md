@@ -42,7 +42,10 @@ exit-0 failure in which Fern parses nothing, which
 already logs for `digitalocean-jentic` and `opensuse-obs`. By the manager's
 ruling it is a Fern refusal, not output to match. A scenario Fern refuses is
 refused in both modes, so crozier's refusal stays as it is. No crozier code
-changed for A.
+changed for A. Run on each exact document, crozier built at this work's base
+(`2a298364e`) and on the finished tree prints the same `unresolved-reference`
+refusal and exits 1. That holds by default, with `--enum-type literals` and with
+`--fern-strict`.
 
 ## E: a `$ref` to a file that does not exist
 
@@ -68,7 +71,8 @@ Its error classes, `BadRequestError`, `NotFoundError`, `NotAcceptableError` and
 therefore drops every type the document means to declare, and gives no
 diagnostic. crozier's refusal names the file. By the manager's ruling this goes
 to the user as a departure candidate, and crozier's refusal is unchanged until
-they rule.
+they rule. On the exact document, crozier at the base (`2a298364e`) and on
+the finished tree prints the same refusal in both enum modes.
 
 ## F: unions of only `null`, and of one string enum
 
