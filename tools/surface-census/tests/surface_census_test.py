@@ -13176,9 +13176,49 @@ class FinishedStateGateTests(unittest.TestCase):
 
     NAMED_KEY = "discriminator-mapping"
     NAMED_ARM = "src/ir.rs::Builder::discriminated_union[if union_target \\{]"
+    NAMED_ARMS = (
+        NAMED_ARM,
+        "src/emit.rs::ExampleCtx::named_value_inner[Some\\(m\\) if m\\.layout\\.is_wrapped\\(\\) => \\{]",
+    )
+    COVERING_FIXTURE = "docs/openapi-surface/handwritten/tidepool-survey-log/evidence.toml"
+    BOUNDED_RECORD = "docs/openapi-surface/witness-search-unproven-features/README.md"
 
-    def test_the_committed_named_gap_is_an_uncovered_arm_with_an_incomplete_screen(self) -> None:
+    def name_the_bounded_gap(self) -> None:
+        """Restate the copy as the tree stood before `tidepool-survey-log` covered the
+        two arms: no cover, the bounded screen unfinished, and both arms named."""
+        for _arm in self.NAMED_ARMS:
+            self.edit(self.COVERING_FIXTURE, f'key = "{self.NAMED_KEY}"', f'key = "{self.NAMED_KEY}-retired"')
+        self.edit(
+            self.BOUNDED_RECORD,
+            f"| `{self.NAMED_KEY}` | `exhausted` |",
+            f"| `{self.NAMED_KEY}` | `search-incomplete` |",
+        )
+        reason = (
+            "`search incomplete` — [bounded search](openapi-surface/witness-search-unproven-features/README.md#verdicts); "
+            "outstanding candidates: [named census](openapi-surface/witness-search-unproven-features/census.tsv)"
+        )
+        header = "| key | unreached arm | why it is unproven |\n|---|---|---|\n"
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            header,
+            header + "".join(f"| `{self.NAMED_KEY}` | `{arm}` | {reason} |\n" for arm in self.NAMED_ARMS),
+        )
+
+    def test_the_committed_arms_are_covered_and_no_longer_named(self) -> None:
+        """`tidepool-survey-log` covers both arms, so neither stands as a named gap."""
+        covered = {
+            (key, arm)
+            for _fixture, key, arm in handwritten_covers(self.root / "docs" / "openapi-surface" / "handwritten")
+        }
+        for arm in self.NAMED_ARMS:
+            self.assertIn((self.NAMED_KEY, arm), covered)
+            self.assertNotIn((self.NAMED_KEY, arm), named_gap_arms(self.root))
+        self.assertEqual([], finished_state_failures(self.root))
+
+    def test_a_named_gap_is_an_uncovered_arm_with_an_incomplete_screen(self) -> None:
         """The bounded screen is not a proof: the uncovered arm still needs its named row."""
+        self.name_the_bounded_gap()
+        self.assertEqual([], finished_state_failures(self.root))
         self.assertIn((self.NAMED_KEY, self.NAMED_ARM), named_gap_arms(self.root))
         self.assertTrue(
             bounded_incomplete_search(
@@ -13204,6 +13244,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(f"{self.NAMED_KEY}-retired: docs/openapi-surface-coverage.md names", failures[1])
 
     def test_a_named_gap_with_no_search_must_say_it_was_not_searched(self) -> None:
+        self.name_the_bounded_gap()
         reason = named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)]
         row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | {reason}"
         self.edit(
@@ -13218,6 +13259,7 @@ class FinishedStateGateTests(unittest.TestCase):
         )
 
     def test_a_bounded_arm_search_refuses_absent_records_and_unnamed_candidates(self) -> None:
+        self.name_the_bounded_gap()
         record = self.root / "docs/openapi-surface/witness-search-unproven-features/README.md"
         census_path = record.with_name("census.tsv")
         self.assertEqual([], finished_state_failures(self.root))
@@ -13239,6 +13281,7 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_a_named_gap_over_a_search_reading_exhausted_is_refused(self) -> None:
         """Once a search record exists, only its `search-incomplete` verdict admits the row."""
+        self.name_the_bounded_gap()
         searches = self.root / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
         template = (searches / "format-duration.md").read_text(encoding="utf-8")
         (searches / f"{self.NAMED_KEY}.md").write_text(

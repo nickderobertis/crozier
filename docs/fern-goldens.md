@@ -312,7 +312,17 @@ The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
 whose outcome changes form (a tree Fern now refuses, or a refusal it now
 generates from) is written and reported, because its `MANIFEST.tsv` row's form
 and verdict are a Contract A decision; an authored probe Fern now refuses moves
-to the refusal registry. Two families refuse an override their delegate cannot
+to the refusal registry. Likewise a refusal class whose probe no longer
+reproduces its recorded refusal (Fern generates from it, refuses it with another
+diagnostic, or runs past the probe's time bound) keeps its record and is
+reported as a changed outcome, not a generation failure: `fern-refusals.py
+probe` exits 3 and writes the change to `--changes`, and a weekly run lists it
+under **Refusal classes whose Fern outcome changed**. A time-bound overrun is
+labelled `unsettled`, naming the bound (`--timeout`, default 900 seconds, or
+`CROZIER_FERN_REFUSALS_PROBE_TIMEOUT`): a run cut short says nothing about
+whether Fern refuses given more time or memory. A probe that could not run at
+all (a missing document, no `fern` on PATH, a crashed harness) still fails its
+item. Two families refuse an override their delegate cannot
 honour: `overlays` takes no `--version` (each overlay is generated at the version
 its golden's provenance records, so run `corpus` first), and `refusals` takes
 neither flag (`fern-refusals.py` measures at the pair `metadata.json` declares).
@@ -419,12 +429,19 @@ A reference whose pinned upstream specification can no longer be fetched (a
 the rest: it keeps its committed tree, and is named in the run's summary and in
 the pull request's **Not regenerated** section, which makes the run a diff.
 
+A refusal class whose probe the candidate pair no longer refuses as recorded is
+likewise a diff, never a failure: the class keeps its record, and the pull
+request's **Refusal classes whose Fern outcome changed** section names it with
+its recorded refusal and Fern's outcome now (`generates`, `refuses-otherwise`,
+or `unsettled` with the time bound it ran past). What that means for the class
+is decided from the pull request.
+
 ### How a failure shows
 
 Any failure before publication ends the run red with its step summary naming
 each failure, and touches no branch, pull request or record: a shard that fails
 or uploads nothing, an item whose generation fails (other than a registered known
-upstream failure, above), an assembly that cannot account for every planned item
+upstream failure or a changed refusal, above), an assembly that cannot account for every planned item
 or finds two shards writing one file, a comparison that cannot run, or a
 missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any Fern runs).
 

@@ -1,0 +1,15 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "67a43d9928815a579b564fe8ff9ff8feacc6bccded2b8d591833bed0f2c5944b"
+
+[[covers]]
+key = "discriminator-mapping"
+arm = 'src/ir.rs::Builder::discriminated_union[if union_target \{]'
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "exhausted"
+
+[[covers]]
+key = "discriminator-mapping"
+arm = 'src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]'
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "exhausted"

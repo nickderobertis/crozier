@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: missing-discriminant-property: POST /intent/addMedia request components/schemas/AddMediaIntentHandlingInvocation discriminator method (fern-strict refusal)

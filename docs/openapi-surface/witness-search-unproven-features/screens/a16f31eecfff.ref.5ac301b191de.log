@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/apple.com/sirikit-cloud-media/1.0.2/openapi.yaml
+HTTP 200
+62799 bytes, sha256 a16f31eecfff998f89dfbf1a9370eaaef4ea2d3a2a4e4e062354fd26554fa746
+pinned sha256 a16f31eecfff998f89dfbf1a9370eaaef4ea2d3a2a4e4e062354fd26554fa746
+outcome: passed: 62799 bytes read at the immutable commit f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49, sha256 a16f31eecfff998f89dfbf1a9370eaaef4ea2d3a2a4e4e062354fd26554fa746

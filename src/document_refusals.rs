@@ -916,7 +916,7 @@ fn check_document_schemas(root: &serde_json::Value, path: &Path, strict: bool) -
 /// Fern validates each endpoint's example against its discriminated unions: a
 /// `discriminator` with a non-empty `mapping` on a schema without `anyOf`. With
 /// no `x-fern-examples` the example is Fern's own, which is `{}` at a union whose
-/// every mapping target is missing; otherwise each `x-fern-examples` value is
+/// every mapping target is missing or the union itself; otherwise each `x-fern-examples` value is
 /// checked. Plain OpenAPI examples and `x-crozier-examples` play no part: Fern
 /// discards the first and never reads the second. Measured in
 /// `docs/fern-refusals/missing-discriminant-property/evaluation.md`.
@@ -1058,8 +1058,9 @@ const EXAMPLE_OPTIONAL_LEVELS: usize = 3;
 /// The deepest required chain measured to carry Fern's example to a union.
 const EXAMPLE_REQUIRED_LEVELS: usize = 12;
 
-/// The union Fern's own example reaches with every mapping target missing: each
-/// variant is then unknown and the example `{}` has no discriminant.
+/// The union Fern's own example reaches with every mapping target missing or
+/// naming the union itself: no variant is then left to fill, and the example
+/// `{}` has no discriminant.
 fn unmapped_union(
     schema: &serde_json::Value,
     root: &serde_json::Value,
@@ -1085,11 +1086,16 @@ fn unmapped_union(
         );
     }
     if let Some((property, mapping)) = discriminated_union(schema) {
+        // A target naming the union itself offers Fern's example no variant
+        // either: Apple's SiriKit Cloud Media `AddMediaIntentHandlingInvocation`
+        // maps all four of its `method` values to itself.
         let missing = mapping.values().all(|target| {
             target
                 .as_str()
                 .and_then(|target| target.strip_prefix('#'))
-                .is_some_and(|pointer| yaml_pointer(root, pointer).is_none())
+                .is_some_and(|pointer| {
+                    yaml_pointer(root, pointer).is_none_or(|target| std::ptr::eq(target, schema))
+                })
         });
         // A resolved variant becomes Fern's example, so nothing below is reached.
         return missing.then(|| format!("{element} discriminator {property}"));
@@ -3203,6 +3209,30 @@ mod tests {
             error.contains("unresolved-schema-reference: paths//contacts/post/requestBody"),
             "{error}"
         );
+    }
+
+    #[test]
+    fn a_union_mapping_every_value_to_itself_leaves_fern_no_variant() {
+        let error = registry_shape_refusal("missing-discriminant-property/self-mapped-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains(
+                "missing-discriminant-property: POST /firings request \
+                 components/schemas/FiringStep discriminator phase"
+            ),
+            "{error}"
+        );
+        // One subtype beside the self mapping, first or second, is Fern's example.
+        for control in [
+            "self-mapped-first-control.yml",
+            "self-mapped-second-control.yml",
+        ] {
+            assert_eq!(
+                registry_shape_refusal(&format!("missing-discriminant-property/{control}")),
+                None,
+                "{control}"
+            );
+        }
     }
 
     #[test]

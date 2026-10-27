@@ -28,7 +28,9 @@ here through the script that owns one item of it:
   refusals          docs/fern-refusals/<class>/fern-refusal.txt and
                     findings.tsv through `fern-refusals.py probe|finding --jobs 1`,
                     and each `<class>/evidence/<stem>.pinned-fern.log` beside its
-                    probe document
+                    probe document; a class whose probe no longer reproduces its
+                    record keeps it, and is reported (not failed) through
+                    .local/fern-references/refusals/probe.<class>.changes.jsonl
 
 Usage:
   fern-references.py list FAMILY
@@ -82,6 +84,8 @@ AUTHORED = Path("docs/openapi-surface/authored-probes")
 REGISTRY = Path("docs/fern-refusals")
 OVERLAY_MANIFEST = ".crozier-overlay.json"
 REFUSAL_SUFFIX = ".fern-refusal.txt"
+# `fern-refusals.py probe`'s exit when a probe no longer reproduces its recorded refusal.
+PROBE_CHANGED_EXIT = 3
 PINNED_LOG = ".pinned-fern.log"
 DOCUMENT_SUFFIXES = (".yml", ".yaml", ".json")
 REMOTE_URL = "@REMOTE_URL@"
@@ -508,7 +512,8 @@ def list_corpus() -> list[str]:
     )
 
 
-def run_script(argv: list[str], log: Path, pair: Pair) -> None:
+def run_script(argv: list[str], log: Path, pair: Pair, tolerated: tuple[int, ...] = (0,)) -> int:
+    """Run one item's delegate into `log`; an exit outside `tolerated` fails the item."""
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("w", encoding="utf-8", newline="\n") as handle:
         result = subprocess.run(
@@ -519,10 +524,11 @@ def run_script(argv: list[str], log: Path, pair: Pair) -> None:
             env=dict(os.environ, FERN_CLI_VERSION=pair.cli),
             check=False,
         )
-    if result.returncode != 0:
+    if result.returncode not in tolerated:
         raise ReferenceError(
             f"`{' '.join(Path(a).name if i == 0 else a for i, a in enumerate(argv))}` exited {result.returncode}; see {rel(log)}"
         )
+    return result.returncode
 
 
 def generate_corpus(item: str, pair: Pair) -> None:
@@ -1191,7 +1197,43 @@ def generate_refusal(item: str, pair: Pair) -> None:
         with run_fern(document, pair, check=True) as run:
             log.write_text(fern_log(pair, run), encoding="utf-8", newline="\n")
     else:
-        run_script(["python3", tool, "probe", "--jobs", "1", item], logs / f"probe.{item}.log", pair)
+        # A class whose probe no longer reproduces its recorded refusal keeps the
+        # record and is reported: the weekly run reads this file as its outcome.
+        changes = refusal_changes(item)
+        changes.unlink(missing_ok=True)
+        log = logs / f"probe.{item}.log"
+        argv = ["python3", tool, "probe", "--jobs", "1", "--changes", str(changes), item]
+        if run_script(argv, log, pair, tolerated=(0, PROBE_CHANGED_EXIT)) == PROBE_CHANGED_EXIT:
+            if not reports_class(changes, item):
+                raise ReferenceError(
+                    f"`fern-refusals.py probe` exited {PROBE_CHANGED_EXIT}, which reports a changed refusal, but "
+                    f"{rel(changes)} does not name {item}; see {rel(log)}"
+                )
+            print(
+                f"fern-references: refusals {item}: Fern no longer reproduces the recorded refusal, which is "
+                f"kept; {rel(changes)} says how, and {rel(log)} has the run",
+                file=sys.stderr,
+                flush=True,
+            )
+
+
+def reports_class(changes: Path, item: str) -> bool:
+    """Whether a `--changes` report holds a JSON object for class `item`."""
+    try:
+        lines = changes.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    for line in lines:
+        with contextlib.suppress(ValueError):
+            record = json.loads(line)
+            if isinstance(record, dict) and record.get("class") == item:
+                return True
+    return False
+
+
+def refusal_changes(item: str) -> Path:
+    """Where a refusal class's probe reports an outcome that no longer matches its record."""
+    return ROOT / LOGS / "refusals" / f"probe.{item}.changes.jsonl"
 
 
 def list_departure_evidence() -> list[str]:

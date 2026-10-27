@@ -1,0 +1,38 @@
+{
+  "schema_version": 3,
+  "index": 0,
+  "pair": {
+    "cli": "2.0.0",
+    "generator": "3.0.0"
+  },
+  "base": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "items": [
+    {
+      "family": "corpus",
+      "item": "a",
+      "status": "ok",
+      "detail": "",
+      "seconds": 1.5,
+      "changed": [
+        "tests/fixtures/a/expected/x.py"
+      ],
+      "log": "corpus/a.log"
+    },
+    {
+      "family": "refusals",
+      "item": "heap-exhausted",
+      "status": "refusal-changed",
+      "detail": "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more time or memory",
+      "seconds": 1800.2,
+      "changed": [
+        "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log"
+      ],
+      "log": "refusals/heap-exhausted.log"
+    }
+  ],
+  "written": [
+    "tests/fixtures/a/expected/x.py",
+    "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log"
+  ],
+  "deleted": []
+}

@@ -99,6 +99,9 @@ from pathlib import Path
 with open(os.environ["DELEGATE_LOG"], "a") as log:
     log.write(json.dumps({"script": Path(sys.argv[0]).name, "argv": sys.argv[1:], "cli": os.environ.get("FERN_CLI_VERSION")}) + "\n")
 print("delegate ran")
+if os.environ.get("DELEGATE_CHANGES") and "--changes" in sys.argv:
+    # What `fern-refusals.py probe --changes` writes for a probe whose outcome changed.
+    Path(sys.argv[sys.argv.index("--changes") + 1]).write_text(os.environ["DELEGATE_CHANGES"], encoding="utf-8")
 sys.exit(int(os.environ.get("DELEGATE_EXIT", "0")))
 """
 
@@ -546,10 +549,30 @@ class FernReferencesTests(unittest.TestCase):
         result = self.run_tool("generate", "refusals")
 
         self.assertEqual(result.returncode, 0, result.stderr)
+        changes = self.root / ".local/fern-references/refusals/probe.zeta.changes.jsonl"
+        # The tool names the report under its resolved root (macOS's /var is /private/var).
         self.assertEqual(
             sorted(tuple(call["argv"]) for call in self.delegate_calls()),
-            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "zeta")],
+            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "--changes", str(changes.resolve()), "zeta")],
         )
+        # A probe that no longer reproduces its recorded refusal is reported, not failed;
+        # the report a previous run left is gone before the probe runs.
+        reported = '{"class": "zeta", "outcome": "generates"}\n'
+        changes.write_text(reported, encoding="utf-8")
+        self.env.update(DELEGATE_EXIT="3", DELEGATE_CHANGES=reported)
+        changed = self.run_tool("generate", "refusals", "zeta")
+        self.assertEqual(changed.returncode, 0, changed.stderr)
+        self.assertIn("refusals zeta: Fern no longer reproduces the recorded refusal, which is kept", changed.stderr)
+        self.assertEqual(reported, changes.read_text(encoding="utf-8"))
+        # A changed exit whose report is lost, or names another class, fails the item.
+        for written in ("", '{"class": "other"}\n'):
+            with self.subTest(written=written):
+                changes.write_text(reported, encoding="utf-8")
+                self.env["DELEGATE_CHANGES"] = written
+                lost = self.run_tool("generate", "refusals", "zeta")
+                self.assertEqual(lost.returncode, 1)
+                self.assertIn("exited 3, which reports a changed refusal, but", lost.stderr)
+        self.env.pop("DELEGATE_CHANGES")
         self.env["DELEGATE_EXIT"] = "4"
         failed = self.run_tool("generate", "refusals", "zeta")
         self.assertEqual(failed.returncode, 1)
