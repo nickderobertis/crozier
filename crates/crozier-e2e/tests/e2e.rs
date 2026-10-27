@@ -7859,6 +7859,12 @@ impl HandwrittenFixture {
             format!("key\tselectors\tsites\tnote\nsample-golden\tschema.format=email\t{HANDWRITTEN_ARM}\t\n"),
         )
         .expect("fixture site table");
+        // No combination row here, so the co-occurrence audit has none either.
+        std::fs::write(
+            regions.join("combination-cooccurrence.tsv"),
+            "key\twitness\tsite\thandlers\twhy_no_branch\n",
+        )
+        .expect("fixture co-occurrence audit");
         std::fs::write(
             regions.join("golden-reach.tsv"),
             format!(
@@ -8002,6 +8008,16 @@ fn handwritten_gate_accepts_a_well_formed_fixture() {
             ),
     )
     .expect("region file");
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+    // The co-occurrence audit is an input the gate reads, so losing it is refused.
+    let audit = fixture.path("docs/openapi-surface/combination-cooccurrence.tsv");
+    let header = std::fs::read_to_string(&audit).expect("co-occurrence audit");
+    std::fs::remove_file(&audit).expect("remove the co-occurrence audit");
+    assert_eq!(
+        vec!["combination-cooccurrence.tsv: missing — restore it from git".to_string()],
+        fixture.failures()
+    );
+    std::fs::write(&audit, header).expect("restore the co-occurrence audit");
     assert_eq!(Vec::<String>::new(), fixture.failures());
 }
 
@@ -8307,7 +8323,7 @@ fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
     fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
     fixture.assert_refused(
         HANDWRITTEN_FIXTURE,
-        "verdict `witness-found` is not `exhausted`, `search-incomplete` or `config-gated`",
+        "verdict `witness-found` is not `exhausted`, `search-incomplete`, `config-gated` or `witness-blocked`",
     );
 
     let fixture = HandwrittenFixture::new();
