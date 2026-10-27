@@ -151,13 +151,13 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
             "curedao/curedao-monorepo",
         ):
             self.assertIn(expected, documents, f"{expected} fell out of the set")
-        for expected in ("security.md:515", "parameters.md:438", "schemas.md:1301"):
+        for expected in ("security.md:515", "parameters.md:438", "schemas.md:1305"):
             self.assertIn(expected, rows, f"{expected} fell out of the in-scope rows")
 
     def test_a_pooled_region_row_splits_into_its_members(self) -> None:
         """The ten SwaggerHub documents of one `schemas.md` row are ten."""
         gate = load_gate()
-        row = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").split("\n")[1307]
+        row = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").split("\n")[1311]
         candidate = row.strip().strip("|").split(" | ")[0]
         self.assertEqual(len(gate.documents_in(candidate)), 10)
 
