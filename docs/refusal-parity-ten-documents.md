@@ -17,7 +17,7 @@ an excepted document's shape is unchanged.
 | `Carapacik/swagger_parser` `swagger_parser/test/schemas/null-types-with-type-array.yaml` at `1fec2df2fd07` (`55071fd9…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
 | `ToolJet/ToolJet` `marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml` at `63c2b08614b7` (`09ac0c7b…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
 | `RS-PYTHON/rs-server` `services/frontend/resources/openapi.json` at `83ebcafb173c` (`a8771072…`) | C | refusal repaired by `refusal-parity-example-collision`; emission residual owned by `rs-server-emission-parity` |
-| `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | refusal repaired by `refusal-parity-lenient-yaml`; residual causes measured there and drafted as follow-ups |
+| `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | refusal repaired by `refusal-parity-lenient-yaml`; emission residual owned by `conquery-emission-parity` |
 | `outstack/enveloper` `docs/api/openapi.yaml` at `cd8150d6d78c` (`95595ff6…`) | E | excepted: a departure candidate for the user |
 | OpenAPI Generator `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml` at `10e6c21c97ab` (`981444e6…`) | F | repaired; registered as corpus row 3476 |
 
@@ -208,8 +208,15 @@ The other lines that differ in `client_wrapper.py` are the five
 repaired the parse, and its record is
 [`quoted-continuation-at-key-column`](fern-measurements/refusal-parity/quoted-continuation-at-key-column/README.md).
 Following its manager's ruling, that node did not register conquery. It
-measured the two remaining causes and drafted each as a follow-up, so no node
-of this run repairs them yet. On the finished tree, crozier generates from the
+measured the two remaining causes and drafted each as a follow-up. This node
+raised both to the manager (reply 39, correlation
+`c-56d85a24506ff2a113e469acb8cc4a1e`). The ruling assigns both to a new node
+of this run, `conquery-emission-parity`, which repairs them and registers
+conquery if it then byte-matches. Neither is repaired here. B is a crozier
+defect the certified pair does not share. A is ruled a repair under the
+usefulness rule, because the certified pair builds the discriminated union from
+the union's listed members, which is what the document's author intended. On
+the finished tree, crozier generates from the
 exact document (`c3a52b3c…`) in both modes. The certified pair was re-run
 here under the generation lock with `tools/fern-goldens/generate-fern-fixture.sh`,
 python-enums and then literals. It wrote 239 files and a 19-file overlay.
@@ -221,7 +228,7 @@ python-enums and then literals. It wrote 239 files and a 19-file overlay.
 | literals | 238 | 228 | 9 | 1 |
 
 The files are the ones that record lists, and every differing line is one of
-its two causes:
+the two causes `conquery-emission-parity` repairs:
 
 - **Cause A, a mapping target that names no schema** (`SECONDARY_ID_QUERY` →
   `#/components/schemas/secondary-Id-query`). This covers `types/query.py`,
