@@ -4,12 +4,6 @@ digest = "9489764d75ce4c6d2595fc2b206bd2bba916d4b13c3497acf7b1104bbded0fee"
 
 [[covers]]
 key = "anyof-discriminated-union"
-arm = 'src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md#witness-search-exhaustive"
-verdict = "exhausted"
-
-[[covers]]
-key = "anyof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md#witness-search-exhaustive"
 verdict = "exhausted"
