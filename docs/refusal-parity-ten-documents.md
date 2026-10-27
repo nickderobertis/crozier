@@ -13,11 +13,11 @@ an excepted document's shape is unchanged.
 | APIs.guru `APIs/digitalocean.com/2.0/openapi.yaml` (`5bd3a480…`) | A | excepted: refused by both |
 | `dltkddnr04/propresenter-remote` `openapi/propresenter.openapi.json` at `b273aeec98db` (`44695afa…`) | A | excepted: refused by both |
 | `jeffmikels/ProPresenter-API` `pro7.9.openapi-spec.json` at `6e7490671c94` (`694f7ec9…`) | A | excepted: refused by both |
-| OpenAPI Generator `samples/client/petstore/csharp/generichost/net10/AllOf/api/openapi.yaml` at `10e6c21c97ab` (`cc2fa0a1…`) | B | owned by `refusal-parity-discriminant-names` |
-| `Carapacik/swagger_parser` `swagger_parser/test/schemas/null-types-with-type-array.yaml` at `1fec2df2fd07` (`55071fd9…`) | B | owned by `refusal-parity-discriminant-names` |
-| `ToolJet/ToolJet` `marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml` at `63c2b08614b7` (`09ac0c7b…`) | B | owned by `refusal-parity-discriminant-names` |
-| `RS-PYTHON/rs-server` `services/frontend/resources/openapi.json` at `83ebcafb173c` (`a8771072…`) | C | owned by `refusal-parity-example-collision` |
-| `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | owned by `refusal-parity-lenient-yaml` |
+| OpenAPI Generator `samples/client/petstore/csharp/generichost/net10/AllOf/api/openapi.yaml` at `10e6c21c97ab` (`cc2fa0a1…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
+| `Carapacik/swagger_parser` `swagger_parser/test/schemas/null-types-with-type-array.yaml` at `1fec2df2fd07` (`55071fd9…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
+| `ToolJet/ToolJet` `marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml` at `63c2b08614b7` (`09ac0c7b…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
+| `RS-PYTHON/rs-server` `services/frontend/resources/openapi.json` at `83ebcafb173c` (`a8771072…`) | C | refusal repaired by `refusal-parity-example-collision`; emission residual owned by `rs-server-emission-parity` |
+| `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | refusal repaired by `refusal-parity-lenient-yaml`; residual causes measured there and drafted as follow-ups |
 | `outstack/enveloper` `docs/api/openapi.yaml` at `cd8150d6d78c` (`95595ff6…`) | E | excepted: a departure candidate for the user |
 | OpenAPI Generator `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml` at `10e6c21c97ab` (`981444e6…`) | F | repaired; registered as corpus row 3476 |
 
@@ -57,7 +57,8 @@ method. `__init__.py` exports those two, the default HTTP clients and
 `reference.md` is the bare `# Reference` heading. The SDK therefore omits every operation
 the documents declare.
 
-By the planner's ruling, A is a Fern refusal, not output to match. A scenario Fern refuses is
+By the planner's ruling, A is a Fern refusal, not output to match. The user's
+confirmation of that ruling is pending. A scenario Fern refuses is
 refused in both modes, so crozier's refusal stays as it is. No crozier code
 changed for A. Run on each exact document, crozier built at this work's base
 (`2a298364e`) and on the finished tree prints the same `unresolved-reference`
@@ -135,25 +136,135 @@ golden and `expected-literals` overlay `openapi_generator_composed_schema_loweri
 holds crozier to. Its Python passes the pinned `ruff format`, which every
 generation runs.
 
+## B, C and D: repaired by other nodes, compared on the finished tree
+
+No code of this node changed for B, C or D. Each comparison below ran crozier
+on the exact document on the finished tree. Its `src/` is that of `95e085cb8`,
+the merge of main at `a9ba6efa8`. Where the parity engine reports a difference,
+every differing line is attributed to a measured cause.
+
+**B, `discriminant-value-unsuitable` (`refusal-parity-discriminant-names`, landed
+on main as `ba33eb085`).** The three documents are corpus rows
+`openapitools-csharp-allof`, `swagger-parser-null-types` and
+`tooljet-microsoft-teams` (rows 3473 to 3475), each with its source committed at the digest above
+and its certified-pair golden and `expected-literals` overlay. The repair is
+[`fern-measurements/refusal-parity/README.md`](fern-measurements/refusal-parity/README.md).
+On the finished tree, `openapitools_csharp_allof_matches_fern_output`,
+`swagger_parser_null_types_matches_fern_output` and
+`tooljet_microsoft_teams_matches_fern_output` pass (python-enums), as does
+`overlay_goldens::overlay_goldens_match_fern_output` (literals). All three
+byte-match apart from the ledgered `sdk-identity-header-prefix` lines, plus
+`fern-metadata-generator-config` in the literals trees. Their Python passes the
+pinned `ruff format`.
+
+**C, `example-type-mismatch` (RS-Server).** `refusal-parity-example-collision`
+(landed on main as `cc0b8bb9e`) repaired the refusal. Its record,
+[`rs-server-collision-parity.md`](fern-refusals/example-type-mismatch/rs-server-collision-parity.md),
+assigns the remaining emission differences to `rs-server-emission-parity`,
+which registers the document. By the planner's ruling, this node neither
+repairs nor registers it. On the finished tree, crozier generates from the
+exact document (`a8771072…`) in both modes. `crozier compare` was run
+against the certified pair's golden that the collision node generated (CLI
+5.163.1, SDK 5.41.3, kept outside the tree with its literals overlay), with
+`package-name: fern` and `project-name: default_package_name`:
+
+| mode | compared | match | differ | only in Fern | only in crozier |
+|---|---|---|---|---|---|
+| python-enums | 232 | 199 | 23 | 9 | 1 |
+| literals | 231 | 198 | 23 | 9 | 1 |
+
+Both modes produce the same differing lines, and each one is one of the six
+causes the collision record lists for `rs-server-emission-parity`:
+
+1. Inlined discriminated-union variants type `bbox` as `Optional[PointBbox]`
+   and the like, where Fern writes `Optional[List[Any]]`. Their nested
+   `coordinates` become `Union[Position2D, Position3D]`, where Fern names
+   `PolygonCoordinatesItemItem`, `MultiLineStringCoordinatesItemItem` and
+   `MultiPolygonCoordinatesItemItemItem`. This covers the eight geometry
+   member models, the four `…GeometriesItem`/`ItemGeometry`/`ItemInputGeometry`
+   unions, the two `stac_pydantic_*` geometries, the request body's
+   `Feature`/`FeatureCollection` variants and the Fern-only
+   `multi_polygon_coordinates_item_item_item.py`.
+2. crozier drops the `type: {const}` property and its single-value enum on the
+   standalone geometry models: the seven Fern-only `*_type.py` modules,
+   `patch_item_…_patch_request_body_type.py`, and their re-exports in both
+   `__init__.py` files.
+3. crozier names `TimeInterval.interval` `TimeIntervalIntervalItemItem` (the
+   crozier-only file), where Fern writes `List[List[Optional[dt.datetime]]]`.
+   The worked examples in `reference.md` and
+   `catalog_transaction_extension/client.py` follow from it.
+4. crozier makes the `api_key` of `client.py` and `core/client_wrapper.py`
+   `Optional[str] = None` and guards its header. Fern writes `str`.
+5. crozier splits `catalog_transaction_extension/types/__init__.py`'s import
+   of the request body's three names into one statement per name.
+6. The root `__init__.py` places `from .client import …` in a different
+   position.
+
+The other lines that differ in `client_wrapper.py` are the five
+`sdk-identity-header-prefix` departure lines.
+
+**D, a YAML continuation crozier's parser rejected (conquery).**
+`refusal-parity-lenient-yaml` (landed on main as `a9ba6efa8`, merged here)
+repaired the parse, and its record is
+[`quoted-continuation-at-key-column`](fern-measurements/refusal-parity/quoted-continuation-at-key-column/README.md).
+Following its manager's ruling, that node did not register conquery. It
+measured the two remaining causes and drafted each as a follow-up, so no node
+of this run repairs them yet. On the finished tree, crozier generates from the
+exact document (`c3a52b3c…`) in both modes. The certified pair was re-run
+here under the generation lock with `tools/fern-goldens/generate-fern-fixture.sh`,
+python-enums and then literals. It wrote 239 files and a 19-file overlay.
+`crozier compare` against those trees:
+
+| mode | compared | match | differ | only in Fern |
+|---|---|---|---|---|
+| python-enums | 239 | 229 | 9 | 1 |
+| literals | 238 | 228 | 9 | 1 |
+
+The files are the ones that record lists, and every differing line is one of
+its two causes:
+
+- **Cause A, a mapping target that names no schema** (`SECONDARY_ID_QUERY` →
+  `#/components/schemas/secondary-Id-query`). This covers `types/query.py`,
+  `types/secondary_id_query.py`, the Fern-only `secondary_id_query_type.py`,
+  `query/client.py`, `reference.md`, and the `Query_*` and
+  `SecondaryIdQueryType` lines of both `__init__.py` files. In literals mode,
+  Fern's example writes `type="CONCEPT_QUERY"` where python-enums writes
+  `ConceptQueryType.CONCEPT_QUERY`. Those are the only lines that differ
+  between the modes, and both are Fern's side of that example.
+- **Cause B, fields inherited through an `allOf`-only base.** This covers
+  `types/filter.py`, `types/select.py` and `types/universal_select.py`, which
+  lack `FilterBase`'s and `Labeled`'s fields and their imports.
+
+The remaining differences are the five `sdk-identity-header-prefix` lines,
+plus `fern-metadata-generator-config` in literals.
+
+With the pinned ruff (`.ruff-version`, 0.11.5) first on `PATH`, `crozier
+generate` exits 0 on each of the five documents in both modes, which means
+its `ruff format` step passed. Every emitted `.py` file parses. Each
+`crozier compare` above, and the golden tests, ran with that ruff.
+
 ## Derived records
 
 Each derived record the branch commits was generated over the `src/` of
-`be0ba0f1c`, the branch's last merge of main (`src/` there is the branch's
-final source; that merge brought no `src/` change):
+`95e085cb8`, the branch's last merge of main (at `a9ba6efa8`). Its `src/` is
+the branch's final source:
 
 - `docs/openapi-surface/golden-reach.tsv` and the golden rows' reach cells,
-  with the census JSON they join: `just golden-reach` over 274 golden tests.
-  The reach ranking in `docs/openapi-surface-coverage.md` is restated from
-  that ledger, and `golden-reach-witnesses/outstanding.tsv` is
-  `golden-reach-search.py outstanding` over the same tree.
-- `docs/openapi-surface/handwritten-reach.tsv`: `just handwritten-reach`,
-  which left it unchanged.
-- The arm counts and arm table in `docs/openapi-surface-coverage.md`:
+  with the census JSON they join, come from `just golden-reach` over 274
+  golden tests. Its rows are identical to the previous measurement and no
+  reach cell moved, so the reach ranking in `docs/openapi-surface-coverage.md`,
+  restated from that ledger, stands. `golden-reach-witnesses/outstanding.tsv`
+  is `golden-reach-search.py outstanding` over the same tree.
+- `docs/openapi-surface/handwritten-reach.tsv` comes from
+  `just handwritten-reach`, which left it unchanged.
+- The arm counts and arm table in `docs/openapi-surface-coverage.md` come from
   `just golden-reach-arms`, which left them unchanged.
 - `tests/fixtures/departures-ledger.tsv` and
-  `docs/departures/evidence/invalid-example-values/inventory.tsv`:
-  `just departures-ledger`, which left both unchanged and
-  passed every golden comparison it ran.
+  `docs/departures/evidence/invalid-example-values/inventory.tsv` come from
+  `crates/crozier-e2e/departures-ledger.sh`, the script `just departures-ledger`
+  runs. It was run directly because this checkout has no Nx install. It left
+  both files unchanged and passed every comparison it ran, with the pinned
+  ruff first on `PATH`.
 
 ## Found on the way
 
