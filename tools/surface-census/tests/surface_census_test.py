@@ -12824,10 +12824,15 @@ class FinishedStateGateTests(unittest.TestCase):
         )
 
     def name_a_demoted_combination(self, reason: str, key: str | None = None) -> tuple[str, str]:
-        """Demote a `golden` combination row (the first, unless `key` names one) to `gap`
-        and name it with `reason`."""
+        """Demote a `golden` combination row (the first proven at an interaction branch,
+        unless `key` names one) to `gap` and name it with `reason`."""
         rows = combination_rows(self.root)
-        key = key or sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
+        sites = load_script("tools/surface-census/golden-reach.py").read_sites_table(
+            self.root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
+        )
+        key = key or sorted(
+            key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden" and not sites[key].cooccurrence
+        )[0]
         region = rows[key].region
         self.edit(
             f"docs/openapi-surface/{region}.md",
@@ -12946,13 +12951,22 @@ class FinishedStateGateTests(unittest.TestCase):
         )
 
     def test_a_handwritten_combination_whose_fixture_misses_its_interaction_site_is_refused(self) -> None:
+        # Each hand-written combination on the finished tree is a co-occurrence, so the copy
+        # declares one at an interaction arm its fixture's measurement reports unexecuted.
         path = "docs/openapi-surface/handwritten-reach.tsv"
         line = next(
             line
             for line in (self.root / path).read_text(encoding="utf-8").splitlines()
             if line.split("\t")[1].startswith(COMBINATION_PREFIX)
         )
-        fixture, key, site, _executed, total = line.split("\t")
+        fixture, key, _handler, _executed, total = line.split("\t")
+        site = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
+        table = "docs/openapi-surface/golden-reach-sites.tsv"
+        row = next(
+            row for row in (self.root / table).read_text(encoding="utf-8").splitlines() if row.startswith(f"{key}\t")
+        )
+        cells = row.split("\t")
+        self.edit(table, row, "\t".join([*cells[:2], site, *cells[3:]]))
         self.edit(path, line, "\t".join([fixture, key, site, "0", total]))
         self.assertIn(
             f"{key}: a `handwritten` combination row whose fixture `{fixture}` does not execute its "
