@@ -261,10 +261,8 @@ the branch's final source:
   `just golden-reach-arms`, which left them unchanged.
 - `tests/fixtures/departures-ledger.tsv` and
   `docs/departures/evidence/invalid-example-values/inventory.tsv` come from
-  `crates/crozier-e2e/departures-ledger.sh`, the script `just departures-ledger`
-  runs. It was run directly because this checkout has no Nx install. It left
-  both files unchanged and passed every comparison it ran, with the pinned
-  ruff first on `PATH`.
+  `just departures-ledger`, run with the pinned ruff first on `PATH`. It left
+  both files unchanged and passed every comparison it ran.
 
 ## Found on the way
 
