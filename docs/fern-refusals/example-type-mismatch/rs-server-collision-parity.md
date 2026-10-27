@@ -69,8 +69,8 @@ The golden was generated at the certified pair with `just fern-goldens-generate
 --version 5.41.3 --fixture rs-server`, plus its literals overlay, under the same
 lock. It has 231 files, and its `.fern/metadata.json` records CLI 5.163.1 and SDK
 5.41.3. crozier's output under the corpus configuration (package `fern`) was
-compared to it by the corpus gate's own comparison (`fixtures-report.sh gaps` and
-`diff`). That comparison ran on this branch's repair commit with the row wired
+compared to it by the corpus gate's own comparison, as `just fixtures-gaps
+rs-server` and `just fixtures-diff rs-server` report it. That comparison ran on this branch's repair commit with the row wired
 in. The wiring has since been removed; the `src/` it ran against is unchanged.
 
 - 199 files byte-match.
