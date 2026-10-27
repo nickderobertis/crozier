@@ -158,3 +158,44 @@ keeps them. The files:
 The document is not registered as a corpus golden. Its licence admits it, but
 it does not byte-match until causes A and B are repaired. Both are drafted as
 follow-ups.
+
+## Scope ruling
+
+The manager of this run ruled on the node's scope twice, over the planner
+channel, each reply amending the node's acceptance criteria. An amendment
+clause takes precedence over any criterion it contradicts.
+
+**Reply 35** (correlation `c-d065d7b4f1a27d3fc79e84fbd8f2ce39`) brought the
+null-only-discriminant refusal into scope. It said:
+
+> Then take conquery as far as it goes: register it as a golden if it
+> byte-matches and its licence allows, otherwise record its measured residual
+> by cause.
+
+**Reply 36** (correlation `c-775c7fadb2321550a66bdbf172a0b87b`) answered how
+to prove the lexical YAML shape, given that the hand-written fixture gate
+requires a census-region cover no lexical shape has. It said:
+
+> Option (c) […]: prove the YAML shape with a from-scratch document and its
+> certified-pair tree, byte-compared by a dedicated e2e test in
+> crates/crozier-e2e through the parity engine, plus the probe/control pair
+> for the discriminant narrowing. Do not commit a fixture under
+> docs/openapi-surface/handwritten/ with a cover that misstates coverage, and
+> do not change the fixture contract or gate in this node. Do not register
+> conquery. Record its two remaining causes […] as measured residuals in your
+> report, and draft each as a follow-up with ORCHESTRATOR_FOLLOW_UP_DRAFT.
+
+Its amendment added these clauses to the node's criteria:
+
+> - For the lexical YAML shape this node repairs, the hand-written fixture
+>   criterion is met by a from-scratch document of the triggering shape whose
+>   crozier output is byte-compared with its certified-pair tree by an e2e
+>   test in crates/crozier-e2e, apart from lines the departures ledger records
+>   under an authorized departure. No handwritten_fixtures_match_fern_goldens
+>   cover is required for that shape.
+> - Where ingef/conquery still differs from the certified pair after this
+>   node's repairs, the report records each remaining difference by cause with
+>   its measured evidence, and each cause is drafted as a follow-up.
+
+So causes A and B are recorded and drafted here, not repaired, and conquery
+is not registered.
