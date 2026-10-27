@@ -2872,20 +2872,20 @@ unreached by any Fern-accepted document.
 | 29 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **45** | **1** | open — real-specification witness search remains open |
 | 30 | `parameter-style-form-query-object` | `parameters` | **1** | **30** | **20** | open — real-specification witness search remains open |
 | 31 | `oneof-string-const-variant` | `schemas` | **1** | **24** | **4** | open — real-specification witness search remains open |
-| 32 | `annotated-ref-shape` | `schemas` | **1** | **20** | **13** | owned — first-pass search record below |
+| 32 | `annotated-ref-shape` | `schemas` | **1** | **23** | **13** | owned — first-pass search record below |
 | 33 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 34 | `anyof-array-variant-composed-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 35 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **18** | **4** | open — real-specification witness search remains open |
 | 36 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — no real witness reaches the operation-scoped map-value arm; see the named gaps |
-| 37 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
-| 38 | `type-single` | `schemas` | **1** | **14** | **267** | open — real-specification witness search remains open |
-| 39 | `anyof-allof-variant` | `schemas` | **1** | **13** | **3** | owned — first-pass search record below |
-| 40 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **13** | **1** | open — real-specification witness search remains open |
-| 41 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
-| 42 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 43 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 47 | `parameter-in-query` | `parameters` | **1** | **9** | **182** | open — real-specification witness search remains open |
-| 48 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
+| 37 | `annotated-ref-target-anyof` | `schemas` | **1** | **17** | **1** | open — real-specification witness search remains open |
+| 38 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
+| 39 | `type-single` | `schemas` | **1** | **14** | **267** | open — real-specification witness search remains open |
+| 40 | `anyof-allof-variant` | `schemas` | **1** | **13** | **3** | owned — first-pass search record below |
+| 41 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **13** | **1** | open — real-specification witness search remains open |
+| 42 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
+| 43 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
+| 44 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
+| 48 | `parameter-in-query` | `parameters` | **1** | **9** | **182** | open — real-specification witness search remains open |
 | 49 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
 | 50 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 51 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **3** | open — real-specification witness search remains open |
@@ -3434,10 +3434,10 @@ ledger, so a registration that adds a second witness removes the row here.
 | `oneof-array-variant-anyof-item` | `schemas` | `langchain-agent-protocol` |
 | `anyof-array-variant-annotated-ref-item` | `schemas` | `braintrust-dev` |
 | `anyof-array-variant-composed-item` | `schemas` | `braintrust-dev` |
+| `annotated-ref-target-anyof` | `schemas` | `braintrust-dev` |
 | `oneof-closed-empty-object-variant` | `schemas` | `zoonk` |
 | `array-item-pointer-walk-allof` | `schemas` | `dnd5eapi.co` |
 | `array-item-pointer-walk-anyof` | `schemas` | `embedpdf-cloudpdf` |
-| `annotated-ref-target-anyof` | `schemas` | `braintrust-dev` |
 | `anyof-array-variant-oneof-nullable-item` | `schemas` | `ramu-shogi` |
 | `property-sole-anyof-closed-object-member` | `schemas` | `npq-registration` |
 | `property-sole-anyof-struct-member` | `schemas` | `npq-registration` |
