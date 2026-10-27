@@ -26456,7 +26456,9 @@ components:
         // `WeftTrigger` is declared, so naming it would import a module the
         // SDK does not contain.
         assert_eq!(trigger_type(1), Some(named("Trigger")));
-        assert!(!labels(&ir).iter().any(|label| label.contains("WeftTrigger")));
+        assert!(!labels(&ir)
+            .iter()
+            .any(|label| label.contains("WeftTrigger")));
         assert!(!labels(&ir)
             .iter()
             .any(|label| label.contains("WarpTrigger")));

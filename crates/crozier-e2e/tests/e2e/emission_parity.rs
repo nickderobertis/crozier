@@ -86,6 +86,7 @@ fn holds_in_both_modes(case: &str, broken: &str, break_it: fn(&str) -> String) {
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK through the binary, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Causes 1, 2 and 5: each flattened variant types its fields as its member
 /// model does, the members keep their `kind` tag, the PATCH body's `const`
 /// property is declared, and the tag's `types/__init__.py` imports a union's
@@ -130,3 +131,4 @@ fn an_empty_root_security_list_departs_only_on_the_credential() {
         },
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

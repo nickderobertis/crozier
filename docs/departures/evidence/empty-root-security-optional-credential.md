@@ -76,7 +76,7 @@ makes the pair's credential optional, as `audiobookshelf` shows.
 
 ## Behaviour
 
-`a_client_built_without_a_key_calls_an_unsecured_operation_of_an_empty_root_security_document`
+`sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key`
 in `crates/crozier-e2e/tests/e2e.rs` generates the SDK from RS-Server's document and
 drives it against a local HTTP server. A client built with no key calls
 `GET /catalog/_mgmt/ping` and sends no `x-api-key` header. A client built with

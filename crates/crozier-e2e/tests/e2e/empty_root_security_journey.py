@@ -20,7 +20,7 @@ import sys
 import threading
 from collections.abc import Iterator
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeAlias
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("sdk_src", type=Path)
@@ -31,11 +31,15 @@ sys.path.insert(0, str(args.sdk_src.resolve()))
 sdk = importlib.import_module("fern")
 
 
+ApiKey: TypeAlias = str
+"""The value of the `x-api-key` header the SDK sends."""
+
+
 class Received(NamedTuple):
     """One request the server received: its path and its `x-api-key` header."""
 
     path: str
-    api_key: str | None
+    api_key: ApiKey | None
 
 
 received: list[Received] = []

@@ -6787,6 +6787,7 @@ fn sdk_env_output_defect_sdks_parse_and_send_what_fern_does() {
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg, so no unrelated edit newly triggers it; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project, as for the `sdk_env_*` blocks above.
 /// RS-Server's root `security: []` leaves its operations without their own
 /// `security` unauthenticated, and crozier's client (the
 /// `empty-root-security-optional-credential` departure) lets them be called
@@ -6842,6 +6843,7 @@ fn sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key()
             "missing 1 required keyword-only argument: 'api_key'",
         ));
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// Complete certified trees for the parameter extension and serialization
 /// shapes. These inputs contain no enums: both modes must preserve all bytes,
