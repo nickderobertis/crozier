@@ -155,3 +155,8 @@ components:
           anyOf:
             - type: string
               enum: [idle, live]
+        alarm:
+          description: How the sensor alerts.
+          oneOf:
+            - type: string
+              enum: [steady, pulsed]

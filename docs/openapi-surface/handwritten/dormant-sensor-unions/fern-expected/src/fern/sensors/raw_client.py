@@ -16,6 +16,7 @@ from ..types.gap import Gap
 from ..types.lull import Lull
 from ..types.pitch import Pitch
 from ..types.reading import Reading
+from ..types.reading_alarm import ReadingAlarm
 from ..types.reading_mode import ReadingMode
 from ..types.silence import Silence
 from ..types.stillness import Stillness
@@ -127,6 +128,7 @@ class RawSensorsClient:
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
+        alarm: typing.Optional[ReadingAlarm] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Reading]:
         """
@@ -153,6 +155,9 @@ class RawSensorsClient:
         mode : typing.Optional[ReadingMode]
             Whether the sensor is sampling.
 
+        alarm : typing.Optional[ReadingAlarm]
+            How the sensor alerts.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -174,6 +179,7 @@ class RawSensorsClient:
                 "pitch": pitch,
                 "tone": tone,
                 "mode": mode,
+                "alarm": alarm,
             },
             headers={
                 "content-type": "application/json",
@@ -349,6 +355,7 @@ class AsyncRawSensorsClient:
         pitch: typing.Optional[Pitch] = OMIT,
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
+        alarm: typing.Optional[ReadingAlarm] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Reading]:
         """
@@ -375,6 +382,9 @@ class AsyncRawSensorsClient:
         mode : typing.Optional[ReadingMode]
             Whether the sensor is sampling.
 
+        alarm : typing.Optional[ReadingAlarm]
+            How the sensor alerts.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -396,6 +406,7 @@ class AsyncRawSensorsClient:
                 "pitch": pitch,
                 "tone": tone,
                 "mode": mode,
+                "alarm": alarm,
             },
             headers={
                 "content-type": "application/json",

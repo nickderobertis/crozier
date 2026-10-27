@@ -6,6 +6,7 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .lull import Lull
 from .pitch import Pitch
+from .reading_alarm import ReadingAlarm
 from .reading_mode import ReadingMode
 from .silence import Silence
 from .stillness import Stillness
@@ -24,6 +25,11 @@ class Reading(UniversalBaseModel):
     mode: typing.Optional[ReadingMode] = pydantic.Field(default=None)
     """
     Whether the sensor is sampling.
+    """
+
+    alarm: typing.Optional[ReadingAlarm] = pydantic.Field(default=None)
+    """
+    How the sensor alerts.
     """
 
     if IS_PYDANTIC_V2:

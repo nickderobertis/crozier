@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 239 of the 270 registered sources live in `corpus-sources/` (a split
+  and 240 of the 271 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1911,10 +1911,8 @@ CONJUNCTIONS = {
     "schema.oneOf>schema.enum:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `enum`",
     "schema.anyOf>schema.enum:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `enum`",
     "schema.oneOf>schema.const:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `const`",
-    "!schema.oneOf:several-non-null-members&!schema.oneOf:sole-non-null-member&schema.oneOf>schema.type=null": "one per Schema Object whose `oneOf` members are all `type: null`: a member is, and no member's primary type is anything else",
-    "!schema.anyOf:several-non-null-members&!schema.anyOf:sole-non-null-member&schema.anyOf>schema.type=null": "one per Schema Object whose `anyOf` members are all `type: null`: a member is, and no member's primary type is anything else",
-    "schema.oneOf:sole-member&schema.oneOf>schema.enum:string-valued": "one per Schema Object whose `oneOf` holds exactly one member, a string-valued `enum`",
-    "schema.anyOf:sole-member&schema.anyOf>schema.enum:string-valued": "one per Schema Object whose `anyOf` holds exactly one member, a string-valued `enum`",
+    "schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued": "one per Schema Object one of whose properties declares no `type` and no `nullable`, and a `oneOf` whose one member is an inline string-valued `enum`",
+    "schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued": "one per Schema Object one of whose properties declares no `type` and no `nullable`, and an `anyOf` whose one member is an inline string-valued `enum`",
     "schema.anyOf>schema.const:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `const`",
     "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members is a bare object carrying an object-valued example that is not itself a schema definition",
     "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
@@ -2348,6 +2346,16 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
     ),
     "prop_type_ref": (
+        Case(
+            "20a",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued",
+        ),
+        Case(
+            "20b",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued",
+        ),
         Case("17", hole="H-ordered-members"),
         Case(
             "1",
@@ -2558,7 +2566,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "14f75555ff7ff98a",
-    "prop_type_ref": "0e868a22ed809140",
+    "prop_type_ref": "03e47a0aef8703fb",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }

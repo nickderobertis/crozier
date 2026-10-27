@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
     from .lull import Lull
     from .pitch import Pitch
     from .reading import Reading
+    from .reading_alarm import ReadingAlarm
     from .reading_mode import ReadingMode
     from .silence import Silence
     from .stillness import Stillness
@@ -27,6 +28,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Lull": ".lull",
     "Pitch": ".pitch",
     "Reading": ".reading",
+    "ReadingAlarm": ".reading_alarm",
     "ReadingMode": ".reading_mode",
     "Silence": ".silence",
     "Stillness": ".stillness",
@@ -64,6 +66,7 @@ __all__ = [
     "Lull",
     "Pitch",
     "Reading",
+    "ReadingAlarm",
     "ReadingMode",
     "Silence",
     "Stillness",
