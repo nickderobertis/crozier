@@ -127,6 +127,11 @@ files, identical to the first measurement's. `crozier compare` ran with
 `package-name: fern` and `project-name: default_package_name`, the names the
 pair's preview uses, and gave the same counts and files listed above.
 
+It was measured again after main's `ba33eb085` was merged in (`a35e3712f`),
+because that change moves how unions are generated. No Fern generation ran for
+this: the same compare ran against the 09:49Z tree. It gave the same counts and
+files, and its normalized diff is byte-identical to the one before the merge.
+
 Each of those ten files is accounted for by one of two generator causes this
 node does not own.
 
