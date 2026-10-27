@@ -1,0 +1,30 @@
+# Red run: HEAD a9a1d4cef with src/ir.rs and src/name_refusals.rs restored to 0f348a953
+# (the production fix reverted; every new test and fixture kept), isolated worktree.
+
+PASS [   0.579s] (1/6) crozier-e2e::e2e discriminant_refusals_recover_with_a_valid_document_name
+FAIL [   0.660s] (2/6) crozier-e2e::e2e refusal_parity::pointer_mapped_discriminant_refusals_hold_beside_the_bare_name_controls
+FAIL [   1.281s] (3/6) crozier-e2e::e2e refusal_parity::bare_name_mapped_discriminants_match_fern_in_both_enum_modes
+FAIL [   1.425s] (4/6) crozier-e2e::e2e swagger_parser_null_types_matches_fern_output
+FAIL [   1.449s] (5/6) crozier-e2e::e2e openapitools_csharp_allof_matches_fern_output
+FAIL [   2.326s] (6/6) crozier-e2e::e2e tooljet_microsoft_teams_matches_fern_output
+Summary [   2.329s] 6 tests run: 1 passed, 5 failed, 830 skipped
+
+thread 'refusal_parity::pointer_mapped_discriminant_refusals_hold_beside_the_bare_name_controls' (3415151) panicked at crates/crozier-e2e/tests/e2e/refusal_parity.rs:132:13:
+bare-name-oneof-control.yml strict=false: crozier: invalid OpenAPI document docs/fern-refusals/discriminant-value-unsuitable/bare-name-oneof-control.yml: discriminant-value-unsuitable: #/components/schemas/Asset discriminant "$_type"; use a letter-led identifier containing letters, numbers and underscores
+thread 'refusal_parity::bare_name_mapped_discriminants_match_fern_in_both_enum_modes' (3415150) panicked at crates/crozier-e2e/tests/e2e/refusal_parity.rs:62:9:
+python-enums: crozier: invalid OpenAPI document <tmp>/openapi.yml: discriminant-value-unsuitable: #/components/schemas/Crate discriminant "@kind"; use a letter-led identifier containing letters, numbers and underscores
+thread 'swagger_parser_null_types_matches_fern_output' (3415164) panicked at crates/crozier-e2e/tests/e2e.rs:9134:10:
+stderr=```"crozier: invalid OpenAPI document <tmp>/openapi.yaml: discriminant-value-unsuitable: #/components/schemas/Person discriminant \"$_type\"; use a letter-led identifier containing letters, numbers and underscores\n"```
+thread 'openapitools_csharp_allof_matches_fern_output' (3415161) panicked at crates/crozier-e2e/tests/e2e.rs:9134:10:
+stderr=```"crozier: invalid OpenAPI document <tmp>/openapi.yaml: discriminant-value-unsuitable: #/components/schemas/Person discriminant \"$_type\"; use a letter-led identifier containing letters, numbers and underscores\n"```
+thread 'tooljet_microsoft_teams_matches_fern_output' (3415159) panicked at crates/crozier-e2e/tests/e2e.rs:9134:10:
+stderr=```"crozier: invalid OpenAPI document <tmp>/openapi.yaml: discriminant-value-unsuitable: #/components/schemas/ConversationMember discriminant \"@odata.type\"; use a letter-led identifier containing letters, numbers and underscores\n"```
+
+FAIL [  96.753s] (1/1) crozier-e2e::e2e overlay_goldens::overlay_goldens_match_fern_output
+Summary [  96.757s] 1 test run: 0 passed, 1 failed, 835 skipped
+openapitools-csharp-allof expected-literals: Unexpected failure
+swagger-parser-null-types expected-literals: Unexpected failure
+tooljet-microsoft-teams expected-literals: Unexpected failure
+The overlay gate generates each in literals mode and is refused with:
+discriminant-value-unsuitable: #/components/schemas/ConversationMember discriminant "@odata.type"
+discriminant-value-unsuitable: #/components/schemas/Person discriminant "$_type"

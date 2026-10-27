@@ -697,3 +697,18 @@ ebusd API specification and generated SDK golden:
     https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml
     GPL-3.0 (the repository's own LICENSE); corpus row 3472 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openapitools-csharp-allof API specification and generated SDK golden:
+    https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/samples/client/petstore/csharp/generichost/net10/AllOf/api/openapi.yaml
+    Apache-2.0 (the repository's own LICENSE; the document's info.license reads MIT); corpus row 3473 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+swagger-parser-null-types API specification and generated SDK golden:
+    https://raw.githubusercontent.com/Carapacik/swagger_parser/1fec2df2fd073ff5bb93a703b856cdfad25b129c/swagger_parser/test/schemas/null-types-with-type-array.yaml
+    MIT (the document's info.license and the repository's own LICENSE); corpus row 3474 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+tooljet-microsoft-teams API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ToolJet/ToolJet/63c2b08614b78f8f289fb6127a32f10ed5987362/marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml
+    AGPL-3.0 (the repository's own LICENSE); corpus row 3475 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

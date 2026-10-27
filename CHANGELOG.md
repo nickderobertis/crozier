@@ -6,6 +6,18 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.140](https://github.com/nickderobertis/crozier/compare/v0.0.139...v0.0.140) - 2026-10-27
+
+### Fixed
+
+- *(parity)* generate unions whose discriminator property is not an identifier ([#648](https://github.com/nickderobertis/crozier/pull/648))
+
+## [0.0.139](https://github.com/nickderobertis/crozier/compare/v0.0.138...v0.0.139) - 2026-10-27
+
+### Fixed
+
+- *(parity)* stop the example-type check firing on a colliding property it misreads ([#646](https://github.com/nickderobertis/crozier/pull/646))
+
 ## [0.0.138](https://github.com/nickderobertis/crozier/compare/v0.0.137...v0.0.138) - 2026-10-27
 
 ### Fixed
