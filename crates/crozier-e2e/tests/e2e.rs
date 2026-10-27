@@ -9954,6 +9954,7 @@ const CORPORA: &[&Corpus] = &[
     &GET_A_ROOM,
     &GRANTLY,
     &EBUSD,
+    &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12336,6 +12337,20 @@ const GRANTLY: Corpus = Corpus {
 /// witnessing a success response whose `oneOf` admits `null`.
 const EBUSD: Corpus = Corpus {
     api: "ebusd",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// OpenAPI Generator's composed-schema lowering document — corpus row 3473,
+/// the publisher's own repository's copy, witnessing an `anyOf` of only `null`
+/// alternatives and an `anyOf` whose one alternative is a string enum.
+const OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING: Corpus = Corpus {
+    api: "openapi-generator-composed-schema-lowering",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20364,6 +20379,13 @@ fn grantly_matches_fern_output() {
 #[test]
 fn ebusd_matches_fern_output() {
     assert_committed_corpus_matches(&EBUSD);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn openapi_generator_composed_schema_lowering_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

@@ -1940,3 +1940,15 @@ and each removal control are recorded in
 | 3470 | `get-a-room` | github-raw | https://raw.githubusercontent.com/hugo-alves/get-a-room/f2130f1eebbc8c697bcdb5cf2a867f6802221523/openapi.yaml | `f2130f1eebbc8c697bcdb5cf2a867f6802221523` | Apache-2.0 (document info.license and repository LICENSE) | committed | Header parameters beside an octet-stream request body |
 | 3471 | `grantly` | github-raw | https://raw.githubusercontent.com/thetejascodes/Grantly/11d3792cd0c94b2b07e8865dffb3239523d6392e/openapi.yaml | `11d3792cd0c94b2b07e8865dffb3239523d6392e` | MIT (document info.license; the repository carries no LICENSE) | committed | An urlencoded form body that is a `oneOf` of grant shapes tagged by one-value enums |
 | 3472 | `ebusd` | github-raw | https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml | `38db2d28bd5622cadb6078c1662c6f7da5cef891` | GPL-3.0 (repository LICENSE) | committed | A success response whose `oneOf` admits `null` |
+
+## Union alternatives that are all `null` or one string enum
+
+The OpenAPI Generator project's own lowering document declares a component
+`anyOf` whose two alternatives are both `type: null`, which crozier once
+emitted as an unparseable `typing.Union[]`, and one whose only alternative is a
+string enum; the search and the witnesses it left unregistered are recorded in
+[`witness-search-null-and-lone-enum-alternatives`](../../docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3473 | `openapi-generator-composed-schema-lowering` | github-raw | https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml | `10e6c21c97abb098cc67f14dfdd02171ce56b115` | Apache-2.0 (repository LICENSE) | committed | An `anyOf` of only `null` alternatives, and an `anyOf` whose one alternative is a string enum |

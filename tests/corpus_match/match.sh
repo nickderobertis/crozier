@@ -339,6 +339,7 @@ inventory=(
   get_a_room_matches_fern_output
   grantly_matches_fern_output
   ebusd_matches_fern_output
+  openapi_generator_composed_schema_lowering_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

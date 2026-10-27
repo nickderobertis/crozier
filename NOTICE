@@ -697,3 +697,8 @@ ebusd API specification and generated SDK golden:
     https://raw.githubusercontent.com/john30/ebusd/38db2d28bd5622cadb6078c1662c6f7da5cef891/contrib/html/openapi.yaml
     GPL-3.0 (the repository's own LICENSE); corpus row 3472 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openapi-generator-composed-schema-lowering API specification and generated SDK golden:
+    https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml
+    Apache-2.0 (the repository's own LICENSE); corpus row 3473 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

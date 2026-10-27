@@ -1,3 +1,15 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
 digest = "4cbd540e4638ec4847bd51155dc11cec6c51dd55e94293f1f162a6035d55e17a"
+
+[[covers]]
+key = "oneof-null-only-alternatives"
+search = "docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md"
+
+[[covers]]
+key = "oneof-sole-string-enum-alternative"
+search = "docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md"

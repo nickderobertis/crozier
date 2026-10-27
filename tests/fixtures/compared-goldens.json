@@ -505,6 +505,7 @@
     "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected": {},
     "docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected": {},
+    "docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected": {},
     "docs/openapi-surface/handwritten/enum-media-selection/fern-expected": {},
     "docs/openapi-surface/handwritten/enum-union-body-example-first-member-value/fern-expected": {},
@@ -1112,6 +1113,12 @@
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/onmyshelf-api/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
+    "tests/fixtures/openapi-generator-composed-schema-lowering/expected": {},
+    "tests/fixtures/openapi-generator-composed-schema-lowering/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/openbanking-brasil-directory/expected": {},
     "tests/fixtures/openbanking.org.uk-account-info-openapi/expected": {},
     "tests/fixtures/openbankingproject-ch-kundenbeziehung/expected": {},
