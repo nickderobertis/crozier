@@ -6,6 +6,18 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.138](https://github.com/nickderobertis/crozier/compare/v0.0.137...v0.0.138) - 2026-10-27
+
+### Fixed
+
+- *(parity)* prove the two discriminator-mapping arms ([#642](https://github.com/nickderobertis/crozier/pull/642))
+
+## [0.0.137](https://github.com/nickderobertis/crozier/compare/v0.0.136...v0.0.137) - 2026-10-26
+
+### Fixed
+
+- *(parity)* settle the type-identity output defects against Fern ([#633](https://github.com/nickderobertis/crozier/pull/633))
+
 ## [0.0.136](https://github.com/nickderobertis/crozier/compare/v0.0.135...v0.0.136) - 2026-10-26
 
 ### Fixed

@@ -13709,7 +13709,17 @@ impl Builder<'_> {
                     fields: vec![wrapped_value_field(TypeRef::Named(target_class.clone()))],
                     discriminant_index: None,
                     source: None,
-                    docstring: docstring.clone(),
+                    // Fern leaves the union's description off a wrapper holding
+                    // its payload in `value` (the hand-written
+                    // `tidepool-survey-log` fixture's `SurveyEntry_Level`), while
+                    // the flattened `SurveyEntry_Sighting` beside it carries it.
+                    // A nested discriminator keeps it: no measured tree shows
+                    // Fern dropping it there.
+                    docstring: target
+                        .discriminator
+                        .is_some()
+                        .then(|| docstring.clone())
+                        .flatten(),
                     layout: target.discriminator.as_ref().map_or(
                         UnionMemberLayout::Wrapped,
                         |discriminator| UnionMemberLayout::NestedDiscriminator {
@@ -28302,6 +28312,90 @@ components:
             .expect("Vessel is a discriminated union");
         assert!(!union.members[0].layout.is_wrapped());
         assert_eq!(union.members[0].fields.len(), 3);
+    }
+
+    /// A mapping target that is a union of references not all objects is held
+    /// whole in the wrapper's `value`, and the wrapper leaves the union's
+    /// description to its flattened siblings (the hand-written
+    /// `tidepool-survey-log` fixture, Fern CLI 5.163.1).
+    #[test]
+    fn a_mapping_target_union_with_a_scalar_member_is_wrapped_without_the_description() {
+        let document = |level: serde_json::Value| {
+            serde_json::json!({
+                "openapi": "3.0.3", "info": {"title": "Tidepool", "version": "1"},
+                "paths": {},
+                "components": {"schemas": {
+                    "SurveyEntry": {
+                        "description": "One thing a volunteer recorded.",
+                        "oneOf": [
+                            {"$ref": "#/components/schemas/WaterLevel"},
+                            {"$ref": "#/components/schemas/CreatureSighting"}
+                        ],
+                        "discriminator": {"propertyName": "entryType", "mapping": {
+                            "level": "#/components/schemas/WaterLevel",
+                            "sighting": "#/components/schemas/CreatureSighting"
+                        }}
+                    },
+                    "WaterLevel": level,
+                    "DepthCentimetres": {"type": "number"},
+                    "GaugeReading": {"type": "object", "required": ["entryType", "gauge"],
+                        "properties": {"entryType": {"type": "string"}, "gauge": {"type": "string"}}},
+                    "CreatureSighting": {"type": "object", "required": ["entryType", "species"],
+                        "properties": {"entryType": {"type": "string"}, "species": {"type": "string"}}}
+                }}
+            })
+        };
+        let union_of = |ir: &crate::ir::Ir| {
+            ir.types
+                .iter()
+                .find_map(|decl| match decl {
+                    TypeDecl::DiscriminatedUnion(union) if union.name == "SurveyEntry" => {
+                        Some(union.clone())
+                    }
+                    _ => None,
+                })
+                .expect("SurveyEntry is a discriminated union")
+        };
+        let ir = build_document(document(serde_json::json!({"oneOf": [
+            {"$ref": "#/components/schemas/DepthCentimetres"},
+            {"$ref": "#/components/schemas/GaugeReading"}
+        ]})));
+        let union = union_of(&ir);
+        let level = &union.members[0];
+        assert_eq!(level.class_name, "SurveyEntry_Level");
+        assert!(matches!(
+            level.layout,
+            crate::ir::UnionMemberLayout::Wrapped
+        ));
+        assert_eq!(level.fields.len(), 1);
+        assert_eq!(level.fields[0].wire_name, "value");
+        assert_eq!(
+            level.fields[0].type_ref,
+            TypeRef::Named("WaterLevel".to_string())
+        );
+        assert_eq!(level.docstring, None);
+        assert_eq!(
+            union.members[1].docstring.as_deref(),
+            Some("One thing a volunteer recorded.")
+        );
+        // The same target with a discriminator of its own nests it instead, and
+        // keeps the description as before.
+        let nested = build_document(document(serde_json::json!({
+            "oneOf": [
+                {"$ref": "#/components/schemas/DepthCentimetres"},
+                {"$ref": "#/components/schemas/GaugeReading"}
+            ],
+            "discriminator": {"propertyName": "entryType"}
+        })));
+        let nested = union_of(&nested);
+        assert!(matches!(
+            nested.members[0].layout,
+            crate::ir::UnionMemberLayout::NestedDiscriminator { .. }
+        ));
+        assert_eq!(
+            nested.members[0].docstring.as_deref(),
+            Some("One thing a volunteer recorded.")
+        );
     }
 
     #[test]

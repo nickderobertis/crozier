@@ -485,7 +485,7 @@ class AssemblyTests(unittest.TestCase):
             (directory / "files" / path).parent.mkdir(parents=True, exist_ok=True)
             (directory / "files" / path).write_text(f"{item}\n", encoding="utf-8")
         record = {
-            "schema_version": 2,
+            "schema_version": 3,
             "index": index,
             "pair": self.pair.to_json(),
             "base": "a" * 40,
@@ -630,8 +630,10 @@ class ArtifactTests(unittest.TestCase):
         fault("do not hold the 2 corpus item(s) it counts", lambda r: r["shards"][1].update(items=[]))
         fault(
             "a shard holds an item of no family it counts",
-            lambda r: r["families"].update(corpus={"items": 1, "seconds": 1})
-            or r["shards"][1]["items"][0].update(family="probes"),
+            lambda r: (
+                r["families"].update(corpus={"items": 1, "seconds": 1})
+                or r["shards"][1]["items"][0].update(family="probes")
+            ),
         )
         fault("shards must be numbered from 0 in order", lambda r: r["shards"][1].update(index=5))
         fault("must be a non-negative number", lambda r: r["estimate"].update(minutes=float("nan")))
@@ -657,7 +659,7 @@ class ArtifactTests(unittest.TestCase):
             "log": "x",
         }
         shard = {
-            "schema_version": 2,
+            "schema_version": 3,
             "index": 0,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
@@ -678,7 +680,7 @@ class ArtifactTests(unittest.TestCase):
             weekly.ShardResult.from_json({**shard, "items": [{**item, "status": "skipped"}]}, "result.json")
         self.assertIn("status 'skipped' is none of", str(raised.exception))
         bundle = {
-            "schema_version": 2,
+            "schema_version": 3,
             "pair": shard["pair"],
             "base": None,
             "complete": True,
@@ -776,6 +778,97 @@ class TimingTableTests(unittest.TestCase):
                 self.assertIn(message, str(raised.exception))
 
 
+# The artifacts each weekly phase writes, byte for byte, at SCHEMA_VERSION 3: a
+# change to what they emit must move this golden (and, when an old reader would
+# misread it, the version) in the same change. Regenerate with
+# CROZIER_UPDATE_WEEKLY_GOLDEN=1 after a deliberate contract change.
+CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v3"
+
+
+def contract_artifacts() -> dict[str, dict[str, object]]:
+    """One of each artifact, as the phases build them: a plan, a shard result
+    and a bundle carrying an `ok` and a `refusal-changed` item, and a diff
+    decision with a populated `refusals_changed`."""
+    pair = weekly.Pair("2.0.0", "3.0.0")
+    # Literal budget and estimate, so a retuned budget or overhead moves the
+    # planner's tests, not this contract.
+    stages = {"plan": 5.0, "shards": 4.02, "assembly": 6.0, "decision": 34.0, "publication": 5.0}
+    plan = small_plan(budget_minutes=180.0, estimate=weekly.Estimate(54.02, stages, 1, 4.0, 6.0, 4.02))
+    unsettled = (
+        "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap "
+        "out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern "
+        "generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no "
+        "diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more "
+        "time or memory"
+    )
+    items = (
+        weekly.ItemResult(
+            "corpus", "a", weekly.Status.OK, "", 1.5, ("tests/fixtures/a/expected/x.py",), "corpus/a.log"
+        ),
+        weekly.ItemResult(
+            "refusals",
+            "heap-exhausted",
+            weekly.Status.REFUSAL_CHANGED,
+            unsettled,
+            1800.2,
+            ("docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log",),
+            "refusals/heap-exhausted.log",
+        ),
+    )
+    shard = weekly.ShardResult(0, pair, plan.base, items, tuple(path for i in items for path in i.changed), ())
+    bundle = weekly.Bundle(pair, plan.base, True, tuple(weekly.replace(item, shard=0) for item in items), (), ())
+    decision = weekly.Decision(pair, True, "b" * 64)
+    decision.refusals_changed.append(weekly.RefusalChange("heap-exhausted", unsettled))
+    decision.gates.append(
+        weekly.GateRun("crozier compare", "refusals", "heap-exhausted", weekly.Verdict.PASS, 1, "reports/r.txt")
+    )
+    return {
+        "plan.json": plan.to_json(),
+        "result.json": shard.to_json(),
+        "bundle.json": bundle.to_json(),
+        "decision.json": decision.to_json(),
+    }
+
+
+class ContractGoldenTests(unittest.TestCase):
+    """What the phases write is the committed version-3 contract, and the
+    phases that read it accept the golden as written."""
+
+    def test_each_artifact_serializes_to_the_committed_golden(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            for name, record in contract_artifacts().items():
+                written = Path(scratch) / name
+                weekly.write_json(written, record)
+                golden = CONTRACT_GOLDEN / name
+                if os.environ.get("CROZIER_UPDATE_WEEKLY_GOLDEN"):
+                    golden.parent.mkdir(parents=True, exist_ok=True)
+                    golden.write_bytes(written.read_bytes())
+                with self.subTest(name):
+                    self.assertEqual(
+                        golden.read_text(encoding="utf-8"),
+                        written.read_text(encoding="utf-8"),
+                        f"{name} no longer serializes as the committed contract; if that is deliberate, bump "
+                        "SCHEMA_VERSION when an old reader would misread it and regenerate with "
+                        "CROZIER_UPDATE_WEEKLY_GOLDEN=1",
+                    )
+
+    def test_the_golden_is_read_back_by_each_phase_unchanged(self) -> None:
+        def golden(name: str) -> dict[str, Any]:
+            # A JSON object whose fields each reader validates: `Any` is json's own value type.
+            return json.loads((CONTRACT_GOLDEN / name).read_text(encoding="utf-8"))
+
+        self.assertEqual(weekly.SCHEMA_VERSION, golden("result.json")["schema_version"])
+        self.assertEqual(golden("plan.json"), weekly.Plan.from_json(golden("plan.json"), "plan").to_json())
+        shard = weekly.ShardResult.from_json(golden("result.json"), "result")
+        self.assertEqual(golden("result.json"), shard.to_json())
+        self.assertEqual(weekly.Status.REFUSAL_CHANGED, shard.items[1].status)
+        bundle = weekly.Bundle.from_json(golden("bundle.json"), "bundle")
+        self.assertEqual(golden("bundle.json"), bundle.to_json())
+        read = weekly.RecordedDecision.from_json(golden("decision.json"), "decision")
+        self.assertEqual(weekly.Outcome.DIFF, read.outcome)
+        self.assertEqual((weekly.RefusalChange("heap-exhausted", bundle.items[1].detail),), read.refusals_changed)
+
+
 class DecisionRecordTests(unittest.TestCase):
     """The decision the publication job reads back is the one written."""
 
@@ -804,6 +897,76 @@ class DecisionRecordTests(unittest.TestCase):
             with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.RecordedDecision.from_json(broken, "decision")
             self.assertIn(message, str(raised.exception))
+
+    def test_refusals_changed_is_omitted_when_empty_and_round_trips_when_populated(self) -> None:
+        pair = weekly.Pair("5.170.0", "5.42.0")
+        empty = weekly.Decision(pair, True, "digest")
+        self.assertNotIn("refusals_changed", empty.to_json())
+        self.assertEqual((), weekly.RecordedDecision.from_json(empty.to_json(), "decision").refusals_changed)
+
+        populated = weekly.Decision(pair, True, "digest")
+        change = weekly.RefusalChange("heap-exhausted", "unsettled: recorded: …; now: …")
+        populated.refusals_changed.append(change)
+        record = json.loads(json.dumps(populated.to_json()))
+        self.assertEqual([vars(change)], record["refusals_changed"])
+        read = weekly.RecordedDecision.from_json(record, "decision")
+        self.assertEqual((weekly.Outcome.DIFF, (change,)), (read.outcome, read.refusals_changed))
+
+        for message, mutate in (
+            ("`refusals_changed` must be list", lambda r: r.update(refusals_changed={})),
+            ("`detail` must be str", lambda r: r["refusals_changed"][0].pop("detail")),
+            ("a match changes no known failure or refusal", lambda r: r.update(outcome="match")),
+        ):
+            broken = json.loads(json.dumps(record))
+            mutate(broken)
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.RecordedDecision.from_json(broken, "decision")
+            self.assertIn(message, str(raised.exception))
+
+
+class RefusalChangeTests(unittest.TestCase):
+    """The report `fern-refusals.py probe --changes` writes is read at the shard's
+    boundary: a change it states names its outcome, record and new result, and
+    anything else fails the item rather than pass as a change."""
+
+    def read(self, text: str | None, item: str = "heap-exhausted") -> str | None:
+        with tempfile.TemporaryDirectory() as scratch:
+            path = Path(scratch) / "probe.heap-exhausted.changes.jsonl"
+            if text is not None:
+                path.write_text(text, encoding="utf-8")
+            return weekly.refusal_change(path, item)
+
+    def test_a_reported_change_is_one_line_and_no_report_is_no_change(self) -> None:
+        line = {
+            "class": "heap-exhausted",
+            "outcome": "unsettled",
+            "recorded": "the check stage …",
+            "now": "unsettled: …",
+        }
+        other = {**line, "class": "other"}
+        text = json.dumps(other) + "\n" + json.dumps(line) + "\n"
+        self.assertEqual("unsettled: recorded: the check stage …; now: unsettled: …", self.read(text))
+        self.assertIsNone(self.read(None))
+        self.assertIsNone(self.read(""))
+        self.assertIsNone(self.read(json.dumps(other) + "\n"))
+
+    def test_a_malformed_report_is_refused(self) -> None:
+        line = {"class": "heap-exhausted", "outcome": "generates", "recorded": "r", "now": "n"}
+        for message, text in (
+            ("is no JSON object", "not json\n"),
+            ("is no JSON object", "[1]\n"),
+            ("`now` must be str", json.dumps({**line, "now": 3})),
+            ("`recorded` must be str", json.dumps({key: value for key, value in line.items() if key != "recorded"})),
+            ("a change is one of generates, refuses-otherwise, unsettled", json.dumps({**line, "outcome": "vanished"})),
+            ("a change is one of", json.dumps({**line, "now": ""})),
+        ):
+            with self.subTest(text=text), self.assertRaises(weekly.WeeklyError) as raised:
+                self.read(text)
+            self.assertIn(message, str(raised.exception))
+        # A report that is there but cannot be read is no "no change".
+        with tempfile.TemporaryDirectory() as scratch, self.assertRaises(weekly.WeeklyError) as raised:
+            weekly.refusal_change(Path(scratch), "heap-exhausted")
+        self.assertIn("cannot read", str(raised.exception))
 
 
 class TitleTests(unittest.TestCase):
@@ -879,7 +1042,7 @@ class PublicationGuardTests(unittest.TestCase):
         (self.bundle / "files").mkdir(parents=True)
         (self.bundle / "files/x.txt").write_text("x\n", encoding="utf-8")
         record = {
-            "schema_version": 2,
+            "schema_version": 3,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
             "complete": True,
@@ -895,7 +1058,7 @@ class PublicationGuardTests(unittest.TestCase):
         self, outcome: str = "match", *, digest: str | None = None, checked_on: str = "2026-10-19"
     ) -> subprocess.CompletedProcess[str]:
         record = {
-            "schema_version": 2,
+            "schema_version": 3,
             "outcome": outcome,
             "complete": True,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},

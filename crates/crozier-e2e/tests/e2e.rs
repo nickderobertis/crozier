@@ -7176,6 +7176,174 @@ fn sdk_env_operation_header_defaults_reach_the_wire() {
     // llmlint: ignore-end[e2e_not_mocked]
 }
 
+/// The `wrapped-union-member-docs-example` correction, composed through the
+/// comparison engine over the complete `tidepool-survey-log` SDK the CLI
+/// generates: it explains Fern's empty keyword argument in `README.md` and
+/// `reference.md`, and nothing beside it.
+#[test]
+fn wrapped_union_member_departure_rejects_unexplained_complete_tree_differences() {
+    let id = "wrapped-union-member-docs-example";
+    let case = repo_root().join("docs/openapi-surface/handwritten/tidepool-survey-log");
+    let expected = case.join("fern-expected");
+    let actual = tempfile::tempdir().unwrap();
+    probe_command(&case.join("openapi.yml"), actual.path())
+        .assert()
+        .success();
+    // The rule reads the wrappers off the specification, which every golden
+    // comparison supplies.
+    let compare = |fern: &Path, crozier: &Path| {
+        let source = crozier::openapi::load(&case.join("openapi.yml")).unwrap();
+        crozier::parity::compare_trees_with_document(fern, crozier, None, true, Some(source))
+            .unwrap()
+    };
+    let positive = compare(&expected, actual.path());
+    assert!(
+        positive.differences.is_empty(),
+        "{:?}",
+        positive.differences
+    );
+    for file in ["README.md", "reference.md"] {
+        assert!(
+            positive
+                .departures
+                .iter()
+                .any(|departure| departure.id == id && departure.file == file),
+            "{id} does not explain {file}"
+        );
+    }
+    // (file, edit to Fern's side, edit to crozier's side): each `(from, to)`
+    // replaces the first `from`, leaving a difference the departure must not
+    // explain.
+    type Edit = Option<(&'static str, &'static str)>;
+    let cases: [(&str, Edit, Edit); 4] = [
+        // An unrelated argument beside the corrected one.
+        (
+            "README.md",
+            Some(("pool_id=\"poolId\"", "pool_id=\"otherPool\"")),
+            None,
+        ),
+        // Fern's keyword must be the mapping value.
+        ("README.md", Some(("level=,", "depth=,")), None),
+        // Only crozier's one-line constructor is the measured form.
+        (
+            "reference.md",
+            None,
+            Some((
+                "SurveyEntry_Level(value=1.1)",
+                "SurveyEntry_Level(\n        value=1.1\n    )",
+            )),
+        ),
+        // Python files are compared as Fern writes them.
+        (
+            "src/fern/client.py",
+            Some((
+                "SurveyEntry_Level(value=1.1)",
+                "SurveyEntry_Level(\n                level=,\n            )",
+            )),
+            None,
+        ),
+    ];
+    let edit = |source: &Path, file: &str, edit: Edit| {
+        let edited = tempfile::tempdir().unwrap();
+        for rel in walk_files(source) {
+            let dest = edited.path().join(&rel);
+            std::fs::create_dir_all(dest.parent().unwrap()).unwrap();
+            std::fs::copy(source.join(rel), dest).unwrap();
+        }
+        if let Some((from, to)) = edit {
+            let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
+            assert!(text.contains(from), "{file} lacks {from}");
+            std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+        }
+        edited
+    };
+    for (file, fern_edit, crozier_edit) in cases {
+        let fern = edit(&expected, file, fern_edit);
+        let crozier = edit(actual.path(), file, crozier_edit);
+        let negative = compare(fern.path(), crozier.path());
+        assert!(
+            negative.differences.iter().any(|(path, _)| path == file),
+            "{fern_edit:?} / {crozier_edit:?} left no difference in {file}"
+        );
+        assert!(
+            !negative
+                .departures
+                .iter()
+                .any(|departure| departure.file == file && departure.id == id),
+            "{id} explained {fern_edit:?} / {crozier_edit:?} in {file}"
+        );
+    }
+}
+
+const WRAPPED_MEMBER_EVIDENCE: &str =
+    "docs/departures/evidence/wrapped-union-member-docs-example.py";
+
+/// The `wrapped-union-member-docs-example` evidence script, run as its note
+/// runs it without the certified SDK installed: it finds the three certified
+/// examples, shows each fails to compile, and says it did not bind.
+#[test]
+fn wrapped_union_member_evidence_shows_the_certified_examples_do_not_compile() {
+    let Some(python) = python_interpreter() else {
+        eprintln!("skipping: no python3/python on PATH");
+        return;
+    };
+    let run = std::process::Command::new(python)
+        .arg("-I")
+        .arg(repo_root().join(WRAPPED_MEMBER_EVIDENCE))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        stdout.matches("certified example does not compile").count(),
+        3,
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("certified SDK not installed: binding not checked"),
+        "{stdout}"
+    );
+}
+
+/// The same script with the unedited certified SDK importable binds the
+/// constructor crozier writes, serializes it with its tag, and shows the
+/// certified tree's keyword rejected by that SDK.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_wrapped_union_member_evidence_binds_the_corrected_constructor() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let run = std::process::Command::new(&python)
+        .arg(root.join(WRAPPED_MEMBER_EVIDENCE))
+        .env(
+            "PYTHONPATH",
+            root.join("docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected/src"),
+        )
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout.contains("corrected: {'value': 1.1, 'entryType': 'level'}"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("certified keyword rejected by the certified SDK: ValidationError"),
+        "{stdout}"
+    );
+    assert!(!stdout.contains("binding not checked"), "{stdout}");
+}
+
 #[test]
 fn parameter_departures_reject_unexplained_complete_tree_differences() {
     fn copy_tree(source: &Path, target: &Path) {
@@ -25123,6 +25291,51 @@ fn a_plain_copy_of_a_quoted_date_example_in_an_example_or_prose_exempts_nothing(
         let plain = copied.replacen(quoted, unquoted, 1);
         assert_ne!(plain, copied, "{name}");
         generates_identically_in_both_modes(&write(&format!("{name}-plain.yml"), &plain));
+    }
+}
+
+#[test]
+fn a_nullable_string_property_generates_beside_the_name_collisions_fern_refuses() {
+    // Measured at Fern CLI 5.163.1 with fern-python-sdk 5.41.3: a later
+    // component named like an inline property takes the name, and the
+    // property's example is refused against it, for a string-led union (with
+    // or without a null member beside its two others), an inline enum, and a
+    // scalar taken by a later inline object. A string whose only other union
+    // member is the null type is the optional string it is, named nothing, so
+    // the same collision generates (RS-Server's `Item.collection` beside
+    // `ItemCollection`), as do a colliding component declared first and an
+    // unreferenced colliding scalar.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-type-mismatch");
+    let schedule = "GET /probe components/schemas/subscription/properties/schedule \
+                    collides with subscription_schedule";
+    for (spec, element) in [
+        ("string-union-collision-probe.yml", schedule),
+        ("nullable-string-union-collision-probe.yml", schedule),
+        (
+            "inline-enum-collision-probe.yml",
+            "GET /probe components/schemas/Owner/properties/kind collides with OwnerKind",
+        ),
+        (
+            "scalar-inline-object-collision-probe.yml",
+            "GET /probe components/schemas/UserRole collides with \
+             components/schemas/User/properties/role",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
+            let failures = refused_failures("example-type-mismatch", &run, element, strict);
+            assert!(failures.is_empty(), "{spec}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{spec}: {}", run.stderr);
+        }
+    }
+    for control in [
+        "nullable-string-union-collision-control.yml",
+        "union-collision-declared-first-control.yml",
+        "unreferenced-scalar-collision-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
     }
 }
 

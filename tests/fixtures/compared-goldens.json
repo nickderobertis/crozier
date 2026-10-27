@@ -639,6 +639,7 @@
     "docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected": {},
     "docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected": {},
     "docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected": {},
+    "docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected": {},
     "docs/openapi-surface/handwritten/tram-route-query/fern-expected": {},
     "docs/openapi-surface/handwritten/transcript-format-part/fern-expected": {},
     "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},

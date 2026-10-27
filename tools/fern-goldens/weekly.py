@@ -78,11 +78,16 @@ CHECKS = Path("tests/fixtures/fern-pair-checks.tsv")
 CHECKS_HEADER = ("fern_cli_version", "fern_python_sdk_version", "checked_on", "outcome")
 FERN_GOLDENS_REPORT = Path(".local/fern-goldens")
 FERN_REFERENCES_LOGS = Path(".local/fern-references")
+# Where `fern-references.py generate refusals` has each class's probe report an
+# outcome that no longer matches its recorded refusal.
+REFUSAL_CHANGES = FERN_REFERENCES_LOGS / "refusals"
+# How `fern-refusals.py probe` says a probe changed: `unsettled` is a run past its bound.
+REFUSAL_OUTCOMES = ("generates", "refuses-otherwise", "unsettled")
 NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
 BASE = "main"
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
 # in `.github/budgets.yaml`, whose test holds the two equal.
@@ -127,6 +132,10 @@ class Status(StrEnum):
     # registration rewritten at the candidate, or replaced by the new golden.
     KNOWN_CHANGED = "known-upstream-failure-changed"
     UNFETCHABLE = "spec-unfetchable"
+    # A refusal class whose probe Fern no longer refuses as its record says: it
+    # generates, refuses otherwise, or runs past the probe's bound (unsettled).
+    # The record is kept and the change reported, never a generation failure.
+    REFUSAL_CHANGED = "refusal-changed"
     FAILED = "failed"
 
 
@@ -545,6 +554,15 @@ class KnownFailureChange:
 
 
 @dataclass(frozen=True)
+class RefusalChange:
+    """A refusal class whose probe the candidate pair no longer refuses as its
+    committed record says: how, the recorded refusal, and Fern's outcome now."""
+
+    item: str
+    detail: str
+
+
+@dataclass(frozen=True)
 class Unfetchable:
     """A reference whose pinned upstream specification could not be fetched."""
 
@@ -572,6 +590,7 @@ class Decision:
     failing: dict[str, list[FailingItem]] = field(default_factory=dict)
     unfetchable: list[Unfetchable] = field(default_factory=list)
     known_changed: list[KnownFailureChange] = field(default_factory=list)
+    refusals_changed: list[RefusalChange] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
 
@@ -579,7 +598,8 @@ class Decision:
     def outcome(self) -> Outcome:
         if self.cannot_run:
             return Outcome.FAILURE
-        return Outcome.DIFF if self.failing or self.unfetchable or self.known_changed else Outcome.MATCH
+        changed = self.known_changed or self.refusals_changed
+        return Outcome.DIFF if self.failing or self.unfetchable or changed else Outcome.MATCH
 
     def title(self) -> str:
         return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
@@ -598,6 +618,7 @@ class Decision:
             "title": self.title(),
             # Optional, and omitted when empty: most runs change no registration.
             **({"known_changed": [vars(entry) for entry in self.known_changed]} if self.known_changed else {}),
+            **({"refusals_changed": [vars(entry) for entry in self.refusals_changed]} if self.refusals_changed else {}),
         }
 
 
@@ -611,6 +632,7 @@ class RecordedDecision:
     bundle: str
     title: str
     known_changed: tuple[KnownFailureChange, ...] = ()
+    refusals_changed: tuple[RefusalChange, ...] = ()
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -632,8 +654,16 @@ class RecordedDecision:
             )
             for entry in changes
         )
-        if known_changed and outcome == Outcome.MATCH:
-            raise WeeklyError(f"{where}: a match changes no known failure; re-run the decision job")
+        refusals = (
+            field_of(record, "refusals_changed", list, where)
+            if isinstance(record, dict) and "refusals_changed" in record
+            else []
+        )
+        refusals_changed = tuple(
+            RefusalChange(name_of(entry, "item", where), field_of(entry, "detail", str, where)) for entry in refusals
+        )
+        if (known_changed or refusals_changed) and outcome == Outcome.MATCH:
+            raise WeeklyError(f"{where}: a match changes no known failure or refusal; re-run the decision job")
         return cls(
             Outcome(outcome),
             field_of(record, "complete", bool, where),
@@ -641,6 +671,7 @@ class RecordedDecision:
             field_of(record, "bundle", str, where),
             field_of(record, "title", str, where),
             known_changed,
+            refusals_changed,
         )
 
 
@@ -1326,6 +1357,35 @@ def delegate_logs(base: Path, since: float) -> list[Path]:
     return sorted(found)
 
 
+def refusal_change(path: Path, item: str) -> str | None:
+    """What `fern-refusals.py probe --changes` reported for `item`, in one line,
+    or `None` when its probe reproduced the recorded refusal."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        # A report that is there but unreadable must not pass as no change.
+        raise WeeklyError(f"cannot read {path.name} ({error}); read the item's log") from None
+    for line in lines:
+        where = f"{path.name}: {line!r}"
+        try:
+            record = json.loads(line)
+        except ValueError:
+            record = None
+        if not isinstance(record, dict):
+            raise WeeklyError(f"{where} is no JSON object; read the item's log and fix fern-refusals.py probe")
+        if record.get("class") == item:
+            outcome, recorded, now = (field_of(record, key, str, where) for key in ("outcome", "recorded", "now"))
+            if outcome not in REFUSAL_OUTCOMES or not recorded or not now:
+                raise WeeklyError(
+                    f"{where}: a change is one of {', '.join(REFUSAL_OUTCOMES)} with what was recorded and what "
+                    "Fern did now; read the item's log and fix fern-refusals.py probe"
+                )
+            return f"{outcome}: recorded: {recorded}; now: {now}"
+    return None
+
+
 def generate_item(base: Path, entry: PlannedItem, logs: Path) -> ItemResult:
     family, item = entry.family, entry.item
     environment = dict(os.environ, CROZIER_FERN_REFERENCES_ROOT=str(base), CROZIER_FERN_GOLDENS_ROOT=str(base))
@@ -1357,6 +1417,14 @@ def generate_item(base: Path, entry: PlannedItem, logs: Path) -> ItemResult:
             detail = (result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}").splitlines()[-1]
     elif item in changes:
         status, detail = Status.KNOWN_CHANGED, changes[item]
+    elif family == "refusals":
+        try:
+            refusal = refusal_change(base / REFUSAL_CHANGES / f"probe.{item}.changes.jsonl", item)
+        except WeeklyError as error:
+            status, detail = Status.FAILED, str(error)
+        else:
+            if refusal is not None:
+                status, detail = Status.REFUSAL_CHANGED, refusal
     elif family == "corpus" and item in listed_fixtures(report / "known-upstream-failures.txt"):
         status, detail = Status.KNOWN, "the exact known upstream Fern failure, reproduced"
     return ItemResult(
@@ -1519,6 +1587,7 @@ def assemble(args: argparse.Namespace) -> int:
     shutil.copy2(base / METADATA, metadata)
     set_pair(output / "files", pair)
     unfetchable = [entry for entry in results if entry.status == Status.UNFETCHABLE]
+    refusals = [entry for entry in results if entry.status == Status.REFUSAL_CHANGED]
     bundle = Bundle(pair, made.base, made.complete, tuple(results), tuple(sorted(set(deleted))), tuple(failures))
     write_json(output / "bundle.json", bundle.to_json())
     summarize(
@@ -1530,6 +1599,7 @@ def assemble(args: argparse.Namespace) -> int:
             f"{len(unfetchable)} with an unfetchable upstream specification; {len(failures)} failure(s).",
             *(f"- **failure**: {failure}" for failure in failures),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in unfetchable),
+            *(f"- refusal changed: `{entry.item}`: {entry.detail}" for entry in refusals),
         ],
     )
     if failures:
@@ -1547,7 +1617,7 @@ def write_timings(base: Path, made: Plan, results: list[ItemResult], destination
     rows of items no longer in the inventory."""
     table, _default = timings(base)
     for entry in results:
-        if entry.status in (Status.OK, Status.KNOWN, Status.KNOWN_CHANGED):
+        if entry.status in (Status.OK, Status.KNOWN, Status.KNOWN_CHANGED, Status.REFUSAL_CHANGED):
             table[(entry.family, entry.item)] = entry.seconds
     if made.complete:
         planned = {entry.key() for shard_plan in made.shards for entry in shard_plan.items}
@@ -1804,6 +1874,8 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             decision.known_changed.append(
                 KnownFailureChange(entry.item, entry.detail, known_change_report(base, entry))
             )
+        if entry.status == Status.REFUSAL_CHANGED:
+            decision.refusals_changed.append(RefusalChange(entry.item, entry.detail))
     reports.mkdir(parents=True, exist_ok=True)
     # A command several family rows name runs once, and its report is split over
     # every family those rows name.
@@ -1873,8 +1945,13 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.known_changed
             else ""
         )
+        refusals = (
+            f", and Fern no longer refuses {len(decision.refusals_changed)} refusal class probe(s) as recorded"
+            if decision.refusals_changed
+            else ""
+        )
         lines.append(
-            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}. This carries the "
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}. This carries the "
             "regenerated references and the new pair; crozier's checks on it show what crozier must change. "
             "It is not auto-merged."
         )
@@ -1899,6 +1976,16 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
                 report = report[:REPORT_LIMIT] + "\n… (truncated; the bundle carries the whole file)"
             lines += [f"- corpus `{change.item}`: {change.detail}", "", "<details><summary>what this carries</summary>"]
             lines += ["", fenced(report), "", "</details>", ""]
+    if decision.refusals_changed:
+        lines += ["## Refusal classes whose Fern outcome changed", ""]
+        lines += [
+            "Each class keeps its recorded refusal; what the new outcome means for it is decided from this pull "
+            "request. An `unsettled` outcome ran past the probe's time bound, which says nothing about whether "
+            "Fern refuses given more time or memory.",
+            "",
+        ]
+        lines += [f"- refusals `{change.item}`: {change.detail}" for change in decision.refusals_changed]
+        lines += [""]
     if decision.unfetchable:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
         lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
@@ -1935,6 +2022,7 @@ def decide(args: argparse.Namespace) -> int:
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- differs: {line}" for line in failing),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
+            *(f"- refusal changed: `{change.item}`: {change.detail}" for change in decision.refusals_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],
     )
