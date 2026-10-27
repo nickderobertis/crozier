@@ -13085,6 +13085,44 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
+    def test_a_combination_cover_with_nothing_to_measure_at_is_refused_not_skipped(self) -> None:
+        """`handwritten-reach` places each combination cover at its interaction sites; a cover the
+        site table does not declare, or a `co-occurrence` one with no audit row, is a failure."""
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        reach = load_script("tools/surface-census/golden-reach.py")
+        key, witness, _line = self.handwritten_audit_row()
+        fixture, failures = gate.read_evidence(HANDWRITTEN / witness)
+        self.assertEqual([], failures)
+        assert fixture is not None
+        sites = reach.read_sites_table(self.root / "docs/openapi-surface/golden-reach-sites.tsv")
+        audit, failures = reach.read_cooccurrence(self.root / COOCCURRENCE_AUDIT)
+        self.assertEqual([], failures)
+        placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
+        self.assertEqual([], failures)
+        self.assertEqual(
+            set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key}
+        )
+        cover = next(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
+        undeclared = fixture._replace(covers=[cover._replace(key="combo-not-declared")])
+        _placed, failures = gate.interaction_sites({witness: undeclared}, sites, audit)
+        self.assertEqual(
+            [
+                f"{witness}: cover `combo-not-declared` names a combination golden-reach-sites.tsv does not "
+                "declare; add its row with its interaction sites or `co-occurrence`"
+            ],
+            failures,
+        )
+        unaudited = {other: row for other, row in audit.items() if other != key}
+        placed, failures = gate.interaction_sites({witness: fixture._replace(covers=[cover])}, sites, unaudited)
+        self.assertEqual([], placed)
+        self.assertEqual(
+            [
+                f"{witness}: cover `{key}` is a `co-occurrence` combination with no "
+                "combination-cooccurrence.tsv row naming its handlers; add the audit row"
+            ],
+            failures,
+        )
+
     def test_a_handwritten_audit_row_is_refused_when_the_certified_pins_are_unreadable(self) -> None:
         """A hand-written witness is byte-matched only at the certified pair, so pins that are not
         an object of two version strings refuse it rather than crash the gate."""

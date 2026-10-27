@@ -852,7 +852,9 @@ def gate(root: Path) -> dict[str, Any]:
     # site the site table declares for its key (`interaction_sites`).
     audit, found = reach.read_cooccurrence(root / REGIONS / "combination-cooccurrence.tsv")
     failures += found
-    interaction_rows = {row for row in interaction_sites(fixtures, sites, audit) if row.key in rows}
+    placed, found = interaction_sites(fixtures, sites, audit)
+    failures += found
+    interaction_rows = {row for row in placed if row.key in rows}
     for name, fixture in sorted(fixtures.items()):
         document = None
         for cover in fixture.covers:
@@ -995,29 +997,40 @@ def interaction_sites(
     fixtures: Mapping[str, Fixture],
     sites: Mapping[str, CombinationSites],
     audit: Mapping[str, CooccurrenceHandlers],
-) -> list[Interaction]:
-    """Each site a feature-level combination cover is measured at.
+) -> tuple[list[Interaction], list[str]]:
+    """Each site a feature-level combination cover is measured at, and each cover it cannot place.
 
     A combination is proven at the branch where its two features meet, so a
     fixture proving one is measured there: each arm site
     `golden-reach-sites.tsv` declares for the cover's key. Where its cell is
     `co-occurrence`, no measured branch joins both, and the fixture is measured at every
-    handling function `combination-cooccurrence.tsv` names for each feature.
+    handling function `combination-cooccurrence.tsv` names for each feature. A cover whose
+    key the site table does not declare, or whose `co-occurrence` key has no audit row,
+    has nothing to be measured at, so it is a failure rather than an empty measurement.
     """
     reach = golden_reach()
     found: set[Interaction] = set()
+    failures: list[str] = []
     for name, fixture in fixtures.items():
         for cover in fixture.covers:
-            if cover.arm is not None or not cover.key.startswith(COMBINATION_PREFIX) or cover.key not in sites:
+            if cover.arm is not None or not cover.key.startswith(COMBINATION_PREFIX):
+                continue
+            if cover.key not in sites:
+                failures.append(
+                    f"{name}: cover `{cover.key}` names a combination golden-reach-sites.tsv does not "
+                    "declare; add its row with its interaction sites or `co-occurrence`"
+                )
                 continue
             row = sites[cover.key]
-            named = (
-                reach.handler_specs(audit[cover.key].handlers)
-                if row.cooccurrence and cover.key in audit
-                else list(row.sites)
-            )
+            if row.cooccurrence and cover.key not in audit:
+                failures.append(
+                    f"{name}: cover `{cover.key}` is a `co-occurrence` combination with no "
+                    "combination-cooccurrence.tsv row naming its handlers; add the audit row"
+                )
+                continue
+            named = reach.handler_specs(audit[cover.key].handlers) if row.cooccurrence else list(row.sites)
             found |= {Interaction(name, cover.key, site) for site in named}
-    return sorted(found)
+    return sorted(found), failures
 
 
 def handwritten_row_failures(key: str, cells: list[str], covers: list[tuple[str, Cover]]) -> list[str]:
@@ -1114,7 +1127,10 @@ def measure(args: argparse.Namespace) -> int:
         if failures or fixture is None:
             raise SystemExit("handwritten-reach: " + "; ".join(failures))
         declared[entry.name] = fixture
-        for row in interaction_sites({entry.name: fixture}, sites, audit):
+        placed, failures = interaction_sites({entry.name: fixture}, sites, audit)
+        if failures:
+            raise SystemExit("handwritten-reach: " + "; ".join(failures))
+        for row in placed:
             reach.resolve_site(row.site, repo_root)
             interactions.append(row)
         for cover in fixture.covers:
