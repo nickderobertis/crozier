@@ -135,6 +135,23 @@ golden and `expected-literals` overlay `openapi_generator_composed_schema_loweri
 holds crozier to. Its Python passes the pinned `ruff format`, which every
 generation runs.
 
+## Derived records
+
+Each derived record the branch commits was generated over the `src/` of
+`be0ba0f1c`, the branch's last merge of main (`src/` there is the branch's
+final source; that merge brought no `src/` change):
+
+- `docs/openapi-surface/golden-reach.tsv` and the golden rows' reach cells,
+  with the census JSON they join: `just golden-reach` over 274 golden tests.
+- `docs/openapi-surface/handwritten-reach.tsv`: `just handwritten-reach`,
+  which left it unchanged.
+- The arm counts and arm table in `docs/openapi-surface-coverage.md`:
+  `just golden-reach-arms`, which left them unchanged.
+- `tests/fixtures/departures-ledger.tsv` and
+  `docs/departures/evidence/invalid-example-values/inventory.tsv`:
+  `crates/crozier-e2e/departures-ledger.sh`, which left both unchanged and
+  passed every golden comparison it ran.
+
 ## Found on the way
 
 The witness search ran crozier over OpenAPI Generator's
