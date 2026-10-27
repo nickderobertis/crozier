@@ -35,6 +35,7 @@ fn class_shape(name: &str) -> PathBuf {
     repo_root().join(CLASS_DIR).join(name)
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates small SDKs and compares them, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The orchard document's `Crate` maps `pear` to the bare `PearCrate` and its
 /// `Label` maps `sticker` to the bare `StickerLabel`, under the unusable
 /// discriminants `@kind` and `$label`. crozier's complete SDK equals Fern's in
@@ -139,3 +140,4 @@ fn pointer_mapped_discriminant_refusals_hold_beside_the_bare_name_controls() {
         }
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

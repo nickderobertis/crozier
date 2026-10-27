@@ -6773,9 +6773,9 @@ fn resolve_request_body(
         // it is, in either spelling: the hand-written `orchard-crate-labels`
         // document's `Label` and `Crate`.
         if target.one_of.is_some() || target.any_of.is_some() || bare_name_mapped_union(target) {
-            let convert = !bare_name_mapped_union(target);
-            let mut body = single(TypeRef::Named(class), required, convert, true);
+            let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
+                single.convert = !bare_name_mapped_union(target);
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
@@ -11753,11 +11753,10 @@ fn collect_discriminant_strips(
             // Only a `oneOf` union or an inheritance base reaches here, so the
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
-                for reference in discriminator
-                    .mapping
-                    .values()
-                    .filter(|target| target.contains('/'))
-                {
+                for reference in discriminator.mapping.values() {
+                    if !reference.contains('/') {
+                        continue;
+                    }
                     // Fern hoists the tag onto the union wrapper and drops it from
                     // the member model it consumed — unless that member is also
                     // referenced somewhere on its own, where the standalone model
