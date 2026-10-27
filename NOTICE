@@ -712,3 +712,8 @@ tooljet-microsoft-teams API specification and generated SDK golden:
     https://raw.githubusercontent.com/ToolJet/ToolJet/63c2b08614b78f8f289fb6127a32f10ed5987362/marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml
     AGPL-3.0 (the repository's own LICENSE); corpus row 3475 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openapi-generator-composed-schema-lowering API specification and generated SDK golden:
+    https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml
+    Apache-2.0 (the repository's own LICENSE); corpus row 3476 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

@@ -181,6 +181,8 @@ parameter-name-extension	parameter.x-fern-parameter-name	parameters.md	supported
 parameter-without-location	parameter.in:absent	parameters.md	supported
 patch-inline-nullable-unrequired-props-omit	pathItem.patch	bodies-media.md	supported
 path-parameters-template-order-31	operation.parameters:path-order-oas-three-one	parameters.md	supported
+property-anyof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
+property-oneof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
 property-ref-to-nullable-component-annotation	schema.$ref	schemas.md	supported
 property-sole-anyof-composed-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported

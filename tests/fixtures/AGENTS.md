@@ -143,6 +143,13 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `kibana-jentic` | `jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/elastic.co/kibana/1.0/openapi.json` | Document sha256 `074048fe12ed07ed40e24d6ff027c480745d1ffe51bd07e86e5d24491b5031e2`. `fern check` at CLI 5.67.1 exits 1 with 40 errors, e.g. `ComponentsSchemasCasesAlertCommentResponseProperties is already declared in cases.yml`. Screened while settling `oneof-anyof-variant`; the registered witness is corpus row 303. Log: [`../../docs/openapi-surface/witness-search-jentic/screens.jsonl`](../../docs/openapi-surface/witness-search-jentic/screens.jsonl) |
 | `apwg-ecx2` | `APWG/ecx2-openapi-doc@9218d45cdc82dded5474adb2a58072e68483cdd8/ecx2-openapi.yaml` | Document sha256 `112b5d9658df34218ea3c584e82ff8a1bfdfe13771826326cbfb7c60b237ba3e`. `fern check` at CLI 5.67.1 exits **0**, but the **generator** exits 1 at `fernapi/fern-python-sdk:5.20.0`: `Found 24 errors and 0 warnings`, each `Objects can only extend other objects, and root.Brand is not an object.` (and `root.Ip`, `root.Url`, `root.Carrier`, …) — its search request bodies' `filters` schemas list scalar components under `allOf`, which Fern turns into `extends` of a non-object. Publisher-owned and GPL-3.0, so this refusal is the only thing that keeps it out of `CORPUS.md`. Screened while closing `property-sole-anyof-composed-member`, which it declares at six sites; the census's stdlib loader first had to learn three flow forms it writes |
 
+The certified pair also parses none of three documents a refusal-parity search
+turned up, and writes the same 35-file empty SDK for each: apis.guru's
+`digitalocean.com/2.0`, `dltkddnr04/propresenter-remote` and
+`jeffmikels/ProPresenter-API` `pro7.9`. They carry no screen, so they stay out of
+the table above; their pins and Fern logs are in
+[`../../docs/refusal-parity-ten-documents.md`](../../docs/refusal-parity-ten-documents.md).
+
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.
 

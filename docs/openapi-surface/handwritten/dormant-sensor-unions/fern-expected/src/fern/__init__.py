@@ -1,0 +1,108 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        Channel,
+        ChannelOne,
+        Channels,
+        ChannelsOne,
+        Gap,
+        Lull,
+        Pitch,
+        Reading,
+        ReadingAlarm,
+        ReadingMode,
+        ReadingPlacement,
+        ReadingPlacementBand,
+        Silence,
+        Stillness,
+        Tone,
+    )
+    from . import sensors
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+    from .client import AsyncFernApi, FernApi
+    from .environment import FernApiEnvironment
+    from .sensors import CalibrateSensorRequestRange, CalibrateSensorResponse, CalibrateSensorResponseVerdict
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AsyncFernApi": ".client",
+    "CalibrateSensorRequestRange": ".sensors",
+    "CalibrateSensorResponse": ".sensors",
+    "CalibrateSensorResponseVerdict": ".sensors",
+    "Channel": ".types",
+    "ChannelOne": ".types",
+    "Channels": ".types",
+    "ChannelsOne": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "Gap": ".types",
+    "Lull": ".types",
+    "Pitch": ".types",
+    "Reading": ".types",
+    "ReadingAlarm": ".types",
+    "ReadingMode": ".types",
+    "ReadingPlacement": ".types",
+    "ReadingPlacementBand": ".types",
+    "Silence": ".types",
+    "Stillness": ".types",
+    "Tone": ".types",
+    "__version__": ".version",
+    "sensors": ".sensors",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "AsyncFernApi",
+    "CalibrateSensorRequestRange",
+    "CalibrateSensorResponse",
+    "CalibrateSensorResponseVerdict",
+    "Channel",
+    "ChannelOne",
+    "Channels",
+    "ChannelsOne",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "FernApi",
+    "FernApiEnvironment",
+    "Gap",
+    "Lull",
+    "Pitch",
+    "Reading",
+    "ReadingAlarm",
+    "ReadingMode",
+    "ReadingPlacement",
+    "ReadingPlacementBand",
+    "Silence",
+    "Stillness",
+    "Tone",
+    "__version__",
+    "sensors",
+]

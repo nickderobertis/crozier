@@ -1284,6 +1284,11 @@ docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8115,6 +8120,14 @@ tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	35	sdk-id
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	reference.md	117	stream-reference-return-type
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	reference.md	400	stream-reference-return-type
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/openapi-generator-composed-schema-lowering/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/openapitools-csharp-allof/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/openapitools-csharp-allof/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/openapitools-csharp-allof/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

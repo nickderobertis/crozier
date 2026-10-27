@@ -10135,6 +10135,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENAPITOOLS_CSHARP_ALLOF,
     &SWAGGER_PARSER_NULL_TYPES,
     &TOOLJET_MICROSOFT_TEAMS,
+    &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12556,6 +12557,20 @@ const SWAGGER_PARSER_NULL_TYPES: Corpus = Corpus {
 /// `@odata.type` base mapped to a bare name and a typed `200` beside a bodyless `207`.
 const TOOLJET_MICROSOFT_TEAMS: Corpus = Corpus {
     api: "tooljet-microsoft-teams",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// OpenAPI Generator's composed-schema lowering document — corpus row 3476,
+/// the publisher's own repository's copy, witnessing an `anyOf` of only `null`
+/// alternatives and an `anyOf` whose one alternative is a string enum.
+const OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING: Corpus = Corpus {
+    api: "openapi-generator-composed-schema-lowering",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20605,6 +20620,13 @@ fn swagger_parser_null_types_matches_fern_output() {
 #[test]
 fn tooljet_microsoft_teams_matches_fern_output() {
     assert_committed_corpus_matches(&TOOLJET_MICROSOFT_TEAMS);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn openapi_generator_composed_schema_lowering_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

@@ -1943,3 +1943,15 @@ and each removal control are recorded in
 | 3473 | `openapitools-csharp-allof` | github-raw | https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/samples/client/petstore/csharp/generichost/net10/AllOf/api/openapi.yaml | `10e6c21c97abb098cc67f14dfdd02171ce56b115` | Apache-2.0 (repository LICENSE; the document's info.license reads MIT) | committed | An inheritance base whose discriminator `$_type` maps one value to a bare schema name |
 | 3474 | `swagger-parser-null-types` | github-raw | https://raw.githubusercontent.com/Carapacik/swagger_parser/1fec2df2fd073ff5bb93a703b856cdfad25b129c/swagger_parser/test/schemas/null-types-with-type-array.yaml | `1fec2df2fd073ff5bb93a703b856cdfad25b129c` | MIT (document info.license and repository LICENSE) | committed | A 3.1 inheritance base whose discriminator `$_type` maps one value to a bare schema name, beside `null` type arrays |
 | 3475 | `tooljet-microsoft-teams` | github-raw | https://raw.githubusercontent.com/ToolJet/ToolJet/63c2b08614b78f8f289fb6127a32f10ed5987362/marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml | `63c2b08614b78f8f289fb6127a32f10ed5987362` | AGPL-3.0 (repository LICENSE) | committed | An inheritance base whose discriminator `@odata.type` maps to a bare schema name, and a typed `200` beside a bodyless `207` |
+
+## Union alternatives that are all `null` or one string enum
+
+The OpenAPI Generator project's own lowering document declares a component
+`anyOf` whose two alternatives are both `type: null`, which crozier once
+emitted as an unparseable `typing.Union[]`, and one whose only alternative is a
+string enum; the search and the witnesses it left unregistered are recorded in
+[`witness-search-null-and-lone-enum-alternatives`](../../docs/openapi-surface/witness-search-null-and-lone-enum-alternatives/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3476 | `openapi-generator-composed-schema-lowering` | github-raw | https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml | `10e6c21c97abb098cc67f14dfdd02171ce56b115` | Apache-2.0 (repository LICENSE) | committed | An `anyOf` of only `null` alternatives, and an `anyOf` whose one alternative is a string enum |

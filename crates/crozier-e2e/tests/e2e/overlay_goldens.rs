@@ -119,6 +119,7 @@ const KINDS: &[Kind] = &[
             "openapitools-csharp-allof",
             "swagger-parser-null-types",
             "tooljet-microsoft-teams",
+            "openapi-generator-composed-schema-lowering",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

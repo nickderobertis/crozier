@@ -16,6 +16,14 @@ verdict: `exhausted` when nothing is outstanding, every declarer reaching
 the arm is screened, and none that passes every screen is left
 unregistered; `search-incomplete` otherwise.
 
+Superseded for the first site since: corpus row 3476,
+`openapi-generator-composed-schema-lowering`, registered by the
+[refusal-parity repairs](../../../refusal-parity-ten-documents.md), reaches
+`Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]`
+(9 of 9 regions, `golden-reach.tsv` at `9cac0bfa2`), so the hand-written arm
+cover of that site is retired. Before those repairs crozier could not format
+that document's all-`null` union, so no generation of it reached the site.
+
 ### Witness search (exhaustive)
 
 | key | source | outcome | queries | walk | candidates | screens |
