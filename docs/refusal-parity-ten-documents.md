@@ -39,8 +39,25 @@ on the pointers `#/paths/~1v2~11-clicks/get/responses/401`,
 What it writes is the 35-file empty SDK: no endpoint and no type. This is the
 exit-0 failure in which Fern parses nothing, which
 [`tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
-already logs for `digitalocean-jentic` and `opensuse-obs`. By the manager's
-ruling it is a Fern refusal, not output to match. A scenario Fern refuses is
+already logs for `digitalocean-jentic` and `opensuse-obs`.
+
+The certified pair was re-run on each exact document, keeping its tree:
+DigitalOcean (sha256 `5bd3a4800c4396372cb80d99cc82b49463e4a3f136b63d1794c19f13da37cf63`),
+propresenter-remote (`44695afa34c9d6e1fce938a62844cf07b30ed296a5e3d2be1779827947394219`)
+and pro7.9 (`694f7ec93b5aafa776ab61f7e049432f2ac01f8db5ffce4aedbde9f1a38616cc`).
+The documents declare 290, 231 and 129 operations. Each run logs the same failure
+again and writes 35 files, and the three trees are byte-identical, so nothing in
+any of the documents reaches the output. Outside `src/fern/core/`, the trees hold
+`README.md`, `CONTRIBUTING.md`, `reference.md`, `pyproject.toml`,
+`requirements.txt`, `.fern/metadata.json`, the package's `__init__.py`,
+`_default_clients.py`, `client.py`, `py.typed`, `version.py` and two test files.
+`client.py` declares `FernApi` and `AsyncFernApi` with `__init__` as their only
+method. `__init__.py` exports those two, the default HTTP clients and
+`__version__`. There is no resource package and no `types/` module, and
+`reference.md` is the bare `# Reference` heading. The SDK therefore omits every operation
+the documents declare.
+
+By the planner's ruling, A is a Fern refusal, not output to match. A scenario Fern refuses is
 refused in both modes, so crozier's refusal stays as it is. No crozier code
 changed for A. Run on each exact document, crozier built at this work's base
 (`2a298364e`) and on the finished tree prints the same `unresolved-reference`
