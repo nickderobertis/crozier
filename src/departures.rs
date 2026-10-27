@@ -47,17 +47,21 @@ pub enum Kind {
     /// Both outputs are valid, and crozier's documents more of what the
     /// specification declares.
     RicherDocumentation,
+    /// Both outputs are valid, and crozier's behaves more usefully for the
+    /// specification as written.
+    Usefulness,
 }
 
 impl Kind {
     /// Every kind, in the order the reference lists them.
-    pub const ALL: [Kind; 6] = [
+    pub const ALL: [Kind; 7] = [
         Kind::FernDefect,
         Kind::Branding,
         Kind::Packaging,
         Kind::Provenance,
         Kind::Ordering,
         Kind::RicherDocumentation,
+        Kind::Usefulness,
     ];
 
     /// The kind as the catalog spells it.
@@ -70,6 +74,7 @@ impl Kind {
             Kind::Provenance => "provenance",
             Kind::Ordering => "ordering",
             Kind::RicherDocumentation => "richer-documentation",
+            Kind::Usefulness => "usefulness",
         }
     }
 
@@ -90,6 +95,9 @@ impl Kind {
             }
             Kind::RicherDocumentation => {
                 "Both outputs are valid; crozier's documents more of what the specification declares."
+            }
+            Kind::Usefulness => {
+                "Both outputs are valid; crozier's behaves more usefully for the specification as written."
             }
         }
     }
@@ -1715,7 +1723,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 34] = [
+pub const RULE_IDS: [&str; 35] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1727,6 +1735,7 @@ pub const RULE_IDS: [&str; 34] = [
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
+    "empty-root-security-optional-credential",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
@@ -1819,6 +1828,11 @@ pub fn rule(id: &str) -> Option<Rule> {
         "empty-namespace-package" => Rule {
             region: Some(empty_namespace_package_root),
             file: Some(empty_namespace_package_file),
+            ..none
+        },
+        "empty-root-security-optional-credential" => Rule {
+            region: Some(empty_root_security_header_guard),
+            line: Some(empty_root_security_optional_credential),
             ..none
         },
         "fern-metadata-generator-config" => Rule {
@@ -3817,6 +3831,112 @@ fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
 /// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
 fn is_client_wrapper(rel: &str) -> bool {
     rel == "core/client_wrapper.py" || rel.ends_with("/core/client_wrapper.py")
+}
+
+/// The credentials `empty-root-security-optional-credential` may make
+/// optional: those of a source document whose credential crozier makes optional
+/// only through its empty root `security` list
+/// ([`crate::ir::empty_root_security_credentials`]). None without a source.
+fn empty_root_security_params(pair: &Pair<'_>) -> Vec<String> {
+    pair.context
+        .source_document
+        .as_ref()
+        .map(crate::ir::empty_root_security_credentials)
+        .unwrap_or_default()
+}
+
+/// Whether `rel` is the root client or its wrapper, the two files the root
+/// client's credential reaches.
+fn is_root_client_file(rel: &str) -> bool {
+    let root_client =
+        rel == "client.py" || (rel.ends_with("/client.py") && rel.matches('/').count() <= 2);
+    is_client_wrapper(rel) || root_client
+}
+
+/// `empty-root-security-optional-credential`, aligned half: in the root client
+/// or its wrapper, Fern's required credential parameter `<name>: T,`, or its
+/// docstring entry `<name> : T`, against crozier's `<name>:
+/// typing.Optional[T] = None,` or `<name> : typing.Optional[T]`, at the same
+/// indentation, for a credential of a document the departure covers.
+fn empty_root_security_optional_credential(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !is_root_client_file(pair.rel) {
+        return false;
+    }
+    let indent = &fern[..fern.len() - fern.trim_start().len()];
+    let Some(ours) = crozier.strip_prefix(indent) else {
+        return false;
+    };
+    let theirs = fern.trim_start();
+    let optional = |name: &str| {
+        if let Some(ty) = theirs
+            .strip_prefix(&format!("{name}: "))
+            .and_then(|rest| rest.strip_suffix(','))
+        {
+            return ours == format!("{name}: typing.Optional[{ty}] = None,");
+        }
+        theirs
+            .strip_prefix(&format!("{name} : "))
+            .is_some_and(|ty| ours == format!("{name} : typing.Optional[{ty}]"))
+    };
+    !ours.starts_with(' ')
+        && empty_root_security_params(pair)
+            .iter()
+            .any(|name| optional(name))
+}
+
+/// `empty-root-security-optional-credential`, header half: in the wrapper,
+/// Fern's `headers[...] = self.<name>` against crozier's same assignment
+/// indented beneath `if self.<name> is not None:`, the guard at Fern's
+/// indentation. Fern's lines are matched to crozier's guards in order.
+fn empty_root_security_header_guard(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !is_client_wrapper(pair.rel) {
+        return Ok(None);
+    }
+    let params = empty_root_security_params(pair);
+    for (j, line) in pair.crozier.iter().enumerate() {
+        let indent = &line[..line.len() - line.trim_start().len()];
+        let Some(name) = params
+            .iter()
+            .find(|name| line.trim_start() == format!("if self.{name} is not None:"))
+        else {
+            continue;
+        };
+        let Some(assignment) = pair
+            .crozier
+            .get(j + 1)
+            .and_then(|next| next.strip_prefix(indent))
+            .and_then(|next| next.strip_prefix("    "))
+            .filter(|next| {
+                !next.starts_with(' ')
+                    && next.starts_with("headers[")
+                    && next.ends_with(&format!("= self.{name}"))
+            })
+        else {
+            continue;
+        };
+        // Guards already replaced left Fern's line in crozier's place, so this
+        // guard answers the next of Fern's lines.
+        let wanted = format!("{indent}{assignment}");
+        let earlier = pair.crozier[..j]
+            .iter()
+            .filter(|seen| **seen == wanted)
+            .count();
+        let Some(i) = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter(|(_, fern)| **fern == wanted)
+            .nth(earlier)
+            .map(|(i, _)| i)
+        else {
+            continue;
+        };
+        return Ok(Some(Region {
+            fern: i..i + 1,
+            crozier: j..j + 2,
+        }));
+    }
+    Ok(None)
 }
 
 /// `sdk-identity-header-prefix`: in the client wrapper, crozier's line is Fern's
@@ -7408,6 +7528,143 @@ mod tests {
                 !other.matches(),
                 "{other_crozier} was excused by another argument's repair"
             );
+        }
+    }
+
+    /// A document whose root `security` is `[]` beside one secured and one
+    /// unsecured operation, with `own` as the unsecured operation's own
+    /// `security` (absent when `None`) and `root` as the root's.
+    fn empty_root_security_source(
+        root: Option<serde_json::Value>,
+        own: Option<serde_json::Value>,
+    ) -> serde_json::Value {
+        let mut open = serde_json::json!({"responses": {"200": {"description": "ok"}}});
+        if let Some(own) = own {
+            open["security"] = own;
+        }
+        let mut document = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {
+                "/ping": {"get": open},
+                "/vault": {"get": {
+                    "security": [{"key": []}],
+                    "responses": {"200": {"description": "ok"}}
+                }}
+            },
+            "components": {"securitySchemes": {
+                "key": {"type": "apiKey", "in": "header", "name": "x-api-key"}
+            }}
+        });
+        if let Some(root) = root {
+            document["security"] = root;
+        }
+        document
+    }
+
+    const CREDENTIAL_WRAPPER_FERN: &str = "class BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n        api_key: str,\n        base_url: str,\n    ):\n        self.api_key = api_key\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {}\n        headers[\"x-api-key\"] = self.api_key\n        return headers\n";
+    const CREDENTIAL_WRAPPER_CROZIER: &str = "class BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n        api_key: typing.Optional[str] = None,\n        base_url: str,\n    ):\n        self.api_key = api_key\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {}\n        if self.api_key is not None:\n            headers[\"x-api-key\"] = self.api_key\n        return headers\n";
+
+    fn credential_wrapper_comparison(
+        source: serde_json::Value,
+        crozier: &str,
+    ) -> crate::parity::FileComparison {
+        let context = Context::default()
+            .with_source_document(serde_json::from_value(source).expect("a source"));
+        crate::parity::compare_file(
+            &context,
+            "src/fern/core/client_wrapper.py",
+            crozier,
+            CREDENTIAL_WRAPPER_FERN,
+        )
+        .expect("the comparison runs")
+    }
+
+    #[test]
+    fn an_empty_root_security_list_excuses_only_its_optional_credential() {
+        let covered = empty_root_security_source(Some(serde_json::json!([])), None);
+        let comparison = credential_wrapper_comparison(covered.clone(), CREDENTIAL_WRAPPER_CROZIER);
+        assert!(comparison.matches(), "{:?}", comparison.residual);
+        let ids: Vec<&str> = comparison
+            .departures
+            .iter()
+            .map(|departure| departure.id)
+            .collect();
+        assert_eq!(ids, ["empty-root-security-optional-credential"; 2]);
+
+        // An absent root `security`, or an operation's own empty list, makes
+        // the certified pair's credential optional too: nothing to excuse.
+        for uncovered in [
+            empty_root_security_source(None, None),
+            empty_root_security_source(Some(serde_json::json!([])), Some(serde_json::json!([]))),
+            empty_root_security_source(
+                Some(serde_json::json!([])),
+                Some(serde_json::json!([{"key": []}])),
+            ),
+        ] {
+            assert!(
+                !credential_wrapper_comparison(uncovered, CREDENTIAL_WRAPPER_CROZIER).matches()
+            );
+        }
+
+        // An adjacent credential mismatch the departure does not describe
+        // still fails: another type, another default, another header value,
+        // or a guard on another attribute.
+        for (from, to) in [
+            (
+                "api_key: typing.Optional[str] = None,",
+                "api_key: typing.Optional[int] = None,",
+            ),
+            (
+                "api_key: typing.Optional[str] = None,",
+                "api_key: typing.Optional[str] = \"\",",
+            ),
+            (
+                "            headers[\"x-api-key\"] = self.api_key",
+                "            headers[\"x-api-key\"] = self.api_key.strip()",
+            ),
+            ("if self.api_key is not None:", "if self.token is not None:"),
+        ] {
+            let crozier = CREDENTIAL_WRAPPER_CROZIER.replacen(from, to, 1);
+            assert_ne!(crozier, CREDENTIAL_WRAPPER_CROZIER, "{to}");
+            assert!(
+                !credential_wrapper_comparison(covered.clone(), &crozier).matches(),
+                "{to} was excused"
+            );
+        }
+
+        // The root client's constructor and docstring lines, never a
+        // sub-client's.
+        let context = source_context(covered, &[]);
+        let rule: LineRule = empty_root_security_optional_credential;
+        for (fern, crozier) in [
+            (
+                "        api_key: str,",
+                "        api_key: typing.Optional[str] = None,",
+            ),
+            ("    api_key : str", "    api_key : typing.Optional[str]"),
+        ] {
+            assert!(line_holds(
+                rule,
+                "src/fern/client.py",
+                &context,
+                fern,
+                crozier
+            ));
+            assert!(!line_holds(
+                rule,
+                "src/fern/catalog/client.py",
+                &context,
+                fern,
+                crozier
+            ));
+            assert!(!line_holds(
+                rule,
+                "src/fern/client.py",
+                &context,
+                fern,
+                &crozier.replacen("api_key", "token", 1)
+            ));
         }
     }
 }

@@ -2301,10 +2301,18 @@ fn tag_types_init_file(
         })
         .collect();
     named.sort();
-    let type_checking: String = named
-        .iter()
-        .map(|(n, m)| format!("    from .{m} import {n}\n"))
-        .collect();
+    // Consecutive names sharing a module collapse into one import, as in
+    // `types_init_file`: RS-Server's create-item body union and its two
+    // wrappers come from one `from .create_item_… import (…)`.
+    let mut type_checking = String::new();
+    for group in named.chunk_by(|a, b| a.1 == b.1) {
+        let names: Vec<&str> = group.iter().map(|(n, _)| n.as_str()).collect();
+        type_checking.push_str(&format!(
+            "    from .{} import {}\n",
+            group[0].1,
+            names.join(", ")
+        ));
+    }
     let pairs: Vec<(String, String)> = named
         .iter()
         .map(|(n, m)| (n.clone(), format!(".{m}")))
@@ -18681,5 +18689,66 @@ mod wire_tests {
         );
         let raw = raw_client(&generated, "items");
         assert!(raw.contains("SyncPager["), "{raw}");
+    }
+}
+
+/// The RS-Server emission repairs the emitter makes, on the hand-written
+/// measurements that isolate them (`docs/fern-measurements/emission-parity/`).
+#[cfg(test)]
+mod emission_parity_tests {
+    fn generated(case: &str) -> Vec<(String, String)> {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/emission-parity")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        super::generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    /// Cause 5: a tag's `types/__init__.py` imports a module's names in one
+    /// statement (`tag_types_init_file`), as the root `types/__init__.py` does.
+    #[test]
+    fn a_tag_types_init_imports_one_modules_names_together() {
+        let files = generated("survey-shapes");
+        let init = &files
+            .iter()
+            .find(|(path, _)| path == "src/fern/survey/types/__init__.py")
+            .expect("the survey tag declares types")
+            .1;
+        assert!(
+            init.contains(
+                "    from .record_sites_request import RecordSitesRequest, RecordSitesRequest_Site, \
+                 RecordSitesRequest_SiteBatch\n"
+            ),
+            "{init}"
+        );
+        assert_eq!(
+            init.matches("from .record_sites_request import").count(),
+            1,
+            "{init}"
+        );
+        assert!(
+            init.contains("    from .amend_site_request_body import AmendSiteRequestBody\n"),
+            "{init}"
+        );
     }
 }

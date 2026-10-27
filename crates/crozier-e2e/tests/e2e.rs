@@ -119,6 +119,14 @@ mod output_defects;
 mod refusal_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The shapes behind RS-Server's emission differences, each in a document
+/// written for it under `docs/fern-measurements/emission-parity/`, held whole
+/// against the certified pair's tree in both enum modes.
+#[path = "e2e/emission_parity.rs"]
+mod emission_parity;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -745,6 +753,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
+        (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -6778,6 +6787,62 @@ fn sdk_env_output_defect_sdks_parse_and_send_what_fern_does() {
     }
 }
 
+/// RS-Server's root `security: []` leaves its operations without their own
+/// `security` unauthenticated, and crozier's client (the
+/// `empty-root-security-optional-credential` departure) lets them be called
+/// without a key: driven against a local HTTP server, a keyless client calls the
+/// unsecured ping with no `x-api-key` header, and a keyed one sends its key on a
+/// secured operation. The certified pair's tree, which requires the key, cannot
+/// build the keyless client at all.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("crates/crozier-e2e/tests/e2e/empty_root_security_journey.py");
+    let out = tempfile::tempdir().unwrap();
+    probe_command(
+        &root.join("tests/fixtures/corpus-sources/rs-server/openapi.json"),
+        out.path(),
+    )
+    .assert()
+    .success();
+    Command::new(&python)
+        .arg(&script)
+        .arg(out.path().join("missing-sdk"))
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "must contain the generated fern package",
+        ));
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(out.path().join("src"))
+        .assert()
+        .success()
+        .stdout(
+            "/catalog/_mgmt/ping x-api-key=null\n\
+             /storage/account/credentials x-api-key=\"rs-key\"\n\
+             /catalog/_mgmt/ping x-api-key=null\n\
+             /storage/account/credentials x-api-key=\"rs-key\"\n",
+        );
+    let fern = tempfile::tempdir().unwrap();
+    copy_dir(
+        &root.join("tests/fixtures/rs-server/expected/src"),
+        fern.path(),
+    );
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(fern.path())
+        .assert()
+        .code(1)
+        .stderr(predicate::str::contains(
+            "missing 1 required keyword-only argument: 'api_key'",
+        ));
+}
+
 /// Complete certified trees for the parameter extension and serialization
 /// shapes. These inputs contain no enums: both modes must preserve all bytes,
 /// apart from the catalogued generator-configuration provenance.
@@ -10136,6 +10201,7 @@ const CORPORA: &[&Corpus] = &[
     &SWAGGER_PARSER_NULL_TYPES,
     &TOOLJET_MICROSOFT_TEAMS,
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
+    &RS_SERVER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12571,6 +12637,21 @@ const TOOLJET_MICROSOFT_TEAMS: Corpus = Corpus {
 /// alternatives and an `anyOf` whose one alternative is a string enum.
 const OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING: Corpus = Corpus {
     api: "openapi-generator-composed-schema-lowering",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// RS-Server (Copernicus Reference System) — corpus row 3477, the publisher's
+/// own repository's copy, witnessing a nullable string property (`anyOf` of a
+/// string and the null type) beside a later component named after its owner
+/// and property, which the certified pair generates from.
+const RS_SERVER: Corpus = Corpus {
+    api: "rs-server",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20627,6 +20708,13 @@ fn tooljet_microsoft_teams_matches_fern_output() {
 #[test]
 fn openapi_generator_composed_schema_lowering_matches_fern_output() {
     assert_committed_corpus_matches(&OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn rs_server_matches_fern_output() {
+    assert_committed_corpus_matches(&RS_SERVER);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
