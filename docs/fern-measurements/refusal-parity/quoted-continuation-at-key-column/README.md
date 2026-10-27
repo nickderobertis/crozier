@@ -119,6 +119,14 @@ tree:
 - 9 differ;
 - 1 is only in Fern's tree.
 
+This was re-measured on the finished tree (`bbf7a405b`). The pair's tree came
+from `tools/fern-goldens/generate-fern-fixture.sh` (packaged, `python_enums`),
+which ran from 2026-10-27T09:49:28Z to 09:50:07Z holding
+`${XDG_CACHE_HOME:-$HOME/.cache}/crozier/fern-generation.lock`. It wrote 239
+files, identical to the first measurement's. `crozier compare` ran with
+`package-name: fern` and `project-name: default_package_name`, the names the
+pair's preview uses, and gave the same counts and files listed above.
+
 Each of those ten files is accounted for by one of two generator causes this
 node does not own.
 
