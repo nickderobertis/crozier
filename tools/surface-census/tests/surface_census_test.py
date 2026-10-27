@@ -1429,12 +1429,22 @@ def combination_proof_failures(
     return failures
 
 
-def handwritten_reach_rows(root: Path) -> tuple[list[Any], list[str]]:
-    """`handwritten-reach.tsv`'s rows as the gate's `ReachRow` (fixture, key, site, regions
-    executed, regions), and
-    every way its header, rows or order break, read by `handwritten-fixtures.py`'s own reader."""
+class HandwrittenReachRow(NamedTuple):
+    """One `handwritten-reach.tsv` row, as `handwritten-fixtures.py`'s `ReachRow` reads it."""
+
+    fixture: str
+    key: str
+    site: str
+    regions_executed: int
+    regions: int
+
+
+def handwritten_reach_rows(root: Path) -> tuple[list[HandwrittenReachRow], list[str]]:
+    """`handwritten-reach.tsv`'s rows, and every way its header, rows or order break,
+    read by `handwritten-fixtures.py`'s own reader."""
     gate = load_script("tools/surface-census/handwritten-fixtures.py")
-    return gate.read_reach_ledger(root / "docs" / "openapi-surface" / "handwritten-reach.tsv")
+    rows, failures = gate.read_reach_ledger(root / "docs" / "openapi-surface" / "handwritten-reach.tsv")
+    return [HandwrittenReachRow(*row) for row in rows], failures
 
 
 def interaction_unreached(root: Path, key: str, reason: str, ledger: dict[str, MeasuredReach]) -> bool:
