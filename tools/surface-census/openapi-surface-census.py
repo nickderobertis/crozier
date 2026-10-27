@@ -5062,7 +5062,7 @@ UNION_PORT_DIGESTS = {
     "last_composed_variant": "3ac394950dc70c7f",
     "is_composed_member": "ea34dd7fa128f6b3",
     "is_map": "ce58b2f1f60a3f18",
-    "simple_nullable_member": "1d041c7fc238931d",
+    "simple_nullable_member": "1aaafcb17ac8d8a2",
 }
 
 
