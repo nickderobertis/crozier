@@ -102,7 +102,9 @@ Two crozier refusals stood between this document and an SDK.
    discriminant stays refused. Both shapes are registry shapes measured at the
    pair:
    - `docs/fern-refusals/generator-lint-failure/null-only-discriminant-control.yml`
-     generates;
+     (the tag in an inline `allOf` member) generates;
+   - `null-only-direct-discriminant-control.yml` (the tag in the variant's own
+     `properties`) generates;
    - `null-only-beside-discriminant-probe.yml` is refused.
 
 With both repaired, crozier generates 238 files. The certified pair wrote 239

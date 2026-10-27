@@ -8,9 +8,10 @@
 //!   crozier reads the same values and writes Fern's SDK. Each malformed
 //!   neighbour beside it is one Fern's reader refuses too (its `*.fern.log`), and
 //!   crozier still refuses it.
-//! - A union variant's discriminant whose only enum value is `null`
-//!   (`docs/fern-refusals/generator-lint-failure/null-only-discriminant-control.yml`)
-//!   generates, as Fern generates it, while the same enum beside the
+//! - A union variant's discriminant whose only enum value is `null`, in an
+//!   inline `allOf` member or the variant's own `properties`
+//!   (`docs/fern-refusals/generator-lint-failure/null-only-discriminant-control.yml`,
+//!   `null-only-direct-discriminant-control.yml`), generates, as Fern generates it, while the same enum beside the
 //!   discriminant (`null-only-beside-discriminant-probe.yml`) stays refused.
 
 use std::path::{Path, PathBuf};
@@ -199,10 +200,12 @@ fn generate_shape(
 /// discriminant the same enum is refused in every mode, as the pair refuses it.
 #[test]
 fn a_null_only_discriminant_generates_where_the_same_enum_beside_it_is_refused() {
-    assert_eq!(
-        fern_verdict("null-only-discriminant-control.yml"),
-        "generates"
-    );
+    for control in [
+        "null-only-discriminant-control.yml",
+        "null-only-direct-discriminant-control.yml",
+    ] {
+        assert_eq!(fern_verdict(control), "generates", "{control}");
+    }
     assert_eq!(
         fern_verdict("null-only-beside-discriminant-probe.yml"),
         "refused"
@@ -210,19 +213,19 @@ fn a_null_only_discriminant_generates_where_the_same_enum_beside_it_is_refused()
     for enum_type in ["python-enums", "literals"] {
         for strict in [false, true] {
             let temp = tempfile::tempdir().unwrap();
-            let out = temp.path().join("sdk");
-            generate_shape(
-                &lint_shape("null-only-discriminant-control.yml"),
-                &out,
-                enum_type,
-                strict,
-            )
-            .success();
-            let silence = std::fs::read_to_string(out.join("src/probe/types/silence.py")).unwrap();
-            assert!(
-                !silence.contains("kind"),
-                "{enum_type}: the discriminant stays on the union:\n{silence}"
-            );
+            for control in [
+                "null-only-discriminant-control.yml",
+                "null-only-direct-discriminant-control.yml",
+            ] {
+                let out = temp.path().join(control);
+                generate_shape(&lint_shape(control), &out, enum_type, strict).success();
+                let silence =
+                    std::fs::read_to_string(out.join("src/probe/types/silence.py")).unwrap();
+                assert!(
+                    !silence.contains("kind"),
+                    "{control} {enum_type}: the discriminant stays on the union:\n{silence}"
+                );
+            }
             let refused = temp.path().join("refused");
             generate_shape(
                 &lint_shape("null-only-beside-discriminant-probe.yml"),
