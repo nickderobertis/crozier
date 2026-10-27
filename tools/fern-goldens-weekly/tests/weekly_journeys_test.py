@@ -27,6 +27,7 @@ import tempfile
 import textwrap
 import unittest
 import unittest.mock
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypedDict
@@ -74,6 +75,18 @@ class RuffFingerprint(TypedDict):
     failed_command: str
     diagnostics: list[RuffDiagnostic]
     ruff_summary: str
+
+
+class ShardItem(TypedDict):
+    """One item of a shard's `result.json`, as `weekly.py shard` writes it."""
+
+    family: str
+    item: str
+    status: str
+    detail: str
+    seconds: float
+    changed: list[str]
+    log: str
 
 
 class Registration(TypedDict):
@@ -183,6 +196,10 @@ config = json.loads(pathlib.Path(os.environ["STAND_IN_FERN"]).read_text(encoding
 rule = config.get("rules", {}).get(title, {})
 with open(config["calls"], "a", encoding="utf-8") as calls:
     calls.write(json.dumps({"command": args[0], "title": title}) + "\n")
+if rule.get("hang") in (True, args[0]):
+    # A run past its caller's time bound, which ends it: every stage, or the one named.
+    import time
+    time.sleep(600)
 if args[0] == "check":
     code, message = rule.get("check", [0, ""])
     print(f"issue: {message}" if message else "All checks passed")
@@ -951,6 +968,130 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertNotIn(REFUSAL_CLASS, failing)
         record = self.remote_file("fern-goldens/update", "docs/fern-refusals/lantern-refused/fern-refusal.txt")
         self.assertIn("diagnostic: Lantern 'harbour' cannot be lit", record)
+
+    def refusal_journey(self, rule: Mapping[str, object], **env: str) -> tuple[Journey, ShardItem]:
+        """A full run whose stood-in Fern answers the refusal class's probe by
+        `rule`, and the class's item as its shard recorded it."""
+        self.publish_seed()
+        trees = self.scratch / "fern-trees"
+        shutil.copytree(self.trees, trees)
+        # The tree Fern writes where it generates from the probe.
+        shutil.copytree(self.trees / "Alpha Lanterns", trees / "probe")
+        self.stand_in({"trees": str(trees), "rules": {"probe": rule}})
+        state = self.run_workflow(**env)
+        shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
+        items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
+        return state, next(entry for entry in items if (entry["family"], entry["item"]) == ("refusals", REFUSAL_CLASS))
+
+    def assert_refusal_reported(self, state: Journey, item: ShardItem, outcome: str, now: str) -> None:
+        """The changed refusal is no generation failure: assembled, decided a diff
+        and listed in the pull request beside the rest, its record kept."""
+        recorded = (
+            "the check stage exits 1 and the generation 1, with `Default value '-createdAt' is not a valid enum "
+            f"value`, at Fern CLI {OLD.cli} / fern-python-sdk {OLD.generator}"
+        )
+        detail = f"{outcome}: recorded: {recorded}; now: {now}"
+        self.assertEqual(("refusal-changed", detail), (item["status"], item["detail"]))
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        timings = (state.artifacts / "bundle/files" / TIMINGS).read_text(encoding="utf-8")
+        self.assertIn(f"refusals\t{REFUSAL_CLASS}\t{item['seconds']:.1f}\n", timings, "its run is a measurement")
+        self.assertEqual("diff", state.outcome(), state.ran("decide").stderr + self.summary())
+        self.assertEqual({}, state.failing(), "crozier still refuses the probe its record says Fern refuses")
+        self.assertEqual([{"item": REFUSAL_CLASS, "detail": detail}], state.recorded()["refusals_changed"])
+        self.assertIn(f"- refusal changed: `{REFUSAL_CLASS}`: {detail}", self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"], "a changed refusal is never auto-merged")
+        self.assertIn("and Fern no longer refuses 1 refusal class probe(s) as recorded", pull["body"])
+        section = pull["body"].split("## Refusal classes whose Fern outcome changed", 1)[1].split("## Inventory")[0]
+        self.assertIn(f"- refusals `{REFUSAL_CLASS}`: {detail}", section)
+        record = f"docs/fern-refusals/{REFUSAL_CLASS}/fern-refusal.txt"
+        self.assertEqual(self.remote_file("main", record), self.remote_file("fern-goldens/update", record))
+
+    def test_a_refusal_fern_still_refuses_as_recorded_is_rewritten_at_the_pair(self) -> None:
+        state, item = self.refusal_journey(self.refusal_rule)
+        self.assertEqual(("ok", ""), (item["status"], item["detail"]))
+        self.assertEqual("match", state.outcome(), state.ran("decide").stderr + self.summary())
+        self.assertNotIn("refusals_changed", state.recorded())
+        (pull,) = self.pulls()
+        self.assertNotIn("## Refusal classes whose Fern outcome changed", pull["body"])
+
+    def test_a_refusal_fern_now_generates_from_is_a_reported_change(self) -> None:
+        state, item = self.refusal_journey({})
+        files = sum(1 for path in (self.trees / "Alpha Lanterns").rglob("*") if path.is_file())
+        now = f"Fern generates from the probe (check exit 0, generate exit 0, writing {files} files)"
+        self.assert_refusal_reported(state, item, "generates", now)
+
+    def test_a_refusal_fern_now_refuses_with_another_diagnostic_is_a_reported_change(self) -> None:
+        state, item = self.refusal_journey({"check": [1, "Lanterns are unlit"], "generate": [1, "Lanterns are unlit"]})
+        now = "Fern refuses the probe otherwise (check exit 1, generate exit 1), printing `Lanterns are unlit`"
+        self.assert_refusal_reported(state, item, "refuses-otherwise", now)
+
+    def test_a_refusal_probe_past_its_time_bound_is_a_reported_unsettled_change(self) -> None:
+        state, item = self.refusal_journey({"hang": True}, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        now = (
+            "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
+            "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
+            "about whether Fern refuses given more time or memory"
+        )
+        self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_refusal_whose_phrase_fern_prints_with_other_exits_is_a_reported_change(self) -> None:
+        said = "Default value '-createdAt' is not a valid enum value"
+        state, item = self.refusal_journey({"check": [2, said], "generate": [2, ""]})
+        now = (
+            f"Fern refuses the probe otherwise (check exit 2, generate exit 2), printing `{said}`; the check stage "
+            "still prints the class's phrase"
+        )
+        self.assert_refusal_reported(state, item, "refuses-otherwise", now)
+
+    def test_a_refusal_whose_phrase_fern_prints_before_a_stage_overruns_is_unsettled(self) -> None:
+        rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
+        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        now = (
+            "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit timeout); "
+            "the check stage still prints the class's phrase; a run cut short says nothing about whether Fern "
+            "refuses given more time or memory"
+        )
+        self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_changed_refusal_report_naming_no_outcome_fails_its_item_and_the_assembly(self) -> None:
+        """A report the probe's delegate wrote that names the class but no
+        outcome `weekly.py` knows is no change: the item fails and nothing is
+        published. The delegate is stood in, as only it can write such a report."""
+        write_executable(
+            self.seed / "tools/fern-refusals/fern-refusals.py",
+            r"""
+            #!/usr/bin/env python3
+            import json, pathlib, sys
+
+            args = sys.argv[1:]
+            report = {"class": args[-1], "outcome": "vanished", "recorded": "r", "now": "n"}
+            pathlib.Path(args[args.index("--changes") + 1]).write_text(json.dumps(report) + "\n", encoding="utf-8")
+            sys.exit(3)
+            """,
+        )
+        state, item = self.refusal_journey(self.refusal_rule)
+        self.assertEqual("failed", item["status"])
+        self.assertIn("a change is one of generates, refuses-otherwise, unsettled", item["detail"])
+        self.assertEqual([1], [shard.returncode for shard in state.shards])
+        self.assertEqual(1, state.ran("assemble").returncode)
+        self.assertIn(f"refusals {REFUSAL_CLASS}: generation failed", state.ran("assemble").stderr)
+        self.assertIsNone(state.decide)
+        self.assert_untouched()
+
+    def test_a_refusal_probe_that_could_not_run_fails_its_item_and_the_assembly(self) -> None:
+        (self.seed / "docs/fern-refusals" / REFUSAL_CLASS / "probe.yml").unlink()
+        state, item = self.refusal_journey(self.refusal_rule)
+        self.assertEqual("failed", item["status"])
+        self.assertEqual([1], [shard.returncode for shard in state.shards])
+        self.assertEqual(1, state.ran("assemble").returncode)
+        self.assertIn(f"refusals {REFUSAL_CLASS}: generation failed", state.ran("assemble").stderr)
+        log = next(state.artifacts.glob(f"fern-goldens-shard-*/logs/refusals/{REFUSAL_CLASS}.log"))
+        self.assertIn(f"no probe document docs/fern-refusals/{REFUSAL_CLASS}/probe.yml", log.read_text("utf-8"))
+        self.assertIsNone(state.decide)
+        self.assert_untouched()
 
     def test_measurements_over_a_hand_written_tree_regenerate_after_it_in_its_shard(self) -> None:
         """A parameter-literals case and an overlay case both read the

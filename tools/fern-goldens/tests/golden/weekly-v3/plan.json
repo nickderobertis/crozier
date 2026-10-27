@@ -1,0 +1,60 @@
+{
+  "schema_version": 3,
+  "complete": true,
+  "items": "",
+  "base": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "pair": {
+    "cli": "2.0.0",
+    "generator": "3.0.0"
+  },
+  "budget_minutes": 180.0,
+  "shard_limit_minutes": 94.5,
+  "default_seconds": 1.0,
+  "families": {
+    "corpus": {
+      "items": 2,
+      "seconds": 2.0
+    }
+  },
+  "units": 2,
+  "shards": [
+    {
+      "index": 0,
+      "seconds": 1.0,
+      "minutes": 4.02,
+      "items": [
+        {
+          "family": "corpus",
+          "item": "a",
+          "seconds": 1.0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "seconds": 1.0,
+      "minutes": 4.02,
+      "items": [
+        {
+          "family": "corpus",
+          "item": "b",
+          "seconds": 1.0
+        }
+      ]
+    }
+  ],
+  "estimate": {
+    "minutes": 54.02,
+    "stages": {
+      "plan": 5.0,
+      "shards": 4.02,
+      "assembly": 6.0,
+      "decision": 34.0,
+      "publication": 5.0
+    },
+    "waves": 1,
+    "setup_minutes_per_job": 4.0,
+    "assembly_minutes": 6.0,
+    "longest_shard_minutes": 4.02
+  }
+}
