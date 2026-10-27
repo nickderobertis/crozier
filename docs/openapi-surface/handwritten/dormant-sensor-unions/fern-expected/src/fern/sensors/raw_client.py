@@ -18,9 +18,12 @@ from ..types.pitch import Pitch
 from ..types.reading import Reading
 from ..types.reading_alarm import ReadingAlarm
 from ..types.reading_mode import ReadingMode
+from ..types.reading_placement import ReadingPlacement
 from ..types.silence import Silence
 from ..types.stillness import Stillness
 from ..types.tone import Tone
+from .types.calibrate_sensor_request_range import CalibrateSensorRequestRange
+from .types.calibrate_sensor_response import CalibrateSensorResponse
 from pydantic import ValidationError
 
 
@@ -129,6 +132,7 @@ class RawSensorsClient:
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
         alarm: typing.Optional[ReadingAlarm] = OMIT,
+        placement: typing.Optional[ReadingPlacement] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Reading]:
         """
@@ -158,6 +162,8 @@ class RawSensorsClient:
         alarm : typing.Optional[ReadingAlarm]
             How the sensor alerts.
 
+        placement : typing.Optional[ReadingPlacement]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -180,6 +186,9 @@ class RawSensorsClient:
                 "tone": tone,
                 "mode": mode,
                 "alarm": alarm,
+                "placement": convert_and_respect_annotation_metadata(
+                    object_=placement, annotation=ReadingPlacement, direction="write"
+                ),
             },
             headers={
                 "content-type": "application/json",
@@ -240,6 +249,60 @@ class RawSensorsClient:
                     Channels,
                     parse_obj_as(
                         type_=Channels,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def calibrate_sensor(
+        self,
+        sensor_id: str,
+        *,
+        range: typing.Optional[CalibrateSensorRequestRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[CalibrateSensorResponse]:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        range : typing.Optional[CalibrateSensorRequestRange]
+            The range to calibrate for.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[CalibrateSensorResponse]
+            The calibration outcome.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sensors/{encode_path_param(sensor_id)}/calibration",
+            method="POST",
+            json={
+                "range": range,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CalibrateSensorResponse,
+                    parse_obj_as(
+                        type_=CalibrateSensorResponse,
                         object_=_response.json(),
                     ),
                 )
@@ -356,6 +419,7 @@ class AsyncRawSensorsClient:
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
         alarm: typing.Optional[ReadingAlarm] = OMIT,
+        placement: typing.Optional[ReadingPlacement] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Reading]:
         """
@@ -385,6 +449,8 @@ class AsyncRawSensorsClient:
         alarm : typing.Optional[ReadingAlarm]
             How the sensor alerts.
 
+        placement : typing.Optional[ReadingPlacement]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -407,6 +473,9 @@ class AsyncRawSensorsClient:
                 "tone": tone,
                 "mode": mode,
                 "alarm": alarm,
+                "placement": convert_and_respect_annotation_metadata(
+                    object_=placement, annotation=ReadingPlacement, direction="write"
+                ),
             },
             headers={
                 "content-type": "application/json",
@@ -467,6 +536,60 @@ class AsyncRawSensorsClient:
                     Channels,
                     parse_obj_as(
                         type_=Channels,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def calibrate_sensor(
+        self,
+        sensor_id: str,
+        *,
+        range: typing.Optional[CalibrateSensorRequestRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[CalibrateSensorResponse]:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        range : typing.Optional[CalibrateSensorRequestRange]
+            The range to calibrate for.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[CalibrateSensorResponse]
+            The calibration outcome.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sensors/{encode_path_param(sensor_id)}/calibration",
+            method="POST",
+            json={
+                "range": range,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CalibrateSensorResponse,
+                    parse_obj_as(
+                        type_=CalibrateSensorResponse,
                         object_=_response.json(),
                     ),
                 )

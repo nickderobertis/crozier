@@ -39,7 +39,7 @@ from fern import FernApi
 
 client = FernApi()
 
-client.sensors.get_silence(
+client.sensors.calibrate_sensor(
     sensor_id="sensorId",
 )
 ```
@@ -70,7 +70,7 @@ client = AsyncFernApi()
 
 
 async def main() -> None:
-    await client.sensors.get_silence(
+    await client.sensors.calibrate_sensor(
         sensor_id="sensorId",
     )
 
@@ -87,7 +87,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.sensors.get_silence(...)
+    client.sensors.calibrate_sensor(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -104,7 +104,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.sensors.with_raw_response.get_silence(...)
+response = client.sensors.with_raw_response.calibrate_sensor(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -135,7 +135,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.sensors.get_silence(..., request_options={
+client.sensors.calibrate_sensor(..., request_options={
     "max_retries": 1
 })
 ```
@@ -150,7 +150,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.sensors.get_silence(..., request_options={
+client.sensors.calibrate_sensor(..., request_options={
     "timeout": 1
 })
 ```

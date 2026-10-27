@@ -8,6 +8,7 @@ from .lull import Lull
 from .pitch import Pitch
 from .reading_alarm import ReadingAlarm
 from .reading_mode import ReadingMode
+from .reading_placement import ReadingPlacement
 from .silence import Silence
 from .stillness import Stillness
 from .tone import Tone
@@ -31,6 +32,8 @@ class Reading(UniversalBaseModel):
     """
     How the sensor alerts.
     """
+
+    placement: typing.Optional[ReadingPlacement] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

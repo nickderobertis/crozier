@@ -16,6 +16,8 @@ if typing.TYPE_CHECKING:
     from .reading import Reading
     from .reading_alarm import ReadingAlarm
     from .reading_mode import ReadingMode
+    from .reading_placement import ReadingPlacement
+    from .reading_placement_band import ReadingPlacementBand
     from .silence import Silence
     from .stillness import Stillness
     from .tone import Tone
@@ -30,6 +32,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Reading": ".reading",
     "ReadingAlarm": ".reading_alarm",
     "ReadingMode": ".reading_mode",
+    "ReadingPlacement": ".reading_placement",
+    "ReadingPlacementBand": ".reading_placement_band",
     "Silence": ".silence",
     "Stillness": ".stillness",
     "Tone": ".tone",
@@ -68,6 +72,8 @@ __all__ = [
     "Reading",
     "ReadingAlarm",
     "ReadingMode",
+    "ReadingPlacement",
+    "ReadingPlacementBand",
     "Silence",
     "Stillness",
     "Tone",

@@ -85,6 +85,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Channels"
+  /sensors/{sensorId}/calibration:
+    post:
+      operationId: calibrateSensor
+      tags: [sensors]
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                range:
+                  description: The range to calibrate for.
+                  anyOf:
+                    - type: string
+                      enum: [short, long]
+      responses:
+        "200":
+          description: The calibration outcome.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verdict:
+                    oneOf:
+                      - type: string
+                        enum: [passed, failed]
 components:
   schemas:
     Silence:
@@ -160,3 +194,11 @@ components:
           oneOf:
             - type: string
               enum: [steady, pulsed]
+        placement:
+          type: object
+          properties:
+            band:
+              description: How far the sensor reaches.
+              anyOf:
+                - type: string
+                  enum: [near, far]

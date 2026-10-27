@@ -250,3 +250,69 @@ client.sensors.put_channel(
 </dl>
 </details>
 
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">calibrate_sensor</a>(...) -> CalibrateSensorResponse</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
+client.sensors.calibrate_sensor(
+    sensor_id="sensorId",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**sensor_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**range:** `typing.Optional[CalibrateSensorRequestRange]` — The range to calibrate for.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

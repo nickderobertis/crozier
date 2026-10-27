@@ -17,6 +17,8 @@ if typing.TYPE_CHECKING:
         Reading,
         ReadingAlarm,
         ReadingMode,
+        ReadingPlacement,
+        ReadingPlacementBand,
         Silence,
         Stillness,
         Tone,
@@ -25,9 +27,13 @@ if typing.TYPE_CHECKING:
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
+    from .sensors import CalibrateSensorRequestRange, CalibrateSensorResponse, CalibrateSensorResponseVerdict
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "CalibrateSensorRequestRange": ".sensors",
+    "CalibrateSensorResponse": ".sensors",
+    "CalibrateSensorResponseVerdict": ".sensors",
     "Channel": ".types",
     "ChannelOne": ".types",
     "Channels": ".types",
@@ -42,6 +48,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Reading": ".types",
     "ReadingAlarm": ".types",
     "ReadingMode": ".types",
+    "ReadingPlacement": ".types",
+    "ReadingPlacementBand": ".types",
     "Silence": ".types",
     "Stillness": ".types",
     "Tone": ".types",
@@ -73,6 +81,9 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "CalibrateSensorRequestRange",
+    "CalibrateSensorResponse",
+    "CalibrateSensorResponseVerdict",
     "Channel",
     "ChannelOne",
     "Channels",
@@ -87,6 +98,8 @@ __all__ = [
     "Reading",
     "ReadingAlarm",
     "ReadingMode",
+    "ReadingPlacement",
+    "ReadingPlacementBand",
     "Silence",
     "Stillness",
     "Tone",

@@ -11,10 +11,13 @@ from ..types.pitch import Pitch
 from ..types.reading import Reading
 from ..types.reading_alarm import ReadingAlarm
 from ..types.reading_mode import ReadingMode
+from ..types.reading_placement import ReadingPlacement
 from ..types.silence import Silence
 from ..types.stillness import Stillness
 from ..types.tone import Tone
 from .raw_client import AsyncRawSensorsClient, RawSensorsClient
+from .types.calibrate_sensor_request_range import CalibrateSensorRequestRange
+from .types.calibrate_sensor_response import CalibrateSensorResponse
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -105,6 +108,7 @@ class SensorsClient:
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
         alarm: typing.Optional[ReadingAlarm] = OMIT,
+        placement: typing.Optional[ReadingPlacement] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Reading:
         """
@@ -133,6 +137,8 @@ class SensorsClient:
 
         alarm : typing.Optional[ReadingAlarm]
             How the sensor alerts.
+
+        placement : typing.Optional[ReadingPlacement]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -164,6 +170,7 @@ class SensorsClient:
             tone=tone,
             mode=mode,
             alarm=alarm,
+            placement=placement,
             request_options=request_options,
         )
         return _response.data
@@ -197,6 +204,41 @@ class SensorsClient:
         )
         """
         _response = self._raw_client.put_channel(sensor_id, request=request, request_options=request_options)
+        return _response.data
+
+    def calibrate_sensor(
+        self,
+        sensor_id: str,
+        *,
+        range: typing.Optional[CalibrateSensorRequestRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CalibrateSensorResponse:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        range : typing.Optional[CalibrateSensorRequestRange]
+            The range to calibrate for.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CalibrateSensorResponse
+            The calibration outcome.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.sensors.calibrate_sensor(
+            sensor_id="sensorId",
+        )
+        """
+        _response = self._raw_client.calibrate_sensor(sensor_id, range=range, request_options=request_options)
         return _response.data
 
 
@@ -301,6 +343,7 @@ class AsyncSensorsClient:
         tone: typing.Optional[Tone] = OMIT,
         mode: typing.Optional[ReadingMode] = OMIT,
         alarm: typing.Optional[ReadingAlarm] = OMIT,
+        placement: typing.Optional[ReadingPlacement] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Reading:
         """
@@ -329,6 +372,8 @@ class AsyncSensorsClient:
 
         alarm : typing.Optional[ReadingAlarm]
             How the sensor alerts.
+
+        placement : typing.Optional[ReadingPlacement]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -368,6 +413,7 @@ class AsyncSensorsClient:
             tone=tone,
             mode=mode,
             alarm=alarm,
+            placement=placement,
             request_options=request_options,
         )
         return _response.data
@@ -409,4 +455,47 @@ class AsyncSensorsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.put_channel(sensor_id, request=request, request_options=request_options)
+        return _response.data
+
+    async def calibrate_sensor(
+        self,
+        sensor_id: str,
+        *,
+        range: typing.Optional[CalibrateSensorRequestRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CalibrateSensorResponse:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        range : typing.Optional[CalibrateSensorRequestRange]
+            The range to calibrate for.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CalibrateSensorResponse
+            The calibration outcome.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.sensors.calibrate_sensor(
+                sensor_id="sensorId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.calibrate_sensor(sensor_id, range=range, request_options=request_options)
         return _response.data
