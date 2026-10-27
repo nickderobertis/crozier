@@ -646,3 +646,21 @@
     for the operation's optional parameters, each valid for its schema, where
     Fern's drops them only because the success body is text.
   evidence: docs/departures/evidence/text-response-optional-query-examples.md
+
+- id: wrapped-union-member-docs-example
+  kind: fern-defect
+  trigger: >-
+    A discriminated union whose mapping names a oneOf or anyOf of references
+    with no discriminator of its own, which the wrapper holds whole in value:
+    the worked examples of README.md and reference.md.
+  fern: >-
+    The wrapper constructed with an empty argument under the mapping value as
+    keyword (SurveyEntry_Level(level=,)).
+  crozier: >-
+    The constructor its own client.py docstrings write, passing the union's
+    example as value (SurveyEntry_Level(value=1.1)).
+  reason: >-
+    Fern's example is not Python: the argument has no value, and the keyword
+    is not a field of the constructor, which rejects it. Its own docstrings
+    construct the same request through value.
+  evidence: docs/departures/evidence/wrapped-union-member-docs-example.md

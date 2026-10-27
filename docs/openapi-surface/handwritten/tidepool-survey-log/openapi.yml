@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Tidepool Survey
+  version: 1.0.0
+  description: Volunteers log what they find in a rock pool at low tide.
+servers:
+  - url: https://survey.tidepool.example
+paths:
+  /pools/{poolId}/entries:
+    post:
+      operationId: logEntry
+      summary: Log one survey entry for a pool.
+      parameters:
+        - name: poolId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyEntry'
+      responses:
+        '200':
+          description: The entry as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurveyEntry'
+components:
+  schemas:
+    SurveyEntry:
+      description: One thing a volunteer recorded at the pool.
+      oneOf:
+        - $ref: '#/components/schemas/WaterLevel'
+        - $ref: '#/components/schemas/CreatureSighting'
+      discriminator:
+        propertyName: entryType
+        mapping:
+          level: '#/components/schemas/WaterLevel'
+          sighting: '#/components/schemas/CreatureSighting'
+    WaterLevel:
+      description: A bare depth in centimetres, or a gauge reading with its gauge.
+      oneOf:
+        - $ref: '#/components/schemas/DepthCentimetres'
+        - $ref: '#/components/schemas/GaugeReading'
+    DepthCentimetres:
+      type: number
+    GaugeReading:
+      type: object
+      required:
+        - entryType
+        - gauge
+        - centimetres
+      properties:
+        entryType:
+          type: string
+        gauge:
+          type: string
+        centimetres:
+          type: number
+    CreatureSighting:
+      type: object
+      required:
+        - entryType
+        - species
+      properties:
+        entryType:
+          type: string
+        species:
+          type: string
+        count:
+          type: integer

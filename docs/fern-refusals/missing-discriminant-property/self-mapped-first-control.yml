@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /firings:
+    post:
+      operationId: scheduleFiring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiringStep"
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    FiringStep:
+      type: object
+      required:
+        - phase
+        - celsius
+      properties:
+        phase:
+          type: string
+          enum:
+            - ramp
+            - hold
+        celsius:
+          type: integer
+      discriminator:
+        propertyName: phase
+        mapping:
+          hold: "#/components/schemas/FiringStep"
+          ramp: "#/components/schemas/RampStep"
+    RampStep:
+      allOf:
+        - $ref: "#/components/schemas/FiringStep"
+      type: object
+      properties:
+        minutes:
+          type: integer
