@@ -1,8 +1,7 @@
 # Witness search: unions of only `null`, and of one string enum
 
 The real-specification search behind the repairs of the composed-schema-lowering
-refusal-parity finding ([record](../../refusal-parity-ten-documents.md)). They
-settle two shapes:
+refusal-parity finding. They settle two shapes:
 
 - **Every alternative is `type: null`.** crozier emitted an unparseable
   `typing.Union[]`, and panicked in `simple_nullable_member` on an array item.
