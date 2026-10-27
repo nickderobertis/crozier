@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.141](https://github.com/nickderobertis/crozier/compare/v0.0.140...v0.0.141) - 2026-10-27
+
+### Fixed
+
+- *(parity)* parse the YAML continuation lines Fern's parser accepts ([#650](https://github.com/nickderobertis/crozier/pull/650))
+
 ## [0.0.140](https://github.com/nickderobertis/crozier/compare/v0.0.139...v0.0.140) - 2026-10-27
 
 ### Fixed
