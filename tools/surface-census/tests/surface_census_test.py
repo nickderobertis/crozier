@@ -1250,7 +1250,14 @@ def byte_match_failures(root: Path, fixture: str) -> list[str]:
     except (OSError, tomllib.TOMLDecodeError) as error:
         return [f"its evidence.toml cannot be read ({error})"]
     pins = root / "assets" / "scaffolding" / "metadata.json"
-    certified = json.loads((pins if pins.is_file() else REPO / pins.relative_to(root)).read_text(encoding="utf-8"))
+    try:
+        certified = json.loads((pins if pins.is_file() else REPO / pins.relative_to(root)).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        return [f"the certified pair's metadata.json cannot be read ({error})"]
+    if not isinstance(certified, dict) or not all(
+        isinstance(certified.get(pin), str) and certified[pin] for pin in ("cliVersion", "generatorVersion")
+    ):
+        return ["the certified pair's metadata.json is not an object declaring string `cliVersion` and `generatorVersion`"]
     failures = [
         f"its evidence.toml `{field}` is `{evidence.get(field)}`, not the certified `{certified[pin]}`"
         for field, pin in (("fern_cli_version", "cliVersion"), ("fern_python_sdk_version", "generatorVersion"))
@@ -1422,8 +1429,9 @@ def combination_proof_failures(
     return failures
 
 
-def handwritten_reach_rows(root: Path) -> tuple[list[tuple[str, str, str, int, int]], list[str]]:
-    """`handwritten-reach.tsv`'s `(fixture, key, site, regions executed, regions)` rows, and
+def handwritten_reach_rows(root: Path) -> tuple[list[Any], list[str]]:
+    """`handwritten-reach.tsv`'s rows as the gate's `ReachRow` (fixture, key, site, regions
+    executed, regions), and
     every way its header, rows or order break, read by `handwritten-fixtures.py`'s own reader."""
     gate = load_script("tools/surface-census/handwritten-fixtures.py")
     return gate.read_reach_ledger(root / "docs" / "openapi-surface" / "handwritten-reach.tsv")
@@ -13076,6 +13084,26 @@ class FinishedStateGateTests(unittest.TestCase):
             f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv",
             finished_state_failures(self.root),
         )
+
+    def test_a_handwritten_audit_row_is_refused_when_the_certified_pins_are_unreadable(self) -> None:
+        """A hand-written witness is byte-matched only at the certified pair, so pins that are not
+        an object of two version strings refuse it rather than crash the gate."""
+        key, witness, _line = self.handwritten_audit_row()
+        metadata = self.root / "assets" / "scaffolding" / "metadata.json"
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        refusal = (
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            "byte-matches: the certified pair's metadata.json "
+        )
+        for broken, reason in (
+            ("null", "is not an object declaring string `cliVersion` and `generatorVersion`"),
+            ('{"cliVersion": "1.0.0"}', "is not an object declaring string `cliVersion` and `generatorVersion`"),
+            ("{", "cannot be read ("),
+        ):
+            with self.subTest(metadata=broken):
+                metadata.write_text(broken, encoding="utf-8", newline="\n")
+                failures = finished_state_failures(self.root)
+                self.assertTrue(any(f.startswith(refusal + reason) for f in failures), failures)
 
     def test_an_audit_row_whose_handlers_cell_breaks_its_grammar_is_refused(self) -> None:
         """A non-empty `handlers` cell naming no handling functions would silently drop the

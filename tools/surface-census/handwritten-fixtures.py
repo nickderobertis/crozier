@@ -534,7 +534,17 @@ def search_failures(root: Path, where: str, cover: Cover) -> list[str]:
     return failures
 
 
-def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]], list[str]]:
+class ReachRow(NamedTuple):
+    """One `handwritten-reach.tsv` row: a fixture's run over one measured site."""
+
+    fixture: str
+    key: str
+    site: str
+    regions_executed: int
+    regions: int
+
+
+def read_reach_ledger(path: Path) -> tuple[list[ReachRow], list[str]]:
     """`handwritten-reach.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
@@ -554,7 +564,7 @@ def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]],
                 f"{name} line {number}: not five tab-separated fields ending in two counts; run `just handwritten-reach`"
             )
             continue
-        rows.append((fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
+        rows.append(ReachRow(fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
     keys = [row[:3] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
         failures.append(
