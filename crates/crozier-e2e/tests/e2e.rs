@@ -25273,6 +25273,51 @@ fn a_plain_copy_of_a_quoted_date_example_in_an_example_or_prose_exempts_nothing(
 }
 
 #[test]
+fn a_nullable_string_property_generates_beside_the_name_collisions_fern_refuses() {
+    // Measured at Fern CLI 5.163.1 with fern-python-sdk 5.41.3: a later
+    // component named like an inline property takes the name, and the
+    // property's example is refused against it, for a string-led union (with
+    // or without a null member beside its two others), an inline enum, and a
+    // scalar taken by a later inline object. A string whose only other union
+    // member is the null type is the optional string it is, named nothing, so
+    // the same collision generates (RS-Server's `Item.collection` beside
+    // `ItemCollection`), as do a colliding component declared first and an
+    // unreferenced colliding scalar.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-type-mismatch");
+    let schedule = "GET /probe components/schemas/subscription/properties/schedule \
+                    collides with subscription_schedule";
+    for (spec, element) in [
+        ("string-union-collision-probe.yml", schedule),
+        ("nullable-string-union-collision-probe.yml", schedule),
+        (
+            "inline-enum-collision-probe.yml",
+            "GET /probe components/schemas/Owner/properties/kind collides with OwnerKind",
+        ),
+        (
+            "scalar-inline-object-collision-probe.yml",
+            "GET /probe components/schemas/UserRole collides with \
+             components/schemas/User/properties/role",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
+            let failures = refused_failures("example-type-mismatch", &run, element, strict);
+            assert!(failures.is_empty(), "{spec}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{spec}: {}", run.stderr);
+        }
+    }
+    for control in [
+        "nullable-string-union-collision-control.yml",
+        "union-collision-declared-first-control.yml",
+        "unreferenced-scalar-collision-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
+    }
+}
+
+#[test]
 fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
     let class = repo_root().join(FERN_REFUSALS_DIR).join("type-not-defined");
     for (spec, element) in [

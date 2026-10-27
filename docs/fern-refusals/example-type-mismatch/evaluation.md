@@ -70,7 +70,8 @@ measured. Refused shapes, each a committed `*-probe.yml` with its Fern log:
 - name collisions, where the later declaration of a Fern type name wins and the
   example of the other is validated against it: an inline string-led union
   ([string-union-collision](evaluation-logs/fern-string-union-collision.log),
-  Stripe's `subscription.schedule`), an inline enum
+  Stripe's `subscription.schedule`; a null member beside its two others changes
+  nothing: [nullable-string-union-collision](evaluation-logs/fern-nullable-string-union-collision-probe.log)), an inline enum
   ([inline-enum-collision](evaluation-logs/fern-inline-enum-collision.log)),
   and a scalar component taken by a later inline object
   ([scalar-inline-object-collision](evaluation-logs/fern-scalar-inline-object-collision.log),
@@ -89,6 +90,8 @@ and which the CLI journey generates identically in both modes:
 [one named request example](evaluation-logs/fern-single-named-example.log),
 [`type: object` without `properties`](evaluation-logs/fern-untyped-object-body.log),
 [a colliding component declared first](evaluation-logs/fern-union-collision-declared-first.log),
+[a string whose only other union member is the null type, named nothing](evaluation-logs/fern-nullable-string-union-collision-control.log)
+(RS-Server's `Item.collection` beside `ItemCollection`),
 [an unreferenced colliding scalar](evaluation-logs/fern-unreferenced-scalar-collision.log),
 [a map under a success response](evaluation-logs/fern-success-string-map.log) and
 [a schema-level map on an error](evaluation-logs/fern-error-schema-level-map.log).

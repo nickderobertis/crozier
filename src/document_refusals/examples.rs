@@ -1624,13 +1624,24 @@ fn plain_string(schema: &Value) -> bool {
         && !has_composition(schema)
 }
 
-/// An inline `anyOf`/`oneOf` of two or more members led by a plain string.
+/// An inline `anyOf`/`oneOf` led by a plain string, with at least two members
+/// besides `{type: 'null'}`. Fern reads a union whose only other member is the
+/// null type as the optional string it is, a type of no name of its own, so it
+/// takes no colliding name (`nullable-string-union-collision` control; RS-Server's
+/// `Item.collection` beside `ItemCollection`); a null member beside two others
+/// leaves the union named (`nullable-string-union-collision` probe).
 fn string_led_union(schema: &Value) -> bool {
     schema
         .get("anyOf")
         .or_else(|| schema.get("oneOf"))
         .and_then(Value::as_array)
-        .filter(|members| members.len() >= 2)
+        .filter(|members| {
+            members
+                .iter()
+                .filter(|member| !is_type(member, "null"))
+                .count()
+                >= 2
+        })
         .is_some_and(|members| {
             let first = &members[0];
             is_type(first, "string")
@@ -1711,6 +1722,55 @@ mod tests {
         ] {
             assert_eq!(verdict(control), None, "{control}");
         }
+    }
+
+    #[test]
+    fn a_string_union_whose_only_other_member_is_null_takes_no_colliding_name() {
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let shape = |name: &str| yaml(&std::fs::read_to_string(class.join(name)).unwrap());
+        let collision = |name: &str| {
+            let root = shape(name);
+            Doc {
+                root: &root,
+                plain: HashSet::new(),
+            }
+            .colliding_property()
+            .map(|(class, detail)| (class.id(), detail))
+        };
+        let refused = Some((
+            "example-type-mismatch",
+            "GET /probe components/schemas/subscription/properties/schedule collides with \
+             subscription_schedule"
+                .to_owned(),
+        ));
+        assert_eq!(collision("string-union-collision-probe.yml"), refused);
+        assert_eq!(
+            collision("nullable-string-union-collision-probe.yml"),
+            refused
+        );
+        assert_eq!(
+            collision("nullable-string-union-collision-control.yml"),
+            None
+        );
+        assert_eq!(
+            collision("union-collision-declared-first-control.yml"),
+            None
+        );
+
+        let schedule = |root: &Value| {
+            root["components"]["schemas"]["subscription"]["properties"]["schedule"].clone()
+        };
+        assert!(string_led_union(&schedule(&shape(
+            "nullable-string-union-collision-probe.yml"
+        ))));
+        assert!(!string_led_union(&schedule(&shape(
+            "nullable-string-union-collision-control.yml"
+        ))));
+        // The null member leads: the union is not string-led, as before.
+        assert!(!string_led_union(&yaml(
+            "anyOf: [{type: 'null'}, {type: string}, {type: integer}]"
+        )));
     }
 
     /// The text of each node [`plain_timestamps`] finds in `text`, sorted.
