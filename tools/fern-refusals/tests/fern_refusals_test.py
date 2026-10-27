@@ -1014,7 +1014,7 @@ class FernRuns(unittest.TestCase):
         valid = record.read_text(encoding="utf-8")
         for text in (
             "generate_exit: 1\n",
-            "fern_cli_version: 0.1.0\nnot a field\n",
+            "fern_cli_version: 0.1.0\nnot a field\n",  # certified-pair: stand-in (an older pair)
             valid.replace("generate_exit: 1", "generate_exit: garbage"),
             valid.replace("generate_exit: 1", "generate_exit: timeout"),
         ):

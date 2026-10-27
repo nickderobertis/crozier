@@ -778,6 +778,97 @@ class TimingTableTests(unittest.TestCase):
                 self.assertIn(message, str(raised.exception))
 
 
+# The artifacts each weekly phase writes, byte for byte, at SCHEMA_VERSION 3: a
+# change to what they emit must move this golden (and, when an old reader would
+# misread it, the version) in the same change. Regenerate with
+# CROZIER_UPDATE_WEEKLY_GOLDEN=1 after a deliberate contract change.
+CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v3"
+
+
+def contract_artifacts() -> dict[str, dict[str, object]]:
+    """One of each artifact, as the phases build them: a plan, a shard result
+    and a bundle carrying an `ok` and a `refusal-changed` item, and a diff
+    decision with a populated `refusals_changed`."""
+    pair = weekly.Pair("2.0.0", "3.0.0")
+    # Literal budget and estimate, so a retuned budget or overhead moves the
+    # planner's tests, not this contract.
+    stages = {"plan": 5.0, "shards": 4.02, "assembly": 6.0, "decision": 34.0, "publication": 5.0}
+    plan = small_plan(budget_minutes=180.0, estimate=weekly.Estimate(54.02, stages, 1, 4.0, 6.0, 4.02))
+    unsettled = (
+        "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap "
+        "out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern "
+        "generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no "
+        "diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more "
+        "time or memory"
+    )
+    items = (
+        weekly.ItemResult(
+            "corpus", "a", weekly.Status.OK, "", 1.5, ("tests/fixtures/a/expected/x.py",), "corpus/a.log"
+        ),
+        weekly.ItemResult(
+            "refusals",
+            "heap-exhausted",
+            weekly.Status.REFUSAL_CHANGED,
+            unsettled,
+            1800.2,
+            ("docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log",),
+            "refusals/heap-exhausted.log",
+        ),
+    )
+    shard = weekly.ShardResult(0, pair, plan.base, items, tuple(path for i in items for path in i.changed), ())
+    bundle = weekly.Bundle(pair, plan.base, True, tuple(weekly.replace(item, shard=0) for item in items), (), ())
+    decision = weekly.Decision(pair, True, "b" * 64)
+    decision.refusals_changed.append(weekly.RefusalChange("heap-exhausted", unsettled))
+    decision.gates.append(
+        weekly.GateRun("crozier compare", "refusals", "heap-exhausted", weekly.Verdict.PASS, 1, "reports/r.txt")
+    )
+    return {
+        "plan.json": plan.to_json(),
+        "result.json": shard.to_json(),
+        "bundle.json": bundle.to_json(),
+        "decision.json": decision.to_json(),
+    }
+
+
+class ContractGoldenTests(unittest.TestCase):
+    """What the phases write is the committed version-3 contract, and the
+    phases that read it accept the golden as written."""
+
+    def test_each_artifact_serializes_to_the_committed_golden(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            for name, record in contract_artifacts().items():
+                written = Path(scratch) / name
+                weekly.write_json(written, record)
+                golden = CONTRACT_GOLDEN / name
+                if os.environ.get("CROZIER_UPDATE_WEEKLY_GOLDEN"):
+                    golden.parent.mkdir(parents=True, exist_ok=True)
+                    golden.write_bytes(written.read_bytes())
+                with self.subTest(name):
+                    self.assertEqual(
+                        golden.read_text(encoding="utf-8"),
+                        written.read_text(encoding="utf-8"),
+                        f"{name} no longer serializes as the committed contract; if that is deliberate, bump "
+                        "SCHEMA_VERSION when an old reader would misread it and regenerate with "
+                        "CROZIER_UPDATE_WEEKLY_GOLDEN=1",
+                    )
+
+    def test_the_golden_is_read_back_by_each_phase_unchanged(self) -> None:
+        def golden(name: str) -> dict[str, Any]:
+            # A JSON object whose fields each reader validates: `Any` is json's own value type.
+            return json.loads((CONTRACT_GOLDEN / name).read_text(encoding="utf-8"))
+
+        self.assertEqual(weekly.SCHEMA_VERSION, golden("result.json")["schema_version"])
+        self.assertEqual(golden("plan.json"), weekly.Plan.from_json(golden("plan.json"), "plan").to_json())
+        shard = weekly.ShardResult.from_json(golden("result.json"), "result")
+        self.assertEqual(golden("result.json"), shard.to_json())
+        self.assertEqual(weekly.Status.REFUSAL_CHANGED, shard.items[1].status)
+        bundle = weekly.Bundle.from_json(golden("bundle.json"), "bundle")
+        self.assertEqual(golden("bundle.json"), bundle.to_json())
+        read = weekly.RecordedDecision.from_json(golden("decision.json"), "decision")
+        self.assertEqual(weekly.Outcome.DIFF, read.outcome)
+        self.assertEqual((weekly.RefusalChange("heap-exhausted", bundle.items[1].detail),), read.refusals_changed)
+
+
 class DecisionRecordTests(unittest.TestCase):
     """The decision the publication job reads back is the one written."""
 

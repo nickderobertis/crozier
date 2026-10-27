@@ -1,0 +1,30 @@
+{
+  "schema_version": 3,
+  "outcome": "diff",
+  "complete": true,
+  "pair": {
+    "cli": "2.0.0",
+    "generator": "3.0.0"
+  },
+  "bundle": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "failing": {},
+  "unfetchable": [],
+  "cannot_run": [],
+  "gates": [
+    {
+      "command": "crozier compare",
+      "family": "refusals",
+      "item": "heap-exhausted",
+      "verdict": "pass",
+      "exit": 1,
+      "report": "reports/r.txt"
+    }
+  ],
+  "title": "test(fern-goldens): regenerate at Fern CLI 2.0.0 / fern-python-sdk 3.0.0",
+  "refusals_changed": [
+    {
+      "item": "heap-exhausted",
+      "detail": "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more time or memory"
+    }
+  ]
+}
