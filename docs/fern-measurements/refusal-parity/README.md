@@ -122,6 +122,47 @@ So, by the manager's ruling, the case is a byte-gated e2e measurement rather
 than a `docs/openapi-surface/handwritten/` fixture. No census key was added to
 give it a cover.
 
+The ruling was delivered over the run's planner channel (correlation
+`c-f7ed5ca398118fe8d4cad89fa01725f1`, reply 34). It answered the question of
+how a hand-written fixture could carry a cover once real witnesses reach every
+arm. It amended this node's acceptance criteria with this text, quoted
+verbatim:
+
+> Where every arm the repair touches is reached by a registered real golden
+> witness, the hand-written fixture criterion is met by a from-scratch document
+> of the triggering shape whose crozier output is byte-compared with its
+> certified-pair tree by an e2e test in crates/crozier-e2e, apart from lines the
+> departures ledger records under an authorized departure. No
+> `handwritten_fixtures_match_fern_goldens` cover is required for that shape.
+
+## Red and green
+
+The new real-CLI acceptance tests were run twice, both times through
+`cargo nextest run -p crozier-e2e` against the debug binary each tree builds:
+
+- **Red:** in an isolated worktree at commit `a9a1d4cef`, with only
+  `src/ir.rs` and `src/name_refusals.rs` restored to the base `0f348a953`.
+  This reverts the production fix and keeps every new test, fixture, golden and
+  ledger row.
+- **Green:** the finished tree at the same commit.
+
+| test | red | green |
+|---|---|---|
+| `refusal_parity::bare_name_mapped_discriminants_match_fern_in_both_enum_modes` | FAIL: the orchard document is refused, `#/components/schemas/Crate discriminant "@kind"` | PASS |
+| `refusal_parity::pointer_mapped_discriminant_refusals_hold_beside_the_bare_name_controls` | FAIL: every refused probe is refused, then `bare-name-oneof-control.yml` is refused, `#/components/schemas/Asset discriminant "$_type"` | PASS |
+| `openapitools_csharp_allof_matches_fern_output` | FAIL: refused, `#/components/schemas/Person discriminant "$_type"` | PASS |
+| `swagger_parser_null_types_matches_fern_output` | FAIL: refused, `#/components/schemas/Person discriminant "$_type"` | PASS |
+| `tooljet_microsoft_teams_matches_fern_output` | FAIL: refused, `#/components/schemas/ConversationMember discriminant "@odata.type"` | PASS |
+| `overlay_goldens::overlay_goldens_match_fern_output` | FAIL: only the three new literals overlays, each refused as above | PASS |
+| `discriminant_refusals_recover_with_a_valid_document_name` (existing guard) | PASS | PASS |
+
+Every red failure is the triggering refusal of a bare-name-mapped document, and
+no other fixture failed. The pre-existing guard passes in both runs, because the
+shapes it refuses are refused before and after the repair. The excerpts are
+[`evidence/red.log`](evidence/red.log) and
+[`evidence/green.log`](evidence/green.log). The `src/` unit tests were shown
+failing the same way earlier, against the four reverted hunks.
+
 ## Measurement provenance
 
 Every Fern run this record rests on held the shared generation lock
