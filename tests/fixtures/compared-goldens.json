@@ -365,6 +365,8 @@
     "docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected": {},
+    "docs/fern-measurements/refusal-parity/discriminant-names-orchard-literals/fern-expected": {},
+    "docs/fern-measurements/refusal-parity/discriminant-names-orchard/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-annotated-body/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-array-mode/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-array-variants/fern-expected": {},
@@ -1113,6 +1115,12 @@
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/onmyshelf-api/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
+    "tests/fixtures/openapitools-csharp-allof/expected": {},
+    "tests/fixtures/openapitools-csharp-allof/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/openbanking-brasil-directory/expected": {},
     "tests/fixtures/openbanking.org.uk-account-info-openapi/expected": {},
     "tests/fixtures/openbankingproject-ch-kundenbeziehung/expected": {},
@@ -1212,6 +1220,12 @@
       ]
     },
     "tests/fixtures/svix-webhooks/expected": {},
+    "tests/fixtures/swagger-parser-null-types/expected": {},
+    "tests/fixtures/swagger-parser-null-types/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/swagger-petstore-distribution/expected-flat": {},
     "tests/fixtures/swagger-petstore-organization/expected-flat": {},
     "tests/fixtures/swagger-petstore/expected": {},
@@ -1223,6 +1237,12 @@
     "tests/fixtures/timelyapp-entry/expected": {},
     "tests/fixtures/timelyapp/expected": {},
     "tests/fixtures/tlon-notes/expected": {},
+    "tests/fixtures/tooljet-microsoft-teams/expected": {},
+    "tests/fixtures/tooljet-microsoft-teams/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/torrentarr/expected": {},
     "tests/fixtures/traccar.org/expected": {},
     "tests/fixtures/truefoundry-trueforge-5adde28/expected": {},
