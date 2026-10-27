@@ -550,9 +550,10 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         changes = self.root / ".local/fern-references/refusals/probe.zeta.changes.jsonl"
+        # The tool names the report under its resolved root (macOS's /var is /private/var).
         self.assertEqual(
             sorted(tuple(call["argv"]) for call in self.delegate_calls()),
-            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "--changes", str(changes), "zeta")],
+            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "--changes", str(changes.resolve()), "zeta")],
         )
         # A probe that no longer reproduces its recorded refusal is reported, not failed;
         # the report a previous run left is gone before the probe runs.
