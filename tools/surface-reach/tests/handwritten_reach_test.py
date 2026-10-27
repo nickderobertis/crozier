@@ -7,7 +7,9 @@ two fixtures covering the same arm, one whose document takes it and one whose
 document does not, read back from the ledger the recipe writes; one document
 measured with and without the `audiences` its fixture declares; a combination
 measured at its interaction branch alone, over a document declaring both of its
-features and two declaring one each; fixtures covering combinations alone,
+features and two declaring one each, and a map's discriminated value union
+measured at the body its success opens against the untagged union that runs the
+same call; fixtures covering combinations alone,
 measured at the interaction branch or at each handler the co-occurrence audit
 names; and a cover naming an arm the site table does not list, a malformed
 audit and an interaction site naming no function, each refused before anything
@@ -212,6 +214,90 @@ components:
 """
 
 
+# `combo-map-of-discriminated-union`: the body `field_type_ref` enters when a
+# property-less map's inline value union is one `discriminated_union` builds. The
+# call opening it also runs for an ordinary multi-member value union, inside the
+# `combo-map-of-oneof` arm, and for a union outside any map the property arm
+# `discriminator` lists runs instead.
+MAP_UNION = "combo-map-of-discriminated-union"
+MAP_UNION_SITES = {
+    MAP_UNION: site_cell(MAP_UNION),
+    "combo-map-of-oneof": site_cell("combo-map-of-oneof"),
+    "discriminator": next(
+        site for site in site_cell("discriminator").split(",") if site.startswith("src/ir.rs::Builder::field_type_ref[")
+    ),
+}
+TAGGED = """oneOf:
+{indent}  - type: object
+{indent}    required: [kind]
+{indent}    properties:
+{indent}      kind: {{type: string, enum: [single]}}
+{indent}      text: {{type: string}}
+{indent}  - type: object
+{indent}    required: [kind]
+{indent}    properties:
+{indent}      kind: {{type: string, enum: [multiple]}}
+{indent}      picks: {{type: array, items: {{type: string}}}}
+"""
+UNTAGGED = """oneOf:
+{indent}  - type: string
+{indent}  - type: integer
+"""
+MAP_UNION_DOCUMENTS = {
+    # Both features: a map whose value is a union its members tag.
+    "map-of-tagged-union": "type: object\n          additionalProperties:\n            "
+    + TAGGED.format(indent="            "),
+    # The map without the discriminated union: two untagged members.
+    "map-of-untagged-union": "type: object\n          additionalProperties:\n            "
+    + UNTAGGED.format(indent="            "),
+    # The discriminated union without the map, at the property itself.
+    "tagged-union-property": TAGGED.format(indent="          "),
+}
+MAP_UNION_COMPONENTS = """openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+paths:
+  /answers:
+    get:
+      operationId: getAnswers
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answers"
+components:
+  schemas:
+    Answers:
+      type: object
+      properties:
+        byQuestion:
+          {value}"""
+MAP_UNION_EVIDENCE = (
+    PAIR_EVIDENCE
+    + """digest = "{zero}"
+
+[[covers]]
+key = "combo-map-of-discriminated-union"
+search = "docs/openapi-surface/witness-search-schema-combinations-models-unions-refs/README.md#verdicts"
+verdict = "exhausted"
+
+[[covers]]
+key = "combo-map-of-oneof"
+search = "docs/openapi-surface/witness-search-schema-combinations-models-unions-refs/README.md#verdicts"
+verdict = "exhausted"
+
+[[covers]]
+key = "discriminator"
+arm = '{arm}'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/discriminator.md#witness-search-exhaustive"
+verdict = "exhausted"
+"""
+)
+
+
 def golden_reach():
     return _module("golden_reach_recipe", "golden-reach.py")
 
@@ -347,6 +433,45 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                         self.assertGreater(executed, 0, "the document declaring both features missed the branch")
                     else:
                         self.assertEqual(0, executed, f"{name} declares one feature, yet reached the branch")
+
+    def test_a_map_value_union_reaches_its_interaction_body_only_when_discriminated(self) -> None:
+        """The map of a tagged union, the map of an untagged one and the tagged union
+        outside any map each run `field_type_ref`; only the first enters the body
+        `discriminated_union`'s success opens, though the second runs that call too."""
+        with tempfile.TemporaryDirectory() as temporary:
+            base, ledger = Path(temporary) / "handwritten", Path(temporary) / "reach.tsv"
+            for name, value in MAP_UNION_DOCUMENTS.items():
+                directory = base / name
+                directory.mkdir(parents=True)
+                (directory / "openapi.yml").write_text(MAP_UNION_COMPONENTS.format(value=value), encoding="utf-8")
+                (directory / "evidence.toml").write_text(
+                    MAP_UNION_EVIDENCE.format(zero="0" * 64, arm=MAP_UNION_SITES["discriminator"]), encoding="utf-8"
+                )
+            run = self.run_recipe(base, ledger)
+            self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+            with ledger.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.reader(handle, delimiter="\t"))
+            self.assertEqual(HEADER, rows[0])
+            executed = {(row[0], row[1], row[2]): int(row[3]) for row in rows[1:]}
+            self.assertEqual(
+                {(name, key, site) for name in MAP_UNION_DOCUMENTS for key, site in MAP_UNION_SITES.items()},
+                set(executed),
+                "the recipe did not measure each fixture at all three sites",
+            )
+            reached = {
+                name: {key for key, site in MAP_UNION_SITES.items() if executed[(name, key, site)] > 0}
+                for name in MAP_UNION_DOCUMENTS
+            }
+            self.assertEqual(
+                {
+                    "map-of-tagged-union": {MAP_UNION, "combo-map-of-oneof"},
+                    # The map's value union runs `discriminated_union`, which returns
+                    # `None` for untagged members: the body stays unreached.
+                    "map-of-untagged-union": {"combo-map-of-oneof"},
+                    "tagged-union-property": {"discriminator"},
+                },
+                reached,
+            )
 
     def test_a_fixture_covering_only_combinations_is_measured_at_each_interaction_site(self) -> None:
         """A fixture with no arm-level cover still runs: at the combination's interaction
