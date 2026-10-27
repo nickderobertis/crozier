@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /signals:
+    get:
+      operationId: getSignal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signal'
+components:
+  schemas:
+    Signal:
+      oneOf:
+      - $ref: '#/components/schemas/Silence'
+      - $ref: '#/components/schemas/Tone'
+      discriminator:
+        propertyName: mode
+        mapping:
+          QUIET: '#/components/schemas/Silence'
+          TONE: '#/components/schemas/Tone'
+    Reading:
+      type: object
+      properties:
+        channel:
+          type: string
+    Silence:
+      allOf:
+      - $ref: '#/components/schemas/Reading'
+      - properties:
+          mode:
+            type: string
+            enum: [QUIET]
+          kind:
+            type: string
+            enum: [NULL]
+    Tone:
+      allOf:
+      - $ref: '#/components/schemas/Reading'
+      - properties:
+          pitch:
+            type: integer
+          mode:
+            type: string
+            enum: [TONE]

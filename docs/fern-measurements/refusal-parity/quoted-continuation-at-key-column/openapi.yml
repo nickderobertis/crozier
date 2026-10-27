@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse
+  version: 1.0.0
+paths:
+  /beacons/{beaconId}:
+    get:
+      operationId: getBeacon
+      tags: [beacons]
+      summary: "Read one beacon
+      by its identifier"
+      description: "Returns the beacon's lamp and its schedule.\
+      \ The lamp is lit at dusk.
+
+      A beacon that was retired answers 404."
+      parameters:
+        - name: beaconId
+          in: path
+          required: true
+          description: 'The beacon''s
+          identifier, as #registered'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The beacon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+components:
+  schemas:
+    Beacon:
+      type: object
+      description: "A light on the coast that ships steer by.
+      Each one keeps its own schedule,
+  and its own lamp."
+      required: [id, lamp]
+      properties:
+        id:
+          type: string
+        lamp:
+          $ref: '#/components/schemas/Lamp'
+        note:
+          type: string
+          description: "Free text kept by the keeper"
+    Lamp:
+      type: string
+      enum:
+      - "oil
+      wick"
+      - electric
+      - 'gas
+      mantle'

@@ -111,10 +111,10 @@ mod output_defects;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
-/// The `discriminant-value-unsuitable` class narrowed to what the certified pair
-/// refuses: the from-scratch bare-name case under
-/// `docs/fern-measurements/refusal-parity/` held whole in both enum modes, and
-/// the class's refused shapes held beside its bare-name controls.
+/// Documents the certified pair generates from that crozier used to refuse,
+/// under `docs/fern-measurements/refusal-parity/`, among them the
+/// `discriminant-value-unsuitable` class narrowed to what the certified pair
+/// refuses, held whole in both enum modes beside the class's refused shapes.
 #[path = "e2e/refusal_parity.rs"]
 mod refusal_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

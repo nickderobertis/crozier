@@ -1,0 +1,39 @@
+Fern CLI 5.163.1, python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi/openapi.yml: unexpected end of the document within a double quoted scalar
+         at line 21, column 1
+       
+        18 |     Beacon:
+        19 |       type: object
+        20 |       description: "A light on  ...
+        21 | ---
+       ------^
+        22 |       Each one keeps its own sc ...
+        23 |       properties:
+::error title=[api]%3A::Failed to parse openapi/openapi.yml: unexpected end of the document within a double quoted scalar%0A  at line 21, column 1%0A%0A 18 |     Beacon:%0A 19 |       type: object%0A 20 |       description: "A light on  ...%0A 21 | ---%0A------^%0A 22 |       Each one keeps its own sc ...%0A 23 |       properties:
+
+generate exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Failed to parse openapi/openapi.yml: unexpected end of the document within a double quoted scalar
+                                            at line 21, column 1
+                                          
+                                           18 |     Beacon:
+                                           19 |       type: object
+                                           20 |       description: "A light on  ...
+                                           21 | ---
+                                          ------^
+                                           22 |       Each one keeps its own sc ...
+                                           23 |       properties:
+::error title=[api]%3A python-sdk fernapi/fern-python-sdk::Failed to parse openapi/openapi.yml: unexpected end of the document within a double quoted scalar%0A  at line 21, column 1%0A%0A 18 |     Beacon:%0A 19 |       type: object%0A 20 |       description: "A light on  ...%0A 21 | ---%0A------^%0A 22 |       Each one keeps its own sc ...%0A 23 |       properties:
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.
