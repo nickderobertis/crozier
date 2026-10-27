@@ -2038,7 +2038,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 48 rows are the 27 generator categories and the 21 scenarios later
+These 49 rows are the 27 generator categories and the 22 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2105,6 +2105,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 | nested-discriminator-flat-wire | Discriminated union whose variant is itself a discriminated union: Fern's `value` wrapper classes and constructors kept; its `kind`/`value` envelope on the wire and its empty worked-example argument corrected | Fern behaviour + Fern defect | `nested-discriminator-wire` | docs/fern-measurements/examples/nested-discriminator-wire/fern-expected | `nested_discriminator_departure_keeps_every_other_byte` | `nested-discriminator-flat-wire` |
 | wrapped-union-member-docs-example | Discriminator mapping target that is a union of references, not all objects, with no discriminator of its own, held whole as the wrapper's `value`; the README and reference.md worked examples' empty mapping-value argument corrected | Fern behaviour + Fern defect | `discriminator-mapping-arms` | docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected | `handwritten_fixtures_match_fern_goldens` | `wrapped-union-member-docs-example` |
+| dangling-mapping-target-variant | Discriminator mapping target naming no component beside targets that do: Fern's discriminated union of wrappers, the member's own tag and its enum kept; the dangling value's `value: typing.Any` wrapper, which no payload of the variant parses into, corrected to carry the tagged member's fields | Fern behaviour + Fern defect | `conquery-emission-parity` | docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected; tests/fixtures/ingef-conquery/expected | `emission_parity::a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields; ingef_conquery_matches_fern_output` | `dangling-mapping-variant-fields` |
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
 
 Additional boundaries of these rows are held by the same gate: the
@@ -2354,8 +2355,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 291 sources. The walk reads the
-  **274** registered sources, of which **274** carry a committed golden; the 17
+  acquires 292 sources. The walk reads the
+  **275** registered sources, of which **275** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
