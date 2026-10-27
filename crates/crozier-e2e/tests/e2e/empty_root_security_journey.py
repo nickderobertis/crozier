@@ -20,6 +20,7 @@ import sys
 import threading
 from collections.abc import Iterator
 from pathlib import Path
+from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("sdk_src", type=Path)
@@ -29,14 +30,22 @@ if not (args.sdk_src / "fern" / "__init__.py").is_file():
 sys.path.insert(0, str(args.sdk_src.resolve()))
 sdk = importlib.import_module("fern")
 
-received: list[tuple[str, str | None]] = []
+
+class Received(NamedTuple):
+    """One request the server received: its path and its `x-api-key` header."""
+
+    path: str
+    api_key: str | None
+
+
+received: list[Received] = []
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
     """Answers every route with an empty JSON object and records its key header."""
 
     def do_GET(self) -> None:
-        received.append((self.path, self.headers.get("x-api-key")))
+        received.append(Received(self.path, self.headers.get("x-api-key")))
         body = b"{}"
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
@@ -75,10 +84,10 @@ def journeys(base_url: str) -> None:
         assert await keyed.osam_service.get_your_s3credentials() == {}
 
     asyncio.run(run())
-    expected = [("/catalog/_mgmt/ping", None), ("/storage/account/credentials", "rs-key")] * 2
+    expected = [Received("/catalog/_mgmt/ping", None), Received("/storage/account/credentials", "rs-key")] * 2
     assert received == expected, received
-    for path, key in received:
-        print(f"{path} x-api-key={json.dumps(key)}")
+    for request in received:
+        print(f"{request.path} x-api-key={json.dumps(request.api_key)}")
 
 
 # llmlint: ignore-end[async_typed_clients_at_boundaries]
