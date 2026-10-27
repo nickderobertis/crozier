@@ -1257,7 +1257,9 @@ def byte_match_failures(root: Path, fixture: str) -> list[str]:
     if not isinstance(certified, dict) or not all(
         isinstance(certified.get(pin), str) and certified[pin] for pin in ("cliVersion", "generatorVersion")
     ):
-        return ["the certified pair's metadata.json is not an object declaring string `cliVersion` and `generatorVersion`"]
+        return [
+            "the certified pair's metadata.json is not an object declaring string `cliVersion` and `generatorVersion`"
+        ]
     failures = [
         f"its evidence.toml `{field}` is `{evidence.get(field)}`, not the certified `{certified[pin]}`"
         for field, pin in (("fern_cli_version", "cliVersion"), ("fern_python_sdk_version", "generatorVersion"))
@@ -12868,9 +12870,14 @@ class FinishedStateGateTests(unittest.TestCase):
         sites = load_script("tools/surface-census/golden-reach.py").read_sites_table(
             self.root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
         )
-        key = key or sorted(
-            key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden" and not sites[key].cooccurrence
-        )[0]
+        key = (
+            key
+            or sorted(
+                key
+                for key, (_r, cells) in rows.items()
+                if cells[3].strip("`") == "golden" and not sites[key].cooccurrence
+            )[0]
+        )
         region = rows[key].region
         self.edit(
             f"docs/openapi-surface/{region}.md",
@@ -13161,9 +13168,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual([], failures)
         placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
         self.assertEqual([], failures)
-        self.assertEqual(
-            set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key}
-        )
+        self.assertEqual(set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key})
         cover = next(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
         undeclared = fixture._replace(covers=[cover._replace(key="combo-not-declared")])
         _placed, failures = gate.interaction_sites({witness: undeclared}, sites, audit)
@@ -13197,7 +13202,10 @@ class FinishedStateGateTests(unittest.TestCase):
         )
         for broken, reason in (
             ("null", "is not an object declaring string `cliVersion` and `generatorVersion`"),
-            ('{"cliVersion": "1.0.0"}', "is not an object declaring string `cliVersion` and `generatorVersion`"),
+            (
+                '{"cliVersion": "1.0.0"}',  # certified-pair: stand-in
+                "is not an object declaring string `cliVersion` and `generatorVersion`",
+            ),
             ("{", "cannot be read ("),
         ):
             with self.subTest(metadata=broken):
@@ -13238,7 +13246,9 @@ class FinishedStateGateTests(unittest.TestCase):
         evidence = self.root / "docs/openapi-surface/handwritten" / fixture / "evidence.toml"
         with evidence.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write('\nunexpected = "key"\n')
-        with self.assertRaisesRegex(ValueError, rf"^{re.escape(fixture)}: cover \d+ carries unknown field\(s\) \['unexpected'\]"):
+        with self.assertRaisesRegex(
+            ValueError, rf"^{re.escape(fixture)}: cover \d+ carries unknown field\(s\) \['unexpected'\]"
+        ):
             restater.witness_blocked_keys(self.root)
         evidence.write_text("[[covers]\n", encoding="utf-8", newline="\n")
         with self.assertRaisesRegex(ValueError, rf"^{re.escape(fixture)}: evidence\.toml is not TOML"):
