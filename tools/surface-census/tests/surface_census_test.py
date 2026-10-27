@@ -19395,6 +19395,85 @@ class CoverageRestatementTests(unittest.TestCase):
         )
         moves([(ledger, together + "\n", "")], [real, cooccurrence - 1, measured, weak, unproven + 1, decided])
 
+    def test_combination_proof_subtotals_follow_their_evidence(self) -> None:
+        """The witness-blocked, fixture co-occurrence and user-ruling subtotals each move
+        with the one input they count, and only that subtotal moves."""
+
+        def subtotals() -> list[int]:
+            flat = " ".join(self.index.read_text(encoding="utf-8").split())
+            found = matched(
+                re.search(
+                    r"rest on a hand-written fixture \((\d+) of them witness-blocked, (\d+) of them "
+                    r"co-occurrences proven on the fixture\), .*? \((\d+) left unproven by the user's ruling\)",
+                    flat,
+                )
+            )
+            return [int(found[n]) for n in range(1, 4)]
+
+        surface = self.root / "docs/openapi-surface"
+        # The blocked subtotal reads the fixtures' own evidence, which the shared
+        # staging leaves out.
+        shutil.copytree(REPO / "docs/openapi-surface/handwritten", surface / "handwritten")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        original = self.index.read_text(encoding="utf-8")
+        blocked, together, ruled = subtotals()
+        handwritten = sorted(
+            line.split(" | ")[0].removeprefix("| ").strip("`")
+            for path in sorted(surface.glob("*.md"))
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| combo-") and " | handwritten | " in line
+        )
+        self.assertTrue(handwritten, "the staged tree carries no hand-written combination row")
+        sites = surface / "golden-reach-sites.tsv"
+        cells = {
+            line.split("\t")[0]: line
+            for line in sites.read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[0] in handwritten
+        }
+        cooccurring = [key for key in handwritten if cells[key].split("\t")[2] == "co-occurrence"]
+        # The committed tree: no hand-written cover is witness-blocked, no row is ruled,
+        # and the hand-written rows whose site cell reads `co-occurrence` are the count.
+        self.assertEqual([0, len(cooccurring), 0], [blocked, together, ruled])
+
+        def moves(path: Path, old: str, new: str, expected: list[int]) -> None:
+            text = path.read_text(encoding="utf-8")
+            self.assertEqual(1, text.count(old), old)
+            path.write_text(text.replace(old, new), encoding="utf-8")
+            self.assertEqual(1, self.run_restater("--combinations-only").returncode, (path, new))
+            written = self.run_restater("--combinations-only", "--write")
+            self.assertEqual(0, written.returncode, written.stderr)
+            self.assertEqual(expected, subtotals(), (path, new))
+            path.write_text(text, encoding="utf-8")
+            self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+            self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
+        # A hand-written combination whose cover reads `witness-blocked` is counted blocked.
+        key = handwritten[0]
+        evidence, cover = next(
+            (path, block)
+            for path in sorted((surface / "handwritten").glob("*/evidence.toml"))
+            for block in path.read_text(encoding="utf-8").split("[[covers]]")
+            if f'key = "{key}"' in block and "\narm = " not in block
+        )
+        verdict = matched(re.search(r'\nverdict = "[^"]+"', cover))[0]
+        moves(
+            evidence,
+            cover,
+            cover.replace(verdict, '\nverdict = "witness-blocked"'),
+            [blocked + 1, together, ruled],
+        )
+        # One whose site cell stops reading `co-occurrence` leaves the fixture count.
+        row = cells[cooccurring[0]]
+        moves(
+            sites,
+            row,
+            row.replace("\tco-occurrence\t", "\tsrc/ir.rs::base_type_ref\t", 1),
+            [blocked, together - 1, ruled],
+        )
+        # A named unproven row whose reason is the user's ruling is counted ruled.
+        named = matched(re.search(r"(?m)^\| `combo-[^`]+` \| `[^`]+` \| (`[^`]+`) — ", original))
+        moves(self.index, named[0], named[0].replace(named[1], "`user ruling`"), [blocked, together, ruled + 1])
+
     def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
