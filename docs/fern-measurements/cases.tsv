@@ -197,3 +197,5 @@ clients-extensions/harbour-chart-vault	docs/fern-measurements/clients-extensions
 clients-extensions/lighthouse-keeper-roster	docs/fern-measurements/clients-extensions/lighthouse-keeper-roster/openapi.yml	python-enums	packaged	-
 output-defects/615-empty-composition-member-reference	docs/fern-measurements/output-defects/615-empty-composition-member-reference/openapi.yml	python-enums	packaged	-
 output-defects/617-annotated-inherited-union	docs/fern-measurements/output-defects/617-annotated-inherited-union/openapi.yml	python-enums	packaged	-
+refusal-parity/discriminant-names-orchard	docs/fern-measurements/refusal-parity/discriminant-names-orchard/openapi.yml	python-enums	packaged	-
+refusal-parity/discriminant-names-orchard-literals	docs/fern-measurements/refusal-parity/discriminant-names-orchard/openapi.yml	literals	packaged	-

@@ -4,6 +4,16 @@
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 13 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 13 of the 13 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
 
+**Narrowed at this pair to mappings of references.** A discriminator whose
+`mapping` names a target by bare schema name is `typing.Any` to Fern, which
+never reads its discriminant: the class's bare-name controls generate, and so do
+three real documents whose `$_type` or `@odata.type` crozier used to refuse.
+crozier no longer refuses that shape. Every shape a mapping of references
+spells, the probes `shapes.tsv` measures, is refused as before, and all 13
+retrievable population documents still exit 1 in both modes. The root cause,
+the repair and each document's outcome are recorded in
+[`../../fern-measurements/refusal-parity/README.md`](../../fern-measurements/refusal-parity/README.md).
+
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**;

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "swagger-parser-null-types",
+  "corpus_spec_ref": "1fec2df2fd073ff5bb93a703b856cdfad25b129c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Carapacik/swagger_parser/1fec2df2fd073ff5bb93a703b856cdfad25b129c/swagger_parser/test/schemas/null-types-with-type-array.yaml"
+}
