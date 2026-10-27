@@ -94,8 +94,8 @@ residuals in the document, and a nested form of the first:
   `Union[ModelIdsShared, ModelIdsResponsesOne]` with `ModelIdsShared =
   Union[str, ModelIdsSharedOne]`, is exampled `request="ids"` by Fern, where
   crozier wrote `ModelIdsResponsesOne.IDS`. `ExampleCtx::union_value` in
-  `src/emit.rs` now asks `admits_str` whether an earlier alternative takes a
-  plain `str` through an optional, a union or an alias.
+  `src/emit.rs` now asks `names_bare_str` whether an earlier alternative names
+  a bare `str` itself or through a union or an alias.
 
 The hand-written fixture
 [`dormant-sensor-unions`](openapi-surface/handwritten/dormant-sensor-unions/)

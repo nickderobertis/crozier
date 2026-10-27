@@ -9943,7 +9943,7 @@ impl<'a> ExampleCtx<'a> {
             {
                 if !variants[..index]
                     .iter()
-                    .any(|variant| self.admits_str(variant, &mut Vec::new()))
+                    .any(|variant| self.names_bare_str(variant, &mut Vec::new()))
                 {
                     return self.named_value(&name, slot);
                 }
@@ -9968,19 +9968,20 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// Whether `t` takes a plain `str`: it is one, or a union or alias with
-    /// one among what it names. `visiting` holds the aliases entered, so a
-    /// cycle of them admits nothing.
-    fn admits_str(&self, t: &TypeRef, visiting: &mut Vec<String>) -> bool {
+    /// Whether `t` names a bare `str`: it is one, or a union or alias with one
+    /// among what it names. An `Optional` is not looked through, since no
+    /// measured document puts one before the enum. `visiting` holds the aliases
+    /// entered, so a cycle of them names nothing.
+    fn names_bare_str(&self, t: &TypeRef, visiting: &mut Vec<String>) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
             TypeRef::Union(variants) => variants
                 .iter()
-                .any(|variant| self.admits_str(variant, visiting)),
+                .any(|variant| self.names_bare_str(variant, visiting)),
             TypeRef::Named(name) if !visiting.contains(name) => match self.find(name) {
                 Some(TypeDecl::Alias(alias)) => {
                     visiting.push(name.clone());
-                    let admits = self.admits_str(&alias.target, visiting);
+                    let admits = self.names_bare_str(&alias.target, visiting);
                     visiting.pop();
                     admits
                 }
