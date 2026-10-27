@@ -119,6 +119,15 @@ mod output_defects;
 mod refusal_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// Union shapes ingef/conquery's document generated differently from the
+/// certified pair, under `docs/fern-measurements/emission-parity/`, each held
+/// whole in both enum modes beside its control, with the departure's runtime
+/// journey.
+#[path = "e2e/emission_parity.rs"]
+mod emission_parity;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -745,6 +754,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
+        (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -10136,6 +10146,7 @@ const CORPORA: &[&Corpus] = &[
     &SWAGGER_PARSER_NULL_TYPES,
     &TOOLJET_MICROSOFT_TEAMS,
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
+    &INGEF_CONQUERY,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12571,6 +12582,22 @@ const TOOLJET_MICROSOFT_TEAMS: Corpus = Corpus {
 /// alternatives and an `anyOf` whose one alternative is a string enum.
 const OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING: Corpus = Corpus {
     api: "openapi-generator-composed-schema-lowering",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ingef/conquery's document — corpus row 3477, witnessing a discriminator
+/// mapping target that names no component beside targets that do (`Query`'s
+/// `SECONDARY_ID_QUERY`, under the `dangling-mapping-variant-fields`
+/// departure), and union variants over bases that are only an `allOf`
+/// (`Filter`, `Select`, `UniversalSelect`).
+const INGEF_CONQUERY: Corpus = Corpus {
+    api: "ingef-conquery",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20627,6 +20654,13 @@ fn tooljet_microsoft_teams_matches_fern_output() {
 #[test]
 fn openapi_generator_composed_schema_lowering_matches_fern_output() {
     assert_committed_corpus_matches(&OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ingef_conquery_matches_fern_output() {
+    assert_committed_corpus_matches(&INGEF_CONQUERY);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

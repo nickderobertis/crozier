@@ -1955,3 +1955,17 @@ string enum; the search and the witnesses it left unregistered are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3476 | `openapi-generator-composed-schema-lowering` | github-raw | https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml | `10e6c21c97abb098cc67f14dfdd02171ce56b115` | Apache-2.0 (repository LICENSE) | committed | An `anyOf` of only `null` alternatives, and an `anyOf` whose one alternative is a string enum |
+
+## A mapping target naming no schema, and variants over an `allOf`-only base
+
+ingef/conquery's document maps its `Query` union's `SECONDARY_ID_QUERY` to
+`#/components/schemas/secondary-Id-query`, where the component is
+`SecondaryIdQuery`, and its `Filter`, `Select` and `UniversalSelect` variants
+extend bases that are themselves only an `allOf`. Both shapes, the
+`dangling-mapping-variant-fields` departure and the from-scratch documents
+measured beside them are recorded in
+[`emission-parity`](../../docs/fern-measurements/emission-parity/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3477 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |

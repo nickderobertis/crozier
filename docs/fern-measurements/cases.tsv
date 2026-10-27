@@ -200,3 +200,7 @@ output-defects/615-empty-composition-member-reference	docs/fern-measurements/out
 output-defects/617-annotated-inherited-union	docs/fern-measurements/output-defects/617-annotated-inherited-union/openapi.yml	python-enums	packaged	-
 refusal-parity/discriminant-names-orchard	docs/fern-measurements/refusal-parity/discriminant-names-orchard/openapi.yml	python-enums	packaged	-
 refusal-parity/discriminant-names-orchard-literals	docs/fern-measurements/refusal-parity/discriminant-names-orchard/openapi.yml	literals	packaged	-
+emission-parity/allof-only-base	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	python-enums	packaged	-
+emission-parity/allof-only-base-literals	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	literals	packaged	-
+emission-parity/dangling-mapping-target	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	python-enums	packaged	-
+emission-parity/dangling-mapping-target-literals	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	literals	packaged	-

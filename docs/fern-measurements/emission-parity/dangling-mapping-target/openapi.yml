@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Observatory
+  version: 1.0.0
+paths:
+  /readings:
+    post:
+      operationId: recordReading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reading'
+      responses:
+        '200':
+          description: The recorded reading
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logbook'
+  /readings/{readingId}:
+    get:
+      operationId: getReading
+      parameters:
+        - name: readingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One logbook entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logbook'
+  /stars/brightest:
+    get:
+      operationId: brightestStar
+      responses:
+        '200':
+          description: The brightest star seen tonight
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StarReading'
+  /instruments:
+    get:
+      operationId: listInstruments
+      responses:
+        '200':
+          description: The instruments on the roof
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Instrument'
+components:
+  schemas:
+    Logbook:
+      type: object
+      properties:
+        id:
+          type: string
+        reading:
+          $ref: '#/components/schemas/Reading'
+    Reading:
+      type: object
+      description: One thing seen through the eyepiece.
+      discriminator:
+        propertyName: kind
+        mapping:
+          STAR: '#/components/schemas/StarReading'
+          COMET: '#/components/schemas/CometReading'
+          METEOR: '#/components/schemas/meteor-reading'
+      oneOf:
+        - $ref: '#/components/schemas/StarReading'
+        - $ref: '#/components/schemas/CometReading'
+        - $ref: '#/components/schemas/MeteorReading'
+    StarReading:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [STAR]
+        magnitude:
+          type: number
+        constellation:
+          type: string
+    CometReading:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [COMET]
+        tailLength:
+          type: number
+    MeteorReading:
+      type: object
+      description: A streak that crossed the sky.
+      properties:
+        trail:
+          $ref: '#/components/schemas/Trail'
+        brightness:
+          type: number
+        kind:
+          type: string
+          enum: [METEOR]
+    Trail:
+      type: object
+      properties:
+        degrees:
+          type: number
+        colour:
+          type: string
+    Instrument:
+      type: object
+      discriminator:
+        propertyName: kind
+        mapping:
+          TELESCOPE: '#/components/schemas/Telescope'
+          CAMERA: '#/components/schemas/Camera'
+      oneOf:
+        - $ref: '#/components/schemas/Telescope'
+        - $ref: '#/components/schemas/Camera'
+    Telescope:
+      type: object
+      required: [kind, aperture]
+      properties:
+        kind:
+          type: string
+          enum: [TELESCOPE]
+        aperture:
+          type: number
+    Camera:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [CAMERA]
+        exposure:
+          type: number
