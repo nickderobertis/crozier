@@ -153,7 +153,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-979 + 114 + 5 + 0 + 0 = 1098. Fourteen sites left the table with the two functions
+938 + 114 + 5 + 0 + 0 = 1057. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2847,13 +2847,13 @@ unreached by any Fern-accepted document.
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
 | 4 | `allof` | `schemas` | **4** | **32** | **95** | open — real-specification witness search remains open |
 | 5 | `discriminator-mapping` | `schemas` | **3** | **231** | **32** | open — real-specification witness search remains open |
-| 6 | `oneof-anyof-variant` | `schemas` | **3** | **79** | **3** | open — real-specification witness search remains open |
+| 6 | `oneof-anyof-variant` | `schemas` | **3** | **80** | **3** | open — real-specification witness search remains open |
 | 7 | `parameter-in-header` | `parameters` | **3** | **20** | **72** | open — real-specification witness search remains open |
 | 8 | `media-type-multipart` | `bodies-media` | **3** | **13** | **28** | open — real-specification witness search remains open |
 | 9 | `format-binary` | `schemas` | **3** | **5** | **48** | open — real-specification witness search remains open |
-| 10 | `oneof` | `schemas` | **2** | **182** | **97** | open — real-specification witness search remains open |
-| 11 | `oneof-discriminated-union` | `schemas` | **2** | **160** | **48** | owned — first-pass search record below |
-| 12 | `anyof-discriminated-union` | `schemas` | **2** | **159** | **16** | owned — first-pass search record below |
+| 10 | `oneof` | `schemas` | **2** | **186** | **97** | open — real-specification witness search remains open |
+| 11 | `oneof-discriminated-union` | `schemas` | **2** | **164** | **48** | owned — first-pass search record below |
+| 12 | `anyof-discriminated-union` | `schemas` | **2** | **163** | **16** | owned — first-pass search record below |
 | 13 | `media-type-event-stream` | `bodies-media` | **2** | **121** | **18** | open — real-specification witness search remains open |
 | 14 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **5** | open — real-specification witness search remains open |
 | 15 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **13** | open — real-specification witness search remains open |
@@ -2861,8 +2861,8 @@ unreached by any Fern-accepted document.
 | 17 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 18 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
 | 19 | `format-byte` | `schemas` | **2** | **4** | **13** | open — real-specification witness search remains open |
-| 20 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **142** | **16** | open — real-specification witness search remains open |
-| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **135** | **11** | open — real-specification witness search remains open |
+| 20 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **146** | **16** | open — real-specification witness search remains open |
+| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **139** | **11** | open — real-specification witness search remains open |
 | 22 | `anyof-oneof-variant` | `schemas` | **1** | **68** | **7** | owned — first-pass search record below |
 | 23 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **5** | open — real-specification witness search remains open |
 | 24 | `additional-properties-schema` | `schemas` | **1** | **51** | **153** | open — real-specification witness search remains open |
@@ -3157,7 +3157,7 @@ why. The changes that took the arm off:
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `not searched` — no arm search has run | `tidepool-survey-log` |
 | 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `not searched` — no arm search has run | `tidepool-survey-log` |
-| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
+| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
 | 7 | `parameter-in-header` | `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]` | 1 | `search-incomplete` | `header-subset-string-default` |
