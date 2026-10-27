@@ -1,4 +1,4 @@
-"""Drive the dangling-mapping-target measurement's SDK through its real client.
+"""Drive the dangling-mapping-target measurement's SDK through its real async client.
 
 Usage: dangling_mapping_wire.py SDK_SRC. SDK_SRC is a generated SDK's `src/`
 directory holding the `fern` package for
@@ -19,6 +19,7 @@ Exit 0 prints one line per step; exit 1 names the first step that failed; exit
 """
 
 import argparse
+import asyncio
 import contextlib
 import http.server
 import importlib
@@ -27,10 +28,24 @@ import sys
 import threading
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 METEOR = {"kind": "METEOR", "brightness": -3.5, "trail": {"degrees": 12.0, "colour": "green"}}
 STAR = {"kind": "STAR", "magnitude": 1.25, "constellation": "Lyra"}
+
+
+class Logbook(Protocol):
+    """The part of a generated `Logbook` the journey reads."""
+
+    reading: object
+
+
+class ReadingClient(Protocol):
+    """The two operations of a generated `AsyncFernApi` the journey drives."""
+
+    async def get_reading(self, reading_id: str) -> Logbook: ...
+
+    async def record_reading(self, *, request: object) -> object: ...
 
 
 class Failure(Exception):
@@ -89,11 +104,11 @@ def serving() -> Iterator[Server]:
         server.httpd.server_close()
 
 
-def round_trip(client: Any, server: Server, reading: dict[str, Any], wrapper: str) -> str:
+async def round_trip(client: ReadingClient, server: Server, reading: dict[str, Any], wrapper: str) -> str:
     """Read a logbook entry holding `reading`, then post its reading back unchanged."""
     server.answer = {"id": "entry", "reading": reading}
     try:
-        entry = client.get_reading("entry")
+        entry = await client.get_reading("entry")
     except Exception as error:
         # Whatever the SDK raises while parsing is the observation.
         last = " | ".join(str(error).splitlines()[-3:])
@@ -107,10 +122,16 @@ def round_trip(client: Any, server: Server, reading: dict[str, Any], wrapper: st
         got = field.dict() if hasattr(field, "dict") else field
         got = {key: item for key, item in got.items() if item is not None} if isinstance(got, dict) else got
         check(got == value, f"{reading['kind']}: {wrapper}.{wire} is {got!r}, not {value!r}")
-    client.record_reading(request=parsed)
+    await client.record_reading(request=parsed)
     sent = server.received[-1]
     check(sent == reading, f"{reading['kind']}: posting it back sent {json.dumps(sent, sort_keys=True)}")
     return f"{reading['kind']}: parsed into {wrapper} and posted back as {json.dumps(sent, sort_keys=True)}"
+
+
+async def journey(client: ReadingClient, server: Server) -> None:
+    """The `STAR` control's round trip, then the `METEOR` one, printing each as it passes."""
+    for reading, wrapper in ((STAR, "Reading_Star"), (METEOR, "Reading_Meteor")):
+        print(await round_trip(client, server, reading, wrapper))
 
 
 def main(argv: list[str]) -> int:
@@ -123,15 +144,14 @@ def main(argv: list[str]) -> int:
     sys.path.insert(0, str(arguments.sdk_src))
     try:
         sdk = importlib.import_module("fern")
-        client_class = sdk.FernApi
+        client_class = sdk.AsyncFernApi
     except (ImportError, AttributeError) as error:
-        print(f"cannot import the generated fern package's FernApi: {error}", file=sys.stderr)
+        print(f"cannot import the generated fern package's AsyncFernApi: {error}", file=sys.stderr)
         return 2
     with serving() as server:
-        client = client_class(base_url=server.url)
+        client: ReadingClient = client_class(base_url=server.url)
         try:
-            for reading, wrapper in ((STAR, "Reading_Star"), (METEOR, "Reading_Meteor")):
-                print(round_trip(client, server, reading, wrapper))
+            asyncio.run(journey(client, server))
         except Failure as failure:
             print(f"failed: {failure}", file=sys.stderr)
             return 1

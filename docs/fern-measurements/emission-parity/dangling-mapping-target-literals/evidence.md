@@ -12,4 +12,4 @@ stripped; no generated file was edited.
 Canonical tree SHA-256: `977c1bea07e657dd549fcd642f4b2bc7c4649ef016fc8be56cc0e97de85e73f2`. The real-binary
 `emission_parity::a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields`
 test compares every file through the parity engine, then induces a change
-the comparison must refuse. The record is [`../README.md`](../README.md).
+the comparison must refuse.

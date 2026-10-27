@@ -27,7 +27,7 @@ union, so payloads using it will fail to serialize or deserialize".
 ## The failure, through the real client
 
 [`dangling_mapping_wire.py`](../../../crates/crozier-e2e/tests/e2e/dangling_mapping_wire.py)
-starts a local HTTP server and drives an SDK's `FernApi` against it. It reads a
+starts a local HTTP server and drives an SDK's `AsyncFernApi` against it. It reads a
 logbook entry whose `reading` is
 `{"kind": "METEOR", "brightness": -3.5, "trail": {"degrees": 12.0, "colour": "green"}}`,
 then posts that reading back. A `STAR` reading makes the same round trip as the

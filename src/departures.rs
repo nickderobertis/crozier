@@ -2027,7 +2027,7 @@ fn any_valued_wrapper(
     // The union's description, which Fern writes on its other wrappers, is not
     // on one holding `value`.
     let quotes = "    \"\"\"";
-    let tag = if lines[class + 1] == quotes {
+    let tag = if lines.get(class + 1).is_some_and(|line| line == quotes) {
         match (class + 2..end).find(|index| lines[*index] == quotes) {
             Some(close) if lines.get(close + 1).is_some_and(String::is_empty) => close + 2,
             _ => return Vec::new(),
@@ -7763,6 +7763,21 @@ update_forward_refs(
                 rel,
                 DANGLING_FERN,
                 &other_tag,
+                &dangling
+            ),
+            None
+        );
+        // Nor is a file that ends at the wrapper's header.
+        let truncated = DANGLING_CROZIER
+            .split_once("class Sighting_Meteor(UniversalBaseModel):")
+            .map(|(head, _)| format!("{head}class Sighting_Meteor(UniversalBaseModel):"))
+            .unwrap();
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &truncated,
                 &dangling
             ),
             None

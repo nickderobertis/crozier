@@ -12,4 +12,4 @@ stripped; no generated file was edited.
 Canonical tree SHA-256: `0018b20dfbcb931d117dd377c34a2fca3d0f025750abb7384f4a11a6651fe73b`. The real-binary
 `emission_parity::a_variant_inherits_fields_through_an_all_of_only_base`
 test compares every file through the parity engine, then induces a change
-the comparison must refuse. The record is [`../README.md`](../README.md).
+the comparison must refuse.
