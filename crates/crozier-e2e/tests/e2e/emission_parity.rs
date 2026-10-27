@@ -162,6 +162,95 @@ fn a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields
     }
 }
 
+/// `case`'s document with `from` replaced by `to`, written under `dir`.
+fn variant_of(case: &str, from: &str, to: &str, dir: &Path) -> PathBuf {
+    let text = std::fs::read_to_string(spec(case)).expect("the measurement document");
+    assert!(text.contains(from), "{case}: no {from:?} to replace");
+    let path = dir.join(format!("{case}.yml"));
+    std::fs::write(&path, text.replacen(from, to, 1)).unwrap();
+    path
+}
+
+/// One class of a comment-stripped module, from its header to the next
+/// top-level statement.
+fn class_block(module: &str, class: &str) -> String {
+    let text = crozier::normalize::strip_python_comments(module);
+    let start = text
+        .find(&format!("class {class}("))
+        .unwrap_or_else(|| panic!("no class {class} in:\n{text}"));
+    let rest = &text[start..];
+    let end = rest[1..]
+        .find("\n\n\n")
+        .map_or(rest.len(), |index| index + 1);
+    rest[..end]
+        .lines()
+        .map(str::trim_end)
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// With no member tagging itself `METEOR`, crozier has no fields to give the
+/// dangling value's wrapper and writes Fern's own: the certified tree's
+/// `Reading_Meteor` reads no member either (it holds `value` though
+/// `MeteorReading` tags itself `METEOR`), and crozier's class is that class
+/// line for line, docstring left off, in both enum modes.
+#[test]
+fn a_dangling_target_no_member_tags_keeps_fern_s_value_wrapper() {
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let untagged = variant_of(
+        DANGLING_TARGET,
+        "enum: [METEOR]",
+        "enum: [SHOOTING_STAR]",
+        temp.path(),
+    );
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(mode);
+        probe_command(&untagged, &out)
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let fern = std::fs::read_to_string(
+            repo_root()
+                .join(golden(DANGLING_TARGET, mode))
+                .join("src/fern/types/reading.py"),
+        )
+        .unwrap();
+        assert_eq!(
+            class_block(&module(&out, "reading.py"), "Reading_Meteor"),
+            class_block(&fern, "Reading_Meteor"),
+            "{mode}"
+        );
+    }
+}
+
+/// A base chain that reaches back to itself (`Named` an `allOf` over `Gauge`,
+/// which is an `allOf` over `Named`) generates, and each wrapper over it lists
+/// every field of the chain once.
+#[test]
+fn a_cyclic_all_of_base_chain_generates_each_field_once() {
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let cyclic = variant_of(
+        ALLOF_ONLY_BASE,
+        "    Named:\n      type: object\n",
+        "    Named:\n      allOf:\n        - $ref: '#/components/schemas/Gauge'\n",
+        temp.path(),
+    );
+    let out = temp.path().join("sdk");
+    probe_command(&cyclic, &out).assert().success();
+    let thermo = class_block(&module(&out, "sensor.py"), "Sensor_Thermo");
+    let fields: Vec<&str> = thermo
+        .lines()
+        .filter_map(|line| line.strip_prefix("    "))
+        .filter(|line| !line.starts_with([' ', '"']) && line.contains(':'))
+        .map(|line| line.split_once(':').unwrap().0)
+        .filter(|name| !name.starts_with("if ") && *name != "else")
+        .collect();
+    assert_eq!(
+        fields,
+        ["kind", "celsius", "unit", "precision", "name", "label"],
+        "{thermo}"
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 fn wire(python: &Path, sdk_src: &Path) -> assert_cmd::Command {

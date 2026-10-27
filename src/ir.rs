@@ -13916,13 +13916,16 @@ impl Builder<'_> {
                                 layout: UnionMemberLayout::Flattened,
                             }
                         }
+                        // Fern writes the union's description on no wrapper
+                        // holding `value`: the observatory measurement's
+                        // `Reading_Meteor` has none.
                         None => UnionMember {
                             class_name: format!("{name}_{}", discriminant_class_name(value)),
                             discriminant: value.clone(),
                             fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
                             declared_discriminant: None,
                             source: None,
-                            docstring: docstring.clone(),
+                            docstring: None,
                             layout: UnionMemberLayout::Wrapped,
                         },
                     },
@@ -29525,6 +29528,7 @@ components:
         let meteor = &union_named(&ir, "Reading").members[1];
         assert_eq!(meteor.class_name, "Reading_Meteor");
         assert!(meteor.layout.is_wrapped());
+        assert_eq!(meteor.docstring, None);
         assert!(matches!(
             meteor.fields[0].type_ref,
             TypeRef::Primitive(Prim::Any)
