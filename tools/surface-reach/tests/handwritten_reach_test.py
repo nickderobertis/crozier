@@ -7,8 +7,11 @@ two fixtures covering the same arm, one whose document takes it and one whose
 document does not, read back from the ledger the recipe writes; one document
 measured with and without the `audiences` its fixture declares; a combination
 measured at its interaction branch alone, over a document declaring both of its
-features and two declaring one each; and a cover naming an arm the site table
-does not list, refused before anything is written. The same three documents,
+features and two declaring one each; fixtures covering combinations alone,
+measured at the interaction branch or at each handler the co-occurrence audit
+names; and a cover naming an arm the site table does not list, a malformed
+audit and an interaction site naming no function, each refused before anything
+is written. The same three documents,
 joined by the golden ledger's own measurement, show the golden reach of the
 interaction branch the same way.
 """
@@ -19,6 +22,7 @@ import csv
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -167,6 +171,58 @@ search = "docs/openapi-surface/golden-reach-witnesses/searches/{feature}.md#witn
 verdict = "exhausted"
 """
 )
+# A fixture covering a combination alone: no arm-level cover, so the recipe measures it
+# only at the combination's interaction sites.
+COMBINATION_ONLY_EVIDENCE = (
+    PAIR_EVIDENCE
+    + """digest = "{zero}"
+
+[[covers]]
+key = "{key}"
+search = "docs/openapi-surface/witness-search-schema-combinations-models-unions-refs/README.md#verdicts"
+verdict = "exhausted"
+"""
+)
+# A combination whose site cell reads `co-occurrence`: no measured branch joins both
+# features, so a fixture covering it is measured at each handling function the
+# committed audit names, over a document declaring security at both levels. The
+# scheme is bearer: a header api key's `required` short-circuits on the document's
+# own `security` before `all_operations_authenticated` runs.
+COOCCURRING = "combo-document-operation-security"
+SECURITY_DOCUMENT = """openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+security:
+  - bearer: []
+paths:
+  /ping:
+    get:
+      operationId: ping
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: ok
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+"""
+
+
+def golden_reach():
+    return _module("golden_reach_recipe", "golden-reach.py")
+
+
+def cooccurrence_handlers(key: str) -> list[str]:
+    """The handling functions the committed `combination-cooccurrence.tsv` names for `key`."""
+    reach = golden_reach()
+    audit, failures = reach.read_cooccurrence(REPO / "docs" / "openapi-surface" / "combination-cooccurrence.tsv")
+    if failures:
+        raise AssertionError(failures)
+    return reach.handler_specs(audit[key].handlers)
 
 
 class HandwrittenReachRecipeTest(unittest.TestCase):
@@ -291,6 +347,132 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                         self.assertGreater(executed, 0, "the document declaring both features missed the branch")
                     else:
                         self.assertEqual(0, executed, f"{name} declares one feature, yet reached the branch")
+
+    def test_a_fixture_covering_only_combinations_is_measured_at_each_interaction_site(self) -> None:
+        """A fixture with no arm-level cover still runs: at the combination's interaction
+        branch, or at every handler the co-occurrence audit names when no branch joins
+        both features; no configuration gate is written for either."""
+        handlers = cooccurrence_handlers(COOCCURRING)
+        self.assertEqual(
+            "co-occurrence",
+            site_cell(COOCCURRING),
+            f"{COOCCURRING} no longer reads `co-occurrence`; pick a key the site table measures by its handlers",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            base, ledger = Path(temporary) / "handwritten", Path(temporary) / "reach.tsv"
+            for name, key, document in (
+                (
+                    "nullable-map-only",
+                    COMBINATION,
+                    COMBINATION_DOCUMENT.format(labels=LABELS["map-of-nullable-values"]),
+                ),
+                ("security-both-levels", COOCCURRING, SECURITY_DOCUMENT),
+            ):
+                directory = base / name
+                directory.mkdir(parents=True)
+                (directory / "openapi.yml").write_text(document, encoding="utf-8")
+                (directory / "evidence.toml").write_text(
+                    COMBINATION_ONLY_EVIDENCE.format(zero="0" * 64, key=key), encoding="utf-8"
+                )
+            run = self.run_recipe(base, ledger)
+            self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+            with ledger.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.reader(handle, delimiter="\t"))
+            self.assertEqual(HEADER, rows[0])
+            measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
+            expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
+                ("security-both-levels", COOCCURRING, handler) for handler in handlers
+            }
+            self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
+            for site, (executed, total) in measured.items():
+                with self.subTest(site=site):
+                    self.assertGreaterEqual(total, 1)
+                    self.assertGreater(executed, 0, f"{site[0]} declares both features, yet missed {site[2]}")
+            with ledger.with_name("gates.tsv").open(encoding="utf-8", newline="") as handle:
+                self.assertEqual(
+                    [["fixture", "key", "site", "setting", "regions_executed", "regions"]],
+                    list(csv.reader(handle, delimiter="\t")),
+                )
+            self.assertIn(
+                f"measured 0 arm-level cover(s) and {len(expected)} combination interaction site(s) into {ledger}, "
+                f"0 configuration gate(s) into {ledger.with_name('gates.tsv')}",
+                run.stdout,
+            )
+
+    def measure_in(self, root: Path) -> tuple[subprocess.CompletedProcess[str], Path]:
+        """`measure` over one combination-only fixture, reading the site table and audit
+        under `root`; refusals land before the instrumented build."""
+        base, ledger = root / "handwritten", root / "reach.tsv"
+        directory = base / "nullable-map-only"
+        directory.mkdir(parents=True)
+        (directory / "openapi.yml").write_text(
+            COMBINATION_DOCUMENT.format(labels=LABELS["map-of-nullable-values"]), encoding="utf-8"
+        )
+        (directory / "evidence.toml").write_text(
+            COMBINATION_ONLY_EVIDENCE.format(zero="0" * 64, key=COMBINATION), encoding="utf-8"
+        )
+        run = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools" / "surface-census" / "handwritten-fixtures.py"),
+                "--repo-root",
+                str(root),
+                "measure",
+                "--handwritten-dir",
+                str(base),
+                "--ledger",
+                str(ledger),
+                "--gates",
+                str(ledger.with_name("gates.tsv")),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+        return run, ledger
+
+    def staged_surface(self, root: Path) -> Path:
+        surface = root / "docs" / "openapi-surface"
+        surface.mkdir(parents=True)
+        for name in ("golden-reach-sites.tsv", "combination-cooccurrence.tsv"):
+            shutil.copyfile(REPO / "docs" / "openapi-surface" / name, surface / name)
+        shutil.copytree(REPO / "src", root / "src")
+        return surface
+
+    def test_a_malformed_cooccurrence_audit_is_refused_before_measuring(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            audit = self.staged_surface(root) / "combination-cooccurrence.tsv"
+            lines = audit.read_text(encoding="utf-8").splitlines(keepends=True)
+            audit.write_text(lines[0].replace("handlers", "functions") + "".join(lines[1:]), encoding="utf-8")
+            run, ledger = self.measure_in(root)
+            self.assertNotEqual(0, run.returncode)
+            self.assertIn(
+                "handwritten-reach: combination-cooccurrence.tsv: the header line must be exactly", run.stderr
+            )
+            self.assertNotIn("Traceback", run.stderr)
+            self.assertFalse(ledger.exists(), "a refused measurement wrote a ledger")
+            # Restored, the same tree passes the audit and reaches site resolution.
+            audit.write_text("".join(lines), encoding="utf-8")
+            self.assertEqual([], golden_reach().read_cooccurrence(audit)[1])
+
+    def test_an_interaction_site_naming_no_function_is_refused_before_measuring(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sites = self.staged_surface(root) / "golden-reach-sites.tsv"
+            text = sites.read_text(encoding="utf-8")
+            missing = "src/ir.rs::no_such_interaction_branch"
+            row = next(line for line in text.splitlines() if line.startswith(f"{COMBINATION}\t"))
+            self.assertIn(f"\t{INTERACTION}\t", row)
+            sites.write_text(
+                text.replace(row, row.replace(f"\t{INTERACTION}\t", f"\t{missing}\t", 1)), encoding="utf-8"
+            )
+            run, ledger = self.measure_in(root)
+            self.assertNotEqual(0, run.returncode)
+            self.assertIn(f"site {missing!r} matches 0 functions", run.stderr)
+            self.assertNotIn("Traceback", run.stderr)
+            self.assertFalse(ledger.exists(), "a refused measurement wrote a ledger")
+            self.assertFalse(ledger.with_name("gates.tsv").exists(), "a refused measurement wrote a gate ledger")
 
     def test_a_cover_naming_an_unlisted_site_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
