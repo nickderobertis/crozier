@@ -223,13 +223,18 @@ class ProofSplit(NamedTuple):
 
 
 def witness_blocked_keys(root: Path) -> set[str]:
-    """Combination keys a hand-written fixture's feature-level cover reads `witness-blocked` for."""
+    """Combination keys a hand-written fixture's feature-level cover reads `witness-blocked` for.
+
+    Raises ValueError when any `evidence.toml` breaks its contract, so invalid evidence
+    never moves the hand-written subtotal.
+    """
     gate = reader("handwritten-fixtures.py")
     keys = set()
     for path in sorted((root / gate.HANDWRITTEN).glob("*/evidence.toml")):
-        fixture, _failures = gate.read_evidence(path.parent)
-        if fixture is not None:
-            keys |= {cover.key for cover in fixture.covers if cover.verdict == "witness-blocked" and cover.arm is None}
+        fixture, failures = gate.read_evidence(path.parent)
+        if failures or fixture is None:
+            raise ValueError("; ".join(failures) or f"{path}: unreadable evidence")
+        keys |= {cover.key for cover in fixture.covers if cover.verdict == "witness-blocked" and cover.arm is None}
     return keys
 
 

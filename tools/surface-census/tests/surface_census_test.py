@@ -13077,6 +13077,44 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
+    def test_an_audit_row_whose_handlers_cell_breaks_its_grammar_is_refused(self) -> None:
+        """A non-empty `handlers` cell naming no handling functions would silently drop the
+        fixture's measurement obligations, so its form is refused rather than read as none."""
+        _text, lines = self.audit_lines()
+        cells = lines[1].split("\t")
+        key, handlers = cells[0], cells[3]
+        feature = handlers.split(" ; ", 1)[0]
+        for broken, reason in (
+            ("invalid", "`invalid` names fewer than two features"),
+            (f"{feature} ; second feature", "group `second feature` is not `<feature>: src/x.rs::f, src/y.rs::g`"),
+            (f"{feature} ; other: build_endpoint", "group `other: build_endpoint` is not"),
+        ):
+            with self.subTest(handlers=broken):
+                changed = "\t".join([*cells[:3], broken, *cells[4:]])
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), lines[1], changed)
+                failures = finished_state_failures(self.root)
+                self.assertTrue(
+                    any(f.startswith(f"{key}: {COOCCURRENCE_AUDIT.name}'s handlers cell {reason}") for f in failures),
+                    failures,
+                )
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), changed, lines[1])
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+
+    def test_restating_the_combinations_refuses_evidence_that_breaks_its_contract(self) -> None:
+        """Invalid `evidence.toml` never moves the hand-written subtotal: the restater refuses it."""
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        key = "combo-inline-body-read-only-property"
+        fixture = self.add_cover(key, f"{self.BLOCKED_RECORD}#blocked-witnesses")
+        self.assertEqual({key}, restater.witness_blocked_keys(self.root))
+        evidence = self.root / "docs/openapi-surface/handwritten" / fixture / "evidence.toml"
+        with evidence.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write('\nunexpected = "key"\n')
+        with self.assertRaisesRegex(ValueError, rf"^{re.escape(fixture)}: cover \d+ carries unknown field\(s\) \['unexpected'\]"):
+            restater.witness_blocked_keys(self.root)
+        evidence.write_text("[[covers]\n", encoding="utf-8", newline="\n")
+        with self.assertRaisesRegex(ValueError, rf"^{re.escape(fixture)}: evidence\.toml is not TOML"):
+            restater.witness_blocked_keys(self.root)
+
     def test_a_user_ruling_is_admitted_in_every_named_table_only_when_well_formed(self) -> None:
         ruling = "user ruling — 2026-10-26: the user keeps this gap open until a real witness appears"
         malformed = "user ruling — 2026-02-30: no such day"
@@ -19501,12 +19539,9 @@ class CoverageRestatementTests(unittest.TestCase):
             if f'key = "{key}"' in block and "\narm = " not in block
         )
         verdict = matched(re.search(r'\nverdict = "[^"]+"', cover))[0]
-        moves(
-            evidence,
-            cover,
-            cover.replace(verdict, '\nverdict = "witness-blocked"'),
-            [blocked + 1, together, ruled],
-        )
+        # `renewed` belongs only to a `search-incomplete` verdict, so the blocked cover drops it.
+        blocked_cover = re.sub(r'\nrenewed = "[^"]*"', "", cover.replace(verdict, '\nverdict = "witness-blocked"'))
+        moves(evidence, cover, blocked_cover, [blocked + 1, together, ruled])
         # One whose site cell stops reading `co-occurrence` leaves the fixture count.
         row = cells[cooccurring[0]]
         moves(

@@ -273,20 +273,38 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
             continue
         if cells[0] in rows:
             failures.append(f"{cells[0]}: {path.name} audits it twice")
+        try:
+            handler_specs(cells[3])
+        except ValueError as error:
+            failures.append(f"{cells[0]}: {path.name}'s handlers cell {error}")
+            continue
         rows[cells[0]] = CooccurrenceAudit(*cells)
     if keys != sorted(keys):
         failures.append(f"{path.name}: rows are not sorted by key")
     return rows, failures
 
 
+HANDLER_SPEC = re.compile(r"src/[\w/]+\.rs::\w+(?:::\w+)*")
+
+
 def handler_specs(cell: str) -> list[str]:
-    """The function specs a `handlers` cell names: `<feature>: src/x.rs::f, … ; <feature>: …`."""
+    """The function specs a `handlers` cell names: `<feature>: src/x.rs::f, … ; <feature>: …`.
+
+    Raises ValueError unless the cell names at least two features, each with a
+    non-empty list of `src/<file>.rs::<function>` specs.
+    """
     specs: list[str] = []
-    for group in cell.split(" ; "):
-        _feature, _, names = group.partition(": ")
-        for name in (name.strip() for name in names.split(",")):
-            if name and name not in specs:
-                specs.append(name)
+    groups = cell.split(" ; ")
+    if len(groups) < 2:
+        raise ValueError(f"`{cell}` names fewer than two features; write `<feature>: src/x.rs::f ; <feature>: …`")
+    for group in groups:
+        feature, separator, names = group.partition(": ")
+        listed = [name.strip() for name in names.split(",")]
+        if not separator or not feature.strip() or not all(HANDLER_SPEC.fullmatch(name) for name in listed):
+            raise ValueError(
+                f"group `{group}` is not `<feature>: src/x.rs::f, src/y.rs::g`; name each feature's handling functions"
+            )
+        specs += [name for name in listed if name not in specs]
     return specs
 
 
