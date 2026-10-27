@@ -236,7 +236,6 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
 
 
 COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
-COOCCURRENCE_COLUMNS = ("key", "witness", "site", "handlers", "why_no_branch")
 
 
 class CooccurrenceAudit(NamedTuple):
@@ -247,6 +246,10 @@ class CooccurrenceAudit(NamedTuple):
     site: str
     handlers: str
     why_no_branch: str
+
+
+# The file's header is the model's fields, so the two cannot drift apart.
+COOCCURRENCE_COLUMNS = CooccurrenceAudit._fields
 
 
 def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, CooccurrenceAudit], list[str]]:
@@ -290,13 +293,16 @@ HANDLER_SPEC = re.compile(r"src/[\w/]+\.rs::\w+(?:::\w+)*")
 def handler_specs(cell: str) -> list[str]:
     """The function specs a `handlers` cell names: `<feature>: src/x.rs::f, … ; <feature>: …`.
 
-    Raises ValueError unless the cell names at least two features, each with a
+    Raises ValueError unless the cell names at least two distinct features, each with a
     non-empty list of `src/<file>.rs::<function>` specs.
     """
     specs: list[str] = []
     groups = cell.split(" ; ")
     if len(groups) < 2:
         raise ValueError(f"`{cell}` names fewer than two features; write `<feature>: src/x.rs::f ; <feature>: …`")
+    features = [group.partition(": ")[0].strip() for group in groups]
+    if len(set(features)) != len(features):
+        raise ValueError(f"`{cell}` names a feature twice; give each feature one group of its own handlers")
     for group in groups:
         feature, separator, names = group.partition(": ")
         listed = [name.strip() for name in names.split(",")]
@@ -1630,8 +1636,8 @@ def scoped_report(args: argparse.Namespace, reaches: list[Reach], commit: str, t
     regions = args.repo_root / "docs/openapi-surface"
     ledger = regions / "golden-reach.tsv"
     previous = read_ledger(ledger)
-    current_golden = measured_rows(regions, set(read_sites_table(regions / "golden-reach-sites.tsv")))
-    combined = {reach.key: reach for _rank, reach in previous if reach.key in current_golden}
+    current_measured = measured_rows(regions, set(read_sites_table(regions / "golden-reach-sites.tsv")))
+    combined = {reach.key: reach for _rank, reach in previous if reach.key in current_measured}
     measured = []
     for reach in reaches:
         note = f"measured at commit {commit} over {tests} scoped golden test(s)"

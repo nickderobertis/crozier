@@ -13088,6 +13088,7 @@ class FinishedStateGateTests(unittest.TestCase):
             ("invalid", "`invalid` names fewer than two features"),
             (f"{feature} ; second feature", "group `second feature` is not `<feature>: src/x.rs::f, src/y.rs::g`"),
             (f"{feature} ; other: build_endpoint", "group `other: build_endpoint` is not"),
+            (f"{feature} ; {feature}", f"`{feature} ; {feature}` names a feature twice"),
         ):
             with self.subTest(handlers=broken):
                 changed = "\t".join([*cells[:3], broken, *cells[4:]])
