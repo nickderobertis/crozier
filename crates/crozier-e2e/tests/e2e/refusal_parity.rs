@@ -28,7 +28,7 @@ fn case_dir(case: &str) -> PathBuf {
     repo_root().join(REFUSAL_PARITY_DIR).join(case)
 }
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK through the binary, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The document generates, and its SDK is Fern's file for file: the folded
 /// summary, descriptions and enum values are the ones Fern read.
 #[test]
@@ -60,7 +60,6 @@ fn a_quoted_continuation_at_its_keys_column_generates_fern_s_sdk() {
         "{beacon}"
     );
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// Each malformed neighbour is refused by the certified pair, as its committed
 /// log records, and by crozier at the parser, writing nothing.
@@ -242,3 +241,121 @@ fn a_null_only_discriminant_generates_where_the_same_enum_beside_it_is_refused()
         }
     }
 }
+
+/// A document whose head the parser refuses for a quoted continuation, with
+/// `born`'s `format: date` example written as `Thing`'s plain timestamp: the
+/// repaired document still reads that example as Fern's reader does (a
+/// timestamp, so no string it rejects) and generates, where the same example
+/// quoted is refused as `example-type-mismatch`.
+#[test]
+fn a_plain_timestamp_after_a_repaired_scalar_keeps_its_exemption() {
+    let probe = std::fs::read_to_string(
+        repo_root().join("docs/fern-refusals/example-type-mismatch/probe.yml"),
+    )
+    .unwrap();
+    let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+    assert!(probe.contains(quoted));
+    let repaired_head = probe.replace(
+        "      type: object\n",
+        "      type: object\n      description: \"A thing\n      that was born.\"\n",
+    );
+    for (example, refused) in [
+        ("2006-01-02T15:04:05+00:00", false),
+        ("\"2006-01-02T15:04:05+00:00\"", true),
+    ] {
+        let temp = tempfile::tempdir().unwrap();
+        let spec = temp.path().join("openapi.yml");
+        std::fs::write(
+            &spec,
+            repaired_head.replace(quoted, &format!("          example: {example}\n")),
+        )
+        .unwrap();
+        let out = temp.path().join("sdk");
+        let assert = probe_command(&spec, &out).assert();
+        if refused {
+            assert
+                .failure()
+                .stderr(predicate::str::contains("example-type-mismatch"));
+            assert!(!out.exists(), "a refused document writes no SDK");
+        } else {
+            assert.success();
+            let thing = std::fs::read_to_string(out.join("src/fern/types/thing.py")).unwrap();
+            assert!(thing.contains("A thing that was born."), "{thing}");
+        }
+    }
+}
+
+/// An anchored and tagged quoted scalar continued at its key's column reads
+/// folded, as an unadorned one does.
+#[test]
+fn an_anchored_and_tagged_continuation_reads_folded() {
+    let temp = tempfile::tempdir().unwrap();
+    let spec = temp.path().join("openapi.yml");
+    std::fs::write(
+        &spec,
+        r#"openapi: 3.0.3
+info:
+  title: Lighthouse
+  version: 1.0.0
+paths:
+  /beacons:
+    get:
+      operationId: listBeacons
+      responses:
+        '200':
+          description: The beacons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+components:
+  schemas:
+    Beacon:
+      type: object
+      description: &beacon !!str "A light on the coast
+      that ships steer by."
+      properties:
+        id:
+          type: string
+          description: *beacon
+"#,
+    )
+    .unwrap();
+    let out = temp.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let beacon = std::fs::read_to_string(out.join("src/fern/types/beacon.py")).unwrap();
+    assert_eq!(
+        beacon
+            .matches("A light on the coast that ships steer by.")
+            .count(),
+        2,
+        "{beacon}"
+    );
+}
+
+/// Where a repairable scalar precedes one that is malformed, the refusal names
+/// the malformed one's line, not the scalar Fern's reader accepts, and no SDK
+/// is written.
+#[test]
+fn a_malformed_scalar_after_a_repairable_one_is_the_one_named() {
+    let temp = tempfile::tempdir().unwrap();
+    let spec = temp.path().join("openapi.yml");
+    let document =
+        std::fs::read_to_string(case_dir(QUOTED_CONTINUATION).join("document-marker.openapi.yml"))
+            .unwrap()
+            .replace(
+                "      operationId: listBeacons\n",
+                "      operationId: listBeacons\n      summary: \"List every\n      beacon\"\n",
+            );
+    let marker_line = document.lines().position(|line| line == "---").unwrap() + 1;
+    std::fs::write(&spec, &document).unwrap();
+    let out = temp.path().join("sdk");
+    probe_command(&spec, &out)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(format!(
+            "line {marker_line} column 1"
+        )));
+    assert!(!out.exists(), "a refused document writes no SDK");
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
