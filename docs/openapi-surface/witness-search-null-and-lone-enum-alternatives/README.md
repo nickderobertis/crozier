@@ -1,7 +1,6 @@
 # Witness search: unions of only `null`, and of one string enum
 
-The real-specification search for four region keys of
-[`schemas.md`](../schemas.md), each a `oneOf`/`anyOf` spelling of two shapes the
+The real-specification search for four `schemas.md` region keys, each a `oneOf`/`anyOf` spelling of two shapes the
 repairs of the `composed-schema-lowering` refusal-parity finding settled:
 
 - `anyof-null-only-alternatives`, `oneof-null-only-alternatives`: every

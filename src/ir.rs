@@ -17838,9 +17838,6 @@ fn untyped_const_composition_values(schema: &Schema) -> Option<Vec<String>> {
         .collect()
 }
 
-/// The string values of a string enum schema, if it is one. Public specs sometimes
-/// omit `type: string` on an enum whose values are all strings; Fern still treats
-/// that as a string enum.
 /// The one alternative of a `oneOf`/`anyOf` that declares nothing beside it,
 /// when that alternative is an inline string `enum` and nothing more.
 fn lone_inline_string_enum(schema: &Schema) -> Option<&Schema> {
@@ -17863,6 +17860,9 @@ fn lone_inline_string_enum(schema: &Schema) -> Option<&Schema> {
     .then_some(member)
 }
 
+/// The string values of a string enum schema, if it is one. Public specs sometimes
+/// omit `type: string` on an enum whose values are all strings; Fern still treats
+/// that as a string enum.
 fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
     let const_values;
     let values = if let Some(values) = schema.enum_values.as_ref() {

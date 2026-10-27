@@ -9968,13 +9968,12 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// Whether `t` takes a plain `str`: it is one, or an optional, union or
-    /// alias with one among what it names. `visiting` holds the aliases
-    /// entered, so a cycle of them admits nothing.
+    /// Whether `t` takes a plain `str`: it is one, or a union or alias with
+    /// one among what it names. `visiting` holds the aliases entered, so a
+    /// cycle of them admits nothing.
     fn admits_str(&self, t: &TypeRef, visiting: &mut Vec<String>) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
-            TypeRef::Optional(inner) => self.admits_str(inner, visiting),
             TypeRef::Union(variants) => variants
                 .iter()
                 .any(|variant| self.admits_str(variant, visiting)),
@@ -15496,19 +15495,14 @@ mod tests {
             ctx.value(&named("Channels"), Slot::Plain).flat(),
             "\"south\""
         );
-        // Through an optional, too; an alias cycle and an `int` admit no
-        // `str`, so the later enum is exampled by its member.
-        assert_eq!(
-            ctx.union_value(
-                &[
-                    TypeRef::Optional(Box::new(named("Channel"))),
-                    named("ChannelsOne")
-                ],
-                Slot::Plain
-            )
-            .flat(),
-            "\"south\""
-        );
+        // An alias cycle and an `int` admit no `str`, so the later enum is
+        // exampled by its member. Structural, not a generation journey: the
+        // cycle guard only keeps a malformed alias graph from recursing
+        // forever, and a document built to produce one would exercise the
+        // loader's `$ref`-cycle handling rather than this rule; the `int`
+        // contrast is the pre-existing rule this change leaves alone, and the
+        // generation journey of the change itself is the
+        // `dormant-sensor-unions` fixture's byte-matched `put_channel` example.
         for earlier in [named("Loop"), TypeRef::Primitive(Prim::Int)] {
             assert_eq!(
                 ctx.union_value(&[earlier.clone(), named("ChannelsOne")], Slot::Plain)
