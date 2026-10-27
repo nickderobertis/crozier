@@ -120,7 +120,6 @@ def _region_keys_module():
 region_rows = _region_keys_module().region_rows
 
 
-# A feature combination's key prefix (`docs/openapi-surface/combinations.md`).
 COMBINATION_PREFIX = "combo-"
 # The site cell of a combination row no measured crozier branch joins both features
 # of: no condition reads both, or one does but no counter region's execution implies
