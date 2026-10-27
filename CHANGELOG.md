@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.140](https://github.com/nickderobertis/crozier/compare/v0.0.139...v0.0.140) - 2026-10-27
+
+### Fixed
+
+- *(parity)* generate unions whose discriminator property is not an identifier ([#648](https://github.com/nickderobertis/crozier/pull/648))
+
 ## [0.0.139](https://github.com/nickderobertis/crozier/compare/v0.0.138...v0.0.139) - 2026-10-27
 
 ### Fixed
