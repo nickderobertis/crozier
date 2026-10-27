@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_team_request_channels import CreateTeamRequestChannels
+from .create_team_request_group_odata_bind import CreateTeamRequestGroupOdataBind
+
+CreateTeamRequest = typing.Union[CreateTeamRequestChannels, CreateTeamRequestGroupOdataBind]

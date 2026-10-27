@@ -19,7 +19,7 @@ an excepted document's shape is unchanged.
 | `RS-PYTHON/rs-server` `services/frontend/resources/openapi.json` at `83ebcafb173c` (`a8771072…`) | C | owned by `refusal-parity-example-collision` |
 | `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | owned by `refusal-parity-lenient-yaml` |
 | `outstack/enveloper` `docs/api/openapi.yaml` at `cd8150d6d78c` (`95595ff6…`) | E | excepted: a departure candidate for the user |
-| OpenAPI Generator `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml` at `10e6c21c97ab` (`981444e6…`) | F | repaired; registered as corpus row 3473 |
+| OpenAPI Generator `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml` at `10e6c21c97ab` (`981444e6…`) | F | repaired; registered as corpus row 3476 |
 
 The draft's full digests, and the Fern log of each run, are those of the
 `discriminator-mapping` arm probe
@@ -130,7 +130,7 @@ witnesses it left unregistered, are in
 byte-matches the certified pair's 86-file output, apart from the lines the
 departures ledger records under `sdk-identity-header-prefix` and
 `stream-reference-return-type`. The document is the committed source of
-corpus row 3473, `openapi-generator-composed-schema-lowering`, whose complete
+corpus row 3476, `openapi-generator-composed-schema-lowering`, whose complete
 golden and `expected-literals` overlay `openapi_generator_composed_schema_lowering_matches_fern_output`
 holds crozier to. Its Python passes the pinned `ruff format`, which every
 generation runs.

@@ -15,7 +15,7 @@ Two `schemas.md` region keys carry census selectors:
 cases 20a and 20b, the property arm of the second repair. The all-`null` fold
 (`src/openapi.rs`) and the component arm (`Builder::add_named`) are in none of
 the census's blind functions, so no selector can name them. Their real witness
-is corpus row 3473, `openapi-generator-composed-schema-lowering`, which declares
+is corpus row 3476, `openapi-generator-composed-schema-lowering`, which declares
 both shapes on components. That is OpenAPI Generator's
 `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml`
 at `10e6c21c97ab`, Apache-2.0 by its repository LICENSE. Its complete golden is

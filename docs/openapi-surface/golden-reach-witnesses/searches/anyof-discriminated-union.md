@@ -16,7 +16,7 @@ verdict: `exhausted` when nothing is outstanding, every declarer reaching
 the arm is screened, and none that passes every screen is left
 unregistered; `search-incomplete` otherwise.
 
-Superseded for the first site since: corpus row 3473,
+Superseded for the first site since: corpus row 3476,
 `openapi-generator-composed-schema-lowering`, registered by the
 [refusal-parity repairs](../../../refusal-parity-ten-documents.md), reaches
 `Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]`

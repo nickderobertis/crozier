@@ -339,6 +339,9 @@ inventory=(
   get_a_room_matches_fern_output
   grantly_matches_fern_output
   ebusd_matches_fern_output
+  openapitools_csharp_allof_matches_fern_output
+  swagger_parser_null_types_matches_fern_output
+  tooljet_microsoft_teams_matches_fern_output
   openapi_generator_composed_schema_lowering_matches_fern_output
 )
 
