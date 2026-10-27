@@ -131,6 +131,14 @@ class Fixture(NamedTuple):
     audiences: tuple[str, ...]
 
 
+class Interaction(NamedTuple):
+    """One site a feature-level combination cover's fixture is measured at."""
+
+    fixture: str
+    key: str
+    site: str
+
+
 class ResidualProof(NamedTuple):
     key: str
     fixture: str
@@ -834,9 +842,7 @@ def gate(root: Path) -> dict[str, Any]:
     # site the site table declares for its key (`interaction_sites`).
     audit, found = reach.read_cooccurrence(root / REGIONS / "combination-cooccurrence.tsv")
     failures += found
-    interaction_rows = {
-        (name, key, site) for name, key, site in interaction_sites(fixtures, sites, audit) if key in rows
-    }
+    interaction_rows = {row for row in interaction_sites(fixtures, sites, audit) if row.key in rows}
     for name, fixture in sorted(fixtures.items()):
         document = None
         for cover in fixture.covers:
@@ -979,8 +985,8 @@ def interaction_sites(
     fixtures: Mapping[str, Fixture],
     sites: Mapping[str, CombinationSites],
     audit: Mapping[str, CooccurrenceHandlers],
-) -> list[tuple[str, str, str]]:
-    """`(fixture, key, site)` for each site a feature-level combination cover is measured at.
+) -> list[Interaction]:
+    """Each site a feature-level combination cover is measured at.
 
     A combination is proven at the branch where its two features meet, so a
     fixture proving one is measured there: each arm site
@@ -989,7 +995,7 @@ def interaction_sites(
     handling function `combination-cooccurrence.tsv` names for each feature.
     """
     reach = golden_reach()
-    found = set()
+    found: set[Interaction] = set()
     for name, fixture in fixtures.items():
         for cover in fixture.covers:
             if cover.arm is not None or not cover.key.startswith(COMBINATION_PREFIX) or cover.key not in sites:
@@ -1000,7 +1006,7 @@ def interaction_sites(
                 if row.cooccurrence and cover.key in audit
                 else list(row.sites)
             )
-            found |= {(name, cover.key, site) for site in named}
+            found |= {Interaction(name, cover.key, site) for site in named}
     return sorted(found)
 
 
@@ -1092,15 +1098,15 @@ def measure(args: argparse.Namespace) -> int:
         raise SystemExit("handwritten-reach: " + "; ".join(failures))
     planned: list[tuple[str, Cover]] = []
     declared: dict[str, Fixture] = {}
-    interactions: list[tuple[str, str, str]] = []
+    interactions: list[Interaction] = []
     for entry in sorted(p for p in base.iterdir() if p.is_dir()):
         fixture, failures = read_evidence(entry)
         if failures or fixture is None:
             raise SystemExit("handwritten-reach: " + "; ".join(failures))
         declared[entry.name] = fixture
-        for name, key, site in interaction_sites({entry.name: fixture}, sites, audit):
-            reach.resolve_site(site, repo_root)
-            interactions.append((name, key, site))
+        for row in interaction_sites({entry.name: fixture}, sites, audit):
+            reach.resolve_site(row.site, repo_root)
+            interactions.append(row)
         for cover in fixture.covers:
             if cover.arm is None:
                 continue
@@ -1117,7 +1123,7 @@ def measure(args: argparse.Namespace) -> int:
         crozier = instrumented_crozier(repo_root, reach)
         profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
         runs: dict[str, tuple[dict, dict]] = {}
-        for name in sorted({name for name, _cover in planned} | {name for name, _key, _site in interactions}):
+        for name in sorted({name for name, _cover in planned} | {row.fixture for row in interactions}):
             runs[name] = scoped_run(
                 base / name / "openapi.yml", declared[name].audiences, crozier, profdata, llvm_cov, repo_root, reach
             )
@@ -1143,8 +1149,8 @@ def measure(args: argparse.Namespace) -> int:
                     (name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm))
                 )
                 gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(controls[name], cover.arm)))
-        for name, key, site in interactions:
-            rows.append((name, key, site, *reached(runs[name], site)))
+        for row in interactions:
+            rows.append((*row, *reached(runs[row.fixture], row.site)))
     rows.sort(key=lambda row: row[:3])
     gate_rows.sort(key=lambda row: row[:4])
     for path, header, lines in ((ledger, REACH_HEADER, rows), (gates, GATE_HEADER, gate_rows)):
