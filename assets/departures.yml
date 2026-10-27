@@ -124,6 +124,32 @@
     `TypeError` for an unexpected keyword argument.
   evidence: docs/departures/evidence/constant-header-docs-arguments.md
 
+- id: dangling-mapping-variant-fields
+  kind: fern-defect
+  trigger: >-
+    A discriminated `oneOf` whose `discriminator.mapping` names, for one value,
+    a target that is no component schema, beside targets that are, and one
+    `oneOf` member no mapping target names tags itself with that value: the
+    union's types module.
+  fern: >-
+    The value's wrapper holds a required `value: typing.Any` ahead of its
+    `Literal` tag, so a payload of that variant, which carries the member's
+    properties beside the tag and no `value`, fails to parse, and the only
+    payload the wrapper can send nests them under `value`.
+  crozier: >-
+    The wrapper carries the member's fields beside the tag, as every other
+    wrapper of the union carries its member's, with the imports and the
+    `update_forward_refs` call those fields need. Every other line, the
+    member's own model with its tag enum included, is Fern's.
+  reason: >-
+    The certified SDK cannot exchange the payload its own OpenAPI document
+    declares for that variant: through its real client, a response carrying
+    the variant raises a parsing error on the missing `value`, and the request
+    it sends nests the variant's properties under `value`. crozier's wrapper
+    parses the response and sends it back in the shape the member schema
+    declares.
+  evidence: docs/departures/evidence/dangling-mapping-variant-fields.md
+
 - id: date-header-constructor-example
   kind: fern-defect
   trigger: >-
