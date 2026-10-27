@@ -152,7 +152,7 @@ final source; that merge brought no `src/` change):
   `just golden-reach-arms`, which left them unchanged.
 - `tests/fixtures/departures-ledger.tsv` and
   `docs/departures/evidence/invalid-example-values/inventory.tsv`:
-  `crates/crozier-e2e/departures-ledger.sh`, which left both unchanged and
+  `just departures-ledger`, which left both unchanged and
   passed every golden comparison it ran.
 
 ## Found on the way
