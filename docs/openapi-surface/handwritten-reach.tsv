@@ -78,7 +78,6 @@ multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias
 multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
 multipart-nullable-array	format-binary	src/ir.rs::hoist_form_object[if nullable_binary]	1	1
 multipart-request-name	request-body-content	src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]	1	1
-nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5

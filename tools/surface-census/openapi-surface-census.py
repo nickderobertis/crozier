@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 242 of the 273 registered sources live in `corpus-sources/` (a split
+  and 243 of the 274 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1911,6 +1911,8 @@ CONJUNCTIONS = {
     "schema.oneOf>schema.enum:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `enum`",
     "schema.anyOf>schema.enum:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `enum`",
     "schema.oneOf>schema.const:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `const`",
+    "schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued": "one per Schema Object one of whose properties declares no `type` and no `nullable`, and a `oneOf` whose one member is an inline string-valued `enum`",
+    "schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued": "one per Schema Object one of whose properties declares no `type` and no `nullable`, and an `anyOf` whose one member is an inline string-valued `enum`",
     "schema.anyOf>schema.const:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `const`",
     "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members is a bare object carrying an object-valued example that is not itself a schema definition",
     "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
@@ -2344,6 +2346,16 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
     ),
     "prop_type_ref": (
+        Case(
+            "20a",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued",
+        ),
+        Case(
+            "20b",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued",
+        ),
         Case("17", hole="H-ordered-members"),
         Case(
             "1",
@@ -2554,7 +2566,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "14f75555ff7ff98a",
-    "prop_type_ref": "0e868a22ed809140",
+    "prop_type_ref": "03e47a0aef8703fb",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -5050,7 +5062,7 @@ UNION_PORT_DIGESTS = {
     "last_composed_variant": "3ac394950dc70c7f",
     "is_composed_member": "ea34dd7fa128f6b3",
     "is_map": "ce58b2f1f60a3f18",
-    "simple_nullable_member": "1d041c7fc238931d",
+    "simple_nullable_member": "1aaafcb17ac8d8a2",
 }
 
 

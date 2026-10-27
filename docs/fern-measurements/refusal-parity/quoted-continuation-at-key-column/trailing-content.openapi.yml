@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse
+  version: 1.0.0
+paths:
+  /beacons:
+    get:
+      operationId: listBeacons
+      responses:
+        '200':
+          description: The beacons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+components:
+  schemas:
+    Beacon:
+      type: object
+      description: "A light on the coast that ships steer by.
+      Each one keeps its own schedule." and its lamp
+      properties:
+        id:
+          type: string

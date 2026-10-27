@@ -5,6 +5,9 @@ the certified pair (Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3)
 generates from all three. This record names the root cause, the code that
 changed, and each document's outcome.
 
+`quoted-continuation-at-key-column/` is another case in this directory, with
+its own record in its `README.md`.
+
 ## Root cause
 
 Each document's discriminator names a mapping target by **bare schema name**,

@@ -424,6 +424,7 @@ struct SchemaContext<'a> {
     default_names: indexmap::IndexMap<String, bool>,
     missing_header_types: std::collections::HashSet<String>,
     expanding: std::cell::OnceCell<ExpandingCycles>,
+    discriminants: std::cell::OnceCell<std::collections::HashSet<*const serde_json::Value>>,
 }
 
 fn schema_declaration_names(
@@ -853,6 +854,7 @@ fn check_document_schemas(root: &serde_json::Value, path: &Path, strict: bool) -
         default_names: schema_declaration_names(root, true, named_default_unsupported),
         missing_header_types: missing_header_types(root),
         expanding: std::cell::OnceCell::new(),
+        discriminants: std::cell::OnceCell::new(),
     };
     if let Some(schemas) = root
         .get("components")
@@ -1655,6 +1657,51 @@ fn strongly_connected(edges: &indexmap::IndexMap<String, Vec<ReferenceStep>>) ->
     components
 }
 
+/// The inline property schemas crozier's model drops as a union variant's
+/// discriminant ([`crate::ir::document_discriminant_strips`]): each stripped
+/// class's own `properties` entry and those of its inline `allOf` members. A
+/// `$ref`'d base keeps its own declaration, so it is not one of them.
+fn variant_discriminants(
+    root: &serde_json::Value,
+) -> std::collections::HashSet<*const serde_json::Value> {
+    fn collect(
+        schema: &serde_json::Value,
+        property: &str,
+        found: &mut std::collections::HashSet<*const serde_json::Value>,
+    ) {
+        if let Some(declared) = schema
+            .get("properties")
+            .and_then(|properties| properties.get(property))
+        {
+            found.insert(std::ptr::from_ref(declared));
+        }
+        for member in schema
+            .get("allOf")
+            .and_then(serde_json::Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter(|member| member.get("$ref").is_none())
+        {
+            collect(member, property, found);
+        }
+    }
+    let mut found = std::collections::HashSet::new();
+    let Ok(doc) = serde_json::from_value::<OpenApi>(root.clone()) else {
+        return found;
+    };
+    let strips = crate::ir::document_discriminant_strips(&doc);
+    let schemas = root
+        .get("components")
+        .and_then(|components| components.get("schemas"))
+        .and_then(serde_json::Value::as_object);
+    for (name, schema) in schemas.into_iter().flatten() {
+        if let Some(property) = strips.get(&crate::naming::class_name(name)) {
+            collect(schema, property, &mut found);
+        }
+    }
+    found
+}
+
 /// The class Fern refuses `schema` with when a cycle that grows on every turn
 /// is reachable from it: `heap-exhausted` where one branches, else
 /// `generated-file-name-too-long`.
@@ -1770,7 +1817,11 @@ fn check_schema(
     // Fern renders a string enum with no non-null member as an enum class whose
     // `visit` method has no body, which its own `ruff check` cannot parse; an
     // untyped one too, measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
-    // (`untyped-null-only-enum` probe; tunarr's `userId`).
+    // (`untyped-null-only-enum` probe; tunarr's `userId`). A variant's
+    // discriminant declares no enum class: the union's tag replaces it, so it
+    // generates (`null-only-discriminant` control; ingef/conquery's
+    // `NullOutput.operation`), where the same enum beside the discriminant is
+    // refused (`null-only-beside-discriminant` probe).
     if schema
         .get("type")
         .is_none_or(|kind| kind.as_str() == Some("string"))
@@ -1778,6 +1829,10 @@ fn check_schema(
             .get("enum")
             .and_then(serde_json::Value::as_array)
             .is_some_and(|values| values.iter().all(serde_json::Value::is_null))
+        && !context
+            .discriminants
+            .get_or_init(|| variant_discriminants(context.root))
+            .contains(&std::ptr::from_ref(schema))
     {
         return refusal(
             context.path,
@@ -3287,6 +3342,92 @@ mod tests {
             registry_shape_refusal("generator-lint-failure/null-and-value-enum-control.yml"),
             None
         );
+    }
+
+    #[test]
+    fn a_variant_s_null_only_discriminant_is_no_lint_failure() {
+        assert_eq!(
+            registry_shape_refusal("generator-lint-failure/null-only-discriminant-control.yml"),
+            None
+        );
+        let error = registry_shape_refusal(
+            "generator-lint-failure/null-only-beside-discriminant-probe.yml",
+        )
+        .unwrap_or_default();
+        assert!(
+            error.contains(
+                "generator-lint-failure: components/schemas/Silence/allOf/1/properties/kind \
+                 enum has no non-null value"
+            ),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn variant_discriminants_are_the_inline_tags_the_model_strips() {
+        let root: serde_json::Value = crate::yaml::from_str(
+            r#"openapi: 3.0.3
+info: {title: t, version: '1'}
+paths:
+  /signals:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Signal'}
+  /loud:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Loud'}
+components:
+  schemas:
+    Signal:
+      oneOf:
+      - $ref: '#/components/schemas/Hush'
+      - $ref: '#/components/schemas/Bare'
+      - $ref: '#/components/schemas/Loud'
+      discriminator:
+        propertyName: kind
+        mapping:
+          'NULL': '#/components/schemas/Hush'
+          BARE: '#/components/schemas/Bare'
+          LOUD: '#/components/schemas/Loud'
+    Base:
+      properties:
+        kind: {type: string, enum: [null]}
+    Hush:
+      allOf:
+      - $ref: '#/components/schemas/Base'
+      - properties:
+          kind: {type: string, enum: [null]}
+    Bare:
+      properties:
+        kind: {type: string, enum: [BARE]}
+    Loud:
+      properties:
+        kind: {type: string, enum: [LOUD]}
+"#,
+        )
+        .unwrap();
+        let found = variant_discriminants(&root);
+        let at =
+            |pointer: &str| found.contains(&std::ptr::from_ref(root.pointer(pointer).unwrap()));
+        // A mapped variant's own tag and its inline `allOf` member's.
+        assert!(at("/components/schemas/Hush/allOf/1/properties/kind"));
+        assert!(at("/components/schemas/Bare/properties/kind"));
+        // A `$ref`'d base keeps its declaration, and a variant also referenced
+        // on its own keeps its tag on that standalone model.
+        assert!(!at("/components/schemas/Base/properties/kind"));
+        assert!(!at("/components/schemas/Loud/properties/kind"));
+        assert_eq!(found.len(), 2);
+        // Something not a document strips nothing.
+        assert!(variant_discriminants(&serde_json::json!({"openapi": 3})).is_empty());
     }
 
     #[test]

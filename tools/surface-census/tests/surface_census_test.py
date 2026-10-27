@@ -3922,6 +3922,8 @@ fn following() { let other = 42; }
             122: "one-hundred-and-twenty-two",
             119: "one-hundred-and-nineteen",
             123: "one-hundred-and-twenty-three",
+            121: "one-hundred-and-twenty-one",
+            125: "one-hundred-and-twenty-five",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -4317,6 +4319,8 @@ class ConjunctionCensusTests(unittest.TestCase):
             "recursive-types": 2,
             "schema-constraints": 1,
         },
+        "schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued": {},
+        "schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
@@ -5820,6 +5824,40 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             near=SchemaDocument({"properties": {"many": {"type": ["string", "array"], "items": STRUCT}}}),
             overlap=SchemaDocument({"properties": {"many": {**array_of(STRUCT), **TWO_ONE_OF}}}),
             overlap_selector="schema.properties>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued",
+            slug="ptr-20a",
+            branch="prop_type_ref case 20a",
+            select=SchemaDocument({"properties": {"pitch": {"oneOf": [{"type": "string", "enum": ["low", "high"]}]}}}),
+            near=SchemaDocument(
+                {"properties": {"pitch": {"type": "string", "oneOf": [{"type": "string", "enum": ["low", "high"]}]}}}
+            ),
+            overlap=SchemaDocument(
+                {
+                    "properties": {
+                        "pitch": {"description": "Tone.", "oneOf": [{"type": "string", "enum": ["low", "high"]}]}
+                    }
+                }
+            ),
+            overlap_selector="schema.properties>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued",
+            slug="ptr-20b",
+            branch="prop_type_ref case 20b",
+            select=SchemaDocument({"properties": {"pitch": {"anyOf": [{"type": "string", "enum": ["low", "high"]}]}}}),
+            near=SchemaDocument(
+                {"properties": {"pitch": {"type": "string", "anyOf": [{"type": "string", "enum": ["low", "high"]}]}}}
+            ),
+            overlap=SchemaDocument(
+                {
+                    "properties": {
+                        "pitch": {"description": "Tone.", "anyOf": [{"type": "string", "enum": ["low", "high"]}]}
+                    }
+                }
+            ),
+            overlap_selector="schema.properties>schema.anyOf",
         ),
         DiscriminationCase(
             selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",

@@ -2935,6 +2935,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
+    normalize_null_only_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
     normalize_boolean_property_objects(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -3243,6 +3244,48 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
             }
         });
     });
+}
+
+/// Read a `oneOf`/`anyOf` whose every alternative is a bare `type: null` as the
+/// `type: null` it amounts to.
+///
+/// No alternative is left once the `null`s are taken as optionality, so every
+/// later pass would otherwise render the node as an empty `typing.Union[]`,
+/// which `ruff` refuses to parse. Fern (measured at CLI 5.163.1 with
+/// `fern-python-sdk` 5.41.3 on the hand-written `dormant-sensor-unions`
+/// fixture) generates `typing.Optional[typing.Any]` for such a node as a
+/// component alias, an object property and an array item, from one `null`
+/// alternative or several, exactly as it does for a plain `type: null`.
+fn normalize_null_only_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut fold_null_only)
+    });
+}
+
+/// [`normalize_null_only_compositions`] on one node, its alternatives folded
+/// first so a nested all-`null` union (`anyOf: [{anyOf: [{type: null}]}]`) is
+/// one too.
+fn fold_null_only(node: &mut Schema) {
+    if node.ty.is_some()
+        || node.all_of.is_some()
+        || node.one_of.is_some() == node.any_of.is_some()
+        || !node.properties.is_empty()
+    {
+        return;
+    }
+    let Some(members) = node.one_of.as_mut().or(node.any_of.as_mut()) else {
+        return;
+    };
+    members.iter_mut().for_each(fold_null_only);
+    let bare_null = Schema {
+        ty: Some(TypeField::Single("null".to_string())),
+        ..Schema::default()
+    };
+    if members.iter().all(|member| *member == bare_null) {
+        node.one_of = None;
+        node.any_of = None;
+        node.ty = Some(TypeField::Single("null".to_string()));
+    }
 }
 
 /// Read a `oneOf` whose branches only constrain the schema's own sibling
@@ -6692,6 +6735,60 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    /// The `dormant-sensor-unions` fixture (Fern CLI 5.163.1): a
+    /// `oneOf`/`anyOf` of nothing but bare `type: null` alternatives, as a
+    /// component, a property and an array item, and nested inside another
+    /// (`Stillness`), is the `type: null` Fern reads it as. An alternative that says anything more, a `type` or `properties`
+    /// beside the composition, or a second composition keeps the union.
+    #[test]
+    fn normalize_null_only_compositions_reads_the_union_as_null() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Silence: { description: Quiet., anyOf: [{ type: "null" }, { type: "null" }] }
+    Lull: { anyOf: [{ type: "null" }] }
+    Reading:
+      type: object
+      properties:
+        void: { oneOf: [{ type: "null" }, { type: "null" }] }
+        hush: { type: array, items: { anyOf: [{ type: "null" }, { type: "null" }] } }
+    Described: { anyOf: [{ type: "null", description: Nothing. }, { type: "null" }] }
+    Mixed: { anyOf: [{ type: "null" }, { type: string }] }
+    Typed: { type: object, anyOf: [{ type: "null" }, { type: "null" }] }
+    Both: { oneOf: [{ type: "null" }], anyOf: [{ type: "null" }] }
+    Stillness: { anyOf: [{ anyOf: [{ type: "null" }] }] }
+"##,
+        );
+        normalize_null_only_compositions(&mut doc);
+        let schemas = &doc.components.schemas;
+        let null = Some(TypeField::Single("null".to_string()));
+        let reading = &schemas["Reading"];
+        let hush = reading.properties["hush"].items.as_deref().expect("items");
+        for (name, node) in [
+            ("Silence", &schemas["Silence"]),
+            ("Lull", &schemas["Lull"]),
+            ("void", &reading.properties["void"]),
+            ("hush", hush),
+            ("Stillness", &schemas["Stillness"]),
+        ] {
+            assert_eq!(node.ty, null, "{name}");
+            assert!(node.one_of.is_none() && node.any_of.is_none(), "{name}");
+        }
+        assert_eq!(schemas["Silence"].description.as_deref(), Some("Quiet."));
+        for kept in ["Described", "Mixed", "Typed"] {
+            assert_eq!(
+                schemas[kept].any_of.as_ref().map(Vec::len),
+                Some(2),
+                "{kept}"
+            );
+        }
+        assert!(schemas["Both"].one_of.is_some() && schemas["Both"].any_of.is_some());
     }
 
     /// The `615-empty-composition-member-reference` measurement (Fern CLI
