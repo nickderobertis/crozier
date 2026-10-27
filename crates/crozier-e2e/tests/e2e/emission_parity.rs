@@ -1,18 +1,7 @@
-//! Union shapes from ingef/conquery's `openapi.yaml` that crozier generated
-//! differently from the certified pair, each in a from-scratch document held
-//! whole to its certified-pair tree in both enum modes
-//! (`docs/fern-measurements/emission-parity/`, recorded in its `README.md`).
-//!
-//! - `allof-only-base`: a union variant that is `allOf: [$ref Base, {…}]`,
-//!   where `Base` is itself only an `allOf` over another `$ref`, an inline
-//!   member or an inline union. Fern's wrapper carries every field the chain
-//!   declares; the variant over a base with direct `properties` is the control.
-//! - `dangling-mapping-target`: a discriminator mapping whose `METEOR` target
-//!   names no component, beside targets that do. Fern writes the union's
-//!   wrappers, and crozier matches every line but the `METEOR` wrapper's, which
-//!   carries the tagged member's fields where Fern's holds `value: typing.Any`
-//!   (the `dangling-mapping-variant-fields` departure). `Instrument`, whose
-//!   targets all resolve, is the control.
+//! The two union shapes of ingef/conquery's document, each in a from-scratch
+//! document held whole to its certified-pair tree in both enum modes, beside
+//! its control. The shapes and their repairs are recorded in
+//! `docs/fern-measurements/emission-parity/README.md`.
 
 use std::path::{Path, PathBuf};
 
@@ -40,8 +29,6 @@ fn generate(case: &str, mode: &str, out: &Path) {
         .success();
 }
 
-/// The case's golden for `mode`: `<case>/` under `python-enums`,
-/// `<case>-literals/` under `literals`.
 fn golden(case: &str, mode: &str) -> String {
     let suffix = if mode == "literals" { "-literals" } else { "" };
     format!("{EMISSION_PARITY_DIR}/{case}{suffix}/fern-expected")
@@ -162,7 +149,6 @@ fn a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields
     }
 }
 
-/// `case`'s document with `from` replaced by `to`, written under `dir`.
 fn variant_of(case: &str, from: &str, to: &str, dir: &Path) -> PathBuf {
     let text = std::fs::read_to_string(spec(case)).expect("the measurement document");
     assert!(text.contains(from), "{case}: no {from:?} to replace");
