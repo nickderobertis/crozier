@@ -862,6 +862,13 @@ fn check_schema_names(
     // An object redeclaring a property its nullable `allOf` base declares is
     // generated, one field per name, since Fern CLI 5.163.1 (authored probe
     // 549-object-property-name-collision); Fern CLI 5.67.1 refused it.
+    // A union mapping a value to a bare schema name is `typing.Any` to Fern,
+    // whose discriminant it never reads: Fern CLI 5.163.1 generates the
+    // openapi-generator AllOf sample, whose `Person` maps `c` to `Child` under
+    // `$_type`, and the class probe once `TextAsset` is mapped by name.
+    if crate::ir::bare_name_mapped_union(schema) {
+        return check_children(schema, location, path, schemas);
+    }
     let explicit = schema.discriminator.as_ref().filter(|_| {
         schema.ty.as_ref().map_or(
             schema.enum_values.is_none() && (schema.any_of.is_none() || schema.one_of.is_some()),
@@ -1596,6 +1603,66 @@ mod tests {
         validate(&doc, &path, false, &crate::ir::build(&doc, &config))
             .err()
             .map(|error| error.to_string())
+    }
+
+    /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a union mapping
+    /// a value to a bare schema name is `typing.Any` to Fern, which generates
+    /// past an unusable discriminant there, under a `oneOf` or an inheritance
+    /// base alike, while it still refuses one mapped by references only. The
+    /// suspended check still reaches the union's own properties.
+    #[test]
+    fn a_bare_name_mapping_suspends_only_its_own_discriminant_check() {
+        let document = |schemas: &str| {
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\n\
+                 components:\n  schemas:\n{schemas}\
+                 \x20   Stamp: {{type: object, properties: {{'$label': {{type: string}}}}}}\n\
+                 \x20   Sticker: {{type: object, properties: {{'$label': {{type: string}}}}}}\n"
+            )
+        };
+        let one_of = |mapping: &str, property: &str| {
+            document(&format!(
+                "    Label:\n      oneOf: [{{$ref: '#/components/schemas/Stamp'}}, {{$ref: '#/components/schemas/Sticker'}}]\n\
+                 \x20     discriminator: {{propertyName: '$label', mapping: {{{mapping}}}}}\n{property}"
+            ))
+        };
+        let inheritance = |mapping: &str| {
+            document(&format!(
+                "    Label:\n      type: object\n      properties: {{'@kind': {{type: string}}}}\n\
+                 \x20     discriminator: {{propertyName: '@kind', mapping: {{{mapping}}}}}\n"
+            ))
+        };
+        let pointers =
+            "stamp: '#/components/schemas/Stamp', sticker: '#/components/schemas/Sticker'";
+        let mixed = "stamp: '#/components/schemas/Stamp', sticker: Sticker";
+        for (source, refused) in [
+            (one_of(mixed, ""), false),
+            (inheritance(mixed), false),
+            (inheritance("sticker: Sticker"), false),
+            (one_of(pointers, ""), true),
+            (inheritance(pointers), true),
+        ] {
+            let refusal = document_refusal(&source);
+            assert_eq!(refusal.is_some(), refused, "{source}\n{refusal:?}");
+            if let Some(refusal) = refusal {
+                assert!(
+                    refusal.contains("discriminant-value-unsuitable"),
+                    "{refusal}"
+                );
+                assert!(refusal.contains("#/components/schemas/Label"), "{refusal}");
+            }
+        }
+        let nested = one_of(
+            mixed,
+            "      properties:\n        tag:\n          type: object\n\
+             \x20         oneOf: [{$ref: '#/components/schemas/Stamp'}]\n\
+             \x20         discriminator: {propertyName: '_t', mapping: {stamp: '#/components/schemas/Stamp'}}\n",
+        );
+        let refusal = document_refusal(&nested).expect("the nested discriminant is still checked");
+        assert!(
+            refusal.contains("Label/properties/tag discriminant \"_t\""),
+            "{refusal}"
+        );
     }
 
     /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3

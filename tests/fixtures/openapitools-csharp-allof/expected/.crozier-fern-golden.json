@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "openapitools-csharp-allof",
+  "corpus_spec_ref": "10e6c21c97abb098cc67f14dfdd02171ce56b115",
+  "corpus_spec_url": "https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/samples/client/petstore/csharp/generichost/net10/AllOf/api/openapi.yaml"
+}

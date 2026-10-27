@@ -116,6 +116,9 @@ const KINDS: &[Kind] = &[
             "get-a-room",
             "grantly",
             "ebusd",
+            "openapitools-csharp-allof",
+            "swagger-parser-null-types",
+            "tooljet-microsoft-teams",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

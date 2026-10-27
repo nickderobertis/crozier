@@ -110,10 +110,14 @@ mod naming_clients_shapes;
 mod output_defects;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Documents the certified pair generates from that crozier used to refuse,
-/// under `docs/fern-measurements/refusal-parity/`.
+/// under `docs/fern-measurements/refusal-parity/`, among them the
+/// `discriminant-value-unsuitable` class narrowed to what the certified pair
+/// refuses, held whole in both enum modes beside the class's refused shapes.
 #[path = "e2e/refusal_parity.rs"]
 mod refusal_parity;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
@@ -10128,6 +10132,9 @@ const CORPORA: &[&Corpus] = &[
     &GET_A_ROOM,
     &GRANTLY,
     &EBUSD,
+    &OPENAPITOOLS_CSHARP_ALLOF,
+    &SWAGGER_PARSER_NULL_TYPES,
+    &TOOLJET_MICROSOFT_TEAMS,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12510,6 +12517,45 @@ const GRANTLY: Corpus = Corpus {
 /// witnessing a success response whose `oneOf` admits `null`.
 const EBUSD: Corpus = Corpus {
     api: "ebusd",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// openapi-generator's C# AllOf sample — corpus row 3473, witnessing an
+/// inheritance base whose `$_type` discriminator maps a value to a bare name.
+const OPENAPITOOLS_CSHARP_ALLOF: Corpus = Corpus {
+    api: "openapitools-csharp-allof",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// swagger_parser's null-types schema — corpus row 3474, witnessing the same
+/// bare-name `$_type` inheritance base in an OpenAPI 3.1 document.
+const SWAGGER_PARSER_NULL_TYPES: Corpus = Corpus {
+    api: "swagger-parser-null-types",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ToolJet's Microsoft Teams plugin document — corpus row 3475, witnessing an
+/// `@odata.type` base mapped to a bare name and a typed `200` beside a bodyless `207`.
+const TOOLJET_MICROSOFT_TEAMS: Corpus = Corpus {
+    api: "tooljet-microsoft-teams",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20538,6 +20584,27 @@ fn grantly_matches_fern_output() {
 #[test]
 fn ebusd_matches_fern_output() {
     assert_committed_corpus_matches(&EBUSD);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn openapitools_csharp_allof_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPITOOLS_CSHARP_ALLOF);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn swagger_parser_null_types_matches_fern_output() {
+    assert_committed_corpus_matches(&SWAGGER_PARSER_NULL_TYPES);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn tooljet_microsoft_teams_matches_fern_output() {
+    assert_committed_corpus_matches(&TOOLJET_MICROSOFT_TEAMS);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

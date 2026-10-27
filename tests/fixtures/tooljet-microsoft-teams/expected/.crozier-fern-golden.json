@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "tooljet-microsoft-teams",
+  "corpus_spec_ref": "63c2b08614b78f8f289fb6127a32f10ed5987362",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ToolJet/ToolJet/63c2b08614b78f8f289fb6127a32f10ed5987362/marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml"
+}

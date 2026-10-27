@@ -1,0 +1,11 @@
+# Green run: HEAD a9a1d4cef, the finished implementation.
+
+PASS [ 112.664s] (1/1) crozier-e2e::e2e overlay_goldens::overlay_goldens_match_fern_output
+Summary [ 112.667s] 1 test run: 1 passed (1 slow), 835 skipped
+PASS [   0.769s] (1/6) crozier-e2e::e2e discriminant_refusals_recover_with_a_valid_document_name
+PASS [   1.828s] (2/6) crozier-e2e::e2e refusal_parity::pointer_mapped_discriminant_refusals_hold_beside_the_bare_name_controls
+PASS [   2.930s] (3/6) crozier-e2e::e2e openapitools_csharp_allof_matches_fern_output
+PASS [   3.380s] (4/6) crozier-e2e::e2e refusal_parity::bare_name_mapped_discriminants_match_fern_in_both_enum_modes
+PASS [   3.565s] (5/6) crozier-e2e::e2e swagger_parser_null_types_matches_fern_output
+PASS [  21.990s] (6/6) crozier-e2e::e2e tooljet_microsoft_teams_matches_fern_output
+Summary [  21.996s] 6 tests run: 6 passed, 830 skipped

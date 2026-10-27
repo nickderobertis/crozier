@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: Orchard crate labels
+  version: 2.4.0
+paths:
+  /crates/{crateId}:
+    get:
+      operationId: getCrate
+      summary: Look up one packed crate
+      parameters:
+        - name: crateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The crate as packed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crate'
+    put:
+      operationId: repackCrate
+      summary: Repack a crate under a new label
+      parameters:
+        - name: crateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Crate'
+      responses:
+        '200':
+          description: The crate as repacked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crate'
+  /crates/{crateId}/weigh-ins:
+    post:
+      operationId: weighCrate
+      summary: Record a weigh-in for a crate
+      parameters:
+        - name: crateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeighIn'
+      responses:
+        '200':
+          description: The weigh-in as recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeighIn'
+        '206':
+          description: Recorded, with the scale reading still pending
+  /labels:
+    post:
+      operationId: printLabel
+      summary: Print a label for a crate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+      responses:
+        '200':
+          description: The printed label
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+components:
+  schemas:
+    Crate:
+      type: object
+      description: A packed crate of fruit
+      discriminator:
+        propertyName: '@kind'
+        mapping:
+          apple: '#/components/schemas/AppleCrate'
+          pear: PearCrate
+      properties:
+        '@kind':
+          type: string
+        id:
+          type: string
+        packedOn:
+          type: string
+          format: date
+    AppleCrate:
+      allOf:
+        - $ref: '#/components/schemas/Crate'
+        - type: object
+          properties:
+            variety:
+              type: string
+    PearCrate:
+      allOf:
+        - $ref: '#/components/schemas/Crate'
+        - type: object
+          properties:
+            ripeness:
+              type: integer
+    Label:
+      oneOf:
+        - $ref: '#/components/schemas/StampLabel'
+        - $ref: '#/components/schemas/StickerLabel'
+      discriminator:
+        propertyName: $label
+        mapping:
+          stamp: '#/components/schemas/StampLabel'
+          sticker: StickerLabel
+    StampLabel:
+      type: object
+      required: [$label]
+      properties:
+        $label:
+          type: string
+        inkColour:
+          type: string
+    StickerLabel:
+      type: object
+      required: [$label]
+      properties:
+        $label:
+          type: string
+        widthMm:
+          type: integer
+    WeighIn:
+      type: object
+      properties:
+        grams:
+          type: integer
+        scaleId:
+          type: string
