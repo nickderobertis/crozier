@@ -317,9 +317,8 @@ fn a_dangling_mapping_outside_the_measured_shape_reads_as_before() {
 /// `allOf` variant's base is a plain object, and `Letter`'s own tag is
 /// optional — generates the tree crozier wrote before either repair, every
 /// file of it, README.md and reference.md included, in both enum modes. Each
-/// `base-tree.<mode>.sha256` was written by `sha256sum` over the output of the
-/// branch's base, `275e9d3da`; main at `cea260ad4`, merged since, writes the
-/// same bytes. The Markdown examples still pass `Letter`'s
+/// `base-tree.<mode>.sha256` pins the baseline tree; its provenance is recorded
+/// in the linked measurement document. The Markdown examples still pass `Letter`'s
 /// optional tag back, which only a union with a dangling target leaves out.
 #[test]
 fn a_document_neither_cause_touches_generates_the_base_tree_byte_for_byte() {
