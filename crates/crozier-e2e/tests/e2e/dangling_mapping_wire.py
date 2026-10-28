@@ -28,7 +28,13 @@ import sys
 import threading
 from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Literal, Protocol, TypedDict
+from typing import Any, Literal, NewType, Protocol, TypedDict
+
+
+ReadingId = NewType("ReadingId", str)
+"""The path identifier of a logbook entry, `readingId` in the document."""
+
+ENTRY = ReadingId("entry")
 
 
 class TrailWire(TypedDict):
@@ -60,7 +66,7 @@ ReadingWire = MeteorWire | StarWire
 class LogbookWire(TypedDict):
     """A `Logbook` entry as the server answers it."""
 
-    id: str
+    id: ReadingId
     reading: ReadingWire
 
 
@@ -77,7 +83,7 @@ class Logbook(Protocol):
 class ReadingClient(Protocol):
     """The two operations of a generated `AsyncFernApi` the journey drives."""
 
-    async def get_reading(self, reading_id: str) -> Logbook: ...
+    async def get_reading(self, reading_id: ReadingId) -> Logbook: ...
 
     async def record_reading(self, *, request: object) -> object: ...
 
@@ -140,9 +146,9 @@ def serving() -> Generator[Server]:
 
 async def round_trip(client: ReadingClient, server: Server, reading: ReadingWire, wrapper: str) -> str:
     """Read a logbook entry holding `reading`, then post its reading back unchanged."""
-    server.answer = {"id": "entry", "reading": reading}
+    server.answer = {"id": ENTRY, "reading": reading}
     try:
-        entry = await client.get_reading("entry")
+        entry = await client.get_reading(ENTRY)
     except Exception as error:
         # Whatever the SDK raises while parsing is the observation.
         last = " | ".join(str(error).splitlines()[-3:])
