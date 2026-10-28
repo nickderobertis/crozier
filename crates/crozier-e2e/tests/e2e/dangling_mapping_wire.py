@@ -26,12 +26,46 @@ import importlib
 import json
 import sys
 import threading
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol, TypedDict
 
-METEOR = {"kind": "METEOR", "brightness": -3.5, "trail": {"degrees": 12.0, "colour": "green"}}
-STAR = {"kind": "STAR", "magnitude": 1.25, "constellation": "Lyra"}
+
+class TrailWire(TypedDict):
+    """A `Trail` as the document declares it on the wire."""
+
+    degrees: float
+    colour: str
+
+
+class MeteorWire(TypedDict):
+    """A `MeteorReading` on the wire: the member the dangling `METEOR` target stands for."""
+
+    kind: Literal["METEOR"]
+    brightness: float
+    trail: TrailWire
+
+
+class StarWire(TypedDict):
+    """A `StarReading` on the wire: the control, whose mapping target names it."""
+
+    kind: Literal["STAR"]
+    magnitude: float
+    constellation: str
+
+
+ReadingWire = MeteorWire | StarWire
+
+
+class LogbookWire(TypedDict):
+    """A `Logbook` entry as the server answers it."""
+
+    id: str
+    reading: ReadingWire
+
+
+METEOR: MeteorWire = {"kind": "METEOR", "brightness": -3.5, "trail": {"degrees": 12.0, "colour": "green"}}
+STAR: StarWire = {"kind": "STAR", "magnitude": 1.25, "constellation": "Lyra"}
 
 
 class Logbook(Protocol):
@@ -61,12 +95,12 @@ class Server:
     """A local HTTP server answering every GET with `answer` and recording each POST body."""
 
     def __init__(self) -> None:
-        self.answer: dict[str, Any] = {}
+        self.answer: LogbookWire | None = None
         self.received: list[Any] = []
         outer = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
-            def log_message(self, *_: object) -> None:
+            def log_message(self, format: str, *args: object) -> None:
                 pass
 
             def reply(self, body: object) -> None:
@@ -93,7 +127,7 @@ class Server:
 
 
 @contextlib.contextmanager
-def serving() -> Iterator[Server]:
+def serving() -> Generator[Server]:
     server = Server()
     thread = threading.Thread(target=server.httpd.serve_forever, daemon=True)
     thread.start()
@@ -104,7 +138,7 @@ def serving() -> Iterator[Server]:
         server.httpd.server_close()
 
 
-async def round_trip(client: ReadingClient, server: Server, reading: dict[str, Any], wrapper: str) -> str:
+async def round_trip(client: ReadingClient, server: Server, reading: ReadingWire, wrapper: str) -> str:
     """Read a logbook entry holding `reading`, then post its reading back unchanged."""
     server.answer = {"id": "entry", "reading": reading}
     try:
