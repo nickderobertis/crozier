@@ -18022,6 +18022,21 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                     (root / paths[5]).unlink()
                 case "unmeasured":
                     removals.unlink()
+                case "null-count" | "bool-count" | "string-exit" | "negative-mismatch":
+                    records = json.loads(removals.read_text(encoding="utf-8"))
+                    for record in records:
+                        match mutation:
+                            case "null-count":
+                                record["certified_pair"]["before_files"] = None
+                                record["certified_pair"]["after_files"] = None
+                            case "bool-count":
+                                record["crozier"]["before_files"] = True
+                                record["crozier"]["after_files"] = True
+                            case "string-exit":
+                                record["control_comparison"]["exit_code"] = "0"
+                            case _:
+                                record["control_comparison"]["counts"]["mismatched"] = -1
+                    removals.write_text(json.dumps(records), encoding="utf-8", newline="\n")
                 case "output-sensitive":
                     # The same declarer, had removing its nulls moved a file in both generators.
                     records = json.loads(removals.read_text(encoding="utf-8"))
@@ -18089,6 +18104,22 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
         self.assertEqual([], errors)
         self.assertEqual(frozenset({"rs-server"}), insensitive["schema-example-null"])
         self.assertEqual([], self.check())
+
+    def test_a_malformed_paired_removal_is_refused_and_admits_nothing(self) -> None:
+        for mutation in ("null-count", "bool-count", "string-exit", "negative-mismatch"):
+            with self.subTest(mutation=mutation):
+                failures = self.check(mutation)
+                self.assertIn(
+                    "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json: "
+                    "record 0 needs a key, a fixture, both engines' non-negative file counts and changed-file "
+                    "map, and its control comparison's exit code and counts",
+                    failures,
+                )
+                self.assertIn(
+                    "residual-handwritten.toml `schema-example-null`: supplemental proof requires only "
+                    "registered residual golden witnesses",
+                    failures,
+                )
 
     def test_an_output_sensitive_or_unmeasured_golden_declarer_supersedes_the_supplement(self) -> None:
         for mutation in ("output-sensitive", "unmeasured"):

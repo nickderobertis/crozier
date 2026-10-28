@@ -203,6 +203,94 @@ class GoldenWitnesses(Protocol):
     def witnesses(self) -> tuple[str, ...]: ...
 
 
+class EngineRemoval(NamedTuple):
+    """One generator's before/after file counts and the files the removal moved."""
+
+    before_files: int
+    after_files: int
+    changed: frozenset[str]
+
+
+class ControlComparison(NamedTuple):
+    """`crozier compare` of the perturbed document against the certified pair's after tree."""
+
+    exit_code: int
+    matched: int
+    mismatched: int
+    could_not_check: int
+
+
+class PairedRemoval(NamedTuple):
+    """One `paired-removal-comparisons.json` record, validated."""
+
+    key: str
+    fixture: str
+    crozier: EngineRemoval
+    certified_pair: EngineRemoval
+    control: ControlComparison
+
+    @property
+    def output_insensitive(self) -> bool:
+        """Neither generator moved a file, and crozier matched the control tree whole."""
+        engines = (self.crozier, self.certified_pair)
+        return (
+            all(not engine.changed and engine.before_files == engine.after_files for engine in engines)
+            and self.control.exit_code == 0
+            and self.control.matched > 0
+            and self.control.mismatched == 0
+            and self.control.could_not_check == 0
+        )
+
+
+def _count(value: object) -> int | None:
+    """A JSON non-negative integer, or None (a bool is not a count)."""
+    return value if type(value) is int and value >= 0 else None
+
+
+def _engine_removal(value: object) -> EngineRemoval | None:
+    if not isinstance(value, dict) or set(value) != {"before_files", "after_files", "changed"}:
+        return None
+    before, after, changed = _count(value["before_files"]), _count(value["after_files"]), value["changed"]
+    if before is None or after is None or not isinstance(changed, dict):
+        return None
+    if not all(isinstance(name, str) and name and isinstance(hashes, dict) for name, hashes in changed.items()):
+        return None
+    return EngineRemoval(before, after, frozenset(changed))
+
+
+def _control_comparison(value: object) -> ControlComparison | None:
+    # Later records also carry `files_compared`, which no verdict here reads.
+    if not isinstance(value, dict) or not {"exit_code", "counts"} <= set(value):
+        return None
+    counts = value["counts"]
+    if type(value["exit_code"]) is not int or not isinstance(counts, dict):
+        return None
+    if set(counts) != {"matched", "mismatched", "could_not_check"}:
+        return None
+    matched, mismatched, could_not_check = (
+        _count(counts[name]) for name in ("matched", "mismatched", "could_not_check")
+    )
+    if matched is None or mismatched is None or could_not_check is None:
+        return None
+    return ControlComparison(value["exit_code"], matched, mismatched, could_not_check)
+
+
+def paired_removal(value: object) -> PairedRemoval | None:
+    """Decode one record, or None where any field is missing or mistyped."""
+    if not isinstance(value, dict):
+        return None
+    key, fixture = value.get("key"), value.get("fixture")
+    if not all(isinstance(name, str) and re.fullmatch(r"[a-z0-9][a-z0-9.*-]*", name) for name in (key, fixture)):
+        return None
+    assert isinstance(key, str) and isinstance(fixture, str)
+    crozier = _engine_removal(value.get("crozier"))
+    certified = _engine_removal(value.get("certified_pair"))
+    control = _control_comparison(value.get("control_comparison"))
+    if crozier is None or certified is None or control is None:
+        return None
+    return PairedRemoval(key, fixture, crozier, certified, control)
+
+
 def output_insensitive_declarers(root: Path) -> tuple[dict[str, frozenset[str]], list[str]]:
     """Per key, the registered sources a committed paired removal records as output-insensitive.
 
@@ -225,22 +313,15 @@ def output_insensitive_declarers(root: Path) -> tuple[dict[str, frozenset[str]],
         if not isinstance(records, list):
             failures.append(f"{where}: expected a list of paired-removal records")
             continue
-        for record in records:
-            try:
-                key, fixture = record["key"], record["fixture"]
-                engines = [record[engine] for engine in ("crozier", "certified_pair")]
-                moved = [engine["changed"] for engine in engines]
-                counts = [engine["before_files"] == engine["after_files"] for engine in engines]
-                control = record["control_comparison"]
-                matched = control["exit_code"] == 0 and control["counts"]["mismatched"] == 0
-            except (KeyError, TypeError):
-                failures.append(f"{where}: a record lacks key, fixture, both engines' changes or its control")
-                continue
-            if not (isinstance(key, str) and isinstance(fixture, str) and all(isinstance(m, dict) for m in moved)):
-                failures.append(f"{where}: a record's key, fixture or changes are malformed")
-                continue
-            if not any(moved) and all(counts) and matched:
-                found.setdefault(key, set()).add(fixture)
+        for index, value in enumerate(records):
+            record = paired_removal(value)
+            if record is None:
+                failures.append(
+                    f"{where}: record {index} needs a key, a fixture, both engines' non-negative file counts "
+                    "and changed-file map, and its control comparison's exit code and counts"
+                )
+            elif record.output_insensitive:
+                found.setdefault(record.key, set()).add(record.fixture)
     return {key: frozenset(fixtures) for key, fixtures in found.items()}, failures
 
 
