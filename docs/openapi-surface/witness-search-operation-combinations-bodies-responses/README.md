@@ -265,7 +265,7 @@ grant or fall under registered Fern refusal classes ([census.tsv](census.tsv)).
 
 | key | candidate | files still mismatched | unrelated shapes |
 |---|---|---:|---|
-| `combo-inline-body-read-only-property` | `webflow-v2` | 6 | of the 11 files deleting the inline bodies' `readOnly` moves in both generators: deepObject map query parameters, whose value types the certified pair hoists and crozier types `Any` or an inline union (the collection-items clients); inline types `sites.scripts` and `pages.scripts` share, which the certified pair places in each package and crozier in one (the two scripts clients, one raw client); and in `reference.md`, those two plus collection-field union selection, worked-example values and a query enum typed `Any` |
+| `combo-inline-body-read-only-property` | `webflow-v2` | 4 | of the 11 files deleting the inline bodies' `readOnly` moves in both generators: inline types `sites.scripts` and `pages.scripts` share, which the certified pair places in each package and crozier in one (the two scripts clients, one raw client); and in `reference.md`, cross-package imports, collection-field union selection, worked-example values and a query enum typed `Any`. The interaction search repairs the deepObject map query value types, closing 14 files and shrinking the registered residual from 83 to 69; see [the new record](../witness-search-interaction-operation-combinations/README.md#webflow-parity) |
 | `combo-inline-body-read-only-property` | `osf.io` | 69 | of its 583 generated files, across most clients: worked-example layout in `README.md` and `reference.md` and divergences in most tag clients; not attributed further |
 
 Before this search, `webflow-v2`'s golden listed the redirects, webhooks and
