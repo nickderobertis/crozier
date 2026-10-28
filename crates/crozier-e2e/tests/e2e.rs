@@ -6816,18 +6816,25 @@ fn sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key()
         .stderr(predicate::str::contains(
             "must contain the generated fern package",
         ));
-    Command::new(&python)
+    let journey = Command::new(&python)
         .env("PYTHONDONTWRITEBYTECODE", "1")
         .arg(&script)
         .arg(out.path().join("src"))
         .assert()
-        .success()
-        .stdout(
-            "/catalog/_mgmt/ping x-api-key=null\n\
-             /storage/account/credentials x-api-key=\"rs-key\"\n\
-             /catalog/_mgmt/ping x-api-key=null\n\
-             /storage/account/credentials x-api-key=\"rs-key\"\n",
-        );
+        .success();
+    // Compared line by line: Python's text-mode stdout ends each line with
+    // `\r\n` on Windows, which `lines()` strips like `\n`.
+    let stdout = String::from_utf8_lossy(&journey.get_output().stdout).into_owned();
+    assert_eq!(
+        stdout.lines().collect::<Vec<_>>(),
+        [
+            "/catalog/_mgmt/ping x-api-key=null",
+            "/storage/account/credentials x-api-key=\"rs-key\"",
+            "/catalog/_mgmt/ping x-api-key=null",
+            "/storage/account/credentials x-api-key=\"rs-key\"",
+        ],
+        "{stdout}"
+    );
     let fern = tempfile::tempdir().unwrap();
     copy_dir(
         &root.join("tests/fixtures/rs-server/expected/src"),
