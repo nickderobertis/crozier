@@ -98,6 +98,20 @@ Both journeys live in `crates/crozier-e2e/tests/e2e/emission_parity.rs`, behind
 They sit at the root because the `sdk-env` tier selects tests by full name,
 with `test(/^sdk_env_/)`.
 
+**Checks run with this journey.** The final source is `491ba4aba`. On it:
+
+- Both runtime journeys pass through the `sdk-env` tier's own selector.
+- The five `emission_parity` golden journeys pass.
+- `just departures-ledger` re-ran every golden comparison with all passing,
+  and the ledger was already current.
+- The library's 737 unit tests, clippy and rustfmt pass.
+
+At `5305ca288`, which adds only the derived records:
+
+- the `surface-census` suite: 614 passed;
+- the offline corpus tests: all three suites passed;
+- `just lint-llm-diff` over the whole diff: no rule failed.
+
 ## What the rule admits
 
 The rule reads the wrappers off the source document
