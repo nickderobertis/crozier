@@ -30,7 +30,6 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import Any, Literal, NewType, Protocol, TypedDict
 
-
 ReadingId = NewType("ReadingId", str)
 """The path identifier of a logbook entry, `readingId` in the document."""
 
