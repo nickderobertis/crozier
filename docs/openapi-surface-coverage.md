@@ -140,11 +140,11 @@ same way. The 571 `golden` rows declare 1026 handling sites in
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **908 are reached by a registered real specification.** Its scoped
+- **909 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
-- **113 are reached only by a hand-written fixture.** Each arm-level
-  cover executes the site and byte-matches the certified tree. Thus each of the 113 is still one of the 118 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 49 read `exhausted`, 64 read `search-incomplete` and 0 read `config-gated`.
+- **112 are reached only by a hand-written fixture.** Each arm-level
+  cover executes the site and byte-matches the certified tree. Thus each of the 112 is still one of the 117 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 49 read `exhausted`, 63 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -153,7 +153,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-908 + 113 + 5 + 0 + 0 = 1026. Fourteen sites left the table with the two functions
+909 + 112 + 5 + 0 + 0 = 1026. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
