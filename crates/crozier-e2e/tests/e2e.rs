@@ -760,6 +760,10 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         departures_ledger::ComparedGolden::default(),
     );
     // llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
+    add(
+        "docs/fern-measurements/examples/harbor-signal-null/fern-expected".to_owned(),
+        departures_ledger::ComparedGolden::default(),
+    );
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
@@ -2974,11 +2978,13 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
 fn residual_null_example_is_absent_from_matching_request_snippets() {
     let (_, failures) = handwritten_documents(repo_root());
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-signal-null");
+    // A from-scratch document whose optional body property's only example is
+    // `null`, with its certified-pair tree: a regression test, not coverage evidence.
+    let fixture = repo_root().join("docs/fern-measurements/examples/harbor-signal-null");
     let spec = fixture.join("openapi.yml");
     let failures = filtered_tree_failures(
         "schema-example-null",
-        "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected",
+        "docs/fern-measurements/examples/harbor-signal-null/fern-expected",
         &spec,
         &fixture.join("fern-expected"),
         &[],

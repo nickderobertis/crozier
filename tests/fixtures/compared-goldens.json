@@ -76,6 +76,7 @@
     "docs/fern-measurements/examples-docs/marina-radio-parts/fern-expected": {},
     "docs/fern-measurements/examples-docs/marina-skipper-refs/fern-expected": {},
     "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
+    "docs/fern-measurements/examples/harbor-signal-null/fern-expected": {},
     "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
@@ -545,7 +546,6 @@
     "docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected": {},
-    "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-window/fern-expected": {},
     "docs/openapi-surface/handwritten/header-subset-string-default/fern-expected": {},

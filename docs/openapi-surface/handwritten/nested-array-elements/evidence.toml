@@ -3,13 +3,6 @@ fern_python_sdk_version = "5.41.3"
 digest = "6424850f2c34c858623f80a7de8518668dc0597ada251971ac8e137bde94f3ed"
 
 [[covers]]
-key = "items-oneof-element"
-arm = 'src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/items-oneof-element.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/golden-reach-witnesses/searches/items-oneof-element.md"
-
-[[covers]]
 key = "array-item-empty-object"
 arm = 'src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-empty-object.md#witness-search-exhaustive"

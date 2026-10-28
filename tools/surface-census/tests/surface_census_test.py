@@ -17150,7 +17150,12 @@ class ParityProofIndexTests(unittest.TestCase):
 
 
 class ResidualWitnessKeyProducerTests(unittest.TestCase):
-    """The selector producer propagates supplemental-proof boundary failures."""
+    """The selector producer propagates supplemental-proof boundary failures.
+
+    The committed registry holds no proof, so the run first holds the committed
+    key set to the committed registry, then adds `ResidualHandwrittenProofTests`'
+    sample proof, whose key the producer must derive, and refuses each broken input.
+    """
 
     def test_residual_inputs_are_derived_or_refused_with_recovery(self) -> None:
         reader = load_script("tools/surface-census/witness-search-region-keys.py")
@@ -17176,10 +17181,17 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
                     check=False,
                 )
 
+            committed = run()
+            self.assertEqual(committed.returncode, 0, committed.stderr)
+            keys = (regions / "witness-search-keys.tsv").read_text(encoding="utf-8")
+            self.assertEqual(committed.stdout, keys)
+            registry = regions / "residual-handwritten.toml"
+            registry.write_text(ResidualHandwrittenProofTests.SAMPLE_PROOFS, encoding="utf-8", newline="\r\n")
             accepted = run()
             self.assertEqual(accepted.returncode, 0, accepted.stderr)
-            self.assertEqual(accepted.stdout, (regions / "witness-search-keys.tsv").read_text(encoding="utf-8"))
-            registry = regions / "residual-handwritten.toml"
+            derived = "schema-example-null\tschema.example=null\tschemas.md\tsupported"
+            self.assertNotIn(derived, keys.splitlines())
+            self.assertEqual(sorted([*keys.splitlines(), derived]), sorted(accepted.stdout.splitlines()))
             schema = regions / "schemas.md"
             cases = [
                 (registry, "version = 1", "version = 99", "expected version = 1"),
@@ -17204,7 +17216,43 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
 
 
 class ResidualHandwrittenProofTests(unittest.TestCase):
-    """Supplement admission reads real files and the same registry as the fixture gate."""
+    """Supplement admission over a sample proof, read by the same registry code as the fixture gate.
+
+    The committed registry holds no proof, so the sample is self-contained: a
+    proof of `schema-example-null` by the `harbor-signal-null` tree, a ledger in
+    which that row's only golden witness is the residual `webflow-v2`, and the
+    fixture's feature-level cover. The region file, the golden registry with its
+    journey and the certified client file are the committed ones.
+    """
+
+    SAMPLE_PROOFS = (
+        "version = 1\n\n[[proofs]]\n"
+        'key = "schema-example-null"\n'
+        'fixture = "harbor-signal-null"\n'
+        'file = "src/fern/client.py"\n'
+        'test = "residual_null_example_is_absent_from_matching_request_snippets"\n'
+        'mode = "absence"\n'
+    )
+    SAMPLE_EVIDENCE = (
+        'fern_cli_version = "5.163.1"\n'
+        'fern_python_sdk_version = "5.41.3"\n'
+        'digest = "24b849f045c8b6a298154244b62b19ef9a1870b74f9d4d1dc330daec0a7fbe9e"\n\n'
+        "[[covers]]\n"
+        'key = "schema-example-null"\n'
+        'search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"\n'
+        'verdict = "search-incomplete"\n'
+        'renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"\n'
+    )
+    TREE = "docs/fern-measurements/examples/harbor-signal-null/fern-expected"
+
+    def sample_ledger(self) -> str:
+        """The committed ledger, with `schema-example-null` resting on `webflow-v2` alone."""
+        lines = (REPO / "docs/openapi-surface/golden-reach.tsv").read_text(encoding="utf-8").splitlines()
+        rows = [line.split("\t") for line in lines]
+        found = [row for row in rows if len(row) > 6 and row[1] == "schema-example-null"]
+        self.assertEqual(1, len(found), "the ledger no longer carries one schema-example-null row")
+        found[0][6] = "webflow-v2"
+        return "\n".join("\t".join(row) for row in rows) + "\n"
 
     def check(self, mutation: str = "") -> list[str]:
         gate = load_script("tools/surface-census/handwritten-fixtures.py")
@@ -17219,11 +17267,18 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 f"docs/openapi-surface/handwritten/{fixture}/evidence.toml",
                 f"docs/openapi-surface/handwritten/{fixture}/fern-expected/src/fern/client.py",
             ]
+            sources = {
+                paths[0]: self.SAMPLE_PROOFS.encode(),
+                paths[1]: self.sample_ledger().encode(),
+                paths[2]: (REPO / paths[2]).read_bytes(),
+                paths[3]: (REPO / paths[3]).read_bytes(),
+                paths[4]: self.SAMPLE_EVIDENCE.encode(),
+                paths[5]: (REPO / self.TREE / "src/fern/client.py").read_bytes(),
+            }
             for relative in paths:
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                source = (REPO / relative).read_bytes()
-                target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+                target.write_bytes(sources[relative].replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
             registry = root / paths[0]
             test = root / paths[3]
             match mutation:
@@ -17271,8 +17326,12 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
             ledger = {row.key: row for _rank, row in reach.read_ledger(root / paths[1])}
             return gate.residual_proof_failures(root, proofs, fixtures, rows, ledger)
 
-    def test_committed_supplement_is_admitted(self) -> None:
+    def test_sample_supplement_is_admitted(self) -> None:
         self.assertEqual([], self.check())
+
+    def test_committed_registry_reads_cleanly(self) -> None:
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        self.assertEqual([], gate.read_residual_proofs(REPO)[1])
 
     def test_broken_supplements_fail_at_their_boundary(self) -> None:
         for mutation, reason in [

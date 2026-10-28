@@ -7,8 +7,8 @@ This is an **unfinished screen**, not a claim that no real witness exists.
 A key with outstanding candidates cannot yet cite this record as
 `none-registrable`; the qualifying renewed searches are identified below. The
 zero-declarer features are covered by `observatory-example-arrays`.
-`onmyshelf-api` proves digit-leading methods, and `harbor-signal-null` supplies
-the weaker residual-only null proof. `formbricks` proves the object-on-map arm.
+`onmyshelf-api` proves digit-leading methods, and `harbor-signal-null` supplied
+the weaker residual-only null proof until `rs-server`'s golden superseded it. `formbricks` proves the object-on-map arm.
 The fractional optional request property, the three examples beside a `$ref`
 and the empty-object arm are decided output-insensitive, not proven. After the
 [renewed bounds](#remaining-bounds-after-the-source-repairs), the array-null
@@ -311,10 +311,13 @@ typed object examples and an extension-property example. This is
 
 The three grants and publisher metadata were read from the shared acquisition
 cache or through the guarded cache-filling client. No new witness generation
-was used for the Formbricks or Vercel reviews. The null-example proof is now the
-admitted lower-proof [harbor-signal-null fixture](../handwritten/harbor-signal-null/evidence.toml),
-with its residual-only registry; it does not turn any pending candidate into a
-real-specification proof.
+was used for the Formbricks or Vercel reviews. The null-example proof was the
+admitted lower-proof `harbor-signal-null` fixture, with its residual-only
+registry; it did not turn any pending candidate into a real-specification
+proof. Corpus row 3477, `rs-server`, later became a byte-matched golden witness
+of `schema-example-null`, so that proof is retired and its
+[tree](../../fern-measurements/examples/harbor-signal-null/README.md) is a
+regression test.
 
 ## Optional fractional request-property attribution
 
