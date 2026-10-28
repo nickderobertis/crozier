@@ -153,13 +153,18 @@ fn a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields
     }
 }
 
-fn variant_of(case: &str, from: &str, to: &str, dir: &Path) -> PathBuf {
-    let text = std::fs::read_to_string(spec(case)).expect("the measurement document");
-    assert!(text.contains(from), "{case}: no {from:?} to replace");
-    let path = dir.join(format!("{case}.yml"));
-    std::fs::write(&path, text.replacen(from, to, 1)).unwrap();
+fn variant_of(case: &str, name: &str, edits: &[(&str, &str)], dir: &Path) -> PathBuf {
+    let mut text = std::fs::read_to_string(spec(case)).expect("the measurement document");
+    for (from, to) in edits {
+        assert!(text.contains(from), "{case}: no {from:?} to replace");
+        text = text.replacen(from, to, 1);
+    }
+    let path = dir.join(format!("{name}.yml"));
+    std::fs::write(&path, text).unwrap();
     path
 }
+
+const METEOR_MEMBER: &str = "        - $ref: '#/components/schemas/MeteorReading'\n";
 
 /// One class of a comment-stripped module, from its header to the next
 /// top-level statement.
@@ -179,23 +184,42 @@ fn class_block(module: &str, class: &str) -> String {
         .join("\n")
 }
 
-/// With no member tagging itself `METEOR`, crozier has no fields to give the
-/// dangling value's wrapper and writes Fern's own: the certified tree's
-/// `Reading_Meteor` reads no member either (it holds `value` though
-/// `MeteorReading` tags itself `METEOR`), and crozier's class is that class
-/// line for line, docstring left off, in both enum modes.
+/// With no one member to stand for `METEOR`, because none tags itself so or
+/// two do, crozier has no fields to give the dangling value's wrapper and
+/// writes Fern's own: the certified tree's `Reading_Meteor` reads no member
+/// either (it holds `value` though `MeteorReading` tags itself `METEOR`), and
+/// crozier's class is that class line for line, docstring left off, in both
+/// enum modes.
 #[test]
-fn a_dangling_target_no_member_tags_keeps_fern_s_value_wrapper() {
+fn a_dangling_target_no_single_member_tags_keeps_fern_s_value_wrapper() {
     let temp = tempfile::tempdir().expect("output tempdir");
     let untagged = variant_of(
         DANGLING_TARGET,
-        "enum: [METEOR]",
-        "enum: [SHOOTING_STAR]",
+        "untagged",
+        &[("enum: [METEOR]", "enum: [SHOOTING_STAR]")],
         temp.path(),
     );
-    for mode in ["python-enums", "literals"] {
-        let out = temp.path().join(mode);
-        probe_command(&untagged, &out)
+    let twin = variant_of(
+        DANGLING_TARGET,
+        "twin",
+        &[
+            (
+                METEOR_MEMBER,
+                "        - $ref: '#/components/schemas/MeteorReading'\n        - $ref: '#/components/schemas/FireballReading'\n",
+            ),
+            (
+                "    Trail:\n",
+                "    FireballReading:\n      type: object\n      properties:\n        kind:\n          type: string\n          enum: [METEOR]\n        flare:\n          type: number\n    Trail:\n",
+            ),
+        ],
+        temp.path(),
+    );
+    for (document, mode) in [&untagged, &twin]
+        .into_iter()
+        .flat_map(|document| ["python-enums", "literals"].map(|mode| (document, mode)))
+    {
+        let out = temp.path().join(document.file_stem().unwrap()).join(mode);
+        probe_command(document, &out)
             .args(["--enum-type", mode])
             .assert()
             .success();
@@ -208,9 +232,65 @@ fn a_dangling_target_no_member_tags_keeps_fern_s_value_wrapper() {
         assert_eq!(
             class_block(&module(&out, "reading.py"), "Reading_Meteor"),
             class_block(&fern, "Reading_Meteor"),
-            "{mode}"
+            "{} {mode}",
+            document.display()
         );
     }
+}
+
+/// A dangling mapping outside the measured shape reads as crozier read it
+/// before. A `$ref` member to nothing leaves `Reading` the undiscriminated
+/// union, `typing.Any` for that member, and `MeteorReading` without its tag.
+/// A mapping none of whose targets names a component is refused for the
+/// discriminant it cannot place, before any file is written.
+#[test]
+fn a_dangling_mapping_outside_the_measured_shape_reads_as_before() {
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let gone = variant_of(
+        DANGLING_TARGET,
+        "gone",
+        &[(
+            METEOR_MEMBER,
+            "        - $ref: '#/components/schemas/MeteorReading'\n        - $ref: '#/components/schemas/Gone'\n",
+        )],
+        temp.path(),
+    );
+    let out = temp.path().join("gone-sdk");
+    probe_command(&gone, &out).assert().success();
+    let reading = crozier::normalize::strip_python_comments(&module(&out, "reading.py"));
+    assert!(
+        reading.contains(
+            "Reading = typing.Union[StarReading, CometReading, MeteorReading, typing.Any]"
+        ),
+        "{reading}"
+    );
+    assert!(!reading.contains("class Reading_"), "{reading}");
+    let meteor = module(&out, "meteor_reading.py");
+    assert!(!meteor.contains("    kind:"), "{meteor}");
+
+    let unnamed = variant_of(
+        DANGLING_TARGET,
+        "unnamed",
+        &[
+            (
+                "STAR: '#/components/schemas/StarReading'",
+                "STAR: '#/components/schemas/star-reading'",
+            ),
+            (
+                "COMET: '#/components/schemas/CometReading'",
+                "COMET: '#/components/schemas/comet-reading'",
+            ),
+        ],
+        temp.path(),
+    );
+    let refused = temp.path().join("unnamed-sdk");
+    probe_command(&unnamed, &refused)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "missing-discriminant-property: POST /readings request components/schemas/Reading discriminator kind",
+        ));
+    assert!(!refused.exists(), "a refused document writes no SDK");
 }
 
 /// A base chain that reaches back to itself (`Named` an `allOf` over `Gauge`,
@@ -221,8 +301,11 @@ fn a_cyclic_all_of_base_chain_generates_each_field_once() {
     let temp = tempfile::tempdir().expect("output tempdir");
     let cyclic = variant_of(
         ALLOF_ONLY_BASE,
-        "    Named:\n      type: object\n",
-        "    Named:\n      allOf:\n        - $ref: '#/components/schemas/Gauge'\n",
+        "cyclic",
+        &[(
+            "    Named:\n      type: object\n",
+            "    Named:\n      allOf:\n        - $ref: '#/components/schemas/Gauge'\n",
+        )],
         temp.path(),
     );
     let out = temp.path().join("sdk");

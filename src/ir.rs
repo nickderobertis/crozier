@@ -11772,11 +11772,16 @@ fn collect_discriminant_strips(
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
-                    // A target naming no component strips nothing: the member it
-                    // stands for keeps its tag, as ingef/conquery's
-                    // `SecondaryIdQuery.type` does in Fern's tree.
+                    // A target naming no component, where the union reads it as a
+                    // variant of its own, strips nothing: the member it stands for
+                    // keeps its tag, as ingef/conquery's `SecondaryIdQuery.type`
+                    // does in Fern's tree. Any other dangling mapping strips as it
+                    // always did.
                     if !reference.contains('/')
                         || resolve_ref_from_schemas(schemas, reference).is_none()
+                            && schema.one_of.as_deref().is_some_and(|variants| {
+                                reads_dangling_targets(variants, &discriminator.mapping, schemas)
+                            })
                     {
                         continue;
                     }
@@ -29571,6 +29576,25 @@ components:
             serde_json::from_value(observed_document(schemas, serde_json::json!({})))
                 .expect("document deserializes");
         assert!(dangling_mapping_wrappers(&document).is_empty());
+        // The member a dangling target stands for keeps its tag only in the
+        // measured shape; beside a member that resolves to nothing, the strip
+        // reads the target as it always did.
+        let strips = |schemas: serde_json::Value| {
+            let schemas: IndexMap<String, Schema> =
+                serde_json::from_value(schemas).expect("schemas deserialize");
+            discriminant_strips(&schemas, &std::collections::HashSet::new())
+        };
+        let measured = dangling_mapping_schemas("#/components/schemas/meteor-reading", "METEOR");
+        assert_eq!(strips(measured.clone()).get("MeteorReading"), None);
+        let mut beside_gone = measured;
+        beside_gone["Reading"]["oneOf"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({"$ref": "#/components/schemas/Gone"}));
+        assert_eq!(
+            strips(beside_gone).get("MeteorReading").map(String::as_str),
+            Some("kind")
+        );
     }
 
     #[test]

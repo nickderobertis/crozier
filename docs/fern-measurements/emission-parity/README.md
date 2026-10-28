@@ -53,7 +53,8 @@ affected files is Fern's, except `Query_SecondaryIdQuery`. That wrapper carries
   with no resolving one, or a member that is itself a `$ref` to nothing, keeps
   crozier's undiscriminated union, as before.
 - `collect_discriminant_strips` strips nothing for a target naming no
-  component, so the member keeps its tag, as Fern's does.
+  component in that same shape, so the member keeps its tag, as Fern's does.
+  Outside it, the strip reads the target as it always did.
 - `UnionMember::declared_discriminant` (`DeclaredDiscriminant`,
   `member_declared_discriminant`) records whether the variant requires its own
   tag. With the union discriminated, conquery's examples construct
