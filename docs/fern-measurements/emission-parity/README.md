@@ -235,4 +235,4 @@ recipe subtests with `nx: not installed`, because this worktree had no
 Taken on the same `src/` before these runs: the library's 737 unit tests,
 clippy with `-D warnings` and rustfmt's check, on the working tree committed as
 `a04564fea`. `just lint-llm-diff` over the whole diff found no failing rule at
-`f23c17833`, and again on the commit that writes this section.
+`f23c17833`.

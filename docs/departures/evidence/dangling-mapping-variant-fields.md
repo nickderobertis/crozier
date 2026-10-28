@@ -98,10 +98,8 @@ Both journeys live in `crates/crozier-e2e/tests/e2e/emission_parity.rs`, behind
 They sit at the root because the `sdk-env` tier selects tests by full name,
 with `test(/^sdk_env_/)`.
 
-**Checks run with this journey.** These were taken on an earlier source,
-`491ba4aba`. The final source's results are in the
-[emission-parity record](../../fern-measurements/emission-parity/README.md#verification-on-the-final-source).
-On `491ba4aba`:
+**Checks run with this journey.** These were taken on `491ba4aba`, an earlier
+source than the branch's final one. On it:
 
 - Both runtime journeys pass through the `sdk-env` tier's own selector.
 - The five `emission_parity` golden journeys pass.
