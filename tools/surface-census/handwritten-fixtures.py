@@ -84,6 +84,9 @@ EVIDENCE_CELL = re.compile(
 E2E_COVERS = REGIONS / "handwritten-e2e.toml"
 RESIDUAL_PROOFS = REGIONS / "residual-handwritten.toml"
 RESIDUAL_FIELDS = {"key", "fixture", "file", "test", "mode"}
+# Each witness search's record of removing a key's declaring nodes from one
+# registered source and generating both documents with crozier and the certified pair.
+PAIRED_REMOVALS = "paired-removal-comparisons.json"
 E2E_EVIDENCE_CELL = re.compile(
     r"^handwritten-e2e: (?P<fixture>docs/fern-measurements/[a-z0-9/-]+); "
     r"test: (?P<test>[a-z0-9_]+); evidence: \[note\]\((?P<evidence>[^)\s]+)\); "
@@ -200,6 +203,47 @@ class GoldenWitnesses(Protocol):
     def witnesses(self) -> tuple[str, ...]: ...
 
 
+def output_insensitive_declarers(root: Path) -> tuple[dict[str, frozenset[str]], list[str]]:
+    """Per key, the registered sources a committed paired removal records as output-insensitive.
+
+    A record counts when removing the key's declaring nodes from the source moves
+    no generated file in crozier or in the certified pair, and `crozier compare`
+    matches the perturbed document against the certified pair's tree whole. Such a
+    declarer's byte-match would hold whether or not crozier handles the feature,
+    so it proves nothing about the key: it neither supersedes the key's
+    hand-written or residual proof nor makes its row `golden`.
+    """
+    found: dict[str, set[str]] = {}
+    failures = []
+    for path in sorted((root / REGIONS).glob(f"*/{PAIRED_REMOVALS}")):
+        where = path.relative_to(root).as_posix()
+        try:
+            records = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            failures.append(f"{where}: cannot read paired removals: {error}")
+            continue
+        if not isinstance(records, list):
+            failures.append(f"{where}: expected a list of paired-removal records")
+            continue
+        for record in records:
+            try:
+                key, fixture = record["key"], record["fixture"]
+                engines = [record[engine] for engine in ("crozier", "certified_pair")]
+                moved = [engine["changed"] for engine in engines]
+                counts = [engine["before_files"] == engine["after_files"] for engine in engines]
+                control = record["control_comparison"]
+                matched = control["exit_code"] == 0 and control["counts"]["mismatched"] == 0
+            except (KeyError, TypeError):
+                failures.append(f"{where}: a record lacks key, fixture, both engines' changes or its control")
+                continue
+            if not (isinstance(key, str) and isinstance(fixture, str) and all(isinstance(m, dict) for m in moved)):
+                failures.append(f"{where}: a record's key, fixture or changes are malformed")
+                continue
+            if not any(moved) and all(counts) and matched:
+                found.setdefault(key, set()).add(fixture)
+    return {key: frozenset(fixtures) for key, fixtures in found.items()}, failures
+
+
 def residual_proof_failures(
     root: Path,
     proofs: list[ResidualProof],
@@ -217,11 +261,12 @@ def residual_proof_failures(
         test_source = registry_path.read_text(encoding="utf-8")
     except (OSError, ValueError) as error:
         return [f"{RESIDUAL_PROOFS.name}: cannot read golden and proof journeys: {error}"]
-    failures = []
+    insensitive, failures = output_insensitive_declarers(root)
     for proof in proofs:
         where = f"{RESIDUAL_PROOFS.name} `{proof.key}`"
         entry = ledger.get(proof.key)
-        witnesses = entry.witnesses if entry else ()
+        declared = entry.witnesses if entry else ()
+        witnesses = tuple(name for name in declared if name not in insensitive.get(proof.key, frozenset()))
         if (
             proof.key not in rows
             or rows[proof.key][1][3].strip("`") != "golden"

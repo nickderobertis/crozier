@@ -10170,13 +10170,17 @@ class RankedBacklogTests(unittest.TestCase):
         registrations = census.golden_registrations(REPO / census.GOLDEN_REGISTRY)
         residual = {api for api, registration in registrations.items() if registration.unmatched}
         vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        # A declarer a paired removal records as output-insensitive proves nothing about the key.
+        insensitive, errors = gate.output_insensitive_declarers(REPO)
+        self.assertEqual([], errors)
         resting = {
             reach.key: real
             for _rank, reach in self.reach_ledger()
-            if (real := set(reach.witnesses) - vendored) and real <= residual
+            if (real := set(reach.witnesses) - vendored - insensitive.get(reach.key, frozenset())) and real <= residual
         }
         table = residual_attributions(REPO)
-        supplements, errors = load_script("tools/surface-census/handwritten-fixtures.py").read_residual_proofs(REPO)
+        supplements, errors = gate.read_residual_proofs(REPO)
         self.assertEqual([], errors)
         supplemental = {item.key for item in supplements}
         self.assertFalse(set(table) & supplemental)
@@ -18003,6 +18007,7 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 "crates/crozier-e2e/tests/e2e.rs",
                 f"docs/openapi-surface/handwritten/{fixture}/evidence.toml",
                 f"docs/openapi-surface/handwritten/{fixture}/fern-expected/src/fern/client.py",
+                "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json",
             ]
             for relative in paths:
                 target = root / relative
@@ -18011,9 +18016,20 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
             registry = root / paths[0]
             test = root / paths[3]
+            removals = root / paths[6]
             match mutation:
                 case "missing-file":
-                    (root / paths[-1]).unlink()
+                    (root / paths[5]).unlink()
+                case "unmeasured":
+                    removals.unlink()
+                case "output-sensitive":
+                    # The same declarer, had removing its nulls moved a file in both generators.
+                    records = json.loads(removals.read_text(encoding="utf-8"))
+                    moved = {"src/fern/client.py": {"before": "0" * 64, "after": "1" * 64}}
+                    for record in records:
+                        record["crozier"]["changed"] = moved
+                        record["certified_pair"]["changed"] = moved
+                    removals.write_text(json.dumps(records), encoding="utf-8", newline="\n")
                 case "unbound-journey":
                     test.write_text(
                         test.read_text(encoding="utf-8").replace(
@@ -18058,6 +18074,30 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
 
     def test_committed_supplement_is_admitted(self) -> None:
         self.assertEqual([], self.check())
+
+    def test_an_output_insensitive_golden_declarer_leaves_the_supplement_and_its_cover_admissible(self) -> None:
+        """`rs-server` byte-matches and declares the key, but its paired removal moves no file."""
+        ledger = {row.key: row for _rank, row in load_script("tools/surface-census/golden-reach.py").read_ledger()}
+        self.assertIn("rs-server", ledger["schema-example-null"].witnesses)
+        self.assertNotIn(
+            "rs-server",
+            {api for api, row in census.golden_registrations(REPO / census.GOLDEN_REGISTRY).items() if row.unmatched},
+        )
+        insensitive, errors = load_script("tools/surface-census/handwritten-fixtures.py").output_insensitive_declarers(
+            REPO
+        )
+        self.assertEqual([], errors)
+        self.assertEqual(frozenset({"rs-server"}), insensitive["schema-example-null"])
+        self.assertEqual([], self.check())
+
+    def test_an_output_sensitive_or_unmeasured_golden_declarer_supersedes_the_supplement(self) -> None:
+        for mutation in ("output-sensitive", "unmeasured"):
+            with self.subTest(mutation=mutation):
+                self.assertIn(
+                    "residual-handwritten.toml `schema-example-null`: supplemental proof requires only "
+                    "registered residual golden witnesses",
+                    self.check(mutation),
+                )
 
     def test_broken_supplements_fail_at_their_boundary(self) -> None:
         for mutation, reason in [
