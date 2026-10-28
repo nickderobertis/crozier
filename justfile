@@ -329,8 +329,9 @@ residual-attribution:
     cargo build --locked -q
     python3 tools/surface-census/residual-attribution.py
 
-# Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
-# how many regions of its arm an instrumented crozier run over that fixture's
+# Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md),
+# and per interaction site of its feature-level cover on a combination key:
+# how many regions of that site an instrumented crozier run over that fixture's
 # openapi.yml alone executes, one run per fixture as `golden-reach` scopes one
 # golden test. Writes docs/openapi-surface/handwritten-reach.tsv, and for a
 # fixture declaring a setting, its arms with and without it into
@@ -339,6 +340,12 @@ residual-attribution:
 # PATH` measure another tree into other files.
 handwritten-reach *args:
     python3 tools/surface-census/handwritten-fixtures.py measure "$@"
+
+# Rewrite docs/openapi-surface/handwritten-byte-match.tsv from the hand-written
+# fixtures' e2e gate: the byte-match record of each audited co-occurrence witness
+# at its current bytes. The gate fails while the committed file differs.
+handwritten-byte-match:
+    CROZIER_UPDATE_HANDWRITTEN_MATCHES=1 cargo test -q -p crozier-e2e --test e2e handwritten_fixtures_match_fern_goldens
 
 # Census which OpenAPI shapes the registered golden sources DECLARE — the input
 # to docs/openapi-surface-coverage.md, and the only measurement of what the

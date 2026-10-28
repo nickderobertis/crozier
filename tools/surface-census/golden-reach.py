@@ -120,27 +120,37 @@ def _region_keys_module():
 region_rows = _region_keys_module().region_rows
 
 
-# A combination row (`docs/openapi-surface/combinations.md`) whose reach cell says
-# this is classified `golden` before any measurement has run over it. Only a
-# combination row may wait this way, and only while its cell says so: every other
-# `golden` row, and a combination row whose cell says anything else, still needs
-# its site-table row and its ledger row.
 COMBINATION_PREFIX = "combo-"
-PENDING_REACH = "reach: `pending measurement`"
-
-
-def pending_combination(cells: list[str]) -> bool:
-    """Whether this `golden` region row is a combination row still awaiting its first measurement."""
-    return cells[0].strip("`").startswith(COMBINATION_PREFIX) and cells[5].startswith(PENDING_REACH)
+# The site cell of a combination row no measured crozier branch joins both features
+# of: no condition reads both, or one does but no counter region's execution implies
+# both hold. `combination-cooccurrence.tsv` audits which functions handle each feature
+# and why. Admitted on a combination row alone.
+COOCCURRENCE = "co-occurrence"
 
 
 def golden_rows(regions_dir: Path = REGIONS_DIR) -> dict[str, str]:
-    """`golden` row key -> the region file stem that owns it, pending combination rows aside."""
+    """`golden` row key -> the region file stem that owns it."""
     out = {}
     for path in sorted(regions_dir.glob("*.md")):
         for cells in region_rows(path.read_text(encoding="utf-8")):
-            if cells[3].strip("`") == "golden" and not pending_combination(cells):
+            if cells[3].strip("`") == "golden":
                 out[cells[0].strip("`")] = path.stem
+    return out
+
+
+def measured_rows(regions_dir: Path = REGIONS_DIR, listed: set[str] | frozenset[str] = frozenset()) -> dict[str, str]:
+    """The rows the ledger measures: every `golden` row, and every `gap` combination row in `listed`.
+
+    A combination whose interaction branch no golden-only witness executes is `gap`,
+    and its ledger row is the measurement its named reason restates, so it stays
+    measured while the site table declares its interaction sites.
+    """
+    out = golden_rows(regions_dir)
+    for path in sorted(regions_dir.glob("*.md")):
+        for cells in region_rows(path.read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            if key.startswith(COMBINATION_PREFIX) and key in listed and cells[3].strip("`") == "gap":
+                out[key] = path.stem
     return out
 
 
@@ -178,6 +188,8 @@ class SiteRow(NamedTuple):
     # Why an arm that looks like this feature's is not counted: a rejection or
     # absence arm, or code no document can reach. Rendered into the reach cell.
     note: str = ""
+    # A combination row whose cell is `co-occurrence`: no interaction branch to measure.
+    cooccurrence: bool = False
 
 
 def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
@@ -205,11 +217,139 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
             fail(
                 f"{path}:{number} ({key}) names no census selector; give it the selector(s) its region row's census cell names, comma-separated"
             )
-        site_list = () if sites.strip() == "none" else tuple(s.strip() for s in _split_sites(sites) if s.strip())
-        if not site_list and sites.strip() != "none":
+        cooccurrence = sites.strip() == COOCCURRENCE
+        if cooccurrence and not key.startswith(COMBINATION_PREFIX):
+            fail(
+                f"{path}:{number} ({key}) reads `{COOCCURRENCE}`, which only a combination row may; "
+                "name the sites that handle the feature, or `none`"
+            )
+        site_list = (
+            ()
+            if sites.strip() in ("none", COOCCURRENCE)
+            else tuple(s.strip() for s in _split_sites(sites) if s.strip())
+        )
+        if not site_list and sites.strip() not in ("none", COOCCURRENCE):
             fail(f"{path}:{number} ({key}) names no site; write `none` for a feature crozier reads nowhere")
-        rows[key] = SiteRow(key, selector_list, site_list, note.strip())
+        rows[key] = SiteRow(key, selector_list, site_list, note.strip(), cooccurrence)
     return rows
+
+
+COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
+
+
+class CooccurrenceAudit(NamedTuple):
+    """One `combination-cooccurrence.tsv` row, its cells in column order."""
+
+    key: str
+    witness: str
+    site: str
+    handlers: str
+    why_no_branch: str
+
+
+# The file's header is the model's fields, so the two cannot drift apart.
+COOCCURRENCE_COLUMNS = CooccurrenceAudit._fields
+
+
+def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, CooccurrenceAudit], list[str]]:
+    """`combination-cooccurrence.tsv` as `key -> row`, and every way its form is broken.
+
+    One row per `co-occurrence` combination, sorted by key, every cell filled: the
+    witness declaring the combination, the JSON Pointer where both features occur in
+    its committed document, each feature's handling functions and why no measured
+    branch in them joins both.
+    """
+    if not path.is_file():
+        return {}, [f"{path.name}: missing — restore it from git"]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or tuple(lines[0].split("\t")) != COOCCURRENCE_COLUMNS:
+        return {}, [f"{path.name}: the header line must be exactly {'<TAB>'.join(COOCCURRENCE_COLUMNS)}"]
+    rows: dict[str, CooccurrenceAudit] = {}
+    failures = []
+    keys = []
+    for number, line in enumerate(lines[1:], start=2):
+        cells = line.split("\t")
+        keys.append(cells[0])
+        if len(cells) != len(COOCCURRENCE_COLUMNS) or not all(cell.strip() for cell in cells):
+            failures.append(f"{cells[0] or f'line {number}'}: {path.name} line {number} has an empty or missing cell")
+            continue
+        if cells[0] in rows:
+            failures.append(f"{cells[0]}: {path.name} audits it twice")
+        try:
+            handler_specs(cells[3])
+        except ValueError as error:
+            failures.append(f"{cells[0]}: {path.name}'s handlers cell {error}")
+            continue
+        rows[cells[0]] = CooccurrenceAudit(*cells)
+    if keys != sorted(keys):
+        failures.append(f"{path.name}: rows are not sorted by key")
+    return rows, failures
+
+
+HANDLER_SPEC = re.compile(r"src/[\w/]+\.rs::\w+(?:::\w+)*")
+
+
+def handler_specs(cell: str) -> list[str]:
+    """The function specs a `handlers` cell names: `<feature>: src/x.rs::f, … ; <feature>: …`.
+
+    Raises ValueError unless the cell names at least two distinct features, each with a
+    non-empty list of `src/<file>.rs::<function>` specs.
+    """
+    specs: list[str] = []
+    groups = cell.split(" ; ")
+    if len(groups) < 2:
+        raise ValueError(f"`{cell}` names fewer than two features; write `<feature>: src/x.rs::f ; <feature>: …`")
+    features = [group.partition(": ")[0].strip() for group in groups]
+    if len(set(features)) != len(features):
+        raise ValueError(f"`{cell}` names a feature twice; give each feature one group of its own handlers")
+    for group in groups:
+        feature, separator, names = group.partition(": ")
+        listed = [name.strip() for name in names.split(",")]
+        if not separator or not feature.strip() or not all(HANDLER_SPEC.fullmatch(name) for name in listed):
+            raise ValueError(
+                f"group `{group}` is not `<feature>: src/x.rs::f, src/y.rs::g`; name each feature's handling functions"
+            )
+        specs += [name for name in listed if name not in specs]
+    return specs
+
+
+def measured_table(table: dict[str, SiteRow], regions_dir: Path = REGIONS_DIR) -> dict[str, SiteRow]:
+    """The site-table rows this ledger measures: a `handwritten` combination's interaction
+    sites are `just handwritten-reach`'s to measure, over its fixture, so its row is set aside."""
+    handwritten = {
+        cells[0].strip("`")
+        for path in sorted(regions_dir.glob("*.md"))
+        for cells in region_rows(path.read_text(encoding="utf-8"))
+        if cells[0].strip("`").startswith(COMBINATION_PREFIX) and cells[3].strip("`") == "handwritten"
+    }
+    return {key: row for key, row in table.items() if key not in handwritten}
+
+
+def combination_site_failures(table: dict[str, SiteRow]) -> list[str]:
+    """A combination row's sites cell: `co-occurrence`, or interaction branches only.
+
+    An interaction branch is an arm-form site (`src/<file>.rs::<fn>[<regex>]`), the
+    branch whose condition reads both features. A whole function, or `none`, says
+    nothing about where the two features meet, so it is refused, naming the key.
+    """
+    failures = []
+    for key, row in sorted(table.items()):
+        if not key.startswith(COMBINATION_PREFIX) or row.cooccurrence:
+            continue
+        if not row.sites:
+            failures.append(
+                f"{key}: a combination row's sites cell is `none`; name its interaction branch as "
+                f"`src/<file>.rs::<fn>[<regex>]`, or write `{COOCCURRENCE}` and audit it in "
+                "combination-cooccurrence.tsv"
+            )
+        for spec in row.sites:
+            match = _SITE.match(spec)
+            if match is None or match.group("arm") is None:
+                failures.append(
+                    f"{key}: `{spec}` names a whole function, not the branch where the combination's "
+                    "features meet; narrow it to that arm with `[<regex>]`"
+                )
+    return failures
 
 
 def _split_sites(cell: str) -> list[str]:
@@ -622,6 +762,8 @@ class Reach(NamedTuple):
     outside: tuple[str, ...]
     sites: tuple[tuple[str, int, int], ...]  # (spec, executed regions, regions)
     note: str = ""
+    # A `co-occurrence` combination: its features meet in no crozier branch.
+    cooccurrence: bool = False
 
     @property
     def unreached(self) -> int:
@@ -656,8 +798,11 @@ def compute(
         fail(
             f"{SITES_TABLE.name} disagrees with the golden rows: missing {missing}, "
             f"not golden {extra}; add or remove those rows so it lists exactly the "
-            f"region files' `golden` rows"
+            f"region files' `golden` rows and the `gap` combination rows it measures"
         )
+    misdeclared = combination_site_failures(table)
+    if misdeclared:
+        fail("; ".join(misdeclared))
     # Each site's regions, and which of them each golden test executed, are
     # computed once: a row's scoped run is the union over its witnesses of
     # those small per-test sets, never of whole-file coverage.
@@ -690,7 +835,7 @@ def compute(
             for fixture in witnesses:
                 hit |= executed_by[spec, fixture_tests[fixture]]
             sites.append((spec, len(hit), len(found)))
-        out.append(Reach(key, region, witnesses, outside, tuple(sites), declared.note))
+        out.append(Reach(key, region, witnesses, outside, tuple(sites), declared.note, declared.cooccurrence))
     out.sort(key=ranking_key)
     return out
 
@@ -727,6 +872,12 @@ def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
     record = (regions_dir or REGIONS_DIR) / SEARCHES / f"{reach.key}.md"
     if record.is_file():
         note += f"; arm search [record]({SEARCHES}/{reach.key}.md)"
+    if reach.cooccurrence:
+        return (
+            f"{CELL_PREFIX} {COOCCURRENCE} — no measured crozier branch joins both features, as "
+            f"[the co-occurrence audit](combination-cooccurrence.tsv) records; {_witness_phrase(reach)}{note} "
+            f"([ledger](golden-reach.tsv) rank {rank})"
+        )
     if not reach.sites:
         return (
             f"{CELL_PREFIX} no handling site — no crozier code runs because a "
@@ -761,7 +912,9 @@ def ledger_text(reaches: list[Reach], provenance: str) -> str:
                     str(reach.regions),
                     ",".join(reach.witnesses) or "-",
                     ",".join(reach.outside) or "-",
-                    SITE_SEPARATOR.join(f"{spec}={hit}/{total}" for spec, hit, total in reach.sites) or "none",
+                    COOCCURRENCE
+                    if reach.cooccurrence
+                    else SITE_SEPARATOR.join(f"{spec}={hit}/{total}" for spec, hit, total in reach.sites) or "none",
                     reach.note or "-",
                 ]
             )
@@ -786,7 +939,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
         rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = fields
         parsed = []
         try:
-            if sites != "none":
+            if sites not in ("none", COOCCURRENCE):
                 for entry in sites.split(SITE_SEPARATOR):
                     spec, _, counts = entry.rpartition("=")
                     hit, _, total = counts.partition("/")
@@ -807,6 +960,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
                     tuple(o for o in outside.split(",") if o != "-"),
                     tuple(parsed),
                     "" if note == "-" else note,
+                    sites == COOCCURRENCE,
                 ),
             )
         )
@@ -822,7 +976,7 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR, ranks: 
         out_lines = []
         for line in text.splitlines(keepends=True):
             cells = region_rows(line)
-            if cells and cells[0][3].strip("`") == "golden" and not pending_combination(cells[0]):
+            if cells and cells[0][3].strip("`") == "golden":
                 row = cells[0]
                 key = row[0].strip("`")
                 if key in by_key:
@@ -856,6 +1010,11 @@ ARM_TABLE_END = "<!-- END GENERATED ARM TABLE -->"
 ARM_TABLE_HEADER = (
     "| rank | key | unreached site | regions | search verdict | hand-written cover |\n|---|---|---|---|---|---|\n"
 )
+
+
+# A hand-written combination fixture's cover verdict where admissible real witnesses
+# exist but unrelated residuals block them (`docs/openapi-surface/handwritten/AGENTS.md`).
+WITNESS_BLOCKED = "witness-blocked"
 
 
 class Verdict(StrEnum):
@@ -1007,6 +1166,10 @@ def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
                 or arm == ""
             ):
                 fail(f"{path}: every cover needs a non-empty string `key` and `verdict`, and a non-empty `arm` if any")
+            if cover["verdict"] == WITNESS_BLOCKED and arm is None:
+                # A feature-level combination cover whose witnesses are blocked proves
+                # no arm; `handwritten-fixtures.py gate` holds it to its record.
+                continue
             covers.append(
                 Cover(path.parent.name, cover["key"], arm, _verdict(cover["verdict"], str(path)), bool(audiences))
             )
@@ -1086,8 +1249,34 @@ def arm_verdict(
     return verdict
 
 
+def golden_ledger(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[tuple[int, Reach]]:
+    """The ledger's `golden` rows: a `gap` combination's unreached interaction branch is
+    named with the combinations, never counted as an arm of a golden row."""
+    golden = golden_rows(regions_dir)
+    return [(rank, reach) for rank, reach in ledger if reach.key in golden]
+
+
+def interaction_unreached_reason(sites: tuple[tuple[str, int, int], ...], by: str) -> str:
+    """The `#### Unproven combinations, named` reason a combination's measurement gives it.
+
+    `sites` are its interaction sites as the measurement reports them, and `by` the
+    run that missed them: `golden-only witnesses `a`, `b`` or `hand-written fixture `f``.
+    """
+    unreached = ", ".join(f"`{spec}` {hit}/{total}" for spec, hit, total in sites if not hit)
+    return f"`interaction branch unreached` — unreached {unreached} by {by}"
+
+
+def witnesses_phrase(witnesses: tuple[str, ...]) -> str:
+    """How an `interaction branch unreached` reason names a ledger row's golden-only witnesses."""
+    if not witnesses:
+        return "no golden-only witness"
+    plural = "es" if len(witnesses) > 1 else ""
+    return f"golden-only witness{plural} " + ", ".join(f"`{name}`" for name in witnesses)
+
+
 def arm_rows(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[ArmRow]:
-    """Every unreached arm, in ledger rank order, as the arm table states it."""
+    """Every unreached arm of a `golden` row, in ledger rank order, as the arm table states it."""
+    ledger = golden_ledger(ledger, regions_dir)
     covers = handwritten_covers(regions_dir)
     covering: dict[tuple[str, str], set[str]] = defaultdict(set)
     for cover in covers:
@@ -1139,6 +1328,7 @@ def render_arm_sections(
     text: str, ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR, path: Path = COVERAGE_DOC
 ) -> str:
     """`text` with its generated arm counts and arm table restated from the committed measurements."""
+    ledger = golden_ledger(ledger, regions_dir)
     rows = arm_rows(ledger, regions_dir)
     table = ARM_TABLE_HEADER + "".join("| " + " | ".join(row.cells()) + " |\n" for row in rows)
     text = _replace_between(text, ARM_COUNTS_BEGIN, ARM_COUNTS_END, arm_counts_text(ledger, rows), path)
@@ -1177,6 +1367,7 @@ def headline_arm_keys(text: str, heading: str, columns: int) -> set[tuple[str, s
 def render_arm_headline(text: str, ledger: list[tuple[int, Reach]], regions: Path, path: Path) -> str:
     """Restate the current arm split, retaining historical and ownership sections."""
     declared = golden_rows(regions)
+    ledger = golden_ledger(ledger, regions)
     if len(ledger) != len(declared) or {reach.key: reach.region for _rank, reach in ledger} != declared:
         fail("the reach ledger is not the golden region population; re-join it before arms --headline")
     rows = arm_rows(ledger, regions)
@@ -1389,12 +1580,13 @@ def measured_commit(out: Path) -> str:
 
 def report(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
-    rows = golden_rows(repo_root / "docs" / "openapi-surface")
     table = read_sites_table(repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv")
+    table = measured_table(table, repo_root / "docs" / "openapi-surface")
+    rows = measured_rows(repo_root / "docs" / "openapi-surface", set(table))
     if args.keys:
         unknown = sorted(set(args.keys) - rows.keys())
         if unknown:
-            fail(f"unknown golden key(s): {', '.join(unknown)}; pass keys from the golden region rows")
+            fail(f"unknown golden key(s): {', '.join(unknown)}; pass keys the ledger measures")
         rows = {key: region for key, region in rows.items() if key in args.keys}
         table = {key: row for key, row in table.items() if key in rows}
     census = load_census(Path(args.census) if args.census else args.out / "census.json")
@@ -1443,8 +1635,8 @@ def scoped_report(args: argparse.Namespace, reaches: list[Reach], commit: str, t
     regions = args.repo_root / "docs/openapi-surface"
     ledger = regions / "golden-reach.tsv"
     previous = read_ledger(ledger)
-    current_golden = golden_rows(regions)
-    combined = {reach.key: reach for _rank, reach in previous if reach.key in current_golden}
+    current_measured = measured_rows(regions, set(read_sites_table(regions / "golden-reach-sites.tsv")))
+    combined = {reach.key: reach for _rank, reach in previous if reach.key in current_measured}
     measured = []
     for reach in reaches:
         note = f"measured at commit {commit} over {tests} scoped golden test(s)"

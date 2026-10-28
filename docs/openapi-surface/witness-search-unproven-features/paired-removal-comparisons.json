@@ -1,0 +1,25 @@
+[
+ {
+  "key": "schema-example-null",
+  "fixture": "rs-server",
+  "perturbation": "Remove the leading null member of each Schema Object examples array whose first member is null: /components/schemas/SearchPostRequest/properties/sortby/examples/0 and /components/schemas/SearchPostRequest/properties/filter/examples/0, lines 9162 and 9199 of the committed source; keep all other document fields.",
+  "crozier": {
+   "before_files": 231,
+   "after_files": 231,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 231,
+   "after_files": 231,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   }
+  }
+ }
+]

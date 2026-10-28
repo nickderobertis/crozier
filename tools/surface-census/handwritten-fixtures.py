@@ -23,12 +23,14 @@ category and its ledger — is stated once, in
 * ``measure`` runs an instrumented crozier over each fixture's `openapi.yml`
   alone — one run per fixture, the way `golden-reach.py measure` scopes one
   golden test — and writes `docs/openapi-surface/handwritten-reach.tsv`, one row
-  per arm-level cover. `just handwritten-reach` runs it.
+  per arm-level cover and one per interaction site of each feature-level cover
+  on a combination key. `just handwritten-reach` runs it.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import importlib.util
 import io
 import json
@@ -58,11 +60,16 @@ TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
 # Optional generation settings: absent, crozier and Fern generate the whole API.
 OPTIONAL_TOP_LEVEL = ("audiences",)
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
-SearchVerdict = Literal["exhausted", "search-incomplete", "config-gated"]
+SearchVerdict = Literal["exhausted", "search-incomplete", "config-gated", "witness-blocked"]
 VERDICTS: tuple[SearchVerdict, ...] = get_args(SearchVerdict)
 # A verdict only an arm-search record states, beside the settlement rule's
 # outcomes: the arm runs only under a generation setting no search probe sets.
 ARM_VERDICTS = ("config-gated",)
+# A feature-level combination cover's verdict where the search found admissible
+# real declarers whose goldens unrelated residuals keep from byte-matching. Its
+# record is a table naming each blocked declarer, not a verdict cell.
+WITNESS_BLOCKED = "witness-blocked"
+COMBINATION_PREFIX = "combo-"
 # Every word a search record states as an outcome, so a key row stating a
 # different one than the cover cites is read as a disagreement, and the
 # non-generation verdicts that make a row `limitations`. RankedBacklogTests holds
@@ -77,6 +84,9 @@ EVIDENCE_CELL = re.compile(
 E2E_COVERS = REGIONS / "handwritten-e2e.toml"
 RESIDUAL_PROOFS = REGIONS / "residual-handwritten.toml"
 RESIDUAL_FIELDS = {"key", "fixture", "file", "test", "mode"}
+# Each witness search's record of removing a key's declaring nodes from one
+# registered source and generating both documents with crozier and the certified pair.
+PAIRED_REMOVALS = "paired-removal-comparisons.json"
 E2E_EVIDENCE_CELL = re.compile(
     r"^handwritten-e2e: (?P<fixture>docs/fern-measurements/[a-z0-9/-]+); "
     r"test: (?P<test>[a-z0-9_]+); evidence: \[note\]\((?P<evidence>[^)\s]+)\); "
@@ -122,6 +132,14 @@ class Fixture(NamedTuple):
     digest: str
     covers: tuple[Cover, ...]
     audiences: tuple[str, ...]
+
+
+class Interaction(NamedTuple):
+    """One site a feature-level combination cover's fixture is measured at."""
+
+    fixture: str
+    key: str
+    site: str
 
 
 class ResidualProof(NamedTuple):
@@ -185,6 +203,128 @@ class GoldenWitnesses(Protocol):
     def witnesses(self) -> tuple[str, ...]: ...
 
 
+class EngineRemoval(NamedTuple):
+    """One generator's before/after file counts and the files the removal moved."""
+
+    before_files: int
+    after_files: int
+    changed: frozenset[str]
+
+
+class ControlComparison(NamedTuple):
+    """`crozier compare` of the perturbed document against the certified pair's after tree."""
+
+    exit_code: int
+    matched: int
+    mismatched: int
+    could_not_check: int
+
+
+class PairedRemoval(NamedTuple):
+    """One `paired-removal-comparisons.json` record, validated."""
+
+    key: str
+    fixture: str
+    crozier: EngineRemoval
+    certified_pair: EngineRemoval
+    control: ControlComparison
+
+    @property
+    def output_insensitive(self) -> bool:
+        """Neither generator moved a file, and crozier matched the control tree whole."""
+        engines = (self.crozier, self.certified_pair)
+        return (
+            all(not engine.changed and engine.before_files == engine.after_files for engine in engines)
+            and self.control.exit_code == 0
+            and self.control.matched > 0
+            and self.control.mismatched == 0
+            and self.control.could_not_check == 0
+        )
+
+
+def _count(value: object) -> int | None:
+    """A JSON non-negative integer, or None (a bool is not a count)."""
+    return value if type(value) is int and value >= 0 else None
+
+
+def _engine_removal(value: object) -> EngineRemoval | None:
+    if not isinstance(value, dict) or set(value) != {"before_files", "after_files", "changed"}:
+        return None
+    before, after, changed = _count(value["before_files"]), _count(value["after_files"]), value["changed"]
+    if before is None or after is None or not isinstance(changed, dict):
+        return None
+    if not all(isinstance(name, str) and name and isinstance(hashes, dict) for name, hashes in changed.items()):
+        return None
+    return EngineRemoval(before, after, frozenset(changed))
+
+
+def _control_comparison(value: object) -> ControlComparison | None:
+    # Later records also carry `files_compared`, which no verdict here reads.
+    if not isinstance(value, dict) or not {"exit_code", "counts"} <= set(value):
+        return None
+    counts = value["counts"]
+    if type(value["exit_code"]) is not int or not isinstance(counts, dict):
+        return None
+    if set(counts) != {"matched", "mismatched", "could_not_check"}:
+        return None
+    matched, mismatched, could_not_check = (
+        _count(counts[name]) for name in ("matched", "mismatched", "could_not_check")
+    )
+    if matched is None or mismatched is None or could_not_check is None:
+        return None
+    return ControlComparison(value["exit_code"], matched, mismatched, could_not_check)
+
+
+def paired_removal(value: object) -> PairedRemoval | None:
+    """Decode one record, or None where any field is missing or mistyped."""
+    if not isinstance(value, dict):
+        return None
+    key, fixture = value.get("key"), value.get("fixture")
+    if not all(isinstance(name, str) and re.fullmatch(r"[a-z0-9][a-z0-9.*-]*", name) for name in (key, fixture)):
+        return None
+    assert isinstance(key, str) and isinstance(fixture, str)
+    crozier = _engine_removal(value.get("crozier"))
+    certified = _engine_removal(value.get("certified_pair"))
+    control = _control_comparison(value.get("control_comparison"))
+    if crozier is None or certified is None or control is None:
+        return None
+    return PairedRemoval(key, fixture, crozier, certified, control)
+
+
+def output_insensitive_declarers(root: Path) -> tuple[dict[str, frozenset[str]], list[str]]:
+    """Per key, the registered sources a committed paired removal records as output-insensitive.
+
+    A record counts when removing the key's declaring nodes from the source moves
+    no generated file in crozier or in the certified pair, and `crozier compare`
+    matches the perturbed document against the certified pair's tree whole. Such a
+    declarer's byte-match would hold whether or not crozier handles the feature,
+    so it proves nothing about the key: it neither supersedes the key's
+    hand-written or residual proof nor makes its row `golden`.
+    """
+    found: dict[str, set[str]] = {}
+    failures = []
+    for path in sorted((root / REGIONS).glob(f"*/{PAIRED_REMOVALS}")):
+        where = path.relative_to(root).as_posix()
+        try:
+            records = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            failures.append(f"{where}: cannot read paired removals: {error}")
+            continue
+        if not isinstance(records, list):
+            failures.append(f"{where}: expected a list of paired-removal records")
+            continue
+        for index, value in enumerate(records):
+            record = paired_removal(value)
+            if record is None:
+                failures.append(
+                    f"{where}: record {index} needs a key, a fixture, both engines' non-negative file counts "
+                    "and changed-file map, and its control comparison's exit code and counts"
+                )
+            elif record.output_insensitive:
+                found.setdefault(record.key, set()).add(record.fixture)
+    return {key: frozenset(fixtures) for key, fixtures in found.items()}, failures
+
+
 def residual_proof_failures(
     root: Path,
     proofs: list[ResidualProof],
@@ -202,11 +342,12 @@ def residual_proof_failures(
         test_source = registry_path.read_text(encoding="utf-8")
     except (OSError, ValueError) as error:
         return [f"{RESIDUAL_PROOFS.name}: cannot read golden and proof journeys: {error}"]
-    failures = []
+    insensitive, failures = output_insensitive_declarers(root)
     for proof in proofs:
         where = f"{RESIDUAL_PROOFS.name} `{proof.key}`"
         entry = ledger.get(proof.key)
-        witnesses = entry.witnesses if entry else ()
+        declared = entry.witnesses if entry else ()
+        witnesses = tuple(name for name in declared if name not in insensitive.get(proof.key, frozenset()))
         if (
             proof.key not in rows
             or rows[proof.key][1][3].strip("`") != "golden"
@@ -340,8 +481,13 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
         if verdict not in VERDICTS:
             failures.append(
                 f"{where} (`{table['key']}`): verdict `{verdict}` is not `exhausted`, "
-                "`search-incomplete` or `config-gated`; only a failed search, or an arm no search "
-                "can reach, admits a hand-written fixture"
+                "`search-incomplete`, `config-gated` or `witness-blocked`; only a failed search, an arm "
+                "no search can reach, or blocked real witnesses admit a hand-written fixture"
+            )
+        if verdict == WITNESS_BLOCKED and (not table["key"].startswith(COMBINATION_PREFIX) or "arm" in table):
+            failures.append(
+                f"{where} (`{table['key']}`): verdict `{WITNESS_BLOCKED}` is admitted only on a "
+                f"feature-level cover (no `arm`) of a `{COMBINATION_PREFIX}` key"
             )
         if verdict == "search-incomplete" and "renewed" not in table:
             failures.append(
@@ -428,6 +574,46 @@ def verdict_failures(base: Path, reference: str, key: str, verdict: str) -> list
     return []
 
 
+def blocked_record_failures(root: Path, reference: str, key: str) -> list[str]:
+    """A `witness-blocked` cover's record: the section `reference` names has a table line
+    whose first cell is `key` for each blocked declarer, naming it, how many files it
+    still mismatches and the unrelated shapes why, and every named declarer is one
+    the record's `census.tsv` counts declaring `key`."""
+    section, error = record_section(root, reference)
+    if section is None:
+        return [f"its search anchor does not resolve: {error}"]
+    lines = [cells for cells in key_rows(section, key) if len(cells) == 4]
+    named = [cells[1].strip("`") for cells in lines if re.fullmatch(r"`[^`]+`", cells[1]) and cells[3]]
+    if not lines or len(named) != len(lines) or not all(re.fullmatch(r"[1-9]\d*", cells[2]) for cells in lines):
+        return [
+            f"the record `{reference}` has no blocked-witness line for `{key}` — a table line "
+            "`| key | candidate | files still mismatched | unrelated shapes |` per blocked declarer"
+        ]
+    census_path = (root / reference.partition("#")[0]).with_name("census.tsv")
+    try:
+        with census_path.open(encoding="utf-8", newline="") as handle:
+            documents = [
+                row.get("document") or "" for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key
+            ]
+    except OSError:
+        return [f"the record `{reference}` has no `census.tsv` beside it naming `{key}`'s declarers"]
+
+    def parts(value: str) -> list[str]:
+        return [part for part in re.split(r"[/:@;\s]+", value) if part]
+
+    def declares(candidate: str, document: str) -> bool:
+        # A whole run of path components, never a substring of one: `flow`
+        # does not name `corpus-sources/webflow-v2/openapi.yml`.
+        want, have = parts(candidate), parts(document)
+        return bool(want) and any(have[i : i + len(want)] == want for i in range(len(have)))
+
+    return [
+        f"the record `{reference}` names `{candidate}` blocked for `{key}`, but its census.tsv records no such declarer"
+        for candidate in named
+        if not any(declares(candidate, document) for document in documents)
+    ]
+
+
 def evidence_cell_failures(region: Path, key: str, cell: str) -> list[str]:
     """A `handwritten` row's evidence cell: its form, and the record its link names
     stating the verdict it states. The link is relative to the region file."""
@@ -437,6 +623,8 @@ def evidence_cell_failures(region: Path, key: str, cell: str) -> list[str]:
             f"{key}: its evidence cell must read `handwritten: <fixture>[, <fixture>…]; search: "
             "<verdict> ([record](<link>))`"
         ]
+    if parsed.group("verdict") == WITNESS_BLOCKED:
+        return [f"{key}: {failure}" for failure in blocked_record_failures(region.parent, parsed.group("link"), key)]
     return [
         f"{key}: {failure}"
         for failure in verdict_failures(region.parent, parsed.group("link"), key, parsed.group("verdict"))
@@ -445,6 +633,8 @@ def evidence_cell_failures(region: Path, key: str, cell: str) -> list[str]:
 
 def search_failures(root: Path, where: str, cover: Cover) -> list[str]:
     """The cited record resolves, states the cover's verdict for its key (and arm)."""
+    if cover.verdict == WITNESS_BLOCKED:
+        return [f"{where}: {failure}" for failure in blocked_record_failures(root, cover.search, cover.key)]
     failures = [f"{where}: {failure}" for failure in verdict_failures(root, cover.search, cover.key, cover.verdict)]
     if failures and "does not resolve" in failures[0]:
         return failures
@@ -470,7 +660,17 @@ def search_failures(root: Path, where: str, cover: Cover) -> list[str]:
     return failures
 
 
-def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]], list[str]]:
+class ReachRow(NamedTuple):
+    """One `handwritten-reach.tsv` row: a fixture's run over one measured site."""
+
+    fixture: str
+    key: str
+    site: str
+    regions_executed: int
+    regions: int
+
+
+def read_reach_ledger(path: Path) -> tuple[list[ReachRow], list[str]]:
     """`handwritten-reach.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
@@ -490,7 +690,7 @@ def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]],
                 f"{name} line {number}: not five tab-separated fields ending in two counts; run `just handwritten-reach`"
             )
             continue
-        rows.append((fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
+        rows.append(ReachRow(fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
     keys = [row[:3] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
         failures.append(
@@ -774,6 +974,13 @@ def gate(root: Path) -> dict[str, Any]:
 
     feature_covers: dict[str, list[tuple[str, Cover]]] = {}
     arm_covers: set[tuple[str, str, str]] = set()
+    # A feature-level combination cover's fixture is measured at each interaction
+    # site the site table declares for its key (`interaction_sites`).
+    audit, found = reach.read_cooccurrence(root / REGIONS / "combination-cooccurrence.tsv")
+    failures += found
+    placed, found = interaction_sites(fixtures, sites, audit)
+    failures += found
+    interaction_rows = {row for row in placed if row.key in rows}
     for name, fixture in sorted(fixtures.items()):
         document = None
         for cover in fixture.covers:
@@ -845,10 +1052,15 @@ def gate(root: Path) -> dict[str, Any]:
                     "which supersedes the fixture — remove this cover"
                 )
 
-    for fixture, key, site in sorted(set(measured) - arm_covers):
+    for fixture, key, site in sorted(set(measured) - arm_covers - interaction_rows):
         failures.append(
             f"handwritten-reach.tsv: the row `{fixture}` `{key}` `{site}` names no live arm-level "
-            "cover — run `just handwritten-reach`"
+            "cover, nor an interaction site of a combination cover — run `just handwritten-reach`"
+        )
+    for fixture, key, site in sorted(interaction_rows - set(measured)):
+        failures.append(
+            f"{fixture}: cover `{key}`: handwritten-reach.tsv has no row for its interaction site "
+            f"`{site}` — run `just handwritten-reach`"
         )
 
     manifest = root / REGIONS / "probe-expected" / "MANIFEST.tsv"
@@ -868,7 +1080,7 @@ def gate(root: Path) -> dict[str, Any]:
             failures.append(
                 f"{key}: a committed non-generation proof settles it, so it is `limitations`, not `handwritten`"
             )
-        if key in sites:
+        if key in sites and not key.startswith(COMBINATION_PREFIX):
             failures.append(
                 f"{key}: golden-reach-sites.tsv lists it, so a golden source declares it and it is not `handwritten`"
             )
@@ -887,6 +1099,64 @@ def gate(root: Path) -> dict[str, Any]:
         },
         "failures": failures,
     }
+
+
+class CombinationSites(Protocol):
+    """What a combination cover is measured at: a `golden-reach-sites.tsv` row's
+    arm sites, or whether its cell is `co-occurrence`."""
+
+    @property
+    def sites(self) -> tuple[str, ...]: ...
+
+    @property
+    def cooccurrence(self) -> bool: ...
+
+
+class CooccurrenceHandlers(Protocol):
+    """A `combination-cooccurrence.tsv` row's `handlers` cell."""
+
+    @property
+    def handlers(self) -> str: ...
+
+
+def interaction_sites(
+    fixtures: Mapping[str, Fixture],
+    sites: Mapping[str, CombinationSites],
+    audit: Mapping[str, CooccurrenceHandlers],
+) -> tuple[list[Interaction], list[str]]:
+    """Each site a feature-level combination cover is measured at, and each cover it cannot place.
+
+    A combination is proven at the branch where its two features meet, so a
+    fixture proving one is measured there: each arm site
+    `golden-reach-sites.tsv` declares for the cover's key. Where its cell is
+    `co-occurrence`, no measured branch joins both, and the fixture is measured at every
+    handling function `combination-cooccurrence.tsv` names for each feature. A cover whose
+    key the site table does not declare, or whose `co-occurrence` key has no audit row,
+    has nothing to be measured at, so it is a failure rather than an empty measurement.
+    """
+    reach = golden_reach()
+    found: set[Interaction] = set()
+    failures: list[str] = []
+    for name, fixture in fixtures.items():
+        for cover in fixture.covers:
+            if cover.arm is not None or not cover.key.startswith(COMBINATION_PREFIX):
+                continue
+            if cover.key not in sites:
+                failures.append(
+                    f"{name}: cover `{cover.key}` names a combination golden-reach-sites.tsv does not "
+                    "declare; add its row with its interaction sites or `co-occurrence`"
+                )
+                continue
+            row = sites[cover.key]
+            if row.cooccurrence and cover.key not in audit:
+                failures.append(
+                    f"{name}: cover `{cover.key}` is a `co-occurrence` combination with no "
+                    "combination-cooccurrence.tsv row naming its handlers; add the audit row"
+                )
+                continue
+            named = reach.handler_specs(audit[cover.key].handlers) if row.cooccurrence else list(row.sites)
+            found |= {Interaction(name, cover.key, site) for site in named}
+    return sorted(found), failures
 
 
 def handwritten_row_failures(key: str, cells: list[str], covers: list[tuple[str, Cover]]) -> list[str]:
@@ -972,13 +1242,23 @@ def measure(args: argparse.Namespace) -> int:
         raise SystemExit(f"handwritten-reach: {base} is not a directory; pass --handwritten-dir or restore it")
     reach = golden_reach()
     sites = reach.read_sites_table(repo_root / REGIONS / "golden-reach-sites.tsv")
+    audit, failures = reach.read_cooccurrence(repo_root / REGIONS / "combination-cooccurrence.tsv")
+    if failures:
+        raise SystemExit("handwritten-reach: " + "; ".join(failures))
     planned: list[tuple[str, Cover]] = []
     declared: dict[str, Fixture] = {}
+    interactions: list[Interaction] = []
     for entry in sorted(p for p in base.iterdir() if p.is_dir()):
         fixture, failures = read_evidence(entry)
         if failures or fixture is None:
             raise SystemExit("handwritten-reach: " + "; ".join(failures))
         declared[entry.name] = fixture
+        placed, failures = interaction_sites({entry.name: fixture}, sites, audit)
+        if failures:
+            raise SystemExit("handwritten-reach: " + "; ".join(failures))
+        for row in placed:
+            reach.resolve_site(row.site, repo_root)
+            interactions.append(row)
         for cover in fixture.covers:
             if cover.arm is None:
                 continue
@@ -991,11 +1271,11 @@ def measure(args: argparse.Namespace) -> int:
             planned.append((entry.name, cover))
     rows: list[tuple[str, str, str, int, int]] = []
     gate_rows: list[tuple[str, str, str, str, int, int]] = []
-    if planned:
+    if planned or interactions:
         crozier = instrumented_crozier(repo_root, reach)
         profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
         runs: dict[str, tuple[dict, dict]] = {}
-        for name in sorted({name for name, _cover in planned}):
+        for name in sorted({name for name, _cover in planned} | {row.fixture for row in interactions}):
             runs[name] = scoped_run(
                 base / name / "openapi.yml", declared[name].audiences, crozier, profdata, llvm_cov, repo_root, reach
             )
@@ -1021,6 +1301,8 @@ def measure(args: argparse.Namespace) -> int:
                     (name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm))
                 )
                 gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(controls[name], cover.arm)))
+        for row in interactions:
+            rows.append((*row, *reached(runs[row.fixture], row.site)))
     rows.sort(key=lambda row: row[:3])
     gate_rows.sort(key=lambda row: row[:4])
     for path, header, lines in ((ledger, REACH_HEADER, rows), (gates, GATE_HEADER, gate_rows)):
@@ -1029,7 +1311,8 @@ def measure(args: argparse.Namespace) -> int:
             encoding="utf-8",
         )
     print(
-        f"handwritten-reach: measured {len(rows)} arm-level cover(s) into {ledger}, "
+        f"handwritten-reach: measured {len(planned)} arm-level cover(s) and {len(interactions)} "
+        f"combination interaction site(s) into {ledger}, "
         f"{len(gate_rows) // 2} configuration gate(s) into {gates}"
     )
     return 0
