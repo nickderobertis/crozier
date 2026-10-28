@@ -717,3 +717,8 @@ openapi-generator-composed-schema-lowering API specification and generated SDK g
     https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml
     Apache-2.0 (the repository's own LICENSE); corpus row 3476 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+rs-server API specification and generated SDK golden:
+    https://raw.githubusercontent.com/RS-PYTHON/rs-server/83ebcafb173c53443d92c54aeeba4f221e36f9c2/services/frontend/resources/openapi.json
+    Apache-2.0 (the repository's own LICENSE; the document declares no info.license); corpus row 3477 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

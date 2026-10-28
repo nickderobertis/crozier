@@ -1,0 +1,37 @@
+openapi: 3.1.0
+info:
+  title: Lantern Keeper
+  version: 1.0.0
+security: []
+paths:
+  /ping:
+    get:
+      operationId: ping
+      responses:
+        '200':
+          description: The keeper is awake.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /logbook:
+    get:
+      operationId: readLogbook
+      security:
+        - keeperKey: []
+      responses:
+        '200':
+          description: The logbook.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  securitySchemes:
+    keeperKey:
+      type: apiKey
+      in: header
+      name: x-keeper-key
