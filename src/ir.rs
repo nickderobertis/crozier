@@ -3735,7 +3735,7 @@ fn build_endpoint(
                 p.schema
                     .as_ref()
                     .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                        hoister.hoist_parameter_type(&request_ctx, &p.name, schema)
                     })
             };
             PathParam {
@@ -3834,7 +3834,7 @@ fn build_endpoint(
                 if is_unknown(s) {
                     TypeRef::Primitive(Prim::Str)
                 } else {
-                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                    hoister.hoist_parameter_type(&request_ctx, &p.name, s)
                 }
             });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
@@ -4029,7 +4029,7 @@ fn build_endpoint(
                 p.schema
                     .as_ref()
                     .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                        hoister.hoist_parameter_type(&request_ctx, &p.name, schema)
                     })
             };
             HeaderParam {
@@ -8923,36 +8923,36 @@ impl InlineHoister<'_> {
         wrap(TypeRef::Named(name))
     }
 
+    /// Hoist structured parameter maps before the ordinary parameter shapes.
+    /// `webflow_v2_matches_fern_output` byte-checks both the resulting filter
+    /// and sort declarations and their collection-client serialization calls.
+    fn hoist_parameter_type(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
+        if schema.reference.is_none() && is_map(schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if value.reference.is_none()
+                    && (is_inline_struct(value) || string_enum_values(value).is_some())
+                {
+                    let name = format!("{}Value", request_parameter_type_name(request_ctx, param));
+                    if let Some(value_type) = self.hoist_named_copy(&name, value) {
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(value_type),
+                        );
+                    }
+                }
+            }
+        }
+        self.hoist_param_enum(request_ctx, param, schema)
+    }
+
     /// Hoist an inline string enum on a request parameter's schema into a named
     /// extensible-enum alias `{request_ctx}{Prop}` in the tag's `types/` package,
     /// matching Fern (a `level` query param on `listWidgets` →
     /// `ListWidgetsRequestLevel`). Array item enums hoist to
-    /// `{request_ctx}{Param}Item`. Structured map values hoist to
-    /// `{request_ctx}{Param}Value`; other schemas retain their base type.
+    /// `{request_ctx}{Param}Item`. A `$ref` or non-enum schema passes through
+    /// [`base_type_ref`] unchanged.
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
-            // Structured query-map values have their own request-scoped type,
-            // just as structured model-map values do. Webflow's collection
-            // filters and sort directions use these declarations in signatures.
-            if is_map(schema) {
-                if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
-                    if value.reference.is_none()
-                        && (is_inline_struct(value)
-                            || value.one_of.is_some()
-                            || value.any_of.is_some()
-                            || string_enum_values(value).is_some())
-                    {
-                        let name =
-                            format!("{}Value", request_parameter_type_name(request_ctx, param));
-                        if let Some(value_type) = self.hoist_named_copy(&name, value) {
-                            return TypeRef::Dict(
-                                Box::new(TypeRef::Primitive(Prim::Str)),
-                                Box::new(value_type),
-                            );
-                        }
-                    }
-                }
-            }
             if let Some(values) = string_enum_values(schema) {
                 let name = request_parameter_type_name(request_ctx, param);
                 // Fern imports positional `x-enum-varnames` on model
@@ -22890,7 +22890,7 @@ mod tests {
                 crate::naming::class_name(parameter)
             );
             assert_eq!(
-                hoister.hoist_param_enum("ListEntriesRequest", parameter, &input),
+                hoister.hoist_parameter_type("ListEntriesRequest", parameter, &input),
                 TypeRef::Dict(
                     Box::new(TypeRef::Primitive(Prim::Str)),
                     Box::new(TypeRef::Named(name.clone()))
@@ -22906,7 +22906,7 @@ mod tests {
             serde_json::json!({"type": "object", "additionalProperties": {"type": "string"}}),
         );
         assert_eq!(
-            hoister.hoist_param_enum("ListEntriesRequest", "labels", &plain),
+            hoister.hoist_parameter_type("ListEntriesRequest", "labels", &plain),
             base_type_ref(&plain)
         );
         assert!(!hoister

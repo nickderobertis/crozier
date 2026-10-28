@@ -79,15 +79,39 @@ column of `census.tsv` distinguishes the prior screen from this missing step.
 ### Nullable responses
 
 Scoped golden-only runs over `ebusd`, `deepsearch-ds-v2` and `letta` reproduced
-the base's missing interaction reach. A structural screen of the earlier
-nullable declarers found no inline union with an explicit null alternative
-beside at least two non-null alternatives. It did find outer `nullable: true`
-on multi-member unions in three tooling documents: the `Rcmade/hono-docs`
-example and two `OpenAPITools/openapi-generator` resources, whose full revisions
-and hashes are in `census.tsv`. Whether those qualify as real specification
-witnesses was escalated to the manager; no admissibility ruling or generation
-result is asserted here. No hand-written cover claims `none-registrable` while
-that screening remains outstanding.
+the base's missing interaction reach. A structural screen of all nullable
+declarers found no inline union with an explicit null alternative beside at
+least two non-null alternatives. The one declaring document the C loader could
+not parse was also screened through the census reader: its `/api/auth/me`
+response is `anyOf: [$ref UserProfile, null]`, a simple nullable reference.
+
+Three tooling documents instead declare outer `nullable: true` on multi-member
+unions: `Rcmade/hono-docs`' example at
+`38a1bc9b0f595b9cc0111db34095a820969aeb94`, and two
+`OpenAPITools/openapi-generator` resources at
+`f81c416b76bcf9baabfb0361a7e94eb3881a2ca4`.
+The manager's 2026-10-28 screening ruling classifies each as a tooling example
+or converter test resource, not a real-world specification. Each is recorded
+with that reason in `census.tsv`; none is a registrable real witness.
+
+| key | verdict | renewed search result | disposition |
+|---|---|---|---|
+| `combo-success-oneof-nullable` | `search-incomplete` | none-registrable | authored explicit-null-plus-two fixture required |
+| `combo-success-anyof-nullable` | `search-incomplete` | none-registrable | authored explicit-null-plus-two fixture required |
+
+### Path and body name
+
+Every declarer was screened for a selected URL-encoded body naming a component
+whose properties include a path parameter's wire name, with that component
+also referenced outside this request. The latter includes references from
+component schemas, responses, and reuse by another request, exactly as
+`non_request_referenced_schemas` records. No document selects that spreading
+branch. Documents whose YAML needed the census reader's recovery were screened
+separately with that reader; none adds a candidate.
+
+| key | verdict | renewed search result | disposition |
+|---|---|---|---|
+| `combo-body-property-named-as-path-param` | `search-incomplete` | none-registrable | authored URL-encoded component fixture required |
 
 ## Webflow parity
 
@@ -97,25 +121,35 @@ engine's normalizations. Its measured residual shrank from **83 to 69 files**,
 with **14 closed files and no new mismatches**. Only those fourteen paths were
 removed from `WEBFLOW_V2.unmatched`; no allowance was added or widened.
 
-`InlineHoister::hoist_param_enum` now declares structured map values under
+`InlineHoister::hoist_parameter_type` now declares structured map values under
 `{Request}{Parameter}Value`, including the filter object's nested union types
-and the sort-direction enum. A regression driving that function was observed
-failing with `Dict[str, Any]` before the repair, then passing afterwards. Its
+and the sort-direction enum. The triggering object-map assertion failed with `Dict[str, Any]` on the base
+implementation, then passed after the repair; the same regression now drives
+the parameter-type wrapper. Its
 primitive-map case ensures scalar values still retain their original type.
 The IR-module filter passed 209 tests. A structural scan of all 293 registered
 OpenAPI documents identified Webflow as the only registered document with a
 parameter shape this repair changes.
 
-Of the eleven files moved by removing the inline bodies' `readOnly` flags,
-four still mismatch: the two scripts clients, the pages-scripts raw client,
-and `reference.md`. The scripts clients share inline type names across
-`sites.scripts` and `pages.scripts`; the emitter's global type-to-package map
-chooses one owner instead of a local owner for each use. The reference also
-still differs in collection-field union selection, worked examples and a
-query enum rendered as `Any`. These remain parity gaps, not departures.
-The [blocked-witness record](../witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses)
-continues to name Webflow and `osf.io`; no whole-file allowance was widened.
+A second repair gives each endpoint package's own inline declarations
+precedence when a type name occurs in several packages. Both annotation imports
+and worked-example constructors use that local declaration, retaining the
+canonical owner of types declared elsewhere. Its generator regression first
+failed because the teams client imported the projects package's declaration;
+it then passed, including the check that a root `Counter` type still imports
+from the root. The IR and emitter filters passed 334 tests.
 
-The comparison above is against the committed certified-pair golden. Fresh
-certified-pair regeneration and the remaining interaction proofs are still
-outstanding; this record does not claim either from the comparison alone.
+Compared with the fresh certified SDK, this closes another **16 files** and
+moves the residual from **69 to 53**, with no new mismatches. The scripts clients
+and raw client now byte-match. Of the eleven files moved by removing the inline
+bodies' `readOnly` flags, only `reference.md` still mismatches: collection-field
+union selection, worked examples and a query enum rendered as `Any` remain.
+These are parity gaps, not departures. The
+[blocked-witness record](../witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses)
+continues to name Webflow and `osf.io`; no allowance was widened.
+
+Fresh generation at Fern CLI 5.163.1 and python-sdk 5.41.3 reproduced all
+1,501 committed SDK files byte for byte. The direct generation script leaves
+its cache marker out; that marker was restated with the repository's
+`expected_state` helper and verified identical to its prior bytes. No SDK
+expectation was edited. The remaining interaction proofs are still outstanding.

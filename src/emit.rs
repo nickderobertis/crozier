@@ -1614,6 +1614,20 @@ pub fn generate_recording(
     Ok((files, values))
 }
 
+/// Prefer a package's own declaration when an inline type name occurs in more
+/// than one package, while retaining the canonical owners of external types.
+fn tag_map_for_module(
+    tag_map: &BTreeMap<String, String>,
+    tag_decls: &[TagTypeDecl],
+    module: &str,
+) -> BTreeMap<String, String> {
+    let mut scoped = tag_map.clone();
+    for declaration in tag_decls.iter().filter(|decl| decl.module == module) {
+        scoped.insert(declaration.decl.name().to_string(), module.to_string());
+    }
+    scoped
+}
+
 fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let env = environment();
     let mut files = Vec::new();
@@ -1700,6 +1714,7 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .push(&tt.decl);
     }
     for (module, decls) in &tag_type_modules {
+        let local_tag_map = tag_map_for_module(&tag_map, &ir.tag_types, module);
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
             let repair = repair_map.get(decl.name());
@@ -1712,7 +1727,7 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 &env,
                 decl,
                 location,
-                &tag_map,
+                &local_tag_map,
                 decl_settings,
                 forward,
                 repair,
@@ -1869,13 +1884,14 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
+            let local_tag_map = tag_map_for_module(&tag_map, &ir.tag_types, module);
             files.push(raw_client_file(
                 &env,
                 pkg,
                 &ir.client_name,
                 module,
                 &eps,
-                &tag_map,
+                &local_tag_map,
             )?);
             let cx = ClientCtx {
                 yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -1887,7 +1903,7 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_decls: &ir.tag_types,
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
-                tag_types: &tag_map,
+                tag_types: &local_tag_map,
                 global_headers: &ir.global_headers,
                 client_path_parameters: &ir.client_path_parameters,
                 sdk_first_party: packaged || pkg == "fern",
@@ -2651,6 +2667,7 @@ fn select_readme_endpoint<'a>(
 /// constructs (`from fern import FernApi, Sector`).
 fn readme_example_parts(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<(String, String)> {
     let mut ctx = ExampleCtx {
+        module: &ep.module,
         types: &ir.types,
         enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -2870,6 +2887,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 
     let sync_example = {
         let mut ctx = ExampleCtx {
+            module: &first.module,
             types: &ir.types,
             enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -2906,6 +2924,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     };
     let async_example = {
         let mut ctx = ExampleCtx {
+            module: &first.module,
             types: &ir.types,
             enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -3087,6 +3106,7 @@ fn reference_file(
     }
 
     for module in modules {
+        let local_tag_map = tag_map_for_module(tag_types, &ir.tag_types, module);
         let eps: Vec<&Endpoint> = ir
             .endpoints
             .iter()
@@ -3099,7 +3119,7 @@ fn reference_file(
             .unwrap_or_else(|| naming::to_pascal_case(module));
         blocks.push(format!("## {title}"));
         for ep in eps {
-            blocks.push(reference_entry(env, ir, ep, module, pkg, tag_types)?);
+            blocks.push(reference_entry(env, ir, ep, module, pkg, &local_tag_map)?);
             blocks.push(String::new());
         }
     }
@@ -3167,6 +3187,7 @@ fn reference_entry(
 
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
+        module,
         types: &ir.types,
         enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -8071,6 +8092,7 @@ fn client_stream_docstring(
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
+        module: cx.module,
         types: cx.types,
         enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
@@ -8190,6 +8212,7 @@ fn client_binary_stream_docstring(
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
+        module: cx.module,
         types: cx.types,
         enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
@@ -8282,6 +8305,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     }
 
     let mut ctx = ExampleCtx {
+        module: cx.module,
         types: cx.types,
         enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
@@ -8647,6 +8671,9 @@ impl Example {
 
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
+    /// The endpoint's package, whose inline declarations take precedence over
+    /// identically named declarations owned by another endpoint package.
+    module: &'a str,
     types: &'a [TypeDecl],
     /// How string enums render: a literal enum's example is its plain string.
     enum_type: EnumType,
@@ -8740,6 +8767,7 @@ pub(crate) fn declared_example_substitution(
     mode: DeclaredExampleMode,
 ) -> Option<DeclaredExampleSubstitution> {
     let mut ctx = ExampleCtx {
+        module: "",
         types: &ir.types,
         enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -9628,7 +9656,9 @@ impl<'a> ExampleCtx<'a> {
         self.types.iter().find(|d| d.name() == name).or_else(|| {
             self.tag_decls
                 .iter()
-                .find_map(|tt| (tt.decl.name() == name).then_some(&tt.decl))
+                .find(|tt| tt.module == self.module && tt.decl.name() == name)
+                .or_else(|| self.tag_decls.iter().find(|tt| tt.decl.name() == name))
+                .map(|tt| &tt.decl)
         })
     }
 
@@ -9643,11 +9673,17 @@ impl<'a> ExampleCtx<'a> {
     /// Record a referenced constructor: a tag-scoped type is tracked with its tag
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
-        if let Some(tt) = self.tag_decls.iter().find(|tt| {
+        let owns_name = |tt: &TagTypeDecl| {
             tt.decl.name() == name
                 || matches!(&tt.decl, TypeDecl::DiscriminatedUnion(union)
                     if union.members.iter().any(|member| member.class_name == name))
-        }) {
+        };
+        if let Some(tt) = self
+            .tag_decls
+            .iter()
+            .find(|tt| tt.module == self.module && owns_name(tt))
+            .or_else(|| self.tag_decls.iter().find(|tt| owns_name(tt)))
+        {
             let entry = (tt.module.clone(), name.to_string());
             if self.referenced_tag.insert(entry.clone()) {
                 self.referenced_tag_doc_order.push(entry);
@@ -15070,6 +15106,7 @@ mod tests {
         auth: &'a Auth,
     ) -> ExampleCtx<'a> {
         ExampleCtx {
+            module: "",
             types,
             enum_type: crate::settings::EnumType::default(),
             yaml_unquoted_timestamps: None,
@@ -17880,6 +17917,68 @@ mod parameter_lowering_tests {
             "src/fern/client.py",
             "date-header-constructor-example",
         );
+    }
+
+    #[test]
+    fn duplicate_inline_type_names_use_the_endpoint_package() {
+        let mut paths = serde_json::Map::new();
+        for parent in ["teams", "projects"] {
+            paths.insert(
+                format!("/{parent}/rules"),
+                json!({"post": {
+                    "operationId": format!("save-{parent}-rules"),
+                    "x-crozier-sdk-group-name": [parent, "rules"],
+                    "x-crozier-sdk-method-name": "save",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"type": "object", "required": ["entries"], "properties": {
+                            "entries": {"type": "array", "items": {
+                                "type": "object", "required": ["rule_id"],
+                                "properties": {"rule_id": {"type": "string"}}
+                            }}
+                        }}
+                    }}},
+                    "responses": {"200": {"description": "Saved rules", "content": {
+                        "application/json": {"schema": {"type": "object", "properties": {
+                            "counter": {"$ref": "#/components/schemas/Counter"},
+                            "entries": {"type": "array", "items": {
+                                "type": "object", "properties": {"rule_id": {"type": "string"}}
+                            }}
+                        }}}
+                    }}}
+                }}),
+            );
+        }
+        let generated = files(json!({
+            "openapi": "3.1.0", "info": {"title": "Rule collections", "version": "1"},
+            "paths": paths,
+            "components": {"schemas": {"Counter": {"type": "object", "properties": {
+                "count": {"type": "integer"}
+            }}}}
+        }));
+        for parent in ["teams", "projects"] {
+            let prefix = format!("src/api/{parent}/rules");
+            for file in ["client.py", "raw_client.py"] {
+                let client = &generated[&format!("{prefix}/{file}")];
+                assert!(
+                    client.contains("from .types.save_rules_response import SaveRulesResponse"),
+                    "{parent}/{file}: {client}"
+                );
+            }
+            let client = &generated[&format!("{prefix}/client.py")];
+            assert!(
+                client.contains(&format!("from api.{parent}.rules import")),
+                "{parent} example: {client}"
+            );
+            let response = &generated[&format!("{prefix}/types/save_rules_response.py")];
+            assert!(
+                response.contains("from .save_rules_response_entries_item import"),
+                "{parent} response: {response}"
+            );
+            assert!(
+                response.contains(".types.counter import Counter"),
+                "{response}"
+            );
+        }
     }
 
     #[test]
