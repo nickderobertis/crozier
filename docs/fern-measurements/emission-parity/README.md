@@ -162,8 +162,9 @@ regenerates. Both ran in one hold of the lock, from 2026-10-27T21:23:58Z to
 21:24:45Z. The 239-file tree is
 byte-identical to the one the earlier node measured.
 
-**The comparison.** crozier generated from the exact document on the finished
-tree and was compared through `crozier compare` with the committed golden
+**The comparison.** At `491ba4aba`, an earlier source than the final one,
+crozier generated from the exact document and was compared through `crozier
+compare` with the committed golden
 (python-enums) and the certified pair's complete literals tree, measured with
 the same bytes and pair:
 
@@ -172,7 +173,9 @@ the same bytes and pair:
 | python-enums | 239 | 0 | five `sdk-identity-header-prefix` lines; `init-type-checking-import-order` at `types/__init__.py:73`; `dangling-mapping-variant-fields` at `types/query.py:1` |
 | literals | 238 | 0 | the same, and `fern-metadata-generator-config` at `.fern/metadata.json:5` |
 
-Both report `matched`. The corpus gate holds the same result:
+Both report `matched`. The corpus gate holds the same result, and on the
+final source it is the comparison of record (see "Verification on the final
+source" below):
 `ingef_conquery_matches_fern_output` compares the golden, and
 `overlay_goldens_match_fern_output` compares its `expected-literals` overlay.
 Both hold every departure to its row in
@@ -207,3 +210,29 @@ Each derived record was regenerated from that source:
 | the census JSON (`.local/golden-reach/census.json`, not committed) and the [`document-paths`](../../openapi-surface/document-paths.md) snapshot, its digest and stated counts | `just golden-reach`'s census step, then `restate-coverage.py --snapshot-json` | `a04564fea`; nothing to restate |
 | the coverage restatements in [`openapi-surface-coverage.md`](../../openapi-surface-coverage.md) | `restate-coverage.py --write`; the reach ranking's cells restated from the `314dd6407` reach ledger | `a04564fea`; three ranking rows gained one unreached region each |
 | [`handwritten-reach.tsv`](../../openapi-surface/handwritten-reach.tsv) | `just handwritten-reach` | `a04564fea`; the committed file was already current |
+
+## Verification on the final source
+
+The final `src/` is `a04564fea`'s. Every result below was taken on
+`f23c17833`, which has that `src/` and only adds `docs/` to it. The commit that
+writes this section changes `docs/` alone. Temporary files went under the
+dispatch's scratch directory, and PATH held only absolute entries.
+
+| check | result |
+|---|---|
+| `ingef_conquery_matches_fern_output` (python-enums) and `overlay_goldens_match_fern_output` (literals, conquery's `expected-literals` among them) | pass: conquery byte-matches the certified pair in both enum modes, apart from its ledger rows |
+| the six `emission_parity` journeys, including the unaffected control's whole-tree comparison with the base | pass |
+| `every_registered_corpus_is_wired_into_the_gate` | pass |
+| `sdk_env_conquery_secondary_id_query_round_trips_through_the_client` and `sdk_env_a_dangling_mapping_variant_round_trips_through_the_client`, through the `sdk-env` tier's nextest selector | 2 passed |
+| the `surface-census` project's `test-census` suite, complete | 614 passed, 1 skipped |
+| `corpus_sources.py check`, `corpus-licensing-drift.py`, `licence-rescreening-check.py` | pass |
+| `test-corpus-offline`: `corpus_offline_test`, `corpus_offline_recovery_test`, `match_usage_test` | all pass (2, 1 and 3 tests) |
+
+`corpus_offline_test`'s first run on this state failed in its four
+recipe subtests with `nx: not installed`, because this worktree had no
+`node_modules`. After `bun install --frozen-lockfile` it passed unchanged.
+
+Taken on the same `src/` before these runs: the library's 737 unit tests,
+clippy with `-D warnings` and rustfmt's check, on the working tree committed as
+`a04564fea`. `just lint-llm-diff` over the whole diff found no failing rule at
+`f23c17833`, and again on the commit that writes this section.
