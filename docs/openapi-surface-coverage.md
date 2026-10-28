@@ -135,7 +135,7 @@ None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 571 `golden` rows declare 1026 handling sites in
+same way. The 570 `golden` rows declare 1026 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
@@ -2916,21 +2916,21 @@ unreached by any Fern-accepted document.
 | 72 | `response-description` | `bodies-media` | **1** | **2** | **271** | open — real-specification witness search remains open |
 | 73 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
 | 74 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
-| 76 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 77 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 78 | `format-email` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
-| 79 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 80 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 81 | `format-ipv4` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
-| 82 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 83 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 84 | `format-password` | `schemas` | **1** | **1** | **8** | open — real-specification witness search remains open |
-| 85 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 86 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 87 | `format-uri` | `schemas` | **1** | **1** | **66** | open — real-specification witness search remains open |
-| 88 | `format-uri-reference` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
-| 89 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 90 | `property-oneof-residual` | `schemas` | **1** | **1** | **37** | open — real-specification witness search remains open |
+| 77 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 78 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 79 | `format-email` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
+| 80 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 81 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 82 | `format-ipv4` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
+| 83 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 84 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 85 | `format-password` | `schemas` | **1** | **1** | **8** | open — real-specification witness search remains open |
+| 86 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 87 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 88 | `format-uri` | `schemas` | **1** | **1** | **66** | open — real-specification witness search remains open |
+| 89 | `format-uri-reference` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
+| 90 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
+| 91 | `property-oneof-residual` | `schemas` | **1** | **1** | **37** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
