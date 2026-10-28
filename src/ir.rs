@@ -2273,11 +2273,12 @@ pub struct DeclaredDiscriminant {
     /// removed. The model writes the tag first, but Fern's worked example writes
     /// it back in this position.
     pub index: usize,
-    /// Whether the variant requires it. Fern's Markdown writers pass the tag
-    /// back only then: ingef/conquery's `Query_ConceptQuery` declares an
-    /// optional `type`, which its docstring example passes and its
-    /// `reference.md` example leaves out.
-    pub required: bool,
+    /// Whether the Markdown writers pass the tag back. Only a union whose
+    /// mapping names a target no component answers leaves an optional tag out:
+    /// ingef/conquery's `Query_ConceptQuery` declares an optional `type`, which
+    /// its docstring example passes and Fern's `reference.md` example leaves
+    /// out. Every other union's examples pass it, as they always have.
+    pub documented: bool,
 }
 
 /// Whether a variant flattens its Python fields or exposes a payload constructor.
@@ -12076,19 +12077,23 @@ fn dangling_target_member<'a>(
 }
 
 /// The variant's own declaration of the discriminant: where
-/// [`member_discriminant_index`] places it, and whether any part of the
-/// variant's `allOf` chain requires it.
+/// [`member_discriminant_index`] places it, and whether the Markdown writers
+/// pass it back — always, unless `in_dangling_union` (the variant's union maps a
+/// value to a target no component answers) and no part of the variant's `allOf`
+/// chain requires it.
 fn member_declared_discriminant(
     schema: &Schema,
     discriminant: &str,
     schemas: &IndexMap<String, Schema>,
+    in_dangling_union: bool,
 ) -> Option<DeclaredDiscriminant> {
     let index = member_discriminant_index(schema, discriminant, schemas)?;
-    let required = all_properties_of(schemas, schema, 0)
-        .required
-        .iter()
-        .any(|name| name == discriminant);
-    Some(DeclaredDiscriminant { index, required })
+    let documented = !in_dangling_union
+        || all_properties_of(schemas, schema, 0)
+            .required
+            .iter()
+            .any(|name| name == discriminant);
+    Some(DeclaredDiscriminant { index, documented })
 }
 
 /// Where a union member's own declaration of the discriminant sat among the
@@ -13810,6 +13815,7 @@ impl Builder<'_> {
                         target,
                         &property_name,
                         self.schemas,
+                        false,
                     ),
                     source: target_name.clone(),
                     docstring: docstring.clone(),
@@ -13880,6 +13886,8 @@ impl Builder<'_> {
                 docstring,
             });
         }
+        let in_dangling_union = mapping.values().any(|reference| dangling(reference))
+            && reads_dangling_targets(variants, mapping, self.schemas);
         for (value, reference) in mapping {
             let target_key = reference.rsplit('/').next().unwrap_or(reference);
             // A mapping target naming no component, beside targets that do, still
@@ -13891,7 +13899,7 @@ impl Builder<'_> {
             // member the mapping leaves out whose own tag is that value (the
             // `dangling-mapping-variant-fields` departure), and only a value no
             // such member tags keeps Fern's `value`.
-            if dangling(reference) && reads_dangling_targets(variants, mapping, self.schemas) {
+            if in_dangling_union && dangling(reference) {
                 members.push(
                     match dangling_target_member(
                         variants,
@@ -13915,6 +13923,7 @@ impl Builder<'_> {
                                     member,
                                     &property_name,
                                     self.schemas,
+                                    true,
                                 ),
                                 source: Some(class),
                                 docstring: docstring.clone(),
@@ -14030,6 +14039,7 @@ impl Builder<'_> {
                     target,
                     &property_name,
                     self.schemas,
+                    in_dangling_union,
                 ),
                 source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
@@ -14132,6 +14142,7 @@ impl Builder<'_> {
                     &target,
                     &property_name,
                     self.schemas,
+                    false,
                 ),
                 source: Some(target_class.clone()),
                 docstring: docstring.clone(),
@@ -29319,29 +29330,18 @@ components:
 
         // Where the tag sat, and whether the chain requires it, are read the
         // same way through the nested base.
-        let declared = |name: &str| member_declared_discriminant(&schemas[name], "kind", &schemas);
-        assert_eq!(
-            declared("Deep"),
-            Some(DeclaredDiscriminant {
-                index: 1,
-                required: true
-            })
-        );
-        assert_eq!(
-            declared("Wind"),
-            Some(DeclaredDiscriminant {
-                index: 0,
-                required: true
-            })
-        );
-        assert_eq!(
-            declared("Thermo"),
-            Some(DeclaredDiscriminant {
-                index: 0,
-                required: false
-            })
-        );
-        assert_eq!(declared("Plain"), None);
+        let declared = |name: &str, in_dangling_union: bool| {
+            member_declared_discriminant(&schemas[name], "kind", &schemas, in_dangling_union)
+        };
+        let at = |index: usize, documented: bool| Some(DeclaredDiscriminant { index, documented });
+        assert_eq!(declared("Deep", true), at(1, true));
+        assert_eq!(declared("Wind", true), at(0, true));
+        assert_eq!(declared("Thermo", true), at(0, false));
+        // Outside a union with a dangling mapping target, the Markdown writers
+        // pass the tag back whether or not it is required.
+        assert_eq!(declared("Thermo", false), at(0, true));
+        assert_eq!(declared("Deep", false), at(1, true));
+        assert_eq!(declared("Plain", true), None);
         assert_eq!(
             member_discriminant_index(&schemas["Loop"], "kind", &schemas),
             Some(0)
@@ -29495,7 +29495,7 @@ components:
             meteor.declared_discriminant,
             Some(DeclaredDiscriminant {
                 index: 2,
-                required: false
+                documented: false
             })
         );
         assert_eq!(meteor.docstring.as_deref(), Some("One sighting."));

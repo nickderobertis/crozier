@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Parcel Locker
+  version: 1.0.0
+paths:
+  /parcels:
+    post:
+      operationId: dropParcel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parcel'
+      responses:
+        '204':
+          description: Dropped
+  /letters/{letterId}:
+    get:
+      operationId: getLetter
+      parameters:
+        - name: letterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One letter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Letter'
+  /lockers/{lockerId}/doors:
+    get:
+      operationId: listDoors
+      parameters:
+        - name: lockerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Every door of the locker
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Door'
+    put:
+      operationId: replaceDoor
+      parameters:
+        - name: lockerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Door'
+      responses:
+        '204':
+          description: Replaced
+components:
+  schemas:
+    Parcel:
+      description: Something left in a locker.
+      discriminator:
+        propertyName: kind
+        mapping:
+          LETTER: '#/components/schemas/Letter'
+          BOX: '#/components/schemas/Box'
+      oneOf:
+        - $ref: '#/components/schemas/Letter'
+        - $ref: '#/components/schemas/Box'
+    Letter:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [LETTER]
+        sender:
+          type: string
+        registered:
+          type: boolean
+    Box:
+      type: object
+      required: [kind, weightGrams]
+      properties:
+        kind:
+          type: string
+          enum: [BOX]
+        weightGrams:
+          type: integer
+    DoorBase:
+      type: object
+      required: [number]
+      properties:
+        number:
+          type: integer
+        open:
+          type: boolean
+    Door:
+      description: One door of a locker.
+      discriminator:
+        propertyName: size
+        mapping:
+          SMALL: '#/components/schemas/SmallDoor'
+          LARGE: '#/components/schemas/LargeDoor'
+      oneOf:
+        - $ref: '#/components/schemas/SmallDoor'
+        - $ref: '#/components/schemas/LargeDoor'
+    SmallDoor:
+      allOf:
+        - $ref: '#/components/schemas/DoorBase'
+        - type: object
+          properties:
+            size:
+              type: string
+              enum: [SMALL]
+            fitsLetters:
+              type: boolean
+    LargeDoor:
+      allOf:
+        - $ref: '#/components/schemas/DoorBase'
+        - type: object
+          required: [size]
+          properties:
+            size:
+              type: string
+              enum: [LARGE]
+            heightCm:
+              type: integer

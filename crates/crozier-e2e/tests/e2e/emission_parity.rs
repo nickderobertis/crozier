@@ -7,12 +7,17 @@ use std::path::{Path, PathBuf};
 
 use predicates::prelude::*;
 
-use super::{departure_ledger, golden_tree_failures, probe_command, repo_root, runtime_python_env};
+use super::{
+    departure_ledger, golden_tree_failures, probe_command, repo_root, runtime_python_env,
+    sha256_hex,
+};
 
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
 pub(crate) const EMISSION_PARITY_DIR: &str = "docs/fern-measurements/emission-parity";
 const ALLOF_ONLY_BASE: &str = "allof-only-base";
 const DANGLING_TARGET: &str = "dangling-mapping-target";
+/// A document of neither shape, held to the base's tree rather than Fern's.
+const UNAFFECTED_CONTROL: &str = "unaffected-control";
 const WIRE: &str = "crates/crozier-e2e/tests/e2e/dangling_mapping_wire.py";
 const CONQUERY_WIRE: &str = "crates/crozier-e2e/tests/e2e/conquery_secondary_id_wire.py";
 /// Corpus row 3477's committed source and its certified-pair golden.
@@ -291,6 +296,73 @@ fn a_dangling_mapping_outside_the_measured_shape_reads_as_before() {
             "missing-discriminant-property: POST /readings request components/schemas/Reading discriminator kind",
         ));
     assert!(!refused.exists(), "a refused document writes no SDK");
+}
+
+/// A document neither cause touches — every mapping target resolves, each
+/// `allOf` variant's base is a plain object, and `Letter`'s own tag is
+/// optional — generates the tree crozier wrote before either repair, every
+/// file of it, README.md and reference.md included, in both enum modes. Each
+/// `base-tree.<mode>.sha256` was written by `sha256sum` over the output of the
+/// branch's base, `275e9d3da`. The Markdown examples still pass `Letter`'s
+/// optional tag back, which only a union with a dangling target leaves out.
+#[test]
+fn a_document_neither_cause_touches_generates_the_base_tree_byte_for_byte() {
+    let case = repo_root()
+        .join(EMISSION_PARITY_DIR)
+        .join(UNAFFECTED_CONTROL);
+    for mode in ["python-enums", "literals"] {
+        let temp = tempfile::tempdir().expect("output tempdir");
+        let out = temp.path().join("sdk");
+        probe_command(&case.join("openapi.yml"), &out)
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let manifest = std::fs::read_to_string(case.join(format!("base-tree.{mode}.sha256")))
+            .expect("the base tree's manifest");
+        let expected: Vec<(String, String)> = manifest
+            .lines()
+            .map(|line| {
+                let (digest, path) = line.split_once("  ").expect("a sha256sum line");
+                (path.to_string(), digest.to_string())
+            })
+            .collect();
+        let mut generated = Vec::new();
+        let mut pending = vec![out.clone()];
+        while let Some(dir) = pending.pop() {
+            for entry in std::fs::read_dir(&dir).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() {
+                    pending.push(path);
+                } else {
+                    let relative = path.strip_prefix(&out).unwrap();
+                    let name = relative
+                        .components()
+                        .map(|part| part.as_os_str().to_string_lossy())
+                        .collect::<Vec<_>>()
+                        .join("/");
+                    generated.push((name, sha256_hex(&std::fs::read(&path).unwrap())));
+                }
+            }
+        }
+        generated.sort();
+        let differing: std::collections::BTreeSet<&str> = expected
+            .iter()
+            .filter(|entry| !generated.contains(entry))
+            .chain(generated.iter().filter(|entry| !expected.contains(entry)))
+            .map(|(path, _)| path.as_str())
+            .collect();
+        assert!(
+            differing.is_empty(),
+            "{mode}: these files differ from the base's tree: {differing:?}"
+        );
+        let tag = if mode == "literals" {
+            "kind=\"LETTER\""
+        } else {
+            "kind=LetterKind.LETTER"
+        };
+        let reference = std::fs::read_to_string(out.join("reference.md")).unwrap();
+        assert!(reference.contains(tag), "{mode}: {reference}");
+    }
 }
 
 /// A base chain that reaches back to itself (`Named` an `allOf` over `Gauge`,

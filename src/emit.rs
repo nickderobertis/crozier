@@ -10177,11 +10177,11 @@ impl<'a> ExampleCtx<'a> {
                         };
                         args.push((Some(py_name), value));
                     }
-                    // The Markdown writers leave a tag the variant does not
-                    // require out (see `DeclaredDiscriminant::required`).
+                    // The Markdown writers leave out a tag the IR marks
+                    // undocumented (see `DeclaredDiscriminant::documented`).
                     if let Some(index) = m
                         .declared_discriminant
-                        .filter(|declared| !self.documentation || declared.required)
+                        .filter(|declared| !self.documentation || declared.documented)
                         .map(|declared| declared.index)
                     {
                         let enum_name = m.source.as_deref().map(|source| {
@@ -12532,12 +12532,26 @@ mod tests {
 
     /// A variant whose own model keeps its tag (it is referenced on its own, so
     /// its tag enum is declared) passes the tag in the client docstring's example
-    /// either way, and in `reference.md` only where the variant requires it:
-    /// ingef/conquery's `Query_ConceptQuery` declares an optional `type`, and
-    /// Fern's `reference.md` writes `Query_ConceptQuery()`.
+    /// either way. `reference.md` passes it too, unless the union maps a value to
+    /// a target no component answers and the variant leaves the tag optional:
+    /// ingef/conquery's `Query` maps `SECONDARY_ID_QUERY` to such a target,
+    /// `Query_ConceptQuery` declares an optional `type`, and Fern's
+    /// `reference.md` writes `Query_ConceptQuery()`.
     #[test]
-    fn markdown_examples_pass_a_variants_own_tag_only_where_it_is_required() {
-        let document = |required: serde_json::Value| {
+    fn markdown_examples_leave_an_optional_tag_out_only_beside_a_dangling_mapping_target() {
+        let document = |required: serde_json::Value, dangling: bool| {
+            let mut mapping = serde_json::json!({
+                "STAR": "#/components/schemas/StarReading",
+                "COMET": "#/components/schemas/CometReading"
+            });
+            let mut one_of = vec![
+                serde_json::json!({"$ref": "#/components/schemas/StarReading"}),
+                serde_json::json!({"$ref": "#/components/schemas/CometReading"}),
+            ];
+            if dangling {
+                mapping["METEOR"] = serde_json::json!("#/components/schemas/meteor-reading");
+                one_of.push(serde_json::json!({"$ref": "#/components/schemas/MeteorReading"}));
+            }
             serde_json::json!({
                 "openapi": "3.0.3",
                 "info": {"title": "Api", "version": "1"},
@@ -12558,14 +12572,8 @@ mod tests {
                 },
                 "components": {"schemas": {
                     "Reading": {
-                        "oneOf": [
-                            {"$ref": "#/components/schemas/StarReading"},
-                            {"$ref": "#/components/schemas/CometReading"}
-                        ],
-                        "discriminator": {"propertyName": "kind", "mapping": {
-                            "STAR": "#/components/schemas/StarReading",
-                            "COMET": "#/components/schemas/CometReading"
-                        }}
+                        "oneOf": one_of,
+                        "discriminator": {"propertyName": "kind", "mapping": mapping}
                     },
                     "StarReading": {"type": "object", "required": required, "properties": {
                         "kind": {"type": "string", "enum": ["STAR"]},
@@ -12573,6 +12581,10 @@ mod tests {
                     }},
                     "CometReading": {"type": "object", "properties": {
                         "kind": {"type": "string", "enum": ["COMET"]}
+                    }},
+                    "MeteorReading": {"type": "object", "properties": {
+                        "kind": {"type": "string", "enum": ["METEOR"]},
+                        "trail": {"type": "number"}
                     }}
                 }}
             })
@@ -12585,12 +12597,20 @@ mod tests {
                 .unwrap_or_else(|| panic!("no {name}"))
         };
         let tag = "kind=StarReadingKind.STAR";
-        let optional = files_for(document(serde_json::json!([])));
+        // Every mapping target resolves: the tag is passed back everywhere,
+        // required or not.
+        for required in [serde_json::json!([]), serde_json::json!(["kind"])] {
+            let files = files_for(document(required, false));
+            assert!(file(&files, "src/api/client.py").contains(tag));
+            assert!(file(&files, "reference.md").contains(tag));
+            assert!(file(&files, "README.md").contains(tag));
+        }
+        let optional = files_for(document(serde_json::json!([]), true));
         assert!(file(&optional, "src/api/client.py").contains(tag));
         let reference = file(&optional, "reference.md");
         assert!(reference.contains("request=Reading_Star()"), "{reference}");
         assert!(!reference.contains(tag), "{reference}");
-        let required = files_for(document(serde_json::json!(["kind"])));
+        let required = files_for(document(serde_json::json!(["kind"]), true));
         assert!(file(&required, "src/api/client.py").contains(tag));
         assert!(file(&required, "reference.md").contains(tag));
     }
