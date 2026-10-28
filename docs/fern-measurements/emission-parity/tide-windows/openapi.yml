@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: Tide Windows
+  version: 1.0.0
+paths:
+  /windows:
+    post:
+      operationId: planWindows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WindowPlan'
+      responses:
+        '200':
+          description: The plan as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WindowPlan'
+components:
+  schemas:
+    WindowPlan:
+      type: object
+      required: [windows]
+      properties:
+        windows:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              anyOf:
+                - type: string
+                  format: date-time
+                - type: 'null'
+        soundings:
+          type: array
+          items:
+            type: array
+            items:
+              anyOf:
+                - type: number
+                - type: 'null'

@@ -62,7 +62,7 @@ under `just test-sdk-env`.
 
 [`conquery_secondary_id_wire.py`](../../../crates/crozier-e2e/tests/e2e/conquery_secondary_id_wire.py)
 drives the client generated from the exact registered document,
-`tests/fixtures/corpus-sources/ingef-conquery/openapi.yaml` (corpus row 3477,
+`tests/fixtures/corpus-sources/ingef-conquery/openapi.yaml` (corpus row 3478,
 sha256 `c3a52b3c…`), against a local HTTP server. It answers
 `GET /queries/{query}` with a status whose `query` is
 `{"type": "SECONDARY_ID_QUERY", "secondaryId": "dataset.sid",

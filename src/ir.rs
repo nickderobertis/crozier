@@ -1534,6 +1534,30 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
     true
 }
 
+/// The Python names of the SDK-wide credentials crozier's root client takes
+/// when the document's credential is optional only through an empty root
+/// `security` list; empty for any other document. That list, like an absent
+/// root `security`, leaves every operation without its own `security`
+/// unauthenticated, which is why crozier's credential is optional, but the
+/// certified pair reads only the absent spelling so and keeps the credential
+/// required: RS-Server declares `security: []` beside 68 secured and 10
+/// unsecured operations. An operation's own `security: []` makes Fern's
+/// credential optional too, so such a document has no departure to name.
+pub(crate) fn empty_root_security_credentials(doc: &OpenApi) -> Vec<String> {
+    let mut operations = doc.paths.values().flat_map(|item| item.operations());
+    let only_root_unauthenticates = doc.security.as_ref().is_some_and(Vec::is_empty)
+        && !all_operations_authenticated(doc)
+        && operations.all(|(_, op)| op.security.as_ref().is_none_or(|reqs| !reqs.is_empty()));
+    if !only_root_unauthenticates {
+        return Vec::new();
+    }
+    auth_model(doc)
+        .credentials()
+        .into_iter()
+        .map(|credential| credential.param.clone())
+        .collect()
+}
+
 /// The shape of a request body's selected media schema. One reading of one
 /// schema, so a body cannot be both a component `$ref` and an inline union.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -3034,6 +3058,8 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         }
     }
 
+    align_flattened_member_types(&mut types, &mut tag_types);
+
     // A literal enum is a plain string at runtime: Fern serializes an enum
     // header with `str(..)` rather than `.value`, and examples an enum value as
     // its string rather than a member access.
@@ -3068,6 +3094,54 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         enum_type: config.enum_type,
         default_max_retries: config.default_max_retries,
         layout: config.layout,
+    }
+}
+
+/// Type each field a union wrapper flattens from a component model as that
+/// model types it. A wrapper is a tagged view of the model, so Fern writes the
+/// model's own field types on it: RS-Server's `ItemGeometry_Point.bbox` is the
+/// `Optional[List[Any]]` of `Point.bbox`, and `ItemGeometry_Polygon.coordinates`
+/// is `Polygon`'s `List[List[PolygonCoordinatesItemItem]]`. A field the model
+/// does not declare itself (an inherited base's) keeps the type
+/// [`member_fields`] gave it.
+fn align_flattened_member_types(types: &mut [TypeDecl], tag_types: &mut [TagTypeDecl]) {
+    let models: std::collections::HashMap<String, Vec<(String, TypeRef)>> = types
+        .iter()
+        .chain(tag_types.iter().map(|tagged| &tagged.decl))
+        .filter_map(|decl| match decl {
+            TypeDecl::Object(object) => Some((
+                object.name.clone(),
+                object
+                    .fields
+                    .iter()
+                    .map(|field| (field.wire_name.clone(), field.type_ref.clone()))
+                    .collect(),
+            )),
+            _ => None,
+        })
+        .collect();
+    let unions = types
+        .iter_mut()
+        .chain(tag_types.iter_mut().map(|tagged| &mut tagged.decl))
+        .filter_map(|decl| match decl {
+            TypeDecl::DiscriminatedUnion(union) => Some(union),
+            _ => None,
+        });
+    for union in unions {
+        for member in &mut union.members {
+            if !matches!(member.layout, UnionMemberLayout::Flattened) {
+                continue;
+            }
+            let Some(model) = member.source.as_ref().and_then(|source| models.get(source)) else {
+                continue;
+            };
+            for field in &mut member.fields {
+                if let Some((_, type_ref)) = model.iter().find(|(wire, _)| *wire == field.wire_name)
+                {
+                    field.type_ref = type_ref.clone();
+                }
+            }
+        }
     }
 }
 
@@ -6971,6 +7045,19 @@ fn resolve_request_body(
                 min_length: None,
                 max_length: None,
             }));
+            // Properties written beside the alternatives are no part of the
+            // alias, but Fern still declares the types they name: RS-Server's
+            // item PATCH body is `anyOf: [$ref PartialItem, array]` beside
+            // `PartialItem`'s own properties, and Fern writes
+            // `…PatchRequestBodyType` for its `type: anyOf [const, null]`. Only
+            // a string `const` or `enum` is measured there, so only that is
+            // declared.
+            for (prop, prop_schema) in &schema.properties {
+                let value = sole_non_null_member(prop_schema).unwrap_or(prop_schema);
+                if value.reference.is_none() && string_enum_values(value).is_some() {
+                    hoister.field_type_ref(&request_body_name, prop, prop_schema);
+                }
+            }
         }
         let mut body = single_with_override(
             TypeRef::Named(request_body_name),
@@ -11536,7 +11623,7 @@ fn schema_is_null_type(schema: &Schema) -> bool {
 fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<String> {
     let mut classes = std::collections::HashSet::new();
     for schema in doc.components.schemas.values() {
-        collect_standalone_references(schema, &mut classes);
+        collect_standalone_references(schema, &doc.components.schemas, true, &mut classes);
     }
     for item in doc.paths.values().chain(doc.webhooks.values()) {
         for (method, operation) in item.operations() {
@@ -11547,16 +11634,27 @@ fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<Str
                 .request_body
                 .iter()
                 .filter(|_| method != "GET")
-                .flat_map(|request| request.content.values())
+                .flat_map(|request| request.content.iter())
                 .chain(
                     operation
                         .responses
                         .values()
-                        .flat_map(|response| response.content.values()),
+                        .flat_map(|response| response.content.iter()),
                 );
-            for media in bodies {
+            for (media_type, media) in bodies {
                 if let Some(schema) = media.schema.as_ref() {
-                    collect_standalone_references(schema, &mut classes);
+                    // A stream's event union leaves its members variant uses:
+                    // Letta's `text/event-stream` responses are an
+                    // undiscriminated `oneOf` of its message models, and Fern's
+                    // models still drop the `message_type` tag their
+                    // discriminated unions elsewhere consume.
+                    let plain_unions = !media_type.starts_with("text/event-stream");
+                    collect_standalone_references(
+                        schema,
+                        &doc.components.schemas,
+                        plain_unions,
+                        &mut classes,
+                    );
                 }
             }
         }
@@ -11568,7 +11666,12 @@ fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<Str
 /// position. A union's member list is descended into only for its *own* nested
 /// content, never for the member references themselves; a discriminator mapping
 /// is not a reference position at all.
-fn collect_standalone_references(schema: &Schema, classes: &mut std::collections::HashSet<String>) {
+fn collect_standalone_references(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    plain_unions: bool,
+    classes: &mut std::collections::HashSet<String>,
+) {
     if let Some(reference) = schema.reference.as_deref() {
         classes.insert(ref_to_class(reference));
     }
@@ -11578,16 +11681,22 @@ fn collect_standalone_references(schema: &Schema, classes: &mut std::collections
         .chain(schema.items.iter().map(Box::as_ref))
         .chain(schema.all_of.iter().flatten())
     {
-        collect_standalone_references(child, classes);
+        collect_standalone_references(child, schemas, plain_unions, classes);
     }
     if let Some(AdditionalProperties::Schema(child)) = schema.additional_properties.as_ref() {
-        collect_standalone_references(child, classes);
+        collect_standalone_references(child, schemas, plain_unions, classes);
     }
     for members in schema.one_of.iter().chain(schema.any_of.iter()) {
-        let plain = is_nullable_alternation(members);
+        // A union nothing discriminates holds its members as plain references,
+        // the way Fern's undiscriminated union names each one: RS-Server's
+        // `SearchPostRequest.intersects` is an `anyOf` of the seven GeoJSON
+        // geometries and `null`, so `Point` keeps the `type` tag the
+        // `Item.geometry` discriminator would otherwise strip.
+        let plain =
+            is_nullable_alternation(members) || plain_unions && !strips_members(schema, schemas);
         for member in members {
             if plain || member.reference.is_none() {
-                collect_standalone_references(member, classes);
+                collect_standalone_references(member, schemas, plain_unions, classes);
             } else {
                 // A variant `$ref` is not a standalone use; its own subtree still is.
                 for child in member
@@ -11596,11 +11705,21 @@ fn collect_standalone_references(schema: &Schema, classes: &mut std::collections
                     .chain(member.items.iter().map(Box::as_ref))
                     .chain(member.all_of.iter().flatten())
                 {
-                    collect_standalone_references(child, classes);
+                    collect_standalone_references(child, schemas, plain_unions, classes);
                 }
             }
         }
     }
+}
+
+/// Whether a union consumes its members' tags, as [`collect_discriminant_strips`]
+/// reads it: a written `discriminator` under a `oneOf`, or a tag the members'
+/// own properties imply.
+fn strips_members(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    schema.discriminator.as_ref().is_some_and(|discriminator| {
+        !discriminator.property_name.is_empty()
+            && (schema.one_of.is_some() || schema.any_of.is_none())
+    }) || inferred_strip_discriminant_property(schema, schemas).is_some()
 }
 
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
@@ -14682,6 +14801,21 @@ impl Builder<'_> {
                                     .map(|members| (nested_items, members))
                             })
                         {
+                            // One alternative beside `null` is that alternative
+                            // made optional, at the second level as at the first:
+                            // RS-Server's `TimeInterval.interval` nests `anyOf:
+                            // [date-time, null]` two arrays deep, and Fern types it
+                            // `List[List[Optional[dt.datetime]]]`.
+                            if let Some(member) = simple_nullable_member(nested_items) {
+                                let element = match member.reference.as_deref() {
+                                    Some(reference) => TypeRef::Named(ref_to_class(reference)),
+                                    None => base_type_ref(member),
+                                };
+                                return sequence_of(
+                                    prop_schema,
+                                    sequence_of(items, optional_type_ref(element)),
+                                );
+                            }
                             let name = format!("{owner}{}ItemItem", naming::class_name(prop));
                             let variants = members
                                 .iter()
@@ -14703,9 +14837,27 @@ impl Builder<'_> {
                         }
                         // An inline object leaf is a model named one `Item` per
                         // level: Cradl's `value` is a list of lists of objects, and
-                        // Fern declares `…ValueItemItem`.
+                        // Fern declares `…ValueItemItem`. A union leaf a third
+                        // array deep is named the same way: RS-Server's
+                        // `MultiPolygon.coordinates` declares
+                        // `MultiPolygonCoordinatesItemItemItem`.
+                        let deeper_union = items
+                            .items
+                            .as_deref()
+                            .filter(|nested| {
+                                nested.reference.is_none()
+                                    && nested.ty.as_ref().and_then(TypeField::primary)
+                                        == Some("array")
+                            })
+                            .and_then(|nested| nested.items.as_deref())
+                            .is_some_and(|leaf| {
+                                leaf.reference.is_none()
+                                    && (leaf.one_of.is_some() || leaf.any_of.is_some())
+                                    && simple_nullable_member(leaf).is_none()
+                            });
                         if items.reference.is_none()
-                            && items.items.as_deref().is_some_and(is_inline_struct)
+                            && (items.items.as_deref().is_some_and(is_inline_struct)
+                                || deeper_union)
                         {
                             let context = format!("{owner}{}", naming::class_name(prop));
                             if let Some(element) = self.nested_array_element(&context, prop_schema)
@@ -26618,8 +26770,14 @@ components:
                 .map(|field| field.type_ref.clone())
         };
         assert_eq!(trigger_type(0), Some(named("Trigger")));
-        // The nullable wrapper keeps the variant-scoped name it always had.
-        assert_eq!(trigger_type(1), Some(named("WeftTrigger")));
+        // The nullable wrapper is the type `Weft`'s own model gives it, as
+        // every flattened field is (`align_flattened_member_types`): no
+        // `WeftTrigger` is declared, so naming it would import a module the
+        // SDK does not contain.
+        assert_eq!(trigger_type(1), Some(named("Trigger")));
+        assert!(!labels(&ir)
+            .iter()
+            .any(|label| label.contains("WeftTrigger")));
         assert!(!labels(&ir)
             .iter()
             .any(|label| label.contains("WarpTrigger")));
@@ -29799,5 +29957,173 @@ mod xml_encoding_tests {
         // An inline `allOf` member that is no XML element itself contributes a
         // plain child element, whatever its property says.
         assert_eq!(by_wire["mixed"], element(None));
+    }
+}
+
+/// The RS-Server emission repairs, each on the hand-written measurement that
+/// isolates it (`docs/fern-measurements/emission-parity/`).
+#[cfg(test)]
+mod emission_parity_tests {
+    use super::{build, Field, OpenApi, Prim, TypeDecl, TypeRef};
+
+    fn measured(case: &str) -> (OpenApi, super::Ir) {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/emission-parity")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        let ir = build(&doc, &config);
+        (doc, ir)
+    }
+
+    fn decls(ir: &super::Ir) -> impl Iterator<Item = &TypeDecl> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+    }
+
+    fn fields<'a>(ir: &'a super::Ir, class: &str) -> &'a [Field] {
+        decls(ir)
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == class => Some(object.fields.as_slice()),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("{class} is declared"))
+    }
+
+    fn field<'a>(fields: &'a [Field], wire: &str) -> &'a TypeRef {
+        &fields
+            .iter()
+            .find(|field| field.wire_name == wire)
+            .unwrap_or_else(|| panic!("{wire} is a field"))
+            .type_ref
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn list(inner: TypeRef) -> TypeRef {
+        TypeRef::List(Box::new(inner))
+    }
+
+    fn declared(ir: &super::Ir, name: &str) -> bool {
+        decls(ir).any(|decl| decl.name() == name)
+    }
+
+    /// Cause 1: a wrapper flattening a component types each field as the
+    /// component does (`align_flattened_member_types`), and a union three
+    /// arrays deep is named one `Item` per level (`field_type_ref`).
+    #[test]
+    fn a_flattened_variant_takes_its_models_field_types() {
+        let (_, ir) = measured("survey-shapes");
+        let union = decls(&ir)
+            .find_map(|decl| match decl {
+                TypeDecl::DiscriminatedUnion(union) if union.name == "SiteOutline" => Some(union),
+                _ => None,
+            })
+            .expect("SiteOutline is a discriminated union");
+        for member in &union.members {
+            let model = fields(&ir, member.source.as_deref().expect("a component variant"));
+            for wrapper_field in &member.fields {
+                assert_eq!(
+                    wrapper_field.type_ref,
+                    *field(model, &wrapper_field.wire_name),
+                    "{}.{}",
+                    member.class_name,
+                    wrapper_field.wire_name
+                );
+            }
+        }
+        let marker = &union.members[0];
+        // The field's own optionality is its `optional` flag, not its type.
+        assert_eq!(
+            *field(&marker.fields, "extent"),
+            list(TypeRef::Primitive(Prim::Any))
+        );
+        assert!(!declared(&ir, "MarkerExtent"));
+        assert_eq!(
+            *field(fields(&ir, "Transect"), "legs"),
+            list(list(named("TransectLegsItemItem")))
+        );
+        assert_eq!(
+            *field(fields(&ir, "Quadrats"), "cells"),
+            list(list(list(named("QuadratsCellsItemItemItem"))))
+        );
+        assert!(declared(&ir, "QuadratsCellsItemItemItem"));
+    }
+
+    /// Cause 2: a member an undiscriminated union also names keeps the tag a
+    /// discriminator elsewhere consumes (`collect_standalone_references`), and
+    /// an inline body union's `const` sibling property is declared
+    /// (`resolve_request_body`).
+    #[test]
+    fn a_member_an_undiscriminated_union_names_keeps_its_tag() {
+        let (doc, ir) = measured("survey-shapes");
+        let strips = super::document_discriminant_strips(&doc);
+        for class in ["Marker", "Transect", "Quadrats"] {
+            assert!(!strips.contains_key(class), "{class} keeps `kind`");
+            assert_eq!(
+                *field(fields(&ir, class), "kind"),
+                named(&format!("{class}Kind"))
+            );
+        }
+        assert!(declared(&ir, "AmendSiteRequestBodyKind"));
+        assert!(!declared(&ir, "AmendSiteRequestBodyLabel"));
+
+        // Without the undiscriminated `within` union, the discriminator strips
+        // every member's tag again.
+        let (mut alone, _) = measured("survey-shapes");
+        alone.components.schemas.shift_remove("SiteSearch");
+        let strips = super::document_discriminant_strips(&alone);
+        for class in ["Marker", "Transect", "Quadrats"] {
+            assert_eq!(strips.get(class).map(String::as_str), Some("kind"));
+        }
+    }
+
+    /// Cause 3: nullable items two arrays deep are optional elements, with no
+    /// alias of their own.
+    #[test]
+    fn nullable_items_two_arrays_deep_are_optional_elements() {
+        let (_, ir) = measured("tide-windows");
+        let plan = fields(&ir, "WindowPlan");
+        let optional = |prim| TypeRef::Optional(Box::new(TypeRef::Primitive(prim)));
+        assert_eq!(
+            *field(plan, "windows"),
+            list(list(optional(Prim::Datetime)))
+        );
+        assert_eq!(*field(plan, "soundings"), list(list(optional(Prim::Float))));
+        assert!(!declared(&ir, "WindowPlanWindowsItemItem"));
+    }
+
+    /// Cause 4: an empty root `security` list beside unsecured operations names
+    /// the credential the departure covers; an absent root list, or an
+    /// operation's own empty list, names none.
+    #[test]
+    fn only_an_empty_root_security_list_names_the_departed_credential() {
+        let (doc, _) = measured("lantern-open-ping");
+        assert_eq!(super::empty_root_security_credentials(&doc), ["api_key"]);
+        let (mut absent, _) = measured("lantern-open-ping");
+        absent.security = None;
+        assert!(super::empty_root_security_credentials(&absent).is_empty());
+        let (mut own, _) = measured("lantern-open-ping");
+        for item in own.paths.values_mut() {
+            if let Some(get) = item.get.as_mut() {
+                if get.security.is_none() {
+                    get.security = Some(Vec::new());
+                }
+            }
+        }
+        assert!(super::empty_root_security_credentials(&own).is_empty());
     }
 }

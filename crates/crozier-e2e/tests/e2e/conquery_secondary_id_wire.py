@@ -2,7 +2,7 @@
 
 Usage: conquery_secondary_id_wire.py SDK_SRC. SDK_SRC is the `src/` directory of
 an SDK generated from tests/fixtures/corpus-sources/ingef-conquery/openapi.yaml
-(corpus row 3477), holding the `fern` package. That document's `Query` maps
+(corpus row 3478), holding the `fern` package. That document's `Query` maps
 `SECONDARY_ID_QUERY` to `#/components/schemas/secondary-Id-query`, which names
 no component; `SecondaryIdQuery` is the member that tags itself so.
 

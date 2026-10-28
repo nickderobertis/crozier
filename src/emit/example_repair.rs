@@ -170,7 +170,8 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                         .filter(|digits| digits.bytes().all(|b| b.is_ascii_digit() || b == b'-'))
                         .map(|digits| format!("{own}{digits},"));
                     // A list the writer spreads over lines is found by its
-                    // opening line.
+                    // opening line; a list that is itself an item of one opens
+                    // on a bare `[` (RS-Server's `interval=[[None, None]]`).
                     let opening = format!("{own}[");
                     let Some(offset) = wanted[from..]
                         .iter()
@@ -183,9 +184,11 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                         .or_else(|| {
                             pending.value.crozier.starts_with('[').then(|| {
                                 wanted[from..].iter().position(|line| {
-                                    !own.is_empty()
-                                        && line.ends_with('[')
-                                        && holds_at_boundary(line, &opening)
+                                    if own.is_empty() {
+                                        *line == "["
+                                    } else {
+                                        line.ends_with('[') && holds_at_boundary(line, &opening)
+                                    }
                                 })
                             })?
                         })

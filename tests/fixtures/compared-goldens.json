@@ -54,6 +54,12 @@
     "docs/fern-measurements/emission-parity/allof-only-base/fern-expected": {},
     "docs/fern-measurements/emission-parity/dangling-mapping-target-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected": {},
+    "docs/fern-measurements/emission-parity/lantern-open-ping-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/lantern-open-ping/fern-expected": {},
+    "docs/fern-measurements/emission-parity/survey-shapes-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/survey-shapes/fern-expected": {},
+    "docs/fern-measurements/emission-parity/tide-windows-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/tide-windows/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules-literals/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected": {},
     "docs/fern-measurements/examples-docs/harbor-map-validation-literals/fern-expected": {},
@@ -1198,6 +1204,12 @@
     },
     "tests/fixtures/rice-shower/expected": {},
     "tests/fixtures/rice-shower/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/rs-server/expected": {},
+    "tests/fixtures/rs-server/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

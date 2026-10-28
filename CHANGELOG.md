@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.143](https://github.com/nickderobertis/crozier/compare/v0.0.142...v0.0.143) - 2026-10-28
+
+### Fixed
+
+- *(parity)* byte-match the certified pair on RS-Server's remaining emission differences ([#656](https://github.com/nickderobertis/crozier/pull/656))
+
 ## [0.0.142](https://github.com/nickderobertis/crozier/compare/v0.0.141...v0.0.142) - 2026-10-27
 
 ### Fixed

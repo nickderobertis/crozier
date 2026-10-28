@@ -718,7 +718,12 @@ openapi-generator-composed-schema-lowering API specification and generated SDK g
     Apache-2.0 (the repository's own LICENSE); corpus row 3476 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
 
+rs-server API specification and generated SDK golden:
+    https://raw.githubusercontent.com/RS-PYTHON/rs-server/83ebcafb173c53443d92c54aeeba4f221e36f9c2/services/frontend/resources/openapi.json
+    Apache-2.0 (the repository's own LICENSE; the document declares no info.license); corpus row 3477 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
 ingef-conquery API specification and generated SDK golden:
     https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml
-    MIT (the repository's own LICENSE); corpus row 3477 retains the immutable
+    MIT (the repository's own LICENSE); corpus row 3478 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

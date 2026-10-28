@@ -735,7 +735,14 @@ fn list_argument(lines: &[&str], start: usize) -> Option<ListArgument> {
     }
     let open = open?;
     let prefix = line[..open].trim();
-    let keyword = if let Some(name) = prefix.strip_suffix('=') {
+    // A list on a line of its own is an item of the list enclosing it, and its
+    // schema is that list's item schema, which the index files under the same
+    // name: RS-Server's `interval=[[None]]` spans lines with the inner `[` bare.
+    let keyword = if prefix.is_empty() {
+        enclosing_list(lines, start)
+            .and_then(|outer| list_argument(lines, outer))?
+            .keyword
+    } else if let Some(name) = prefix.strip_suffix('=') {
         name.chars()
             .all(|c| c.is_alphanumeric() || c == '_')
             .then(|| name.to_string())?
@@ -798,6 +805,37 @@ fn list_argument(lines: &[&str], start: usize) -> Option<ListArgument> {
         }
         position = (index + 1, 0);
     }
+}
+
+/// The line opening the list that holds line `start` as an item: the nearest
+/// earlier line leaving more `[` open than the lines between it and `start`
+/// close. Brackets inside a literal do not count.
+fn enclosing_list(lines: &[&str], start: usize) -> Option<usize> {
+    let mut open = 0isize;
+    for at in (0..start).rev() {
+        let (mut quote, mut escaped) = (None, false);
+        for character in lines[at].chars() {
+            if let Some(delimiter) = quote {
+                if escaped {
+                    escaped = false;
+                } else if character == '\\' {
+                    escaped = true;
+                } else if character == delimiter {
+                    quote = None;
+                }
+            } else if matches!(character, '"' | '\'') {
+                quote = Some(character);
+            } else if character == '[' {
+                open += 1;
+            } else if character == ']' {
+                open -= 1;
+            }
+        }
+        if open > 0 {
+            return Some(at);
+        }
+    }
+    None
 }
 
 /// An example value read as nested brackets: tokens, and bracketed groups of

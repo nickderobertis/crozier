@@ -242,6 +242,27 @@
     `ImportError`.
   evidence: docs/departures/evidence/empty-namespace-package.md
 
+- id: empty-root-security-optional-credential
+  kind: usefulness
+  trigger: >-
+    A document whose root `security` is the empty list, with operations that
+    declare no `security` of their own beside operations that require a
+    credential and none whose own `security` is empty: the root `client.py` and
+    `core/client_wrapper.py`.
+  fern: >-
+    The credential required, `api_key: str` in each constructor and its
+    docstring, and its header set unconditionally.
+  crozier: >-
+    The credential optional, `api_key: typing.Optional[str] = None`, and its
+    header set only when a value was given.
+  reason: >-
+    An empty root `security` list means what an absent one does: every
+    operation without its own `security` needs no credential. The certified
+    pair already makes the credential optional for the absent spelling, and
+    crozier reads both spellings alike, so an SDK user can call the
+    unauthenticated operations without inventing a key.
+  evidence: docs/departures/evidence/empty-root-security-optional-credential.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-

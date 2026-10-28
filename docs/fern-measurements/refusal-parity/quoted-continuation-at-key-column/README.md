@@ -173,7 +173,7 @@ it does not byte-match until causes A and B are repaired. Both are drafted as
 follow-ups.
 
 A later node, `conquery-emission-parity`, repaired both causes and registered
-the document as corpus row 3477. Its record is
+the document as corpus row 3478. Its record is
 [`emission-parity`](../../emission-parity/README.md).
 
 ## Scope ruling

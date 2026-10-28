@@ -1,0 +1,253 @@
+openapi: 3.1.0
+info:
+  title: Reef Survey
+  version: 1.0.0
+paths:
+  /sites:
+    get:
+      operationId: listSites
+      tags: [sites]
+      responses:
+        '200':
+          description: Every surveyed site.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+  /sites/search:
+    post:
+      operationId: searchSites
+      tags: [sites]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteSearch'
+      responses:
+        '200':
+          description: The sites inside the outline.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+  /sites/{site_id}:
+    patch:
+      operationId: amendSite
+      tags: [survey]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: SiteAmendment
+              anyOf:
+                - $ref: '#/components/schemas/SitePatch'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/Note'
+              properties:
+                kind:
+                  anyOf:
+                    - type: string
+                      const: Site
+                    - type: 'null'
+                label:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+      responses:
+        '200':
+          description: The amended site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+  /sites/batch:
+    post:
+      operationId: recordSites
+      tags: [survey]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: '#/components/schemas/Site'
+                - $ref: '#/components/schemas/SiteBatch'
+      responses:
+        '201':
+          description: Recorded.
+components:
+  schemas:
+    Marker:
+      type: object
+      required: [kind, at]
+      properties:
+        extent:
+          anyOf:
+            - type: array
+              prefixItems:
+                - type: number
+                - type: number
+              minItems: 2
+              maxItems: 2
+            - type: array
+              prefixItems:
+                - type: number
+                - type: number
+                - type: number
+              minItems: 3
+              maxItems: 3
+            - type: 'null'
+        kind:
+          type: string
+          const: Marker
+        at:
+          anyOf:
+            - $ref: '#/components/schemas/Flat'
+            - $ref: '#/components/schemas/Deep'
+    Transect:
+      type: object
+      required: [kind, legs]
+      properties:
+        extent:
+          anyOf:
+            - type: array
+              prefixItems:
+                - type: number
+                - type: number
+              minItems: 2
+              maxItems: 2
+            - type: 'null'
+        kind:
+          type: string
+          const: Transect
+        legs:
+          type: array
+          items:
+            type: array
+            items:
+              anyOf:
+                - $ref: '#/components/schemas/Flat'
+                - $ref: '#/components/schemas/Deep'
+    Quadrats:
+      type: object
+      required: [kind, cells]
+      properties:
+        extent:
+          anyOf:
+            - type: array
+              prefixItems:
+                - type: number
+                - type: number
+              minItems: 2
+              maxItems: 2
+            - type: 'null'
+        kind:
+          type: string
+          const: Quadrats
+        cells:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                anyOf:
+                  - $ref: '#/components/schemas/Flat'
+                  - $ref: '#/components/schemas/Deep'
+    Flat:
+      type: array
+      prefixItems:
+        - type: number
+        - type: number
+      minItems: 2
+      maxItems: 2
+    Deep:
+      type: array
+      prefixItems:
+        - type: number
+        - type: number
+        - type: number
+      minItems: 3
+      maxItems: 3
+    Site:
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          type: string
+          const: Site
+        name:
+          type: string
+        outline:
+          anyOf:
+            - oneOf:
+                - $ref: '#/components/schemas/Marker'
+                - $ref: '#/components/schemas/Transect'
+                - $ref: '#/components/schemas/Quadrats'
+              discriminator:
+                propertyName: kind
+                mapping:
+                  Marker: '#/components/schemas/Marker'
+                  Transect: '#/components/schemas/Transect'
+                  Quadrats: '#/components/schemas/Quadrats'
+            - type: 'null'
+    SiteBatch:
+      type: object
+      required: [type, sites]
+      properties:
+        type:
+          type: string
+          const: SiteBatch
+        extent:
+          anyOf:
+            - type: array
+              prefixItems:
+                - type: number
+                - type: number
+              minItems: 2
+              maxItems: 2
+            - type: 'null'
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/Site'
+    SiteSearch:
+      type: object
+      properties:
+        within:
+          anyOf:
+            - $ref: '#/components/schemas/Marker'
+            - $ref: '#/components/schemas/Transect'
+            - $ref: '#/components/schemas/Quadrats'
+            - type: 'null'
+    SitePatch:
+      type: object
+      properties:
+        kind:
+          anyOf:
+            - type: string
+              const: Site
+            - type: 'null'
+        label:
+          anyOf:
+            - type: string
+            - type: 'null'
+    Note:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string

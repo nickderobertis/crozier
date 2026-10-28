@@ -145,7 +145,7 @@ the `METEOR` read. The unit tests beside each repair are in `src/ir.rs`
 
 ## conquery's outcome
 
-conquery is registered as corpus row 3477, `ingef-conquery`
+conquery is registered as corpus row 3478, `ingef-conquery`
 ([`CORPUS.md`](../../../tests/fixtures/CORPUS.md)). Its row records:
 
 - the source bytes, vendored at sha256

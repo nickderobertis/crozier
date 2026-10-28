@@ -40,6 +40,14 @@ Where crozier's only addition would be a placeholder, it matches Fern instead.
 The entry's evidence note shows the specification's own declared example or
 description and its validity for the schema it documents.
 
+## Usefulness
+
+Where both outputs are valid but crozier's behaves more usefully for the
+specification as written, crozier may keep its own: a departure of kind
+`usefulness`. Such an entry exists only by a planner's ruling. Its reason
+cites the specification text crozier follows, and its evidence note names an
+end-to-end test of the behaviour through the generated SDK.
+
 ## What an entry holds
 
 | Key | Holds |
@@ -194,6 +202,7 @@ when the two differ.
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
 | `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
+| `usefulness` | 1 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
 
 ### `anyof-path-param-schema-example`
 
@@ -302,6 +311,15 @@ when the two differ.
 - **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`.
 - **Why:** The tree cannot be imported: the root package exports no client and its `client.py` imports from above the top-level package, so the documented `from <package> import <Client>` and `client._.method()` raise `ImportError`.
 - **Evidence:** [`docs/departures/evidence/empty-namespace-package.md`](../../docs/departures/evidence/empty-namespace-package.md)
+
+### `empty-root-security-optional-credential`
+
+- **Kind:** `usefulness`
+- **Trigger:** A document whose root `security` is the empty list, with operations that declare no `security` of their own beside operations that require a credential and none whose own `security` is empty: the root `client.py` and `core/client_wrapper.py`.
+- **Fern writes:** The credential required, `api_key: str` in each constructor and its docstring, and its header set unconditionally.
+- **crozier writes:** The credential optional, `api_key: typing.Optional[str] = None`, and its header set only when a value was given.
+- **Why:** An empty root `security` list means what an absent one does: every operation without its own `security` needs no credential. The certified pair already makes the credential optional for the absent spelling, and crozier reads both spellings alike, so an SDK user can call the unauthenticated operations without inventing a key.
+- **Evidence:** [`docs/departures/evidence/empty-root-security-optional-credential.md`](../../docs/departures/evidence/empty-root-security-optional-credential.md)
 
 ### `fern-metadata-generator-config`
 

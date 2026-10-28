@@ -120,6 +120,7 @@ const KINDS: &[Kind] = &[
             "swagger-parser-null-types",
             "tooljet-microsoft-teams",
             "openapi-generator-composed-schema-lowering",
+            "rs-server",
             "ingef-conquery",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
