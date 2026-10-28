@@ -12548,6 +12548,12 @@ class BoundedFeatureSearch(NamedTuple):
     reason: str
 
 
+class HandwrittenReachReaderContractTests(unittest.TestCase):
+    def test_the_typed_adapter_tracks_the_authoritative_readers_fields(self) -> None:
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        self.assertEqual(gate.ReachRow._fields, HandwrittenReachRow._fields)
+
+
 class FinishedStateGateTests(unittest.TestCase):
     """`finished_state_failures` over a copy of the committed ledgers, broken one way at a time.
 
