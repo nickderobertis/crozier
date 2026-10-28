@@ -2856,9 +2856,9 @@ unreached by any Fern-accepted document.
 | 16 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 17 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
 | 18 | `format-byte` | `schemas` | **2** | **4** | **14** | open — real-specification witness search remains open |
-| 19 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **192** | **16** | open — real-specification witness search remains open |
-| 20 | `anyof-discriminated-union` | `schemas` | **1** | **191** | **17** | owned — first-pass search record below |
-| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **185** | **11** | open — real-specification witness search remains open |
+| 19 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **193** | **16** | open — real-specification witness search remains open |
+| 20 | `anyof-discriminated-union` | `schemas` | **1** | **192** | **17** | owned — first-pass search record below |
+| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **186** | **11** | open — real-specification witness search remains open |
 | 22 | `anyof-oneof-variant` | `schemas` | **1** | **68** | **7** | owned — first-pass search record below |
 | 23 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **7** | open — real-specification witness search remains open |
 | 24 | `additional-properties-schema` | `schemas` | **1** | **51** | **154** | open — real-specification witness search remains open |
