@@ -1,2 +1,8 @@
 version = 1
-proofs = []
+
+[[proofs]]
+key = "schema-example-null"
+fixture = "harbor-signal-null"
+file = "src/fern/client.py"
+test = "residual_null_example_is_absent_from_matching_request_snippets"
+mode = "absence"

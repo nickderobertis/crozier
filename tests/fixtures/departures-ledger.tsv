@@ -527,11 +527,6 @@ docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected	src/fern
 docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected	src/fern/tides/client.py	110	optional-lowered-required-query-array-example
 docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected	src/fern/tides/client.py	227	optional-lowered-required-query-array-example
-docs/fern-measurements/examples/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/fern-measurements/examples/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/fern-measurements/examples/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/fern-measurements/examples/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/fern-measurements/examples/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/examples/nested-discriminator-wire/fern-expected	README.md	1	nested-discriminator-flat-wire
 docs/fern-measurements/examples/nested-discriminator-wire/fern-expected	reference.md	1	nested-discriminator-flat-wire
 docs/fern-measurements/examples/nested-discriminator-wire/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -1521,6 +1516,11 @@ docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/c
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

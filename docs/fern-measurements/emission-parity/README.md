@@ -208,14 +208,16 @@ one; `49c42b1a1` counts both (276 sources, 245 under `corpus-sources/`).
 
 Main registered RS-Server without re-measuring golden reach, so re-measuring
 here moved two census facts. Both are RS-Server's consequences, not conquery's.
-RS-Server's golden reaches `nested_array_element`'s `items.one_of` arm and
-witnesses `schema-example-null`, which had rested only on the residual
-`webflow-v2`. Under the manager's ruling, `03333dd02` retires the two
-hand-written proofs this supersedes: `nested-array-elements`' arm-level
-`items-oneof-element` cover, and the `schema-example-null` supplement in
-`residual-handwritten.toml`. The supplement's tree moved to
-[`examples/harbor-signal-null`](../examples/harbor-signal-null/README.md), where
-its e2e journey remains a regression test.
+RS-Server's golden executes `nested_array_element`'s `items.one_of` arm in 21 of
+its 21 regions. That supersedes `nested-array-elements`' arm-level
+`items-oneof-element` cover, which `03333dd02` retires under the manager's
+ruling. RS-Server also declares two null examples, so the ledger lists it beside
+`webflow-v2` for `schema-example-null`. Removing them moves no generated file,
+so it is no witness of that row. The row's residual-only `harbor-signal-null`
+proof therefore stays, as the manager's later ruling holds. `03333dd02` had
+retired it too, and the revert after it restores the base's content. The census
+gate change that stops such a declarer superseding the proof comes from
+main.
 
 ## Derived records
 
@@ -232,8 +234,9 @@ commit touches `src/`. Each derived record was regenerated from that source:
 
 ## Verification on the final source
 
-Every result below was taken on the final `src/`, `5cba42910`'s, with the
-retirements of `03333dd02` in the tree. Temporary files went under a TMPDIR
+Every result below is from an earlier state: the final `src/`, `5cba42910`'s,
+with both retirements of `03333dd02` in the tree, before the revert. It is
+restated after main's census gate change is merged. Temporary files went under a TMPDIR
 outside the worktree, and PATH held only absolute entries.
 
 | check | result |
