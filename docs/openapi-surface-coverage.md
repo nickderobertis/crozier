@@ -119,7 +119,7 @@ split five ways:
 502 + 70 + 152 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 20 are `gap`, 68 are `golden` and 3 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 21 are `gap`, 67 are `golden` and 3 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where the run that byte-matches Fern
@@ -127,10 +127,10 @@ executes the branch where its two features meet. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) holds that bar, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
 **15** are byte-matched against a registered real specification at their
-interaction branch, **53** are byte-matched co-occurrences, where no measured crozier branch joins both features
+interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **8** remain
-unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 15 + 53 + 0 + 3 + 8 + 12 = 91.
+non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **9** remain
+unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 15 + 52 + 0 + 3 + 9 + 12 = 91.
 None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -3031,7 +3031,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **488** reach every handling site their
+The golden rows split in two. **487** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **83** carry at least one handling site no golden-only witness executes: 117 unreached arms in all. By the verdict each arm's linked record states, 54 read `exhausted`, 24 read `search-incomplete`, 0 read `config-gated`, and 39 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3241,21 +3241,21 @@ why. The changes that took the arm off:
 | 72 | `response-description` | `src/emit.rs::push_return_doc[=None => \{\}]` | 1 | `not searched` — no arm search has run | `buoy-depth-response` |
 | 73 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `not searched` — no arm search has run | `enum-media-selection` |
 | 74 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
-| 76 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
-| 77 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
-| 78 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 79 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 80 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 81 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 82 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 83 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 84 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 85 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 86 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 87 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 88 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 89 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 90 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
+| 77 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
+| 78 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
+| 79 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 80 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 81 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 82 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 83 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 84 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 85 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 86 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 87 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 88 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 89 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 90 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 91 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
 <!-- END GENERATED ARM TABLE -->
 
 **Configuration-gated arms.** An arm only a generation setting reaches is
@@ -3394,6 +3394,7 @@ run executes the branch, or a hand-written fixture that does, removes the row.
 | `combo-body-property-named-as-path-param` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::rename_claimed_path_params[if !overridden && spread\.contains\(&param\.wire_name\) \{]` 0/3 by golden-only witnesses `agco-ats`, `anchore.io`, `apache.org`, `apache.org-airflow`, `apideck.com-accounting`, `apideck.com-crm`, `apideck.com-customer-support`, `apideck.com-file-storage`, `apideck.com-hris`, `apideck.com-issue-tracking`, `apideck.com-lead`, `apideck.com-sms`, `apideck.com-vault`, `crozier-property-name`, `googleapis-monitoring-v1`, `googleapis-servicebroker`, `maif.local-otoroshi`, `microcks.local`, `mockserver`, `netbox.dev`, `nextgen`, `otoroshi`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `redhat.com-catalog_inventory`, `sftpgo`, `swagger-petstore`, `traccar.org` |
 | `combo-inline-body-read-only-property` | `bodies-media` | `witness blocked` — [blocked witnesses](openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses). `webflow-v2` still mismatches 6 of the 11 files deleting the inline bodies' `readOnly` moves, and `osf.io` 69 of its 583, on unrelated shapes (deepObject map query value types, cross-package placement of shared inline types, worked-example values); its readOnly handling itself matches |
 | `combo-oneof-beside-properties` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]` 0/10 by golden-only witnesses `free5gc-namf-communication`, `free5gc-pdu-session`, `komga`, `langchain-agent-server`, `mockserver`, `paloalto-cspm-alerts`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `peopledatalabs`, `qredence-fleet-rlm`, `sigstore-rekor`, `webflow-v2` |
+| `combo-oneof-schema-example` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::referenced_example_literal[^    \{$]` 0/1 by golden-only witnesses `free5gc-namf-communication`, `free5gc-pdu-session`, `rgb-lightning-node`, `webflow-v2`, `zulip`, `zulip-jentic`, `zulip-jentic-entry` |
 | `combo-ref-body-read-only-property` | `bodies-media` | `interaction branch unreached` — unreached `src/emit.rs::append_request_call_args[=^ {40}&& ep\.body_schema_is_open$]` 0/1 by golden-only witnesses `agco-ats`, `apache.org`, `apache.org-airflow`, `apideck.com-accounting`, `apideck.com-ats`, `apideck.com-crm`, `apideck.com-customer-support`, `apideck.com-file-storage`, `apideck.com-hris`, `apideck.com-issue-tracking`, `apideck.com-lead`, `apideck.com-sms`, `apideck.com-vault`, `bunq.com`, `googleapis-monitoring-v1`, `k8s-container-service-provider`, `netbox.dev`, `openbanking-brasil-directory`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `paloalto-remote-networks`, `redhat.com-catalog_inventory`, `steaminputdb`, `writeonly-fields` |
 | `combo-success-anyof-nullable` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` 0/2 by golden-only witnesses `deepsearch-ds-v2`, `letta` |
 | `combo-success-oneof-nullable` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` 0/2 by golden-only witness `ebusd` |

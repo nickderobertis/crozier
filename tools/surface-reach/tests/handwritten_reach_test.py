@@ -1809,21 +1809,6 @@ OUTCOMES = (
             lacks=((CLIENT, "pen=Cage("),),
         ),
     ),
-    Outcome(
-        "combo-oneof-schema-example",
-        Run(
-            operation_document(tally_post(TALLY_JSON + CRATE_BODY), "  schemas:\n" + crate("oneOf", CAGE_EXAMPLE)),
-            ran=(UNION_EXAMPLE, MATCHED_VARIANT),
-            holds=((CLIENT, "pen=Cage("), (CLIENT, "width=4,")),
-            lacks=((CLIENT, "pen=Hutch("),),
-        ),
-        Run(
-            operation_document(tally_post(TALLY_JSON + CRATE_BODY), "  schemas:\n" + crate("oneOf")),
-            skipped=(UNION_EXAMPLE, MATCHED_VARIANT),
-            holds=((CLIENT, "pen=Hutch("),),
-            lacks=((CLIENT, "pen=Cage("),),
-        ),
-    ),
     # A media example on a referenced `oneOf` body is matched to the member it
     # fits; without it the request synthesizes the first member.
     Outcome(
