@@ -2818,7 +2818,18 @@ const MODELS_REFS_COMPOSED_NARROWING_DIR: &str =
 // llmlint: ignore[names_match_behavior] The name is the one the contract in docs/openapi-surface/handwritten/AGENTS.md and this node's acceptance criteria give the gate, and the `cargo nextest -E 'test(handwritten_fixtures_match_fern_goldens)'` check selects it by; renaming it would silently empty that filter.
 #[test]
 fn handwritten_fixtures_match_fern_goldens() {
-    let failures = handwritten_fixture_failures(repo_root());
+    let root = repo_root();
+    let (mut failures, matched) = handwritten_fixture_outcome(root);
+    let derived = handwritten_byte_match_ledger(root, &matched);
+    let path = root.join(HANDWRITTEN_MATCHES);
+    if std::env::var_os("CROZIER_UPDATE_HANDWRITTEN_MATCHES").is_some() {
+        std::fs::write(&path, &derived).expect("write the hand-written byte-match record");
+    } else if std::fs::read_to_string(&path).unwrap_or_default() != derived {
+        failures.push(format!(
+            "{HANDWRITTEN_MATCHES} is not the record of the audited fixtures this gate byte-matched, \
+             at their current bytes; regenerate it with `just handwritten-byte-match` and commit it"
+        ));
+    }
     assert!(
         failures.is_empty(),
         "the hand-written fixtures break their contract \
@@ -5869,10 +5880,51 @@ fn worked_date_time_examples_always_parse() {
 /// for the real gate and a scratch tree laid out the same way for the tests
 /// below, so both go through this one path.
 fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
+    handwritten_fixture_outcome(root).0
+}
+
+/// The record `tools/surface-census/tests/surface_census_test.py` reads to hold a
+/// hand-written co-occurrence witness to a real byte-match: one row per fixture
+/// `combination-cooccurrence.tsv` names as a witness, with the SHA-256 of the
+/// `openapi.yml` and the digest of the `fern-expected/` tree this gate compared.
+const HANDWRITTEN_MATCHES: &str = "docs/openapi-surface/handwritten-byte-match.tsv";
+
+/// `HANDWRITTEN_MATCHES` as this run derives it: each audited hand-written
+/// witness among the `matched` fixtures, at the bytes it was matched at.
+fn handwritten_byte_match_ledger(
+    root: &Path,
+    matched: &std::collections::BTreeSet<String>,
+) -> String {
+    let audit =
+        std::fs::read_to_string(root.join("docs/openapi-surface/combination-cooccurrence.tsv"))
+            .unwrap_or_default();
+    let witnesses: std::collections::BTreeSet<&str> = audit
+        .lines()
+        .skip(1)
+        .filter_map(|line| line.split('\t').nth(1))
+        .filter(|witness| matched.contains(*witness))
+        .collect();
+    let mut ledger = String::from("fixture\topenapi_sha256\tfern_expected_digest\n");
+    for witness in witnesses {
+        let fixture = root.join(HANDWRITTEN_DIR).join(witness);
+        let spec =
+            std::fs::read(fixture.join("openapi.yml")).expect("a matched fixture's openapi.yml");
+        let digest = probe_artifact_digest(&fixture.join("fern-expected"))
+            .expect("a matched fixture's fern-expected/ digest");
+        ledger.push_str(&format!("{witness}\t{}\t{digest}\n", sha256_hex(&spec)));
+    }
+    ledger
+}
+
+/// Every contract failure of the hand-written fixtures under `root`, and the
+/// fixtures crozier byte-matched against a `fern-expected/` tree that hashes to
+/// its declared digest.
+fn handwritten_fixture_outcome(root: &Path) -> (Vec<String>, std::collections::BTreeSet<String>) {
     let (evidence, mut failures) = handwritten_documents(root);
+    let mut matched = std::collections::BTreeSet::new();
     let Ok(entries) = std::fs::read_dir(root.join(HANDWRITTEN_DIR)) else {
         // The document check has already said the directory is missing.
-        return failures;
+        return (failures, matched);
     };
     let mut fixtures: Vec<PathBuf> = entries
         .filter_map(Result::ok)
@@ -5888,6 +5940,7 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
             .unwrap_or_default();
         let expected = fixture.join("fern-expected");
         let spec = fixture.join("openapi.yml");
+        let mut certified = false;
         if let Some(declared) = evidence.get(&name) {
             for (field, pin) in [
                 ("fern_cli_version", cli_pin.as_str()),
@@ -5904,7 +5957,7 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
             if expected.is_dir() {
                 let digest = declared["digest"].as_str().unwrap_or_default();
                 match probe_artifact_digest(&expected) {
-                    Ok(actual) if actual == digest => {}
+                    Ok(actual) if actual == digest => certified = true,
                     Ok(actual) => failures.push(format!(
                         "{name}: fern-expected/ hashes to {actual}, but evidence.toml declares \
                          `{digest}` — a committed Fern tree changed; restore it, never re-declare \
@@ -5925,16 +5978,20 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
                         .collect()
                 })
                 .unwrap_or_default();
-            failures.extend(filtered_tree_failures(
+            let found = filtered_tree_failures(
                 &name,
                 &format!("{HANDWRITTEN_DIR}/{name}/fern-expected"),
                 &spec,
                 &expected,
                 &audiences,
-            ));
+            );
+            if certified && found.is_empty() {
+                matched.insert(name.clone());
+            }
+            failures.extend(found);
         }
     }
-    failures
+    (failures, matched)
 }
 
 /// The document half of the gate: each fixture's parsed pins and digest, and
@@ -8076,6 +8133,12 @@ impl HandwrittenFixture {
             format!("key\tselectors\tsites\tnote\nsample-golden\tschema.format=email\t{HANDWRITTEN_ARM}\t\n"),
         )
         .expect("fixture site table");
+        // No combination row here, so the co-occurrence audit has none either.
+        std::fs::write(
+            regions.join("combination-cooccurrence.tsv"),
+            "key\twitness\tsite\thandlers\twhy_no_branch\n",
+        )
+        .expect("fixture co-occurrence audit");
         std::fs::write(
             regions.join("golden-reach.tsv"),
             format!(
@@ -8219,6 +8282,16 @@ fn handwritten_gate_accepts_a_well_formed_fixture() {
             ),
     )
     .expect("region file");
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+    // The co-occurrence audit is an input the gate reads, so losing it is refused.
+    let audit = fixture.path("docs/openapi-surface/combination-cooccurrence.tsv");
+    let header = std::fs::read_to_string(&audit).expect("co-occurrence audit");
+    std::fs::remove_file(&audit).expect("remove the co-occurrence audit");
+    assert_eq!(
+        vec!["combination-cooccurrence.tsv: missing — restore it from git".to_string()],
+        fixture.failures()
+    );
+    std::fs::write(&audit, header).expect("restore the co-occurrence audit");
     assert_eq!(Vec::<String>::new(), fixture.failures());
 }
 
@@ -8524,7 +8597,7 @@ fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
     fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
     fixture.assert_refused(
         HANDWRITTEN_FIXTURE,
-        "verdict `witness-found` is not `exhausted`, `search-incomplete` or `config-gated`",
+        "verdict `witness-found` is not `exhausted`, `search-incomplete`, `config-gated` or `witness-blocked`",
     );
 
     let fixture = HandwrittenFixture::new();

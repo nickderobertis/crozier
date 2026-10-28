@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import csv
+import datetime
 import functools
 import gzip
 import hashlib
@@ -45,7 +46,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
-from typing import Any, ClassVar, NamedTuple
+from typing import Any, ClassVar, NamedTuple, Protocol
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -1158,6 +1159,337 @@ def refusal_population_is_decided(root: Path, name: str) -> bool:
         return False
 
 
+INTERACTION_UNREACHED = "`interaction branch unreached`"
+# A gap the user has explicitly ruled may stay unproven, in any of the three named
+# tables: the date of the ruling and its text.
+USER_RULING = re.compile(r"(?:`user ruling`|user ruling) — (?P<date>\d{4}-\d{2}-\d{2}): (?P<text>\S.*)")
+COOCCURRENCE_AUDIT = Path("docs") / "openapi-surface" / "combination-cooccurrence.tsv"
+# What `handwritten_fixtures_match_fern_goldens` byte-matched, at the bytes it compared:
+# one row per audited hand-written witness, written and held current by that gate.
+BYTE_MATCHES = Path("docs") / "openapi-surface" / "handwritten-byte-match.tsv"
+BYTE_MATCHES_HEADER = "fixture\topenapi_sha256\tfern_expected_digest"
+
+
+def user_ruling(reason: str) -> bool | None:
+    """Whether a named reason is a well-formed user ruling: None when it is no ruling at all."""
+    if not re.match(r"`?user ruling", reason):
+        return None
+    match = USER_RULING.fullmatch(reason)
+    if match is None:
+        return False
+    try:
+        datetime.date.fromisoformat(match["date"])
+    except ValueError:
+        return False
+    return True
+
+
+def unadmitted_combination_reason(key: str) -> str:
+    return (
+        f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
+        f"without {NOT_SEARCHED}, a validated {WITNESS_BLOCKED} record, {INTERACTION_UNREACHED} "
+        "or a user ruling as its reason"
+    )
+
+
+def ruling_failure(where: str, reason: str) -> str:
+    return (
+        f"{where}: its user ruling {reason!r} is not `user ruling — <YYYY-MM-DD>: <ruling text>` "
+        "with a real date and the ruling's text"
+    )
+
+
+def cooccurrence_audit(root: Path) -> tuple[dict, list[str]]:
+    """`combination-cooccurrence.tsv` as `key -> row`, and what its form breaks (`golden-reach.py`)."""
+    return load_script("tools/surface-census/golden-reach.py").read_cooccurrence(root / COOCCURRENCE_AUDIT)
+
+
+def pointer_target(document: object, pointer: str) -> object | None:
+    """The node a JSON Pointer names in a parsed document, or None."""
+    if not pointer.startswith("/"):
+        return None
+    node = document
+    for token in pointer[1:].split("/"):
+        token = token.replace("~1", "/").replace("~0", "~")
+        match node:
+            case dict() if token in node:
+                node = node[token]
+            case list() if token.isdigit() and int(token) < len(node):
+                node = node[int(token)]
+            case _:
+                return None
+    return node
+
+
+def certified_tree_digest(tree: Path) -> str:
+    """A `fern-expected/` tree's digest, streamed as `probe_artifact_digest` in `e2e.rs` streams it."""
+    stream = bytearray()
+    for relative in sorted(path.relative_to(tree).as_posix() for path in tree.rglob("*") if path.is_file()):
+        content = (tree / relative).read_bytes()
+        stream += relative.encode() + b"\0" + str(len(content)).encode() + b"\0" + content
+    return hashlib.sha256(stream).hexdigest()
+
+
+def byte_match_failures(root: Path, fixture: str) -> list[str]:
+    """Why `fixture` is not one `handwritten_fixtures_match_fern_goldens` byte-matched.
+
+    That gate compares crozier's output over `openapi.yml` against `fern-expected/`,
+    and records in `BYTE_MATCHES` each audited witness it matched with the SHA-256 of
+    the document and the digest of the tree it compared; it fails while that record
+    is stale. So the fixture is byte-matched only at a recorded row whose hashes are
+    its current bytes, its tree hashing to its declared digest at the certified pair.
+    """
+    relative = Path("docs") / "openapi-surface" / "handwritten" / fixture
+    # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
+    directory = (root if (root / relative / "openapi.yml").is_file() else REPO) / relative
+    expected = directory / "fern-expected"
+    if not (directory / "openapi.yml").is_file() or not expected.is_dir() or not any(expected.rglob("*")):
+        return ["it carries no `openapi.yml` and `fern-expected/` tree for the gate to compare"]
+    try:
+        evidence = tomllib.loads((directory / "evidence.toml").read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        return [f"its evidence.toml cannot be read ({error})"]
+    pins = root / "assets" / "scaffolding" / "metadata.json"
+    try:
+        certified = json.loads((pins if pins.is_file() else REPO / pins.relative_to(root)).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        return [f"the certified pair's metadata.json cannot be read ({error})"]
+    if not isinstance(certified, dict) or not all(
+        isinstance(certified.get(pin), str) and certified[pin] for pin in ("cliVersion", "generatorVersion")
+    ):
+        return [
+            "the certified pair's metadata.json is not an object declaring string `cliVersion` and `generatorVersion`"
+        ]
+    failures = [
+        f"its evidence.toml `{field}` is `{evidence.get(field)}`, not the certified `{certified[pin]}`"
+        for field, pin in (("fern_cli_version", "cliVersion"), ("fern_python_sdk_version", "generatorVersion"))
+        if evidence.get(field) != certified[pin]
+    ]
+    if (actual := certified_tree_digest(expected)) != evidence.get("digest"):
+        failures.append(f"its fern-expected/ hashes to {actual}, not the digest evidence.toml declares")
+    record = root / BYTE_MATCHES if (root / BYTE_MATCHES).is_file() else REPO / BYTE_MATCHES
+    lines = record.read_text(encoding="utf-8").splitlines() if record.is_file() else []
+    if lines[:1] != [BYTE_MATCHES_HEADER]:
+        return [*failures, f"{BYTE_MATCHES.name} is missing or its header is not `{BYTE_MATCHES_HEADER}`"]
+    current = "\t".join([fixture, hashlib.sha256((directory / "openapi.yml").read_bytes()).hexdigest(), actual])
+    if current not in lines[1:]:
+        failures.append(
+            f"{BYTE_MATCHES.name} records no byte-match of its current openapi.yml and fern-expected/; "
+            "crozier's output over them is unproven until handwritten_fixtures_match_fern_goldens "
+            "matches them and rewrites the record"
+        )
+    return failures
+
+
+class MeasuredReach(Protocol):
+    """What the combination contract reads of a `golden-reach.tsv` row (`golden-reach.py`'s `Reach`)."""
+
+    @property
+    def witnesses(self) -> tuple[str, ...]: ...
+
+    @property
+    def sites(self) -> tuple[tuple[str, int, int], ...]: ...
+
+    @property
+    def unreached_sites(self) -> int: ...
+
+
+def combination_proof_failures(
+    root: Path, ledger: dict[str, MeasuredReach], covers: list[tuple[str, str, str | None]]
+) -> list[str]:
+    """The combination proof contract: where each combination's proof rests.
+
+    (a) a combination's site cell names interaction branches, or `co-occurrence`;
+    (b) a `golden` row's witnesses, and a `handwritten` row's fixture, execute every
+    interaction site, or the row is a named `gap`; (c) a `co-occurrence` row has
+    exactly one audit row whose witness is a golden-only declarer of the combination,
+    or, on a `handwritten` row, its fixture, byte-matched and running every named handler.
+    """
+    reach = load_script("tools/surface-census/golden-reach.py")
+    surface = root / "docs" / "openapi-surface"
+    try:
+        table = reach.read_sites_table(surface / "golden-reach-sites.tsv")
+    except SystemExit as error:
+        return [str(error)]
+    failures = reach.combination_site_failures(table)
+    rows = combination_rows(root)
+    audit, found = cooccurrence_audit(root)
+    failures += found
+    for key in sorted(k for k in table if k.startswith(COMBINATION_PREFIX) and k not in rows):
+        failures.append(f"{key}: golden-reach-sites.tsv declares it, but no region row carries it")
+    cooccurring = {key for key, row in table.items() if key.startswith(COMBINATION_PREFIX) and row.cooccurrence}
+    for key in sorted(cooccurring - set(audit)):
+        failures.append(f"{key}: its site cell reads `co-occurrence`, but {COOCCURRENCE_AUDIT.name} has no row for it")
+    for key in sorted(set(audit) - cooccurring):
+        failures.append(f"{key}: {COOCCURRENCE_AUDIT.name} audits it, but its site cell is not `co-occurrence`")
+    sources = None
+    measured_rows, found = handwritten_reach_rows(root)
+    failures += found
+    measurements = {(fixture, key, site): executed for fixture, key, site, executed, _total in measured_rows}
+    for key in sorted(set(audit) & cooccurring):
+        witness = audit[key].witness
+        category = rows[key].cells[3].strip("`") if key in rows else "-"
+        match category:
+            case "handwritten":
+                # A hand-written combination no measured branch joins both features of rests on its
+                # fixture: the audit names it, and the fixture runs every named handler.
+                fixtures = {fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None}
+                if witness not in fixtures:
+                    failures.append(
+                        f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not the hand-written "
+                        "fixture whose feature-level cover proves it"
+                    )
+                    continue
+                failures += [
+                    f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+                    f"byte-matches: {reason}"
+                    for reason in byte_match_failures(root, witness)
+                ]
+                fixture_document = Path("docs") / "openapi-surface" / "handwritten" / witness / "openapi.yml"
+                # A ledger copy may carry the fixtures' evidence alone; their documents are the tree's.
+                document_path: Path | None = (root if (root / fixture_document).is_file() else REPO) / fixture_document
+                for spec in reach.handler_specs(audit[key].handlers):
+                    if measurements.get((witness, key, spec), 0) < 1:
+                        failures.append(
+                            f"{key}: its hand-written fixture `{witness}` does not execute the handler `{spec}` "
+                            f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv"
+                        )
+            case "golden":
+                measured = ledger.get(key)
+                if measured is None or witness not in measured.witnesses:
+                    failures.append(
+                        f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{witness}`, which is not a golden-only "
+                        "source the census counts declaring the combination (its golden-reach.tsv witnesses)"
+                    )
+                    continue
+                if sources is None:
+                    engine = load_script("tools/surface-census/openapi-surface-census.py")
+                    # A ledger copy carries no corpus; its witnesses' committed sources are the tree's.
+                    fixtures_root = (root if (root / "tests" / "fixtures").is_dir() else REPO) / "tests" / "fixtures"
+                    sources = {
+                        source.fixture: source.path
+                        for source in engine.acquisition_sources(fixtures_root, fixtures_root / "corpus-sources", False)
+                    }
+                document_path = sources.get(witness)
+            case _:
+                failures.append(
+                    f"{key}: a `co-occurrence` row stays `golden`, or `handwritten` on its fixture; it reads `{category}`"
+                )
+                continue
+        for spec in reach.handler_specs(audit[key].handlers):
+            try:
+                reach.resolve_site(spec, root if (root / "src").is_dir() else REPO)
+            except SystemExit as error:
+                failures.append(
+                    f"{key}: {COOCCURRENCE_AUDIT.name} names the handler `{spec}`, which does not resolve ({error})"
+                )
+        engine = load_script("tools/surface-census/openapi-surface-census.py")
+        try:
+            document = engine.load_document(document_path) if document_path is not None else None
+        except (engine.DocumentError, SystemExit, ValueError):
+            document = None
+        if document is None or pointer_target(document, audit[key].site) is None:
+            failures.append(
+                f"{key}: {COOCCURRENCE_AUDIT.name}'s site `{audit[key].site}` names no node in "
+                f"`{witness}`'s committed source document"
+            )
+    for key, (region, cells) in sorted(rows.items()):
+        declared = table.get(key)
+        match cells[3].strip("`"):
+            case "golden":
+                if declared is None:
+                    failures.append(f"{key}: a `golden` combination row with no golden-reach-sites.tsv row")
+                    continue
+                if declared.cooccurrence:
+                    continue
+                measured = ledger.get(key)
+                unreached = [spec for spec, hit, _total in measured.sites if not hit] if measured else declared.sites
+                if unreached:
+                    failures.append(
+                        f"{key}: a `golden` combination row ({region}.md) whose golden-only witnesses do not "
+                        f"execute its interaction site(s) {', '.join(f'`{spec}`' for spec in unreached)}; "
+                        f"reclassify it `gap` and name it {INTERACTION_UNREACHED}"
+                    )
+            case "handwritten":
+                fixtures = sorted({fixture for fixture, cover_key, arm in covers if cover_key == key and arm is None})
+                if declared is None:
+                    failures.append(
+                        f"{key}: a `handwritten` combination row needs its interaction sites, or `co-occurrence`, "
+                        "in golden-reach-sites.tsv"
+                    )
+                    continue
+                if declared.cooccurrence:
+                    continue
+                for fixture in fixtures:
+                    for spec in declared.sites:
+                        if measurements.get((fixture, key, spec), 0) < 1:
+                            failures.append(
+                                f"{key}: a `handwritten` combination row whose fixture `{fixture}` does not execute "
+                                f"its interaction site `{spec}` in handwritten-reach.tsv; reclassify it `gap` and "
+                                f"name it {INTERACTION_UNREACHED}"
+                            )
+    return failures
+
+
+class HandwrittenReachRow(NamedTuple):
+    """One `handwritten-reach.tsv` row, as `handwritten-fixtures.py`'s `ReachRow` reads it."""
+
+    fixture: str
+    key: str
+    site: str
+    regions_executed: int
+    regions: int
+
+
+def handwritten_reach_rows(root: Path) -> tuple[list[HandwrittenReachRow], list[str]]:
+    """`handwritten-reach.tsv`'s rows, and every way its header, rows or order break,
+    read by `handwritten-fixtures.py`'s own reader."""
+    gate = load_script("tools/surface-census/handwritten-fixtures.py")
+    rows, failures = gate.read_reach_ledger(root / "docs" / "openapi-surface" / "handwritten-reach.tsv")
+    return [HandwrittenReachRow(*row) for row in rows], failures
+
+
+def interaction_unreached(root: Path, key: str, reason: str, ledger: dict[str, MeasuredReach]) -> bool:
+    """Admit an `interaction branch unreached` reason only as the measurement states it.
+
+    It names each unreached interaction site with its counts and the run that
+    missed it — the golden-only witnesses golden-reach.tsv reports, or the
+    hand-written fixture handwritten-reach.tsv measures — exactly as rendered by
+    `golden-reach.py`'s `interaction_unreached_reason`.
+    """
+    reach = load_script("tools/surface-census/golden-reach.py")
+    expected = []
+    measured = ledger.get(key)
+    if measured is not None and measured.unreached_sites:
+        expected.append(reach.interaction_unreached_reason(measured.sites, reach.witnesses_phrase(measured.witnesses)))
+    by_fixture: dict[str, list[tuple[str, int, int]]] = {}
+    measured_rows, malformed = handwritten_reach_rows(root)
+    if malformed:
+        # A ledger whose form is broken states no measurement to restate.
+        return False
+    for fixture, measured_key, site, executed, total in measured_rows:
+        if measured_key == key:
+            by_fixture.setdefault(fixture, []).append((site, executed, total))
+    for fixture, sites in sorted(by_fixture.items()):
+        if any(not hit for _spec, hit, _total in sites):
+            expected.append(reach.interaction_unreached_reason(tuple(sites), f"hand-written fixture `{fixture}`"))
+    return reason in expected
+
+
+def witness_blocked_cover_failures(root: Path) -> list[str]:
+    """Every `witness-blocked` cover: feature-level, on a combination key, citing a record
+    whose table names the key and each blocked declarer (`handwritten-fixtures.py`)."""
+    gate = load_script("tools/surface-census/handwritten-fixtures.py")
+    failures = []
+    for evidence in sorted((root / gate.HANDWRITTEN).glob("*/evidence.toml")):
+        fixture, found = gate.read_evidence(evidence.parent)
+        failures += [failure for failure in found if gate.WITNESS_BLOCKED in failure]
+        for cover in fixture.covers if fixture is not None else ():
+            if cover.verdict == gate.WITNESS_BLOCKED:
+                failures += gate.search_failures(root, f"{evidence.parent.name}: cover `{cover.key}`", cover)
+    return failures
+
+
 def finished_state_failures(root: Path) -> list[str]:
     """What keeps the coverage report from its finished state, read off `root`'s ledgers.
 
@@ -1169,14 +1501,21 @@ def finished_state_failures(root: Path) -> list[str]:
     `NAMED_GAPS_HEADING` — over an arm search reading `search-incomplete`, or,
     where no arm search exists, giving `not searched` as its reason; and every
     Fern refusal class has a decided detector or an evaluated whole document
-    population. Nothing unproven passes
-    unlisted.
+    population. Every combination is held to the combination proof contract
+    (`combination_proof_failures`): its site cell names interaction branches or
+    reads `co-occurrence` with its audit row, and a `golden` or `handwritten` row's
+    run executes each interaction site, else the row is a named `gap`. Each named
+    table admits its own reason forms and a dated user ruling, and nothing else.
+    Nothing unproven passes unlisted.
     """
     surface = root / "docs" / "openapi-surface"
     decided, failures = load_script("tools/surface-census/output-insensitive.py").read_records(root)
     ledger = load_script("tools/surface-census/golden-reach.py").read_ledger(surface / "golden-reach.tsv")
     witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
+    ledger_by_key = {reach.key: reach for _rank, reach in ledger}
     covers = handwritten_covers(surface / "handwritten")
+    failures += combination_proof_failures(root, ledger_by_key, covers)
+    failures += witness_blocked_cover_failures(root)
     named_features = named_gap_features(root)
     named_combinations = named_gap_combinations(root)
     open_features = set()
@@ -1197,13 +1536,17 @@ def finished_state_failures(root: Path) -> list[str]:
             if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
                 open_features.add(key)
                 if key in named_features:
-                    if not (
-                        named_features[key].startswith(NOT_SEARCHED)
+                    ruled = user_ruling(named_features[key])
+                    if ruled is False:
+                        failures.append(ruling_failure(key, named_features[key]))
+                    elif not (
+                        ruled
+                        or named_features[key].startswith(NOT_SEARCHED)
                         or bounded_incomplete_search(root, key, named_features[key])
                     ):
                         failures.append(
                             f"{key}: docs/openapi-surface-coverage.md names it an unproven feature "
-                            f"without {NOT_SEARCHED} or a validated bounded search as its reason"
+                            f"without {NOT_SEARCHED}, a validated bounded search or a user ruling as its reason"
                         )
                     continue
                 failures.append(
@@ -1226,14 +1569,21 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"{key}: docs/openapi-surface-coverage.md names it in region "
                 f"{named_combinations[key].region!r}, but its row is in {region!r}"
             )
+        elif user_ruling(named_combinations[key].why) is False:
+            failures.append(ruling_failure(key, named_combinations[key].why))
+        elif named_combinations[key].why.startswith(INTERACTION_UNREACHED):
+            if not interaction_unreached(root, key, named_combinations[key].why, ledger_by_key):
+                failures.append(
+                    f"{key}: docs/openapi-surface-coverage.md names it {INTERACTION_UNREACHED}, but not as "
+                    "its measurement reports it: each unreached interaction site with its counts, and the "
+                    "golden-only witnesses or hand-written fixture whose run missed it"
+                )
         elif not (
             named_combinations[key].why.startswith(NOT_SEARCHED)
+            or user_ruling(named_combinations[key].why)
             or witness_blocked(root, key, named_combinations[key].why)
         ):
-            failures.append(
-                f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
-                f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason"
-            )
+            failures.append(unadmitted_combination_reason(key))
     for key in sorted(set(named_combinations) - set(gap_combinations)):
         failures.append(
             f"{key}: docs/openapi-surface-coverage.md names it an unproven combination, but it is "
@@ -1252,6 +1602,9 @@ def finished_state_failures(root: Path) -> list[str]:
             )
     unreached = set()
     for _rank, reach in ledger:
+        if reach.key.startswith(COMBINATION_PREFIX):
+            # A combination's unreached interaction branch is named with the combinations.
+            continue
         for arm, hit, _total in reach.sites:
             if not hit:
                 unreached.add((reach.key, arm))
@@ -1259,6 +1612,11 @@ def finished_state_failures(root: Path) -> list[str]:
                 continue
             if (reach.key, arm) in named:
                 reason = named[(reach.key, arm)]
+                ruled = user_ruling(reason)
+                if ruled is not None:
+                    if not ruled:
+                        failures.append(ruling_failure(f"{reach.key} arm `{arm}`", reason))
+                    continue
                 if reason.startswith("`search incomplete`") and not bounded_incomplete_search(
                     root, reach.key, reason, arm
                 ):
@@ -2444,6 +2802,10 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
                 f'{audiences}\n[[covers]]\nkey = "{self.KEY}"\narm = \'{arm}\'\nverdict = "{verdict}"\n',
                 encoding="utf-8",
             )
+        # The arm sections name the ledger's `golden` rows, which a region file declares.
+        (regions / "schemas.md").write_text(
+            f"| {self.KEY} | both | scratch | golden | scratch | scratch | scratch | scratch |\n", encoding="utf-8"
+        )
         (regions / "golden-reach.tsv").write_text(
             "# golden-reach ledger: scratch\n"
             + golden_reach_script().LEDGER_HEADER
@@ -9654,8 +10016,10 @@ class RankedBacklogTests(unittest.TestCase):
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
         # Feature proof totals above exclude combinations. The arm headline
-        # explicitly describes the whole reach ledger, including combinations.
-        arm_ledger_rows = self.reach_ledger(combinations=True)
+        # describes the ledger's `golden` rows, golden combinations among them; a
+        # `gap` combination's unreached interaction branch is named with the
+        # combinations instead.
+        arm_ledger_rows = golden_reach_script().golden_ledger(self.reach_ledger(combinations=True), self.REGIONS)
         unreached = {
             (reach.key, spec) for _rank, reach in arm_ledger_rows for spec, hit, _total in reach.sites if not hit
         }
@@ -9806,13 +10170,17 @@ class RankedBacklogTests(unittest.TestCase):
         registrations = census.golden_registrations(REPO / census.GOLDEN_REGISTRY)
         residual = {api for api, registration in registrations.items() if registration.unmatched}
         vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        # A declarer a paired removal records as output-insensitive proves nothing about the key.
+        insensitive, errors = gate.output_insensitive_declarers(REPO)
+        self.assertEqual([], errors)
         resting = {
             reach.key: real
             for _rank, reach in self.reach_ledger()
-            if (real := set(reach.witnesses) - vendored) and real <= residual
+            if (real := set(reach.witnesses) - vendored - insensitive.get(reach.key, frozenset())) and real <= residual
         }
         table = residual_attributions(REPO)
-        supplements, errors = load_script("tools/surface-census/handwritten-fixtures.py").read_residual_proofs(REPO)
+        supplements, errors = gate.read_residual_proofs(REPO)
         self.assertEqual([], errors)
         supplemental = {item.key for item in supplements}
         self.assertFalse(set(table) & supplemental)
@@ -11005,7 +11373,7 @@ class RankedBacklogTests(unittest.TestCase):
     def reach_ledger(self, path=None, *, combinations=False):
         module = self.golden_reach()
         rows = module.read_ledger() if path is None else module.read_ledger(path)
-        golden = module.golden_rows(self.REGIONS)
+        golden = module.measured_rows(self.REGIONS, set(module.read_sites_table()))
         load_script("tools/surface-census/restate-coverage.py").validate_reach_population(
             {reach.key for _rank, reach in rows},
             {key for key in golden if not key.startswith(COMBINATION_PREFIX)},
@@ -11059,7 +11427,7 @@ class RankedBacklogTests(unittest.TestCase):
         module = self.golden_reach()
         rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger(combinations=True)}
         for key, (region, cells) in sorted((self.entries | self.combination_entries).items()):
-            if cells[3].strip("`") != "golden" or module.pending_combination(cells):
+            if cells[3].strip("`") != "golden":
                 continue
             with self.subTest(region=region, key=key):
                 self.assertTrue(
@@ -11073,8 +11441,8 @@ class RankedBacklogTests(unittest.TestCase):
         """One ledger row per golden row, owned by the right region, in rubric order."""
         module = self.golden_reach()
         ledger = self.reach_ledger(combinations=True)
-        golden = module.golden_rows(self.REGIONS)
-        self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
+        measured = module.measured_rows(self.REGIONS, set(module.read_sites_table()))
+        self.assertEqual(measured, {reach.key: reach.region for _rank, reach in ledger})
         self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
         self.assertEqual(
             sorted((reach for _rank, reach in ledger), key=module.ranking_key),
@@ -11406,7 +11774,7 @@ class RankedBacklogTests(unittest.TestCase):
         edit or a stale section fails here.
         """
         module = golden_reach_script()
-        ledger = self.reach_ledger(combinations=True)
+        ledger = module.golden_ledger(self.reach_ledger(combinations=True), self.REGIONS)
         rows = module.arm_rows(ledger, self.REGIONS)
         self.assertEqual(
             [
@@ -12184,6 +12552,12 @@ class BoundedFeatureSearch(NamedTuple):
     reason: str
 
 
+class HandwrittenReachReaderContractTests(unittest.TestCase):
+    def test_the_typed_adapter_tracks_the_authoritative_readers_fields(self) -> None:
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        self.assertEqual(gate.ReachRow._fields, HandwrittenReachRow._fields)
+
+
 class FinishedStateGateTests(unittest.TestCase):
     """`finished_state_failures` over a copy of the committed ledgers, broken one way at a time.
 
@@ -12199,6 +12573,9 @@ class FinishedStateGateTests(unittest.TestCase):
         surface = Path("docs") / "openapi-surface"
         copies = [*(path.relative_to(REPO) for path in (REPO / surface).glob("*.md"))]
         copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
+        copies += [surface / name for name in ("golden-reach-sites.tsv", "handwritten-reach.tsv")]
+        copies += [COOCCURRENCE_AUDIT] if (REPO / COOCCURRENCE_AUDIT).is_file() else []
+        copies += [BYTE_MATCHES] if (REPO / BYTE_MATCHES).is_file() else []
         dispositions = REPO / surface / "output-insensitive.tsv"
         if dispositions.exists():
             copies += [surface / "output-insensitive.tsv", Path("assets/scaffolding/metadata.json")]
@@ -12214,6 +12591,16 @@ class FinishedStateGateTests(unittest.TestCase):
                 if "object-query-type-unsupported" in row["classes"].split(","):
                     copies.append(surface / "fern-refusals/crozier-logs" / f"{row['digest']}.strict.log")
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
+        # A hand-written co-occurrence witness is held to the tree its byte-match compares.
+        with (REPO / COOCCURRENCE_AUDIT).open(encoding="utf-8") as handle:
+            audited = {row["witness"] for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+        copies += [
+            path.relative_to(REPO)
+            for name in sorted(audited)
+            if (HANDWRITTEN / name).is_dir()
+            for path in (HANDWRITTEN / name).rglob("*")
+            if path.is_file()
+        ]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
         copies += [surface / "witness-search-unproven-features" / name for name in ("README.md", "census.tsv")]
@@ -12486,10 +12873,21 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
-    def name_a_demoted_combination(self, reason: str) -> tuple[str, str]:
-        """Demote a `golden` combination row to `gap` and name it with `reason`."""
+    def name_a_demoted_combination(self, reason: str, key: str | None = None) -> tuple[str, str]:
+        """Demote a `golden` combination row (the first proven at an interaction branch,
+        unless `key` names one) to `gap` and name it with `reason`."""
         rows = combination_rows(self.root)
-        key = sorted(key for key, (_r, cells) in rows.items() if cells[3].strip("`") == "golden")[0]
+        sites = load_script("tools/surface-census/golden-reach.py").read_sites_table(
+            self.root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
+        )
+        key = (
+            key
+            or sorted(
+                key
+                for key, (_r, cells) in rows.items()
+                if cells[3].strip("`") == "golden" and not sites[key].cooccurrence
+            )[0]
+        )
         region = rows[key].region
         self.edit(
             f"docs/openapi-surface/{region}.md",
@@ -12507,8 +12905,7 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_a_named_combination_with_neither_admitted_reason_is_refused(self) -> None:
         key, _region = self.name_a_demoted_combination("`search incomplete` — no record")
         self.assertIn(
-            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
-            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
+            unadmitted_combination_reason(key),
             finished_state_failures(self.root),
         )
 
@@ -12517,8 +12914,7 @@ class FinishedStateGateTests(unittest.TestCase):
             "`witness blocked` — [blocked witnesses](openapi-surface/no-such-search/README.md#blocked-witnesses). x"
         )
         self.assertIn(
-            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
-            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
+            unadmitted_combination_reason(key),
             finished_state_failures(self.root),
         )
 
@@ -12536,8 +12932,401 @@ class FinishedStateGateTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertIn(
-            f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
-            f"without {NOT_SEARCHED} or a validated {WITNESS_BLOCKED} record as its reason",
+            unadmitted_combination_reason(key),
+            finished_state_failures(self.root),
+        )
+
+    SITES = "docs/openapi-surface/golden-reach-sites.tsv"
+    LEDGER = "docs/openapi-surface/golden-reach.tsv"
+
+    def interaction_combination(self) -> tuple[str, str, list[str]]:
+        """A `golden` combination measured at an interaction branch: its key, its site-table
+        line and its ledger fields."""
+        rows = combination_rows(self.root)
+        table = (self.root / self.SITES).read_text(encoding="utf-8").splitlines()
+        ledger = [line.split("\t") for line in (self.root / self.LEDGER).read_text(encoding="utf-8").splitlines()]
+        for line in table:
+            key, _selectors, sites, _note = line.split("\t")
+            if key.startswith(COMBINATION_PREFIX) and sites != "co-occurrence" and rows[key].cells[3] == "golden":
+                fields = next(fields for fields in ledger if fields[1:2] == [key])
+                return key, line, fields
+        raise AssertionError("the committed tree measures no combination at an interaction branch")
+
+    def unreach(self, fields: list[str]) -> list[str]:
+        """The ledger fields `fields` with every interaction site reported unreached."""
+        sites = re.sub(r"=\d+/(\d+)(?= ; |$)", r"=0/\1", fields[8])
+        return [*fields[:3], str(len(sites.split(" ; "))), *fields[4:8], sites, *fields[9:]]
+
+    def test_a_combination_naming_a_whole_function_or_none_is_refused_by_key(self) -> None:
+        key, line, _fields = self.interaction_combination()
+        for cell, refusal in (
+            ("src/ir.rs::build_endpoint", f"{key}: `src/ir.rs::build_endpoint` names a whole function"),
+            ("none", f"{key}: a combination row's sites cell is `none`"),
+        ):
+            with self.subTest(cell=cell):
+                fields = line.split("\t")
+                self.edit(self.SITES, line, "\t".join([*fields[:2], cell, fields[3]]))
+                failures = finished_state_failures(self.root)
+                self.assertTrue(any(failure.startswith(refusal) for failure in failures), failures)
+                self.edit(self.SITES, "\t".join([*fields[:2], cell, fields[3]]), line)
+        self.assertEqual([], finished_state_failures(self.root))
+
+    def test_a_golden_combination_whose_witnesses_miss_its_interaction_branch_is_refused(self) -> None:
+        key, _line, fields = self.interaction_combination()
+        self.edit(self.LEDGER, "\t".join(fields), "\t".join(self.unreach(fields)))
+        failures = finished_state_failures(self.root)
+        self.assertTrue(
+            any(
+                failure.startswith(f"{key}: a `golden` combination row (")
+                and "whose golden-only witnesses do not execute its interaction site(s)" in failure
+                for failure in failures
+            ),
+            failures,
+        )
+
+    def test_an_interaction_branch_unreached_reason_is_admitted_only_as_measured(self) -> None:
+        """The demoted row, named with the reason its measurement renders, passes; any other
+        wording of that reason is refused, naming the key."""
+        key, _line, fields = self.interaction_combination()
+        unreached = self.unreach(fields)
+        self.edit(self.LEDGER, "\t".join(fields), "\t".join(unreached))
+        reach = load_script("tools/surface-census/golden-reach.py")
+        measured = {r.key: r for _rank, r in reach.read_ledger(self.root / self.LEDGER)}[key]
+        reason = reach.interaction_unreached_reason(measured.sites, reach.witnesses_phrase(measured.witnesses))
+        self.assertTrue(reason.startswith(f"{INTERACTION_UNREACHED} — unreached `"), reason)
+        self.name_a_demoted_combination(reason, key)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+        doc = "docs/openapi-surface-coverage.md"
+        self.edit(doc, reason, reason.replace(" by golden-only witness", " by some witness"))
+        self.assertIn(
+            f"{key}: docs/openapi-surface-coverage.md names it {INTERACTION_UNREACHED}, but not as its "
+            "measurement reports it: each unreached interaction site with its counts, and the golden-only "
+            "witnesses or hand-written fixture whose run missed it",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_handwritten_combination_whose_fixture_misses_its_interaction_site_is_refused(self) -> None:
+        # Each hand-written combination on the finished tree is a co-occurrence, so the copy
+        # declares one at an interaction arm its fixture's measurement reports unexecuted.
+        path = "docs/openapi-surface/handwritten-reach.tsv"
+        line = next(
+            line
+            for line in (self.root / path).read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[1].startswith(COMBINATION_PREFIX)
+        )
+        fixture, key, _handler, _executed, total = line.split("\t")
+        site = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
+        table = "docs/openapi-surface/golden-reach-sites.tsv"
+        row = next(
+            row for row in (self.root / table).read_text(encoding="utf-8").splitlines() if row.startswith(f"{key}\t")
+        )
+        cells = row.split("\t")
+        self.edit(table, row, "\t".join([*cells[:2], site, *cells[3:]]))
+        self.edit(path, line, "\t".join([fixture, key, site, "0", total]))
+        self.assertIn(
+            f"{key}: a `handwritten` combination row whose fixture `{fixture}` does not execute its "
+            f"interaction site `{site}` in handwritten-reach.tsv; reclassify it `gap` and name it "
+            f"{INTERACTION_UNREACHED}",
+            finished_state_failures(self.root),
+        )
+
+    def audit_lines(self) -> tuple[str, list[str]]:
+        text = (self.root / COOCCURRENCE_AUDIT).read_text(encoding="utf-8")
+        return text, text.splitlines()
+
+    def test_a_cooccurrence_row_and_its_audit_row_are_held_both_ways(self) -> None:
+        text, lines = self.audit_lines()
+        row = lines[1]
+        key = row.split("\t")[0]
+        (self.root / COOCCURRENCE_AUDIT).write_text(text.replace(row + "\n", "", 1), encoding="utf-8", newline="\n")
+        self.assertIn(
+            f"{key}: its site cell reads `co-occurrence`, but {COOCCURRENCE_AUDIT.name} has no row for it",
+            finished_state_failures(self.root),
+        )
+        arm, _line, _fields = self.interaction_combination()
+        extra = "\t".join([arm, *row.split("\t")[1:]])
+        body = sorted([*lines[1:], extra])
+        (self.root / COOCCURRENCE_AUDIT).write_text("\n".join([lines[0], *body]) + "\n", encoding="utf-8", newline="\n")
+        self.assertIn(
+            f"{arm}: {COOCCURRENCE_AUDIT.name} audits it, but its site cell is not `co-occurrence`",
+            finished_state_failures(self.root),
+        )
+
+    def test_an_audit_row_whose_witness_is_no_golden_only_declarer_is_refused(self) -> None:
+        _text, lines = self.audit_lines()
+        rows = [line.split("\t") for line in lines[1:]]
+        key, witness = rows[0][:2]
+        reach = load_script("tools/surface-census/golden-reach.py")
+        ledger = {r.key: r for _rank, r in reach.read_ledger(self.root / self.LEDGER)}
+        # A registered golden-only source that never declares this combination, and a
+        # name that is no golden-only source at all.
+        elsewhere = next(
+            w
+            for _rank, r in reach.read_ledger(self.root / self.LEDGER)
+            for w in r.witnesses
+            if w not in ledger[key].witnesses
+        )
+        for other in (elsewhere, "no-such-registered-source"):
+            with self.subTest(witness=other):
+                line = "\t".join(rows[0])
+                changed = "\t".join([key, other, *rows[0][2:]])
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), line, changed)
+                self.assertIn(
+                    f"{key}: {COOCCURRENCE_AUDIT.name} names witness `{other}`, which is not a golden-only "
+                    "source the census counts declaring the combination (its golden-reach.tsv witnesses)",
+                    finished_state_failures(self.root),
+                )
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), changed, line)
+        pointer = "\t".join([key, witness, "/no/such/pointer", *rows[0][3:]])
+        self.edit(COOCCURRENCE_AUDIT.as_posix(), "\t".join(rows[0]), pointer)
+        self.assertIn(
+            f"{key}: {COOCCURRENCE_AUDIT.name}'s site `/no/such/pointer` names no node in "
+            f"`{witness}`'s committed source document",
+            finished_state_failures(self.root),
+        )
+
+    def handwritten_audit_row(self) -> tuple[str, str, str]:
+        """A committed `handwritten` co-occurrence audit row: its key, fixture and line."""
+        rows = combination_rows(self.root)
+        _text, lines = self.audit_lines()
+        for line in lines[1:]:
+            key, witness = line.split("\t")[:2]
+            if rows[key].cells[3].strip("`") == "handwritten":
+                return key, witness, line
+        raise AssertionError("the committed tree audits no hand-written co-occurrence row")
+
+    def test_a_handwritten_cooccurrence_audit_row_on_its_byte_matched_fixture_passes(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        self.assertTrue((self.root / HANDWRITTEN.relative_to(REPO) / witness / "fern-expected").is_dir())
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+
+    def test_a_handwritten_audit_row_whose_fixture_does_not_byte_match_is_refused(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        expected = self.root / HANDWRITTEN.relative_to(REPO) / witness / "fern-expected"
+        client = next(path for path in sorted(expected.rglob("*.py")) if path.stat().st_size)
+        refusal = (
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            "byte-matches: "
+        )
+        # Its tree edited to no longer be the one Fern generated, then gone altogether.
+        original = client.read_bytes()
+        client.write_bytes(original + b"# not Fern's output\n")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(
+            any(f.startswith(refusal + "its fern-expected/ hashes to ") for f in failures),
+            failures,
+        )
+        client.write_bytes(original)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+        shutil.rmtree(expected)
+        self.assertIn(
+            refusal + "it carries no `openapi.yml` and `fern-expected/` tree for the gate to compare",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_handwritten_audit_row_whose_document_no_longer_byte_matches_is_refused(self) -> None:
+        """A changed `openapi.yml` changes crozier's SDK while `fern-expected/` and its digest stay
+        Fern's: the recorded byte-match was of the old document, so the witness is refused."""
+        key, witness, _line = self.handwritten_audit_row()
+        fixture = self.root / HANDWRITTEN.relative_to(REPO) / witness
+        tree = certified_tree_digest(fixture / "fern-expected")
+        document = fixture / "openapi.yml"
+        original = document.read_text(encoding="utf-8")
+        # A renamed operationId renames the generated client method, so crozier's output differs.
+        operation = re.search(r'"operationId": "([^"]+)"', original)
+        assert operation is not None, "the audited fixture's document declares no operationId"
+        renamed = f'"operationId": "{operation.group(1)}_renamed"'
+        document.write_text(original.replace(operation.group(0), renamed, 1), encoding="utf-8", newline="\n")
+        self.assertEqual(tree, certified_tree_digest(fixture / "fern-expected"))
+        self.assertIn(
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            f"byte-matches: {BYTE_MATCHES.name} records no byte-match of its current openapi.yml and "
+            "fern-expected/; crozier's output over them is unproven until handwritten_fixtures_match_fern_goldens "
+            "matches them and rewrites the record",
+            finished_state_failures(self.root),
+        )
+        document.write_text(original, encoding="utf-8", newline="\n")
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+
+    def test_a_handwritten_audit_row_whose_fixture_misses_a_named_handler_is_refused(self) -> None:
+        key, witness, _line = self.handwritten_audit_row()
+        path = "docs/openapi-surface/handwritten-reach.tsv"
+        line = next(
+            line
+            for line in (self.root / path).read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[:2] == [witness, key]
+        )
+        fixture, _key, site, _executed, total = line.split("\t")
+        self.edit(path, line, "\t".join([fixture, key, site, "0", total]))
+        self.assertIn(
+            f"{key}: its hand-written fixture `{witness}` does not execute the handler `{site}` "
+            f"{COOCCURRENCE_AUDIT.name} names, in handwritten-reach.tsv",
+            finished_state_failures(self.root),
+        )
+
+    def test_a_combination_cover_with_nothing_to_measure_at_is_refused_not_skipped(self) -> None:
+        """`handwritten-reach` places each combination cover at its interaction sites; a cover the
+        site table does not declare, or a `co-occurrence` one with no audit row, is a failure."""
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        reach = load_script("tools/surface-census/golden-reach.py")
+        key, witness, _line = self.handwritten_audit_row()
+        fixture, failures = gate.read_evidence(HANDWRITTEN / witness)
+        self.assertEqual([], failures)
+        assert fixture is not None
+        sites = reach.read_sites_table(self.root / "docs/openapi-surface/golden-reach-sites.tsv")
+        audit, failures = reach.read_cooccurrence(self.root / COOCCURRENCE_AUDIT)
+        self.assertEqual([], failures)
+        placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
+        self.assertEqual([], failures)
+        self.assertEqual(set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key})
+        cover = next(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
+        undeclared = fixture._replace(covers=[cover._replace(key="combo-not-declared")])
+        _placed, failures = gate.interaction_sites({witness: undeclared}, sites, audit)
+        self.assertEqual(
+            [
+                f"{witness}: cover `combo-not-declared` names a combination golden-reach-sites.tsv does not "
+                "declare; add its row with its interaction sites or `co-occurrence`"
+            ],
+            failures,
+        )
+        unaudited = {other: row for other, row in audit.items() if other != key}
+        placed, failures = gate.interaction_sites({witness: fixture._replace(covers=[cover])}, sites, unaudited)
+        self.assertEqual([], placed)
+        self.assertEqual(
+            [
+                f"{witness}: cover `{key}` is a `co-occurrence` combination with no "
+                "combination-cooccurrence.tsv row naming its handlers; add the audit row"
+            ],
+            failures,
+        )
+
+    def test_a_handwritten_audit_row_is_refused_when_the_certified_pins_are_unreadable(self) -> None:
+        """A hand-written witness is byte-matched only at the certified pair, so pins that are not
+        an object of two version strings refuse it rather than crash the gate."""
+        key, witness, _line = self.handwritten_audit_row()
+        metadata = self.root / "assets" / "scaffolding" / "metadata.json"
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        refusal = (
+            f"{key}: its hand-written fixture `{witness}` is not one handwritten_fixtures_match_fern_goldens "
+            "byte-matches: the certified pair's metadata.json "
+        )
+        for broken, reason in (
+            ("null", "is not an object declaring string `cliVersion` and `generatorVersion`"),
+            (
+                '{"cliVersion": "1.0.0"}',  # certified-pair: stand-in
+                "is not an object declaring string `cliVersion` and `generatorVersion`",
+            ),
+            ("{", "cannot be read ("),
+        ):
+            with self.subTest(metadata=broken):
+                metadata.write_text(broken, encoding="utf-8", newline="\n")
+                failures = finished_state_failures(self.root)
+                self.assertTrue(any(f.startswith(refusal + reason) for f in failures), failures)
+
+    def test_an_audit_row_whose_handlers_cell_breaks_its_grammar_is_refused(self) -> None:
+        """A non-empty `handlers` cell naming no handling functions would silently drop the
+        fixture's measurement obligations, so its form is refused rather than read as none."""
+        _text, lines = self.audit_lines()
+        cells = lines[1].split("\t")
+        key, handlers = cells[0], cells[3]
+        feature = handlers.split(" ; ", 1)[0]
+        for broken, reason in (
+            ("invalid", "`invalid` names fewer than two features"),
+            (f"{feature} ; second feature", "group `second feature` is not `<feature>: src/x.rs::f, src/y.rs::g`"),
+            (f"{feature} ; other: build_endpoint", "group `other: build_endpoint` is not"),
+            (f"{feature} ; {feature}", f"`{feature} ; {feature}` names a feature twice"),
+        ):
+            with self.subTest(handlers=broken):
+                changed = "\t".join([*cells[:3], broken, *cells[4:]])
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), lines[1], changed)
+                failures = finished_state_failures(self.root)
+                self.assertTrue(
+                    any(f.startswith(f"{key}: {COOCCURRENCE_AUDIT.name}'s handlers cell {reason}") for f in failures),
+                    failures,
+                )
+                self.edit(COOCCURRENCE_AUDIT.as_posix(), changed, lines[1])
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+
+    def test_restating_the_combinations_refuses_evidence_that_breaks_its_contract(self) -> None:
+        """Invalid `evidence.toml` never moves the hand-written subtotal: the restater refuses it."""
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        key = "combo-inline-body-read-only-property"
+        fixture = self.add_cover(key, f"{self.BLOCKED_RECORD}#blocked-witnesses")
+        self.assertEqual({key}, restater.witness_blocked_keys(self.root))
+        evidence = self.root / "docs/openapi-surface/handwritten" / fixture / "evidence.toml"
+        with evidence.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write('\nunexpected = "key"\n')
+        with self.assertRaisesRegex(
+            ValueError, rf"^{re.escape(fixture)}: cover \d+ carries unknown field\(s\) \['unexpected'\]"
+        ):
+            restater.witness_blocked_keys(self.root)
+        evidence.write_text("[[covers]\n", encoding="utf-8", newline="\n")
+        with self.assertRaisesRegex(ValueError, rf"^{re.escape(fixture)}: evidence\.toml is not TOML"):
+            restater.witness_blocked_keys(self.root)
+
+    def test_a_user_ruling_is_admitted_in_every_named_table_only_when_well_formed(self) -> None:
+        ruling = "user ruling — 2026-10-26: the user keeps this gap open until a real witness appears"
+        malformed = "user ruling — 2026-02-30: no such day"
+        key, _region = self.name_a_demoted_combination(ruling)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if key in failure])
+        self.edit("docs/openapi-surface-coverage.md", ruling, malformed)
+        self.assertIn(ruling_failure(key, malformed), finished_state_failures(self.root))
+        doc = "docs/openapi-surface-coverage.md"
+        # The committed arms table may be empty, so name the bounded gap to rule on.
+        self.name_the_bounded_gap()
+        body = (self.root / doc).read_text(encoding="utf-8").split(NAMED_GAPS_HEADING, 1)[1].split("\n#", 1)[0]
+        line = next(line for line in body.splitlines() if line.startswith("| `") and table_cells(line, 3))
+        cells = table_cells(line, 3)
+        assert cells is not None
+        arm_key, arm = cells[0].strip("` "), cells[1].strip("` ").replace("\\|", "|")
+        self.edit(doc, line, line.replace(cells[2], ruling))
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if arm_key in failure])
+        self.edit(doc, ruling, "user ruling: undated")
+        self.assertIn(
+            ruling_failure(f"{arm_key} arm `{arm}`", "user ruling: undated"), finished_state_failures(self.root)
+        )
+        feature, _record, reason = self.add_bounded_feature_search()
+        self.edit(doc, reason, ruling)
+        self.assertEqual([], [failure for failure in finished_state_failures(self.root) if feature in failure])
+        self.edit(doc, ruling, malformed)
+        self.assertIn(ruling_failure(feature, malformed), finished_state_failures(self.root))
+
+    def add_cover(self, key: str, search: str) -> str:
+        """Append a `witness-blocked` cover to a committed fixture's evidence copy; return the fixture."""
+        evidence = next(iter(sorted((self.root / "docs/openapi-surface/handwritten").glob("*/evidence.toml"))))
+        with evidence.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(f'\n[[covers]]\nkey = "{key}"\nsearch = "{search}"\nverdict = "witness-blocked"\n')
+        return evidence.parent.name
+
+    BLOCKED_RECORD = "docs/openapi-surface/witness-search-operation-combinations-bodies-responses/README.md"
+
+    def test_a_witness_blocked_cover_is_admitted_only_on_a_combination_citing_its_blocked_declarers(self) -> None:
+        key = "combo-inline-body-read-only-property"
+        fixture = self.add_cover(key, f"{self.BLOCKED_RECORD}#blocked-witnesses")
+        self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
+
+    def test_a_witness_blocked_cover_on_a_feature_key_is_refused(self) -> None:
+        fixture = self.add_cover("request-body-content", f"{self.BLOCKED_RECORD}#blocked-witnesses")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(
+            any(
+                failure.startswith(f"{fixture}: cover ")
+                and "(`request-body-content`): verdict `witness-blocked` is admitted only on a feature-level cover"
+                in failure
+                for failure in failures
+            ),
+            failures,
+        )
+
+    def test_a_witness_blocked_cover_citing_a_record_that_does_not_name_its_key_is_refused(self) -> None:
+        key = "combo-inline-body-read-only-property"
+        # A section of the record that names no blocked declarer of the key.
+        fixture = self.add_cover(key, f"{self.BLOCKED_RECORD}#how-a-removal-control-is-taken")
+        self.assertIn(
+            f"{fixture}: cover `{key}`: the record `{self.BLOCKED_RECORD}#how-a-removal-control-is-taken` "
+            "has no blocked-witness line "
+            f"for `{key}` — a table line `| key | candidate | files still mismatched | unrelated shapes |` per "
+            "blocked declarer",
             finished_state_failures(self.root),
         )
 
@@ -12750,7 +13539,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual(
             [
                 "sample-listed-feature: docs/openapi-surface-coverage.md names it an "
-                f"unproven feature without {NOT_SEARCHED} or a validated bounded search as its reason"
+                f"unproven feature without {NOT_SEARCHED}, a validated bounded search or a user ruling as its reason"
             ],
             finished_state_failures(self.root),
         )
@@ -17218,6 +18007,7 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 "crates/crozier-e2e/tests/e2e.rs",
                 f"docs/openapi-surface/handwritten/{fixture}/evidence.toml",
                 f"docs/openapi-surface/handwritten/{fixture}/fern-expected/src/fern/client.py",
+                "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json",
             ]
             for relative in paths:
                 target = root / relative
@@ -17226,9 +18016,35 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
             registry = root / paths[0]
             test = root / paths[3]
+            removals = root / paths[6]
             match mutation:
                 case "missing-file":
-                    (root / paths[-1]).unlink()
+                    (root / paths[5]).unlink()
+                case "unmeasured":
+                    removals.unlink()
+                case "null-count" | "bool-count" | "string-exit" | "negative-mismatch":
+                    records = json.loads(removals.read_text(encoding="utf-8"))
+                    for record in records:
+                        match mutation:
+                            case "null-count":
+                                record["certified_pair"]["before_files"] = None
+                                record["certified_pair"]["after_files"] = None
+                            case "bool-count":
+                                record["crozier"]["before_files"] = True
+                                record["crozier"]["after_files"] = True
+                            case "string-exit":
+                                record["control_comparison"]["exit_code"] = "0"
+                            case _:
+                                record["control_comparison"]["counts"]["mismatched"] = -1
+                    removals.write_text(json.dumps(records), encoding="utf-8", newline="\n")
+                case "output-sensitive":
+                    # The same declarer, had removing its nulls moved a file in both generators.
+                    records = json.loads(removals.read_text(encoding="utf-8"))
+                    moved = {"src/fern/client.py": {"before": "0" * 64, "after": "1" * 64}}
+                    for record in records:
+                        record["crozier"]["changed"] = moved
+                        record["certified_pair"]["changed"] = moved
+                    removals.write_text(json.dumps(records), encoding="utf-8", newline="\n")
                 case "unbound-journey":
                     test.write_text(
                         test.read_text(encoding="utf-8").replace(
@@ -17273,6 +18089,46 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
 
     def test_committed_supplement_is_admitted(self) -> None:
         self.assertEqual([], self.check())
+
+    def test_an_output_insensitive_golden_declarer_leaves_the_supplement_and_its_cover_admissible(self) -> None:
+        """`rs-server` byte-matches and declares the key, but its paired removal moves no file."""
+        ledger = {row.key: row for _rank, row in load_script("tools/surface-census/golden-reach.py").read_ledger()}
+        self.assertIn("rs-server", ledger["schema-example-null"].witnesses)
+        self.assertNotIn(
+            "rs-server",
+            {api for api, row in census.golden_registrations(REPO / census.GOLDEN_REGISTRY).items() if row.unmatched},
+        )
+        insensitive, errors = load_script("tools/surface-census/handwritten-fixtures.py").output_insensitive_declarers(
+            REPO
+        )
+        self.assertEqual([], errors)
+        self.assertEqual(frozenset({"rs-server"}), insensitive["schema-example-null"])
+        self.assertEqual([], self.check())
+
+    def test_a_malformed_paired_removal_is_refused_and_admits_nothing(self) -> None:
+        for mutation in ("null-count", "bool-count", "string-exit", "negative-mismatch"):
+            with self.subTest(mutation=mutation):
+                failures = self.check(mutation)
+                self.assertIn(
+                    "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json: "
+                    "record 0 needs a key, a fixture, both engines' non-negative file counts and changed-file "
+                    "map, and its control comparison's exit code and counts",
+                    failures,
+                )
+                self.assertIn(
+                    "residual-handwritten.toml `schema-example-null`: supplemental proof requires only "
+                    "registered residual golden witnesses",
+                    failures,
+                )
+
+    def test_an_output_sensitive_or_unmeasured_golden_declarer_supersedes_the_supplement(self) -> None:
+        for mutation in ("output-sensitive", "unmeasured"):
+            with self.subTest(mutation=mutation):
+                self.assertIn(
+                    "residual-handwritten.toml `schema-example-null`: supplemental proof requires only "
+                    "registered residual golden witnesses",
+                    self.check(mutation),
+                )
 
     def test_broken_supplements_fail_at_their_boundary(self) -> None:
         for mutation, reason in [
@@ -18634,7 +19490,8 @@ class CoverageRestatementTests(unittest.TestCase):
         surface.mkdir()
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
-        shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
+        for name in ("golden-reach.tsv", "golden-reach-sites.tsv"):
+            shutil.copyfile(REPO / "docs/openapi-surface" / name, surface / name)
         stage_restatement_population(self.root)
 
     def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
@@ -18704,31 +19561,41 @@ class CoverageRestatementTests(unittest.TestCase):
             flat = " ".join(self.index.read_text(encoding="utf-8").split())
             found = matched(
                 re.search(
-                    r"\*\*Combinations by proof\.\*\* \*\*(\d+)\*\* are byte-matched .*? \*\*(\d+)\*\* are compared "
-                    r".*? \*\*(\d+)\*\* rest on .*? \*\*(\d+)\*\* remains? unproven and \*\*(\d+)\*\* (?:is|are) "
-                    r"decided output-insensitive: [\d +]+ = (\d+)\.",
+                    r"\*\*Combinations by proof\.\*\* A combination is proven only where .*? \*\*(\d+)\*\* are "
+                    r"byte-matched .*? interaction branch, \*\*(\d+)\*\* (?:is a byte-matched co-occurrence|are "
+                    r"byte-matched co-occurrences), .*? \*\*(\d+)\*\* (?:is|are) compared .*? \*\*(\d+)\*\* rest on "
+                    r".*? \(\d+ of them witness-blocked, \d+ of them co-occurrences proven on the fixture\), "
+                    r"\*\*(\d+)\*\* remains? unproven, each named below \(\d+ left "
+                    r"unproven by the user's ruling\), and \*\*(\d+)\*\* (?:is|are) decided output-insensitive: "
+                    r"[\d +]+ = (\d+)\.",
                     flat,
                 )
             )
-            return [int(found[n]) for n in range(1, 7)]
+            return [int(found[n]) for n in range(1, 8)]
 
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
-        real, measured, weak, unproven, decided, total = stated()
-        self.assertEqual(total, real + measured + weak + unproven + decided)
+        real, cooccurrence, measured, weak, unproven, decided, total = stated()
+        self.assertEqual(total, real + cooccurrence + measured + weak + unproven + decided)
         self.assertEqual(len(census.COMBINATIONS), total)
         original = self.index.read_text(encoding="utf-8")
         # A golden combination whose ledger row names no golden-only witness is unproven.
         ledger = self.root / "docs/openapi-surface/golden-reach.tsv"
         ledger_text = ledger.read_text(encoding="utf-8")
         line = next(
-            row for row in ledger_text.splitlines() if row.split("\t")[1:2] and row.split("\t")[1].startswith("combo-")
+            row
+            for row in ledger_text.splitlines()
+            if row.split("\t")[1:2]
+            and row.split("\t")[1].startswith("combo-")
+            and row.split("\t")[3] == "0"
+            and row.split("\t")[6] != "-"
+            and row.split("\t")[8] not in ("none", "co-occurrence")
         )
         fields = line.split("\t")
         fields[6] = "-"
         ledger.write_text(ledger_text.replace(line, "\t".join(fields), 1), encoding="utf-8")
         self.assertEqual(1, self.run_restater("--combinations-only").returncode)
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
-        self.assertEqual([real - 1, measured, weak, unproven + 1, decided, total], stated())
+        self.assertEqual([real - 1, cooccurrence, measured, weak, unproven + 1, decided, total], stated())
         restated = self.index.read_text(encoding="utf-8")
         header = next(row for row in ledger_text.splitlines() if row.startswith("rank\t"))
         ledger.write_text(
@@ -18777,7 +19644,7 @@ class CoverageRestatementTests(unittest.TestCase):
 
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         original = self.index.read_text(encoding="utf-8")
-        real, measured, weak, unproven, decided = stated()
+        real, cooccurrence, measured, weak, unproven, decided = stated()
         surface = self.root / "docs/openapi-surface"
         registry = surface / "output-insensitive.tsv"
         decision = next(
@@ -18797,19 +19664,111 @@ class CoverageRestatementTests(unittest.TestCase):
         withdrawn = (registry, decision + "\n", "")
         # A decided gap whose decision is withdrawn is unproven, or rests on a
         # committed measurement once it is UNREACHABLE or a limitations row.
-        moves([withdrawn], [real, measured, weak, unproven + 1, decided - 1])
+        moves([withdrawn], [real, cooccurrence, measured, weak, unproven + 1, decided - 1])
         unreachable = (region, row, row.replace(" | FIXTURE — ", " | UNREACHABLE — ", 1))
-        moves([withdrawn, unreachable], [real, measured + 1, weak, unproven, decided - 1])
+        moves([withdrawn, unreachable], [real, cooccurrence, measured + 1, weak, unproven, decided - 1])
         limitations = (region, row, row.replace(" | gap | ", " | limitations | ", 1))
-        moves([withdrawn, limitations], [real, measured + 1, weak, unproven, decided - 1])
-        # A golden combination the reach ledger carries no row for is unproven.
+        moves([withdrawn, limitations], [real, cooccurrence, measured + 1, weak, unproven, decided - 1])
+        # A golden combination the reach ledger carries no row for, or whose
+        # interaction branch its witnesses never execute, is unproven; a
+        # co-occurrence row is counted apart.
         ledger = surface / "golden-reach.tsv"
+        rows = [line.split("\t") for line in ledger.read_text(encoding="utf-8").splitlines()]
         golden = next(
-            line
-            for line in ledger.read_text(encoding="utf-8").splitlines()
-            if line.split("\t")[1:2] and line.split("\t")[1].startswith("combo-") and line.split("\t")[6] != "-"
+            "\t".join(fields)
+            for fields in rows
+            if fields[1:2]
+            and fields[1].startswith("combo-")
+            and fields[3] == "0"
+            and fields[6] != "-"
+            and fields[8] not in ("none", "co-occurrence")
         )
-        moves([(ledger, golden + "\n", "")], [real - 1, measured, weak, unproven + 1, decided])
+        moves([(ledger, golden + "\n", "")], [real - 1, cooccurrence, measured, weak, unproven + 1, decided])
+        fields = golden.split("\t")
+        unreached = "\t".join([*fields[:3], "1", *fields[4:8], re.sub(r"=\d+/", "=0/", fields[8]), *fields[9:]])
+        moves([(ledger, golden, unreached)], [real - 1, cooccurrence, measured, weak, unproven + 1, decided])
+        together = next(
+            "\t".join(fields)
+            for fields in rows
+            if fields[1:2] and fields[1].startswith("combo-") and fields[8] == "co-occurrence"
+        )
+        moves([(ledger, together + "\n", "")], [real, cooccurrence - 1, measured, weak, unproven + 1, decided])
+
+    def test_combination_proof_subtotals_follow_their_evidence(self) -> None:
+        """The witness-blocked, fixture co-occurrence and user-ruling subtotals each move
+        with the one input they count, and only that subtotal moves."""
+
+        def subtotals() -> list[int]:
+            flat = " ".join(self.index.read_text(encoding="utf-8").split())
+            found = matched(
+                re.search(
+                    r"rest on a hand-written fixture \((\d+) of them witness-blocked, (\d+) of them "
+                    r"co-occurrences proven on the fixture\), .*? \((\d+) left unproven by the user's ruling\)",
+                    flat,
+                )
+            )
+            return [int(found[n]) for n in range(1, 4)]
+
+        surface = self.root / "docs/openapi-surface"
+        # The blocked subtotal reads the fixtures' own evidence, which the shared
+        # staging leaves out.
+        shutil.copytree(REPO / "docs/openapi-surface/handwritten", surface / "handwritten")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        original = self.index.read_text(encoding="utf-8")
+        blocked, together, ruled = subtotals()
+        handwritten = sorted(
+            line.split(" | ")[0].removeprefix("| ").strip("`")
+            for path in sorted(surface.glob("*.md"))
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| combo-") and " | handwritten | " in line
+        )
+        self.assertTrue(handwritten, "the staged tree carries no hand-written combination row")
+        sites = surface / "golden-reach-sites.tsv"
+        cells = {
+            line.split("\t")[0]: line
+            for line in sites.read_text(encoding="utf-8").splitlines()
+            if line.split("\t")[0] in handwritten
+        }
+        cooccurring = [key for key in handwritten if cells[key].split("\t")[2] == "co-occurrence"]
+        # The committed tree: no hand-written cover is witness-blocked, no row is ruled,
+        # and the hand-written rows whose site cell reads `co-occurrence` are the count.
+        self.assertEqual([0, len(cooccurring), 0], [blocked, together, ruled])
+
+        def moves(path: Path, old: str, new: str, expected: list[int]) -> None:
+            text = path.read_text(encoding="utf-8")
+            self.assertEqual(1, text.count(old), old)
+            path.write_text(text.replace(old, new), encoding="utf-8")
+            self.assertEqual(1, self.run_restater("--combinations-only").returncode, (path, new))
+            written = self.run_restater("--combinations-only", "--write")
+            self.assertEqual(0, written.returncode, written.stderr)
+            self.assertEqual(expected, subtotals(), (path, new))
+            path.write_text(text, encoding="utf-8")
+            self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+            self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+
+        # A hand-written combination whose cover reads `witness-blocked` is counted blocked.
+        key = handwritten[0]
+        evidence, cover = next(
+            (path, block)
+            for path in sorted((surface / "handwritten").glob("*/evidence.toml"))
+            for block in path.read_text(encoding="utf-8").split("[[covers]]")
+            if f'key = "{key}"' in block and "\narm = " not in block
+        )
+        verdict = matched(re.search(r'\nverdict = "[^"]+"', cover))[0]
+        # `renewed` belongs only to a `search-incomplete` verdict, so the blocked cover drops it.
+        blocked_cover = re.sub(r'\nrenewed = "[^"]*"', "", cover.replace(verdict, '\nverdict = "witness-blocked"'))
+        moves(evidence, cover, blocked_cover, [blocked + 1, together, ruled])
+        # One whose site cell stops reading `co-occurrence` leaves the fixture count.
+        row = cells[cooccurring[0]]
+        moves(
+            sites,
+            row,
+            row.replace("\tco-occurrence\t", "\tsrc/ir.rs::base_type_ref\t", 1),
+            [blocked, together - 1, ruled],
+        )
+        # A named unproven row whose reason is the user's ruling is counted ruled.
+        named = matched(re.search(r"(?m)^\| `combo-[^`]+` \| `[^`]+` \| (`[^`]+`) — ", original))
+        moves(self.index, named[0], named[0].replace(named[1], "`user ruling`"), [blocked, together, ruled + 1])
 
     def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
@@ -19304,7 +20263,8 @@ class CoverageRestatementTests(unittest.TestCase):
         for path in (self.root / "docs/openapi-surface").glob("*.md"):
             lines = []
             for line in path.read_text(encoding="utf-8").splitlines():
-                if "| gap |" in line and "| FIXTURE " in line:
+                # The feature backlog alone: a combination row is counted apart.
+                if "| gap |" in line and "| FIXTURE " in line and not line.startswith(f"| {COMBINATION_PREFIX}"):
                     line = line.replace("| gap |", "| handwritten |")
                 lines.append(line)
             path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -19772,24 +20732,10 @@ class CombinationListTests(unittest.TestCase):
         )
         self.assertEqual(len(census.COMBINATIONS), sum(categories.values()))
 
-    def test_a_golden_combination_row_waits_for_measurement_only_while_its_cell_says_so(self) -> None:
-        """Only combination rows explicitly marked pending may omit reach measurements."""
+    def test_no_golden_row_waits_outside_the_ledger_whatever_its_cell_says(self) -> None:
+        """A `golden` combination row is measured like any other: a cell claiming a
+        pending measurement exempts nothing, so the ledger must carry it."""
         reach = load_script("tools/surface-census/golden-reach.py")
-        golden = reach.golden_rows(REPO / "docs" / "openapi-surface")
-        surface = REPO / "docs" / "openapi-surface"
-        for path in sorted(surface.glob("*.md")):
-            for cells in RankedBacklogTests.region_rows(path.read_text(encoding="utf-8")):
-                key = cells[0].strip("`")
-                if cells[3].strip("`") == "golden" and not key.startswith(COMBINATION_PREFIX):
-                    with self.subTest(key=key):
-                        self.assertIn(key, golden)
-        for key, (_region, cells) in sorted(combination_rows(REPO).items()):
-            if cells[3].strip("`") == "golden":
-                with self.subTest(key=key):
-                    if cells[5].startswith(reach.PENDING_REACH):
-                        self.assertNotIn(key, golden)
-                    else:
-                        self.assertIn(key, golden)
         key, (region, cells) = next(
             (key, row) for key, row in sorted(combination_rows(REPO).items()) if row.cells[3].strip("`") == "golden"
         )
@@ -19799,13 +20745,11 @@ class CombinationListTests(unittest.TestCase):
             for line in (self.root / relative).read_text(encoding="utf-8").splitlines()
             if line.startswith((f"| {key} |", f"| `{key}` |"))
         )
-        for cell, included in ((reach.PENDING_REACH, False), ("reach: measured test case", True)):
-            changed = [*cells]
-            changed[5] = cell
-            replacement = "| " + " | ".join(changed) + " |"
-            self.edit(relative, current, replacement)
-            current = replacement
-            self.assertEqual(included, key in reach.golden_rows(self.root / "docs" / "openapi-surface"))
+        changed = [*cells]
+        changed[5] = "reach: `pending measurement` — enters the ledger at the next measurement"
+        self.edit(relative, current, "| " + " | ".join(changed) + " |")
+        self.assertIn(key, reach.golden_rows(self.root / "docs" / "openapi-surface"))
+        self.assertFalse(hasattr(reach, "pending_combination"))
 
 
 class RequestBodyReadingTests(unittest.TestCase):

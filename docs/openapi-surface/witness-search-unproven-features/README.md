@@ -135,7 +135,11 @@ bounded attribution preflight below, and the array-null, outside-enum and
 string-const keys have it after the
 [renewed bounds](#remaining-bounds-after-the-source-repairs). The
 residual-only hand-written rule for `schema-example-null` remains a fallback
-only if no real witness can be registered.
+only if no real witness can be registered. Corpus row 3477, `rs-server`, later
+declared two null first `examples` members inside a golden that byte-matches
+whole; its [paired removal](paired-removal-comparisons.json) moves no generated
+file in crozier or the certified pair, so it is an output-insensitive declarer,
+not a witness, and the `harbor-signal-null` supplement still stands.
 
 ## Renewed search
 
