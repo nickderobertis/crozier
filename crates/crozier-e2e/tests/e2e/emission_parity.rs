@@ -4,16 +4,6 @@
 //!
 //! - `survey-shapes`, `tide-windows`, `lantern-open-ping`: RS-Server's causes,
 //!   recorded in `docs/rs-server-emission-parity.md`.
-//!   - `survey-shapes`: GeoJSON-like members tagged by a `const` `kind`,
-//!     inlined as variants of a discriminated union and also named by an
-//!     undiscriminated one; their nullable tuple `extent`; coordinates two and
-//!     three arrays deep; an inline PATCH body union beside a `const`
-//!     property; and a tag-scoped discriminated body union.
-//!   - `tide-windows`: nullable items two arrays deep, with a `minItems` the
-//!     worked examples repair.
-//!   - `lantern-open-ping`: an empty root `security` list beside a secured and
-//!     an unsecured operation, the `empty-root-security-optional-credential`
-//!     departure.
 //! - `allof-only-base`, `dangling-mapping-target`, `unaffected-control`:
 //!   conquery's two union shapes, each beside its control, recorded in
 //!   `docs/fern-measurements/emission-parity/README.md`.
