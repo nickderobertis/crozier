@@ -270,7 +270,7 @@ below is `4e009625a`: it follows that merge, and its `src/` is byte-identical to
 | departures ledger and invalid-example inventory | `just departures-ledger`; 811 e2e checks passed, and both generated files were unchanged |
 | golden-reach ledger and region reach cells | `just golden-reach` measured all 276 golden tests; `just golden-reach-report` rejoined them after the interaction-site migration; the ledger header names `4e009625a` |
 | census JSON, document-path snapshot and extension counts | the census step of `just golden-reach`, then `restate-coverage.py --snapshot-json .local/golden-reach/census.json --write`; 903 selectors, 1,328,715 declaration sites, 276 sources; the JSON is an uncommitted measurement artifact |
-| coverage index restatements | `restate-coverage.py --write` and `golden-reach.py arms --headline`; the source count is 276 |
+| coverage index restatements | `restate-coverage.py --write` and `golden-reach.py arms --headline`; the source count is 276. The ranking's 83 rows were generated from the ledger by `restate-reach-ranking.py` in the dispatch scratch directory, preserving boundary text by key and rejecting a changed key population; the existing restater does not write that table |
 | hand-written reach and configuration-gate ledgers | `just handwritten-reach`; 117 arm covers, 10 combination interaction sites and no configuration gates; both generated files were unchanged |
 | outstanding arm-search list | `golden-reach-search.py outstanding`; 171 items across six searches |
 
