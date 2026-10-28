@@ -14,6 +14,10 @@ pub(crate) const EMISSION_PARITY_DIR: &str = "docs/fern-measurements/emission-pa
 const ALLOF_ONLY_BASE: &str = "allof-only-base";
 const DANGLING_TARGET: &str = "dangling-mapping-target";
 const WIRE: &str = "crates/crozier-e2e/tests/e2e/dangling_mapping_wire.py";
+const CONQUERY_WIRE: &str = "crates/crozier-e2e/tests/e2e/conquery_secondary_id_wire.py";
+/// Corpus row 3477's committed source and its certified-pair golden.
+const CONQUERY_SPEC: &str = "tests/fixtures/corpus-sources/ingef-conquery/openapi.yaml";
+const CONQUERY_GOLDEN: &str = "tests/fixtures/ingef-conquery/expected";
 
 fn spec(case: &str) -> PathBuf {
     repo_root()
@@ -240,9 +244,13 @@ fn a_cyclic_all_of_base_chain_generates_each_field_once() {
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 fn wire(python: &Path, sdk_src: &Path) -> assert_cmd::Command {
+    journey(WIRE, python, sdk_src)
+}
+
+fn journey(script: &str, python: &Path, sdk_src: &Path) -> assert_cmd::Command {
     let mut command = assert_cmd::Command::new(python);
     command
-        .arg(repo_root().join(WIRE))
+        .arg(repo_root().join(script))
         .arg(sdk_src)
         .env("PYTHONDONTWRITEBYTECODE", "1");
     command
@@ -254,9 +262,7 @@ fn wire(python: &Path, sdk_src: &Path) -> assert_cmd::Command {
 /// meteor's fields and posts it back as the server sent it, beside the `STAR`
 /// control. The certified tree's `value: typing.Any` wrapper raises on the
 /// same response, which is the defect the departure corrects.
-#[test]
-#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
-fn sdk_env_a_dangling_mapping_variant_round_trips_through_the_client() {
+pub(crate) fn dangling_mapping_variant_round_trips_through_the_client() {
     let python = runtime_python_env().expect("SDK runtime environment");
     let work = tempfile::tempdir().unwrap();
     wire(&python, work.path())
@@ -290,5 +296,56 @@ fn sdk_env_a_dangling_mapping_variant_round_trips_through_the_client() {
         "METEOR: reading the entry raised ParsingError",
     ))
     .stderr(predicate::str::contains("reading.METEOR.value"));
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// The same defect on the exact registered conquery document, through the
+/// client generated from it, against a local HTTP server: in either enum mode,
+/// a `SECONDARY_ID_QUERY` status parses into `Query_SecondaryIdQuery` with
+/// `SecondaryIdQuery`'s `secondary_id` and `date_aggregation_mode`, and posting
+/// that query back sends the server exactly the payload it answered, beside the
+/// `CONCEPT_QUERY` control. The certified golden's client raises on the same
+/// response, at the `value` its wrapper requires.
+pub(crate) fn conquery_secondary_id_query_round_trips_through_the_client() {
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let work = tempfile::tempdir().unwrap();
+    journey(CONQUERY_WIRE, &python, work.path())
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "must contain the generated fern package",
+        ));
+    for mode in ["python-enums", "literals"] {
+        let out = work.path().join(mode);
+        probe_command(&repo_root().join(CONQUERY_SPEC), &out)
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        journey(CONQUERY_WIRE, &python, &out.join("src"))
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(
+                "SECONDARY_ID_QUERY: parsed into Query_SecondaryIdQuery and posted back as \
+                 {\"dateAggregationMode\": \"MERGE\", \"secondaryId\": \"dataset.sid\", \"type\": \"SECONDARY_ID_QUERY\"}",
+            ))
+            .stdout(predicate::str::contains(
+                "CONCEPT_QUERY: parsed into Query_ConceptQuery",
+            ));
+    }
+    journey(
+        CONQUERY_WIRE,
+        &python,
+        &repo_root().join(CONQUERY_GOLDEN).join("src"),
+    )
+    .assert()
+    .code(1)
+    .stdout(predicate::str::contains(
+        "CONCEPT_QUERY: parsed into Query_ConceptQuery",
+    ))
+    .stderr(predicate::str::contains(
+        "SECONDARY_ID_QUERY: reading the status raised ParsingError",
+    ))
+    .stderr(predicate::str::contains("query.SECONDARY_ID_QUERY.value"));
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

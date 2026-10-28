@@ -128,6 +128,26 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/^sdk_env_/)` selector reads a test's full name, so a journey in a module is wrapped here at the crate root; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// The observatory measurement's dangling `METEOR` wrapper round-trips through
+/// crozier's client and fails through the certified tree's
+/// (`emission_parity`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_a_dangling_mapping_variant_round_trips_through_the_client() {
+    emission_parity::dangling_mapping_variant_round_trips_through_the_client();
+}
+
+/// conquery's `SECONDARY_ID_QUERY` round-trips through the client crozier
+/// generates from the registered document, in both enum modes, and fails
+/// through the certified golden's (`emission_parity`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_conquery_secondary_id_query_round_trips_through_the_client() {
+    emission_parity::conquery_secondary_id_query_round_trips_through_the_client();
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
