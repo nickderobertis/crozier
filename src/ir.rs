@@ -8927,10 +8927,32 @@ impl InlineHoister<'_> {
     /// extensible-enum alias `{request_ctx}{Prop}` in the tag's `types/` package,
     /// matching Fern (a `level` query param on `listWidgets` →
     /// `ListWidgetsRequestLevel`). Array item enums hoist to
-    /// `{request_ctx}{Param}Item`. A `$ref` or non-enum schema passes through
-    /// [`base_type_ref`] unchanged.
+    /// `{request_ctx}{Param}Item`. Structured map values hoist to
+    /// `{request_ctx}{Param}Value`; other schemas retain their base type.
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
+            // Structured query-map values have their own request-scoped type,
+            // just as structured model-map values do. Webflow's collection
+            // filters and sort directions use these declarations in signatures.
+            if is_map(schema) {
+                if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                    if value.reference.is_none()
+                        && (is_inline_struct(value)
+                            || value.one_of.is_some()
+                            || value.any_of.is_some()
+                            || string_enum_values(value).is_some())
+                    {
+                        let name =
+                            format!("{}Value", request_parameter_type_name(request_ctx, param));
+                        if let Some(value_type) = self.hoist_named_copy(&name, value) {
+                            return TypeRef::Dict(
+                                Box::new(TypeRef::Primitive(Prim::Str)),
+                                Box::new(value_type),
+                            );
+                        }
+                    }
+                }
+            }
             if let Some(values) = string_enum_values(schema) {
                 let name = request_parameter_type_name(request_ctx, param);
                 // Fern imports positional `x-enum-varnames` on model
@@ -22837,6 +22859,60 @@ mod tests {
         assert!(!declarations
             .iter()
             .any(|decl| decl.name() == "CreateRecordRequestOptionalValuesValue"));
+    }
+
+    #[test]
+    fn query_map_values_have_request_scoped_declarations() {
+        let schemas = indexmap::IndexMap::new();
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: Some(&schemas),
+            out: Vec::new(),
+        };
+        for (parameter, value) in [
+            (
+                "filter",
+                serde_json::json!({"type": "object", "properties": {
+                    "eq": {"type": "string"},
+                    "in": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}]}
+                }}),
+            ),
+            (
+                "sort",
+                serde_json::json!({"type": "string", "enum": ["asc", "desc"]}),
+            ),
+        ] {
+            let input =
+                schema(serde_json::json!({"type": "object", "additionalProperties": value}));
+            let name = format!(
+                "ListEntriesRequest{}Value",
+                crate::naming::class_name(parameter)
+            );
+            assert_eq!(
+                hoister.hoist_param_enum("ListEntriesRequest", parameter, &input),
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Named(name.clone()))
+                )
+            );
+            assert!(hoister.out.iter().any(|decl| decl.name() == name));
+        }
+        assert!(hoister
+            .out
+            .iter()
+            .any(|decl| decl.name() == "ListEntriesRequestFilterValueIn"));
+        let plain = schema(
+            serde_json::json!({"type": "object", "additionalProperties": {"type": "string"}}),
+        );
+        assert_eq!(
+            hoister.hoist_param_enum("ListEntriesRequest", "labels", &plain),
+            base_type_ref(&plain)
+        );
+        assert!(!hoister
+            .out
+            .iter()
+            .any(|decl| decl.name() == "ListEntriesRequestLabelsValue"));
     }
 
     #[test]
