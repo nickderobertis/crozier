@@ -2845,8 +2845,10 @@ class ArmSearchStageTests(_StageScratch):
         )
         document = (self.root / "a.yaml").read_text(encoding="utf-8")
         digest = hashlib.sha256(document.encode("utf-8")).hexdigest()
-        # A run cut off by its timeout is recorded and settles nothing.
-        self.assertEqual(summary.format(1, 0, 1), rescreen("hang", "--timeout", "1"))
+        # A run cut off by its timeout is recorded and settles nothing. The bound leaves the
+        # stub's interpreter time to start and log its call on a loaded host (one second did
+        # not), and is still far short of the 30 seconds it sleeps.
+        self.assertEqual(summary.format(1, 0, 1), rescreen("hang", "--timeout", "10"))
         self.assertEqual(unmeasured, fern_screen())
         self.assertEqual(
             [("a.yaml", digest, "timeout")], [(r["candidate"], r["sha256"], r["check_exit"]) for r in evidence()]
