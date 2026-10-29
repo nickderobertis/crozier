@@ -401,3 +401,39 @@ and failed the hand-written fixture contract on the three categories above.
 The full-diff judged lint at a 750,000-byte budget passed all 12 batches before
 these final reach records were regenerated. Verification of the regenerated
 records is recorded separately below.
+
+## Verification after the interaction-proof merge
+
+The production source for these checks is tree
+`e83231501001edafde01d48ff864459d25b09555`, the `src/` tree of
+`1552b5244` and `f2ec3c17c`. Unit and static checks started at `db26c1682`,
+whose production source is identical. The complete census and reach suites
+below ran over the regenerated records committed at `f2ec3c17c`; subsequent
+changes add verification results to this note only.
+
+| check | result |
+|---|---|
+| `crozier:test`, including each touched module | 1,096 passed |
+| focused normal-ledger parity checks, both enum modes, full-tree unaffected control and gate wiring | 13 passed |
+| `just departures-ledger` | all 812 checks passed; both generated records unchanged |
+| `just test-sdk-env` | 38 SDK journeys passed, including conquery and the from-scratch dangling-target response/post journeys; runtime comparison and nested-discriminator runtime also passed |
+| corpus source, licence and licence-rescreening lint targets | passed |
+| `just test-corpus-offline` | 2 offline tests, 1 recovery test and 3 command-usage tests passed |
+| both Rust projects' clippy, rustfmt and project-boundary checks | passed |
+| `surface-census:test-census`, complete, over the regenerated tree | 637 passed, 1 skipped |
+| `surface-census:test-reach`, complete | 122 tests completed, 3 skipped |
+| judged lint over the full diff before the final record regeneration | all 12 batches passed |
+| judged lint over the regenerated-record diff from `1552b5244` to `f2ec3c17c` | all 6 batches passed |
+
+The earlier census run started before regeneration and reported 13 failures
+(including subtest failures), 628 passes and one skip. Every failure named an
+obsolete combination-ledger population; none refused the schema-example-null
+proof. The complete green run above supersedes it. Neither that proof nor its
+gate was changed.
+
+The source document's SHA-256 remains
+`c3a52b3c5453c003a563a9b39784dfcd9f89f69e0ae1848dbec2881a24b9ec21`.
+The normal-ledger conquery comparison and its literals overlay still byte-match
+the certified pair apart from the catalogued departures, including
+`dangling-mapping-variant-fields`. The unaffected control still matches every
+base-tree file in both modes, including README.md and reference.md.
