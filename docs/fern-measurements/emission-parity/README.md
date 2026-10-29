@@ -300,9 +300,9 @@ The following completed checks exercise `4e009625a`'s source:
 The source document still has SHA-256
 `c3a52b3c5453c003a563a9b39784dfcd9f89f69e0ae1848dbec2881a24b9ec21`.
 
-## Final source and comparison
+## Source and comparison before the interaction-proof merge
 
-The source commit for the finished measurements is `ebe709072`, after merge
+The source commit for those earlier measurements is `ebe709072`, after merge
 `6235dc9b6` brought in `bc66bfb08`. The later refactor replaces two
 discriminant-policy booleans with explicit enums; it changes no generated
 file. Its library suite passes all 1,096 tests. The full-tree unaffected
@@ -326,10 +326,11 @@ guard makes the test fail because a change in reading.txt is hidden; restoring
 the guard makes it pass. This mutation was temporary and is absent from the
 committed tree.
 
-## Final derived records
+## Derived records before the interaction-proof merge
 
-Every record below was regenerated from source commit `ebe709072`, after the
-last merge of main. Subsequent edits update only these records and this note.
+Every record below was regenerated from source commit `ebe709072`, after merge
+`6235dc9b6`. The later interaction-proof merge and its regenerated records below
+supersede these measurements.
 
 | record | generation and outcome |
 |---|---|
@@ -345,7 +346,7 @@ region: `[13313, 50, 13313, 58]` in `src/ir.rs` at `ebe709072`.
 Zoonk's scoped measurement reaches it. Both features meet in
 `Builder::add_object`'s allOf-member loop, as required by the manager's ruling.
 
-## Final verification
+## Verification before the interaction-proof merge
 
 | check on source `ebe709072` | result |
 |---|---|
@@ -371,3 +372,32 @@ changes.
 The complete census, reach suite and full judged diff review ran at
 `42901c3dd`, whose `src/` tree is identical to `ebe709072`'s.
 The final change adds their results to this note only.
+
+
+## Interaction-proof merge and regenerated records
+
+Merge `db26c1682` concludes the merge of main at
+`1a435aee46799fc8ab357e8c0ee1d9b9c0c43152`; its parents are `35ee1b752`
+and that main commit. Correction `1552b5244` restores main's three
+`handwritten` schema-combination classifications, which the first resolution
+had retained as `gap` beside their old reach cells. The hand-written fixture
+contract passes after that correction. No merge state, unmerged path or conflict
+marker remains in the eight resolved files.
+
+The source commit for every regenerated record below is `1552b5244`, after
+that merge. Its `src/` tree is `e83231501001edafde01d48ff864459d25b09555`,
+identical to `db26c1682`'s. No production code changes in this continuation.
+
+| record | regeneration from source `1552b5244` |
+|---|---|
+| departures ledger and invalid-example inventory | `just departures-ledger`; all 812 checks passed; 10,574 departure rows and 5,905 inventory rows, both files unchanged |
+| golden-reach ledger and region reach cells | `just golden-reach`; all 276 golden tests measured, 426 reach cells updated; the header names `1552b52445a7` |
+| census JSON and document-path snapshot | the census step of `just golden-reach`, then `restate-coverage.py --snapshot-json .local/golden-reach/census.json --write`; 903 selectors, 1,328,715 declaration sites, 276 sources; the JSON is an uncommitted measurement artifact |
+| coverage restatements and reach ranking | `restate-coverage.py --write`, scratch `restate-reach-ranking.py`, and `golden-reach.py arms --headline`; 83 ranking rows restated from the regenerated ledger, preserving boundary text by key |
+| hand-written reach and configuration-gate ledgers | `just handwritten-reach`; 117 arm covers, 16 combination interaction sites, no configuration gates; both files unchanged |
+
+The corrected full ledger run supersedes an earlier run that passed 811 checks
+and failed the hand-written fixture contract on the three categories above.
+The full-diff judged lint at a 750,000-byte budget passed all 12 batches before
+these final reach records were regenerated. Verification of the regenerated
+records is recorded separately below.
