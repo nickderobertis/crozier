@@ -9647,6 +9647,7 @@ class EscalationRestatementTests(unittest.TestCase):
         )
     }
     STAYS_OPEN = re.compile(r"what stays open is (\d+) candidate\(s\)")
+    region_rows = staticmethod(load_script("tools/surface-census/witness-search-region-keys.py").region_rows)
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -9732,6 +9733,14 @@ class EscalationRestatementTests(unittest.TestCase):
             "forks": len({row["candidate"].split(":", 1)[0] for row in served}),
             "pinned-404": len(served) + len(refused),
             "exhausted": outcomes[EXHAUSTED],
+            # The headline splits every `handwritten` region row by its search
+            # verdict, including rows whose record lives outside this index.
+            "handwritten-exhausted": sum(
+                cells[3].strip("`") == "handwritten" and "search: exhausted" in cells[4]
+                for path in sorted(self.REGIONS.glob("*.md"))
+                for cells in self.region_rows(path.read_text(encoding="utf-8"))
+                if not cells[0].strip("`").startswith(COMBINATION_PREFIX)
+            ),
             "incomplete": len(self.refused),
             "refused": len(refused),
             "gone": gone,
@@ -9741,7 +9750,7 @@ class EscalationRestatementTests(unittest.TestCase):
             (self.schemas, r"(\w+) keys read `exhausted`", "exhausted"),
             (self.schemas, r"(\w+) keys still\s+read `search-incomplete`", "incomplete"),
             (self.schemas, r"reason: (\d+) `github-code-search` candidates", "refused"),
-            (self.doc, r"(\w+) have a search record that reads `exhausted`", "exhausted"),
+            (self.doc, r"rows,\s+(\w+) have a search record that reads `exhausted`", "handwritten-exhausted"),
             (self.doc, r"(\w+) read `search-incomplete`\s+only because GitHub refused (?:\d+)", "incomplete"),
             (self.doc, r"only because GitHub refused (\d+) candidates", "refused"),
             (self.doc, r"\*\*(\w+) read `exhausted`, \w+ read `search-incomplete`", "exhausted"),

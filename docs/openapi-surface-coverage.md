@@ -45,9 +45,9 @@ split five ways:
   witness establishes parity where the feature lands. Their bounded searches
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
-  purpose. Of the `handwritten` rows, 6 have a search record that reads
-  `exhausted`: every candidate is decided and none is registrable. 145 read
-  `search-incomplete`. Of those,
+  purpose. Of the `handwritten` rows,
+  6 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 145 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
