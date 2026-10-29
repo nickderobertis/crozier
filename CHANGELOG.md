@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.145](https://github.com/nickderobertis/crozier/compare/v0.0.144...v0.0.145) - 2026-10-29
+
+### Fixed
+
+- *(parity)* re-prove operation combinations at the interaction branch ([#660](https://github.com/nickderobertis/crozier/pull/660))
+
 ## [0.0.144](https://github.com/nickderobertis/crozier/compare/v0.0.143...v0.0.144) - 2026-10-29
 
 ### Fixed
