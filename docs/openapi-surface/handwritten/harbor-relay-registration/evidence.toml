@@ -1,0 +1,8 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "5fd9b3edcf20b6bfcc64c9fab458559d7bc191317b8b9d446a12cf627e6413c4"
+
+[[covers]]
+key = "combo-inline-body-read-only-property"
+search = "docs/openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses"
+verdict = "witness-blocked"

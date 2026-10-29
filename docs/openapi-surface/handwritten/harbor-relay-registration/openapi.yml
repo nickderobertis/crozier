@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: Harbor relay registration
+  version: '1'
+paths:
+  /registrations:
+    post:
+      operationId: registerRelay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationInput'
+      responses:
+        '204':
+          description: Registration recorded
+  /signals:
+    post:
+      operationId: submitSignal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label]
+              properties:
+                label:
+                  type: string
+                sequence:
+                  type: integer
+                  readOnly: true
+      responses:
+        '204':
+          description: Signal recorded
+components:
+  schemas:
+    RegistrationInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Human assigned relay label.
+        registration_id:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        revision:
+          type: integer
+          readOnly: true

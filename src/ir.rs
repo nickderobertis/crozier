@@ -2456,6 +2456,9 @@ pub struct Field {
     /// reaches through a `$ref` or an `allOf`). Fern's worked examples leave such
     /// a property out unless it is required.
     pub deprecated: bool,
+    /// Whether the property itself is server-populated. Request examples omit
+    /// it while the SDK model retains it for responses.
+    pub read_only: bool,
     /// The property's XML encoding; set on every field of an XML model.
     pub xml: Option<XmlProperty>,
     /// Whether the field comes from an `allOf` parent the model flattens
@@ -3857,7 +3860,7 @@ fn build_endpoint(
                 if is_unknown(s) {
                     TypeRef::Primitive(Prim::Str)
                 } else {
-                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                    hoister.hoist_parameter_type(&request_ctx, &p.name, s)
                 }
             });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
@@ -8300,6 +8303,7 @@ impl InlineHoister<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                read_only: prop_schema.read_only == Some(true),
                 deprecated: own_deprecated(prop_schema),
                 xml: None,
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
@@ -8944,6 +8948,38 @@ impl InlineHoister<'_> {
             max_length: None,
         }));
         wrap(TypeRef::Named(name))
+    }
+
+    /// Hoist structured parameter maps before the ordinary parameter shapes.
+    /// `webflow_v2_matches_fern_output` byte-checks both the resulting filter
+    /// and sort declarations and their collection-client serialization calls.
+    fn hoist_parameter_type(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
+        // A single inline allOf enum retains its parameter-scoped name, as
+        // Webflow's reporting sortBy does. Outer defaults still belong to the
+        // parameter; only the enum declaration comes from the member.
+        if schema.reference.is_none() {
+            if let Some([member]) = schema.all_of.as_deref() {
+                if member.reference.is_none() && string_enum_values(member).is_some() {
+                    return self.hoist_param_enum(request_ctx, param, member);
+                }
+            }
+        }
+        if schema.reference.is_none() && is_map(schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if value.reference.is_none()
+                    && (is_inline_struct(value) || string_enum_values(value).is_some())
+                {
+                    let name = format!("{}Value", request_parameter_type_name(request_ctx, param));
+                    if let Some(value_type) = self.hoist_named_copy(&name, value) {
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(value_type),
+                        );
+                    }
+                }
+            }
+        }
+        self.hoist_param_enum(request_ctx, param, schema)
     }
 
     /// Hoist an inline string enum on a request parameter's schema into a named
@@ -12385,6 +12421,7 @@ fn append_member_fields(
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
             declared_name: prop_schema.property_name().map(str::to_owned),
+            read_only: prop_schema.read_only == Some(true),
             deprecated: own_deprecated(prop_schema),
             xml: None,
             type_ref,
@@ -12542,6 +12579,7 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         docstring: None,
         example: None,
         declared_name: None,
+        read_only: false,
         deprecated: false,
         xml: None,
         admits_only_empty_object: false,
@@ -13739,6 +13777,7 @@ impl Builder<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                read_only: prop_schema.read_only == Some(true),
                 deprecated: own_deprecated(prop_schema),
                 xml: None,
                 type_ref,
@@ -14266,6 +14305,7 @@ impl Builder<'_> {
                         docstring: None,
                         example: None,
                         declared_name: None,
+                        read_only: false,
                         deprecated: false,
                         xml: None,
                         admits_only_empty_object: false,
@@ -18863,6 +18903,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            read_only: false,
             deprecated: false,
             admits_only_empty_object: false,
             xml: None,
@@ -23185,6 +23226,60 @@ mod tests {
         assert!(!declarations
             .iter()
             .any(|decl| decl.name() == "CreateRecordRequestOptionalValuesValue"));
+    }
+
+    #[test]
+    fn query_map_values_have_request_scoped_declarations() {
+        let schemas = indexmap::IndexMap::new();
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: Some(&schemas),
+            out: Vec::new(),
+        };
+        for (parameter, value) in [
+            (
+                "filter",
+                serde_json::json!({"type": "object", "properties": {
+                    "eq": {"type": "string"},
+                    "in": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}]}
+                }}),
+            ),
+            (
+                "sort",
+                serde_json::json!({"type": "string", "enum": ["asc", "desc"]}),
+            ),
+        ] {
+            let input =
+                schema(serde_json::json!({"type": "object", "additionalProperties": value}));
+            let name = format!(
+                "ListEntriesRequest{}Value",
+                crate::naming::class_name(parameter)
+            );
+            assert_eq!(
+                hoister.hoist_parameter_type("ListEntriesRequest", parameter, &input),
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Named(name.clone()))
+                )
+            );
+            assert!(hoister.out.iter().any(|decl| decl.name() == name));
+        }
+        assert!(hoister
+            .out
+            .iter()
+            .any(|decl| decl.name() == "ListEntriesRequestFilterValueIn"));
+        let plain = schema(
+            serde_json::json!({"type": "object", "additionalProperties": {"type": "string"}}),
+        );
+        assert_eq!(
+            hoister.hoist_parameter_type("ListEntriesRequest", "labels", &plain),
+            base_type_ref(&plain)
+        );
+        assert!(!hoister
+            .out
+            .iter()
+            .any(|decl| decl.name() == "ListEntriesRequestLabelsValue"));
     }
 
     #[test]

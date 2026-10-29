@@ -13301,8 +13301,8 @@ class FinishedStateGateTests(unittest.TestCase):
     BLOCKED_RECORD = "docs/openapi-surface/witness-search-operation-combinations-bodies-responses/README.md"
 
     def test_a_witness_blocked_cover_is_admitted_only_on_a_combination_citing_its_blocked_declarers(self) -> None:
-        key = "combo-inline-body-read-only-property"
-        fixture = self.add_cover(key, f"{self.BLOCKED_RECORD}#blocked-witnesses")
+        # The positive cover must declare and reach the combination it claims.
+        fixture = "harbor-relay-registration"
         self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
 
     def test_a_witness_blocked_cover_on_a_feature_key_is_refused(self) -> None:
@@ -19493,6 +19493,10 @@ class CoverageRestatementTests(unittest.TestCase):
         for name in ("golden-reach.tsv", "golden-reach-sites.tsv"):
             shutil.copyfile(REPO / "docs/openapi-surface" / name, surface / name)
         stage_restatement_population(self.root)
+        for evidence in (REPO / "docs/openapi-surface/handwritten").glob("*/evidence.toml"):
+            destination = surface / "handwritten" / evidence.parent.name / evidence.name
+            destination.parent.mkdir(parents=True)
+            shutil.copyfile(evidence, destination)
 
     def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -19710,9 +19714,6 @@ class CoverageRestatementTests(unittest.TestCase):
             return [int(found[n]) for n in range(1, 4)]
 
         surface = self.root / "docs/openapi-surface"
-        # The blocked subtotal reads the fixtures' own evidence, which the shared
-        # staging leaves out.
-        shutil.copytree(REPO / "docs/openapi-surface/handwritten", surface / "handwritten")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         original = self.index.read_text(encoding="utf-8")
         blocked, together, ruled = subtotals()
@@ -19730,9 +19731,13 @@ class CoverageRestatementTests(unittest.TestCase):
             if line.split("\t")[0] in handwritten
         }
         cooccurring = [key for key in handwritten if cells[key].split("\t")[2] == "co-occurrence"]
-        # The committed tree: no hand-written cover is witness-blocked, no row is ruled,
-        # and the hand-written rows whose site cell reads `co-occurrence` are the count.
-        self.assertEqual([0, len(cooccurring), 0], [blocked, together, ruled])
+        blocked_keys = {
+            cover["key"]
+            for evidence in (surface / "handwritten").glob("*/evidence.toml")
+            for cover in tomllib.loads(evidence.read_text(encoding="utf-8")).get("covers", [])
+            if cover.get("verdict") == "witness-blocked" and "arm" not in cover
+        }
+        self.assertEqual([len(set(handwritten) & blocked_keys), len(cooccurring), 0], [blocked, together, ruled])
 
         def moves(path: Path, old: str, new: str, expected: list[int]) -> None:
             text = path.read_text(encoding="utf-8")
@@ -19747,7 +19752,7 @@ class CoverageRestatementTests(unittest.TestCase):
             self.assertEqual(original, self.index.read_text(encoding="utf-8"))
 
         # A hand-written combination whose cover reads `witness-blocked` is counted blocked.
-        key = handwritten[0]
+        key = next(key for key in handwritten if key not in blocked_keys)
         evidence, cover = next(
             (path, block)
             for path in sorted((surface / "handwritten").glob("*/evidence.toml"))
@@ -19767,6 +19772,30 @@ class CoverageRestatementTests(unittest.TestCase):
             [blocked, together - 1, ruled],
         )
         # A named unproven row whose reason is the user's ruling is counted ruled.
+        # Stage that scenario even when every committed combination is proven.
+        gap_key = next(key for key in handwritten if key not in blocked_keys and key not in cooccurring)
+        gap_region, gap_row = next(
+            (path, line)
+            for path in sorted(surface.glob("*.md"))
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.startswith(f"| {gap_key} |")
+        )
+        gap_region.write_text(
+            gap_region.read_text(encoding="utf-8").replace(
+                gap_row, gap_row.replace(" | handwritten | ", " | gap | "), 1
+            ),
+            encoding="utf-8",
+        )
+        before, heading, after = original.partition("#### Unproven combinations, named")
+        self.assertTrue(heading)
+        header = "| key | region | why it is unproven |\n|---|---|---|\n"
+        self.assertIn(header, after)
+        named_row = f"| `{gap_key}` | `{gap_region.stem}` | `not searched` — staged unproven combination |\n"
+        self.index.write_text(before + heading + after.replace(header, header + named_row, 1), encoding="utf-8")
+        staged = self.run_restater("--combinations-only", "--write")
+        self.assertEqual(0, staged.returncode, staged.stderr)
+        self.assertEqual([blocked, together, ruled], subtotals())
+        original = self.index.read_text(encoding="utf-8")
         named = matched(re.search(r"(?m)^\| `combo-[^`]+` \| `[^`]+` \| (`[^`]+`) — ", original))
         moves(self.index, named[0], named[0].replace(named[1], "`user ruling`"), [blocked, together, ruled + 1])
 

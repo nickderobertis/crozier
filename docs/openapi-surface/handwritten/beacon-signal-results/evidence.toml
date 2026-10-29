@@ -1,0 +1,21 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "c51bd44630742c41f5e5e7a22be575e2c5787a77c3adfb8936626bf540dc1ec8"
+
+[[covers]]
+key = "combo-success-oneof-nullable"
+search = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md#nullable-responses"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md"
+
+[[covers]]
+key = "combo-success-anyof-nullable"
+search = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md#nullable-responses"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md"
+
+[[covers]]
+key = "combo-body-property-named-as-path-param"
+search = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md#path-and-body-name"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-operation-combinations/README.md"

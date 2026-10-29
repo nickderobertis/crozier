@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Beacon Signal Results
+  version: 1.0.0
+paths:
+  /classifications:
+    get:
+      operationId: classifySignal
+      responses:
+        '200':
+          description: A numeric or boolean classification, or no classification
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: boolean
+                  - type: 'null'
+  /summaries:
+    get:
+      operationId: summarizeSignal
+      responses:
+        '200':
+          description: A numeric or textual summary, or no summary
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: integer
+                  - type: string
+                  - type: 'null'
+  /relays/{channel_code}:
+    post:
+      operationId: updateRelay
+      parameters:
+        - name: channel_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RelayTarget'
+      responses:
+        '200':
+          description: The updated relay target
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayTarget'
+components:
+  schemas:
+    RelayTarget:
+      type: object
+      required:
+        - channel_code
+      properties:
+        channel_code:
+          type: string

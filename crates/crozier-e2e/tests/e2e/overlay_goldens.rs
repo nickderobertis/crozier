@@ -77,6 +77,8 @@ const KINDS: &[Kind] = &[
     // - `supabase-api-v1`: inline property and query enums across a large
     //   management API's request and response models.
     // - `rta-in-japan-twitter`: a posting API's one media-type enum.
+    // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
+    // read-only properties of referenced request bodies.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -86,6 +88,10 @@ const KINDS: &[Kind] = &[
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two corpora extend the established literal-mode golden inventory, using the same binary, subprocess contract and dependencies as the other overlays. An inventory entry cannot define a separate project edge.
+            "webflow-v2",
+            "steaminputdb",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             "enum-receiver-collision",
             "openfigi.com",
             "offchain-metadata-tools",

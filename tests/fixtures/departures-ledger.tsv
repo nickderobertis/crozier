@@ -1243,6 +1243,11 @@ docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1517,6 +1522,11 @@ docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/c
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-signal-null/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -9316,6 +9326,7 @@ tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	37	sdk-iden
 tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/steaminputdb/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/strapi-rest-api/expected	src/fern/__init__.py	32	init-type-checking-import-order
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -10381,6 +10392,7 @@ tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	40	sdk-identi
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/pages/types/__init__.py	9	init-type-checking-import-order
 tests/fixtures/webflow-v2/expected	src/fern/sites/__init__.py	44	init-type-checking-import-order
+tests/fixtures/webflow-v2/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
