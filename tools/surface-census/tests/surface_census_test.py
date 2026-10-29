@@ -11865,7 +11865,8 @@ class RankedBacklogTests(unittest.TestCase):
                     f"{cells[1]} reads {cells[6]!r}; the boundary makes it `{disposition}`",
                 )
         flat = " ".join(self.doc.split())
-        reaching = sum(1 for _rank, reach in ledger if not reach.unreached_sites)
+        # Every ledger row reaching all its sites ties below the table, combination rows included.
+        reaching = sum(1 for _rank, reach in self.reach_ledger(combinations=True) if not reach.unreached_sites)
         self.assertIn(f"**{reaching}** golden rows reach every handling site", flat)
 
     REACH_ARMS = "#### Every unreached arm, and its search verdict"

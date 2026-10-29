@@ -2812,7 +2812,8 @@ region files are the run named in the ledger's first line.
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
 then key. **488** golden rows reach every handling site and tie below every row
-listed here; each says so in its own cell. Unreached regions break ties and
+listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
+`unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
 
 **The boundary.** The first pass of this measurement owned the rows ranked above

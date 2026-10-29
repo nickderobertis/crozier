@@ -556,6 +556,8 @@ def restate(root: Path) -> str:
         key for key in reach_reader.measured_rows(surface, listed) if key.startswith(parser.COMBINATION_PREFIX)
     }
     validate_reach_population(set(ledger), golden_keys, golden_combinations | measured_combinations)
+    # The ranking's tie count is every ledger row reaching all its sites, combination rows included.
+    reaching = sum(reach.unreached_sites == 0 for reach in ledger.values())
     ledger = {key: reach for key, reach in ledger.items() if key in golden_keys}
     one = [
         f"| `{key}` | `{entries[key].region}` | `{reach.witnesses}` |"
@@ -575,7 +577,6 @@ def restate(root: Path) -> str:
     header = "| key | region | only golden-only witness |\n|---|---|---|\n"
     section = substitute(section, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + "\n".join(one) + "\n")
     text = before + thin_heading + section + following + tail
-    reaching = sum(reach.unreached_sites == 0 for reach in ledger.values())
     text = substitute(
         text,
         r"\*\*\d+\*\* golden rows reach every handling site",
