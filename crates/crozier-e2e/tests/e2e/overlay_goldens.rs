@@ -88,8 +88,10 @@ const KINDS: &[Kind] = &[
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two repaired witnesses require literal-mode byte comparisons through the existing overlay gate and corpus-match inventory. They add no new subprocess boundary or dependency; splitting the established golden family out of crozier-e2e's broad edge is separately drafted graph work, outside this proof task.
             "webflow-v2",
             "steaminputdb",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             "enum-receiver-collision",
             "openfigi.com",
             "offchain-metadata-tools",

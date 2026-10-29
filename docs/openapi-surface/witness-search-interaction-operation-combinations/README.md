@@ -235,9 +235,10 @@ The manager also approved declaring the inline interaction site by contract
 That predicate is the newly declared site; the selected combination rows and
 all other interaction declarations are unchanged.
 
-The final dispatch also freshly regenerated Webflow through the pinned generation
-script into a disposable staging tree: all **1,501** SDK files reproduced the
-committed golden byte for byte (`fresh-fern.log` in this dispatch’s scratch).
+The preceding retry (`2858861-7`) freshly regenerated Webflow through the pinned
+generation script into a disposable staging tree: all **1,501** SDK files
+reproduced the committed golden byte for byte (`fresh-fern.log` in that retry’s
+scratch).
 The staging tree and temporary screening fixture are removed after generation.
 
 ## Intermediate authored measurements
@@ -361,8 +362,11 @@ read-only evidence already identifies SteamInputDB's omitted `$schema`
 arguments. Its complete golden byte-matches. This retry measured the corrected interaction
 with `golden-reach.py measure --tests '^steaminputdb_matches_fern_output$'
 `--jobs 1` at commit `ba0dbb016f84`: SteamInputDB executes every counter region
-on the declared retain-predicate line. The scoped report records the site as
-reached. This real witness takes precedence over an authored referenced-body
+on the declared retain-predicate line. The scoped report records **6/6**
+regions reached. The same preceding retry freshly reproduced all 133
+SteamInputDB golden files and generated its literals overlay
+(`2858861-7/fresh-steaminput.log`); the source and golden bytes are unchanged
+in this retry. This real witness takes precedence over an authored referenced-body
 proof; no referenced-body cover remains in the authored fixture.
 
 ### CLI build boundary
