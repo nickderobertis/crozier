@@ -20,9 +20,9 @@ use serde::Serialize;
 use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyExample, BodyField, BodySchemaShape, ClientPathParameter,
-    Credential, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir,
-    ObjectType, PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl,
-    TypeRef,
+    Credential, DiscriminantDocumentation, Endpoint, EndpointPagination, ErrorClass, Field,
+    GlobalHeader, HeaderType, Ir, ObjectType, PageAdvance, Prim, QueryParam, RequestBody,
+    StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -10186,10 +10186,16 @@ impl<'a> ExampleCtx<'a> {
                         args.push((Some(py_name), value));
                     }
                     // The Markdown writers leave out a tag the IR marks
-                    // undocumented (see `DeclaredDiscriminant::documented`).
+                    // undocumented (see `DeclaredDiscriminant::documentation`).
                     if let Some(index) = m
                         .declared_discriminant
-                        .filter(|declared| !self.documentation || declared.documented)
+                        .filter(|declared| {
+                            !self.documentation
+                                || matches!(
+                                    declared.documentation,
+                                    DiscriminantDocumentation::Include
+                                )
+                        })
                         .map(|declared| declared.index)
                     {
                         let enum_name = m.source.as_deref().map(|source| {

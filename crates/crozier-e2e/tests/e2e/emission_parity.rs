@@ -163,6 +163,143 @@ fn a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields
     }
 }
 
+fn assert_dangling_rule_abstains(comparison: &crozier::parity::TreeComparison, path: &str) {
+    assert!(
+        comparison.differences.iter().any(|(name, _)| name == path),
+        "the unexpected SDK change at {path} was hidden: {comparison:?}"
+    );
+    assert!(
+        !comparison.departures.iter().any(|departure| {
+            departure.file == path && departure.id == "dangling-mapping-variant-fields"
+        }),
+        "the rule claimed an unrelated SDK change: {comparison:?}"
+    );
+}
+
+/// The public tree-comparison boundary used by `compare` must recognize only
+/// the declared Python wrapper. Corrupted SDK files remain differences; valid
+/// forward-reference and import uses survive the wrapper rewrite.
+#[test]
+fn dangling_mapping_departure_respects_source_scope_and_wrapper_structure() {
+    const MODULE: &str = "src/fern/types/reading.py";
+    const WRAPPER: &str = "Reading_Meteor";
+    for mode in ["python-enums", "literals"] {
+        let temp = tempfile::tempdir().expect("comparison tempdir");
+        let generated = temp.path().join("generated");
+        generate(DANGLING_TARGET, mode, &generated);
+        let reference = repo_root().join(golden(DANGLING_TARGET, mode));
+        let source = spec(DANGLING_TARGET);
+        let compare = |reference: &Path, generated: &Path| {
+            crozier::parity::compare_trees_with_document(
+                reference,
+                generated,
+                None,
+                true,
+                Some(crozier::openapi::load(&source).unwrap()),
+            )
+            .expect("real SDK trees can be compared")
+        };
+        let baseline = compare(&reference, &generated);
+        assert!(baseline.differences.is_empty(), "{mode}: {baseline:?}");
+        assert!(baseline.departures.iter().any(|departure| {
+            departure.file == MODULE && departure.id == "dangling-mapping-variant-fields"
+        }));
+
+        let without_source =
+            crozier::parity::compare_trees(&reference, &generated, None, true).unwrap();
+        assert_dangling_rule_abstains(&without_source, MODULE);
+
+        let original = module(&generated, "reading.py");
+        let reference_module = std::fs::read_to_string(reference.join(MODULE)).unwrap();
+        let text_reference = temp.path().join("text-reference");
+        let text_generated = temp.path().join("text-generated");
+        super::copy_dir(&reference, &text_reference);
+        super::copy_dir(&generated, &text_generated);
+        let text_path = "src/fern/types/reading.txt";
+        for (root, content) in [
+            (&text_reference, &reference_module),
+            (&text_generated, &original),
+        ] {
+            std::fs::write(
+                root.join(text_path),
+                crozier::normalize::strip_python_comments(content),
+            )
+            .unwrap();
+        }
+        assert_dangling_rule_abstains(&compare(&text_reference, &text_generated), text_path);
+
+        let class = original.find(&format!("class {WRAPPER}(")).unwrap();
+        let config = class + original[class..].find("    if IS_PYDANTIC_V2:").unwrap();
+        let opening = class + original[class..].find("    \"\"\"").unwrap();
+        let closing = opening
+            + "    \"\"\"".len()
+            + original[opening + "    \"\"\"".len()..]
+                .find("    \"\"\"")
+                .unwrap();
+        let mut unclosed_docstring = original.clone();
+        unclosed_docstring.replace_range(closing..closing + "    \"\"\"".len(), "    \"\"");
+        let tag = "kind: typing.Literal[\"METEOR\"] = \"METEOR\"";
+        assert!(original[class..].contains(tag));
+        let mut missing_config = original.clone();
+        missing_config.replace_range(config..config + "    if IS_PYDANTIC_V2:".len(), "");
+        for (name, changed) in [
+            ("truncated", original[..config].to_owned()),
+            ("unclosed-docstring", unclosed_docstring),
+            ("missing-config", missing_config),
+            (
+                "wrong-tag",
+                original.replacen(tag, "kind: typing.Literal[\"COMET\"] = \"COMET\"", 1),
+            ),
+        ] {
+            let edited = temp.path().join(name);
+            super::copy_dir(&generated, &edited);
+            std::fs::write(edited.join(MODULE), changed).unwrap();
+            assert_dangling_rule_abstains(&compare(&reference, &edited), MODULE);
+        }
+
+        let single = temp.path().join("single-forward-reference");
+        super::copy_dir(&generated, &single);
+        // A harmless rebuild is a valid post-processing step on a generated SDK.
+        // It must not leave an unused helper import after the Any-wrapper rewrite.
+        assert!(!original.contains("update_forward_refs"));
+        let future = "from __future__ import annotations\n";
+        assert!(original.contains(future));
+        let mut one_line = original.replacen(
+            future,
+            &format!("{future}from ..core.pydantic_utilities import update_forward_refs\n"),
+            1,
+        );
+        one_line.push_str(&format!("\nupdate_forward_refs({WRAPPER})\n"));
+        std::fs::write(single.join(MODULE), one_line).unwrap();
+        let compared = compare(&reference, &single);
+        assert!(compared.differences.is_empty(), "{mode}: {compared:?}");
+
+        let kept_reference = temp.path().join("kept-import-reference");
+        let kept_generated = temp.path().join("kept-import-generated");
+        super::copy_dir(&reference, &kept_reference);
+        super::copy_dir(&generated, &kept_generated);
+        let import = "from .trail import Trail";
+        let import_at = original.find(import).unwrap();
+        assert!(!reference_module.lines().any(|line| line == import));
+        let anchor = original[..import_at]
+            .lines()
+            .rev()
+            .find(|line| !line.is_empty() && reference_module.lines().any(|other| other == *line))
+            .unwrap();
+        let reference_with_import =
+            reference_module.replacen(&format!("{anchor}\n"), &format!("{anchor}\n{import}\n"), 1);
+        let extension = "\n\ndef retained_trail(value: Trail) -> Trail:\n    return value\n";
+        for (root, content) in [
+            (&kept_reference, reference_with_import),
+            (&kept_generated, original.clone()),
+        ] {
+            std::fs::write(root.join(MODULE), content + extension).unwrap();
+        }
+        let compared = compare(&kept_reference, &kept_generated);
+        assert!(compared.differences.is_empty(), "{mode}: {compared:?}");
+    }
+}
+
 fn variant_of(case: &str, name: &str, edits: &[(&str, &str)], dir: &Path) -> PathBuf {
     let mut text = std::fs::read_to_string(spec(case)).expect("the measurement document");
     for (from, to) in edits {
