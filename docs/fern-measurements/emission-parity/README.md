@@ -177,8 +177,7 @@ the same bytes and pair:
 | literals | 238 | 0 | the same, and `fern-metadata-generator-config` at `.fern/metadata.json:5` |
 
 Both report `matched`. The corpus gate holds the same result, and on the
-merged source it is the comparison of record (see "Verification on the merged
-source" below):
+merged source it is the comparison of record (see the final verification below):
 `ingef_conquery_matches_fern_output` compares the golden, and
 `overlay_goldens_match_fern_output` compares its `expected-literals` overlay.
 Both hold every departure to its row in
@@ -257,13 +256,13 @@ ledger run exceeded the socket-length limit. `corpus_offline_test` failed on the
 doubled source count until `49c42b1a1`, and the census suite on the superseded
 proofs until `03333dd02`.
 
-## Post-merge source and derived records
+## Earlier post-merge source and derived records
 
 Merge `6235dc9b6` concludes the merge of `bc66bfb08` into this branch; its
 parents are `02f81c49c` and `bc66bfb08`. No merge state, unmerged path or conflict
 marker remains in the eight resolved files. The source commit for every record
 below is `4e009625a`: it follows that merge, and its `src/` is byte-identical to
-`5cba42910`'s. No subsequent change modifies `src/`.
+`5cba42910`'s. The later discriminant-policy refactor at `ebe709072` supersedes these measurements.
 
 | record | generation from source `4e009625a` |
 |---|---|
@@ -285,7 +284,7 @@ a measurement site. The first census run exposed the stale site and the source
 count of 275; it was interrupted after 325 passing tests and one skip to read
 those failures. It reported no failure concerning `schema-example-null`.
 
-## Verification on the merged source
+## Earlier verification on the merged source
 
 The following completed checks exercise `4e009625a`'s source:
 
@@ -300,3 +299,68 @@ The following completed checks exercise `4e009625a`'s source:
 
 The source document still has SHA-256
 `c3a52b3c5453c003a563a9b39784dfcd9f89f69e0ae1848dbec2881a24b9ec21`.
+
+## Final source and comparison
+
+The source commit for the finished measurements is `ebe709072`, after merge
+`6235dc9b6` brought in `bc66bfb08`. The later refactor replaces two
+discriminant-policy booleans with explicit enums; it changes no generated
+file. Its library suite passes all 1,096 tests. The full-tree unaffected
+control still matches the base in both enum modes, including README.md and
+reference.md.
+
+On that source, the normal-ledger conquery golden and literals overlay
+comparisons pass. Every file matches the certified pair apart from the
+catalogued departure lines described above. The 13 focused parity checks also
+pass both from-scratch causes, existing resolved-target/plain-base controls,
+and gate wiring. The SDK-environment suite passes its 38 journeys, including
+conquery's SECONDARY_ID_QUERY response parsing and posting, plus the runtime
+comparison and nested-discriminator runtime checks.
+
+The comparison-boundary journey generates the real SDK in both enum modes and
+compares filesystem trees through the public parity API. It checks abstention
+without a source, for a non-Python file, and for truncated, unterminated,
+configuration-free and wrongly tagged wrappers. It also checks retained helper
+imports and single-line forward-reference cleanup. Removing the Python-file
+guard makes the test fail because a change in reading.txt is hidden; restoring
+the guard makes it pass. This mutation was temporary and is absent from the
+committed tree.
+
+## Final derived records
+
+Every record below was regenerated from source commit `ebe709072`, after the
+last merge of main. Subsequent edits update only these records and this note.
+
+| record | generation and outcome |
+|---|---|
+| departures ledger and invalid-example inventory | `just departures-ledger`; all 812 checks passed, 10,567 departure rows and 5,905 inventory rows; both files unchanged |
+| golden-reach ledger and region reach cells | `just golden-reach`; all 276 golden tests measured; 14 schema reach cells updated; the ledger header names `ebe709072` |
+| census JSON and document-path snapshot | `just golden-reach`'s census step, then `restate-coverage.py --snapshot-json .local/golden-reach/census.json --write`; 903 selectors, 1,328,715 declaration sites and 276 sources; the JSON remains an uncommitted measurement artifact |
+| coverage restatements and reach ranking | `restate-coverage.py --write`, scratch `restate-reach-ranking.py` and `golden-reach.py arms --headline`; all 83 ranking rows generated from the current ledger, preserving boundary text by key; 420 golden rows reach every handling site |
+| hand-written reach and configuration-gate ledgers | `just handwritten-reach`; 117 arm covers, 10 combination interaction sites and no configuration gates; generated files unchanged |
+| outstanding arm-search list | `golden-reach-search.py outstanding`, 171 items across six searches, regenerated against the final source |
+
+The measured `combo-allof-oneof-member` interaction retains its own counter
+region: `[13313, 50, 13313, 58]` in `src/ir.rs` at `ebe709072`.
+Zoonk's scoped measurement reaches it. Both features meet in
+`Builder::add_object`'s allOf-member loop, as required by the manager's ruling.
+
+## Final verification
+
+| check on source `ebe709072` | result |
+|---|---|
+| `crozier:test` | 1,096 passed |
+| focused parity, both enum modes and full-tree unaffected control | 13 passed |
+| `just test-sdk-env` | 38 SDK journeys, runtime comparison and nested-discriminator runtime passed |
+| corpus source and licence lint targets | passed |
+| `just test-corpus-offline` | 2 offline tests, 1 recovery test and 3 command-usage tests passed |
+| both Rust projects' clippy, rustfmt and project-boundary checks | passed |
+| targeted judged lint for IR, emitter and comparison-boundary integration | passed |
+
+The first final-source ledger attempt passed 811 checks but one unrelated
+comparison-output assertion failed because its temporary-file path contained
+the orchestration directory's word “Fern”. The rerun used a short symlink to
+the same scratch directory and passed all 812 checks. Unit discovery also
+requires Git's ceiling directory at that scratch root, which lives inside the
+orchestration repository. These are environment settings, with no test or gate
+changes.
