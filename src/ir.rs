@@ -2433,6 +2433,9 @@ pub struct Field {
     /// reaches through a `$ref` or an `allOf`). Fern's worked examples leave such
     /// a property out unless it is required.
     pub deprecated: bool,
+    /// Whether the property itself is server-populated. Request examples omit
+    /// it while the SDK model retains it for responses.
+    pub read_only: bool,
     /// The property's XML encoding; set on every field of an XML model.
     pub xml: Option<XmlProperty>,
     /// Whether the field comes from an `allOf` parent the model flattens
@@ -3735,7 +3738,7 @@ fn build_endpoint(
                 p.schema
                     .as_ref()
                     .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                        hoister.hoist_parameter_type(&request_ctx, &p.name, schema)
+                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                     })
             };
             PathParam {
@@ -4029,7 +4032,7 @@ fn build_endpoint(
                 p.schema
                     .as_ref()
                     .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                        hoister.hoist_parameter_type(&request_ctx, &p.name, schema)
+                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                     })
             };
             HeaderParam {
@@ -8277,6 +8280,7 @@ impl InlineHoister<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                read_only: prop_schema.read_only == Some(true),
                 deprecated: own_deprecated(prop_schema),
                 xml: None,
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
@@ -12152,6 +12156,7 @@ fn append_member_fields(
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
             declared_name: prop_schema.property_name().map(str::to_owned),
+            read_only: prop_schema.read_only == Some(true),
             deprecated: own_deprecated(prop_schema),
             xml: None,
             type_ref,
@@ -12309,6 +12314,7 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         docstring: None,
         example: None,
         declared_name: None,
+        read_only: false,
         deprecated: false,
         xml: None,
         admits_only_empty_object: false,
@@ -13528,6 +13534,7 @@ impl Builder<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                read_only: prop_schema.read_only == Some(true),
                 deprecated: own_deprecated(prop_schema),
                 xml: None,
                 type_ref,
@@ -13986,6 +13993,7 @@ impl Builder<'_> {
                         docstring: None,
                         example: None,
                         declared_name: None,
+                        read_only: false,
                         deprecated: false,
                         xml: None,
                         admits_only_empty_object: false,
@@ -18537,6 +18545,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            read_only: false,
             deprecated: false,
             admits_only_empty_object: false,
             xml: None,

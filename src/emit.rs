@@ -4964,6 +4964,7 @@ fn render_discriminated_union(
                 docstring: None,
                 example: None,
                 declared_name: None,
+                read_only: false,
                 deprecated: false,
                 xml: None,
                 admits_only_empty_object: false,
@@ -9211,6 +9212,7 @@ impl<'a> ExampleCtx<'a> {
         let fields = member
             .fields
             .iter()
+            .filter(|field| !field.read_only)
             .map(|field| ExampleField {
                 py_name: field.py_name.clone(),
                 wire_name: field.wire_name.clone(),
@@ -10438,7 +10440,7 @@ impl<'a> ExampleCtx<'a> {
             .iter()
             .filter(leads)
             .chain(obj.fields.iter().filter(|f| !leads(f)));
-        for f in inherited_first {
+        for f in inherited_first.filter(|field| !field.read_only) {
             // An example spells a field Fern renames only on the model under its
             // plain name: VisKit's `ThreePieceIn.copy` is the model field `copy_`,
             // and Fern's example constructs `ThreePieceIn(copy="copy", …)`.
@@ -15144,6 +15146,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            read_only: false,
             deprecated: false,
             admits_only_empty_object: false,
             xml: None,
@@ -17793,6 +17796,47 @@ mod parameter_lowering_tests {
     }
 
     #[test]
+    fn request_examples_omit_read_only_model_fields() {
+        for referenced in [false, true] {
+            let server_id = if referenced {
+                json!({"$ref": "#/components/schemas/ServerToken", "readOnly": true})
+            } else {
+                json!({"type": "string", "readOnly": true})
+            };
+            let generated = files(json!({
+                "openapi": "3.1.0", "info": {"title": "Relay registrations", "version": "1"},
+                "paths": {"/registrations": {"post": {
+                    "operationId": "registerEntries",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"type": "object", "required": ["entries"], "properties": {
+                            "entries": {"type": "array", "items": {"$ref": "#/components/schemas/RelayRecord"}}
+                        }},
+                        "example": {"entries": [{"server_id": "server-7", "name": "Relay", "note": "keep this note"}]}
+                    }}},
+                    "responses": {"204": {"description": "Registered"}}
+                }}},
+                "components": {"schemas": {
+                    "ServerToken": {"type": "string"},
+                    "RelayRecord": {"type": "object", "required": ["name"], "properties": {
+                        "server_id": server_id, "name": {"type": "string"}, "note": {"type": "string"}
+                    }}
+                }}
+            }));
+            let model = &generated["src/api/types/relay_record.py"];
+            assert!(model.contains("server_id: typing.Optional"), "{model}");
+            for path in ["src/api/client.py", "reference.md"] {
+                let example = &generated[path];
+                assert!(example.contains("name=\"Relay\""), "{path}: {example}");
+                assert!(
+                    example.contains("note=\"keep this note\""),
+                    "{path}: {example}"
+                );
+                assert!(!example.contains("server_id="), "{path}: {example}");
+            }
+        }
+    }
+
+    #[test]
     fn extension_parameters_keep_their_wire_names_and_defaults() {
         let document: Value = serde_json::from_str(include_str!(
             "../docs/openapi-surface/handwritten/observatory-query-extensions/openapi.yml"
@@ -17922,7 +17966,7 @@ mod parameter_lowering_tests {
     #[test]
     fn duplicate_inline_type_names_use_the_endpoint_package() {
         let mut paths = serde_json::Map::new();
-        for parent in ["teams", "projects"] {
+        for (parent, field) in [("teams", "team_key"), ("projects", "project_key")] {
             paths.insert(
                 format!("/{parent}/rules"),
                 json!({"post": {
@@ -17932,8 +17976,8 @@ mod parameter_lowering_tests {
                     "requestBody": {"required": true, "content": {"application/json": {
                         "schema": {"type": "object", "required": ["entries"], "properties": {
                             "entries": {"type": "array", "items": {
-                                "type": "object", "required": ["rule_id"],
-                                "properties": {"rule_id": {"type": "string"}}
+                                "type": "object", "required": [field],
+                                "properties": {(field): {"type": "string"}}
                             }}
                         }}
                     }}},
@@ -17941,7 +17985,7 @@ mod parameter_lowering_tests {
                         "application/json": {"schema": {"type": "object", "properties": {
                             "counter": {"$ref": "#/components/schemas/Counter"},
                             "entries": {"type": "array", "items": {
-                                "type": "object", "properties": {"rule_id": {"type": "string"}}
+                                "type": "object", "properties": {(field): {"type": "string"}}
                             }}
                         }}}
                     }}}
@@ -17955,7 +17999,10 @@ mod parameter_lowering_tests {
                 "count": {"type": "integer"}
             }}}}
         }));
-        for parent in ["teams", "projects"] {
+        for (parent, field, other) in [
+            ("teams", "team_key", "project_key"),
+            ("projects", "project_key", "team_key"),
+        ] {
             let prefix = format!("src/api/{parent}/rules");
             for file in ["client.py", "raw_client.py"] {
                 let client = &generated[&format!("{prefix}/{file}")];
@@ -17969,6 +18016,13 @@ mod parameter_lowering_tests {
                 client.contains(&format!("from api.{parent}.rules import")),
                 "{parent} example: {client}"
             );
+            assert!(client.contains(&format!("{field}=")), "{parent}: {client}");
+            assert!(!client.contains(&format!("{other}=")), "{parent}: {client}");
+            assert!(
+                generated["reference.md"].contains(&format!("{field}=")),
+                "{}",
+                generated["reference.md"]
+            );
             let response = &generated[&format!("{prefix}/types/save_rules_response.py")];
             assert!(
                 response.contains("from .save_rules_response_entries_item import"),
@@ -17979,6 +18033,16 @@ mod parameter_lowering_tests {
                 "{response}"
             );
         }
+        assert!(
+            generated["README.md"].contains("team_key="),
+            "{}",
+            generated["README.md"]
+        );
+        assert!(
+            !generated["README.md"].contains("project_key="),
+            "{}",
+            generated["README.md"]
+        );
     }
 
     #[test]
