@@ -5,7 +5,7 @@ base `bc66bfb087fbd34abfe89f1075912b103e848896`: one in `parameters`, four in `b
 in `naming-clients`. A census declaration alone is not proof. The detector for
 each key is its conjunction below **and an instrumented crozier run executing
 every declared interaction site**. The authored `beacon-signal-results` fixture now proves the path/body-name
-branch and both nullable-response branches. The authored `harbor-relay-registration` fixture carries the inline-body fallback. The corrected referenced-body branch is being measured against registered `steaminputdb`, as recorded below.
+branch and both nullable-response branches. The authored `harbor-relay-registration` fixture carries the inline-body fallback. Registered `steaminputdb` proves the corrected referenced-body branch, as recorded below.
 
 ## Populations read
 
@@ -59,7 +59,8 @@ was evaluated by the repository census's unchanged conjunction evaluator.
 
 ## Detectors
 
-The selectors and interaction declarations are unchanged from the base.
+The selectors are unchanged from the base. The two read-only interaction
+declarations follow the manager-approved corrections recorded below.
 Each detector requires both its selector's positive count and execution of its
 interaction site in `golden-reach-sites.tsv`.
 
@@ -78,7 +79,7 @@ The bounded search uses `search-incomplete` where no registrable reaching witnes
 | key | verdict | declarers | outstanding evidence |
 |---|---|---:|---|
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1256 | none-registrable; authored `beacon-signal-results` reaches all three interaction regions |
-| `combo-ref-body-read-only-property` | `search-incomplete` | 731 | the removed content-type clause was a crozier defect; registered `steaminputdb` is the candidate for its corrected field-retention interaction |
+| `combo-ref-body-read-only-property` | `search-incomplete` | 731 | proven: registered `steaminputdb` byte-matches and reaches the corrected field-retention interaction |
 | `combo-inline-body-read-only-property` | `witness-blocked` | 20 | authored `harbor-relay-registration`, under the manager-approved fallback; [remaining residuals](../witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses) |
 | `combo-success-oneof-nullable` | `search-incomplete` | 24 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
 | `combo-success-anyof-nullable` | `search-incomplete` | 69 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
@@ -357,9 +358,12 @@ The genuine interaction is the condition chain in `src/ir.rs::build`:
 `fields.retain` calls `schema_property_is_read_only` on each source property.
 The new line-only site is that retain predicate. The existing single-feature
 read-only evidence already identifies SteamInputDB's omitted `$schema`
-arguments. Its complete golden byte-matches; the corrected interaction's
-scoped measurement is the remaining step. This real witness takes precedence
-over an authored referenced-body proof if it reaches the declared site.
+arguments. Its complete golden byte-matches. This retry measured the corrected interaction
+with `golden-reach.py measure --tests '^steaminputdb_matches_fern_output$'
+`--jobs 1` at commit `ba0dbb016f84`: SteamInputDB executes every counter region
+on the declared retain-predicate line. The scoped report records the site as
+reached. This real witness takes precedence over an authored referenced-body
+proof; no referenced-body cover remains in the authored fixture.
 
 ### CLI build boundary
 

@@ -119,18 +119,18 @@ split five ways:
 502 + 70 + 152 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 16 are `gap`, 67 are `golden` and 8 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 16 are `gap`, 68 are `golden` and 7 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where the run that byte-matches Fern
 executes the branch where its two features meet. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) holds that bar, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**15** are byte-matched against a registered real specification at their
+**16** are byte-matched against a registered real specification at their
 interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **8** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **4** remain
-unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 15 + 52 + 0 + 8 + 4 + 12 = 91.
+non-generation, **7** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **4** remain
+unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 16 + 52 + 0 + 7 + 4 + 12 = 91.
 None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -3389,7 +3389,6 @@ run executes the branch, or a hand-written fixture that does, removes the row.
 
 | key | region | why it is unproven |
 |---|---|---|
-| `combo-ref-body-read-only-property` | `bodies-media` | `not searched` — the manager-approved corrected interaction site awaits its first scoped measurement; registered `steaminputdb` is the byte-matched candidate |
 | `combo-allof-nullable` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` 0/2 by golden-only witnesses `ecommerce-ai-skills-runtime`, `embedpdf-cloudpdf`, `hse`, `huatuo-node`, `huatuo-node-tree`, `huatuo-server`, `onevoice`, `rgb-lightning-node`, `timelyapp`, `timelyapp-entry`, `zoonk` |
 | `combo-anyof-beside-properties` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]` 0/10 by golden-only witnesses `ahasend-api`, `auto-agent-protocol`, `docu-goapiserver`, `ecommerce-ai-skills-runtime`, `fergus`, `get-a-room`, `qredence-fleet-rlm`, `rs-server`, `zulip`, `zulip-jentic`, `zulip-jentic-entry` |
 | `combo-oneof-beside-properties` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]` 0/10 by golden-only witnesses `free5gc-namf-communication`, `free5gc-pdu-session`, `komga`, `langchain-agent-server`, `mockserver`, `paloalto-cspm-alerts`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `peopledatalabs`, `qredence-fleet-rlm`, `sigstore-rekor`, `webflow-v2` |
