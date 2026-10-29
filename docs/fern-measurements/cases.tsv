@@ -207,3 +207,7 @@ emission-parity/tide-windows	docs/fern-measurements/emission-parity/tide-windows
 emission-parity/tide-windows-literals	docs/fern-measurements/emission-parity/tide-windows/openapi.yml	literals	packaged	-
 emission-parity/lantern-open-ping	docs/fern-measurements/emission-parity/lantern-open-ping/openapi.yml	python-enums	packaged	-
 emission-parity/lantern-open-ping-literals	docs/fern-measurements/emission-parity/lantern-open-ping/openapi.yml	literals	packaged	-
+emission-parity/allof-only-base	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	python-enums	packaged	-
+emission-parity/allof-only-base-literals	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	literals	packaged	-
+emission-parity/dangling-mapping-target	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	python-enums	packaged	-
+emission-parity/dangling-mapping-target-literals	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	literals	packaged	-

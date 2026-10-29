@@ -20,9 +20,9 @@ use serde::Serialize;
 use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyExample, BodyField, BodySchemaShape, ClientPathParameter,
-    Credential, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir,
-    ObjectType, PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl,
-    TypeRef,
+    Credential, DiscriminantDocumentation, Endpoint, EndpointPagination, ErrorClass, Field,
+    GlobalHeader, HeaderType, Ir, ObjectType, PageAdvance, Prim, QueryParam, RequestBody,
+    StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -9190,7 +9190,7 @@ impl<'a> ExampleCtx<'a> {
             .find(|member| member.discriminant == discriminant)?;
         // A tag the synthesized example writes back (see `value`) is not
         // measured from an example, so that member keeps the synthesized one.
-        let writes_tag = member.discriminant_index.is_some()
+        let writes_tag = member.declared_discriminant.is_some()
             && member
                 .source
                 .as_deref()
@@ -10216,7 +10216,19 @@ impl<'a> ExampleCtx<'a> {
                         };
                         args.push((Some(py_name), value));
                     }
-                    if let Some(index) = m.discriminant_index {
+                    // The Markdown writers leave out a tag the IR marks
+                    // undocumented (see `DeclaredDiscriminant::documentation`).
+                    if let Some(index) = m
+                        .declared_discriminant
+                        .filter(|declared| {
+                            !self.documentation
+                                || matches!(
+                                    declared.documentation,
+                                    DiscriminantDocumentation::Include
+                                )
+                        })
+                        .map(|declared| declared.index)
+                    {
                         let enum_name = m.source.as_deref().map(|source| {
                             naming::child_class_name(source, &u.discriminant_property)
                         });
@@ -12561,6 +12573,91 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    /// A variant whose own model keeps its tag (it is referenced on its own, so
+    /// its tag enum is declared) passes the tag in the client docstring's example
+    /// either way. `reference.md` passes it too, unless the union maps a value to
+    /// a target no component answers and the variant leaves the tag optional:
+    /// ingef/conquery's `Query` maps `SECONDARY_ID_QUERY` to such a target,
+    /// `Query_ConceptQuery` declares an optional `type`, and Fern's
+    /// `reference.md` writes `Query_ConceptQuery()`.
+    #[test]
+    fn markdown_examples_leave_an_optional_tag_out_only_beside_a_dangling_mapping_target() {
+        let document = |required: serde_json::Value, dangling: bool| {
+            let mut mapping = serde_json::json!({
+                "STAR": "#/components/schemas/StarReading",
+                "COMET": "#/components/schemas/CometReading"
+            });
+            let mut one_of = vec![
+                serde_json::json!({"$ref": "#/components/schemas/StarReading"}),
+                serde_json::json!({"$ref": "#/components/schemas/CometReading"}),
+            ];
+            if dangling {
+                mapping["METEOR"] = serde_json::json!("#/components/schemas/meteor-reading");
+                one_of.push(serde_json::json!({"$ref": "#/components/schemas/MeteorReading"}));
+            }
+            serde_json::json!({
+                "openapi": "3.0.3",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {
+                    "/readings": {"post": {
+                        "operationId": "recordReading",
+                        "requestBody": {"required": true, "content": {"application/json": {
+                            "schema": {"$ref": "#/components/schemas/Reading"}
+                        }}},
+                        "responses": {"204": {"description": "OK"}}
+                    }},
+                    "/stars": {"get": {
+                        "operationId": "brightestStar",
+                        "responses": {"200": {"description": "OK", "content": {"application/json": {
+                            "schema": {"$ref": "#/components/schemas/StarReading"}
+                        }}}}
+                    }}
+                },
+                "components": {"schemas": {
+                    "Reading": {
+                        "oneOf": one_of,
+                        "discriminator": {"propertyName": "kind", "mapping": mapping}
+                    },
+                    "StarReading": {"type": "object", "required": required, "properties": {
+                        "kind": {"type": "string", "enum": ["STAR"]},
+                        "magnitude": {"type": "number"}
+                    }},
+                    "CometReading": {"type": "object", "properties": {
+                        "kind": {"type": "string", "enum": ["COMET"]}
+                    }},
+                    "MeteorReading": {"type": "object", "properties": {
+                        "kind": {"type": "string", "enum": ["METEOR"]},
+                        "trail": {"type": "number"}
+                    }}
+                }}
+            })
+        };
+        let file = |files: &[(String, String)], name: &str| {
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with(name))
+                .map(|(_, contents)| contents.clone())
+                .unwrap_or_else(|| panic!("no {name}"))
+        };
+        let tag = "kind=StarReadingKind.STAR";
+        // Every mapping target resolves: the tag is passed back everywhere,
+        // required or not.
+        for required in [serde_json::json!([]), serde_json::json!(["kind"])] {
+            let files = files_for(document(required, false));
+            assert!(file(&files, "src/api/client.py").contains(tag));
+            assert!(file(&files, "reference.md").contains(tag));
+            assert!(file(&files, "README.md").contains(tag));
+        }
+        let optional = files_for(document(serde_json::json!([]), true));
+        assert!(file(&optional, "src/api/client.py").contains(tag));
+        let reference = file(&optional, "reference.md");
+        assert!(reference.contains("request=Reading_Star()"), "{reference}");
+        assert!(!reference.contains(tag), "{reference}");
+        let required = files_for(document(serde_json::json!(["kind"]), true));
+        assert!(file(&required, "src/api/client.py").contains(tag));
+        assert!(file(&required, "reference.md").contains(tag));
     }
 
     /// A wrapper holding a union whole in `value` passes it without a trailing
@@ -15280,7 +15377,7 @@ mod tests {
                     layout: crate::ir::UnionMemberLayout::Flattened,
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
-                    discriminant_index: None,
+                    declared_discriminant: None,
                     fields: Vec::new(),
                     source: None,
                     docstring: None,
@@ -16283,7 +16380,7 @@ mod tests {
                 layout: crate::ir::UnionMemberLayout::Flattened,
                 class_name: "Cargo_Crate".to_string(),
                 discriminant: "crate".to_string(),
-                discriminant_index: None,
+                declared_discriminant: None,
                 fields: vec![quantity],
                 source: Some("Crate".to_string()),
                 docstring: None,
@@ -16355,7 +16452,7 @@ mod tests {
                 layout: crate::ir::UnionMemberLayout::Flattened,
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
-                discriminant_index: None,
+                declared_discriminant: None,
                 fields: vec![
                     model_field("radius", TypeRef::Primitive(Prim::Float), true),
                     nullable_required,
@@ -17149,7 +17246,7 @@ mod tests {
                 layout: crate::ir::UnionMemberLayout::Flattened,
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
-                discriminant_index: None,
+                declared_discriminant: None,
                 fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
                 source: None,
                 docstring: None,

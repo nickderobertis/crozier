@@ -2110,6 +2110,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 | nested-discriminator-flat-wire | Discriminated union whose variant is itself a discriminated union: Fern's `value` wrapper classes and constructors kept; its `kind`/`value` envelope on the wire and its empty worked-example argument corrected | Fern behaviour + Fern defect | `nested-discriminator-wire` | docs/fern-measurements/examples/nested-discriminator-wire/fern-expected | `nested_discriminator_departure_keeps_every_other_byte` | `nested-discriminator-flat-wire` |
 | wrapped-union-member-docs-example | Discriminator mapping target that is a union of references, not all objects, with no discriminator of its own, held whole as the wrapper's `value`; the README and reference.md worked examples' empty mapping-value argument corrected | Fern behaviour + Fern defect | `discriminator-mapping-arms` | docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected | `handwritten_fixtures_match_fern_goldens` | `wrapped-union-member-docs-example` |
+| dangling-mapping-target-variant | Discriminator mapping target naming no component beside targets that do: Fern's discriminated union of wrappers, the member's own tag and its enum kept; the dangling value's `value: typing.Any` wrapper, which rejects the server's flat variant payload, corrected to carry the tagged member's fields | Fern behaviour + Fern defect | `conquery-emission-parity` | docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected; tests/fixtures/ingef-conquery/expected | `emission_parity::a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields; ingef_conquery_matches_fern_output` | `dangling-mapping-variant-fields` |
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
 
 Additional boundaries of these rows are held by the same gate: the
@@ -2359,8 +2360,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 292 sources. The walk reads the
-  **275** registered sources, of which **275** carry a committed golden; the 17
+  acquires 293 sources. The walk reads the
+  **276** registered sources, of which **276** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2848,44 +2849,44 @@ unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | golden-only witnesses | boundary |
 |---|---|---|---|---|---|---|
-| 1 | `request-body-content` | `bodies-media` | **7** | **57** | **232** | open — real-specification witness search remains open |
-| 2 | `parameter-schema` | `parameters` | **4** | **78** | **227** | open — real-specification witness search remains open |
+| 1 | `request-body-content` | `bodies-media` | **7** | **57** | **233** | open — real-specification witness search remains open |
+| 2 | `parameter-schema` | `parameters` | **4** | **78** | **228** | open — real-specification witness search remains open |
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
-| 4 | `allof` | `schemas` | **4** | **32** | **99** | open — real-specification witness search remains open |
-| 5 | `discriminator-mapping` | `schemas` | **3** | **231** | **37** | open — real-specification witness search remains open |
+| 4 | `allof` | `schemas` | **4** | **31** | **100** | open — real-specification witness search remains open |
+| 5 | `discriminator-mapping` | `schemas` | **3** | **242** | **38** | open — real-specification witness search remains open |
 | 6 | `oneof-anyof-variant` | `schemas` | **3** | **80** | **3** | open — real-specification witness search remains open |
 | 7 | `parameter-in-header` | `parameters` | **3** | **20** | **72** | open — real-specification witness search remains open |
 | 8 | `media-type-multipart` | `bodies-media` | **3** | **13** | **28** | open — real-specification witness search remains open |
 | 9 | `format-binary` | `schemas` | **3** | **5** | **49** | open — real-specification witness search remains open |
-| 10 | `oneof` | `schemas` | **2** | **177** | **101** | open — real-specification witness search remains open |
-| 11 | `oneof-discriminated-union` | `schemas` | **2** | **155** | **50** | owned — first-pass search record below |
+| 10 | `oneof` | `schemas` | **2** | **188** | **102** | open — real-specification witness search remains open |
+| 11 | `oneof-discriminated-union` | `schemas` | **2** | **166** | **51** | owned — first-pass search record below |
 | 12 | `media-type-event-stream` | `bodies-media` | **2** | **121** | **18** | open — real-specification witness search remains open |
 | 13 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **5** | open — real-specification witness search remains open |
 | 14 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **13** | open — real-specification witness search remains open |
-| 15 | `parameter-in-path` | `parameters` | **2** | **28** | **191** | open — real-specification witness search remains open |
+| 15 | `parameter-in-path` | `parameters` | **2** | **28** | **192** | open — real-specification witness search remains open |
 | 16 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 17 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
 | 18 | `format-byte` | `schemas` | **2** | **4** | **14** | open — real-specification witness search remains open |
-| 19 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **146** | **17** | open — real-specification witness search remains open |
-| 20 | `anyof-discriminated-union` | `schemas` | **1** | **145** | **18** | owned — first-pass search record below |
-| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **139** | **11** | open — real-specification witness search remains open |
+| 19 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **195** | **17** | open — real-specification witness search remains open |
+| 20 | `anyof-discriminated-union` | `schemas` | **1** | **194** | **18** | owned — first-pass search record below |
+| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **188** | **11** | open — real-specification witness search remains open |
 | 22 | `anyof-oneof-variant` | `schemas` | **1** | **68** | **8** | owned — first-pass search record below |
 | 23 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **7** | open — real-specification witness search remains open |
-| 24 | `additional-properties-schema` | `schemas` | **1** | **51** | **154** | open — real-specification witness search remains open |
+| 24 | `additional-properties-schema` | `schemas` | **1** | **51** | **155** | open — real-specification witness search remains open |
 | 25 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
 | 26 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 27 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 28 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **45** | **1** | open — real-specification witness search remains open |
 | 29 | `parameter-style-form-query-object` | `parameters` | **1** | **30** | **20** | open — real-specification witness search remains open |
 | 30 | `oneof-string-const-variant` | `schemas` | **1** | **24** | **4** | open — real-specification witness search remains open |
-| 31 | `annotated-ref-shape` | `schemas` | **1** | **23** | **13** | owned — first-pass search record below |
+| 31 | `annotated-ref-shape` | `schemas` | **1** | **23** | **14** | owned — first-pass search record below |
 | 32 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 33 | `anyof-array-variant-composed-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 34 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **18** | **4** | open — real-specification witness search remains open |
 | 35 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — no real witness reaches the operation-scoped map-value arm; see the named gaps |
 | 36 | `annotated-ref-target-anyof` | `schemas` | **1** | **17** | **1** | open — real-specification witness search remains open |
 | 37 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
-| 38 | `type-single` | `schemas` | **1** | **14** | **272** | open — real-specification witness search remains open |
+| 38 | `type-single` | `schemas` | **1** | **14** | **273** | open — real-specification witness search remains open |
 | 39 | `anyof-allof-variant` | `schemas` | **1** | **13** | **3** | owned — first-pass search record below |
 | 40 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **13** | **1** | open — real-specification witness search remains open |
 | 41 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
@@ -2899,21 +2900,21 @@ unreached by any Fern-accepted document.
 | 49 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 50 | `media-type-form-urlencoded` | `bodies-media` | **1** | **7** | **23** | open — real-specification witness search remains open |
 | 51 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **2** | open — real-specification witness search remains open |
-| 52 | `enum` | `schemas` | **1** | **5** | **199** | open — real-specification witness search remains open |
+| 52 | `enum` | `schemas` | **1** | **5** | **200** | open — real-specification witness search remains open |
 | 53 | `http-dpop` | `security` | **1** | **5** | **3** | open — real-specification witness search remains open |
 | 54 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
 | 55 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
 | 56 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
-| 57 | `nullable` | `schemas` | **1** | **4** | **80** | open — real-specification witness search remains open |
+| 57 | `nullable` | `schemas` | **1** | **4** | **81** | open — real-specification witness search remains open |
 | 58 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
-| 59 | `description` | `schemas` | **1** | **3** | **212** | open — real-specification witness search remains open |
+| 59 | `description` | `schemas` | **1** | **3** | **213** | open — real-specification witness search remains open |
 | 60 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **6** | open — real-specification witness search remains open |
 | 61 | `format-int64` | `schemas` | **1** | **3** | **51** | open — real-specification witness search remains open |
-| 62 | `format-uuid` | `schemas` | **1** | **3** | **51** | open — real-specification witness search remains open |
-| 63 | `format-date` | `schemas` | **1** | **2** | **38** | open — real-specification witness search remains open |
-| 64 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **244** | open — real-specification witness search remains open |
-| 65 | `recursive-graph` | `schemas` | **1** | **2** | **244** | open — real-specification witness search remains open |
-| 66 | `response-description` | `bodies-media` | **1** | **2** | **271** | open — real-specification witness search remains open |
+| 62 | `format-uuid` | `schemas` | **1** | **3** | **52** | open — real-specification witness search remains open |
+| 63 | `format-date` | `schemas` | **1** | **2** | **39** | open — real-specification witness search remains open |
+| 64 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **245** | open — real-specification witness search remains open |
+| 65 | `recursive-graph` | `schemas` | **1** | **2** | **245** | open — real-specification witness search remains open |
+| 66 | `response-description` | `bodies-media` | **1** | **2** | **272** | open — real-specification witness search remains open |
 | 67 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
 | 68 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
 | 69 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |

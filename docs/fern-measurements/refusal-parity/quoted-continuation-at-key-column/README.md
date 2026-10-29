@@ -172,6 +172,10 @@ The document is not registered as a corpus golden. Its licence admits it, but
 it does not byte-match until causes A and B are repaired. Both are drafted as
 follow-ups.
 
+A later node, `conquery-emission-parity`, repaired both causes and registered
+the document as corpus row 3478. Its record is
+[`emission-parity`](../../emission-parity/README.md).
+
 ## Scope ruling
 
 The manager of this run ruled on the node's scope twice, over the planner

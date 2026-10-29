@@ -120,11 +120,33 @@ mod refusal_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
-/// The shapes behind RS-Server's emission differences, each in a document
-/// written for it under `docs/fern-measurements/emission-parity/`, held whole
-/// against the certified pair's tree in both enum modes.
+/// The shapes behind RS-Server's and ingef/conquery's emission differences,
+/// each in a document written for it under
+/// `docs/fern-measurements/emission-parity/`, held whole against the
+/// certified pair's tree in both enum modes, with the conquery departure's
+/// control and runtime journey.
 #[path = "e2e/emission_parity.rs"]
 mod emission_parity;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/^sdk_env_/)` selector reads a test's full name, so a journey in a module is wrapped here at the crate root; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// The observatory measurement's dangling `METEOR` wrapper round-trips through
+/// crozier's client and fails through the certified tree's
+/// (`emission_parity`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_a_dangling_mapping_variant_round_trips_through_the_client() {
+    emission_parity::dangling_mapping_variant_round_trips_through_the_client();
+}
+
+/// conquery's `SECONDARY_ID_QUERY` round-trips through the client crozier
+/// generates from the registered document, in both enum modes, and fails
+/// through the certified golden's (`emission_parity`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_conquery_secondary_id_query_round_trips_through_the_client() {
+    emission_parity::conquery_secondary_id_query_round_trips_through_the_client();
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The per-golden ledger of intended departures every golden comparison holds
@@ -10284,6 +10306,7 @@ const CORPORA: &[&Corpus] = &[
     &TOOLJET_MICROSOFT_TEAMS,
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &RS_SERVER,
+    &INGEF_CONQUERY,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12698,6 +12721,22 @@ const OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING: Corpus = Corpus {
 /// and property, which the certified pair generates from.
 const RS_SERVER: Corpus = Corpus {
     api: "rs-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ingef/conquery's document — corpus row 3478, witnessing a discriminator
+/// mapping target that names no component beside targets that do (`Query`'s
+/// `SECONDARY_ID_QUERY`, under the `dangling-mapping-variant-fields`
+/// departure), and union variants over bases that are only an `allOf`
+/// (`Filter`, `Select`, `UniversalSelect`).
+const INGEF_CONQUERY: Corpus = Corpus {
+    api: "ingef-conquery",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20761,6 +20800,13 @@ fn openapi_generator_composed_schema_lowering_matches_fern_output() {
 #[test]
 fn rs_server_matches_fern_output() {
     assert_committed_corpus_matches(&RS_SERVER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ingef_conquery_matches_fern_output() {
+    assert_committed_corpus_matches(&INGEF_CONQUERY);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

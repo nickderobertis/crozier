@@ -1723,13 +1723,14 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 35] = [
+pub const RULE_IDS: [&str; 36] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
     "collapsed-anyof-property-description",
     "constant-header-docs-arguments",
+    "dangling-mapping-variant-fields",
     "date-header-constructor-example",
     "digit-leading-method-reference-identifiers",
     "docstring-literal-dollar-escape",
@@ -1769,6 +1770,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "anyof-path-param-schema-example" => Rule {
             region: Some(declared_examples::region),
             line: Some(declared_request_string_example),
+            ..none
+        },
+        "dangling-mapping-variant-fields" => Rule {
+            region: Some(dangling_mapping_variant_fields),
             ..none
         },
         "nested-discriminator-flat-wire" => Rule {
@@ -1980,6 +1985,182 @@ fn body_entry_value(expression: &str) -> Option<(&str, &str, bool)> {
         value.find(|character: char| !character.is_ascii_alphanumeric() && character != '_')?;
     let name = &value[..end];
     (!name.is_empty() && (converted || &value[end..] == ",")).then_some((wire, name, converted))
+}
+
+/// `dangling-mapping-variant-fields`: in a types module, Fern's file is
+/// crozier's once each wrapper [`crate::ir::dangling_mapping_wrappers`] reads off
+/// the source document is written Fern's way: `value: typing.Any` ahead of the
+/// tag in place of the member's fields, a configuration without `extra`, no
+/// `update_forward_refs` call of its own, and no import only those lines used.
+/// The region is the whole file; every other line must already match.
+fn dangling_mapping_variant_fields(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    if !pair.rel.ends_with(".py") {
+        return Ok(None);
+    }
+    let mut lines: Vec<String> = pair.crozier.iter().map(|line| (*line).to_owned()).collect();
+    let mut removed = Vec::new();
+    for (wrapper, value, fields) in crate::ir::dangling_mapping_wrappers(source) {
+        removed.extend(any_valued_wrapper(&mut lines, &wrapper, &value, &fields));
+    }
+    if removed.is_empty() {
+        return Ok(None);
+    }
+    drop_unused_imports(&mut lines, &removed);
+    Ok(lines
+        .iter()
+        .map(String::as_str)
+        .eq(pair.fern.iter().copied())
+        .then_some(Region {
+            fern: 0..pair.fern.len(),
+            crozier: 0..pair.crozier.len(),
+        }))
+}
+
+/// Rewrite crozier's `wrapper` class as Fern writes a wrapper holding an unknown
+/// `value`, and drop its own `update_forward_refs` call, returning the lines
+/// taken out. Nothing changes, and nothing is returned, unless the class is an
+/// optional docstring, the tag's `Literal` line, exactly the member's `fields`
+/// in order and the pydantic configuration.
+fn any_valued_wrapper(
+    lines: &mut Vec<String>,
+    wrapper: &str,
+    value: &str,
+    fields: &[String],
+) -> Vec<String> {
+    let header = format!("class {wrapper}(UniversalBaseModel):");
+    let Some(class) = lines.iter().position(|line| *line == header) else {
+        return Vec::new();
+    };
+    let end = lines[class + 1..]
+        .iter()
+        .position(|line| !line.is_empty() && !line.starts_with(' '))
+        .map_or(lines.len(), |index| class + 1 + index);
+    // The union's description, which Fern writes on its other wrappers, is not
+    // on one holding `value`.
+    let quotes = "    \"\"\"";
+    let tag = if lines.get(class + 1).is_some_and(|line| line == quotes) {
+        match (class + 2..end).find(|index| lines[*index] == quotes) {
+            Some(close) if lines.get(close + 1).is_some_and(String::is_empty) => close + 2,
+            _ => return Vec::new(),
+        }
+    } else {
+        class + 1
+    };
+    let literal = serde_json::Value::String(value.to_owned()).to_string();
+    let tag_suffix = format!(": typing.Literal[{literal}] = {literal}");
+    let tag_line = lines.get(tag).is_some_and(|line| {
+        line.strip_prefix("    ")
+            .and_then(|rest| rest.strip_suffix(&tag_suffix))
+            .is_some_and(|name| !name.is_empty() && !name.contains(' '))
+    });
+    let Some(config) = (tag..end).find(|index| lines[*index] == "    if IS_PYDANTIC_V2:") else {
+        return Vec::new();
+    };
+    // The fields sit between the tag and the blank line before the configuration.
+    if !tag_line || config < tag + 3 || !lines[config - 1].is_empty() {
+        return Vec::new();
+    }
+    // Each field opens at the class's indent with `name:`; its continuation
+    // lines sit deeper.
+    let declared: Vec<&str> = lines[tag + 1..config - 1]
+        .iter()
+        .filter_map(|line| line.strip_prefix("    "))
+        .filter(|line| !line.starts_with(' ') && !line.starts_with(']'))
+        .map(|line| line.split_once(':').map_or(line, |(name, _)| name))
+        .collect();
+    if !declared
+        .iter()
+        .copied()
+        .eq(fields.iter().map(String::as_str))
+    {
+        return Vec::new();
+    }
+    let mut config_lines: Vec<String> = lines[config..end]
+        .iter()
+        .filter(|line| *line != "            extra = pydantic.Extra.allow")
+        .map(|line| {
+            line.replace(
+                "pydantic.ConfigDict(extra=\"allow\", frozen=True)",
+                "pydantic.ConfigDict(frozen=True)",
+            )
+        })
+        .collect();
+    let mut rewritten = vec![
+        header,
+        "    value: typing.Any".to_owned(),
+        lines[tag].clone(),
+        String::new(),
+    ];
+    rewritten.append(&mut config_lines);
+    let mut taken: Vec<String> = lines[class + 1..tag]
+        .iter()
+        .chain(&lines[tag + 1..config - 1])
+        .cloned()
+        .collect();
+    lines.splice(class..end, rewritten);
+    let single = format!("update_forward_refs({wrapper})");
+    let opening = format!("    {wrapper},");
+    if let Some(call) = lines.iter().position(|line| *line == single) {
+        taken.push(lines.remove(call));
+    } else if let Some((call, close)) = lines
+        .iter()
+        .enumerate()
+        .position(|(index, line)| {
+            line == "update_forward_refs(" && lines.get(index + 1) == Some(&opening)
+        })
+        .and_then(|call| {
+            let close = lines[call..].iter().position(|line| line == ")")?;
+            Some((call, call + close))
+        })
+    {
+        taken.extend(lines.drain(call..=close));
+    }
+    // A call that closed the file leaves the blank lines before it at the end,
+    // where the formatted file has none.
+    while lines.len() > 1 && lines.iter().rev().take(2).all(String::is_empty) {
+        lines.pop();
+    }
+    taken
+}
+
+/// Drop each single-name import whose name only `removed` lines used.
+fn drop_unused_imports(lines: &mut Vec<String>, removed: &[String]) {
+    let used_by = |text: &str, name: &str| {
+        text.split(|character: char| !character.is_ascii_alphanumeric() && character != '_')
+            .any(|word| word == name)
+    };
+    let imported = |line: &str| -> Option<String> {
+        let name = match line.strip_prefix("from ") {
+            Some(rest) => rest.split_once(" import ")?.1,
+            None => line.strip_prefix("import ")?,
+        };
+        (!name.is_empty()
+            && name
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.'))
+        .then(|| name.rsplit('.').next().unwrap_or(name).to_owned())
+    };
+    let candidates: Vec<(usize, String)> = lines
+        .iter()
+        .enumerate()
+        .filter_map(|(index, line)| imported(line).map(|name| (index, name)))
+        .filter(|(_, name)| removed.iter().any(|line| used_by(line, name)))
+        .collect();
+    let unused: Vec<usize> = candidates
+        .into_iter()
+        .filter(|(index, name)| {
+            !lines.iter().enumerate().any(|(other, line)| {
+                other != *index && imported(line).is_none() && used_by(line, name)
+            })
+        })
+        .map(|(index, _)| index)
+        .collect();
+    for index in unused.into_iter().rev() {
+        lines.remove(index);
+    }
 }
 
 /// Recognize only the measured nested wrapper's adapters and broken examples.
@@ -7529,6 +7710,209 @@ mod tests {
                 "{other_crozier} was excused by another argument's repair"
             );
         }
+    }
+
+    /// `Sighting` maps `METEOR` to a target naming no component, and
+    /// `MeteorReading`, the member no target names, tags itself `METEOR`.
+    fn dangling_mapping_source(meteor_target: &str) -> crate::openapi::OpenApi {
+        serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {
+                "Sighting": {
+                    "discriminator": {"propertyName": "kind", "mapping": {
+                        "STAR": "#/components/schemas/StarReading",
+                        "METEOR": meteor_target
+                    }},
+                    "oneOf": [
+                        {"$ref": "#/components/schemas/StarReading"},
+                        {"$ref": "#/components/schemas/MeteorReading"}
+                    ]
+                },
+                "StarReading": {"type": "object", "properties": {
+                    "kind": {"type": "string", "enum": ["STAR"]}
+                }},
+                "MeteorReading": {"type": "object", "properties": {
+                    "trail": {"$ref": "#/components/schemas/Trail"},
+                    "kind": {"type": "string", "enum": ["METEOR"]}
+                }},
+                "Trail": {"type": "object", "properties": {"degrees": {"type": "number"}}}
+            }}
+        }))
+        .expect("a source document")
+    }
+
+    const DANGLING_FERN: &str = r#"import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+
+
+class Sighting_Meteor(UniversalBaseModel):
+    value: typing.Any
+    kind: typing.Literal["METEOR"] = "METEOR"
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+"#;
+
+    const DANGLING_CROZIER: &str = r#"import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+from .trail import Trail
+
+
+class Sighting_Meteor(UniversalBaseModel):
+    """
+    One sighting.
+    """
+
+    kind: typing.Literal["METEOR"] = "METEOR"
+    trail: typing.Optional["Trail"] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+update_forward_refs(
+    Sighting_Meteor,
+    Trail=Trail,
+)
+"#;
+
+    #[test]
+    fn dangling_mapping_variant_fields_holds_on_the_wrapper_and_nowhere_else() {
+        let rel = "src/fern/types/sighting.py";
+        let with =
+            |target: &str| Context::default().with_source_document(dangling_mapping_source(target));
+        let dangling = with("#/components/schemas/meteor-reading");
+        let crozier_lines = DANGLING_CROZIER.split('\n').count();
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                DANGLING_CROZIER,
+                &dangling
+            ),
+            Some(Region {
+                fern: 0..DANGLING_FERN.split('\n').count(),
+                crozier: 0..crozier_lines,
+            })
+        );
+        // Without the source document, or where the mapping names the member
+        // by reference, the rule abstains.
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                DANGLING_CROZIER,
+                &Context::default()
+            ),
+            None
+        );
+        let resolved = with("#/components/schemas/MeteorReading");
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                DANGLING_CROZIER,
+                &resolved
+            ),
+            None
+        );
+        // Any other difference in the file is still a difference.
+        let drifted = DANGLING_CROZIER.replace("import pydantic\n", "import pydantic  \n");
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &drifted,
+                &dangling
+            ),
+            None
+        );
+        // An import the rewritten file still uses stays: Fern's file must have it.
+        let still_used = DANGLING_CROZIER.replace(
+            "update_forward_refs(\n    Sighting_Meteor,",
+            "Default = Trail\nupdate_forward_refs(\n    Sighting_Meteor,",
+        );
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &still_used,
+                &dangling
+            ),
+            None
+        );
+        // Nor are fields other than the member's: the departure is its fields.
+        let renamed = DANGLING_CROZIER.replace("    trail:", "    path:");
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &renamed,
+                &dangling
+            ),
+            None
+        );
+        // A wrapper whose tag is not the mapping's value is not the construct.
+        let other_tag = DANGLING_CROZIER.replace("\"METEOR\"", "\"COMET\"");
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &other_tag,
+                &dangling
+            ),
+            None
+        );
+        // Nor is a file that ends at the wrapper's header.
+        let truncated = DANGLING_CROZIER
+            .split_once("class Sighting_Meteor(UniversalBaseModel):")
+            .map(|(head, _)| format!("{head}class Sighting_Meteor(UniversalBaseModel):"))
+            .unwrap();
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                rel,
+                DANGLING_FERN,
+                &truncated,
+                &dangling
+            ),
+            None
+        );
+        // Nor is a file other than Python.
+        assert_eq!(
+            region_of(
+                dangling_mapping_variant_fields,
+                "reference.md",
+                DANGLING_FERN,
+                DANGLING_CROZIER,
+                &dangling
+            ),
+            None
+        );
     }
 
     /// A document whose root `security` is `[]` beside one secured and one

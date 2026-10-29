@@ -50,6 +50,10 @@
     "docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
+    "docs/fern-measurements/emission-parity/allof-only-base-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/allof-only-base/fern-expected": {},
+    "docs/fern-measurements/emission-parity/dangling-mapping-target-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected": {},
     "docs/fern-measurements/emission-parity/lantern-open-ping-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/lantern-open-ping/fern-expected": {},
     "docs/fern-measurements/emission-parity/survey-shapes-literals/fern-expected": {},
@@ -1041,6 +1045,12 @@
     "tests/fixtures/huatuo-server/expected": {},
     "tests/fixtures/hubspot-events/expected": {},
     "tests/fixtures/ideaconsult-enanomapper/expected": {},
+    "tests/fixtures/ingef-conquery/expected": {},
+    "tests/fixtures/ingef-conquery/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/inline-array-request/expected": {},
     "tests/fixtures/inline-request-response/expected": {},
     "tests/fixtures/integer-enums/expected": {},
