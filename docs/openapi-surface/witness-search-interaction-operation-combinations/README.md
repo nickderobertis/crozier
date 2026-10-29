@@ -215,7 +215,7 @@ Temporarily removing only the union filter made the latter fail on the emitted
 That induced-state failure is recorded in `union-red.log`, not claimed as a
 result of the finished source.
 
-The normalized Webflow report now has **47 differing files**, down from 53,
+The normalized Webflow report now has **47 unmatched expected files**, down from 53,
 with six closed files and no new mismatches. Its `unmatched` list loses exactly
 those six paths. One of the eleven inline-readOnly-sensitive files still differs:
 `reference.md`. The remaining classes are collection-field union selection,
