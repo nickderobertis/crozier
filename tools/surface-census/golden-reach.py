@@ -1282,7 +1282,10 @@ def cited_search_verdict(
         if section is None:
             fail(f"`{key}`'s arm `{site}` cites a search record that does not resolve: {error}")
         stated |= {
-            cell.strip("`") for cells in gate.key_rows(section, key) for cell in cells if cell.strip("`") in set(Verdict)
+            cell.strip("`")
+            for cells in gate.key_rows(section, key)
+            for cell in cells
+            if cell.strip("`") in set(Verdict)
         }
     if len(stated) != 1:
         fail(
