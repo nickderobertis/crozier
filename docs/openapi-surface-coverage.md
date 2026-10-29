@@ -119,7 +119,7 @@ split five ways:
 502 + 70 + 152 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 21 are `gap`, 67 are `golden` and 3 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 18 are `gap`, 67 are `golden` and 6 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where the run that byte-matches Fern
@@ -129,8 +129,8 @@ executes the branch where its two features meet. `finished_state_failures` in
 **15** are byte-matched against a registered real specification at their
 interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **9** remain
-unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 15 + 52 + 0 + 3 + 9 + 12 = 91.
+non-generation, **6** rest on a hand-written fixture (0 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **6** remain
+unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 15 + 52 + 0 + 6 + 6 + 12 = 91.
 None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -3231,31 +3231,31 @@ why. The changes that took the arm off:
 | 58 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `slashless-json-response` |
 | 59 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
 | 60 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 62 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |
-| 63 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
-| 64 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `not searched` — no arm search has run | `odometer-reading` |
-| 65 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `not searched` — no arm search has run | `meadow-tag-code` |
-| 69 | `format-date` | `src/ir.rs::scalar_body[=Some\("date"\) =>]` | 2 | `not searched` — no arm search has run | `skyglass-observation-date` |
-| 70 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
-| 71 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
-| 72 | `response-description` | `src/emit.rs::push_return_doc[=None => \{\}]` | 1 | `not searched` — no arm search has run | `buoy-depth-response` |
-| 73 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `not searched` — no arm search has run | `enum-media-selection` |
-| 74 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
-| 77 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
-| 78 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
-| 79 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 80 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 81 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 82 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 83 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 84 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 85 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 86 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 87 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 88 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 89 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 90 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 91 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
+| 61 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |
+| 62 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
+| 63 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `not searched` — no arm search has run | `odometer-reading` |
+| 64 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `not searched` — no arm search has run | `meadow-tag-code` |
+| 66 | `format-date` | `src/ir.rs::scalar_body[=Some\("date"\) =>]` | 2 | `not searched` — no arm search has run | `skyglass-observation-date` |
+| 67 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
+| 68 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
+| 69 | `response-description` | `src/emit.rs::push_return_doc[=None => \{\}]` | 1 | `not searched` — no arm search has run | `buoy-depth-response` |
+| 70 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `not searched` — no arm search has run | `enum-media-selection` |
+| 71 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
+| 74 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
+| 75 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
+| 76 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 77 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 78 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 79 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 80 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 81 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 82 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 83 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 84 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 85 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 86 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 87 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 88 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
 <!-- END GENERATED ARM TABLE -->
 
 **Configuration-gated arms.** An arm only a generation setting reaches is
@@ -3391,13 +3391,10 @@ run executes the branch, or a hand-written fixture that does, removes the row.
 |---|---|---|
 | `combo-allof-nullable` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` 0/2 by golden-only witnesses `ecommerce-ai-skills-runtime`, `embedpdf-cloudpdf`, `hse`, `huatuo-node`, `huatuo-node-tree`, `huatuo-server`, `onevoice`, `rgb-lightning-node`, `timelyapp`, `timelyapp-entry`, `zoonk` |
 | `combo-anyof-beside-properties` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]` 0/10 by golden-only witnesses `ahasend-api`, `auto-agent-protocol`, `docu-goapiserver`, `ecommerce-ai-skills-runtime`, `fergus`, `get-a-room`, `qredence-fleet-rlm`, `rs-server`, `zulip`, `zulip-jentic`, `zulip-jentic-entry` |
-| `combo-body-property-named-as-path-param` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::rename_claimed_path_params[if !overridden && spread\.contains\(&param\.wire_name\) \{]` 0/3 by golden-only witnesses `agco-ats`, `anchore.io`, `apache.org`, `apache.org-airflow`, `apideck.com-accounting`, `apideck.com-crm`, `apideck.com-customer-support`, `apideck.com-file-storage`, `apideck.com-hris`, `apideck.com-issue-tracking`, `apideck.com-lead`, `apideck.com-sms`, `apideck.com-vault`, `crozier-property-name`, `googleapis-monitoring-v1`, `googleapis-servicebroker`, `maif.local-otoroshi`, `microcks.local`, `mockserver`, `netbox.dev`, `nextgen`, `otoroshi`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `redhat.com-catalog_inventory`, `sftpgo`, `swagger-petstore`, `traccar.org` |
 | `combo-inline-body-read-only-property` | `bodies-media` | `witness blocked` — [blocked witnesses](openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses). `webflow-v2` still mismatches 1 of the 11 files deleting the inline bodies' `readOnly` moves (`reference.md`), and `osf.io` 69 of its 583, on unrelated reference examples; its readOnly handling itself matches. The [interaction search](openapi-surface/witness-search-interaction-operation-combinations/README.md#webflow-parity) repairs its deepObject map query value types and shared inline imports |
 | `combo-oneof-beside-properties` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]` 0/10 by golden-only witnesses `free5gc-namf-communication`, `free5gc-pdu-session`, `komga`, `langchain-agent-server`, `mockserver`, `paloalto-cspm-alerts`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `peopledatalabs`, `qredence-fleet-rlm`, `sigstore-rekor`, `webflow-v2` |
 | `combo-oneof-schema-example` | `schemas` | `interaction branch unreached` — unreached `src/ir.rs::referenced_example_literal[^    \{$]` 0/1 by golden-only witnesses `free5gc-namf-communication`, `free5gc-pdu-session`, `rgb-lightning-node`, `webflow-v2`, `zulip`, `zulip-jentic`, `zulip-jentic-entry` |
 | `combo-ref-body-read-only-property` | `bodies-media` | `interaction branch unreached` — unreached `src/emit.rs::append_request_call_args[=^ {40}&& ep\.body_schema_is_open$]` 0/1 by golden-only witnesses `agco-ats`, `apache.org`, `apache.org-airflow`, `apideck.com-accounting`, `apideck.com-ats`, `apideck.com-crm`, `apideck.com-customer-support`, `apideck.com-file-storage`, `apideck.com-hris`, `apideck.com-issue-tracking`, `apideck.com-lead`, `apideck.com-sms`, `apideck.com-vault`, `bunq.com`, `googleapis-monitoring-v1`, `k8s-container-service-provider`, `netbox.dev`, `openbanking-brasil-directory`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`, `paloalto-remote-networks`, `redhat.com-catalog_inventory`, `steaminputdb`, `writeonly-fields` |
-| `combo-success-anyof-nullable` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` 0/2 by golden-only witnesses `deepsearch-ds-v2`, `letta` |
-| `combo-success-oneof-nullable` | `document-paths` | `interaction branch unreached` — unreached `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` 0/2 by golden-only witness `ebusd` |
 
 #### The `example` arm, removed as a proven divergence
 

@@ -1,6 +1,9 @@
 fixture	key	site	regions_executed	regions
 atlas-untagged-inline-discriminator	property-oneof-residual	src/ir.rs::untagged_inline_discriminator[if untagged \{]	1	1
 base-path-client-argument	parameter-in-path	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
+beacon-signal-results	combo-body-property-named-as-path-param	src/ir.rs::rename_claimed_path_params[if !overridden && spread\.contains\(&param\.wire_name\) \{]	3	3
+beacon-signal-results	combo-success-anyof-nullable	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
+beacon-signal-results	combo-success-oneof-nullable	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
 blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]	1	1
 buoy-depth-response	response-description	src/emit.rs::push_return_doc[=None => \{\}]	1	1
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1

@@ -4,8 +4,9 @@ This bounded search reopens the five operation-owned combinations named on
 base `bc66bfb087fbd34abfe89f1075912b103e848896`: one in `parameters`, four in `bodies-responses`, and none
 in `naming-clients`. A census declaration alone is not proof. The detector for
 each key is its conjunction below **and an instrumented crozier run executing
-every declared interaction site**. No new combination is claimed proven here;
-the outstanding screening is stated explicitly below.
+every declared interaction site**. The authored `beacon-signal-results` fixture now proves the path/body-name
+branch and both nullable-response branches. The remaining screening is stated
+explicitly below.
 
 ## Populations read
 
@@ -70,11 +71,11 @@ column of `census.tsv` distinguishes the prior screen from this missing step.
 
 | key | verdict | declarers | outstanding evidence |
 |---|---|---:|---|
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 1256 | a generating document selecting the URL-encoded spreading branch; sharing a JSON body's property name does not suffice |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | 1256 | none-registrable; authored `beacon-signal-results` reaches all three interaction regions |
 | `combo-ref-body-read-only-property` | `search-incomplete` | 731 | an instrumented generating document reaching the response-heavy open-body operand, followed by a complete byte match |
-| `combo-inline-body-read-only-property` | `search-incomplete` | 20 | the remaining four Webflow files below, or its expressly permitted witness-blocked fixture |
-| `combo-success-oneof-nullable` | `search-incomplete` | 24 | admissibility and instrumented screening of the tooling documents below, or an eligible authored fixture |
-| `combo-success-anyof-nullable` | `search-incomplete` | 69 | completed interaction screening; the registered simple-nullable examples take an earlier branch |
+| `combo-inline-body-read-only-property` | `search-incomplete` | 20 | the remaining Webflow `reference.md` file below, or its expressly permitted witness-blocked fixture |
+| `combo-success-oneof-nullable` | `search-incomplete` | 24 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
+| `combo-success-anyof-nullable` | `search-incomplete` | 69 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
 
 ### Nullable responses
 
@@ -96,8 +97,8 @@ with that reason in `census.tsv`; none is a registrable real witness.
 
 | key | verdict | renewed search result | disposition |
 |---|---|---|---|
-| `combo-success-oneof-nullable` | `search-incomplete` | none-registrable | authored explicit-null-plus-two fixture required |
-| `combo-success-anyof-nullable` | `search-incomplete` | none-registrable | authored explicit-null-plus-two fixture required |
+| `combo-success-oneof-nullable` | `search-incomplete` | none-registrable | authored `beacon-signal-results`, both interaction regions reached |
+| `combo-success-anyof-nullable` | `search-incomplete` | none-registrable | authored `beacon-signal-results`, both interaction regions reached |
 
 ### Path and body name
 
@@ -111,7 +112,14 @@ separately with that reader; none adds a candidate.
 
 | key | verdict | renewed search result | disposition |
 |---|---|---|---|
-| `combo-body-property-named-as-path-param` | `search-incomplete` | none-registrable | authored URL-encoded component fixture required |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | none-registrable | authored `beacon-signal-results`, all three interaction regions reached |
+
+The fixture was authored from scratch and freshly generated at the certified
+pair. Its conjunction counts are one for each covered key. The instrumented
+hand-written reach measurement records 3/3 regions for the path/body-name site
+and 2/2 for each nullable-response site. The complete generated tree is checked
+by `handwritten_fixtures_match_fern_goldens`. It is hand-written evidence, not a
+real-specification match.
 
 ## Webflow parity
 

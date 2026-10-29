@@ -1218,6 +1218,11 @@ docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/beacon-signal-results/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
