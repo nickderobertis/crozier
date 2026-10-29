@@ -678,17 +678,38 @@ class ReportTests(unittest.TestCase):
             "\n".join(["\t".join(golden_reach.REACH_COLUMNS), *reach]) + "\n", encoding="utf-8", newline="\n"
         )
 
-    def cover(self, fixture: str, verdict: str, *, audiences: bool = False, arm: str | None = None) -> None:
-        """A hand-written fixture whose `evidence.toml` covers `flag-set`'s arm with `verdict`."""
+    def cover(
+        self,
+        fixture: str,
+        verdict: str,
+        *,
+        audiences: bool = False,
+        arm: str | None = None,
+        search: str | None = None,
+    ) -> None:
+        """A hand-written fixture whose `evidence.toml` covers `flag-set`'s arm with `verdict`, citing `search`."""
         directory = self.repo / "docs" / "openapi-surface" / "handwritten" / fixture
         directory.mkdir(parents=True, exist_ok=True)
         spelled = (self.FLAG_SET_ARM if arm is None else arm).replace("'", "\\'")
         (directory / "evidence.toml").write_text(
             ('audiences = ["public"]\n\n' if audiences else "")
-            + f'[[covers]]\nkey = "flag-set"\narm = \'{spelled}\'\nverdict = "{verdict}"\n',
+            + f'[[covers]]\nkey = "flag-set"\narm = \'{spelled}\'\nverdict = "{verdict}"\n'
+            + (f'search = "{search}"\n' if search else ""),
             encoding="utf-8",
             newline="\n",
         )
+
+    def witness_search(self, verdict: str) -> str:
+        """A bounded witness-search record stating `verdict` for `flag-set`; the reference a cover cites."""
+        record = self.repo / "docs" / "openapi-surface" / "witness-search-demo" / "README.md"
+        record.parent.mkdir(parents=True, exist_ok=True)
+        record.write_text(
+            "# Witness search: demo\n\n## Verdicts\n\n| key | candidates | outcome |\n|---|---|---|\n"
+            f"| `flag-set` | 3 | `{verdict}` |\n\n## Later\n\n| `flag-set` | 0 | `search-incomplete` |\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        return "docs/openapi-surface/witness-search-demo/README.md#verdicts"
 
     def arms_table(self) -> str:
         return (self.repo / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
@@ -703,6 +724,34 @@ class ReportTests(unittest.TestCase):
         self.assertIn("2 unreached arms in all", self.arms_table())
         again = self.run_arms()
         self.assertEqual("golden-reach: arm sections unchanged\n", again.stdout)
+
+    def test_a_covered_arm_with_no_arm_search_reads_the_witness_search_its_cover_cites(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        # The cover copies another verdict: the table reads the cited record's section, not the copy.
+        self.cover("cited-fixture", "search-incomplete", search=self.witness_search("exhausted"))
+        run = self.run_arms()
+        self.assertEqual(0, run.returncode, run.stderr)
+        table = self.arms_table()
+        self.assertIn(f"| 2 | `flag-set` | `{self.FLAG_SET_ARM}` | 1 | `exhausted` | `cited-fixture` |", table)
+        # `flag-orphan`'s arm has neither an arm search nor a citing cover, so it alone is unsearched.
+        self.assertIn("| 1 | `flag-orphan` | `src/demo.rs::unrelated` | 1 | `not searched`", table)
+        self.assertIn("1 read `exhausted`, 0 read `search-incomplete`, 0 read `config-gated`, and 1 have", table)
+
+    def test_a_cited_witness_search_stating_no_one_verdict_for_the_key_is_refused(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        index = self.arms_index()
+        before = index.read_text(encoding="utf-8")
+        for case, reference in {
+            "no verdict": self.witness_search("none-registrable"),
+            "unresolved anchor": "docs/openapi-surface/witness-search-demo/README.md#no-such-heading",
+        }.items():
+            with self.subTest(case=case):
+                self.cover("cited-fixture", "exhausted", search=reference)
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(f"`{self.FLAG_SET_ARM}`", run.stderr)
+                self.assertEqual(before, index.read_text(encoding="utf-8"), "a refused run rewrote the index")
 
     def test_arms_refuses_an_index_whose_markers_are_missing_repeated_or_reversed(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)

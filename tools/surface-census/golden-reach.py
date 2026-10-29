@@ -1034,6 +1034,8 @@ class Cover(NamedTuple):
     verdict: Verdict
     # The fixture declares a generation setting (`audiences`), so its runs are gated.
     set_up: bool
+    # `<repo-relative path>#<anchor>` of the search record the cover cites, if any.
+    search: str | None = None
 
 
 class ArmRow(NamedTuple):
@@ -1043,7 +1045,7 @@ class ArmRow(NamedTuple):
     key: str
     site: str
     regions: int
-    verdict: Verdict | None  # None: no arm search has run
+    verdict: Verdict | None  # None: no arm search has run and no cover cites a witness search
     covers: tuple[str, ...]
 
     def cells(self) -> list[str]:
@@ -1171,7 +1173,14 @@ def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
                 # no arm; `handwritten-fixtures.py gate` holds it to its record.
                 continue
             covers.append(
-                Cover(path.parent.name, cover["key"], arm, _verdict(cover["verdict"], str(path)), bool(audiences))
+                Cover(
+                    path.parent.name,
+                    cover["key"],
+                    arm,
+                    _verdict(cover["verdict"], str(path)),
+                    bool(audiences),
+                    cover.get("search") if isinstance(cover.get("search"), str) else None,
+                )
             )
     return covers
 
@@ -1249,6 +1258,52 @@ def arm_verdict(
     return verdict
 
 
+def cited_search_verdict(
+    key: str, site: str, regions_dir: Path = REGIONS_DIR, covers: list[Cover] | None = None
+) -> Verdict | None:
+    """The verdict the witness-search records an arm's hand-written covers cite state for its key.
+
+    An arm no arm-search record names may still have been searched: a bounded
+    witness search a cover cites decided it. Each cited record's section is read,
+    never the cover's own copy of the verdict; None when no cover cites one.
+    """
+    cited = {
+        cover.search
+        for cover in (handwritten_covers(regions_dir) if covers is None else covers)
+        if (cover.key, cover.arm) == (key, site) and cover.search
+    }
+    if not cited:
+        return None
+    gate = _load_handwritten_module()
+    root = regions_dir.parents[1]
+    stated: set[str] = set()
+    for reference in sorted(cited):
+        section, error = gate.record_section(root, reference)
+        if section is None:
+            fail(f"`{key}`'s arm `{site}` cites a search record that does not resolve: {error}")
+        stated |= {
+            cell.strip("`") for cells in gate.key_rows(section, key) for cell in cells if cell.strip("`") in set(Verdict)
+        }
+    if len(stated) != 1:
+        fail(
+            f"the records {sorted(cited)} state {sorted(stated) or 'no verdict'} for `{key}`, not one verdict "
+            f"for its arm `{site}`; correct the records or the covers that cite them, then re-run"
+        )
+    return Verdict(stated.pop())
+
+
+def _load_handwritten_module():
+    spec = importlib.util.spec_from_file_location(
+        "golden_reach_handwritten", REPO / "tools" / "surface-census" / "handwritten-fixtures.py"
+    )
+    if spec is None or spec.loader is None:
+        fail("cannot load tools/surface-census/handwritten-fixtures.py; restore it from git")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault(spec.name, module)
+    spec.loader.exec_module(module)
+    return module
+
+
 def golden_ledger(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[tuple[int, Reach]]:
     """The ledger's `golden` rows: a `gap` combination's unreached interaction branch is
     named with the combinations, never counted as an arm of a golden row."""
@@ -1288,7 +1343,8 @@ def arm_rows(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -
             reach.key,
             spec,
             total,
-            arm_verdict(reach.key, spec, regions_dir, covers),
+            arm_verdict(reach.key, spec, regions_dir, covers)
+            or cited_search_verdict(reach.key, spec, regions_dir, covers),
             tuple(sorted(covering.get((reach.key, spec), ()))),
         )
         for rank, reach in ledger

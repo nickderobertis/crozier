@@ -10158,6 +10158,112 @@ class RankedBacklogTests(unittest.TestCase):
             "a class has neither a decided detector nor an evaluated document population",
         )
 
+    def test_the_prose_counts_are_the_ledgers_counts(self) -> None:
+        """Each count the prose states about the current tree, derived again from its ledger.
+
+        The reach ranking's tie count is the golden ledger rows whose
+        `unreached_sites` is 0; the hand-written verdict split is the region rows'
+        evidence cells; the census's feature total is the walk; and the closing
+        list of every remaining unproven scenario is the region rows, the reach
+        ledger, the residual attribution, the hand-written covers, the named-gap
+        table and the authored-probe tree. A count the prose states and no ledger
+        yields fails here, so the prose cannot drift from what it summarises.
+        """
+        flat = " ".join(self.doc.split())
+        golden_ledger = golden_reach_script().golden_ledger(self.reach_ledger(combinations=True), self.REGIONS)
+        ranking = " ".join(self.section("#### The reach ranking", "**The boundary.**").split())
+        tie = re.search(r"\*\*(\d+)\*\* golden rows reach every handling site and tie below", ranking)
+        self.assertIsNotNone(tie, "the reach ranking no longer states how many rows reach every site")
+        assert tie is not None
+        self.assertEqual(
+            sum(1 for _rank, reach in golden_ledger if reach.unreached_sites == 0),
+            int(tie.group(1)),
+            "the reach ranking's tie count is not the golden-reach.tsv rows whose unreached_sites is 0",
+        )
+
+        verdicts = Counter(
+            found.group(1) if (found := re.search(r"search: ([a-z-]+)", cells[4])) else None
+            for _region, cells in self.entries.values()
+            if cells[3].strip("`") == "handwritten"
+        )
+        split = re.search(
+            r"Of the `handwritten` rows, (\d+) have a search record that reads `exhausted`:.*? (\d+) read "
+            r"`search-incomplete`\.",
+            flat,
+        )
+        self.assertIsNotNone(split, "the headline no longer splits the hand-written rows by search verdict")
+        assert split is not None
+        self.assertEqual([verdicts["exhausted"], verdicts["search-incomplete"]], [int(v) for v in split.groups()])
+
+        stated_totals = [
+            re.search(r"\*\*What the census still cannot enumerate\.\*\* The (\d+) features are", flat),
+            re.search(r"bring it to \*\*(\d+)\*\*, the walk's count above\.", flat),
+        ]
+        self.assertTrue(all(stated_totals), "the census-reach or denominator paragraph no longer states the total")
+        self.assertEqual([len(self.entries)] * 2, [int(found.group(1)) for found in stated_totals if found])
+
+        records, failures = load_script("tools/surface-census/output-insensitive.py").read_records(REPO)
+        self.assertEqual([], failures)
+        decided = {key for key, (_region, cells) in self.entries.items() if (key, "-") in records}
+        supplements, errors = load_script("tools/surface-census/handwritten-fixtures.py").read_residual_proofs(REPO)
+        self.assertEqual([], errors)
+        supplemental = {item.key for item in supplements}
+        attributions = residual_attributions(REPO)
+        residual_open = {key for key, (_w, _f, _g, verdict) in attributions.items() if verdict == "open gap"}
+        ledger = {reach.key: reach for _rank, reach in self.reach_ledger()}
+        vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
+        no_witness = {
+            key
+            for key, (_region, cells) in self.entries.items()
+            if cells[3].strip("`") == "golden"
+            and key not in supplemental
+            and key not in residual_open
+            and not set(ledger[key].witnesses) - vendored
+        }
+        unproven = len(self.gaps("FIXTURE") - decided) + len(residual_open) + len(no_witness)
+        split_rows = sorted(key for key, (_w, _f, gap, verdict) in attributions.items() if verdict == "split" and gap)
+        unreached = {
+            (reach.key, spec) for _rank, reach in golden_ledger for spec, hit, _total in reach.sites if not hit
+        }
+        covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
+        handwritten = sum(1 for _region, cells in self.entries.values() if cells[3].strip("`") == "handwritten")
+        probes = sorted(
+            path.name for path in (self.REGIONS / "authored-probes").iterdir() if (path / "openapi.yml").is_file()
+        )
+        remaining = " ".join(
+            self.section("**Every remaining unproven scenario, named.**", "Where crozier deliberately differs").split()
+        )
+        stated = re.search(
+            r"\*\*Features no proof covers \((\d+)\):\*\*.*?"
+            r"\*\*Output of a proven row that lands in an `unmatched` file \((\d+)\):\*\*(.*?)"
+            r"\*\*Arms no proof covers \((\d+)\):\*\*.*?"
+            r"\*\*Features and arms resting on hand-written fixtures only \((\d+) features, (\d+) arms\):\*\*.*?"
+            r"\*\*Authored-probe gaps \((\d+)\):\*\*(.*)",
+            remaining,
+        )
+        self.assertIsNotNone(stated, "the list of every remaining unproven scenario no longer states its counts")
+        assert stated is not None
+        self.assertEqual(
+            [
+                unproven,
+                len(split_rows),
+                len(set(named_gap_arms(REPO)) & unreached),
+                handwritten + len(supplemental),
+                len(covered),
+                len(probes),
+            ],
+            [int(stated.group(index)) for index in (1, 2, 4, 5, 6, 7)],
+            "a count of the remaining-scenario list is not its ledger's",
+        )
+        self.assertEqual(
+            split_rows, sorted(key for key in split_rows if f"`{key}`" in stated.group(3)), "a split row is unnamed"
+        )
+        self.assertEqual(
+            probes,
+            sorted(set(re.findall(r"\(openapi-surface/authored-probes/([^/)]+)/\)", stated.group(8)))),
+            "the authored-probe list does not link exactly the committed probes",
+        )
+
     def test_every_golden_row_resting_only_on_residual_goldens_is_attributed(self) -> None:
         """A residual golden proves a row only where its byte-matched files carry the row.
 
