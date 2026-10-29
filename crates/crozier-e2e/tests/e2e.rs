@@ -181,6 +181,15 @@ fn tier_filter_selects(expression: &str, name: &str) -> bool {
     })
 }
 
+/// The project files of the tier projects `just test-sdk-env` runs, each also an
+/// `e2eReads` input. Read by path rather than by scanning `tests/`, so the suite
+/// reads no project the boundaries forbid it to depend on.
+const SDK_ENV_TIER_PROJECT_FILES: [&str; 3] = [
+    "tests/sdk_env/project.json",
+    "tests/runtime/project.json",
+    "tests/nested-discriminator/runtime/project.json",
+];
+
 /// Every `sdk_env_` journey this binary carries, a module-qualified one such as
 /// `output_defects::sdk_env_…` included, is selected by the nextest filter of
 /// one of the projects `just test-sdk-env` runs, so each runtime journey a
@@ -201,41 +210,43 @@ fn every_sdk_env_journey_is_selected_by_the_sdk_env_tier() {
         .map(str::trim)
         .collect();
     let mut filters = Vec::new();
-    for entry in std::fs::read_dir(root.join("tests")).unwrap() {
-        for path in [entry.as_ref().unwrap().path().join("project.json")]
-            .into_iter()
-            .chain(
-                std::fs::read_dir(entry.unwrap().path())
-                    .into_iter()
-                    .flatten()
-                    .map(|nested| nested.unwrap().path().join("project.json")),
-            )
-        {
-            let Ok(text) = std::fs::read_to_string(&path) else {
-                continue;
-            };
-            let project: serde_json::Value = serde_json::from_str(&text).unwrap();
-            if !projects.contains(&project["name"].as_str().unwrap_or_default()) {
-                continue;
-            }
-            let command = project["targets"]["test"]["options"]["command"]
-                .as_str()
-                .unwrap_or_default();
-            if command.contains("cargo nextest run") && command.contains("-p crozier-e2e") {
-                let expression = command
-                    .split("-E \"")
-                    .nth(1)
-                    .and_then(|rest| rest.split('"').next())
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "{}: its crozier-e2e run carries no `-E \"…\"` filter",
-                            path.display()
-                        )
-                    });
-                filters.push(expression.to_owned());
-            }
+    let mut found = Vec::new();
+    for relative in SDK_ENV_TIER_PROJECT_FILES {
+        let path = root.join(relative);
+        let text = std::fs::read_to_string(&path)
+            .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+        let project: serde_json::Value = serde_json::from_str(&text).unwrap();
+        let name = project["name"].as_str().unwrap_or_default().to_owned();
+        if !projects.contains(&name.as_str()) {
+            continue;
+        }
+        found.push(name);
+        let command = project["targets"]["test"]["options"]["command"]
+            .as_str()
+            .unwrap_or_default();
+        if command.contains("cargo nextest run") && command.contains("-p crozier-e2e") {
+            let expression = command
+                .split("-E \"")
+                .nth(1)
+                .and_then(|rest| rest.split('"').next())
+                .unwrap_or_else(|| {
+                    panic!(
+                        "{}: its crozier-e2e run carries no `-E \"…\"` filter",
+                        path.display()
+                    )
+                });
+            filters.push(expression.to_owned());
         }
     }
+    let missing: Vec<&&str> = projects
+        .iter()
+        .filter(|name| !found.iter().any(|seen| seen == **name))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "`test-sdk-env` runs {missing:?}, whose project.json is not in SDK_ENV_TIER_PROJECT_FILES; \
+         add its path there and to nx.json's `e2eReads`"
+    );
     assert!(
         !filters.is_empty(),
         "no project `test-sdk-env` runs ({projects:?}) runs crozier-e2e"
