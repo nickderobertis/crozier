@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.144](https://github.com/nickderobertis/crozier/compare/v0.0.143...v0.0.144) - 2026-10-29
+
+### Fixed
+
+- *(parity)* carry allOf-only bases' fields and dangling mapping variants in union wrappers ([#659](https://github.com/nickderobertis/crozier/pull/659))
+
 ## [0.0.143](https://github.com/nickderobertis/crozier/compare/v0.0.142...v0.0.143) - 2026-10-28
 
 ### Fixed
