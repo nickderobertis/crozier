@@ -1967,3 +1967,17 @@ to a byte-match are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3477 | `rs-server` | github-raw | https://raw.githubusercontent.com/RS-PYTHON/rs-server/83ebcafb173c53443d92c54aeeba4f221e36f9c2/services/frontend/resources/openapi.json | `83ebcafb173c53443d92c54aeeba4f221e36f9c2` | Apache-2.0 (repository LICENSE; the document declares no info.license) | committed | GeoJSON geometries tagged by `const` properties, inlined as discriminated-union variants; nullable date-times nested two arrays deep |
+
+## A mapping target naming no schema, and variants over an `allOf`-only base
+
+ingef/conquery's document maps its `Query` union's `SECONDARY_ID_QUERY` to
+`#/components/schemas/secondary-Id-query`, where the component is
+`SecondaryIdQuery`, and its `Filter`, `Select` and `UniversalSelect` variants
+extend bases that are themselves only an `allOf`. Both shapes, the
+`dangling-mapping-variant-fields` departure and the from-scratch documents
+measured beside them are recorded in
+[`emission-parity`](../../docs/fern-measurements/emission-parity/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |

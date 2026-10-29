@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "ingef-conquery",
+  "corpus_spec_ref": "0379408a4b681575daf311d37bd12ff08ccc409d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml"
+}

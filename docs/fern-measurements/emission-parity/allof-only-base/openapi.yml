@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse
+  version: 1.0.0
+paths:
+  /sensors:
+    get:
+      operationId: listSensors
+      responses:
+        '200':
+          description: Every sensor in the greenhouse
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sensor'
+  /sensors/{sensorId}:
+    put:
+      operationId: replaceSensor
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sensor'
+      responses:
+        '204':
+          description: Replaced
+components:
+  schemas:
+    Sensor:
+      description: Something that measures the air or the soil.
+      discriminator:
+        propertyName: kind
+        mapping:
+          THERMO: '#/components/schemas/ThermoSensor'
+          RAIN: '#/components/schemas/RainSensor'
+          WIND: '#/components/schemas/WindSensor'
+          HUMIDITY: '#/components/schemas/HumiditySensor'
+      oneOf:
+        - $ref: '#/components/schemas/ThermoSensor'
+        - $ref: '#/components/schemas/RainSensor'
+        - $ref: '#/components/schemas/WindSensor'
+        - $ref: '#/components/schemas/HumiditySensor'
+    Named:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+    Calibrated:
+      type: object
+      properties:
+        calibratedOn:
+          type: string
+          format: date
+    Gauge:
+      allOf:
+        - $ref: '#/components/schemas/Named'
+        - properties:
+            unit:
+              type: string
+            precision:
+              type: integer
+    VaneGauge:
+      allOf:
+        - $ref: '#/components/schemas/Gauge'
+        - $ref: '#/components/schemas/Calibrated'
+        - properties:
+            heading:
+              type: number
+        - oneOf:
+            - properties:
+                degrees:
+                  type: number
+            - properties:
+                compassPoint:
+                  type: string
+    PlainGauge:
+      type: object
+      properties:
+        unit:
+          type: string
+        accuracy:
+          type: number
+    ThermoSensor:
+      allOf:
+        - $ref: '#/components/schemas/Gauge'
+        - properties:
+            kind:
+              type: string
+              enum: [THERMO]
+            celsius:
+              type: number
+    RainSensor:
+      allOf:
+        - $ref: '#/components/schemas/Gauge'
+        - properties:
+            millimetres:
+              type: number
+            kind:
+              type: string
+              enum: [RAIN]
+        - oneOf:
+            - properties:
+                bucket:
+                  type: string
+            - properties:
+                funnelWidth:
+                  type: number
+    WindSensor:
+      allOf:
+        - $ref: '#/components/schemas/VaneGauge'
+        - properties:
+            kind:
+              type: string
+              enum: [WIND]
+    HumiditySensor:
+      allOf:
+        - $ref: '#/components/schemas/PlainGauge'
+        - properties:
+            kind:
+              type: string
+              enum: [HUMIDITY]
+            percent:
+              type: number

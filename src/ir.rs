@@ -2273,10 +2273,9 @@ pub struct UnionMember {
     pub discriminant: String,
     /// The variant's fields, with the discriminant property removed.
     pub fields: Vec<Field>,
-    /// Where the discriminant sat among those fields before it was removed, when
-    /// the variant declares it as a property of its own. The model writes the tag
-    /// first, but Fern's worked example writes it back in this position.
-    pub discriminant_index: Option<usize>,
+    /// The variant's own declaration of the discriminant, when it declares it as
+    /// a property of its own.
+    pub declared_discriminant: Option<DeclaredDiscriminant>,
     /// The component schema this wrapper flattened, when the variant was a
     /// `$ref`. It is the one cyclic name the wrapper's own `update_forward_refs`
     /// call omits — the wrapper *is* that model, so resolving its name against
@@ -2289,6 +2288,30 @@ pub struct UnionMember {
     /// field written *ahead* of the discriminant and drops the `extra` member from
     /// the wrapper's pydantic config.
     pub layout: UnionMemberLayout,
+}
+
+/// How a member's declared tag appears in Markdown worked examples.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiscriminantDocumentation {
+    /// Pass the member's declared tag back in the example.
+    Include,
+    /// Leave an optional tag out of the example.
+    OmitOptional,
+}
+
+/// A union variant's own declaration of the discriminant property.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeclaredDiscriminant {
+    /// Where the discriminant sat among the variant's fields before it was
+    /// removed. The model writes the tag first, but Fern's worked example writes
+    /// it back in this position.
+    pub index: usize,
+    /// How the Markdown writers treat the tag. Only a union whose
+    /// mapping names a target no component answers leaves an optional tag out:
+    /// ingef/conquery's `Query_ConceptQuery` declares an optional `type`, which
+    /// its docstring example passes and Fern's `reference.md` example leaves
+    /// out. Every other union's examples pass it, as they always have.
+    pub documentation: DiscriminantDocumentation,
 }
 
 /// Whether a variant flattens its Python fields or exposes a payload constructor.
@@ -11878,7 +11901,17 @@ fn collect_discriminant_strips(
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
-                    if !reference.contains('/') {
+                    // A target naming no component, where the union reads it as a
+                    // variant of its own, strips nothing: the member it stands for
+                    // keeps its tag, as ingef/conquery's `SecondaryIdQuery.type`
+                    // does in Fern's tree. Any other dangling mapping strips as it
+                    // always did.
+                    if !reference.contains('/')
+                        || resolve_ref_from_schemas(schemas, reference).is_none()
+                            && schema.one_of.as_deref().is_some_and(|variants| {
+                                reads_dangling_targets(variants, &discriminator.mapping, schemas)
+                            })
+                    {
                         continue;
                     }
                     // Fern hoists the tag onto the union wrapper and drops it from
@@ -11979,29 +12012,231 @@ fn member_fields(
             // An inline `allOf` member's properties belong to the variant itself,
             // so a hoisted property type is named after the variant — EN 18222's
             // `SingleValuedDataElement.value` is `SingleValuedDataElementValue`.
-            append_member_fields(member, discriminant, &required, owner, &mut fields);
+            append_inline_member_fields(
+                member,
+                discriminant,
+                &required,
+                owner,
+                schemas,
+                &mut fields,
+            );
         }
     }
     append_member_fields(schema, discriminant, &required, owner, &mut fields);
+    let mut visited = Vec::new();
+    append_base_fields(schema, discriminant, schemas, &mut visited, &mut fields);
+    fields
+}
+
+/// Append the fields every `$ref` `allOf` base of `schema` contributes, each base
+/// walked in [`member_fields`]' own order: its inline `allOf` members' properties
+/// and its own, then its own `$ref` bases. A base that is itself only an `allOf`
+/// passes its bases' fields on, the way Fern flattens them: ingef/conquery's
+/// `DateDistanceFilter` extends `FilterBase`, which is `allOf: [$ref Labeled,
+/// {unit, …}]`, and Fern's `Filter_DateDistance` closes with `unit`, …,
+/// `default_value`, then `Labeled`'s `name` and `label`. `visited` holds the bases
+/// already walked on this path, so a base that reaches itself stops there.
+fn append_base_fields<'a>(
+    schema: &'a Schema,
+    discriminant: &str,
+    schemas: &'a IndexMap<String, Schema>,
+    visited: &mut Vec<&'a str>,
+    fields: &mut Vec<Field>,
+) {
     for member in schema.all_of.iter().flatten() {
-        let Some(base) = member
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
-        else {
+        let Some((reference, base)) = member.reference.as_deref().and_then(|reference| {
+            resolve_ref_from_schemas(schemas, reference).map(|base| (reference, base))
+        }) else {
             continue;
         };
-        let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
-        let base_name = member.reference.as_deref().map(ref_to_class);
-        append_member_fields(
-            base,
-            discriminant,
-            &base_required,
-            base_name.as_deref(),
-            &mut fields,
-        );
+        if visited.contains(&reference) {
+            continue;
+        }
+        visited.push(reference);
+        let base_required: Vec<&str> = base
+            .required
+            .iter()
+            .chain(base.all_of.iter().flatten().flat_map(|m| &m.required))
+            .map(String::as_str)
+            .collect();
+        let base_name = ref_to_class(reference);
+        for inline in base.all_of.iter().flatten() {
+            if inline.reference.is_none() {
+                append_inline_member_fields(
+                    inline,
+                    discriminant,
+                    &base_required,
+                    Some(&base_name),
+                    schemas,
+                    fields,
+                );
+            }
+        }
+        append_member_fields(base, discriminant, &base_required, Some(&base_name), fields);
+        append_base_fields(base, discriminant, schemas, visited, fields);
+        visited.pop();
     }
-    fields
+}
+
+/// Append an inline `allOf` member's fields to a union wrapper's: its own
+/// properties, or, for a member that is an undiscriminated union, its branches'
+/// properties, all optional, as [`Builder::add_object`] lends them to the
+/// standalone model. ingef/conquery's `CountFilter` composes `oneOf: [{column},
+/// {distinctByColumn}]`, and Fern's `Filter_Count` carries both after
+/// `distinct`.
+fn append_inline_member_fields(
+    member: &Schema,
+    discriminant: &str,
+    required: &[&str],
+    owner: Option<&str>,
+    schemas: &IndexMap<String, Schema>,
+    fields: &mut Vec<Field>,
+) {
+    match branch_union_properties(member, schemas) {
+        Some(BranchUnion::Tagged) => {}
+        Some(BranchUnion::Merged(merged)) => {
+            append_member_fields(&merged, discriminant, &[], owner, fields);
+        }
+        None => append_member_fields(member, discriminant, required, owner, fields),
+    }
+}
+
+/// Whether a mapping `reference` is a component pointer naming no component.
+fn names_no_component(reference: &str, schemas: &IndexMap<String, Schema>) -> bool {
+    reference
+        .strip_prefix("#/components/schemas/")
+        .is_some_and(|key| !key.contains('/') && !schemas.contains_key(key))
+}
+
+/// Whether a discriminated `oneOf` reads a mapping target naming no component
+/// as a variant of its own: only where every member resolves and some target
+/// does name a component, the shape ingef/conquery's `Query` measured. Any
+/// other dangling mapping keeps crozier's undiscriminated union.
+fn reads_dangling_targets(
+    variants: &[Schema],
+    mapping: &IndexMap<String, String>,
+    schemas: &IndexMap<String, Schema>,
+) -> bool {
+    mapping
+        .values()
+        .any(|target| !names_no_component(target, schemas))
+        && variants.iter().all(|variant| {
+            !variant.unresolved_reference
+                && variant
+                    .reference
+                    .as_deref()
+                    .is_none_or(|reference| resolve_ref_from_schemas(schemas, reference).is_some())
+        })
+}
+
+/// Every component union's wrapper that carries a `oneOf` member's fields in
+/// place of Fern's `value: typing.Any` (see [`dangling_target_member`]): the
+/// wrapper's class name, its discriminant value and its fields' Python names. The
+/// `dangling-mapping-variant-fields` departure's rule reads them off the source
+/// document.
+pub(crate) fn dangling_mapping_wrappers(
+    doc: &crate::openapi::OpenApi,
+) -> Vec<(String, String, Vec<String>)> {
+    let schemas = &doc.components.schemas;
+    let mut wrappers = Vec::new();
+    for (name, schema) in schemas {
+        let (Some(discriminator), Some(variants)) = (&schema.discriminator, &schema.one_of) else {
+            continue;
+        };
+        if !reads_dangling_targets(variants, &discriminator.mapping, schemas) {
+            continue;
+        }
+        for (value, reference) in &discriminator.mapping {
+            if !names_no_component(reference, schemas) {
+                continue;
+            }
+            let Some((class, member)) = dangling_target_member(
+                variants,
+                &discriminator.mapping,
+                &discriminator.property_name,
+                value,
+                schemas,
+            ) else {
+                continue;
+            };
+            let fields = member_fields(member, &discriminator.property_name, schemas, Some(&class))
+                .into_iter()
+                .map(|field| field.py_name)
+                .collect();
+            wrappers.push((
+                format!(
+                    "{}_{}",
+                    naming::class_name(name),
+                    discriminant_class_name(value)
+                ),
+                value.clone(),
+                fields,
+            ));
+        }
+    }
+    wrappers
+}
+
+/// The `oneOf` member a discriminator mapping entry whose target names no
+/// component stands for: a `$ref` member no mapping target names, whose own
+/// discriminant property is `value`. Its class name and schema; `None` when no
+/// member, or more than one, fits.
+fn dangling_target_member<'a>(
+    variants: &[Schema],
+    mapping: &IndexMap<String, String>,
+    property: &str,
+    value: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(String, &'a Schema)> {
+    let mut found = variants.iter().filter_map(|variant| {
+        let reference = variant.reference.as_deref()?;
+        if mapping.values().any(|target| target == reference) {
+            return None;
+        }
+        let member = resolve_ref_from_schemas(schemas, reference)?;
+        let tag = last_composed_variant(member)
+            .properties
+            .get(property)
+            .and_then(discriminant_value)?;
+        (tag == value).then(|| (ref_to_class(reference), member))
+    });
+    let first = found.next()?;
+    found.next().is_none().then_some(first)
+}
+
+/// The union situation that supplies a member's worked-example policy.
+#[derive(Debug, Clone, Copy)]
+enum DiscriminantContext {
+    StandardUnion,
+    RecoveredMapping,
+}
+
+/// Locate a member's own tag and choose its worked-example policy.
+fn member_declared_discriminant(
+    schema: &Schema,
+    discriminant: &str,
+    schemas: &IndexMap<String, Schema>,
+    context: DiscriminantContext,
+) -> Option<DeclaredDiscriminant> {
+    let index = member_discriminant_index(schema, discriminant, schemas)?;
+    let documentation = match context {
+        DiscriminantContext::StandardUnion => DiscriminantDocumentation::Include,
+        DiscriminantContext::RecoveredMapping => {
+            if all_properties_of(schemas, schema, 0)
+                .required
+                .iter()
+                .any(|name| name == discriminant)
+            {
+                DiscriminantDocumentation::Include
+            } else {
+                DiscriminantDocumentation::OmitOptional
+            }
+        }
+    };
+    Some(DeclaredDiscriminant {
+        index,
+        documentation,
+    })
 }
 
 /// Where a union member's own declaration of the discriminant sat among the
@@ -12030,19 +12265,39 @@ fn member_discriminant_index(
     if scan(schema, discriminant, &mut index) {
         return Some(index);
     }
-    for member in schema.all_of.iter().flatten() {
-        let Some(base) = member
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
-        else {
-            continue;
-        };
-        if scan(base, discriminant, &mut index) {
-            return Some(index);
+    fn scan_bases<'a>(
+        schema: &'a Schema,
+        discriminant: &str,
+        schemas: &'a IndexMap<String, Schema>,
+        visited: &mut Vec<&'a str>,
+        index: &mut usize,
+    ) -> bool {
+        for member in schema.all_of.iter().flatten() {
+            let Some((reference, base)) = member.reference.as_deref().and_then(|reference| {
+                resolve_ref_from_schemas(schemas, reference).map(|base| (reference, base))
+            }) else {
+                continue;
+            };
+            if visited.contains(&reference) {
+                continue;
+            }
+            visited.push(reference);
+            let found = base
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|inline| inline.reference.is_none())
+                .any(|inline| scan(inline, discriminant, index))
+                || scan(base, discriminant, index)
+                || scan_bases(base, discriminant, schemas, visited, index);
+            visited.pop();
+            if found {
+                return true;
+            }
         }
+        false
     }
-    None
+    scan_bases(schema, discriminant, schemas, &mut Vec::new(), &mut index).then_some(index)
 }
 
 /// Append a schema's own properties (minus the discriminant) to `fields`.
@@ -13052,37 +13307,15 @@ impl Builder<'_> {
                 continue;
             }
             if member.reference.is_none() {
-                // An inline `allOf` member that is itself an undiscriminated union
-                // contributes the union of its branches' properties, every one of
-                // them optional: Fern flattens braintrust's
-                // `TopicMapFunctionAutomation.function` — `allOf: [$ref
-                // SavedFunctionId, anyOf: [function, global]]` — into one object
-                // carrying `type`, `id`, `version`, `name` and `function_type`,
-                // where a property two branches declare keeps the first branch's
-                // position and the last branch's schema.
-                if let Some(branches) = member.one_of.as_ref().or(member.any_of.as_ref()) {
-                    // A `oneOf` whose branches each tag themselves is a
-                    // discriminated union, which has no properties to lend: Zoonk's
-                    // lesson steps are `allOf: [{id, …}, oneOf: [{kind: alphabet,
-                    // content}, …]]`, and Fern's step model carries `id` and the
-                    // rest but neither `kind` nor `content`.
-                    if member.one_of.is_some()
-                        && inferred_discriminant_property(member, schemas).is_some()
-                    {
-                        continue;
-                    }
-                    let mut merged = Schema::default();
-                    for branch in branches {
-                        for (prop, prop_schema) in &branch.properties {
-                            if !prop_schema.negative_only() {
-                                merged.properties.insert(prop.clone(), prop_schema.clone());
-                            }
-                        }
-                    }
-                    if !merged.properties.is_empty() {
+                // An inline `allOf` member that is itself a union lends its
+                // branches' properties, or none when it is discriminated.
+                match branch_union_properties(member, schemas) {
+                    Some(BranchUnion::Tagged) => continue,
+                    Some(BranchUnion::Merged(merged)) => {
                         self.collect_fields(name, &merged, &[], &mut fields);
                         continue;
                     }
+                    None => {}
                 }
                 // A property a base declares with a description, redeclared here
                 // without one, keeps the base's: the Vonage Messages API's
@@ -13659,7 +13892,7 @@ impl Builder<'_> {
                         class_name: format!("{name}_{}", discriminant_class_name(&value)),
                         discriminant: value,
                         fields: vec![wrapped_value_field(TypeRef::Named(variant_name))],
-                        discriminant_index: None,
+                        declared_discriminant: None,
                         source: None,
                         docstring: docstring.clone(),
                         layout: UnionMemberLayout::Wrapped,
@@ -13721,10 +13954,11 @@ impl Builder<'_> {
                             target_name.as_deref().or(Some(variant_name.as_str())),
                         )
                     }),
-                    discriminant_index: member_discriminant_index(
+                    declared_discriminant: member_declared_discriminant(
                         target,
                         &property_name,
                         self.schemas,
+                        DiscriminantContext::StandardUnion,
                     ),
                     source: target_name.clone(),
                     docstring: docstring.clone(),
@@ -13783,7 +14017,7 @@ impl Builder<'_> {
                         class_name: format!("{name}_{}", discriminant_class_name(value)),
                         discriminant: value.clone(),
                         fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
-                        discriminant_index: None,
+                        declared_discriminant: None,
                         source: None,
                         docstring: docstring.clone(),
                         layout: crate::ir::UnionMemberLayout::Wrapped,
@@ -13795,8 +14029,71 @@ impl Builder<'_> {
                 docstring,
             });
         }
+        let context = if mapping.values().any(|reference| dangling(reference))
+            && reads_dangling_targets(variants, mapping, self.schemas)
+        {
+            DiscriminantContext::RecoveredMapping
+        } else {
+            DiscriminantContext::StandardUnion
+        };
         for (value, reference) in mapping {
             let target_key = reference.rsplit('/').next().unwrap_or(reference);
+            // A mapping target naming no component, beside targets that do, still
+            // names a variant: ingef/conquery's `Query` maps `SECONDARY_ID_QUERY`
+            // to `secondary-Id-query` where the component is `SecondaryIdQuery`,
+            // and Fern writes `Query_SecondaryIdQuery` among the other wrappers.
+            // Fern's wrapper holds `value: typing.Any`, which no payload of the
+            // variant parses into; crozier's carries the fields of the `oneOf`
+            // member the mapping leaves out whose own tag is that value (the
+            // `dangling-mapping-variant-fields` departure), and only a value no
+            // such member tags keeps Fern's `value`.
+            if matches!(context, DiscriminantContext::RecoveredMapping) && dangling(reference) {
+                members.push(
+                    match dangling_target_member(
+                        variants,
+                        mapping,
+                        &property_name,
+                        value,
+                        self.schemas,
+                    ) {
+                        Some((class, member)) => {
+                            variant_targets.push(class.clone());
+                            UnionMember {
+                                class_name: format!("{name}_{}", discriminant_class_name(value)),
+                                discriminant: value.clone(),
+                                fields: member_fields(
+                                    member,
+                                    &property_name,
+                                    self.schemas,
+                                    Some(&class),
+                                ),
+                                declared_discriminant: member_declared_discriminant(
+                                    member,
+                                    &property_name,
+                                    self.schemas,
+                                    DiscriminantContext::RecoveredMapping,
+                                ),
+                                source: Some(class),
+                                docstring: docstring.clone(),
+                                layout: UnionMemberLayout::Flattened,
+                            }
+                        }
+                        // Fern writes the union's description on no wrapper
+                        // holding `value`: the observatory measurement's
+                        // `Reading_Meteor` has none.
+                        None => UnionMember {
+                            class_name: format!("{name}_{}", discriminant_class_name(value)),
+                            discriminant: value.clone(),
+                            fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
+                            declared_discriminant: None,
+                            source: None,
+                            docstring: None,
+                            layout: UnionMemberLayout::Wrapped,
+                        },
+                    },
+                );
+                continue;
+            }
             let target = self.schemas.get(target_key)?;
             // A mapping target that is itself a union of objects is their merge:
             // Fern's importer (measured at CLI 5.163.1) declares one object,
@@ -13824,7 +14121,7 @@ impl Builder<'_> {
                         self.schemas,
                         Some(&merged_name),
                     ),
-                    discriminant_index: None,
+                    declared_discriminant: None,
                     source: Some(merged_name.clone()),
                     docstring: docstring.clone(),
                     layout: crate::ir::UnionMemberLayout::Flattened,
@@ -13851,7 +14148,7 @@ impl Builder<'_> {
                     class_name: format!("{name}_{}", discriminant_class_name(value)),
                     discriminant: value.clone(),
                     fields: vec![wrapped_value_field(TypeRef::Named(target_class.clone()))],
-                    discriminant_index: None,
+                    declared_discriminant: None,
                     source: None,
                     // Fern leaves the union's description off a wrapper holding
                     // its payload in `value` (the hand-written
@@ -13886,7 +14183,12 @@ impl Builder<'_> {
                     self.schemas,
                     Some(&naming::class_name(target_key)),
                 ),
-                discriminant_index: member_discriminant_index(target, &property_name, self.schemas),
+                declared_discriminant: member_declared_discriminant(
+                    target,
+                    &property_name,
+                    self.schemas,
+                    context,
+                ),
                 source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
                 layout: crate::ir::UnionMemberLayout::Flattened,
@@ -13971,7 +14273,7 @@ impl Builder<'_> {
                         min_length: None,
                         max_length: None,
                     }],
-                    discriminant_index: None,
+                    declared_discriminant: None,
                     source: None,
                     docstring: None,
                     layout: crate::ir::UnionMemberLayout::Wrapped,
@@ -13984,10 +14286,11 @@ impl Builder<'_> {
                 class_name,
                 discriminant: value.clone(),
                 fields: self.variant_own_fields(&target_class, &target),
-                discriminant_index: member_discriminant_index(
+                declared_discriminant: member_declared_discriminant(
                     &target,
                     &property_name,
                     self.schemas,
+                    DiscriminantContext::StandardUnion,
                 ),
                 source: Some(target_class.clone()),
                 docstring: docstring.clone(),
@@ -16370,6 +16673,45 @@ fn annotate_xml_fields(
     }
 }
 
+/// What an inline `allOf` member that is itself a `oneOf`/`anyOf` lends the
+/// object it composes.
+enum BranchUnion {
+    /// A `oneOf` whose branches each tag themselves is a discriminated union,
+    /// which has no properties to lend: Zoonk's lesson steps are `allOf: [{id,
+    /// …}, oneOf: [{kind: alphabet, content}, …]]`, and Fern's step model
+    /// carries `id` and the rest but neither `kind` nor `content`.
+    Tagged,
+    /// An undiscriminated union lends the union of its branches' properties,
+    /// every one of them optional (`required` is empty).
+    Merged(Box<Schema>),
+}
+
+/// The properties an inline `allOf` member that is an undiscriminated union
+/// contributes: Fern flattens braintrust's `TopicMapFunctionAutomation.function`
+/// — `allOf: [$ref SavedFunctionId, anyOf: [function, global]]` — into one
+/// object carrying `type`, `id`, `version`, `name` and `function_type`, where a
+/// property two branches declare keeps the first branch's position and the last
+/// branch's schema. `None` for a member that is no union, or whose branches
+/// declare no property.
+fn branch_union_properties(
+    member: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<BranchUnion> {
+    let branches = member.one_of.as_ref().or(member.any_of.as_ref())?;
+    if member.one_of.is_some() && inferred_discriminant_property(member, schemas).is_some() {
+        return Some(BranchUnion::Tagged);
+    }
+    let mut merged = Schema::default();
+    for branch in branches {
+        for (prop, prop_schema) in &branch.properties {
+            if !prop_schema.negative_only() {
+                merged.properties.insert(prop.clone(), prop_schema.clone());
+            }
+        }
+    }
+    (!merged.properties.is_empty()).then(|| BranchUnion::Merged(Box::new(merged)))
+}
+
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
 /// into its own, `$ref`s resolved, and the `allOf` itself dropped. A schema with
 /// no `allOf` comes back unchanged.
@@ -18500,7 +18842,13 @@ mod tests {
         synthesized_method_name, title_from_tag, variant_class_name, AliasType, Auth, Builder,
         Field, InlineHoister, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
     };
+    use super::{
+        branch_union_properties, dangling_mapping_wrappers, dangling_target_member,
+        member_declared_discriminant, member_discriminant_index, BranchUnion, DeclaredDiscriminant,
+        DiscriminantContext, DiscriminantDocumentation, DiscriminatedUnion, UnionMemberLayout,
+    };
     use crate::openapi::{OpenApi, Operation, Parameter, Schema, TypeField};
+    use indexmap::IndexMap;
 
     fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
         Field {
@@ -29060,6 +29408,421 @@ components:
         assert_eq!(field("parent").as_deref(), Some("The parent run."));
         // A described first alternative documents the property, as Fern's does.
         assert_eq!(field("graph").as_deref(), Some("A graph ID."));
+    }
+
+    fn wire_names(fields: &[Field]) -> Vec<&str> {
+        fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect()
+    }
+
+    #[test]
+    fn variant_wrappers_inherit_fields_through_an_all_of_only_base() {
+        let schemas: IndexMap<String, Schema> = serde_json::from_value(serde_json::json!({
+            "Named": {"type": "object", "required": ["name"], "properties": {
+                "name": {"type": "string"}, "label": {"type": "string"}
+            }},
+            "Calibrated": {"type": "object", "properties": {"calibratedOn": {"type": "string"}}},
+            "Gauge": {"allOf": [
+                {"$ref": "#/components/schemas/Named"},
+                {"properties": {"unit": {"type": "string"}}}
+            ]},
+            "Vane": {"allOf": [
+                {"$ref": "#/components/schemas/Gauge"},
+                {"$ref": "#/components/schemas/Calibrated"},
+                {"properties": {"heading": {"type": "number"}}},
+                {"oneOf": [
+                    {"properties": {"degrees": {"type": "number"}}},
+                    {"properties": {"compassPoint": {"type": "string"}}}
+                ]}
+            ]},
+            "Plain": {"type": "object", "properties": {
+                "unit": {"type": "string"}, "accuracy": {"type": "number"}
+            }},
+            "Thermo": {"allOf": [
+                {"$ref": "#/components/schemas/Gauge"},
+                {"properties": {"kind": {"type": "string", "enum": ["THERMO"]}, "celsius": {"type": "number"}}}
+            ]},
+            "Wind": {"allOf": [
+                {"$ref": "#/components/schemas/Vane"},
+                {"required": ["kind"], "properties": {"kind": {"type": "string", "enum": ["WIND"]}}}
+            ]},
+            "Rain": {"allOf": [
+                {"$ref": "#/components/schemas/Gauge"},
+                {"properties": {"kind": {"type": "string", "enum": ["RAIN"]}}},
+                {"oneOf": [
+                    {"properties": {"bucket": {"type": "string"}}},
+                    {"properties": {"funnelWidth": {"type": "number"}}}
+                ]}
+            ]},
+            "Humidity": {"allOf": [
+                {"$ref": "#/components/schemas/Plain"},
+                {"properties": {"kind": {"type": "string", "enum": ["HUMIDITY"]}, "percent": {"type": "number"}}}
+            ]},
+            "TagBase": {"allOf": [
+                {"$ref": "#/components/schemas/Named"},
+                {"required": ["kind"], "properties": {"unit": {"type": "string"}, "kind": {"type": "string"}}}
+            ]},
+            "Deep": {"allOf": [{"$ref": "#/components/schemas/TagBase"}]},
+            "Loop": {"allOf": [
+                {"$ref": "#/components/schemas/Knot"},
+                {"properties": {"kind": {"type": "string"}, "loop": {"type": "string"}}}
+            ]},
+            "Knot": {"allOf": [
+                {"$ref": "#/components/schemas/Loop"},
+                {"properties": {"knot": {"type": "string"}}}
+            ]}
+        }))
+        .expect("schemas deserialize");
+        let fields = |name: &str| member_fields(&schemas[name], "kind", &schemas, Some(name));
+        // The variant's own fields, then its base's inline member, then the
+        // base's own base: Fern's order for ingef/conquery's `Filter_*`.
+        let thermo = fields("Thermo");
+        assert_eq!(wire_names(&thermo), ["celsius", "unit", "name", "label"]);
+        let name = thermo
+            .iter()
+            .find(|field| field.wire_name == "name")
+            .unwrap();
+        assert!(name.spec_required && !name.optional, "{name:?}");
+        assert!(matches!(&thermo[1].type_ref, TypeRef::Primitive(Prim::Str)));
+        // A base of two `$ref`s and an inline union lends every one of them, the
+        // union's branches optional, ahead of its own bases'.
+        assert_eq!(
+            wire_names(&fields("Wind")),
+            [
+                "heading",
+                "degrees",
+                "compassPoint",
+                "unit",
+                "name",
+                "label",
+                "calibratedOn"
+            ]
+        );
+        // The variant's own inline union lends its branches in place.
+        assert_eq!(
+            wire_names(&fields("Rain")),
+            ["bucket", "funnelWidth", "unit", "name", "label"]
+        );
+        // A base with direct `properties` gives exactly what it always gave.
+        assert_eq!(
+            wire_names(&fields("Humidity")),
+            ["percent", "unit", "accuracy"]
+        );
+        // A chain that reaches back to the variant ends: each base is walked
+        // once on a path, and the variant, named by no `$ref` of its own, once
+        // more as `Knot`'s base.
+        assert_eq!(wire_names(&fields("Loop")), ["loop", "knot", "loop"]);
+
+        // Where the tag sat, and whether the chain requires it, are read the
+        // same way through the nested base.
+        let declared = |name: &str, context: DiscriminantContext| {
+            member_declared_discriminant(&schemas[name], "kind", &schemas, context)
+        };
+        let at = |index: usize, documentation: DiscriminantDocumentation| {
+            Some(DeclaredDiscriminant {
+                index,
+                documentation,
+            })
+        };
+        use DiscriminantContext::{RecoveredMapping, StandardUnion};
+        use DiscriminantDocumentation::{Include, OmitOptional};
+        assert_eq!(declared("Deep", RecoveredMapping), at(1, Include));
+        assert_eq!(declared("Wind", RecoveredMapping), at(0, Include));
+        assert_eq!(declared("Thermo", RecoveredMapping), at(0, OmitOptional));
+        // Outside a union with a dangling mapping target, the Markdown writers
+        // pass the tag back whether or not it is required.
+        assert_eq!(declared("Thermo", StandardUnion), at(0, Include));
+        assert_eq!(declared("Deep", StandardUnion), at(1, Include));
+        assert_eq!(declared("Plain", RecoveredMapping), None);
+        assert_eq!(
+            member_discriminant_index(&schemas["Loop"], "kind", &schemas),
+            Some(0)
+        );
+    }
+
+    #[test]
+    fn branch_union_properties_lends_only_an_undiscriminated_members_branches() {
+        let schemas = IndexMap::new();
+        let member = |value: serde_json::Value| -> Schema {
+            serde_json::from_value(value).expect("member deserializes")
+        };
+        let merged = branch_union_properties(
+            &member(serde_json::json!({"anyOf": [
+                {"properties": {"a": {"type": "string"}, "b": {"type": "string"}}},
+                {"properties": {"b": {"type": "integer"}, "c": {"type": "string"}}}
+            ]})),
+            &schemas,
+        );
+        let Some(BranchUnion::Merged(merged)) = merged else {
+            panic!("an undiscriminated union lends its branches");
+        };
+        assert_eq!(
+            merged.properties.keys().collect::<Vec<_>>(),
+            ["a", "b", "c"]
+        );
+        assert_eq!(
+            merged.properties["b"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("integer")
+        );
+        assert!(merged.required.is_empty());
+        assert!(matches!(
+            branch_union_properties(
+                &member(serde_json::json!({"oneOf": [
+                    {"properties": {"kind": {"type": "string", "enum": ["x"]}, "x": {"type": "string"}}},
+                    {"properties": {"kind": {"type": "string", "enum": ["y"]}, "y": {"type": "string"}}}
+                ]})),
+                &schemas,
+            ),
+            Some(BranchUnion::Tagged)
+        ));
+        assert!(branch_union_properties(
+            &member(serde_json::json!({"properties": {"a": {"type": "string"}}})),
+            &schemas
+        )
+        .is_none());
+        assert!(branch_union_properties(
+            &member(serde_json::json!({"oneOf": [{"type": "string"}, {"type": "integer"}]})),
+            &schemas
+        )
+        .is_none());
+    }
+
+    /// `Reading` maps `METEOR` to a target naming no component; `Instrument`
+    /// maps every value to a component, the shape crozier always handled.
+    fn dangling_mapping_schemas(meteor_target: &str, meteor_tag: &str) -> serde_json::Value {
+        let tagged = |tag: &str, extra: serde_json::Value| {
+            let mut properties = serde_json::json!({"kind": {"type": "string", "enum": [tag]}});
+            properties
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            serde_json::json!({"type": "object", "properties": properties})
+        };
+        serde_json::json!({
+            "Reading": {
+                "description": "One sighting.",
+                "discriminator": {"propertyName": "kind", "mapping": {
+                    "STAR": "#/components/schemas/StarReading",
+                    "METEOR": meteor_target
+                }},
+                "oneOf": [
+                    {"$ref": "#/components/schemas/StarReading"},
+                    {"$ref": "#/components/schemas/MeteorReading"}
+                ]
+            },
+            "StarReading": tagged("STAR", serde_json::json!({"magnitude": {"type": "number"}})),
+            "MeteorReading": {"type": "object", "properties": {
+                "trail": {"type": "string"},
+                "brightness": {"type": "number"},
+                "kind": {"type": "string", "enum": [meteor_tag]}
+            }},
+            "Instrument": {
+                "discriminator": {"propertyName": "kind", "mapping": {
+                    "TELESCOPE": "#/components/schemas/Telescope",
+                    "CAMERA": "#/components/schemas/Camera"
+                }},
+                "oneOf": [
+                    {"$ref": "#/components/schemas/Telescope"},
+                    {"$ref": "#/components/schemas/Camera"}
+                ]
+            },
+            "Telescope": tagged("TELESCOPE", serde_json::json!({"aperture": {"type": "number"}})),
+            "Camera": tagged("CAMERA", serde_json::json!({"exposure": {"type": "number"}}))
+        })
+    }
+
+    fn union_named<'a>(ir: &'a super::Ir, name: &str) -> &'a DiscriminatedUnion {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .find_map(|declaration| match declaration {
+                TypeDecl::DiscriminatedUnion(union) if union.name == name => Some(union),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no discriminated union {name}"))
+    }
+
+    fn object_field_names(ir: &super::Ir, name: &str) -> Vec<String> {
+        ir.types
+            .iter()
+            .find_map(|declaration| match declaration {
+                TypeDecl::Object(object) if object.name == name => Some(
+                    object
+                        .fields
+                        .iter()
+                        .map(|field| field.wire_name.clone())
+                        .collect(),
+                ),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no model {name}"))
+    }
+
+    #[test]
+    fn a_mapping_target_naming_no_schema_carries_its_tagged_members_fields() {
+        let body = serde_json::json!({
+            "reading": {"$ref": "#/components/schemas/Reading"},
+            "instrument": {"$ref": "#/components/schemas/Instrument"}
+        });
+        let (ir, _) = generate(observed_document(
+            dangling_mapping_schemas("#/components/schemas/meteor-reading", "METEOR"),
+            body.clone(),
+        ));
+        let reading = union_named(&ir, "Reading");
+        let classes: Vec<&str> = reading
+            .members
+            .iter()
+            .map(|m| m.class_name.as_str())
+            .collect();
+        assert_eq!(classes, ["Reading_Star", "Reading_Meteor"]);
+        let meteor = &reading.members[1];
+        assert_eq!(meteor.discriminant, "METEOR");
+        assert_eq!(wire_names(&meteor.fields), ["trail", "brightness"]);
+        assert!(matches!(meteor.layout, UnionMemberLayout::Flattened));
+        assert_eq!(meteor.source.as_deref(), Some("MeteorReading"));
+        assert_eq!(
+            meteor.declared_discriminant,
+            Some(DeclaredDiscriminant {
+                index: 2,
+                documentation: DiscriminantDocumentation::OmitOptional
+            })
+        );
+        assert_eq!(meteor.docstring.as_deref(), Some("One sighting."));
+        assert!(reading
+            .variant_targets
+            .iter()
+            .any(|target| target == "MeteorReading"));
+        // The member the dangling target stands for keeps its tag, as Fern's
+        // model does; the member mapped by reference loses it.
+        assert_eq!(
+            object_field_names(&ir, "MeteorReading"),
+            ["trail", "brightness", "kind"]
+        );
+        assert_eq!(object_field_names(&ir, "StarReading"), ["magnitude"]);
+        // Every target resolving: the wrappers are what they always were.
+        let instrument = union_named(&ir, "Instrument");
+        let wrappers: Vec<(&str, Vec<&str>)> = instrument
+            .members
+            .iter()
+            .map(|member| (member.class_name.as_str(), wire_names(&member.fields)))
+            .collect();
+        assert_eq!(
+            wrappers,
+            [
+                ("Instrument_Telescope", vec!["aperture"]),
+                ("Instrument_Camera", vec!["exposure"])
+            ]
+        );
+
+        // No unmapped member tags itself with the value: Fern's `value` wrapper.
+        let (ir, _) = generate(observed_document(
+            dangling_mapping_schemas("#/components/schemas/meteor-reading", "SHOOTING_STAR"),
+            body.clone(),
+        ));
+        let meteor = &union_named(&ir, "Reading").members[1];
+        assert_eq!(meteor.class_name, "Reading_Meteor");
+        assert!(meteor.layout.is_wrapped());
+        assert_eq!(meteor.docstring, None);
+        assert!(matches!(
+            meteor.fields[0].type_ref,
+            TypeRef::Primitive(Prim::Any)
+        ));
+
+        // The target corrected to name the component: the same wrapper fields.
+        let (ir, _) = generate(observed_document(
+            dangling_mapping_schemas("#/components/schemas/MeteorReading", "METEOR"),
+            body,
+        ));
+        let meteor = &union_named(&ir, "Reading").members[1];
+        assert_eq!(wire_names(&meteor.fields), ["trail", "brightness"]);
+        assert_eq!(
+            object_field_names(&ir, "MeteorReading"),
+            ["trail", "brightness"]
+        );
+    }
+
+    #[test]
+    fn a_dangling_mapping_reads_as_before_unless_its_members_resolve_beside_a_named_target() {
+        let undiscriminated = |schemas: serde_json::Value| {
+            let (ir, _) = generate(observed_document(
+                schemas,
+                serde_json::json!({"reading": {"$ref": "#/components/schemas/Reading"}}),
+            ));
+            !ir.types.iter().any(|declaration| {
+                matches!(declaration, TypeDecl::DiscriminatedUnion(union) if union.name == "Reading")
+            })
+        };
+        // A member that is itself a `$ref` to nothing.
+        let mut schemas = dangling_mapping_schemas("#/components/schemas/meteor-reading", "METEOR");
+        schemas["Reading"]["oneOf"][1] = serde_json::json!({"$ref": "#/components/schemas/Gone"});
+        assert!(undiscriminated(schemas));
+        // Every mapping target naming no component.
+        let mut schemas = dangling_mapping_schemas("#/components/schemas/meteor-reading", "METEOR");
+        schemas["Reading"]["discriminator"]["mapping"]["STAR"] =
+            serde_json::json!("#/components/schemas/star-reading");
+        assert!(undiscriminated(schemas.clone()));
+        let document: OpenApi =
+            serde_json::from_value(observed_document(schemas, serde_json::json!({})))
+                .expect("document deserializes");
+        assert!(dangling_mapping_wrappers(&document).is_empty());
+        // The member a dangling target stands for keeps its tag only in the
+        // measured shape; beside a member that resolves to nothing, the strip
+        // reads the target as it always did.
+        let strips = |schemas: serde_json::Value| {
+            let schemas: IndexMap<String, Schema> =
+                serde_json::from_value(schemas).expect("schemas deserialize");
+            discriminant_strips(&schemas, &std::collections::HashSet::new())
+        };
+        let measured = dangling_mapping_schemas("#/components/schemas/meteor-reading", "METEOR");
+        assert_eq!(strips(measured.clone()).get("MeteorReading"), None);
+        let mut beside_gone = measured;
+        beside_gone["Reading"]["oneOf"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({"$ref": "#/components/schemas/Gone"}));
+        assert_eq!(
+            strips(beside_gone).get("MeteorReading").map(String::as_str),
+            Some("kind")
+        );
+    }
+
+    #[test]
+    fn dangling_mapping_wrappers_names_only_wrappers_a_member_fills() {
+        let document = |meteor_tag: &str| -> OpenApi {
+            serde_json::from_value(observed_document(
+                dangling_mapping_schemas("#/components/schemas/meteor-reading", meteor_tag),
+                serde_json::json!({}),
+            ))
+            .expect("document deserializes")
+        };
+        assert_eq!(
+            dangling_mapping_wrappers(&document("METEOR")),
+            [(
+                "Reading_Meteor".to_string(),
+                "METEOR".to_string(),
+                vec!["trail".to_string(), "brightness".to_string()]
+            )]
+        );
+        assert!(dangling_mapping_wrappers(&document("SHOOTING_STAR")).is_empty());
+        let schemas = document("METEOR").components.schemas;
+        let Some(variants) = schemas["Reading"].one_of.as_ref() else {
+            panic!("Reading is a oneOf");
+        };
+        let mapping = &schemas["Reading"].discriminator.as_ref().unwrap().mapping;
+        // Two unmapped members tagging the value leave it unresolved.
+        let mut twice = variants.clone();
+        twice.push(variants[1].clone());
+        assert!(dangling_target_member(&twice, mapping, "kind", "METEOR", &schemas).is_none());
+        assert_eq!(
+            dangling_target_member(variants, mapping, "kind", "METEOR", &schemas)
+                .map(|(class, _)| class),
+            Some("MeteorReading".to_string())
+        );
     }
 }
 
