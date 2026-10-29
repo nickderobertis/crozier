@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: Orchard Dispatch
+  version: 1.0.0
+paths:
+  /dispatches:
+    post:
+      operationId: createDispatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dispatch'
+      responses:
+        '200':
+          description: Dispatch recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+components:
+  schemas:
+    Basket:
+      type: object
+      required: [label]
+      properties:
+        label: {type: string}
+    SpareBasket:
+      nullable: true
+      allOf:
+        - $ref: '#/components/schemas/Basket'
+    Delivery:
+      required: [receipt]
+      properties:
+        receipt: {type: string}
+      oneOf:
+        - type: object
+          required: [route]
+          properties:
+            route: {type: string, enum: [road]}
+            wheels: {type: integer}
+        - type: object
+          required: [route]
+          properties:
+            route: {type: string, enum: [rail]}
+            carriage: {type: integer}
+    DeliveryCondition:
+      properties:
+        receipt: {type: string}
+        distance: {type: integer}
+      oneOf:
+        - required: [receipt]
+        - required: [distance]
+    Notice:
+      properties:
+        orchard: {type: string}
+      anyOf:
+        - type: object
+          required: [channel]
+          properties:
+            channel: {type: string, enum: [paper]}
+            pages: {type: integer}
+        - type: object
+          required: [channel]
+          properties:
+            channel: {type: string, enum: [radio]}
+            frequency: {type: number}
+    NoticeCondition:
+      properties:
+        recipient: {type: string}
+        station: {type: integer}
+      anyOf:
+        - required: [recipient]
+        - required: [station]
+    RoutingHint:
+      example: {code: ridge, detail: north}
+      oneOf:
+        - type: object
+          required: [code]
+          properties:
+            code: {type: string}
+        - type: object
+          required: [detail]
+          properties:
+            detail: {type: string}
+    Dispatch:
+      type: object
+      properties:
+        hint: {$ref: '#/components/schemas/RoutingHint'}
+        basket: {$ref: '#/components/schemas/SpareBasket'}
+        delivery: {$ref: '#/components/schemas/Delivery'}
+        delivery_condition: {$ref: '#/components/schemas/DeliveryCondition'}
+        notice: {$ref: '#/components/schemas/Notice'}
+        notice_condition: {$ref: '#/components/schemas/NoticeCondition'}

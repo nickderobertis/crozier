@@ -13,7 +13,7 @@ use super::{
 
 /// Every hand-written union fixture, each with a literals overlay under
 /// [`LITERALS_DIR`].
-const FIXTURES: [&str; 13] = [
+const FIXTURES: [&str; 14] = [
     "atlas-untagged-inline-discriminator",
     "bakery-get-body-member",
     "ferry-mapping-outside-schemas",
@@ -22,6 +22,7 @@ const FIXTURES: [&str; 13] = [
     "kitchen-nested-mapping-target",
     "library-union-shared-fields",
     "museum-titled-array-items",
+    "orchard-dispatch-schemas",
     "pharmacy-nullable-scalar-unions",
     "quiz-nullable-response-union",
     "survey-map-value-union",

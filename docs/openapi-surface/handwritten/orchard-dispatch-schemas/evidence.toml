@@ -1,0 +1,27 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "ff10db77be36534ce16ba5486661bef4dfee3665a35d3fe21e888641ca56f5ee"
+
+[[covers]]
+key = "combo-allof-nullable"
+search = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md"
+
+[[covers]]
+key = "combo-anyof-beside-properties"
+search = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md"
+
+[[covers]]
+key = "combo-oneof-beside-properties"
+search = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md"
+
+[[covers]]
+key = "combo-oneof-schema-example"
+search = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-interaction-schema-combinations/README.md"
