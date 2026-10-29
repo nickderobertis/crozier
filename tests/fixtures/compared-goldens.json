@@ -428,6 +428,11 @@
         ".crozier-overlay.json"
       ]
     },
+    "docs/fern-measurements/union-literals/orchard-dispatch-schemas/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "docs/fern-measurements/union-literals/pharmacy-nullable-scalar-unions/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -601,6 +606,7 @@
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected": {},
     "docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected": {},
+    "docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected": {},
     "docs/openapi-surface/handwritten/ore-bin-screen/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},

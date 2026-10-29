@@ -1006,6 +1006,7 @@ docs/fern-measurements/union-literals/harbor-nullable-inline-object/fern-expecte
 docs/fern-measurements/union-literals/kitchen-nested-mapping-target/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-literals/library-union-shared-fields/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-literals/museum-titled-array-items/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/union-literals/orchard-dispatch-schemas/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-literals/pharmacy-nullable-scalar-unions/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-literals/quiz-nullable-response-union/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-literals/survey-map-value-union/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
@@ -1855,6 +1856,12 @@ docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected	src/fern/types/__init__.py	9	init-type-checking-import-order
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

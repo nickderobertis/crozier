@@ -93,6 +93,12 @@ observatory-client-headers	parameter-in-header	src/ir.rs::global_headers[for hea
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
 odometer-reading	format-int64	src/ir.rs::bounded_example_literal[=^ {16}exact$]	1	1
+orchard-dispatch-schemas	combo-allof-nullable	src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]	2	2
+orchard-dispatch-schemas	combo-anyof-beside-properties	src/ir.rs::Builder::add_named_shape[for \(prop, prop_schema\) in &schema\.properties \{]	6	6
+orchard-dispatch-schemas	combo-anyof-beside-properties	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]	10	10
+orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::add_named_shape[for \(prop, prop_schema\) in &schema\.properties \{]	6	6
+orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]	10	10
+orchard-dispatch-schemas	combo-oneof-schema-example	src/ir.rs::referenced_example_literal[^    \{$]	1	1
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	22	26
