@@ -88,7 +88,7 @@ const KINDS: &[Kind] = &[
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
-            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two repaired witnesses require literal-mode byte comparisons through the existing overlay gate and corpus-match inventory. They add no new subprocess boundary or dependency; splitting the established golden family out of crozier-e2e's broad edge is separately drafted graph work, outside this proof task.
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These two corpora extend the established literal-mode golden inventory, using the same binary, subprocess contract and dependencies as the other overlays. An inventory entry cannot define a separate project edge.
             "webflow-v2",
             "steaminputdb",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

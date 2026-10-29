@@ -359,9 +359,9 @@ The genuine interaction is the condition chain in `src/ir.rs::build`:
 `fields.retain` calls `schema_property_is_read_only` on each source property.
 The new line-only site is that retain predicate. The existing single-feature
 read-only evidence already identifies SteamInputDB's omitted `$schema`
-arguments. Its complete golden byte-matches. This retry measured the corrected interaction
-with `golden-reach.py measure --tests '^steaminputdb_matches_fern_output$'
-`--jobs 1` at commit `ba0dbb016f84`: SteamInputDB executes every counter region
+arguments. Its complete golden byte-matches. This retry’s scoped instrumented
+golden run at commit `ba0dbb016f84` measures the corrected interaction:
+SteamInputDB executes every counter region
 on the declared retain-predicate line. The scoped report records **6/6**
 regions reached. The same preceding retry freshly reproduced all 133
 SteamInputDB golden files and generated its literals overlay
