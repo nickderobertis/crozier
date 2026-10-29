@@ -61,6 +61,8 @@
       "!{workspaceRoot}/docs/openapi-surface/golden-reach-witnesses/**/*",
       "{workspaceRoot}/tests/fixtures/**/*",
       "{workspaceRoot}/justfile",
+      "{workspaceRoot}/tests/*/project.json",
+      "{workspaceRoot}/tests/*/*/project.json",
       "{workspaceRoot}/action.yml",
       "{workspaceRoot}/pyproject.toml",
       "{workspaceRoot}/.github/workflows/release.yml",
