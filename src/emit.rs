@@ -6296,10 +6296,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // and declares exactly one required member — the k8s Container Service
     // Provider's `Container`, six of whose seven properties are `readOnly` around
     // the single required `spec`. Fern keeps the explicit `content-type` for that
-    // shape, so it escapes both drops an ordinary echo body takes: the
-    // response-heavy one below, which applies only to an *undocumented* schema
-    // (apideck's `add`, netbox's `groups_create`), and the request/response
-    // same-`$ref` one, which drops the header for Airflow's `post_pool` (no
+    // shape, so it escapes the surviving-schema and request/response same-`$ref`
+    // drops below. The latter drops the header for Airflow's `post_pool` (no
     // required member) and the Petstore's `place_order` (not response-heavy).
     let resource_envelope = ep.body_schema_is_response_heavy
         && ep.body_schema_documented
@@ -6470,17 +6468,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // same reason: Fern sends the condition beside it.
                         && !(ep.query_params.is_empty()
                             && ep.stream_condition.is_none()
-                            && matches!(body, RequestBody::Inline(fields)
+                            && matches!(body, RequestBody::Inline(_)
                             if ep.body_schema_shape == BodySchemaShape::Ref
-                                && (!ep.body_schema_dropped
-                                    && ep.body_schema_metadata_missing
-                                    && ep.body_schema_is_open
-                                    && !ep.body_schema_is_success_response
-                                    || ep.body_schema_is_response_heavy
-                                        && ep.body_schema_is_open
-                                        && ep.body_description_missing
-                                        && !ep.body_schema_documented
-                                        && fields.iter().filter(|field| field.spec_required).count() == 1)))
+                                && !ep.body_schema_dropped
+                                && ep.body_schema_metadata_missing
+                                && ep.body_schema_is_open
+                                && !ep.body_schema_is_success_response))
                         && (!(ep.body_schema_has_example
                                 && ep.body_schema_documented
                                 && !ep.body_schema_example_wrapped
@@ -17796,6 +17789,29 @@ mod parameter_lowering_tests {
     }
 
     #[test]
+    fn query_enum_in_single_allof_keeps_its_named_type() {
+        let generated = files(json!({
+            "openapi": "3.1.0", "info": {"title": "Relay ranks", "version": "1"},
+            "paths": {"/ranks": {"get": {
+                "operationId": "listRanks",
+                "parameters": [{"name": "sortBy", "in": "query", "schema": {
+                    "allOf": [{"type": "string", "enum": ["signal", "delay"]}],
+                    "default": "signal"
+                }}],
+                "responses": {"204": {"description": "Listed"}}
+            }}}
+        }));
+        for path in ["src/api/client.py", "reference.md"] {
+            let output = &generated[path];
+            assert!(
+                output.contains("typing.Optional[ListRanksRequestSortBy]"),
+                "{path}: {output}"
+            );
+        }
+        assert!(generated.contains_key("src/api/types/list_ranks_request_sort_by.py"));
+    }
+
+    #[test]
     fn request_examples_omit_read_only_model_fields() {
         for referenced in [false, true] {
             let server_id = if referenced {
@@ -17833,6 +17849,88 @@ mod parameter_lowering_tests {
                 );
                 assert!(!example.contains("server_id="), "{path}: {example}");
             }
+        }
+    }
+
+    #[test]
+    fn request_examples_omit_read_only_hoisted_and_union_fields() {
+        for discriminated in [false, true] {
+            let record = json!({"type": "object", "required": ["name", "kind"], "properties": {
+                "kind": {"type": "string", "enum": ["relay"]},
+                "server_id": {"type": "string", "readOnly": true},
+                "name": {"type": "string"}, "note": {"type": "string"}
+            }});
+            let item = if discriminated {
+                json!({"oneOf": [record, {
+                    "type": "object", "required": ["kind", "channel"], "properties": {
+                        "kind": {"type": "string", "enum": ["beacon"]},
+                        "channel": {"type": "integer"}
+                    }
+                }], "discriminator": {"propertyName": "kind"}})
+            } else {
+                record
+            };
+            let generated = files(json!({
+                "openapi": "3.1.0", "info": {"title": "Signal batches", "version": "1"},
+                "paths": {"/signals": {"post": {
+                    "operationId": "submitSignals",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"type": "object", "required": ["entries"], "properties": {
+                            "entries": {"type": "array", "items": item}
+                        }},
+                        "example": {"entries": [{"kind": "relay", "server_id": "server-7", "name": "Relay", "note": "keep this note"}]}
+                    }}},
+                    "responses": {"204": {"description": "Recorded"}}
+                }}}
+            }));
+            assert!(generated.iter().any(|(path, model)| {
+                path.starts_with("src/api/types/") && model.contains("server_id: typing.Optional")
+            }));
+            for path in ["src/api/client.py", "reference.md"] {
+                let example = &generated[path];
+                assert!(example.contains("name=\"Relay\""), "{path}: {example}");
+                assert!(
+                    example.contains("note=\"keep this note\""),
+                    "{path}: {example}"
+                );
+                assert!(!example.contains("server_id="), "{path}: {example}");
+            }
+        }
+    }
+
+    #[test]
+    fn referenced_read_only_resources_keep_the_json_content_type() {
+        for documented_field in [false, true] {
+            let mut name = json!({"type": "string"});
+            if documented_field {
+                name["description"] = json!("Human assigned relay label.");
+            }
+            let generated = files(json!({
+                "openapi": "3.1.0", "info": {"title": "Relay registration", "version": "1"},
+                "paths": {"/registrations": {"post": {
+                    "operationId": "registerRelay",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/RegistrationInput"}
+                    }}},
+                    "responses": {"204": {"description": "Recorded"}}
+                }}},
+                "components": {"schemas": {"RegistrationInput": {
+                    "type": "object", "required": ["name"], "properties": {
+                        "name": name,
+                        "registration_id": {"type": "string", "readOnly": true},
+                        "created_at": {"type": "string", "format": "date-time", "readOnly": true},
+                        "revision": {"type": "integer", "readOnly": true}
+                    }
+                }}}
+            }));
+            let raw = &generated["src/api/raw_client.py"];
+            assert_eq!(
+                raw.matches("\"content-type\": \"application/json\"")
+                    .count(),
+                2,
+                "{raw}"
+            );
+            assert!(raw.contains("\"name\": name"), "{raw}");
         }
     }
 
@@ -18034,12 +18132,12 @@ mod parameter_lowering_tests {
             );
         }
         assert!(
-            generated["README.md"].contains("team_key="),
+            generated["README.md"].contains("project_key="),
             "{}",
             generated["README.md"]
         );
         assert!(
-            !generated["README.md"].contains("project_key="),
+            !generated["README.md"].contains("team_key="),
             "{}",
             generated["README.md"]
         );

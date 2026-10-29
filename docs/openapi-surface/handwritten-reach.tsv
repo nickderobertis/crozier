@@ -31,13 +31,14 @@ format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => Typ
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 harbor-nullable-inline-object	oneof-sole-non-null-member	src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]	11	11
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::annotated_ref_type	32	36
-harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::collect_fields	126	200
+harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::collect_fields	127	201
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::described_all_of_ref	30	33
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::resolved_schema_example_literal	10	37
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::schema_example	7	7
 harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example	32	52
 harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example_value	16	39
 harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::resolve_ref	8	9
+harbor-relay-registration	combo-inline-body-read-only-property	src/ir.rs::resolve_request_body[=\.is_none_or\(\x7cproperty\x7c property\.read_only != Some\(true\)\)]	3	3
 harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
 harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
 header-subset-string-default	parameter-in-header	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	1	1

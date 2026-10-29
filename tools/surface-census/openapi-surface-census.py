@@ -3152,6 +3152,8 @@ COMBINATIONS: tuple[Combination, ...] = (
         "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.anyOf",
         "one per Operation Object writing `parameters` one of whose request body's media types' schema declares `anyOf`",
     ),
+    # Interaction: build resolves a dropped body's schema reference, then
+    # filters read-only properties before writing its request arguments.
     Combination(
         "combo-ref-body-read-only-property",
         "bodies-media.md",

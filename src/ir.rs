@@ -8931,6 +8931,16 @@ impl InlineHoister<'_> {
     /// `webflow_v2_matches_fern_output` byte-checks both the resulting filter
     /// and sort declarations and their collection-client serialization calls.
     fn hoist_parameter_type(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
+        // A single inline allOf enum retains its parameter-scoped name, as
+        // Webflow's reporting sortBy does. Outer defaults still belong to the
+        // parameter; only the enum declaration comes from the member.
+        if schema.reference.is_none() {
+            if let Some([member]) = schema.all_of.as_deref() {
+                if member.reference.is_none() && string_enum_values(member).is_some() {
+                    return self.hoist_param_enum(request_ctx, param, member);
+                }
+            }
+        }
         if schema.reference.is_none() && is_map(schema) {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
                 if value.reference.is_none()

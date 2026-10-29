@@ -77,6 +77,8 @@ const KINDS: &[Kind] = &[
     // - `supabase-api-v1`: inline property and query enums across a large
     //   management API's request and response models.
     // - `rta-in-japan-twitter`: a posting API's one media-type enum.
+    // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
+    // read-only properties of referenced request bodies.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -86,6 +88,8 @@ const KINDS: &[Kind] = &[
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
+            "webflow-v2",
+            "steaminputdb",
             "enum-receiver-collision",
             "openfigi.com",
             "offchain-metadata-tools",

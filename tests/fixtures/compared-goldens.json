@@ -542,6 +542,7 @@
     "docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected": {},
+    "docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-window/fern-expected": {},
@@ -1227,6 +1228,11 @@
     "tests/fixtures/sse-streaming/expected": {},
     "tests/fixtures/standrig/expected": {},
     "tests/fixtures/steaminputdb/expected": {},
+    "tests/fixtures/steaminputdb/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/strapi-rest-api/expected": {},
     "tests/fixtures/subsloth/expected": {},
     "tests/fixtures/subsloth/expected-literals": {
@@ -1287,15 +1293,65 @@
       "carve_outs": {
         "unmatched": [
           "reference.md",
-          "src/fern/analyze/__init__.py",
-          "src/fern/analyze/reports/__init__.py",
           "src/fern/analyze/reports/client.py",
-          "src/fern/analyze/reports/raw_client.py",
-          "src/fern/analyze/reports/types/__init__.py",
-          "src/fern/analyze/reports/types/top_pages_reports_request_sort_by.py",
           "src/fern/collections/__init__.py",
           "src/fern/collections/client.py",
-          "src/fern/collections/fields/client.py",
+          "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
+          "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
+          "src/fern/products/client.py",
+          "src/fern/products/types/create_products_request_product.py",
+          "src/fern/sites/robots_txt/client.py",
+          "src/fern/workspaces/__init__.py",
+          "src/fern/workspaces/audit_logs/__init__.py",
+          "src/fern/workspaces/audit_logs/types/__init__.py",
+          "src/fern/workspaces/audit_logs/types/custom_role.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_site_membership.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_site_membership_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_user_access.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_user_access_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting.py",
+          "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting_event_sub_type.py",
+          "src/fern/workspaces/audit_logs/types/setting_change.py",
+          "src/fern/workspaces/audit_logs/types/setting_change_method.py",
+          "src/fern/workspaces/audit_logs/types/setting_change_setting.py",
+          "src/fern/workspaces/audit_logs/types/site_membership.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_granular_access.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_granular_access_type.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_method.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_site.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_target_user.py",
+          "src/fern/workspaces/audit_logs/types/site_membership_user_type.py",
+          "src/fern/workspaces/audit_logs/types/user_access.py",
+          "src/fern/workspaces/audit_logs/types/user_access_method.py",
+          "src/fern/workspaces/audit_logs/types/workspace_invitation.py",
+          "src/fern/workspaces/audit_logs/types/workspace_invitation_method.py",
+          "src/fern/workspaces/audit_logs/types/workspace_invitation_target_user.py",
+          "src/fern/workspaces/audit_logs/types/workspace_invitation_target_users_item.py",
+          "src/fern/workspaces/audit_logs/types/workspace_invitation_user_type.py",
+          "src/fern/workspaces/audit_logs/types/workspace_membership.py",
+          "src/fern/workspaces/audit_logs/types/workspace_membership_method.py",
+          "src/fern/workspaces/audit_logs/types/workspace_membership_target_user.py",
+          "src/fern/workspaces/audit_logs/types/workspace_membership_user_type.py"
+        ]
+      }
+    },
+    "tests/fixtures/webflow-v2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ],
+      "carve_outs": {
+        "unmatched": [
+          "reference.md",
+          "src/fern/analyze/reports/client.py",
+          "src/fern/collections/__init__.py",
+          "src/fern/collections/client.py",
           "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",
