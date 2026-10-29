@@ -80,7 +80,7 @@ The bounded search uses `search-incomplete` where no registrable reaching witnes
 |---|---|---:|---|
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1256 | none-registrable; authored `beacon-signal-results` reaches all three interaction regions |
 | `combo-ref-body-read-only-property` | `search-incomplete` | 731 | proven: registered `steaminputdb` byte-matches and reaches the corrected field-retention interaction |
-| `combo-inline-body-read-only-property` | `witness-blocked` | 20 | authored `harbor-relay-registration`, under the manager-approved fallback; [remaining residuals](../witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses) |
+| `combo-inline-body-read-only-property` | `witness-blocked` | 20 | authored `harbor-relay-registration`, under the manager-approved fallback |
 | `combo-success-oneof-nullable` | `search-incomplete` | 24 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
 | `combo-success-anyof-nullable` | `search-incomplete` | 69 | none-registrable; authored `beacon-signal-results` reaches both interaction regions |
 
@@ -159,9 +159,7 @@ moves the residual from **69 to 53**, with no new mismatches. The scripts client
 and raw client now byte-match. Of the eleven files moved by removing the inline
 bodies' `readOnly` flags, only `reference.md` still mismatches: collection-field
 union selection, worked examples and a query enum rendered as `Any` remain.
-These are parity gaps, not departures. The
-[blocked-witness record](../witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses)
-continues to name Webflow and `osf.io`; no allowance was widened.
+These are parity gaps, not departures; no allowance was widened.
 
 Fresh generation at Fern CLI 5.163.1 and python-sdk 5.41.3 reproduced all
 1,501 committed SDK files byte for byte. The direct generation script leaves
