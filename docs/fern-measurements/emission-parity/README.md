@@ -356,6 +356,9 @@ Zoonk's scoped measurement reaches it. Both features meet in
 | `just test-corpus-offline` | 2 offline tests, 1 recovery test and 3 command-usage tests passed |
 | both Rust projects' clippy, rustfmt and project-boundary checks | passed |
 | targeted judged lint for IR, emitter and comparison-boundary integration | passed |
+| complete surface-census test-census suite over the regenerated records | 637 passed, 1 skipped |
+| complete surface-census test-reach suite | 122 completed, 3 skipped |
+| judged lint over the full diff against origin/main, 750,000-byte budget | all 12 batches passed, no retry needed |
 
 The first final-source ledger attempt passed 811 checks but one unrelated
 comparison-output assertion failed because its temporary-file path contained
@@ -364,3 +367,7 @@ the same scratch directory and passed all 812 checks. Unit discovery also
 requires Git's ceiling directory at that scratch root, which lives inside the
 orchestration repository. These are environment settings, with no test or gate
 changes.
+
+The complete census, reach suite and full judged diff review ran at
+`42901c3dd`, whose `src/` tree is identical to `ebe709072`'s.
+The final change adds their results to this note only.
