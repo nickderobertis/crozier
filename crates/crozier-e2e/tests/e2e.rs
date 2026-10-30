@@ -22238,6 +22238,16 @@ fn refusal_run(
     probe: &Path,
     strict: bool,
 ) -> Result<RefusalRun, String> {
+    refusal_run_with(generator, probe, strict, &[])
+}
+
+/// [`refusal_run`] with further generation flags, such as `--enum-type literals`.
+fn refusal_run_with(
+    generator: &dyn Fn() -> Command,
+    probe: &Path,
+    strict: bool,
+    flags: &[&str],
+) -> Result<RefusalRun, String> {
     let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
     let target = out.path().join("sdk");
     let mut command = generator();
@@ -22256,6 +22266,7 @@ fn refusal_run(
             "default_package_name",
         ])
         .args(strict.then_some("--fern-strict"))
+        .args(flags)
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
     let files = if target.exists() {
@@ -24764,6 +24775,60 @@ fn response_component_fragment_is_refused_only_on_a_success_response() {
         );
         assert!(failures.is_empty(), "{}", failures.join("\n"));
         assert_eq!(run.stderr.lines().count(), 1);
+    }
+}
+
+/// Fern parses nothing when an error response names an undeclared component
+/// response (`docs/refusal-parity-dangling-response-ref.md`).
+#[test]
+fn undeclared_error_response_component_is_refused_until_declared() {
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference");
+    let probe = class.join("undeclared-error-response-probe.yml");
+    let modes: [(bool, &[&str]); 3] = [
+        (false, &[]),
+        (false, &["--enum-type", "literals"]),
+        (true, &[]),
+    ];
+    for (strict, flags) in modes {
+        let run = refusal_run_with(&crozier, &probe, strict, flags).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//orders/post/responses/400: #/components/responses/Rejected",
+            strict,
+        );
+        assert!(failures.is_empty(), "{flags:?}: {}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let inlined = dir.path().join("inlined.yml");
+    std::fs::write(
+        &inlined,
+        std::fs::read_to_string(&probe).unwrap().replace(
+            "'400': {$ref: '#/components/responses/Rejected'}",
+            "'400': {description: Rejected}",
+        ),
+    )
+    .unwrap();
+    for spec in [class.join("undeclared-error-response-control.yml"), inlined] {
+        let runs: Vec<RefusalRun> = modes
+            .iter()
+            .map(|(strict, flags)| refusal_run_with(&crozier, &spec, *strict, flags).unwrap())
+            .collect();
+        for run in &runs {
+            assert_eq!(run.code, Some(0), "{}", run.stderr);
+            assert!(run.files.iter().any(|file| file.ends_with("raw_client.py")));
+        }
+        let (normal, strict) = (&runs[0], &runs[2]);
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
     }
 }
 
