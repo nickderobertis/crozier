@@ -4,6 +4,6 @@ digest = "65537dde1771605fd7d0ce54561bb5e90e6d66818758a4d4f9b0d7825113ec67"
 
 [[covers]]
 key = "readme-multipart-optional-file-params"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

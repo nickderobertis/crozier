@@ -7361,9 +7361,9 @@ fn resolve_request_body(
         // where a `title` alone does not move it: measured at fern-python-sdk
         // 5.41.3, an
         // inline `{type: string, description: …}` body sends it and a titled
-        // `{type: integer}` or `{type: string}` one does not. The hand-written
-        // fixture `described-scalar-bodies` holds both sides, byte-compared by
-        // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`.
+        // `{type: integer}` or `{type: string}` one does not. Corpus row 4210,
+        // `tuxedo-dapp`, is the described side's real witness; the retained
+        // `described-scalar-bodies` document under docs/fern-measurements holds both.
         let described = schema.reference.is_none() && schema.description.is_some();
         let mut body = single_with_override(
             type_ref,

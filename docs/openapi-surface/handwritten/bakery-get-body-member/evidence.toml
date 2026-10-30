@@ -4,6 +4,6 @@ digest = "2f5f03707716ef5117b83345043084ea4e6189a6b43fd365bc14171fb6e1176b"
 
 [[covers]]
 key = "get-request-body-union-member"
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

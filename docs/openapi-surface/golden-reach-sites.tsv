@@ -588,3 +588,4 @@ response-without-description-blank-line	fixture=amrc-acs-directory	src/emit.rs::
 media-type-event-stream-event-dispatch	operation.responses:event-stream-event-dispatch	src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]	
 operation-id-hyphenated-tag-method	fixture=parcelis-api	src/ir.rs::method_from_hyphenated_tag_id	
 patch-inline-nullable-unrequired-props-omit	fixture=blufiles-api	src/ir.rs::hoist_inline_object[=nullable: is_optional\(prop_schema\)$]	
+request-body-described-inline-scalar	fixture=tuxedo-dapp	src/ir.rs::resolve_request_body[=let described = schema\.reference\.is_none\(\) && schema\.description\.is_some\(\);]	

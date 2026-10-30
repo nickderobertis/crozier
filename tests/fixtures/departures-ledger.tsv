@@ -1027,6 +1027,11 @@ docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected	reference.md	2	stream-reference-return-type
 docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected	reference.md	59	stream-reference-return-type
 docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -1400,11 +1405,6 @@ docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fer
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -10238,6 +10238,12 @@ tests/fixtures/truefoundry-trueforge/expected-flat	settings/skills/client.py	129
 tests/fixtures/truefoundry-trueforge/expected-flat	settings/skills/client.py	224	schema-rejected-name-example
 tests/fixtures/truefoundry-trueforge/expected-flat	settings/skills/client.py	271	schema-rejected-name-example
 tests/fixtures/truefoundry-trueforge/expected-flat	types/__init__.py	126	init-type-checking-import-order
+tests/fixtures/tuxedo-dapp/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/tuxedo-dapp/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/tuxedo-dapp/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/tuxedo-dapp/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/tuxedo-dapp/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/tuxedo-dapp/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	README.md	46	schema-rejected-name-example
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	README.md	81	schema-rejected-name-example
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	reference.md	111	schema-rejected-name-example

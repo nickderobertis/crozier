@@ -393,6 +393,7 @@
     "docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/ferry-berth-desk/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/gallery-plaque-groups/fern-expected": {},
@@ -530,7 +531,6 @@
     "docs/openapi-surface/handwritten/declared-rename-control/fern-expected": {},
     "docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected": {},
     "docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected": {},
-    "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected": {},
     "docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected": {},
     "docs/openapi-surface/handwritten/dormant-sensor-unions/fern-expected": {},
@@ -1345,6 +1345,12 @@
     "tests/fixtures/truefoundry-trueforge-5adde28/expected": {},
     "tests/fixtures/truefoundry-trueforge/expected": {},
     "tests/fixtures/truefoundry-trueforge/expected-flat": {},
+    "tests/fixtures/tuxedo-dapp/expected": {},
+    "tests/fixtures/tuxedo-dapp/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/twilio.com-twilio_messaging_v1/expected": {},
     "tests/fixtures/twilio.com-twilio_voice_v1/expected": {},
     "tests/fixtures/typescript-service-template/expected": {},

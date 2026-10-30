@@ -4,6 +4,6 @@ digest = "1380c7f2d28ffa23423e25bdfa9864389fc86be27a3653e6bfea3d189f560450"
 
 [[covers]]
 key = "media-type-event-stream-item-schema"
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

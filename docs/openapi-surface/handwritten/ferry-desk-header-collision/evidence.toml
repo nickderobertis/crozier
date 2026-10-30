@@ -4,6 +4,6 @@ digest = "1c4b36ea070a2c31b9d5768ae9fece76d1f98dfd6c930836dbcee81ae86449e9"
 
 [[covers]]
 key = "combo-body-property-named-as-header-param"
-search = "docs/openapi-surface/witness-search-operation-combinations-parameters/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-operation-combinations-parameters/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

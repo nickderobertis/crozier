@@ -4,6 +4,6 @@ digest = "3ea45b27cb352f20703386b750f53ea0222875c891fac251c16224f75fe5c58a"
 
 [[covers]]
 key = "multipart-optional-enum-part-plain-field"
-search = "docs/openapi-surface/witness-search-naming-wire/README.md#bounded-public-witnesses"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

@@ -10454,6 +10454,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &RS_SERVER,
     &INGEF_CONQUERY,
+    &TUXEDO_DAPP,
     &BLUFILES_API,
     &PARCELIS_API,
     &SYNTHWERK_LLM,
@@ -12894,6 +12895,19 @@ const RS_SERVER: Corpus = Corpus {
 /// (`Filter`, `Select`, `UniversalSelect`).
 const INGEF_CONQUERY: Corpus = Corpus {
     api: "ingef-conquery",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// TuxedoDapp's API document — corpus row 4210, witnessing inline scalar JSON
+/// request bodies declaring a `description`, in operations declaring no parameter.
+const TUXEDO_DAPP: Corpus = Corpus {
+    api: "tuxedo-dapp",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -21094,6 +21108,13 @@ fn rs_server_matches_fern_output() {
 #[test]
 fn ingef_conquery_matches_fern_output() {
     assert_committed_corpus_matches(&INGEF_CONQUERY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn tuxedo_dapp_matches_fern_output() {
+    assert_committed_corpus_matches(&TUXEDO_DAPP);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
