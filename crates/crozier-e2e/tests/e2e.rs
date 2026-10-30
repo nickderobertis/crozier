@@ -24778,12 +24778,8 @@ fn response_component_fragment_is_refused_only_on_a_success_response() {
     }
 }
 
-/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: an error response
-/// naming a `components/responses` entry the document does not declare makes
-/// Fern parse nothing and write its endpoint-less SDK, as the Setu document
-/// (`docs/refusal-parity-dangling-response-ref.md`) does; declaring the
-/// response generates. crozier refuses the probe in every mode and generates
-/// the control, and the same response inlined, identically across modes.
+/// Fern parses nothing when an error response names an undeclared component
+/// response (`docs/refusal-parity-dangling-response-ref.md`).
 #[test]
 fn undeclared_error_response_component_is_refused_until_declared() {
     let class = repo_root()
