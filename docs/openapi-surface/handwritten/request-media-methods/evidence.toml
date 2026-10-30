@@ -5,11 +5,11 @@ digest = "604924f12c8ca205066e98ffe4f8e14260bcec279c81d6423ad2e38c9b5bd572"
 [[covers]]
 key = "request-body-content"
 arm = 'src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]'
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#exhausted-arms"
 verdict = "exhausted"
 
 [[covers]]
 key = "request-body-content"
 arm = 'src/openapi.rs::Operation::with_sdk_method_name'
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#exhausted-arms"
 verdict = "exhausted"

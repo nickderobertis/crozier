@@ -64,9 +64,9 @@ arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 | `response-description` | arm `src/emit.rs::push_return_doc[=None => \{\}]` | `bodies-media` | `buoy-depth-response` | proven: corpus row 4200 |
 | `media-type-event-stream` | arm `src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]` | `bodies-media` | `event-stream-event-dispatch` | proven: corpus row 4207 |
 | `media-type-event-stream` | arm `src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]` | `bodies-media` | `event-stream-event-dispatch` | proven: corpus row 4207 |
-| `request-body-content` | arm `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | `bodies-media` | `inline-body-readonly-own-overlap` | exhausted |
-| `request-body-content` | arm `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | `bodies-media` | `json-request-shapes` | exhausted |
-| `request-body-content` | arm `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | `bodies-media` | `json-request-shapes` | exhausted |
+| `request-body-content` | arm `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | `bodies-media` | `inline-body-readonly-own-overlap` | search-incomplete |
+| `request-body-content` | arm `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | `bodies-media` | `json-request-shapes` | search-incomplete |
+| `request-body-content` | arm `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | `bodies-media` | `json-request-shapes` | search-incomplete |
 | `media-type-form-urlencoded` | arm `src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]` | `bodies-media` | `kiln-form-mode` | proven: corpus row 4201 |
 | `media-type-multipart` | arm `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | `bodies-media` | `multipart-alias-object` | search-incomplete |
 | `media-type-multipart` | arm `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | `bodies-media` | `multipart-json-module` | search-incomplete |
@@ -77,7 +77,7 @@ arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 | `media-type-malformed-key` | arm `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | `bodies-media` | `slashless-json-response` | search-incomplete |
 | `media-type-multipart` | arm `src/ir.rs::nullable_enum_part[    member$]` | `bodies-media` | `transcript-format-part` | proven: corpus row 4202 |
 
-Of the 58 targets, 15 are proven by a registered real witness, 10 read `exhausted`, 32 read `search-incomplete` and 1 reads `witness-blocked`.
+Of the 58 targets, 15 are proven by a registered real witness, 7 read `exhausted`, 35 read `search-incomplete` and 1 reads `witness-blocked`.
 
 ## Populations read
 
@@ -285,14 +285,21 @@ One line per open arm; its declarers are the documents whose instrumented crozie
 
 | key | verdict | arm | declarers | outstanding |
 |---|---|---|---:|---|
-| `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 0 | every one of the 0 declarer(s) is decided and the live window was read whole |
-| `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 8 | every one of the 8 declarer(s) is decided and the live window was read whole |
-| `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | 3 | every one of the 3 declarer(s) is decided and the live window was read whole |
+| `request-body-content` | `search-incomplete` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `request-body-content` | `search-incomplete` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 8 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `request-body-content` | `search-incomplete` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | 3 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `media-type-multipart` | `search-incomplete` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `media-type-multipart` | `search-incomplete` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `media-type-malformed-key` | `search-incomplete` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 0 | GitHub reported 9344 results for `"content:" "json:" "schema:" "responses:" path:openapi language:YAML` and its first 300 were read |
+
+## Exhausted arms
+
+Open arms whose every declarer is decided and whose live window was read whole.
+
+| key | verdict | arm | declarers | outstanding |
+|---|---|---|---:|---|
 | `request-body-content` | `exhausted` | `src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]` | 3 | every one of the 3 declarer(s) is decided and the live window was read whole |
 | `request-body-content` | `exhausted` | `src/openapi.rs::Operation::with_sdk_method_name` | 3 | every one of the 3 declarer(s) is decided and the live window was read whole |
-| `media-type-malformed-key` | `search-incomplete` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 0 | GitHub reported 9344 results for `"content:" "json:" "schema:" "responses:" path:openapi language:YAML` and its first 300 were read |
 
 ## Blocked witnesses
 

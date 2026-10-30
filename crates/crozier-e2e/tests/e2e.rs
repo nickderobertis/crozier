@@ -10454,6 +10454,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &RS_SERVER,
     &INGEF_CONQUERY,
+    &OSPARC_DIRECTOR_V2,
     &TUXEDO_DAPP,
     &BLUFILES_API,
     &PARCELIS_API,
@@ -12895,6 +12896,19 @@ const RS_SERVER: Corpus = Corpus {
 /// (`Filter`, `Select`, `UniversalSelect`).
 const INGEF_CONQUERY: Corpus = Corpus {
     api: "ingef-conquery",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// osparc-simcore's director-v2 document — corpus row 4211, witnessing a
+/// contentless `200` beside a `201` declaring content.
+const OSPARC_DIRECTOR_V2: Corpus = Corpus {
+    api: "osparc-director-v2",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -21108,6 +21122,13 @@ fn rs_server_matches_fern_output() {
 #[test]
 fn ingef_conquery_matches_fern_output() {
     assert_committed_corpus_matches(&INGEF_CONQUERY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn osparc_director_v2_matches_fern_output() {
+    assert_committed_corpus_matches(&OSPARC_DIRECTOR_V2);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

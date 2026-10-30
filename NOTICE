@@ -782,3 +782,8 @@ tuxedo-dapp API specification and generated SDK golden:
     https://raw.githubusercontent.com/mlabs-haskell/TuxedoDapp/0160b433517a61aa249f40b8e684a93c0281441d/openapi.yaml
     Apache-2.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4210 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+osparc-director-v2 API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4211 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

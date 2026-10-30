@@ -6,13 +6,15 @@ digest = "057f91656810822fda1b33f9d6b6824a373fc712143063f20e1ead0fe962e97f"
 key = "request-body-content"
 arm = 'src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]'
 search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
-verdict = "exhausted"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
 
 [[covers]]
 key = "request-body-content"
 arm = 'src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]'
 search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
-verdict = "exhausted"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
 
 [[covers]]
 key = "format-binary"

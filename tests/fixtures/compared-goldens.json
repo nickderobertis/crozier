@@ -526,7 +526,6 @@
     "docs/openapi-surface/handwritten/compass-choice/fern-expected": {},
     "docs/openapi-surface/handwritten/compass-member-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
-    "docs/openapi-surface/handwritten/contentless-created-success/fern-expected": {},
     "docs/openapi-surface/handwritten/courier-delivery-hooks/fern-expected": {},
     "docs/openapi-surface/handwritten/declared-rename-control/fern-expected": {},
     "docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected": {},
@@ -1210,6 +1209,12 @@
     },
     "tests/fixtures/opentosca-license-engine/expected": {},
     "tests/fixtures/operation-id-non-identifier/expected": {},
+    "tests/fixtures/osparc-director-v2/expected": {},
+    "tests/fixtures/osparc-director-v2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/osparc-payments/expected": {},
     "tests/fixtures/osparc-simcore-webserver/expected": {},
     "tests/fixtures/otoroshi/expected": {},

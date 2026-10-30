@@ -10350,9 +10350,9 @@ fn has_bodyless_success(op: &Operation) -> bool {
     // 5.163.1 measures `203`, `205`–`208`, `226` and `299` alike, and the
     // ToolJet Teams document's `addMultipleTeamMembers` answers a typed `200`
     // beside a bodyless `207`. A contentless `200` beside a typed
-    // `201` stays non-optional too (the hand-written fixture
-    // `contentless-created-success`, byte-compared by
-    // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`). EN 18222's `updateDPPById` returns
+    // `201` stays non-optional too (osparc-simcore's director-v2
+    // `create_or_update_or_start_computation`, corpus row 4211,
+    // byte-compared by `osparc_director_v2_matches_fern_output`). EN 18222's `updateDPPById` returns
     // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
         || success_response_schema(op).is_some() && codes.iter().all(|code| *code != "204"))
@@ -10400,9 +10400,9 @@ fn has_dispatchable_media(response: &Response) -> bool {
 }
 
 /// Prefer a declared success body to a contentless success. Fern selects the
-/// 201's body beside a contentless 200; a 200 with content still wins. The
-/// hand-written fixture `contentless-created-success` holds it through the
-/// binary, byte-compared by `handwritten_fixtures_match_fern_goldens`.
+/// 201's body beside a contentless 200; a 200 with content still wins.
+/// Corpus row 4211, `osparc-director-v2`, holds it through the binary,
+/// byte-compared by `osparc_director_v2_matches_fern_output`.
 fn success_response_with_content(op: &Operation) -> Option<(&String, &Response)> {
     op.responses
         .get_key_value("200")
