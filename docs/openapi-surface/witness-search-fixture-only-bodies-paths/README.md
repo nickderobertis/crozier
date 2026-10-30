@@ -109,8 +109,8 @@ recorded.
 
 ## Live requests
 
-Every live GitHub request this search made went through
-`tools/witness-search/rate_limit_guard.py`, the shared response cache
+Every live GitHub request this search made but the one disclosed below went
+through `tools/witness-search/rate_limit_guard.py`, the shared response cache
 consulted first; the guard's own ledgers are under
 `.local/witness-search-fixture-only-bodies-paths/`. 26 query phrasings were
 issued, up to their first three result pages, with 30 seconds between
@@ -123,10 +123,18 @@ code-search calls.
 
 The guard logged one wait, with the two readings it took while waiting, and
 no secondary-limit refusal. No Sourcegraph, Postman, SwaggerHub or GraphQL
-request was made. One further request went outside the guard by mistake: a single
-unauthenticated `GET https://api.github.com/repos/openiap/opencore` from a
-shell command, whose answer was not used (the guarded lookup had already
-recorded that repository's licence).
+request was made.
+
+**One request went outside the guard, and is disclosed here.** At about
+2026-10-30T03:32:05Z (seconds after the guarded source checks of corpus rows
+4203 and 4204 at 03:31:38Z and 03:31:40Z), a shell command registering those
+rows also ran `curl -s -o /dev/null -w '%{http_code}'
+https://api.github.com/repos/openiap/opencore`: one unauthenticated `GET`,
+added by mistake while checking a licence, whose body was discarded and never
+cited. That repository's licence, MPL-2.0, comes from the guarded lookup of the
+same URL recorded earlier in `rate-limit-calls.jsonl`. It cannot be guarded
+after the fact and was not repeated; every GitHub request after it went
+through the guard.
 
 ## How a declarer was screened
 
