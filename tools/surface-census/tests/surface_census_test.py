@@ -19486,11 +19486,10 @@ class NamingWireCensusTests(unittest.TestCase):
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
-                area = (
-                    "docs/fern-measurements/naming-wire"
-                    if fixture == "ledger-batch-upload"
-                    else "docs/openapi-surface/handwritten"
-                )
+                area = {
+                    "ledger-batch-upload": "docs/fern-measurements/naming-wire",
+                    "gallery-plaque-groups": "docs/fern-measurements/superseded-fixtures",
+                }.get(fixture, "docs/openapi-surface/handwritten")
                 document = census.load_document(REPO / area / fixture / "openapi.yml")
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
@@ -19529,7 +19528,7 @@ class NamingWireCensusTests(unittest.TestCase):
 
     def test_camel_tag_shape_excludes_upper_prefix_and_lower_tag(self) -> None:
         census = load_census()
-        source = REPO / "docs/openapi-surface/handwritten/gallery-plaque-groups/openapi.yml"
+        source = REPO / "docs/fern-measurements/superseded-fixtures/gallery-plaque-groups/openapi.yml"
         for variant in ("upper-prefix", "lower-tag"):
             with self.subTest(variant=variant):
                 document = census.load_document(source)

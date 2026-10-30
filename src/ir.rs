@@ -24103,7 +24103,7 @@ mod tests {
     fn alias_object_request_flattens_without_losing_the_models_or_advertising_request() {
         let doc = crate::openapi::load(
             &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+                .join("docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml"),
         )
         .unwrap();
         let config = crate::config::GenerateConfig::new(
@@ -24139,7 +24139,7 @@ mod tests {
 
     #[test]
     fn alias_reference_correction_is_scoped_to_nonempty_flattened_fields_without_request() {
-        let source = include_str!("../docs/openapi-surface/handwritten/request-alias/openapi.yml");
+        let source = include_str!("../docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml");
         let mut document: serde_json::Value = crate::yaml::from_str(source).unwrap();
         document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({
             "request": { "type": "string" }

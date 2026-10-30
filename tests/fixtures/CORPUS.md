@@ -1981,3 +1981,20 @@ measured beside them are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |
+
+## Real witnesses for fixture-only bodies, media and document-path shapes
+
+Real specifications that replace hand-written proofs in the `bodies-media` and
+`document-paths` regions, each found and screened by the bounded search in
+[`witness-search-fixture-only-bodies-paths`](../../docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4200 | `amrc-acs-directory` | github-raw | https://raw.githubusercontent.com/AMRC-FactoryPlus/amrc-connectivity-stack/6e52501e7d21f26ea584013e71e2152a9c4f0f6b/acs-directory/api/openapi.yaml | `6e52501e7d21f26ea584013e71e2152a9c4f0f6b` | MIT (repository LICENSE; the document declares no info.license) | committed | JSON success responses written without a `description` key |
+| 4201 | `ummaya-agent-delegation` | github-raw | https://raw.githubusercontent.com/umyunsang/UMMAYA/72ed9b5bbcc4fbfb018e55559cfa20fbd2c1903e/docs/security/agent-delegation.openapi.yaml | `72ed9b5bbcc4fbfb018e55559cfa20fbd2c1903e` | Apache-2.0 (info.license and repository LICENSE) | committed | A urlencoded `$ref` request body whose component declares an inline string enum |
+| 4202 | `speech-ai-forge` | github-raw | https://raw.githubusercontent.com/lenML/Speech-AI-Forge/a41b70abba866ecded6e1e90beea6cc68e3fd0ae/docs/openapi.json | `a41b70abba866ecded6e1e90beea6cc68e3fd0ae` | AGPL-3.0 (repository LICENSE; the document declares no info.license) | committed | Optional multipart parts whose `anyOf` is a string-enum `$ref` beside `null` |
+| 4203 | `openiap-opencore` | github-raw | https://raw.githubusercontent.com/openiap/opencore/c9e560b656cb14c7f82fc9ed1c44820acce43ea3/public.template/swagger.json | `c9e560b656cb14c7f82fc9ed1c44820acce43ea3` | MPL-2.0 (info.license and repository LICENSE) | committed | A request property naming a component that is only a `$ref` to an object |
+| 4204 | `openparser-ocr` | github-raw | https://raw.githubusercontent.com/eigenpal/openparser/bc71fecfbd228a785963db37c48bfc7e427da08c/docs/OCR_API_OPENAPI.yaml | `bc71fecfbd228a785963db37c48bfc7e427da08c` | Apache-2.0 (repository LICENSE; the document declares no info.license) | committed | A multipart part naming the component its operation's request would be named |
+| 4205 | `jobster-api` | github-raw | https://raw.githubusercontent.com/harjasae2001/Jobster-API/8690a283add7cd81bdb5a4447e04556504cdc6e0/openapi.yaml | `8690a283add7cd81bdb5a4447e04556504cdc6e0` | ISC (repository LICENSE; the document declares no info.license) | committed | A JSON request body `$ref` to an `allOf` of a `$ref` base and an inline member, each requiring properties |
+| 4206 | `kompaz-web-frontend` | github-raw | https://raw.githubusercontent.com/Stichting-KOMPAZ-1/KOMPAZ-web-frontend/a847053e46b98324c57183af2b2c09abe01f8ecf/openapi.json | `a847053e46b98324c57183af2b2c09abe01f8ecf` | MIT (repository LICENSE; the document declares no info.license) | committed | camelCase tags whose operation ids prefix the method with the tag in lower camel case |
+| 4207 | `synthwerk-llm` | github-raw | https://raw.githubusercontent.com/VelimirMueller/synthwerk-sdk/f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae/packages/sdk/contracts/llm.yaml | `f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae` | MIT (repository LICENSE; the document declares no info.license) | committed | An event stream whose union is discriminated on `event` with a mapping |

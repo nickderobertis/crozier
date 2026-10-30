@@ -345,6 +345,14 @@ inventory=(
   openapi_generator_composed_schema_lowering_matches_fern_output
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
+  synthwerk_llm_matches_fern_output
+  kompaz_web_frontend_matches_fern_output
+  jobster_api_matches_fern_output
+  openparser_ocr_matches_fern_output
+  openiap_opencore_matches_fern_output
+  speech_ai_forge_matches_fern_output
+  ummaya_agent_delegation_matches_fern_output
+  amrc_acs_directory_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

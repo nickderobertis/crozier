@@ -27,7 +27,7 @@ under the corpus gate's normalization, every departure held to
 | case | what it pins | document | tree |
 |---|---|---|---|
 | `bigint-format-string-typed-str` | a `type: string, format: bigint` property is typed `str` | [hand-written fixture](../../openapi-surface/handwritten/bigint-format-string-typed-str/) | overlay |
-| `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [hand-written fixture](../../openapi-surface/handwritten/buoy-depth-response/) | overlay |
+| `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [superseded fixture](../superseded-fixtures/buoy-depth-response/) | overlay |
 | `described-ref-oneof-alias-without-docstring` | a described component `oneOf` of two object `$ref`s is a `typing.Union` alias with no docstring | [hand-written fixture](../../openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/) | overlay |
 | `discriminated-variant-date-value-snippet` | discriminated variants valued `date` and `date-time` take `dt.date` and `dt.datetime`, and the worked call passes `datetime.date.fromisoformat(...)` | [hand-written fixture](../../openapi-surface/handwritten/discriminated-variant-date-value-snippet/) | overlay |
 | `dotted-mapping-key-variant-class-name` | mapping keys `door.locked` and `door.unlocked` name `Notice_DoorLocked` and `Notice_DoorUnlocked`, not the target schemas | [document](dotted-mapping-key-variant-class-name/openapi.yml) | complete tree |
@@ -53,7 +53,7 @@ under the corpus gate's normalization, every departure held to
 | `passport-scan` | the README passes a multipart body's optional file part beside its required one | [hand-written fixture](../../openapi-surface/handwritten/passport-scan/) | overlay |
 | `patch-inline-nullable-unrequired-props-omit` | a PATCH body of unrequired nullable properties takes each as `Optional[...] = OMIT`, sent with `omit=OMIT` | [hand-written fixture](../../openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/) | overlay |
 | `poster-upload` | the README passes a multipart body's file part before the scalar parts declared ahead of it | [hand-written fixture](../../openapi-surface/handwritten/poster-upload/) | overlay |
-| `pottery-commission` | a body `$ref` to an `allOf` of a base and an inline member is worked base field first | [hand-written fixture](../../openapi-surface/handwritten/pottery-commission/) | overlay |
+| `pottery-commission` | a body `$ref` to an `allOf` of a base and an inline member is worked base field first | [superseded fixture](../superseded-fixtures/pottery-commission/) | overlay |
 | `prompt-variable` | a const holding `$` is a one-value `Literal` alias, passed bare everywhere but Fern's docstrings (the `docstring-literal-dollar-escape` departure) | [hand-written fixture](../../openapi-surface/handwritten/prompt-variable/) | overlay |
 | `query-param-ref-to-enum-or-array-union-converted` | an optional query parameter naming a one-or-many enum union is sent through `convert_and_respect_annotation_metadata` | [hand-written fixture](../../openapi-surface/handwritten/query-param-ref-to-enum-or-array-union-converted/) | overlay |
 | `required-and-nullable-property-defaults-none` | a required `nullable: true` property is `Optional[...] = None` | [document](required-and-nullable-property-defaults-none/openapi.yml) | complete tree |

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .extraction_pipeline_llm_options_reasoning_effort_one import ExtractionPipelineLlmOptionsReasoningEffortOne
+from .extraction_pipeline_llm_options_reasoning_effort_zero import ExtractionPipelineLlmOptionsReasoningEffortZero
+
+ExtractionPipelineLlmOptionsReasoningEffort = typing.Union[
+    ExtractionPipelineLlmOptionsReasoningEffortZero, ExtractionPipelineLlmOptionsReasoningEffortOne
+]
