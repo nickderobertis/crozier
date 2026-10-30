@@ -15026,6 +15026,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         "operation-id-digit-leading-method",
         "pathitem-ref",
         "relative-file-ref",
+        "operation-id-hyphenated-tag-method",
+        "camel-case-tag-group-and-prefix",
     }
 
     @classmethod
@@ -15164,6 +15166,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             ("relative-file-ref", "pathItem.$ref:relative-file"),
             ("nonascii-info-title", "info.title:non-ascii"),
             ("operation-id-digit-leading-method", "operation.operationId:digit-leading-method"),
+            ("operation-id-hyphenated-tag-method", "operation.operationId:hyphenated-tag-method"),
+            ("camel-case-tag-group-and-prefix", "operation.operationId:camel-case-tag-prefix"),
         ):
             with self.subTest(key=key):
                 transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
