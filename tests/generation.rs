@@ -338,11 +338,6 @@ fn property_metadata_survives_the_public_generation_pipeline() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
     for (fixture, file, expected) in [
         (
-            "blank-reading-description",
-            "src/acme/types/read_records_response.py",
-            "\"\"\" \"\"\"",
-        ),
-        (
             "compass-member-notes",
             "src/acme/types/compass.py",
             "Towards the southern horizon.",

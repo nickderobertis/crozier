@@ -110,7 +110,6 @@ literals-mode/water-pump-station	docs/openapi-surface/handwritten/water-pump-sta
 literals-mode/weather-radar-stream	docs/openapi-surface/handwritten/weather-radar-stream/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/weather-radar-stream/fern-expected
 models-refs-composed-narrowing/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	python-enums	packaged	-
 models-refs-literals/artefact-catalogue	docs/openapi-surface/handwritten/artefact-catalogue/openapi.yml	literals	packaged	-
-models-refs-literals/blank-reading-description	docs/openapi-surface/handwritten/blank-reading-description/openapi.yml	literals	packaged	-
 models-refs-literals/circuit-readings	docs/openapi-surface/handwritten/circuit-readings/openapi.yml	literals	packaged	-
 models-refs-literals/compass-member-notes	docs/openapi-surface/handwritten/compass-member-notes/openapi.yml	literals	packaged	-
 models-refs-literals/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	literals	packaged	-

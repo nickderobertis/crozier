@@ -3827,7 +3827,6 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
     let root = repo_root();
     let mut all_failures = Vec::new();
     for name in [
-        "blank-reading-description",
         "compass-member-notes",
         "gauge-public-fields",
         "verified-seal",

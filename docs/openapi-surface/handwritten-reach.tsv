@@ -4,7 +4,6 @@ base-path-client-argument	parameter-in-path	src/ir.rs::lifted_client_path_parame
 beacon-signal-results	combo-body-property-named-as-path-param	src/ir.rs::rename_claimed_path_params[if !overridden && spread\.contains\(&param\.wire_name\) \{]	3	3
 beacon-signal-results	combo-success-anyof-nullable	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
 beacon-signal-results	combo-success-oneof-nullable	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
-blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]	1	1
 buoy-depth-response	response-description	src/emit.rs::push_return_doc[=None => \{\}]	1	1
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
@@ -67,6 +66,7 @@ json-request-shapes	format-binary	src/emit.rs::build_example_inner[if s\.type_re
 json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	27
+kiln-array-mode	anyof-array-variant-inline-enum-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]	1	1
 kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	2	2
 kiln-form-mode	media-type-form-urlencoded	src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]	2	2
 kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5

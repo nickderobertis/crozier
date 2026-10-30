@@ -369,6 +369,25 @@ const SCHEMAS_FIXTURE_ONLY_WITNESSES: &[Witness] = &[
         )],
     },
     Witness {
+        shape: "empty-description-inline-response-docstring",
+        corpus: "stellastra-com",
+        declares: |doc| {
+            let schema = at(
+                doc,
+                "/paths/~1post-review/post/responses/200/content/application~1json/schema",
+            )?;
+            expect(
+                schema["type"] == "object" && schema["description"] == "",
+                "POST /post-review's 200 schema is an inline object with description: ''",
+            )
+        },
+        golden: &[(
+            "src/fern/types/post_post_review_response.py",
+            &["class PostPostReviewResponse(UniversalBaseModel):\n    \"\"\" \"\"\"\n"],
+            &[],
+        )],
+    },
+    Witness {
         shape: "unread-date-time-example",
         corpus: "netgsm-sms",
         declares: |doc| {

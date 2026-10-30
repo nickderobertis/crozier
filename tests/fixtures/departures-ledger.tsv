@@ -644,12 +644,6 @@ docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -1255,11 +1249,6 @@ docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	sr
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/blank-reading-description/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
