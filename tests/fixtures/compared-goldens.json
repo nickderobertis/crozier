@@ -393,6 +393,7 @@
     "docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/ferry-berth-desk/fern-expected": {},
@@ -529,7 +530,6 @@
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
     "docs/openapi-surface/handwritten/courier-delivery-hooks/fern-expected": {},
     "docs/openapi-surface/handwritten/declared-rename-control/fern-expected": {},
-    "docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected": {},
     "docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected": {},
     "docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected": {},
@@ -1161,6 +1161,12 @@
       ]
     },
     "tests/fixtures/oip-web-api/expected": {},
+    "tests/fixtures/ollama-api/expected": {},
+    "tests/fixtures/ollama-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/onmyshelf-api/expected": {},
     "tests/fixtures/openaire-graph/expected": {},

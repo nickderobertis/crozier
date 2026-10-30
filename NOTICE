@@ -787,3 +787,8 @@ osparc-director-v2 API specification and generated SDK golden:
     https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json
     MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4211 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ollama-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ollama/ollama/16b4376aeadbec58a18b9817d49c37b1b64e33d0/docs/openapi.yaml
+    MIT (the document's info.license and the repository's own LICENSE); corpus row 4212 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

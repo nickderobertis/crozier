@@ -2227,7 +2227,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "depot-bin-ledger-literals",
-        "docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml",
+        "docs/fern-measurements/superseded-fixtures/depot-bin-ledger/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -10465,6 +10465,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &RS_SERVER,
     &INGEF_CONQUERY,
+    &OLLAMA_API,
     &OSPARC_DIRECTOR_V2,
     &TUXEDO_DAPP,
     &BLUFILES_API,
@@ -12907,6 +12908,19 @@ const RS_SERVER: Corpus = Corpus {
 /// (`Filter`, `Select`, `UniversalSelect`).
 const INGEF_CONQUERY: Corpus = Corpus {
     api: "ingef-conquery",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Ollama's API document — corpus row 4212, witnessing an untagged operation
+/// whose `operationId` is `list`.
+const OLLAMA_API: Corpus = Corpus {
+    api: "ollama-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -21133,6 +21147,13 @@ fn rs_server_matches_fern_output() {
 #[test]
 fn ingef_conquery_matches_fern_output() {
     assert_committed_corpus_matches(&INGEF_CONQUERY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ollama_api_matches_fern_output() {
+    assert_committed_corpus_matches(&OLLAMA_API);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

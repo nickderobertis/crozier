@@ -18,7 +18,7 @@ clients-extensions/cargo-hold-pallets-literals	docs/openapi-surface/handwritten/
 clients-extensions/courier-delivery-hooks-literals	docs/openapi-surface/handwritten/courier-delivery-hooks/openapi.yml	literals	packaged	-
 clients-extensions/crane-hire-cursor	docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml	python-enums	packaged	-
 clients-extensions/crane-hire-cursor-flat	docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml	python-enums	flat	-
-clients-extensions/depot-bin-ledger-literals	docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml	literals	packaged	-
+clients-extensions/depot-bin-ledger-literals	docs/fern-measurements/superseded-fixtures/depot-bin-ledger/openapi.yml	literals	packaged	-
 clients-extensions/dock-yard-bookings-literals	docs/openapi-surface/handwritten/dock-yard-bookings/openapi.yml	literals	packaged	-
 clients-extensions/ferry-berth-desk-literals	docs/fern-measurements/superseded-fixtures/ferry-berth-desk/openapi.yml	literals	packaged	-
 clients-extensions/film-shot-planner-literals	docs/openapi-surface/handwritten/film-shot-planner/openapi.yml	literals	packaged	-

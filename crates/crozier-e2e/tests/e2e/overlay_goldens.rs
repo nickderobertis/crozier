@@ -128,6 +128,7 @@ const KINDS: &[Kind] = &[
             "openapi-generator-composed-schema-lowering",
             "rs-server",
             "ingef-conquery",
+            "ollama-api",
             "osparc-director-v2",
             "tuxedo-dapp",
             "blufiles-api",

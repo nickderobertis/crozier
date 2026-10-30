@@ -345,6 +345,7 @@ inventory=(
   openapi_generator_composed_schema_lowering_matches_fern_output
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
+  ollama_api_matches_fern_output
   osparc_director_v2_matches_fern_output
   tuxedo_dapp_matches_fern_output
   blufiles_api_matches_fern_output

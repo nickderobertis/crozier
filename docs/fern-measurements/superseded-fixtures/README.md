@@ -9,6 +9,7 @@ measurements or a departure's evidence read them as inputs.
 | fixture | superseded as a proof of | by |
 |---|---|---|
 | `buoy-depth-response` | `response-without-description-blank-line`, and `response-description`'s `push_return_doc` arm | corpus row 4200, `amrc-acs-directory` |
+| `depot-bin-ledger` | `operation-id-untagged-list-or-set` | corpus row 4212, `ollama-api` |
 | `described-scalar-bodies` | `request-body-described-inline-scalar` | corpus row 4210, `tuxedo-dapp` |
 | `event-stream-event-dispatch` | `media-type-event-stream-event-dispatch`, and `media-type-event-stream`'s `raw_stream_method` and `sse_event_dispatch` arms | corpus row 4207, `synthwerk-llm` |
 | `ferry-berth-desk` | `operation-id-hyphenated-tag-method` | corpus row 4208, `parcelis-api` |

@@ -1027,6 +1027,11 @@ docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1395,11 +1400,6 @@ docs/openapi-surface/handwritten/declared-rename-control/fern-expected	src/fern/
 docs/openapi-surface/handwritten/declared-rename-control/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/declared-rename-control/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/declared-rename-control/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8334,6 +8334,12 @@ tests/fixtures/oip-web-api/expected	src/fern/core/client_wrapper.py	35	sdk-ident
 tests/fixtures/oip-web-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/oip-web-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/oip-web-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/ollama-api/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/onevoice/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/onevoice/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/onevoice/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
