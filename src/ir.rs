@@ -11507,7 +11507,7 @@ fn inferred_discriminant_property_with(
                     if !supported {
                         return None;
                     }
-                } else if !singleton_enum {
+                } else if !singleton_enum || untyped_const_tag(field) {
                     return None;
                 }
                 let value = discriminant_value(field)?;
@@ -11531,6 +11531,18 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
     tag.enum_values.is_some() && !is_string_type(tag)
 }
 
+/// A `const` tag on a union member that declares no `type: string`. Fern reads
+/// it as a one-member enum of no declared type, so an inline-only union tagged
+/// that way stays ordinary, as [`untyped_enum_tag`]'s bare `enum` does: the
+/// Notion API's `movePageParentRequest` members tag `type` with a bare
+/// `const: page_id`, `database_id` and `workspace`, and Fern's tree is the plain
+/// `typing.Union` of three models. It is read only where no member is a `$ref`;
+/// the `$ref`-only spellings in [`inferred_discriminant_property_with`] keep
+/// their own rules.
+fn untyped_const_tag(tag: &Schema) -> bool {
+    tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
+}
+
 fn inferred_union_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -11540,6 +11552,7 @@ fn inferred_union_discriminant_property(
     }
     inferred_discriminant_property(schema, schemas).or_else(|| {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        let inline_only = variants.iter().all(|variant| variant.reference.is_none());
         let values: Option<Vec<String>> = variants
             .iter()
             .map(|variant| {
@@ -11556,7 +11569,9 @@ fn inferred_union_discriminant_property(
                     .flatten()
                     // The `anyOf` rule of `inferred_discriminant_property_with`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
-                    .filter(|tag| !untyped_enum_tag(tag))
+                    .filter(|tag| {
+                        !untyped_enum_tag(tag) && !(inline_only && untyped_const_tag(tag))
+                    })
                     .and_then(discriminant_value)
             })
             .collect();
@@ -22430,6 +22445,62 @@ mod tests {
         assert_eq!(
             super::inferred_strip_discriminant_property(&union, &schemas).as_deref(),
             Some("op")
+        );
+    }
+
+    #[test]
+    fn untyped_const_tags_leave_an_inline_union_ordinary() {
+        let schemas = indexmap::IndexMap::new();
+        let member = |tag: serde_json::Value, extra: &str| {
+            let mut properties = serde_json::Map::new();
+            properties.insert("type".into(), tag);
+            if !extra.is_empty() {
+                properties.insert(extra.into(), serde_json::json!({ "type": "string" }));
+            }
+            serde_json::json!({
+                "type": "object",
+                "required": ["type"],
+                "properties": properties
+            })
+        };
+        // The Notion API's move-page parent: each inline member tags `type` with
+        // a bare `const`, declaring no `type: string`.
+        let bare = schema(serde_json::json!({ "oneOf": [
+            member(serde_json::json!({ "const": "page_id" }), "page_id"),
+            member(serde_json::json!({ "const": "database_id" }), "database_id"),
+            member(serde_json::json!({ "const": "workspace" }), "")
+        ] }));
+        assert_eq!(super::inferred_discriminant_property(&bare, &schemas), None);
+        assert_eq!(
+            super::inferred_union_discriminant_property(&bare, &schemas),
+            None
+        );
+        // The same tags declaring `type: string` still discriminate.
+        let typed = schema(serde_json::json!({ "oneOf": [
+            member(serde_json::json!({ "type": "string", "const": "page_id" }), "page_id"),
+            member(serde_json::json!({ "type": "string", "const": "database_id" }), "database_id"),
+            member(serde_json::json!({ "type": "string", "const": "workspace" }), "")
+        ] }));
+        assert_eq!(
+            super::inferred_union_discriminant_property(&typed, &schemas).as_deref(),
+            Some("type")
+        );
+        // A `$ref`-only union keeps its own rule: a bare string `const` on a
+        // required `type` still discriminates there.
+        let mut referenced = indexmap::IndexMap::new();
+        for (name, tag) in [("PageParent", "page_id"), ("WorkspaceParent", "workspace")] {
+            referenced.insert(
+                name.to_string(),
+                schema(member(serde_json::json!({ "const": tag }), "")),
+            );
+        }
+        let by_reference = schema(serde_json::json!({ "oneOf": [
+            { "$ref": "#/components/schemas/PageParent" },
+            { "$ref": "#/components/schemas/WorkspaceParent" }
+        ] }));
+        assert_eq!(
+            super::inferred_union_discriminant_property(&by_reference, &referenced).as_deref(),
+            Some("type")
         );
     }
 
