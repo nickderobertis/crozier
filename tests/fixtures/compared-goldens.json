@@ -578,7 +578,6 @@
     "docs/openapi-surface/handwritten/library-union-shared-fields/fern-expected": {},
     "docs/openapi-surface/handwritten/literal-enum-value-quote-escaping/fern-expected": {},
     "docs/openapi-surface/handwritten/literal-prefixed-integer-path-segment/fern-expected": {},
-    "docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected": {},
     "docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected": {},
     "docs/openapi-surface/handwritten/locker-bank-claims/fern-expected": {},
     "docs/openapi-surface/handwritten/lunar-null-labels/fern-expected": {},
@@ -605,7 +604,6 @@
     "docs/openapi-surface/handwritten/observatory-example-arrays/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-nullable-query/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-query-extensions/fern-expected": {},
-    "docs/openapi-surface/handwritten/observatory-route-order/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected": {},
@@ -642,7 +640,6 @@
     "docs/openapi-surface/handwritten/sensor-batch-query/fern-expected": {},
     "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/signal-box-relays/fern-expected": {},
-    "docs/openapi-surface/handwritten/ski-lift-gates/fern-expected": {},
     "docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected": {},
     "docs/openapi-surface/handwritten/slashless-json-response/fern-expected": {},
     "docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected": {},
@@ -1086,6 +1083,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/laposta/expected": {},
     "tests/fixtures/letta/expected": {},
     "tests/fixtures/listennotes/expected": {},
     "tests/fixtures/livepeer-ai-runner/expected": {},
@@ -1097,6 +1095,7 @@
     "tests/fixtures/marimo-plugins/expected": {},
     "tests/fixtures/marimo/expected": {},
     "tests/fixtures/maximo-wxo-integration/expected": {},
+    "tests/fixtures/mcp-handle/expected": {},
     "tests/fixtures/med-anvisa-price/expected": {},
     "tests/fixtures/mermade-openapi-converter/expected": {},
     "tests/fixtures/mi-music/expected": {},
@@ -1128,6 +1127,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/notion-mcp-server/expected": {},
     "tests/fixtures/npq-registration/expected": {},
     "tests/fixtures/oal-example/expected": {},
     "tests/fixtures/oauth-client-credentials/expected": {},

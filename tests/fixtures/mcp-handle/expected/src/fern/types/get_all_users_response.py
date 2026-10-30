@@ -1,0 +1,53 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .user_info import UserInfo
+
+
+class GetAllUsersResponse(UniversalBaseModel):
+    users: typing.List[UserInfo] = pydantic.Field()
+    """
+    List of users
+    """
+
+    total_count: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="totalCount"),
+        pydantic.Field(alias="totalCount", description="Total number of users across all pages"),
+    ]
+    """
+    Total number of users across all pages
+    """
+
+    page: int = pydantic.Field()
+    """
+    Current page number
+    """
+
+    page_size: typing_extensions.Annotated[
+        int, FieldMetadata(alias="pageSize"), pydantic.Field(alias="pageSize", description="Number of results per page")
+    ]
+    """
+    Number of results per page
+    """
+
+    total_pages: typing_extensions.Annotated[
+        int, FieldMetadata(alias="totalPages"), pydantic.Field(alias="totalPages", description="Total number of pages")
+    ]
+    """
+    Total number of pages
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

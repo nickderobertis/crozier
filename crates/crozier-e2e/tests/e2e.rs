@@ -2286,7 +2286,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "lock-keeper-vault-literals",
-        "docs/openapi-surface/handwritten/lock-keeper-vault/openapi.yml",
+        "docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -2336,7 +2336,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "ski-lift-gates-literals",
-        "docs/openapi-surface/handwritten/ski-lift-gates/openapi.yml",
+        "docs/fern-measurements/clients-extensions/ski-lift-gates-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -7086,7 +7086,6 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
         "observatory-client-headers",
         "observatory-client-variable",
         "observatory-nullable-query",
-        "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
         "warehouse-header-token",
@@ -7868,7 +7867,6 @@ fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
         "observatory-client-headers",
         "observatory-client-variable",
         "observatory-nullable-query",
-        "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
     ] {
@@ -7930,9 +7928,6 @@ elif case.endswith('nullable-query'):
 elif case.endswith('base-path'):
     assert 'cycle' not in signature.parameters
     assert inspect.signature(FernApi).parameters['cycle'].default == 'night'
-elif case.endswith('route-order'):
-    assert list(signature.parameters)[:2] == ['station', 'sensor'], signature
-    args = ('north', 'camera')
 assert method(*args, **kwargs) == ['signal']
 request = sent[-1]
 if case.endswith('query-extensions'):
@@ -7969,8 +7964,6 @@ elif case.endswith('base-path'):
     overridden = FernApi(**ctor, cycle='dawn')
     assert overridden.list_signals() == ['signal']
     assert sent[-1].url.path == '/dawn/signals'
-elif case.endswith('route-order'):
-    assert request.url.path == '/stations/north/sensors/camera', request.url
 else:
     assert list(signature.parameters) == ['request_options'], signature
     assert not request.url.params
@@ -10460,6 +10453,9 @@ const CORPORA: &[&Corpus] = &[
     &EGO_MICROSERVICES,
     &OFFCHAIN_METADATA_TOOLS,
     &SUBSLOTH,
+    &NOTION_MCP_SERVER,
+    &LAPOSTA,
+    &MCP_HANDLE,
 ];
 
 #[test]
@@ -14530,6 +14526,65 @@ const SUBSLOTH: Corpus = Corpus {
 #[test]
 fn subsloth_matches_fern_output() {
     assert_committed_corpus_matches(&SUBSLOTH);
+}
+
+/// Notion's API description as its MCP server publishes it — corpus row 4400.
+/// Its `Notion-Version` header defaults to one string on most but not all
+/// operations, and its move-page body is an inline union whose members tag
+/// `type` with a bare `const`.
+const NOTION_MCP_SERVER: Corpus = Corpus {
+    api: "notion-mcp-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn notion_mcp_server_matches_fern_output() {
+    assert_committed_corpus_matches(&NOTION_MCP_SERVER);
+}
+
+/// Laposta's API description — corpus row 4401. Its basic scheme names the
+/// username `api_key` and the password `leave_empty` by `x-fern-basic`, and its
+/// form fields and history limit write string examples on boolean and integer
+/// schemas.
+const LAPOSTA: Corpus = Corpus {
+    api: "laposta",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn laposta_matches_fern_output() {
+    assert_committed_corpus_matches(&LAPOSTA);
+}
+
+/// MCP Handle's API reference — corpus row 4402. Its bearer scheme names the
+/// credential `api_key` by `x-fern-bearer`, and its `servers` query parameter is
+/// a nullable array whose element is an inline union.
+const MCP_HANDLE: Corpus = Corpus {
+    api: "mcp-handle",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn mcp_handle_matches_fern_output() {
+    assert_committed_corpus_matches(&MCP_HANDLE);
 }
 
 #[test]

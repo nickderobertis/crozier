@@ -133,7 +133,6 @@ forward-refs-omit-hoisted-variant-models	schema.oneOf	schemas.md	supported
 get-request-body-union-member	operation.requestBody:get-union-member	bodies-media.md	supported
 global-headers-extension	openapi.x-fern-global-headers	parameters.md	supported
 group-path-ending-in-api-nested-package	operation.x-fern-sdk-group-name	document-paths.md	supported
-header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
 ignore-extension-on-property-kept	schema.properties	schemas.md	supported
 integer-example-beyond-double-precision	schema.format=int64	schemas.md	supported
 integer-format-fallback	schema.format=bigint	schemas.md	supported
@@ -180,7 +179,6 @@ parameter-ignore-extension	parameter.x-fern-ignore	parameters.md	supported
 parameter-name-extension	parameter.x-fern-parameter-name	parameters.md	supported
 parameter-without-location	parameter.in:absent	parameters.md	supported
 patch-inline-nullable-unrequired-props-omit	pathItem.patch	bodies-media.md	supported
-path-parameters-template-order-31	operation.parameters:path-order-oas-three-one	parameters.md	supported
 property-anyof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
 property-oneof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
 property-ref-to-nullable-component-annotation	schema.$ref	schemas.md	supported
@@ -222,8 +220,6 @@ schema-type-name-inline-property	schema.x-fern-type-name:inline-property	schemas
 schema-x-tags	schema.x-tags:component	schemas.md	supported
 sdk-variable-parameter-extension	parameter.x-fern-sdk-variable	parameters.md	supported
 sdk-variables-extension	openapi.x-fern-sdk-variables	parameters.md	supported
-security-scheme-basic-extension-named	securityScheme.x-fern-basic:named-or-env	security.md	supported
-security-scheme-bearer-extension-named	securityScheme.x-fern-bearer:named	security.md	supported
 security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	security.md	supported
 security-scheme-header-extension-named	securityScheme.x-fern-header:named	security.md	supported
 security-scheme-token-variable-name	securityScheme.x-fern-token-variable-name:bearer	security.md	supported

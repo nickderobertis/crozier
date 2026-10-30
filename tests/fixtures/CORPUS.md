@@ -1981,3 +1981,29 @@ measured beside them are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |
+
+## Real witnesses that replaced hand-written fixtures
+
+Found by the [fixture-only search for the parameter, security and extension
+proofs](../../docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md).
+Notion publishes the description its MCP server serves in its own
+`makenotion/notion-mcp-server` repository; the document's `info.license` names
+MIT, and the pinned repository's `LICENSE` grants it, retained in
+`licenses/notion-mcp-server-MIT.txt`. Its `Notion-Version` header carries the
+string default `2025-09-03` on most but not all operations, the shape crozier
+promotes to a one-value client argument. Laposta publishes its own API
+description, generated from its sources, in the `laposta/laposta-skill`
+repository, whose `LICENSE` grants MIT (retained in
+`licenses/laposta-skill-MIT.txt`); its basic scheme's `x-fern-basic` names the
+username `api_key` and the password `leave_empty`. MCP Handle publishes its
+platform's API reference in its own `WeatherPal-AI/MCP-handle` repository (not
+a fork), under the repository's Apache-2.0 `LICENSE` (retained in
+`licenses/mcp-handle-Apache-2.0.txt`); its bearer scheme's `x-fern-bearer`
+names the credential `api_key`, and its `servers` query parameter is a nullable
+array of an inline union.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4400 | `notion-mcp-server` | github-raw | https://raw.githubusercontent.com/makenotion/notion-mcp-server/730ae781ba28beeaf0865025a3f2ed4c25ea2387/scripts/notion-openapi.json | `730ae781ba28beeaf0865025a3f2ed4c25ea2387` | MIT (document info.license and publisher repository LICENSE) | committed | A string-defaulted header on a subset of operations; an inline union tagged by untyped `const` |
+| 4401 | `laposta` | github-raw | https://raw.githubusercontent.com/laposta/laposta-skill/a97773a9023708ab722e30f0e157a2b69fefc882/spec/openapi-en.yml | `a97773a9023708ab722e30f0e157a2b69fefc882` | MIT (publisher repository LICENSE) | committed | A basic scheme naming its credentials by `x-fern-basic`; string examples on boolean and integer schemas |
+| 4402 | `mcp-handle` | github-raw | https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json | `9c59f16950d25e08c1058d8174e12b22861280d8` | Apache-2.0 (publisher repository LICENSE) | committed | A bearer scheme naming its credential by `x-fern-bearer`; a nullable query array of an inline union |

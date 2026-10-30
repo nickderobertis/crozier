@@ -30,7 +30,7 @@ clients-extensions/keyword-server-field	docs/fern-measurements/clients-extension
 clients-extensions/lamp-room-log-literals	docs/openapi-surface/handwritten/lamp-room-log/openapi.yml	literals	packaged	-
 clients-extensions/ledger-records-offset-flat	docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml	python-enums	flat	-
 clients-extensions/ledger-records-offset-literals	docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml	literals	packaged	-
-clients-extensions/lock-keeper-vault-literals	docs/openapi-surface/handwritten/lock-keeper-vault/openapi.yml	literals	packaged	-
+clients-extensions/lock-keeper-vault-literals	docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/openapi.yml	literals	packaged	-
 clients-extensions/locker-archive-hosts-literals	docs/openapi-surface/handwritten/locker-archive-hosts/openapi.yml	literals	packaged	-
 clients-extensions/locker-bank-claims-literals	docs/openapi-surface/handwritten/locker-bank-claims/openapi.yml	literals	packaged	-
 clients-extensions/meter-reader-gateway-literals	docs/openapi-surface/handwritten/meter-reader-gateway/openapi.yml	literals	packaged	-
@@ -40,7 +40,7 @@ clients-extensions/relay-station-header-names	docs/fern-measurements/clients-ext
 clients-extensions/relay-station-shared-name	docs/fern-measurements/clients-extensions/relay-station-shared-name/openapi.yml	python-enums	packaged	-
 clients-extensions/rfid-door-panel-literals	docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml	literals	packaged	-
 clients-extensions/signal-box-relays-literals	docs/openapi-surface/handwritten/signal-box-relays/openapi.yml	literals	packaged	-
-clients-extensions/ski-lift-gates-literals	docs/openapi-surface/handwritten/ski-lift-gates/openapi.yml	literals	packaged	-
+clients-extensions/ski-lift-gates-literals	docs/fern-measurements/clients-extensions/ski-lift-gates-literals/openapi.yml	literals	packaged	-
 clients-extensions/tide-gauge-sessions-literals	docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml	literals	packaged	-
 clients-extensions/twin-key-relay-literals	docs/openapi-surface/handwritten/twin-key-relay/openapi.yml	literals	packaged	-
 clients-extensions/vineyard-cellar-glossary-literals	docs/openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml	literals	packaged	-
