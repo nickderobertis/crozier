@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "vtex-marketplace-protocol",
+  "corpus_spec_ref": "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
+  "corpus_spec_url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml"
+}

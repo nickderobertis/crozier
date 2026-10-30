@@ -211,3 +211,11 @@ emission-parity/allof-only-base	docs/fern-measurements/emission-parity/allof-onl
 emission-parity/allof-only-base-literals	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	literals	packaged	-
 emission-parity/dangling-mapping-target	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	python-enums	packaged	-
 emission-parity/dangling-mapping-target-literals	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	literals	packaged	-
+emission-parity/query-declaration-order	docs/fern-measurements/emission-parity/query-declaration-order/openapi.yml	python-enums	packaged	-
+emission-parity/query-declaration-order-literals	docs/fern-measurements/emission-parity/query-declaration-order/openapi.yml	literals	packaged	-
+emission-parity/framing-headers	docs/fern-measurements/emission-parity/framing-headers/openapi.yml	python-enums	packaged	-
+emission-parity/framing-headers-literals	docs/fern-measurements/emission-parity/framing-headers/openapi.yml	literals	packaged	-
+emission-parity/array-with-properties	docs/fern-measurements/emission-parity/array-with-properties/openapi.yml	python-enums	packaged	-
+emission-parity/array-with-properties-literals	docs/fern-measurements/emission-parity/array-with-properties/openapi.yml	literals	packaged	-
+emission-parity/promoted-framing-headers	docs/fern-measurements/emission-parity/promoted-framing-headers/openapi.yml	python-enums	packaged	-
+emission-parity/promoted-framing-headers-literals	docs/fern-measurements/emission-parity/promoted-framing-headers/openapi.yml	literals	packaged	-

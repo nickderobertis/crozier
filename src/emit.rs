@@ -10939,8 +10939,8 @@ fn build_example_inner(
         };
         args.push((Some(pp.py_name.clone()), v));
     }
-    // Fern normally follows required/optional grouping for parameters. Two request
-    // bodies are imported with header examples before query examples instead: a
+    // Fern shows query examples before header examples. Two request bodies are
+    // imported with header examples before query examples instead: a
     // wildcard (`*/*`) body, and a form body (`multipart/form-data` or
     // urlencoded) — api.video's `POST /upload` shows its optional `Content-Range`
     // header ahead of its required `token` query parameter. Both keep the ordinary
@@ -10974,192 +10974,114 @@ fn build_example_inner(
             Example::Dict(_) | Example::DocDict(_) | Example::ReferenceDict(_)
         );
     }
-    for qp in ep
-        .query_params
-        .iter()
-        .filter(|qp| !header_first_request && qp.required)
-    {
-        // A required array is shown with one sampled item, whatever its item
-        // type (`colors=[Color.RED]`, `spots=[Spot()]`), except that Fern leaves
-        // every one out of an operation whose success body is `text/*`, or that
-        // takes a required object or map query parameter. Measured on variants
-        // of one operation: `application/xml`, `+json`, `204` and error-only
-        // responses all show it, as does an optional map beside it. The
-        // signature makes every query array optional, so either call runs.
-        // A declared example is kept where Fern drops it (the
-        // `optional-lowered-required-query-array-example` departure): the
-        // specification's own value documents the argument the operation
-        // requires. A synthesized one is left out, as Fern leaves it.
-        if omits_required_query_arrays
-            && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
-            && !(qp.example.is_some() && qp.example_is_scalar)
-        {
-            continue;
-        }
-        let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
-            // A literal the type cannot hold is not an example Fern renders: an
-            // enum parameter whose example names no member takes the enum's own
-            // synthesized value (`mosip-esignet`'s `scope: openid profile`, which
-            // is two members' values in one string). Every type that *can* hold a
-            // literal is scalar, and [`ExampleCtx::value_from_example`] renders
-            // one for each of those, so the fallback is only ever the synthesized
-            // value.
-            ctx.value_from_example(&qp.type_ref, ex)
-                .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
-        } else if let TypeRef::List(inner) = &qp.type_ref {
-            if qp.one_or_many && !reference {
-                ctx.value(inner, Slot::Named(&qp.wire_name))
-            } else if matches!(inner.as_ref(), TypeRef::Optional(_)) && !documentation {
-                // Nullable items: a docstring passes an empty list. The Markdown
-                // passes one element, the non-null one Fern renders for the same
-                // items without `nullable`, where Fern's own passes `None`, which
-                // the signature's `Sequence[int]` rejects (the
-                // `nullable-items-docs` departure).
-                Example::List(Vec::new())
-            } else {
-                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
-            }
-        } else if let TypeRef::Dict(_, value) = &qp.type_ref {
-            let pairs = vec![(
-                qp.wire_name.clone(),
-                ctx.value(value, Slot::Named(&qp.wire_name)),
-            )];
-            if reference {
-                Example::ReferenceDict(pairs)
-            } else {
-                Example::Dict(pairs)
-            }
-        } else {
-            // A union led by an unknown takes that unknown's placeholder, which
-            // the Markdown writers keep on its line as they keep any untyped
-            // value's: rice-shower's `time_start={"key": "value"}`.
-            if ctx.resolves_to_union_led_by_unknown(&qp.type_ref) {
-                ctx.untyped_arguments.insert(qp.py_name.clone());
-            }
-            ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-        };
-        args.push((Some(qp.py_name.clone()), v));
-    }
-    for header_param in ep
-        .header_params
-        .iter()
-        .filter(|header| header.required && !reference)
-    {
-        let v = header_param
-            .example
-            .as_ref()
-            .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
-            .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
-            .unwrap_or_else(|| {
-                let slot = header_slot(&header_param.wire_name);
-                header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
-            });
-        args.push((Some(header_param.py_name.clone()), v));
-    }
-    if header_first_request && !reference {
-        for header_param in ep
-            .header_params
-            .iter()
-            .filter(|header| !header.required && header.example.is_some() && declared_examples)
-        {
-            let value = header_param
-                .example
-                .as_ref()
-                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
-                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
-                .unwrap_or_else(|| {
-                    let slot = header_slot(&header_param.wire_name);
-                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
-                });
-            args.push((Some(header_param.py_name.clone()), value));
-        }
-        for qp in ep.query_params.iter().filter(|qp| qp.required) {
-            args.push((
+    // Fern walks each kind of parameter in its declaration order, an optional
+    // one beside the required ones: VTEX's `enqueue_new_order` declares its
+    // optional `an` query before its required `affiliateId` and documents
+    // `an="apiexamples", affiliate_id="MKP"`, and the `query-declaration-order`
+    // measurement shows the same for an optional header declared before a
+    // required one. An optional parameter is shown only by its declared example.
+    let mut query_args: Vec<(Option<String>, Example)> = Vec::new();
+    for qp in &ep.query_params {
+        if qp.required && header_first_request {
+            query_args.push((
                 Some(qp.py_name.clone()),
                 header_first_query_example(ctx, qp),
             ));
-        }
-    }
-    if header_first_request && reference {
-        for qp in ep.query_params.iter().filter(|qp| qp.required) {
-            args.push((
-                Some(qp.py_name.clone()),
-                header_first_query_example(ctx, qp),
-            ));
-        }
-        for header_param in ep.header_params.iter().filter(|header| header.required) {
-            let value = header_param
-                .example
-                .as_ref()
-                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
-                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
-                .unwrap_or_else(|| {
-                    let slot = header_slot(&header_param.wire_name);
-                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
-                });
-            args.push((Some(header_param.py_name.clone()), value));
-        }
-        for header_param in ep
-            .header_params
-            .iter()
-            .filter(|header| !header.required && header.example.is_some() && declared_examples)
-        {
-            let value = header_param
-                .example
-                .as_ref()
-                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
-                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
-                .unwrap_or_else(|| {
-                    let slot = header_slot(&header_param.wire_name);
-                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
-                });
-            args.push((Some(header_param.py_name.clone()), value));
-        }
-    }
-    for qp in ep.query_params.iter().filter(|qp| !qp.required) {
-        if qp.example.is_none() || !qp.example_is_scalar || !declared_examples {
-            continue;
-        }
-        let example = qp.example.as_deref().unwrap_or_default();
-        // A YAML timestamp is a date to Fern's parser, so it is no example for a
-        // parameter that is not temporal, and an optional one then goes
-        // unshown: the hand-written `ref-pointer-walk` fixture's `since` writes
-        // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
-        if let Ok(serde_json::Value::String(value)) =
-            serde_json::from_str::<serde_json::Value>(example)
-        {
-            if ctx
-                .yaml_unquoted_timestamps
-                .is_some_and(|unquoted| unquoted.contains(&value))
-                && !ctx.example_is_temporal(&qp.type_ref)
-                && yaml_resolves_as_timestamp(&value)
+        } else if qp.required {
+            // A required array is shown with one sampled item, whatever its item
+            // type (`colors=[Color.RED]`, `spots=[Spot()]`), except that Fern leaves
+            // every one out of an operation whose success body is `text/*`, or that
+            // takes a required object or map query parameter. Measured on variants
+            // of one operation: `application/xml`, `+json`, `204` and error-only
+            // responses all show it, as does an optional map beside it. The
+            // signature makes every query array optional, so either call runs.
+            // A declared example is kept where Fern drops it (the
+            // `optional-lowered-required-query-array-example` departure): the
+            // specification's own value documents the argument the operation
+            // requires. A synthesized one is left out, as Fern leaves it.
+            if omits_required_query_arrays
+                && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+                && !(qp.example.is_some() && qp.example_is_scalar)
             {
                 continue;
             }
+            let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
+                // A literal the type cannot hold is not an example Fern renders: an
+                // enum parameter whose example names no member takes the enum's own
+                // synthesized value (`mosip-esignet`'s `scope: openid profile`, which
+                // is two members' values in one string). Every type that *can* hold a
+                // literal is scalar, and [`ExampleCtx::value_from_example`] renders
+                // one for each of those, so the fallback is only ever the synthesized
+                // value.
+                ctx.value_from_example(&qp.type_ref, ex)
+                    .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
+            } else if let TypeRef::List(inner) = &qp.type_ref {
+                if qp.one_or_many && !reference {
+                    ctx.value(inner, Slot::Named(&qp.wire_name))
+                } else if matches!(inner.as_ref(), TypeRef::Optional(_)) && !documentation {
+                    // Nullable items: a docstring passes an empty list. The Markdown
+                    // passes one element, the non-null one Fern renders for the same
+                    // items without `nullable`, where Fern's own passes `None`, which
+                    // the signature's `Sequence[int]` rejects (the
+                    // `nullable-items-docs` departure).
+                    Example::List(Vec::new())
+                } else {
+                    Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+                }
+            } else if let TypeRef::Dict(_, value) = &qp.type_ref {
+                let pairs = vec![(
+                    qp.wire_name.clone(),
+                    ctx.value(value, Slot::Named(&qp.wire_name)),
+                )];
+                if reference {
+                    Example::ReferenceDict(pairs)
+                } else {
+                    Example::Dict(pairs)
+                }
+            } else {
+                // A union led by an unknown takes that unknown's placeholder, which
+                // the Markdown writers keep on its line as they keep any untyped
+                // value's: rice-shower's `time_start={"key": "value"}`.
+                if ctx.resolves_to_union_led_by_unknown(&qp.type_ref) {
+                    ctx.untyped_arguments.insert(qp.py_name.clone());
+                }
+                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+            };
+            query_args.push((Some(qp.py_name.clone()), v));
+        } else {
+            if qp.example.is_none() || !qp.example_is_scalar || !declared_examples {
+                continue;
+            }
+            let example = qp.example.as_deref().unwrap_or_default();
+            // A YAML timestamp is a date to Fern's parser, so it is no example for a
+            // parameter that is not temporal, and an optional one then goes
+            // unshown: the hand-written `ref-pointer-walk` fixture's `since` writes
+            // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
+            if let Ok(serde_json::Value::String(value)) =
+                serde_json::from_str::<serde_json::Value>(example)
+            {
+                if ctx
+                    .yaml_unquoted_timestamps
+                    .is_some_and(|unquoted| unquoted.contains(&value))
+                    && !ctx.example_is_temporal(&qp.type_ref)
+                    && yaml_resolves_as_timestamp(&value)
+                {
+                    continue;
+                }
+            }
+            query_args.push((
+                Some(qp.py_name.clone()),
+                ctx.value_from_example(&qp.type_ref, example)
+                    .unwrap_or_else(|| Example::Atom(example.to_string())),
+            ));
         }
-        args.push((
-            Some(qp.py_name.clone()),
-            ctx.value_from_example(&qp.type_ref, example)
-                .unwrap_or_else(|| Example::Atom(example.to_string())),
-        ));
     }
-    if reference && !header_first_request {
-        for header_param in ep.header_params.iter().filter(|header| header.required) {
-            let value = header_param
-                .example
-                .as_ref()
-                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
-                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
-                .unwrap_or_else(|| {
-                    let slot = header_slot(&header_param.wire_name);
-                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
-                });
-            args.push((Some(header_param.py_name.clone()), value));
-        }
-    }
-    for header_param in ep.header_params.iter().filter(|header| {
-        !header_first_request && !header.required && header.example.is_some() && declared_examples
-    }) {
+    let mut header_args: Vec<(Option<String>, Example)> = Vec::new();
+    for header_param in ep
+        .header_params
+        .iter()
+        .filter(|header| header.required || header.example.is_some() && declared_examples)
+    {
         let value = header_param
             .example
             .as_ref()
@@ -11169,7 +11091,16 @@ fn build_example_inner(
                 let slot = header_slot(&header_param.wire_name);
                 header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
             });
-        args.push((Some(header_param.py_name.clone()), value));
+        header_args.push((Some(header_param.py_name.clone()), value));
+    }
+    // A wildcard or form body takes its headers first everywhere but
+    // `reference.md` (see `header_first_request`).
+    if header_first_request && !reference {
+        args.extend(header_args);
+        args.extend(query_args);
+    } else {
+        args.extend(query_args);
+        args.extend(header_args);
     }
     // The docstring writer walks an example's headers before its query
     // parameters, whatever the body (`EndpointFunctionSnippetGenerator`); the
@@ -12658,6 +12589,96 @@ mod tests {
         let required = files_for(document(serde_json::json!(["kind"]), true));
         assert!(file(&required, "src/api/client.py").contains(tag));
         assert!(file(&required, "reference.md").contains(tag));
+    }
+
+    /// Worked examples walk query and header parameters each in declaration
+    /// order, an optional one shown before a required one declared after it
+    /// (the `query-declaration-order` measurement, Fern CLI 5.163.1). The
+    /// docstring takes headers first, and the Markdown takes queries first.
+    #[test]
+    fn worked_examples_keep_each_parameter_kind_in_declaration_order() {
+        let header = |name: &str, required: bool, example: &str| {
+            serde_json::json!({"name": name, "in": "header", "required": required,
+                "schema": {"type": "string", "example": example}})
+        };
+        let query = |name: &str, required: bool, example: &str| {
+            serde_json::json!({"name": name, "in": "query", "required": required,
+                "schema": {"type": "string", "example": example}})
+        };
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {
+                "/logbook": {"post": {
+                    "operationId": "writeLogbook",
+                    "parameters": [
+                        header("X-Watch-Note", false, "calm"),
+                        query("draft", false, "yes"),
+                        header("X-Keeper-Id", true, "keeper"),
+                        query("tide", true, "high")
+                    ],
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"type": "object", "required": ["text"],
+                            "properties": {"text": {"type": "string", "example": "fog"}}}
+                    }}},
+                    "responses": {"204": {"description": "OK"}}
+                }},
+                "/photos": {"post": {
+                    "operationId": "uploadPhoto",
+                    "parameters": [
+                        query("caption", false, "dusk"),
+                        header("X-Camera", false, "brass"),
+                        query("album", true, "winter")
+                    ],
+                    "requestBody": {"required": true, "content": {"multipart/form-data": {
+                        "schema": {"type": "object", "properties": {"note": {"type": "string"}}}
+                    }}},
+                    "responses": {"204": {"description": "OK"}}
+                }}
+            }
+        }));
+        let file = |name: &str| {
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with(name))
+                .map(|(_, contents)| contents.clone())
+                .unwrap_or_else(|| panic!("no {name}"))
+        };
+        let order = |text: &str, call: &str, names: &[&str]| {
+            let start = text
+                .find(&format!("{call}("))
+                .unwrap_or_else(|| panic!("no {call} in:\n{text}"));
+            let body = &text[start..start + text[start..].find(")\n").expect("call end")];
+            let mut at: Vec<usize> = names
+                .iter()
+                .map(|name| {
+                    body.find(&format!("{name}="))
+                        .unwrap_or_else(|| panic!("no {name} in:\n{body}"))
+                })
+                .collect();
+            let found = at.clone();
+            at.sort_unstable();
+            assert_eq!(found, at, "{call}: {names:?} out of order in:\n{body}");
+        };
+        let markdown_logbook = ["draft", "tide", "watch_note", "keeper_id", "text"];
+        order(&file("reference.md"), "write_logbook", &markdown_logbook);
+        order(&file("README.md"), "write_logbook", &markdown_logbook);
+        let client = file("src/api/client.py");
+        order(
+            &client,
+            "client.write_logbook",
+            &["watch_note", "keeper_id", "draft", "tide", "text"],
+        );
+        order(
+            &file("reference.md"),
+            "upload_photo",
+            &["caption", "album", "camera"],
+        );
+        order(
+            &client,
+            "client.upload_photo",
+            &["camera", "caption", "album"],
+        );
     }
 
     /// A wrapper holding a union whole in `value` passes it without a trailing

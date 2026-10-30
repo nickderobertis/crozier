@@ -1981,3 +1981,15 @@ measured beside them are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |
+
+## Optional-first query arguments, framing headers, and `items` beside `properties`
+
+VTEX's Marketplace Protocol declares optional query parameters before required
+ones, required `Content-Length` and `X-Forwarded-For` header parameters, and
+untyped schemas carrying both `items: {}` and a `properties` map. The three
+repairs that brought it to a byte-match are recorded in
+[`vtex-output-parity.md`](../../docs/vtex-output-parity.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 3479 | `vtex-marketplace-protocol` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | committed | An optional query parameter declared before a required one; required `Content-Length` and `X-Forwarded-For` header parameters beside `X-Forwarded-Proto`; untyped schemas carrying `items: {}` beside `properties` |

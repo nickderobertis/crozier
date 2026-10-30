@@ -2945,6 +2945,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_multi_type_schemas(&mut doc);
     normalize_undiscriminated_unions(&mut doc);
     normalize_unlisted_required(&mut doc);
+    normalize_array_properties(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     reject_unemittable_parameters(&doc, path)?;
@@ -3750,6 +3751,27 @@ fn normalize_unlisted_required(doc: &mut OpenApi) {
                 };
             } else if node.required.is_unlisted() {
                 node.required = RequiredNames::default();
+            }
+        });
+    });
+}
+
+/// Read a schema declaring `type: array` as the array it says it is, whatever
+/// `properties` map sits beside its `items`: Fern types it a list of those items
+/// and never reads the map. VTEX's Marketplace Protocol (corpus row 3479) writes
+/// `installmentOptions: {type: array, items: {}, properties: {bin, installments,
+/// …}}`, and Fern's field is `Optional[List[Any]]`. The `array-with-properties`
+/// measurement shows the same reading with string items (`List[str]`), with no
+/// `items` (`List[Any]`) and for a component (`Bundle = List[Any]`). Without a
+/// declared type, `items` beside `properties` still reads as an object there.
+/// The map goes here, so no later pass hoists a model from it.
+fn normalize_array_properties(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node.ty.as_ref().and_then(TypeField::primary) == Some("array")
+                && node.properties.declared()
+            {
+                node.properties = SchemaProperties::default();
             }
         });
     });
@@ -5759,6 +5781,75 @@ components:
             item.ty.as_ref().and_then(TypeField::primary),
             Some("number")
         );
+    }
+
+    #[test]
+    fn a_declared_array_drops_the_properties_beside_its_items_and_an_untyped_one_keeps_them() {
+        let mut doc = parse(
+            r"
+openapi: 3.0.3
+info: { title: t, version: '1' }
+paths:
+  /harvests:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  crates:
+                    type: array
+                    items: {}
+                    properties:
+                      count: { type: integer }
+                      grades:
+                        type: array
+                        items: {}
+                        properties: { letter: { type: string } }
+                  weather:
+                    items: {}
+                    properties: { sky: { type: string } }
+components:
+  schemas:
+    Bundle:
+      type: array
+      items: { type: string }
+      properties: { label: { type: string } }
+    Nullable:
+      type: [array, 'null']
+      properties: { label: { type: string } }
+    Plain:
+      type: array
+      items: { type: string }
+",
+        );
+        normalize_array_properties(&mut doc);
+        for name in ["Bundle", "Nullable", "Plain"] {
+            let schema = &doc.components.schemas[name];
+            assert!(schema.properties.is_empty(), "{name}");
+            assert!(!schema.properties.declared(), "{name}");
+        }
+        // The items survive: only the map beside them goes.
+        let bundle = doc.components.schemas["Bundle"].items.as_deref();
+        assert_eq!(
+            bundle.and_then(|items| items.ty.as_ref().and_then(TypeField::primary)),
+            Some("string")
+        );
+        let operation = doc.paths["/harvests"].get.as_ref().expect("get");
+        let response = operation.responses["200"].content["application/json"]
+            .schema
+            .as_ref()
+            .expect("schema");
+        let crates = response.properties.get("crates").expect("crates");
+        assert!(crates.properties.is_empty());
+        assert!(crates.items.is_some());
+        // With no declared type, `items` beside `properties` keeps the map.
+        let weather = response.properties.get("weather").expect("weather");
+        assert!(weather.properties.get("sky").is_some());
+        assert!(response.properties.get("crates").is_some());
     }
 
     #[test]
