@@ -12,7 +12,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cargo nextest run --locked -p crozier-e2e --run-ignored only -E \"test(/^sdk_env_/) and not test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
+        "command": "cargo nextest run --locked -p crozier-e2e --run-ignored only -E \"test(/(^|::)sdk_env_/) and not test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
       },
       "cache": false,
       "inputs": [

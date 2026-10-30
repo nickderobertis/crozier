@@ -129,7 +129,7 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/^sdk_env_/)` selector reads a test's full name, so a journey in a module is wrapped here at the crate root; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/(^|::)sdk_env_/)` selector reads a test's full name and so selects a module's journey as well as one at the crate root (`every_sdk_env_journey_is_selected_by_the_sdk_env_tier` holds that); crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 /// The observatory measurement's dangling `METEOR` wrapper round-trips through
 /// crozier's client and fails through the certified tree's
 /// (`emission_parity`).
@@ -148,6 +148,147 @@ fn sdk_env_conquery_secondary_id_query_round_trips_through_the_client() {
     emission_parity::conquery_secondary_id_query_round_trips_through_the_client();
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// One nextest filterset predicate, as the SDK-environment tier's commands
+/// write them: `test(/regex/)` searches a test's full name, `test(=name)` is the
+/// whole name, and either may be negated with `not`. Any other spelling panics,
+/// so a filter this reading cannot evaluate fails rather than reading as empty.
+fn tier_filter_selects(expression: &str, name: &str) -> bool {
+    expression.split(" and ").all(|term| {
+        let (negated, term) = match term.trim().strip_prefix("not ") {
+            Some(rest) => (true, rest),
+            None => (false, term.trim()),
+        };
+        let inner = term
+            .strip_prefix("test(")
+            .and_then(|rest| rest.strip_suffix(')'))
+            .unwrap_or_else(|| {
+                panic!("unreadable sdk-env tier filter term `{term}` in `{expression}`")
+            });
+        let hit = if let Some(pattern) = inner
+            .strip_prefix('/')
+            .and_then(|rest| rest.strip_suffix('/'))
+        {
+            predicate::str::is_match(pattern)
+                .unwrap_or_else(|error| panic!("sdk-env tier filter regex `{pattern}`: {error}"))
+                .eval(name)
+        } else if let Some(exact) = inner.strip_prefix('=') {
+            name == exact
+        } else {
+            panic!("unreadable sdk-env tier filter term `{term}` in `{expression}`")
+        };
+        hit != negated
+    })
+}
+
+/// The project files of the tier projects `just test-sdk-env` runs, each also an
+/// `e2eReads` input. Read by path rather than by scanning `tests/`, so the suite
+/// reads no project the boundaries forbid it to depend on.
+const SDK_ENV_TIER_PROJECT_FILES: [&str; 3] = [
+    "tests/sdk_env/project.json",
+    "tests/runtime/project.json",
+    "tests/nested-discriminator/runtime/project.json",
+];
+
+/// Every `sdk_env_` journey this binary carries, a module-qualified one such as
+/// `output_defects::sdk_env_…` included, is selected by the nextest filter of
+/// one of the projects `just test-sdk-env` runs, so each runtime journey a
+/// catalogued departure cites as its proof runs in that tier. The journeys are
+/// this binary's own ignored tests as libtest lists them, not a reading of the
+/// source; the filters are the projects' committed commands.
+#[test]
+fn every_sdk_env_journey_is_selected_by_the_sdk_env_tier() {
+    let root = repo_root();
+    let justfile = std::fs::read_to_string(root.join("justfile")).unwrap();
+    let projects: Vec<&str> = justfile
+        .split("\ntest-sdk-env:\n")
+        .nth(1)
+        .and_then(|body| body.lines().next())
+        .and_then(|line| line.split("--projects=").nth(1))
+        .expect("justfile's `test-sdk-env` recipe names the projects it runs with `--projects=`")
+        .split(',')
+        .map(str::trim)
+        .collect();
+    let mut filters = Vec::new();
+    let mut found = Vec::new();
+    for relative in SDK_ENV_TIER_PROJECT_FILES {
+        let path = root.join(relative);
+        let text = std::fs::read_to_string(&path)
+            .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+        let project: serde_json::Value = serde_json::from_str(&text).unwrap();
+        let name = project["name"].as_str().unwrap_or_default().to_owned();
+        if !projects.contains(&name.as_str()) {
+            continue;
+        }
+        found.push(name);
+        let command = project["targets"]["test"]["options"]["command"]
+            .as_str()
+            .unwrap_or_default();
+        if command.contains("cargo nextest run") && command.contains("-p crozier-e2e") {
+            let expression = command
+                .split("-E \"")
+                .nth(1)
+                .and_then(|rest| rest.split('"').next())
+                .unwrap_or_else(|| {
+                    panic!(
+                        "{}: its crozier-e2e run carries no `-E \"…\"` filter",
+                        path.display()
+                    )
+                });
+            filters.push(expression.to_owned());
+        }
+    }
+    let missing: Vec<&&str> = projects
+        .iter()
+        .filter(|name| !found.iter().any(|seen| seen == **name))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "`test-sdk-env` runs {missing:?}, whose project.json is not in SDK_ENV_TIER_PROJECT_FILES; \
+         add its path there and to nx.json's `e2eReads`"
+    );
+    assert!(
+        !filters.is_empty(),
+        "no project `test-sdk-env` runs ({projects:?}) runs crozier-e2e"
+    );
+    let listed = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--list", "--ignored", "--format", "terse"])
+        .output()
+        .unwrap();
+    assert!(
+        listed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&listed.stderr)
+    );
+    let journeys: Vec<String> = String::from_utf8(listed.stdout)
+        .unwrap()
+        .lines()
+        .filter_map(|line| line.strip_suffix(": test"))
+        .filter(|name| {
+            name.rsplit("::")
+                .next()
+                .is_some_and(|leaf| leaf.starts_with("sdk_env_"))
+        })
+        .map(str::to_owned)
+        .collect();
+    assert!(
+        journeys.iter().any(|name| name.contains("::")),
+        "no module-qualified `sdk_env_` journey listed; the check would not reach one: {journeys:?}"
+    );
+    let unselected: Vec<&String> = journeys
+        .iter()
+        .filter(|name| {
+            !filters
+                .iter()
+                .any(|filter| tier_filter_selects(filter, name))
+        })
+        .collect();
+    assert!(
+        unselected.is_empty(),
+        "these `sdk_env_` journeys run in no `test-sdk-env` project; widen the filter of tests/sdk_env/project.json \
+         ({filters:?}) to select them: {unselected:?}"
+    );
+}
 
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
