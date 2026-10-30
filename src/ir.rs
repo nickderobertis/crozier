@@ -24139,7 +24139,8 @@ mod tests {
 
     #[test]
     fn alias_reference_correction_is_scoped_to_nonempty_flattened_fields_without_request() {
-        let source = include_str!("../docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml");
+        let source =
+            include_str!("../docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml");
         let mut document: serde_json::Value = crate::yaml::from_str(source).unwrap();
         document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({
             "request": { "type": "string" }

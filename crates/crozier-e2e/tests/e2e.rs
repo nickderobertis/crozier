@@ -3413,7 +3413,11 @@ fn schema_shape_arms_match_complete_certified_trees() {
         for &mode in modes {
             let fixture_dir = if repo_root().join(&measured).is_dir() {
                 SCHEMA_SHAPES_DIR
-            } else if repo_root().join(SUPERSEDED_FIXTURES_DIR).join(shape).is_dir() {
+            } else if repo_root()
+                .join(SUPERSEDED_FIXTURES_DIR)
+                .join(shape)
+                .is_dir()
+            {
                 SUPERSEDED_FIXTURES_DIR
             } else {
                 HANDWRITTEN_DIR
@@ -5225,7 +5229,8 @@ fn alias_reference_scope_controls_keep_their_reference_body_through_the_cli() {
     let root = repo_root();
     let original: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(
-            root.join(SUPERSEDED_FIXTURES_DIR).join("request-alias/openapi.yml"),
+            root.join(SUPERSEDED_FIXTURES_DIR)
+                .join("request-alias/openapi.yml"),
         )
         .unwrap(),
     )
@@ -5504,7 +5509,10 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join(SUPERSEDED_FIXTURES_DIR).join("multipart-nullable-array/openapi.yml"))
+            .arg(
+                root.join(SUPERSEDED_FIXTURES_DIR)
+                    .join("multipart-nullable-array/openapi.yml"),
+            )
             .arg("--output")
             .arg(out.path())
             .args([
@@ -5691,7 +5699,10 @@ fn sdk_env_alias_body_reference_matches_the_actual_flattened_signature() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join(SUPERSEDED_FIXTURES_DIR).join("request-alias/openapi.yml"))
+            .arg(
+                root.join(SUPERSEDED_FIXTURES_DIR)
+                    .join("request-alias/openapi.yml"),
+            )
             .arg("--output")
             .arg(out.path())
             .args([
@@ -28776,11 +28787,7 @@ fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
         } else {
             handwritten.join(name)
         };
-        (
-            name,
-            dir.join("openapi.yml"),
-            dir.join("fern-expected/src"),
-        )
+        (name, dir.join("openapi.yml"), dir.join("fern-expected/src"))
     })
     .collect();
     cases.push((
