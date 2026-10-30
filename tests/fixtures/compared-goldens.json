@@ -569,6 +569,7 @@
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
+    "docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-form-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-variant-trigger/fern-expected": {},
@@ -1124,6 +1125,12 @@
     "tests/fixtures/nextgen/expected": {},
     "tests/fixtures/nimisampo/expected": {},
     "tests/fixtures/nimisampo/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/nixtla-timegpt/expected": {},
+    "tests/fixtures/nixtla-timegpt/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

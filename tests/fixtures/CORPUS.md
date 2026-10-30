@@ -1981,3 +1981,16 @@ measured beside them are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |
+
+## Float literals a fast decimal reader rounds one unit off
+
+Nixtla's TimeGPT document, vendored in ourofoundation/wrappers, carries
+seventeen-digit floats in its worked examples, several of which a fast,
+approximate decimal reader lands one unit in the last place away from their
+correctly rounded value, and rows of an example matrix that end exactly at the
+snippet width once their trailing comma is counted. Both repairs are recorded
+in [`float-literal-parity.md`](../../docs/float-literal-parity.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4301 | `nixtla-timegpt` | github-raw | https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json | `79688dd65e7fb2fb670ad30b01b5db5208c1d928` | MIT (repository LICENSE; the document declares no info.license) | committed | JSON float literals whose correctly rounded value a fast reader misses by one unit in the last place, in worked examples; example-matrix rows that end at the snippet width with their trailing comma |

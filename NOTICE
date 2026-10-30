@@ -727,3 +727,8 @@ ingef-conquery API specification and generated SDK golden:
     https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml
     MIT (the repository's own LICENSE); corpus row 3478 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+nixtla-timegpt API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4301 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

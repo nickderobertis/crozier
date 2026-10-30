@@ -128,6 +128,7 @@ const KINDS: &[Kind] = &[
             "openapi-generator-composed-schema-lowering",
             "rs-server",
             "ingef-conquery",
+            "nixtla-timegpt",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },
