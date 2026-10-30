@@ -12,7 +12,7 @@ every declarer, its site count and its screening outcome in
 
 ## Targets
 
-Computed from base `1748b79468890ba98a4e8c64fa7f0519b2cf6b56`: every `handwritten` row of `bodies-media.md` and
+Computed from base `1748b794688900b67e630cad6f606f421bb14b3a`: every `handwritten` row of `bodies-media.md` and
 `document-paths.md` (combination rows included), no residual-only supplement (neither file has one), and every
 arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 
@@ -89,7 +89,7 @@ unchanged `tools/surface-census/openapi-surface-census.py` evaluator.
 
 | population | revision | files read | OpenAPI 3 | other version | unreadable |
 |---|---|---:|---:|---:|---:|
-| registered corpus (`tests/fixtures/`) | base `1748b79468890ba98a4e8c64fa7f0519b2cf6b56` | 986 | 294 | 692 | 0 |
+| registered corpus (`tests/fixtures/`) | base `1748b794688900b67e630cad6f606f421bb14b3a` | 986 | 294 | 692 | 0 |
 | APIs.guru `APIs-guru/openapi-directory` archive | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`, archive SHA-256 `816adb9fb4e19dc9ab28d7ad95363de146251fb41164abdb86f953f9f400c644` | 4,138 | 1,970 | 2,168 | 0 |
 | earlier GitHub code-search acquisitions (two retained copies) | identity snapshot SHA-256 `ecdfa0355116f4c28e5b0768997eedb070d2453aef9668fb77a56ad1817165b5` | 10,159 | 9,484 | 569 | 106 |
 | earlier Sourcegraph acquisitions (two retained copies) | the same identity snapshot | 8,100 | 5,640 | 2,424 | 36 |
