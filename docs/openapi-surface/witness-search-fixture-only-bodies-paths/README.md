@@ -10,6 +10,14 @@ executes the target's arm or interaction branch. Every other target ends
 every declarer, its site count and its screening outcome in
 [`census.tsv`](census.tsv).
 
+The record names one commit of this repository: the base below, the parent of
+this branch's first commit, which the target set was computed from. Every
+other 40-hex revision it or `census.tsv` names belongs to the repository
+written beside it — the APIs.guru `openapi-directory` archive, or the
+publisher in a `owner/repo:path@revision` declarer — and so does not resolve
+in this repository; identities of this repository's own documents name the
+base.
+
 ## Targets
 
 Computed from base `1748b794688900b67e630cad6f606f421bb14b3a`: every `handwritten` row of `bodies-media.md` and
