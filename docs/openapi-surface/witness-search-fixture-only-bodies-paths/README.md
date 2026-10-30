@@ -95,9 +95,12 @@ unchanged `tools/surface-census/openapi-surface-census.py` evaluator.
 | earlier Sourcegraph acquisitions (two retained copies) | the same identity snapshot | 8,100 | 5,640 | 2,424 | 36 |
 | shared GitHub response cache, bodies naming `openapi` | `${XDG_CACHE_HOME:-$HOME/.cache}/crozier/github-responses/` as read on 2026-10-29 | 1,577 | 1,566 | 3 | 8 |
 | this search's live GitHub code-search results | each result at the commit GitHub indexed | 2,497 | 946 | 1,094 | 457 |
+| the sibling operations-extensions search's live acquisitions, read 2026-10-30 (the 2,210 of its 2,706 documents no population above holds) | each result at the commit GitHub indexed | 2,210 | 267 | 1,042 | 901 |
 
-The populations overlap; 10,755 distinct OpenAPI 3 documents (by SHA-256) were
-censused. A cache body names no request, so one with no recorded publisher,
+The populations overlap; 11,022 distinct OpenAPI 3 documents (by SHA-256) were
+censused. The sibling's documents were read from its worktree and copied out,
+never written there, and re-screened before any further live search; none
+yielded a registrable witness (`census.tsv` names each declarer). A cache body names no request, so one with no recorded publisher,
 path and revision in an earlier search's ledger or enumeration is counted but
 cannot be registered. The earlier acquisitions' identities, and their
 hash audit, are those the
@@ -116,7 +119,7 @@ code-search calls.
 | bucket | live requests | answered from the cache |
 |---|---:|---:|
 | `code_search` | 52 | 4 |
-| `core` (result contents, repository licences, source verification) | 3282 | 137 |
+| `core` (result contents, repository licences, source verification) | 3287 | 138 |
 
 The guard logged one wait, with the two readings it took while waiting, and
 no secondary-limit refusal. No Sourcegraph, Postman, SwaggerHub or GraphQL
@@ -255,17 +258,17 @@ One line per open feature or combination target; `census.tsv` names every declar
 | `response-status-space-suffixed` | `search-incomplete` | 6 | 2 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
 | `get-request-body-union-member` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `allof-parent-request-body` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `request-example-deprecated-property` | `search-incomplete` | 300 | 6 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `request-example-deprecated-property` | `search-incomplete` | 302 | 6 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `enum-union-body-example-first-member-value` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `multipart-inline-object-part-json-encoded` | `search-incomplete` | 37 | 11 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `multipart-inline-object-part-json-encoded` | `search-incomplete` | 39 | 11 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `multipart-part-encoding-charset-tuple` | `search-incomplete` | 6 | GitHub reported 418 results for `"multipart/form-data" "encoding:" "contentType:" "charset="` and its first 300 were read; GitHub reported 312 results for `"multipart/form-data" "\"encoding\"" "\"contentType\"" "charset="` and its first 300 were read |
 | `stream-error-status-raises-typed-error` | `exhausted` | 0 | every one of the 0 declarer(s) is decided and the live window was read whole |
-| `string-body-example-backslash-escaped` | `search-incomplete` | 0 | GitHub reported 135 results for `"requestBody:" "type: string" "example:" "\\n" "text/plain" path:openapi` and its first 133 were read |
+| `string-body-example-backslash-escaped` | `search-incomplete` | 1 | GitHub reported 135 results for `"requestBody:" "type: string" "example:" "\\n" "text/plain" path:openapi` and its first 133 were read |
 | `binary-download-with-body-has-no-example` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `example-imports-case-insensitive-order` | `search-incomplete` | 2 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `readme-multipart-file-params-listed-first` | `search-incomplete` | 134 | 63 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `readme-multipart-file-params-listed-first` | `search-incomplete` | 135 | 63 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `readme-multipart-optional-file-params` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `readme-streaming-snippet-omits-type-import` | `search-incomplete` | 57 | 8 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
+| `readme-streaming-snippet-omits-type-import` | `search-incomplete` | 60 | 8 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
 | `text-response-drops-request-example` | `search-incomplete` | 6 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
 | `multipart-optional-enum-part-plain-field` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `server-default-url-templated` | `exhausted` | 9 | every one of the 9 declarer(s) is decided and the live window was read whole |
@@ -274,14 +277,14 @@ One line per open feature or combination target; `census.tsv` names every declar
 | `operation-id-untagged-list-or-set` | `search-incomplete` | 18 | 2 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `operation-id-all-caps-tag-split-prefix` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `operation-empty-tag` | `exhausted` | 10 | every one of the 10 declarer(s) is decided and the live window was read whole |
-| `empty-path-segment-double-slash-kept` | `search-incomplete` | 3 | GitHub reported 683 results for `"paths:" "//{" path:openapi` and its first 300 were read |
-| `group-path-ending-in-api-nested-package` | `search-incomplete` | 0 | GitHub reported 2692 results for `"x-fern-sdk-group-name" "api"` and its first 300 were read |
+| `empty-path-segment-double-slash-kept` | `search-incomplete` | 4 | GitHub reported 683 results for `"paths:" "//{" path:openapi` and its first 300 were read |
+| `group-path-ending-in-api-nested-package` | `search-incomplete` | 1 | GitHub reported 2692 results for `"x-fern-sdk-group-name" "api"` and its first 300 were read |
 | `readme-endpoint-prefers-argless-non-get` | `search-incomplete` | 7 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `readme-nested-group-post-preferred` | `search-incomplete` | 3 | GitHub reported 1548 results for `"x-fern-sdk-group-name" "post"` and its first 300 were read |
+| `readme-nested-group-post-preferred` | `search-incomplete` | 5 | GitHub reported 1548 results for `"x-fern-sdk-group-name" "post"` and its first 300 were read |
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1487 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `combo-body-property-named-as-header-param` | `search-incomplete` | 7 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `combo-success-oneof-nullable` | `search-incomplete` | 27 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `combo-success-anyof-nullable` | `search-incomplete` | 82 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `combo-success-anyof-nullable` | `search-incomplete` | 84 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 
 ## Arm verdicts
 
