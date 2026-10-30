@@ -69,16 +69,16 @@ split five ways:
   [renewed search](openapi-surface/witness-search-bodies-responses/README.md)
   read 1,469 documents a bounded code search returned, and none declares
   either.
-  The parameter-lowering shapes `query-array-items-union`,
-  `header-subset-string-default` and `base-path-extension` have not been
-  searched at any declared source either: their
-  [search](openapi-surface/witness-search-parameter-lowering/README.md) read the
-  documents already acquired for the coverage searches, issued no live query,
-  and found each `none-registrable`.
-  The thirteen parameter extension and serialization shapes read
-  `search-incomplete` on their
-  [search](openapi-surface/witness-search-parameters-extension-evidence/README.md),
-  which screened the candidate real specifications it names against Fern.
+  The hand-written rows of `parameters.md`, `security.md` and
+  `oas31-extensions.md` cite the
+  [fixture-only search](openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts),
+  which read the registered corpus, the pinned APIs.guru archive, the
+  documents earlier searches acquired and a guarded GitHub code search for
+  every `x-fern-*` extension they name. It registered real witnesses for six
+  of them (corpus rows 4400 to 4404, and row 3001 reused), reads `exhausted`
+  where every declarer is decided and none is registrable, and leaves the
+  shapes no code-search phrase selects `search-incomplete`, naming each
+  outstanding declarer.
   Three more — `cycle-into-cycle`,
   `request-body-property-closed-empty-object` and `type-misspelled-scalar` —
   have not been searched at any declared source either; their
@@ -89,8 +89,7 @@ split five ways:
   [search](openapi-surface/witness-search-contentless-success/README.md) read
   238 registered sources and 40 additional pinned candidates, finding one
   converter example that fails publisher provenance.
-  The union shapes `discriminated-extension`,
-  `discriminator-property-name-extension`, `get-request-body-union-member` and
+  The union shapes `get-request-body-union-member` and
   `oneof-map-variant-anyof-value` have not been searched at any declared source
   either; their
   [search](openapi-surface/witness-search-union-scenarios/README.md#witness-search)

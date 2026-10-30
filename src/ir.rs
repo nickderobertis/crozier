@@ -11602,7 +11602,7 @@ fn inferred_union_discriminant_property(
                     // The `anyOf` rule of `inferred_discriminant_property_with`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
                     .filter(|tag| {
-                        !untyped_enum_tag(tag) && !(inline_only && untyped_const_tag(tag))
+                        !(untyped_enum_tag(tag) || (inline_only && untyped_const_tag(tag)))
                     })
                     .and_then(discriminant_value)
             })
