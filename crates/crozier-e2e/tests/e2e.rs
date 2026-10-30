@@ -2341,7 +2341,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "tide-gauge-sessions-literals",
-        "docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml",
+        "docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -10456,6 +10456,8 @@ const CORPORA: &[&Corpus] = &[
     &NOTION_MCP_SERVER,
     &LAPOSTA,
     &MCP_HANDLE,
+    &MICROSOFT_ADME_CRS_CONVERTER,
+    &WIIM_HTTPAPI,
 ];
 
 #[test]
@@ -14585,6 +14587,43 @@ const MCP_HANDLE: Corpus = Corpus {
 #[test]
 fn mcp_handle_matches_fern_output() {
     assert_committed_corpus_matches(&MCP_HANDLE);
+}
+
+/// Microsoft's ADME CRS converter description — corpus row 4403. Its http
+/// scheme spells `scheme: Bearer` with a capital.
+const MICROSOFT_ADME_CRS_CONVERTER: Corpus = Corpus {
+    api: "microsoft-adme-crs-converter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn microsoft_adme_crs_converter_matches_fern_output() {
+    assert_committed_corpus_matches(&MICROSOFT_ADME_CRS_CONVERTER);
+}
+
+/// The Linkplay/WiiM device HTTP API as its author describes it — corpus row
+/// 4404. Its command routes put an integer parameter after literal text in one
+/// segment.
+const WIIM_HTTPAPI: Corpus = Corpus {
+    api: "wiim-httpapi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn wiim_httpapi_matches_fern_output() {
+    assert_committed_corpus_matches(&WIIM_HTTPAPI);
 }
 
 #[test]

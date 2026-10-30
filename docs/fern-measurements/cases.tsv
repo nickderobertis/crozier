@@ -41,7 +41,7 @@ clients-extensions/relay-station-shared-name	docs/fern-measurements/clients-exte
 clients-extensions/rfid-door-panel-literals	docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml	literals	packaged	-
 clients-extensions/signal-box-relays-literals	docs/openapi-surface/handwritten/signal-box-relays/openapi.yml	literals	packaged	-
 clients-extensions/ski-lift-gates-literals	docs/fern-measurements/clients-extensions/ski-lift-gates-literals/openapi.yml	literals	packaged	-
-clients-extensions/tide-gauge-sessions-literals	docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml	literals	packaged	-
+clients-extensions/tide-gauge-sessions-literals	docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/openapi.yml	literals	packaged	-
 clients-extensions/twin-key-relay-literals	docs/openapi-surface/handwritten/twin-key-relay/openapi.yml	literals	packaged	-
 clients-extensions/vineyard-cellar-glossary-literals	docs/openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml	literals	packaged	-
 clients-extensions/weather-buoy-feeds	docs/fern-measurements/clients-extensions/weather-buoy-feeds/openapi.yml	python-enums	packaged	-
@@ -79,7 +79,7 @@ literals-mode/group-path-ending-in-api-nested-package	docs/openapi-surface/handw
 literals-mode/invoice-renderer	docs/openapi-surface/handwritten/invoice-renderer/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/invoice-renderer/fern-expected
 literals-mode/literal-enum-description-omitted	docs/fern-measurements/literals-mode/literal-enum-description-omitted/openapi.yml	literals	packaged	expected:-
 literals-mode/literal-enum-value-quote-escaping	docs/openapi-surface/handwritten/literal-enum-value-quote-escaping/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/literal-enum-value-quote-escaping/fern-expected
-literals-mode/literal-prefixed-integer-path-segment	docs/openapi-surface/handwritten/literal-prefixed-integer-path-segment/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/literal-prefixed-integer-path-segment/fern-expected
+literals-mode/literal-prefixed-integer-path-segment	docs/fern-measurements/literals-mode/literal-prefixed-integer-path-segment/openapi.yml	literals	packaged	expected:-
 literals-mode/multipart-inline-object-part-json-encoded	docs/openapi-surface/handwritten/multipart-inline-object-part-json-encoded/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/multipart-inline-object-part-json-encoded/fern-expected
 literals-mode/multipart-part-encoding-charset-tuple	docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected
 literals-mode/multipart-single-value-enum-part-kept-optional	docs/fern-measurements/literals-mode/multipart-single-value-enum-part-kept-optional/openapi.yml	literals	packaged	expected:-

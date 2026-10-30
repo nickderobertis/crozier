@@ -482,7 +482,44 @@ Witness {
         ],
         &["token: typing.Optional[typing.Union[str"],
     )],
-}];
+},
+Witness {
+    shape: "security-scheme-capitalised-http",
+    corpus: "microsoft-adme-crs-converter",
+    declares: |doc| {
+        let scheme = at(doc, "/components/securitySchemes/Authorization")?;
+        expect(
+            scheme["type"] == "http" && scheme["scheme"] == "Bearer",
+            "the http scheme spells `Bearer` with a capital",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &["headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""],
+        &[],
+    )],
+},
+Witness {
+    shape: "literal-prefixed-integer-path-segment",
+    corpus: "wiim-httpapi",
+    declares: |doc| {
+        let operation = at(doc, "/paths/~1setPlayerCmd:vol:{value}/get")?;
+        expect(
+            operation["parameters"].as_array().is_some_and(|list| {
+                list.iter().any(|p| {
+                    p["name"] == "value" && p["in"] == "path" && p["schema"]["type"] == "integer"
+                })
+            }),
+            "`/setPlayerCmd:vol:{value}` types `value` as an integer path parameter",
+        )
+    },
+    golden: &[(
+        "src/fern/playback_control/raw_client.py",
+        &["f\"setPlayerCmd:vol:{encode_path_param(value)}\","],
+        &[],
+    )],
+},
+];
 
 /// Every fixture-only-search witness still declares its shape and carries its
 /// output.

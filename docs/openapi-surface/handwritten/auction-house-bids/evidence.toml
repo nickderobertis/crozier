@@ -4,6 +4,5 @@ digest = "b99b2033f08e57d57ea880deeb6362bd8b981b72defc898b67502a741e3b93bb"
 
 [[covers]]
 key = "operation-webhook-extension"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#webhook-marked-path-operation"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

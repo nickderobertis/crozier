@@ -2000,10 +2000,20 @@ platform's API reference in its own `WeatherPal-AI/MCP-handle` repository (not
 a fork), under the repository's Apache-2.0 `LICENSE` (retained in
 `licenses/mcp-handle-Apache-2.0.txt`); its bearer scheme's `x-fern-bearer`
 names the credential `api_key`, and its `servers` query parameter is a nullable
-array of an inline union.
+array of an inline union. Microsoft's `adme-samples` repository, whose
+seismic description row 3004 already registers at the same revision, also
+publishes the CRS converter description; its http scheme spells `scheme:
+Bearer` with a capital, and the repository grants MIT (retained in
+`licenses/microsoft-adme-samples.txt`). The WiiM device HTTP API is described
+in OpenAPI by its author in `cvdlinden/wiim-httpapi` under the repository's
+GPL-3.0 `LICENSE` (retained in `licenses/wiim-httpapi-GPL-3.0.txt`); its command
+routes put an integer parameter after literal text in one segment
+(`/setPlayerCmd:vol:{value}`).
 
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 4400 | `notion-mcp-server` | github-raw | https://raw.githubusercontent.com/makenotion/notion-mcp-server/730ae781ba28beeaf0865025a3f2ed4c25ea2387/scripts/notion-openapi.json | `730ae781ba28beeaf0865025a3f2ed4c25ea2387` | MIT (document info.license and publisher repository LICENSE) | committed | A string-defaulted header on a subset of operations; an inline union tagged by untyped `const` |
 | 4401 | `laposta` | github-raw | https://raw.githubusercontent.com/laposta/laposta-skill/a97773a9023708ab722e30f0e157a2b69fefc882/spec/openapi-en.yml | `a97773a9023708ab722e30f0e157a2b69fefc882` | MIT (publisher repository LICENSE) | committed | A basic scheme naming its credentials by `x-fern-basic`; string examples on boolean and integer schemas |
 | 4402 | `mcp-handle` | github-raw | https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json | `9c59f16950d25e08c1058d8174e12b22861280d8` | Apache-2.0 (publisher repository LICENSE) | committed | A bearer scheme naming its credential by `x-fern-bearer`; a nullable query array of an inline union |
+| 4403 | `microsoft-adme-crs-converter` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/crs_converter_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | MIT (publisher repository LICENSE) | committed | An http scheme spelled `Bearer` with a capital |
+| 4404 | `wiim-httpapi` | github-raw | https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json | `3dce4a722aa2b30fdb06d720b58714e224d26eb6` | GPL-3.0 (author repository LICENSE) | committed | Integer path parameters after literal text in one segment |

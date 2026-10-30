@@ -4,6 +4,6 @@ digest = "60b70a9dcc52d25e1eae901a644baa2d079ffd431b6abd89b2fce418a7a5672d"
 
 [[covers]]
 key = "global-headers-extension"
-search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

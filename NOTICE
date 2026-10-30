@@ -748,3 +748,17 @@ MCP Handle API reference and generated SDK golden:
     LICENSE, retained in licenses/mcp-handle-Apache-2.0.txt). Corpus row 4402
     retains the unmodified source alongside the generated SDK, with Python
     comments stripped.
+
+The CRS converter OpenAPI document in corpus row 4403 is distributed by
+Microsoft in microsoft/adme-samples at revision
+df39d22ed32acfe80fcdbc5b554871b2c752a39a, rest-apis/M18/crs_converter_openapi.yaml,
+under the publisher repository's MIT grant, Copyright (c) Microsoft
+Corporation, retained in licenses/microsoft-adme-samples.txt. The row retains
+the unmodified source alongside the generated SDK.
+
+Linkplay/WiiM HTTP API description and generated SDK golden:
+    https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json
+    Written and published by its author in cvdlinden/wiim-httpapi under the
+    repository's GPL-3.0 grant, retained in licenses/wiim-httpapi-GPL-3.0.txt.
+    Corpus row 4404 retains the unmodified source alongside the generated SDK,
+    with Python comments stripped.

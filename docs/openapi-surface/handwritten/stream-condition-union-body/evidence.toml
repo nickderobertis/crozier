@@ -4,13 +4,11 @@ digest = "ecb272c7d3d601e238d24ac6e89e37a4ac37aba0784153db2893b136279b72cc"
 
 [[covers]]
 key = "fern-streaming-condition-union-body"
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"
 
 [[covers]]
 key = "fern-streaming-extension"
 arm = 'src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]'
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
+verdict = "exhausted"

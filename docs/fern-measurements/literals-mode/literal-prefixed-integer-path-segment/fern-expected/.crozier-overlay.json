@@ -3,7 +3,5 @@
   "fern_cli_version": "5.163.1",
   "enum_type": "literals",
   "base": "expected",
-  "removed": [
-    "src/fern/core/enum.py"
-  ]
+  "removed": []
 }

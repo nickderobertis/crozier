@@ -4,6 +4,5 @@ digest = "354ef137ff46e4bf5fddf3a6f392624baed3a2ef99edff73b5b0f8cbad2212e9"
 
 [[covers]]
 key = "discriminated-extension"
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

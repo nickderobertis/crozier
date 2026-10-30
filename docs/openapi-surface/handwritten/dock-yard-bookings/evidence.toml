@@ -4,6 +4,5 @@ digest = "9303436d99b6b0aec4f900bfd82c836309b763e8b8627618952f7192b0191557"
 
 [[covers]]
 key = "operation-group-types-beside-child-group"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-with-types-beside-a-child-group"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

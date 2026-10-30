@@ -4,6 +4,6 @@ digest = "c7110f37ace48ec6b88bc2f79a41fb3e68d36d0749bcc53a5769dda617b39f82"
 
 [[covers]]
 key = "query-anyof-const-member-example-as-enum-member"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"
