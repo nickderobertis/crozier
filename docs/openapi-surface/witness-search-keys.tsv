@@ -138,7 +138,6 @@ integer-example-beyond-double-precision	schema.format=int64	schemas.md	supported
 integer-format-fallback	schema.format=bigint	schemas.md	supported
 literal-enum-value-quote-escaping	schema.enum:apostrophe-member	schemas.md	supported
 literal-example-dollar-escaped-in-docstring	schema.const	schemas.md	supported
-literal-prefixed-integer-path-segment	openapi.paths:templated-key	parameters.md	supported
 literal-type-extension-ignored	schema.type=boolean	schemas.md	supported
 media-type-event-stream-binary-schema	operation.responses:event-stream-binary	bodies-media.md	supported
 media-type-event-stream-event-dispatch	operation.responses:event-stream-event-dispatch	bodies-media.md	supported
@@ -220,7 +219,6 @@ schema-type-name-inline-property	schema.x-fern-type-name:inline-property	schemas
 schema-x-tags	schema.x-tags:component	schemas.md	supported
 sdk-variable-parameter-extension	parameter.x-fern-sdk-variable	parameters.md	supported
 sdk-variables-extension	openapi.x-fern-sdk-variables	parameters.md	supported
-security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	security.md	supported
 security-scheme-header-extension-named	securityScheme.x-fern-header:named	security.md	supported
 security-scheme-token-variable-name	securityScheme.x-fern-token-variable-name:bearer	security.md	supported
 security-schemes-duplicate-api-key-header	components.securitySchemes:duplicate-api-key-header	security.md	supported
