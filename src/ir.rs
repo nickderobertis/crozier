@@ -8866,6 +8866,19 @@ impl InlineHoister<'_> {
             if is_map(non_null[0]) {
                 return wrap(nullable_map_value_type_ref(non_null[0]));
             }
+            // A sole array member whose element is an inline union names that
+            // element `{Param}Item`, exactly as the same array does without the
+            // `type: null` beside it: MCP Handle's `servers` is `anyOf: [array of
+            // anyOf [$ref McpServerName, const ALL], null]`, and Fern's signature
+            // is `Optional[Sequence[…ServersItem]]` over the hoisted union.
+            if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array")
+                && non_null[0]
+                    .items
+                    .as_deref()
+                    .is_some_and(inline_multi_member_union)
+            {
+                return wrap(self.hoist_param_enum(request_ctx, param, non_null[0]));
+            }
             return wrap(self.schemas.map_or_else(
                 || base_type_ref(non_null[0]),
                 |schemas| full_type_ref_resolved(non_null[0], schemas),
@@ -23370,6 +23383,57 @@ mod tests {
             .out
             .iter()
             .any(|decl| decl.name() == "ListEntriesRequestLabelsValue"));
+    }
+
+    #[test]
+    fn a_nullable_query_array_hoists_its_inline_union_item() {
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: None,
+            out: Vec::new(),
+        };
+        // MCP Handle's `servers`: a nullable array whose element is an `anyOf`
+        // of a component enum and a `const` string.
+        let servers = schema(serde_json::json!({
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": { "anyOf": [
+                        { "$ref": "#/components/schemas/McpServerName" },
+                        { "const": "ALL", "type": "string" }
+                    ] }
+                },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("DeleteServersRequest", "servers", &servers),
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Named(
+                "DeleteServersRequestServersItem".to_string()
+            )))))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias) if alias.name == "DeleteServersRequestServersItem"
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enumeration) if enumeration.name == "DeleteServersRequestServersItemOne"
+        )));
+        // A nullable array of plain scalars stays an optional list of them.
+        let tags = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("DeleteServersRequest", "tags", &tags),
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
+        );
     }
 
     #[test]
