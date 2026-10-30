@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "ffc267df5150a52cfca52285a6825be2867b01a8936889029c4397ce7923f511"
-
-[[covers]]
-key = "variant-own-fields-before-allof-parent-fields"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

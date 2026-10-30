@@ -3,12 +3,6 @@ fern_python_sdk_version = "5.41.3"
 digest = "70e06c5e0e853450951bd8e9f25b3309a7a8b55fdf4a30777f57f222d8a4c619"
 
 [[covers]]
-key = "anyof-array-variant-inline-enum-item"
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
-
-[[covers]]
 key = "oneof-anyof-variant"
 arm = 'src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]'
 search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"

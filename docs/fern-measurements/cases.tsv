@@ -61,10 +61,10 @@ examples-docs/marina-nullable-note	docs/fern-measurements/examples-docs/marina-n
 examples-docs/marina-radio-parts	docs/fern-measurements/examples-docs/marina-radio-parts/openapi.yml	python-enums	packaged	-
 examples-docs/marina-skipper-refs	docs/fern-measurements/examples-docs/marina-skipper-refs/openapi.yml	python-enums	packaged	-
 examples-docs/marina-tide-channels	docs/fern-measurements/examples-docs/marina-tide-channels/openapi.yml	python-enums	packaged	-
+examples-docs/unread-date-time-examples	docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml	python-enums	packaged	-
 literals-mode/avionics-booking	docs/openapi-surface/handwritten/avionics-booking/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/avionics-booking/fern-expected
 literals-mode/bigint-format-string-typed-str	docs/openapi-surface/handwritten/bigint-format-string-typed-str/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected
 literals-mode/buoy-depth-response	docs/openapi-surface/handwritten/buoy-depth-response/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/buoy-depth-response/fern-expected
-literals-mode/described-ref-oneof-alias-without-docstring	docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected
 literals-mode/discriminated-variant-date-value-snippet	docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected
 literals-mode/dotted-mapping-key-variant-class-name	docs/fern-measurements/literals-mode/dotted-mapping-key-variant-class-name/openapi.yml	literals	packaged	expected:-
 literals-mode/empty-path-segment-double-slash-kept	docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected
@@ -99,7 +99,6 @@ literals-mode/sensor-batch-query	docs/openapi-surface/handwritten/sensor-batch-q
 literals-mode/snake-case-component-name-pascal-class	docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/openapi.yml	literals	packaged	expected:-
 literals-mode/stream-error-status-raises-typed-error	docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected
 literals-mode/string-body-example-backslash-escaped	docs/openapi-surface/handwritten/string-body-example-backslash-escaped/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/string-body-example-backslash-escaped/fern-expected
-literals-mode/survey-field-selector	docs/openapi-surface/handwritten/survey-field-selector/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/survey-field-selector/fern-expected
 literals-mode/tram-route-query	docs/openapi-surface/handwritten/tram-route-query/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/tram-route-query/fern-expected
 literals-mode/transcript-format-part	docs/openapi-surface/handwritten/transcript-format-part/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/transcript-format-part/fern-expected
 literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped	docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected
@@ -107,7 +106,6 @@ literals-mode/union-of-enum-ref-const-and-string-members	docs/openapi-surface/ha
 literals-mode/union-of-two-enum-refs-alias	docs/openapi-surface/handwritten/union-of-two-enum-refs-alias/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/union-of-two-enum-refs-alias/fern-expected
 literals-mode/variant-nullable-value-optional-default-none	docs/openapi-surface/handwritten/variant-nullable-value-optional-default-none/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/variant-nullable-value-optional-default-none/fern-expected
 literals-mode/variant-optional-const-discriminant-merged	docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/openapi.yml	literals	packaged	expected:-
-literals-mode/variant-own-fields-before-allof-parent-fields	docs/openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/fern-expected
 literals-mode/water-pump-station	docs/openapi-surface/handwritten/water-pump-station/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/water-pump-station/fern-expected
 literals-mode/weather-radar-stream	docs/openapi-surface/handwritten/weather-radar-stream/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/weather-radar-stream/fern-expected
 models-refs-composed-narrowing/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	python-enums	packaged	-

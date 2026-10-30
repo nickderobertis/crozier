@@ -350,9 +350,10 @@ attribute at a time (not re-measured at the certified pair), and held at CLI
   the appended `Z` breaks. The default is valid for the schema and contradicts no
   code, so this too is Fern behaviour; every value crozier writes parses with
   `datetime.datetime.fromisoformat`, and the docstring writer changes only the
-  date-time separator. The hand-written fixture `unread-date-time-examples`
-  holds a zone name and a negative offset (each Fern's default) beside a `Z`
-  value (its own instant).
+  date-time separator. The registered `netgsm-sms` golden carries an unread
+  pattern string as Fern's default, and the examples-docs measurement
+  `unread-date-time-examples` holds a zone name and a negative offset (each
+  Fern's default) beside a `Z` value (its own instant).
 - *A composed (`allOf`) request body* lists its bases' fields ahead of its own,
   in declaration order and whatever `required` says: the docstring every base's
   first all the way down, the Markdown writers each base's own fields before that

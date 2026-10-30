@@ -102,6 +102,10 @@ const CASES: &[(&str, &str, &[&str])] = &[
         "marina-tide-channels",
         "docs/fern-measurements/examples-docs/marina-tide-channels/openapi.yml",
         &[],
+    ),    (
+        "unread-date-time-examples",
+        "docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml",
+        &[],
     ),
 ];
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
@@ -371,6 +375,12 @@ fn examples_docs_cases_fail_on_an_adjacent_unexplained_byte() {
             "reference.md",
             "client.🚧_legacy_endpoints.list_legacy_moorings(",
             "client.🚧_legacy_endpoint.list_legacy_moorings(",
+        ),
+        (
+            "unread-date-time-examples",
+            "reference.md",
+            "    closed_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    closed_at=datetime.datetime.fromisoformat(\"2022-08-11T21:30:00+00:00\"),",
         ),
     ] {
         let (_, spec, flags) = CASES

@@ -1,7 +1,0 @@
-{
-  "cliVersion": "5.163.1",
-  "generatorName": "fernapi/fern-python-sdk",
-  "generatorVersion": "5.41.3",
-  "invokedBy": "ci",
-  "ciProvider": "github"
-}

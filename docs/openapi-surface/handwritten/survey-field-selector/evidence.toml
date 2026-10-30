@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "2e852ed26c3fb77d308aa0792e2a18dd398bb09eb5f315a8329e0a658e4675aa"
-
-[[covers]]
-key = "enum-visit-kwargs-parameter"
-search = "docs/openapi-surface/witness-search-naming-wire/README.md#bounded-public-witnesses"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"

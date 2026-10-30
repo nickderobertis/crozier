@@ -15040,7 +15040,7 @@ fn worked_example_goldens_match_in_process() {
             Layout::Packaged,
         ),
         (
-            "docs/openapi-surface/handwritten/unread-date-time-examples",
+            "docs/fern-measurements/examples-docs/unread-date-time-examples",
             "openapi.yml",
             "fern-expected",
             "fern",

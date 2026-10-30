@@ -4,9 +4,10 @@
 //! unexplained byte beside the matched one still fails the comparison.
 //!
 //! The hand-written fixtures of these shapes (`gallery-plaque-groups`,
-//! `transcript-format-part`, `survey-field-selector`) are
+//! `transcript-format-part`) are
 //! held whole, in both enum modes, by `handwritten_fixtures_match_fern_goldens`
-//! and `literals_mode_measurements_match_fern`; the reordered root imports are
+//! and `literals_mode_measurements_match_fern`; the `kwargs` visitor parameter
+//! is held by the registered `langchain-agent-server` golden; the reordered root imports are
 //! held by every registered corpus golden that re-exports a tag subpackage's
 //! types. The retained `ledger-batch-upload` control is a measurement beside the
 //! registered tamoss feature proof, held in both modes by this module.
@@ -224,6 +225,19 @@ fn tamoss_copy(_: &str) -> (tempfile::TempDir, String, PathBuf) {
     )
 }
 
+/// The registered `kwargs` enum witness (`enum-visit-kwargs-parameter`).
+fn langchain_copy(_: &str) -> (tempfile::TempDir, String, PathBuf) {
+    let root = repo_root();
+    fern_copy(
+        &root.join("tests/fixtures/langchain-agent-server/expected"),
+        root.join("tests/fixtures/corpus-sources/langchain-agent-server/openapi.json"),
+    )
+}
+
+/// The `select` enum whose `kwargs` member's visitor parameter is `kwargs_`.
+const LANGCHAIN_SELECT: &str =
+    "src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py";
+
 /// Plant one unexplained byte; a `from` the golden no longer holds fails here,
 /// so a regenerated golden cannot leave a negative case silently unperturbed.
 fn perturb(tree: &Path, rel: &str, from: &str, to: &str) {
@@ -295,18 +309,18 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
             )],
         ),
         (
-            "survey-field-selector",
-            handwritten_copy,
+            "langchain-agent-server",
+            langchain_copy,
             &[
                 (
-                    "src/fern/responses/types/list_responses_request_select_item.py",
+                    LANGCHAIN_SELECT,
                     "kwargs_: typing.Callable",
                     "kwargs: typing.Callable",
                 ),
                 (
-                    "src/fern/responses/types/list_responses_request_select_item.py",
-                    "json: typing.Callable",
-                    "json_: typing.Callable",
+                    LANGCHAIN_SELECT,
+                    "metadata: typing.Callable",
+                    "metadata_: typing.Callable",
                 ),
             ],
         ),

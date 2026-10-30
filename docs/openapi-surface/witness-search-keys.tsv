@@ -11,7 +11,6 @@ allof-union-branch-not-schema-overrides-property	schema.allOf	schemas.md	support
 annotated-ref-target-inheritance-union	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.discriminator:inheritance-union	schemas.md	supported
 annotated-ref-target-string-const	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued	schemas.md	supported
 anyof-array-variant-inline-const-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued	schemas.md	supported
-anyof-array-variant-inline-enum-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued	schemas.md	supported
 array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union	schemas.md	supported
 array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf	schemas.md	supported
 base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
@@ -111,8 +110,6 @@ combo-success-statuses-mixed-media	operation.context:success-content&operation.c
 combo-success-text-beside-download	operation.context:success-download&operation.context:success-text	document-paths.md	supported
 combo-tagged-group-and-method-name	operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name	document-paths.md	supported
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
-cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
-described-ref-oneof-alias-without-docstring	schema.description	schemas.md	supported
 discriminated-extension	schema.x-fern-discriminated	oas31-extensions.md	supported
 discriminated-variant-date-value-snippet	schema.format=date	schemas.md	supported
 discriminator-property-name-extension	schema.discriminator.x-fern-property-name	oas31-extensions.md	supported
@@ -120,7 +117,6 @@ empty-description-inline-response-docstring	schema.description	schemas.md	suppor
 empty-path-segment-double-slash-kept	openapi.paths:several-template-expressions	document-paths.md	supported
 enum-union-body-example-first-member-value	schema.enum:string-valued	bodies-media.md	supported
 enum-value-description-extension-dropped	schema.enum	schemas.md	supported
-enum-visit-kwargs-parameter	schema.enum:kwargs-member	schemas.md	supported
 example-imports-case-insensitive-order	schema.$ref	bodies-media.md	supported
 example-nested-array-two-items	parameter.schema	parameters.md	supported
 fern-streaming-boolean	operation.x-fern-streaming	oas31-extensions.md	supported
@@ -234,11 +230,8 @@ stream-error-status-raises-typed-error	response.content	bodies-media.md	supporte
 string-body-example-backslash-escaped	mediaType.example	bodies-media.md	supported
 string-json-format-typed-any	schema.format=json-string	schemas.md	supported
 text-response-drops-request-example	mediaType.examples	bodies-media.md	supported
-type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 undiscriminated-ref-oneof-sibling-properties-dropped	schema.properties:non-empty	schemas.md	supported
 union-of-enum-ref-const-and-string-members	schema.const:string-valued	schemas.md	supported
 union-of-two-enum-refs-alias	schema.$ref:resolves-to-component	schemas.md	supported
-unread-date-time-example	schema.example:unread-date-time	schemas.md	supported
 variant-nullable-value-optional-default-none	schema.nullable	schemas.md	supported
-variant-own-fields-before-allof-parent-fields	schema.allOf:sole-member	schemas.md	supported
 webhook-inline-json-body-named	openapi.webhooks:inline-json-body-named	oas31-extensions.md	supported

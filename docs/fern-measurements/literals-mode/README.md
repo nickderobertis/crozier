@@ -28,7 +28,6 @@ under the corpus gate's normalization, every departure held to
 |---|---|---|---|
 | `bigint-format-string-typed-str` | a `type: string, format: bigint` property is typed `str` | [hand-written fixture](../../openapi-surface/handwritten/bigint-format-string-typed-str/) | overlay |
 | `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [hand-written fixture](../../openapi-surface/handwritten/buoy-depth-response/) | overlay |
-| `described-ref-oneof-alias-without-docstring` | a described component `oneOf` of two object `$ref`s is a `typing.Union` alias with no docstring | [hand-written fixture](../../openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/) | overlay |
 | `discriminated-variant-date-value-snippet` | discriminated variants valued `date` and `date-time` take `dt.date` and `dt.datetime`, and the worked call passes `datetime.date.fromisoformat(...)` | [hand-written fixture](../../openapi-surface/handwritten/discriminated-variant-date-value-snippet/) | overlay |
 | `dotted-mapping-key-variant-class-name` | mapping keys `door.locked` and `door.unlocked` name `Notice_DoorLocked` and `Notice_DoorUnlocked`, not the target schemas | [document](dotted-mapping-key-variant-class-name/openapi.yml) | complete tree |
 | `empty-path-segment-double-slash-kept` | a path with an empty segment keeps its `//` in the request URL | [hand-written fixture](../../openapi-surface/handwritten/empty-path-segment-double-slash-kept/) | overlay |
@@ -69,7 +68,6 @@ under the corpus gate's normalization, every departure held to
 | `union-of-two-enum-refs-alias` | a component union of two enum `$ref`s is an alias importing both | [hand-written fixture](../../openapi-surface/handwritten/union-of-two-enum-refs-alias/) | overlay |
 | `variant-nullable-value-optional-default-none` | a variant's required nullable value and its unrequired one are both `Optional[...] = None` | [hand-written fixture](../../openapi-surface/handwritten/variant-nullable-value-optional-default-none/) | overlay |
 | `variant-optional-const-discriminant-merged` | a variant's optional `const` named like the discriminator leaves only the variant literal, first | [document](variant-optional-const-discriminant-merged/openapi.yml) | complete tree |
-| `variant-own-fields-before-allof-parent-fields` | a variant's own field comes before the field its `allOf` parent adds | [hand-written fixture](../../openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/) | overlay |
 | `water-pump-station` | the README demonstrates a nested group's `POST` over top-level groups' `GET`s | [hand-written fixture](../../openapi-surface/handwritten/water-pump-station/) | overlay |
 | `weather-radar-stream` | the README's streaming section imports the model its call constructs | [hand-written fixture](../../openapi-surface/handwritten/weather-radar-stream/) | overlay |
 

@@ -5936,7 +5936,7 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
 }
 
 /// Every `date-time` value crozier's worked examples write over the
-/// `unread-date-time-examples` hand-written fixture is an instant
+/// `unread-date-time-examples` examples-docs measurement is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
 /// with each field in range. The document's examples are a zone name and a
 /// negative offset, which Fern replaces with its default, beside a `Z` value it
@@ -5945,7 +5945,7 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
 #[test]
 fn worked_date_time_examples_always_parse() {
     let fixture =
-        repo_root().join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
+        repo_root().join("docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml");
     let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "python", "--spec"])

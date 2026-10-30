@@ -19567,16 +19567,17 @@ class NamingWireCensusTests(unittest.TestCase):
             ("gallery-plaque-groups", "operation.operationId:camel-case-tag-prefix"),
             ("transcript-format-part", "operation.requestBody:optional-nullable-enum-multipart-part"),
             ("ledger-batch-upload", "operation.requestBody:titled-array-component-oas-three-one"),
-            ("survey-field-selector", "schema.enum:kwargs-member"),
+            ("langchain-agent-server", "schema.enum:kwargs-member"),
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
-                area = (
-                    "docs/fern-measurements/naming-wire"
-                    if fixture == "ledger-batch-upload"
-                    else "docs/openapi-surface/handwritten"
-                )
-                document = census.load_document(REPO / area / fixture / "openapi.yml")
+                if fixture == "langchain-agent-server":
+                    path = REPO / "tests/fixtures/corpus-sources" / fixture / "openapi.json"
+                elif fixture == "ledger-batch-upload":
+                    path = REPO / "docs/fern-measurements/naming-wire" / fixture / "openapi.yml"
+                else:
+                    path = REPO / "docs/openapi-surface/handwritten" / fixture / "openapi.yml"
+                document = census.load_document(path)
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
                 match fixture:
@@ -19588,10 +19589,10 @@ class NamingWireCensusTests(unittest.TestCase):
                         control["components"]["schemas"]["CaptionFormat"] = {"type": "object"}
                     case "ledger-batch-upload":
                         control["openapi"] = "3.0.3"
-                    case "survey-field-selector":
-                        control["paths"]["/responses"]["get"]["parameters"][0]["schema"]["items"]["enum"].remove(
-                            "kwargs"
-                        )
+                    case "langchain-agent-server":
+                        control["paths"]["/threads/{thread_id}/runs"]["get"]["parameters"][4]["schema"]["items"][
+                            "enum"
+                        ].remove("kwargs")
                 self.assertEqual(census.census_document(control).get(selector, 0), 0)
                 self.assertIsNone(census.selector_error(selector))
 

@@ -248,6 +248,144 @@ const EXAMPLES_DOCS_WITNESSES: &[Witness] = &[
     },
 ];
 
+/// The registered witnesses the fixture-only `schemas` search found for rows a
+/// hand-written fixture alone proved before:
+/// `docs/openapi-surface/witness-search-fixture-only-schemas/README.md`.
+const SCHEMAS_FIXTURE_ONLY_WITNESSES: &[Witness] = &[
+    Witness {
+        shape: "described-ref-oneof-alias-without-docstring",
+        corpus: "ecommerce-ai-skills-runtime",
+        declares: |doc| {
+            let union = at(doc, "/components/schemas/ProviderSmokeRequest")?;
+            expect(
+                union["description"].as_str().is_some_and(|text| text.starts_with("Strict provider-target union."))
+                    && union["oneOf"].as_array().is_some_and(|members| {
+                        members.len() == 2 && members.iter().all(|member| member["$ref"].is_string())
+                    })
+                    && union.get("discriminator").is_none(),
+                "ProviderSmokeRequest is a described, undiscriminated oneOf of two $refs",
+            )
+        },
+        golden: &[(
+            "src/fern/types/provider_smoke_request.py",
+            &["ProviderSmokeRequest = typing.Union[OpenAiProviderSmokeRequest, MarketplaceProviderSmokeRequest]\n"],
+            &["Strict provider-target union", "\"\"\""],
+        )],
+    },
+    Witness {
+        shape: "described-ref-oneof-alias-without-docstring",
+        corpus: "tamoss",
+        declares: |doc| {
+            let union = at(doc, "/components/schemas/Flow")?;
+            expect(
+                union["description"] == "Describes a Flow" && union["oneOf"].is_array(),
+                "Flow is a described oneOf",
+            )
+        },
+        golden: &[(
+            "src/fern/types/flow.py",
+            &["Flow = typing.Union[FlowVideo, FlowAudio, FlowImage, FlowData, FlowMulti]\n"],
+            &["Describes a Flow"],
+        )],
+    },
+    Witness {
+        shape: "variant-own-fields-before-allof-parent-fields",
+        corpus: "ingef-conquery",
+        declares: |doc| {
+            let variant = at(doc, "/components/schemas/FilterValueInteger")?;
+            expect(
+                variant["properties"]["value"].is_object()
+                    && variant["allOf"][0]["$ref"] == "#/components/schemas/FilterValueBase",
+                "FilterValueInteger declares value and extends FilterValueBase",
+            )?;
+            expect(
+                at(doc, "/components/schemas/FilterValueBase/properties/filter")?.is_object(),
+                "FilterValueBase declares filter",
+            )
+        },
+        golden: &[(
+            "src/fern/types/filter_value.py",
+            &["    type: typing.Literal[\"INTEGER\"] = \"INTEGER\"\n    value: typing.Optional[int] = None\n    filter: typing.Optional[FilterId] = None\n"],
+            &[],
+        )],
+    },
+    Witness {
+        shape: "anyof-array-variant-inline-enum-item",
+        corpus: "langchain-agent-server",
+        declares: |doc| {
+            let members = at(doc, "/components/schemas/RunCreateStateful/properties/stream_mode/anyOf")?;
+            expect(
+                members[0]["type"] == "array"
+                    && members[0]["items"]["enum"].is_array()
+                    && members[1]["enum"].is_array(),
+                "stream_mode is an anyOf of an inline-enum array and an inline enum",
+            )
+        },
+        golden: &[(
+            "src/fern/types/run_create_stateful_stream_mode.py",
+            &["RunCreateStatefulStreamModeZeroItem", "RunCreateStatefulStreamModeOne"],
+            &[],
+        )],
+    },
+    Witness {
+        shape: "enum-visit-kwargs-parameter",
+        corpus: "langchain-agent-server",
+        declares: |doc| {
+            let items = at(doc, "/paths/~1threads~1{thread_id}~1runs/get/parameters/4/schema/items/enum")?;
+            expect(
+                items.as_array().is_some_and(|values| values.iter().any(|value| value == "kwargs")),
+                "the runs select enum holds kwargs",
+            )
+        },
+        golden: &[(
+            "src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py",
+            &["        kwargs_: typing.Callable[[], T_Result],\n", "            return kwargs_()\n"],
+            &["        kwargs: typing.Callable"],
+        )],
+    },
+    Witness {
+        shape: "cycle-into-cycle",
+        corpus: "ingef-conquery",
+        declares: |doc| expect(at(doc, "/components/schemas/Concept")?.is_object(), "Concept is declared"),
+        golden: &[(
+            "src/fern/types/concept.py",
+            &["from .concept_tree_child import ConceptTreeChild\n\nupdate_forward_refs(Concept, ConceptTreeChild=ConceptTreeChild)\n"],
+            &[],
+        )],
+    },
+    Witness {
+        shape: "type-misspelled-scalar",
+        corpus: "panoptes",
+        declares: |doc| {
+            expect(
+                at(doc, "/components/schemas/TextFacet/properties/startOpen/type")? == "bool",
+                "TextFacet.startOpen is type: bool",
+            )
+        },
+        golden: &[(
+            "src/fern/types/text_facet.py",
+            &["    start_open: typing_extensions.Annotated[\n        typing.Optional[typing.Any],"],
+            &["typing.Optional[bool]"],
+        )],
+    },
+    Witness {
+        shape: "unread-date-time-example",
+        corpus: "netgsm-sms",
+        declares: |doc| {
+            let start = at(doc, "/components/schemas/ReportRequest/allOf/1/properties/startdate")?;
+            expect(
+                start["format"] == "date-time" && start["example"] == "dd.MM.yyyy HH:mm:ss",
+                "ReportRequest.startdate is a date-time exampled dd.MM.yyyy HH:mm:ss",
+            )
+        },
+        golden: &[(
+            "reference.md",
+            &["startdate=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),"],
+            &["dd.MM.yyyy"],
+        )],
+    },
+];
+
 fn parse(path: &std::path::Path) -> serde_json::Value {
     let text =
         std::fs::read_to_string(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
@@ -345,5 +483,17 @@ fn examples_docs_real_witnesses_declare_their_shapes() {
     {
         failures.push("googleapis-youtubeanalytics-v1: its packaged README.md is not empty".into());
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// Every registered witness the fixture-only `schemas` search found still
+/// declares its row's trigger, and its golden — compared whole by its corpus
+/// test — still carries the output the row is about.
+#[test]
+fn schemas_fixture_only_real_witnesses_declare_their_shapes() {
+    let failures: Vec<String> = SCHEMAS_FIXTURE_ONLY_WITNESSES
+        .iter()
+        .flat_map(witness_failures)
+        .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
