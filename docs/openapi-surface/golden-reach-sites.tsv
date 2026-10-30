@@ -581,3 +581,9 @@ combo-tagged-group-and-method-name	operation.tags&operation.x-fern-sdk-group-nam
 combo-annotated-ref-property-example	schema.properties>schema.allOf:annotated-ref&schema.example	co-occurrence	No crozier branch reads both features; combination-cooccurrence.tsv names each feature's handlers.
 combo-body-property-named-as-header-param	operation.requestBody&operation.requestBody:property-named-as-header-parameter	co-occurrence	A condition reads both features, but no counter region's execution implies both hold; combination-cooccurrence.tsv records it and an instrumented test proves the outcome.
 combo-param-example-beside-ref-schema	parameter.example&parameter.schema>schema.$ref	co-occurrence	A condition reads both features, but no counter region's execution implies both hold; combination-cooccurrence.tsv records it and an instrumented test proves the outcome.
+path-parameters-template-order-31	operation.parameters:path-order-oas-three-one	src/ir.rs::path_param_position	Path arguments take the URL template's order.
+header-subset-string-default	parameter.schema:subset-header-string-default	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	
+security-scheme-basic-extension-named	securityScheme.x-fern-basic:named-or-env	src/openapi.rs::SecurityScheme::basic_credentials	
+security-scheme-bearer-extension-named	securityScheme.x-fern-bearer:named	src/openapi.rs::SecurityScheme::bearer_credential	
+security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{]	The scheme name is read case-insensitively, so a capitalised `Bearer` takes the bearer arm.
+literal-prefixed-integer-path-segment	fixture=wiim-httpapi	none	No census selector isolates the segment shape; the witness is named.
