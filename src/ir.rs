@@ -5017,14 +5017,14 @@ fn parameter_example_value<'a>(
                 .find_map(|example| component_example_value(doc, example))
         })
         .filter(|_| declared_string)
-        .or_else(|| parameter.schema.as_ref().and_then(schema_example))
+        .or_else(|| parameter.schema.as_ref().and_then(typed_schema_example))
         .or_else(|| {
             parameter
                 .schema
                 .as_ref()
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
-                .and_then(schema_example)
+                .and_then(typed_schema_example)
         })
 }
 
@@ -5428,6 +5428,23 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
     schema.example.as_ref().or_else(|| schema.examples.first())
 }
 
+/// [`schema_example`], unless it is a JSON string on a schema typed `boolean`,
+/// `integer` or `number`: Fern's importer drops such an example, so a worked
+/// call falls back to the type's own placeholder (`True`) or, for an optional
+/// parameter, leaves the argument out. Laposta's form fields write
+/// `type: boolean, examples: ["false"]` and its history `limit` writes
+/// `type: integer, examples: ["100"]`; a from-scratch probe measured the same
+/// for the singular `example` keyword.
+fn typed_schema_example(schema: &Schema) -> Option<&serde_json::Value> {
+    schema_example(schema).filter(|value| {
+        !value.is_string()
+            || !matches!(
+                schema.ty.as_ref().and_then(TypeField::primary),
+                Some("boolean" | "integer" | "number")
+            )
+    })
+}
+
 /// Render a schema example for a generated call. Arrays commonly put the example
 /// on `items` rather than on the array itself; Fern promotes that to a one-element
 /// list in worked examples.
@@ -5439,7 +5456,7 @@ fn resolved_schema_example_literal(
     schema: &Schema,
     schemas: Option<&IndexMap<String, Schema>>,
 ) -> Option<String> {
-    schema_example(schema)
+    typed_schema_example(schema)
         .and_then(|value| bounded_example_literal(value, declares_int64(schema)))
         .or_else(|| {
             let items = schema.items.as_deref()?;
@@ -5453,7 +5470,9 @@ fn resolved_schema_example_literal(
                         schemas,
                     )?
                 }
-                None => bounded_example_literal(schema_example(items)?, declares_int64(items))?,
+                None => {
+                    bounded_example_literal(typed_schema_example(items)?, declares_int64(items))?
+                }
             };
             Some(format!("[{item}]"))
         })
@@ -25938,6 +25957,54 @@ mod tests {
         }))
         .expect("array schema");
         assert_eq!(super::schema_example_literal(&array), None);
+    }
+
+    #[test]
+    fn string_examples_on_boolean_and_numeric_schemas_are_not_worked_values() {
+        let literal = |value: serde_json::Value| {
+            let schema: crate::openapi::Schema =
+                serde_json::from_value(value).expect("example schema");
+            super::schema_example_literal(&schema)
+        };
+        // Laposta's form fields and history limit: the 3.1 `examples` keyword
+        // holding a string on a boolean and an integer.
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "examples": ["false"] })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "integer", "examples": ["100"] })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "number", "example": "1.5" })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "example": "true" })),
+            None
+        );
+        // A value of the declared type, and a string on a string schema, stay.
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "examples": [false] })).as_deref(),
+            Some("False")
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "integer", "example": 100 })).as_deref(),
+            Some("100")
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "string", "examples": ["100"] })).as_deref(),
+            Some("\"100\"")
+        );
+        // An array's item example is held to the item's type the same way.
+        assert_eq!(
+            literal(serde_json::json!({
+                "type": "array",
+                "items": { "type": "integer", "examples": ["7"] }
+            })),
+            None
+        );
     }
 
     #[test]
