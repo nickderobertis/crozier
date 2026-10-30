@@ -1054,6 +1054,11 @@ docs/fern-measurements/superseded-fixtures/kiln-form-mode/fern-expected	src/fern
 docs/fern-measurements/superseded-fixtures/kiln-form-mode/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/kiln-form-mode/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/kiln-form-mode/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/multipart-request-name/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/multipart-request-name/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/multipart-request-name/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1766,11 +1771,6 @@ docs/openapi-surface/handwritten/multipart-json-module/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/multipart-json-module/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/multipart-json-module/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/multipart-json-module/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

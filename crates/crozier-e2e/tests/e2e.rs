@@ -5421,10 +5421,10 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
 fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["multipart-nullable-array"] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        let fixture = root.join(SUPERSEDED_FIXTURES_DIR).join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                format!("{SUPERSEDED_FIXTURES_DIR}/{shape}/fern-expected")
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
@@ -5504,7 +5504,7 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join("docs/openapi-surface/handwritten/multipart-nullable-array/openapi.yml"))
+            .arg(root.join(SUPERSEDED_FIXTURES_DIR).join("multipart-nullable-array/openapi.yml"))
             .arg("--output")
             .arg(out.path())
             .args([

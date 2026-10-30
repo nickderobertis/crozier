@@ -15,6 +15,7 @@ measurements or a departure's evidence read them as inputs.
 | `gallery-plaque-groups` | `camel-case-tag-group-and-prefix` | corpus row 4206, `kompaz-web-frontend` |
 | `kiln-form-mode` | `media-type-form-urlencoded`'s `hoist_form_object` arm | corpus row 4201, `ummaya-agent-delegation` |
 | `multipart-request-name` | `request-body-content`'s `validate_ir` arm | corpus row 4204, `openparser-ocr` |
+| `multipart-nullable-array` | `format-binary`'s `hoist_form_object` `nullable_binary` arm | corpus row 4202, `speech-ai-forge` |
 | `patch-inline-nullable-unrequired-props-omit` | `patch-inline-nullable-unrequired-props-omit` | corpus row 4209, `blufiles-api` |
 | `pottery-commission` | `allof-body-example-id-field-order` | corpus row 4205, `jobster-api` |
 | `request-alias` | `request-body-content`'s `resolve_form_object_alias` arm | corpus row 4203, `openiap-opencore` |
