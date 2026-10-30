@@ -15542,6 +15542,27 @@ mod tests {
         assert!(Example::ReferenceList(vec![Example::Atom("1".to_string())]).forces_multiline());
     }
 
+    /// A worked example re-read from its JSON text keeps each float's correctly
+    /// rounded value, whichever reader loaded the document: a fast, approximate
+    /// decimal reader lands one unit in the last place away from each literal
+    /// here, so a YAML document's examples changed in its last digit too.
+    #[test]
+    fn an_example_rereads_its_floats_as_their_correctly_rounded_values() {
+        for (example, json) in [
+            ("0.9345407030264767", "0.9345407030264767"),
+            ("0.48729867539182836", "0.48729867539182836"),
+            (
+                "[0.24200106749781558, 0.36454792138880565]",
+                "[0.24200106749781558,0.36454792138880565]",
+            ),
+            // The Python-spelling fallback reads its numbers the same way.
+            ("[0.9921600467158583, True]", "[0.9921600467158583,true]"),
+        ] {
+            let value = super::parse_example_value(example).expect("the example parses");
+            assert_eq!(value.to_string(), json, "{example}");
+        }
+    }
+
     /// A wrapped list's item stays on one line only while it fits the width
     /// with its trailing comma: an item 79 columns wide ends its line at 80 and
     /// stays flat, one 80 wide ends at 81 and wraps (TimeGPT's `TomBrady` rows,
