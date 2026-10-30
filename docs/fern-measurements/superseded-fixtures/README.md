@@ -20,6 +20,3 @@ measurements or a departure's evidence read them as inputs.
 | `pottery-commission` | `allof-body-example-id-field-order` | corpus row 4205, `jobster-api` |
 | `request-alias` | `request-body-content`'s `resolve_form_object_alias` arm | corpus row 4203, `openiap-opencore` |
 | `request-example-nulls` | `request-example-nested-null` | corpus row 2801, `dystore-api` |
-
-The search that found each witness is
-[`witness-search-fixture-only-bodies-paths`](../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md).
