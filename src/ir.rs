@@ -873,10 +873,18 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             .iter()
             .any(|existing| existing.wire_name == header.header)
         {
+            // loonfs declares its actor and principal headers `optional: true`,
+            // and Fern types each `Optional[str] = None` and sends it only when
+            // given; without the key the header stays required.
+            let presence = if header.optional == Some(true) {
+                HeaderPresence::Optional(HeaderType::Str)
+            } else {
+                HeaderPresence::Required(HeaderType::Str)
+            };
             headers.push(GlobalHeader {
                 py_name: naming::field_name(&header.name),
                 wire_name: header.header.clone(),
-                presence: HeaderPresence::Required(HeaderType::Str),
+                presence,
                 credential: None,
             });
         }
@@ -12105,7 +12113,7 @@ fn member_fields(
             );
         }
     }
-    append_member_fields(schema, discriminant, &required, owner, &mut fields);
+    append_member_fields(schema, discriminant, &required, owner, schemas, &mut fields);
     let mut visited = Vec::new();
     append_base_fields(schema, discriminant, schemas, &mut visited, &mut fields);
     fields
@@ -12155,7 +12163,14 @@ fn append_base_fields<'a>(
                 );
             }
         }
-        append_member_fields(base, discriminant, &base_required, Some(&base_name), fields);
+        append_member_fields(
+            base,
+            discriminant,
+            &base_required,
+            Some(&base_name),
+            schemas,
+            fields,
+        );
         append_base_fields(base, discriminant, schemas, visited, fields);
         visited.pop();
     }
@@ -12178,9 +12193,9 @@ fn append_inline_member_fields(
     match branch_union_properties(member, schemas) {
         Some(BranchUnion::Tagged) => {}
         Some(BranchUnion::Merged(merged)) => {
-            append_member_fields(&merged, discriminant, &[], owner, fields);
+            append_member_fields(&merged, discriminant, &[], owner, schemas, fields);
         }
-        None => append_member_fields(member, discriminant, required, owner, fields),
+        None => append_member_fields(member, discriminant, required, owner, schemas, fields),
     }
 }
 
@@ -12389,6 +12404,7 @@ fn append_member_fields(
     discriminant: &str,
     required: &[&str],
     enum_owner: Option<&str>,
+    schemas: &IndexMap<String, Schema>,
     fields: &mut Vec<Field>,
 ) {
     for (prop, prop_schema) in &schema.properties {
@@ -12476,7 +12492,14 @@ fn append_member_fields(
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
             docstring: None,
-            example: schema_example_literal(prop_schema),
+            // A property naming a component takes that component's example:
+            // loonfs's `FilesystemOperationAppendFile.path` is an annotated `$ref`
+            // to `AbsolutePath`, exampled `/docs/report.txt`, and Fern's variant
+            // constructor passes it.
+            example: resolved_schema_example_literal(prop_schema, Some(schemas)).or_else(|| {
+                let reference = prop_schema.reference.as_deref()?;
+                referenced_example_literal(resolve_ref_from_schemas(schemas, reference)?, schemas)
+            }),
             admits_only_empty_object: admits_only_empty_object(prop_schema),
             inherited_from_flattened_parent: false,
             min_length: string_lengths(prop_schema).0,
@@ -22835,6 +22858,7 @@ mod tests {
             "category",
             &["category", "vin", "axles"],
             None,
+            &indexmap::IndexMap::new(),
             &mut fields,
         );
         let optional: Vec<(&str, bool, bool)> = fields
