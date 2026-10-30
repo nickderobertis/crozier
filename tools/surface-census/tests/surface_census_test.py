@@ -19943,6 +19943,59 @@ class CoverageRestatementTests(unittest.TestCase):
         region.write_text(source, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only").returncode)
 
+    def test_native_snapshot_json_restates_the_operation_id_predicate_rows(self) -> None:
+        """The two operationId-predicate golden rows take their census list from their own predicate.
+
+        Their spec location names `operationId`, so without their predicate selector the
+        restatement would list every source declaring any operationId; censusing only their
+        registered witnesses proves each row is rewritten from its predicate's own counts.
+        """
+        measured = subprocess.run(
+            # `onmyshelf-api` keeps the digit-leading-method row's own listing populated.
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--json",
+                "--fixture",
+                "parcelis-api",
+                "--fixture",
+                "kompaz-web-frontend",
+                "--fixture",
+                "onmyshelf-api",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, measured.returncode, measured.stderr)
+        source = self.root / "operation-id-predicates.json"
+        source.write_text(measured.stdout, encoding="utf-8")
+        snapshot = self.root / "docs/openapi-surface/document-paths.md"
+        text = snapshot.read_text(encoding="utf-8")
+        for key, cell in (
+            ("operation-id-hyphenated-tag-method", "`parcelis-api` (9)"),
+            ("camel-case-tag-group-and-prefix", "`kompaz-web-frontend` (3)"),
+        ):
+            line = next(line for line in text.splitlines() if line.startswith(f"| {key} |"))
+            text = text.replace(line, line.replace(cell, "`stale-source` (1)"), 1)
+        snapshot.write_text(text, encoding="utf-8")
+        self.assertEqual(1, self.run_restater("--snapshot-json", str(source)).returncode)
+        written = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        actual = DocumentPathsSnapshotTests.entries(snapshot.read_text(encoding="utf-8"))
+        self.assertEqual(
+            [("parcelis-api", "9")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["operation-id-hyphenated-tag-method"][4]),
+        )
+        self.assertEqual(
+            [("kompaz-web-frontend", "3")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["camel-case-tag-group-and-prefix"][4]),
+        )
+        settled = self.run_restater("--snapshot-json", str(source))
+        self.assertEqual(0, settled.returncode, settled.stderr)
+
     def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
         measured = subprocess.run(
             [sys.executable, str(SCRIPT), "--json", "--fixture", "onmyshelf-api"],
