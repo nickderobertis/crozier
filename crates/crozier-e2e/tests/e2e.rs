@@ -18243,6 +18243,33 @@ fn path_parameters_follow_url_template_order() {
 }
 
 #[test]
+fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
+    // Measured at the certified pair (Fern CLI 5.163.1, fern-python-sdk 5.41.3)
+    // on this document by the fixture-only witness search: Fern drops a string
+    // example on a `boolean`, `number` or `integer` schema under the singular
+    // `example` and the 3.1 `examples` keyword alike, on a body property, an
+    // array's items and a query parameter's referenced schema, and writes each
+    // type's placeholder; a typed example (`page`) stays.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Gauge API, version: 1.0.0 }\npaths:\n  /readings:\n    post:\n      operationId: recordReading\n      tags: [readings]\n      parameters:\n        - { name: window, in: query, required: true, schema: { $ref: '#/components/schemas/Window' } }\n        - { name: page, in: query, required: false, schema: { type: integer, example: 4 } }\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [calibrated, ratio, samples, offsets]\n              properties:\n                calibrated: { type: boolean, example: \"false\" }\n                ratio: { type: number, example: \"1.5\" }\n                samples: { type: integer, examples: [\"3\"] }\n                offsets: { type: array, items: { type: integer, examples: [\"7\"] } }\n      responses:\n        '204': { description: Recorded }\ncomponents:\n  schemas:\n    Window: { type: integer, example: \"100\" }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/readings/client.py"))
+        .expect("the readings client is generated");
+    assert!(
+        client.contains(
+            "client.readings.record_reading(\n            window=1,\n            page=4,\n            calibrated=True,\n            ratio=1.1,\n            samples=1,\n            offsets=[1],\n        )"
+        ),
+        "string examples on typed scalars should give way to the placeholders Fern writes: {client}"
+    );
+    for dropped in ["\"100\"", "\"false\"", "\"1.5\"", "\"3\"", "\"7\""] {
+        assert!(
+            !client.contains(dropped),
+            "the worked call should not pass the string example {dropped}: {client}"
+        );
+    }
+}
+
+#[test]
 fn pydantic_model_api_fields_are_aliased() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        schema: { type: string }\n        kwargs: { type: string }\n",
