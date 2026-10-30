@@ -5944,8 +5944,8 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
 /// changes nothing but the date-time separator.
 #[test]
 fn worked_date_time_examples_always_parse() {
-    let fixture =
-        repo_root().join("docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml");
+    let fixture = repo_root()
+        .join("docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml");
     let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "python", "--spec"])

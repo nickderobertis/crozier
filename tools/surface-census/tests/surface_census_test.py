@@ -16217,13 +16217,24 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         def tagged(value: str) -> dict[str, Any]:
             return {"type": "object", "properties": {"kind": {"type": "string", "enum": [value]}}}
 
-        union = {"description": "Any packing.", "oneOf": [{"$ref": "#/components/schemas/Crate"}, {"$ref": "#/components/schemas/Sack"}]}
+        union = {
+            "description": "Any packing.",
+            "oneOf": [{"$ref": "#/components/schemas/Crate"}, {"$ref": "#/components/schemas/Sack"}],
+        }
         cases = {
             "positive": {"Crate": crate, "Sack": sack, "Packing": union},
             "undescribed": {"Crate": crate, "Sack": sack, "Packing": {"oneOf": union["oneOf"]}},
             "one-member": {"Crate": crate, "Packing": {**union, "oneOf": union["oneOf"][:1]}},
-            "discriminated": {"Crate": crate, "Sack": sack, "Packing": {**union, "discriminator": {"propertyName": "kind"}}},
-            "with-properties": {"Crate": crate, "Sack": sack, "Packing": {**union, "properties": {"label": {"type": "string"}}}},
+            "discriminated": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "discriminator": {"propertyName": "kind"}},
+            },
+            "with-properties": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "properties": {"label": {"type": "string"}}},
+            },
             "scalar-member": {"Crate": crate, "Sack": {"type": "string"}, "Packing": union},
             "inline-member": {"Crate": crate, "Packing": {**union, "oneOf": [union["oneOf"][0], sack]}},
             "tagged-members": {"Crate": tagged("crate"), "Sack": tagged("sack"), "Packing": union},

@@ -102,7 +102,8 @@ const CASES: &[(&str, &str, &[&str])] = &[
         "marina-tide-channels",
         "docs/fern-measurements/examples-docs/marina-tide-channels/openapi.yml",
         &[],
-    ),    (
+    ),
+    (
         "unread-date-time-examples",
         "docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml",
         &[],
