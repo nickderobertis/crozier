@@ -115,7 +115,7 @@ Code search reads only each repository's default branch and only files it indexe
 | `x-fern-token-variable-name` | `"x-fern-token-variable-name"` | 22 | 22 | 6 |
 | `x-fern-webhook` | `"x-fern-webhook"` | 61 | 61 | 5 |
 
-Every live request went through [`tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py), by way of `tools/witness-search/witness-search-github.py`'s acquirer and `tools/witness-search/witness_screen.py`; the probes, waits and cache hits are under `.local/witness-search-fixture-only-operations-extensions/`. Live requests per bucket: `code_search` 153, `core` 1, and 4042 on the exact-commit raw lane (`raw.githubusercontent.com`, paced rather than percentage-guarded). The shared response cache answered 5068 requests at no cost. No GraphQL, Postman or SwaggerHub route was used.
+Every live request went through [`tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py), by way of `tools/witness-search/witness-search-github.py`'s acquirer and `tools/witness-search/witness_screen.py`; the probes, waits and cache hits are under `.local/witness-search-fixture-only-operations-extensions/`. Live requests per bucket: `code_search` 153, `core` 1, and 4043 on the exact-commit raw lane (`raw.githubusercontent.com`, paced rather than percentage-guarded). The shared response cache answered 5069 requests at no cost. No GraphQL, Postman or SwaggerHub route was used.
 
 ### The detectors
 
@@ -304,6 +304,17 @@ What became of each `search-incomplete` target's declarers: none is registrable 
 | `parameter-in-header` | `none-registrable` | no declarer of the arms this record searched for it executes them on a byte-matching golden |
 | `parameter-style-form-query-object` | `none-registrable` | no declarer of the arms this record searched for it executes them on a byte-matching golden |
 | `x-fern-or-crozier-ignore` | `none-registrable` | no declarer of the arms this record searched for it executes them on a byte-matching golden |
+
+## Redundant divergent candidates
+
+An admissible real declarer that the certified pair generates from, but
+whose every target and arm a registered witness already proves, is not
+registered; each divergence it shows is drafted as a follow-up with its
+differing lines.
+
+| candidate | screens | targets it would witness | already witnessed by | divergences (each a drafted follow-up) |
+|---|---|---|---|---|
+| `APIs-guru/openapi-directory:APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | licence passed (the aggregator's CC0), ref passed, Fern passed at 5.163.1 / 5.41.3; [measured record](vtex-marketplace-screen/screens.jsonl), filed `not-owed` | `header-subset-string-default` (7 sites) and its arm `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]`; no other detector of this record fires on it | corpus row 4400 `notion-mcp-server` | crozier differs in 9 files and writes 3 more: worked calls order an optional query argument declared before a required one after it (`an`, `sc`); crozier exposes the required headers `content-length` and `x-forwarded-for`, which Fern drops; and crozier hoists models for untyped schemas that carry `items: {}` beside `properties`, which Fern types `List[Any]`. None touches the global header the target exercises |
 
 ## The real witnesses
 
