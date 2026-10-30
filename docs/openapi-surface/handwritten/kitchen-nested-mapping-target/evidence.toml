@@ -5,6 +5,6 @@ digest = "ed6796d3547a0d5000c43b223bea2b049d96b53016088194b4124159350e2b82"
 [[covers]]
 key = "discriminator-mapping"
 arm = 'src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]'
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -4,6 +4,6 @@ digest = "7fa642e29dc6925fdbcb0cc62f1481144fb00eb8443458165eafafe71a775f79"
 
 [[covers]]
 key = "reference-literal-single-quote-escaped"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

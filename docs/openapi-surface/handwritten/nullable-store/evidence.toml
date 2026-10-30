@@ -4,13 +4,13 @@ digest = "37eefedea17a3c67c1f4580939c6929a033b0532a799ad8462b23d1de0481466"
 
 [[covers]]
 key = "nullable-single-allof-ref-component-not-optional"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "allof"
 arm = 'src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -5,6 +5,6 @@ digest = "e6021d05edbcdda05a864cbd486955fe17581b76ed4bddd8332c62e65f9758f2"
 [[covers]]
 key = "allof"
 arm = 'src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]'
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

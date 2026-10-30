@@ -4,6 +4,6 @@ digest = "ef7ddf52d02ad5e21c0be2a70ef610eade06ac1354501218b1a86e99933121c4"
 
 [[covers]]
 key = "forward-refs-omit-hoisted-variant-models"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

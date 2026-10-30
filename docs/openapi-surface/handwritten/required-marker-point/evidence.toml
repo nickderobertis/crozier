@@ -4,6 +4,6 @@ digest = "b4c32b64a86da69bd472b3742b81fdefeb2e800d5d03bbcfa19c6e365746ca1b"
 
 [[covers]]
 key = "ref-with-nullable-sibling-made-optional"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

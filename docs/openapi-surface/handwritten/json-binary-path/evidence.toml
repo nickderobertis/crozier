@@ -5,13 +5,13 @@ digest = "2e7fa2e64facc075f027e1c1e4ba00d2092e4302a4fc0022d44712dd0855a67d"
 [[covers]]
 key = "format-binary"
 arm = 'src/ir.rs::scalar_body[=Some\("binary"\)]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "format-binary"
 arm = 'src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

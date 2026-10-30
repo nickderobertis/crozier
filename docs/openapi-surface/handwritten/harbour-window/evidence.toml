@@ -5,13 +5,13 @@ digest = "8f9130c8512df46654d3417d38316a198c0628638d8a915edec340cd364fa97b"
 [[covers]]
 key = "allof"
 arm = 'src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composed-narrowing-constraints"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "enum"
 arm = 'src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composed-narrowing-constraints"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

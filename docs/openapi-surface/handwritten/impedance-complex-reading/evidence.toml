@@ -4,6 +4,6 @@ digest = "0f1aac7ea2b18a28b35ed5147d86d3a62332925d282b392391210200588a1251"
 
 [[covers]]
 key = "schema-name-builtin-complex"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#schema-named-complex"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

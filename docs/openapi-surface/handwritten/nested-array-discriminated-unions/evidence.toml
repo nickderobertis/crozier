@@ -17,9 +17,9 @@ verdict = "exhausted"
 [[covers]]
 key = "oneof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-discriminated-union.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-discriminated-union.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "array-item-anyof-discriminated-union"

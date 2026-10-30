@@ -5,6 +5,6 @@ digest = "1b704b257e6a220852d4ff7f8995f02d45d6c15a0988fa96c372b20f03486793"
 [[covers]]
 key = "format-byte"
 arm = 'src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]'
-search = "docs/openapi-surface/witness-search-scalar-body-format/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-scalar-body-format/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

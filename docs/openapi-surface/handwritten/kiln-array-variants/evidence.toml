@@ -4,18 +4,18 @@ digest = "43b687057ab49073efe755f7dfbaf2c7e05acd8afedf11770c0c65a3b9c760a5"
 
 [[covers]]
 key = "anyof-array-variant-inline-const-item"
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "oneof-array-variant-inline-const-item"
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "oneof-array-variant-inline-enum-item"
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

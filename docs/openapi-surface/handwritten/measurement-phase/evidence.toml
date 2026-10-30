@@ -4,20 +4,20 @@ digest = "b62c439e829ea27e6b5a5e51f9093329ceb7953a279a90a99921f317da8f2217"
 
 [[covers]]
 key = "allof-enum-ref-narrowed-by-scalar-member"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "allof"
 arm = 'src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "enum"
 arm = 'src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

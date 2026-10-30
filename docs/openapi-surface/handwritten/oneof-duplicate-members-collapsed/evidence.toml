@@ -4,6 +4,6 @@ digest = "ffe1e2614d77e04ad52cc38aec7687a30d45e3bb2452c76fcfa6e9717e23c3bc"
 
 [[covers]]
 key = "oneof-duplicate-members-collapsed"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

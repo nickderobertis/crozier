@@ -4,6 +4,6 @@ digest = "c9648282242b2e58b4c65838f4870ade8efbfadb81d23e07b3a4db8e73a6b413"
 
 [[covers]]
 key = "ref-into-component-response-schema-named-by-last-segment"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -4,12 +4,12 @@ digest = "7fadb32c75eaaebf963da4afb8eba219e4eb87f88fb98fc748d15fa84b2a694c"
 
 [[covers]]
 key = "schema-sdk-group-name"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#component-sdk-group"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "schema-x-tags"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#component-x-tags"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

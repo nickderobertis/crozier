@@ -5,6 +5,13 @@ digest = "70e06c5e0e853450951bd8e9f25b3309a7a8b55fdf4a30777f57f222d8a4c619"
 [[covers]]
 key = "oneof-anyof-variant"
 arm = 'src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]'
-search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+
+[[covers]]
+key = "anyof-array-variant-inline-enum-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]'
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

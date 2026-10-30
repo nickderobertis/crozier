@@ -5,6 +5,6 @@ digest = "eeb35e3d7553639d6004c00428fa51369578782901689daf44195ffeb8d65d23"
 [[covers]]
 key = "format-byte"
 arm = 'src/ir.rs::has_byte_text_response[=^ {16}return true;$]'
-search = "docs/openapi-surface/witness-search-byte-text-response/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-byte-text-response/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

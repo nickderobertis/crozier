@@ -4,6 +4,6 @@ digest = "24a56554b5f4489175db7c19a75489a1a2c0160a06bdb335eb9fd7df1efacedf"
 
 [[covers]]
 key = "nullable-anyof-member-description-dropped"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

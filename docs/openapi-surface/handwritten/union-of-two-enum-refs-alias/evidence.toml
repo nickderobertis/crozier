@@ -4,6 +4,6 @@ digest = "6423eaa1c0486a1b9475f11f2130fabe3d45bee9a5e3daa59543571e2f46d456"
 
 [[covers]]
 key = "union-of-two-enum-refs-alias"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

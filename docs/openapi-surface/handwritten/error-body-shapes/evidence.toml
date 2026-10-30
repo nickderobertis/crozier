@@ -5,6 +5,6 @@ digest = "1a9dd16be1b53f58777c232bedd69e851a1cf8b1a3cdcf5bb9ac838416850814"
 [[covers]]
 key = "oneof"
 arm = 'src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]'
-search = "docs/openapi-surface/witness-search-error-body-shapes/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-error-body-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -4,6 +4,6 @@ digest = "57210115c8bee666b67e66a62dc6b4bd1bb894a49a75a697ce96969a1da20e24"
 
 [[covers]]
 key = "discriminated-variant-date-value-snippet"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

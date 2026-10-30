@@ -4,6 +4,6 @@ digest = "5e58169c3b206bff99dfd7d2a2970300b333f5dc895a9370c52ae1a1ebe8986c"
 
 [[covers]]
 key = "allof-overlapping-ref-parents-flattened"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

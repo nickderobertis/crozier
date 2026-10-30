@@ -4,6 +4,6 @@ digest = "c42d11d91219c8a3391fa30b77180d322ac89c635f26ca239f013fb95984476b"
 
 [[covers]]
 key = "literal-example-dollar-escaped-in-docstring"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

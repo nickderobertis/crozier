@@ -5,6 +5,6 @@ digest = "fbbdd2e76efd6483391cee1ad482e208ee7bb11c3054fdc62ed39c8ec26e0e91"
 [[covers]]
 key = "oneof-string-const-variant"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]'
-search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
