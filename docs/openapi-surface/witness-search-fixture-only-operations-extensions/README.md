@@ -2,7 +2,7 @@
 
 Every target of the region files [`parameters.md`](../parameters.md), [`security.md`](../security.md) and [`oas31-extensions.md`](../oas31-extensions.md) whose proof, at this node's base (`1748b7946`), was a hand-written fixture: their `handwritten` feature rows, their one `handwritten` combination row, and every arm-level hand-written cover of one of their `golden` rows that [`../handwritten-reach.tsv`](../handwritten-reach.tsv) listed. None of their `golden` rows rested on a residual-only supplement (the one supplement, `schema-example-null`, is a `schemas.md` row). Each target was searched once, against the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3), for a real specification whose complete golden crozier byte-matches.
 
-**Outcome.** 6 feature targets now rest on a registered real witness and 3 arm targets are executed by one; 32 targets are `exhausted`; 23 remain `search-incomplete`, each with its reason below. Six corpus rows carry the witnesses: registered row 3001 `formbricks`, reused, and rows 4400 to 4404, added by this record.
+**Outcome.** 8 feature targets now rest on a registered real witness and 4 arm targets are executed by one; 32 targets are `exhausted`; 20 remain `search-incomplete`, each with its reason below. Seven corpus rows carry the witnesses: registered row 3001 `formbricks`, reused, and rows 4400 to 4405, added by this record.
 
 ## The targets
 
@@ -115,7 +115,7 @@ Code search reads only each repository's default branch and only files it indexe
 | `x-fern-token-variable-name` | `"x-fern-token-variable-name"` | 22 | 22 | 6 |
 | `x-fern-webhook` | `"x-fern-webhook"` | 61 | 61 | 5 |
 
-Every live request went through [`tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py), by way of `tools/witness-search/witness-search-github.py`'s acquirer and `tools/witness-search/witness_screen.py`; the probes, waits and cache hits are under `.local/witness-search-fixture-only-operations-extensions/`. Live requests per bucket: `code_search` 153, `core` 1, and 4043 on the exact-commit raw lane (`raw.githubusercontent.com`, paced rather than percentage-guarded). The shared response cache answered 5069 requests at no cost. No GraphQL, Postman or SwaggerHub route was used.
+Every live request went through [`tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py), by way of `tools/witness-search/witness-search-github.py`'s acquirer and `tools/witness-search/witness_screen.py`; the probes, waits and cache hits are under `.local/witness-search-fixture-only-operations-extensions/`. Live requests per bucket: `code_search` 153, `core` 1, and 4044 on the exact-commit raw lane (`raw.githubusercontent.com`, paced rather than percentage-guarded). The shared response cache answered 5071 requests at no cost. No GraphQL, Postman or SwaggerHub route was used.
 
 ### The detectors
 
@@ -199,7 +199,7 @@ The cover of each `search-incomplete` and `exhausted` key cites this table; a `g
 | key | outcome | declarers | why |
 |---|---|---|---|
 | `client-header-date-format` | `search-incomplete` | 2 acquired | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
-| `global-headers-extension` | `search-incomplete` | 3 GitHub | loonfs's own description (`loonfs/loonfs`, Apache-2.0) passes every screen, but crozier ignores `optional: true` on its `x-fern-global-headers`; honouring it amends `src/openapi.rs`'s frozen `GlobalHeaderExtension`, outside this node, so the candidate waits on that repair (drafted follow-up); the other declarers are copies or grant nothing |
+| `global-headers-extension` | `golden` | 3 GitHub | corpus row 4405 `loonfs` declares it and its golden byte-matches, after the optional-header repair the manager authorized |
 | `nullable-array-query-explode-false` | `search-incomplete` | 1 APIs.guru | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
 | `nullable-query-array-items` | `search-incomplete` | 18 acquired, 1 APIs.guru | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 9 declarer(s) outstanding |
 | `parameter-default-extension` | `exhausted` | 0 | no real document declares it |
@@ -229,7 +229,7 @@ The cover of each `search-incomplete` and `exhausted` key cites this table; a `g
 | `operation-sdk-group-name-without-method-name` | `exhausted` | 1 acquired, 4 GitHub | its declarers grant nothing (`SchematicHQ/schematic-fern-config`, `Inowu/wrestaurant-docs`, `qoretechnologies/qore`) or are a third-party copy of ElevenLabs' description |
 | `operation-sdk-method-name-sequence` | `exhausted` | 0 | no real document declares it |
 | `operation-idempotent-with-root-headers` | `exhausted` | 2 GitHub | its only declarers are a framework's conformance examples, written to exercise the extensions |
-| `operation-retries-disabled` | `search-incomplete` | 1 GitHub | its one declarer, `loonfs/loonfs`, passes every screen and waits on the global-header repair above (drafted follow-up) |
+| `operation-retries-disabled` | `golden` | 1 GitHub | corpus row 4405 `loonfs` declares it (7 operations) and its golden byte-matches |
 | `operation-webhook-extension` | `exhausted` | 0 | no real document declares it |
 | `operation-pagination-offset` | `exhausted` | 0 | no real document declares it |
 | `operation-pagination-boolean` | `exhausted` | 0 | no real document declares it |
@@ -258,7 +258,6 @@ Each arm-level cover's verdict, naming the arm it covers.
 | `http-negotiate` | `exhausted` | `src/ir.rs::auth_model[=_ => Auth::None,]` | `http-negotiate-unrequired` | no real document declares a negotiate scheme with no supported scheme beside it and no operation requiring it |
 | `parameter-schema` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | `nullable-query-union-items` | no document in the populations read declares it, and GitHub code search has no phrase that selects the shape, so the public documents outside them cannot be enumerated |
 | `parameter-in-header` | `search-incomplete` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | `observatory-client-date` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
-| `parameter-in-header` | `search-incomplete` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | `observatory-client-headers` | `loonfs/loonfs` would execute it once its global headers byte-match (drafted follow-up) |
 | `parameter-in-path` | `exhausted` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | `observatory-client-variable` | no real document declares `x-fern-sdk-variable` |
 | `parameter-in-query` | `exhausted` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | `observatory-query-extensions` | no real document declares `x-fern-default` |
 | `parameter-style-form-query-object` | `search-incomplete` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | `ore-bin-screen` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 60 declarer(s) outstanding |
@@ -274,6 +273,7 @@ Their arm-level covers are retired: the instrumented run of the witness's golden
 | golden row | arm | retired cover | witness |
 |---|---|---|---|
 | `parameter-in-header` | `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]` | `header-subset-string-default` | corpus row 4400 `notion-mcp-server` executes it |
+| `parameter-in-header` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | `observatory-client-headers` | corpus row 4405 `loonfs` executes it |
 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]` | `query-array-items-union` | corpus row 4402 `mcp-handle` executes it |
 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]` | `query-array-items-union` | corpus row 4402 `mcp-handle` executes it |
 
@@ -284,7 +284,6 @@ What became of each `search-incomplete` target's declarers: none is registrable 
 | key | outcome | why |
 |---|---|---|
 | `client-header-date-format` | `none-registrable` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
-| `global-headers-extension` | `none-registrable` | loonfs's own description (`loonfs/loonfs`, Apache-2.0) passes every screen, but crozier ignores `optional: true` on its `x-fern-global-headers`; honouring it amends `src/openapi.rs`'s frozen `GlobalHeaderExtension`, outside this node, so the candidate waits on that repair (drafted follow-up); the other declarers are copies or grant nothing |
 | `nullable-array-query-explode-false` | `none-registrable` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
 | `nullable-query-array-items` | `none-registrable` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 9 declarer(s) outstanding |
 | `parameter-without-location` | `none-registrable` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); every declarer they hold is decided |
@@ -298,7 +297,6 @@ What became of each `search-incomplete` target's declarers: none is registrable 
 | `required-query-array-nullable-union-items` | `none-registrable` | no document in the populations read declares it, and GitHub code search has no phrase that selects the shape, so the public documents outside them cannot be enumerated |
 | `security-scheme-header-extension-named` | `none-registrable` | Persona's `persona-id/persona-openapi` (Apache 2.0, eight dated versions) is a multi-file description whose tree was not acquired in this dispatch; `darwin-studios/darwin-cli` passes every screen and differs in 10 files (drafted follow-up); a framework's examples are excluded |
 | `security-schemes-duplicate-api-key-header` | `none-registrable` | no document in the populations read declares it, and GitHub code search has no phrase that selects the shape, so the public documents outside them cannot be enumerated |
-| `operation-retries-disabled` | `none-registrable` | its one declarer, `loonfs/loonfs`, passes every screen and waits on the global-header repair above (drafted follow-up) |
 | `combo-param-example-beside-ref-schema` | `none-registrable` | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 125 declarer(s) outstanding |
 | `parameter-schema` | `none-registrable` | no declarer of the arms this record searched for it executes them on a byte-matching golden |
 | `parameter-in-header` | `none-registrable` | no declarer of the arms this record searched for it executes them on a byte-matching golden |
@@ -321,14 +319,22 @@ differing lines.
 Each witness is a publisher's or author's own document at an immutable commit,
 under a grant the corpus rule admits, committed with its NOTICE entry and its
 complete certified-pair golden, and gated by its corpus test. Crozier needed
-three repairs to byte-match them, each with a unit test driving the touched
-function on the triggering shape and an all-corpus check that no committed
-golden moved: an inline union whose members tag `type` with a bare `const`
-stays an ordinary union (Notion); a string example on a `boolean`, `integer`
-or `number` schema is not a worked value (Laposta, measured against a
-from-scratch probe under both the singular and the 3.1 array keyword); and a
+seven repairs to byte-match them, each with a unit test driving the touched
+code on the triggering shape and an all-corpus check that no committed golden
+moved: an inline union whose members tag `type` with a bare `const` stays an
+ordinary union (Notion); a string example on a `boolean`, `integer` or
+`number` schema is not a worked value (Laposta, measured against a
+from-scratch probe under both the singular and the 3.1 array keyword); a
 nullable query array hoists its inline union item as the plain array does (MCP
-Handle).
+Handle); and, for LoonFS, an `optional: true` global header is
+`Optional[str] = None` and left out of worked clients, the README's pagination
+call carries its worked arguments, a download its media type makes under a
+schema that is no `format: binary` string is worked without its optional
+declared examples, and a discriminated variant's property naming a component
+takes that component's example. The optional-header repair adds one
+field, `optional: Option<bool>`, to `src/openapi.rs`'s `GlobalHeaderExtension`,
+a change to that run-frozen interface the manager authorized; a document
+without the key deserializes and generates as before.
 
 | key | witness | what its golden shows | comparison test |
 |---|---|---|---|
@@ -338,10 +344,13 @@ Handle).
 | `security-scheme-bearer-extension-named` | row 4402 `mcp-handle`: `WeatherPal-AI/MCP-handle` at `9c59f16950d25e08c1058d8174e12b22861280d8` (Apache-2.0) | the bearer token is the constructor argument `api_key` | `mcp_handle_matches_fern_output` |
 | `security-scheme-capitalised-http` | row 4403 `microsoft-adme-crs-converter`: `microsoft/adme-samples` at `df39d22ed32acfe80fcdbc5b554871b2c752a39a` (MIT), beside row 3004 | `scheme: Bearer` is the bearer `token` sent as `Authorization: Bearer …` | `microsoft_adme_crs_converter_matches_fern_output` |
 | `literal-prefixed-integer-path-segment` | row 4404 `wiim-httpapi`: `cvdlinden/wiim-httpapi` at `3dce4a722aa2b30fdb06d720b58714e224d26eb6` (GPL-3.0) | `/setPlayerCmd:vol:{value}` is `set_player_cmd_vol(value: int)`, requesting `f"setPlayerCmd:vol:{encode_path_param(value)}"` | `wiim_httpapi_matches_fern_output` |
+| `global-headers-extension` | row 4405 `loonfs`: `loonfs/loonfs` at `1e9aebea7e6fca3ea5f32d33b066e39228131208` (Apache-2.0) | `Loonfs-Actor` and three siblings, marked `optional: true`, are `actor_id: typing.Optional[str] = None` and its kin, set only when given | `loonfs_matches_fern_output` |
+| `operation-retries-disabled` | row 4405 `loonfs` | seven operations, `create_upload` among them, are sent with `max_retries` set to 0 | `loonfs_matches_fern_output` |
 
 The arm witnesses are read off [`../golden-reach.tsv`](../golden-reach.tsv):
-row 4400 executes `global_headers`' subset-default arm, and row 4402 executes
-`hoist_param_enum`'s inline-union-item arms.
+row 4400 executes `global_headers`' subset-default arm, row 4402
+`hoist_param_enum`'s inline-union-item arms, and row 4405 `global_headers`'
+loop over the declared extension headers.
 
 `fixture_only_real_witnesses_declare_their_shapes` in
 [`../../../crates/crozier-e2e/tests/e2e/real_witnesses.rs`](../../../crates/crozier-e2e/tests/e2e/real_witnesses.rs)
@@ -351,7 +360,12 @@ claim standing.
 
 The superseded hand-written fixtures are retired: `observatory-route-order`,
 `header-subset-string-default`, `lock-keeper-vault`, `ski-lift-gates`,
-`tide-gauge-sessions` and `literal-prefixed-integer-path-segment`. The
+`tide-gauge-sessions`, `literal-prefixed-integer-path-segment`,
+`observatory-client-headers` and `warehouse-header-token`, and
+`parcel-courier-desk` keeps only its idempotency cover. The last two whole
+fixtures' documents and trees are inputs to other tests, so they stay measured
+as [parameter-lowering](../../fern-measurements/parameter-lowering/README.md)
+cases. The
 three literals-mode measurements that read the security fixtures' documents
 keep those documents beside their trees under
 [`../../fern-measurements/clients-extensions/`](../../fern-measurements/clients-extensions/README.md);
