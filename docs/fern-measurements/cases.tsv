@@ -153,6 +153,7 @@ schema-shapes/pottery-studio-shapes	docs/fern-measurements/schema-shapes/pottery
 parameter-lowering/header-default-constants	docs/fern-measurements/parameter-lowering/header-default-constants/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-default-literal	docs/fern-measurements/parameter-lowering/header-default-literal/openapi.yml	python-enums	packaged	-
 parameter-lowering/header-defaults-managed	docs/fern-measurements/parameter-lowering/header-defaults-managed/openapi.yml	python-enums	packaged	-
+parameter-lowering/observatory-client-headers	docs/fern-measurements/parameter-lowering/observatory-client-headers/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-array-union-items	docs/fern-measurements/parameter-lowering/query-array-union-items/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-nullable-30	docs/fern-measurements/parameter-lowering/query-nullable-30/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-nullable-31	docs/fern-measurements/parameter-lowering/query-nullable-31/openapi.yml	python-enums	packaged	-
@@ -161,6 +162,7 @@ parameter-lowering/query-union-enum-member	docs/fern-measurements/parameter-lowe
 parameter-lowering/query-union-placement	docs/fern-measurements/parameter-lowering/query-union-placement/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-union-temporal-member	docs/fern-measurements/parameter-lowering/query-union-temporal-member/openapi.yml	python-enums	packaged	-
 parameter-lowering/single-operation-headers	docs/fern-measurements/parameter-lowering/single-operation-headers/openapi.yml	python-enums	packaged	-
+parameter-lowering/warehouse-header-token	docs/fern-measurements/parameter-lowering/warehouse-header-token/openapi.yml	python-enums	packaged	-
 remaining-examples/compass-choice-control	docs/fern-measurements/remaining-examples/compass-choice-control/openapi.yml	python-enums	packaged	-
 remaining-examples/enum-media-selection-control	docs/fern-measurements/remaining-examples/enum-media-selection-control/openapi.yml	python-enums	packaged	-
 remaining-examples/fletch-mcp-no-enum-map-value	docs/fern-measurements/remaining-examples/fletch-mcp-no-enum-map-value/openapi.yml	python-enums	packaged	-

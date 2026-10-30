@@ -18073,7 +18073,7 @@ mod parameter_lowering_tests {
             ),
             (
                 include_str!(
-                    "../docs/openapi-surface/handwritten/observatory-client-headers/openapi.yml"
+                    "../docs/fern-measurements/parameter-lowering/observatory-client-headers/openapi.yml"
                 ),
                 "station: str",
             ),

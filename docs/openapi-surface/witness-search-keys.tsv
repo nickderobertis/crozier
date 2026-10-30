@@ -131,7 +131,6 @@ fern-streaming-format-over-json	operation.x-fern-streaming	oas31-extensions.md	s
 fern-streaming-terminator	operation.x-fern-streaming	oas31-extensions.md	supported
 forward-refs-omit-hoisted-variant-models	schema.oneOf	schemas.md	supported
 get-request-body-union-member	operation.requestBody:get-union-member	bodies-media.md	supported
-global-headers-extension	openapi.x-fern-global-headers	parameters.md	supported
 group-path-ending-in-api-nested-package	operation.x-fern-sdk-group-name	document-paths.md	supported
 ignore-extension-on-property-kept	schema.properties	schemas.md	supported
 integer-example-beyond-double-precision	schema.format=int64	schemas.md	supported
@@ -167,7 +166,6 @@ operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	doc
 operation-idempotent-with-root-headers	operation.x-fern-idempotent:with-root-headers	oas31-extensions.md	supported
 operation-pagination-boolean	operation.x-fern-pagination:boolean-over-root	oas31-extensions.md	supported
 operation-pagination-offset	operation.x-fern-pagination:offset	oas31-extensions.md	supported
-operation-retries-disabled	operation.x-fern-retries:disabled	oas31-extensions.md	supported
 operation-sdk-group-name-leading-underscore	operation.x-fern-sdk-group-name:leading-underscore	oas31-extensions.md	supported
 operation-sdk-group-name-without-method-name	operation.x-fern-sdk-group-name:without-method-name	oas31-extensions.md	supported
 operation-sdk-method-name-sequence	operation.x-fern-sdk-method-name:sequence	oas31-extensions.md	supported

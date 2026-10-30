@@ -762,3 +762,10 @@ Linkplay/WiiM HTTP API description and generated SDK golden:
     repository's GPL-3.0 grant, retained in licenses/wiim-httpapi-GPL-3.0.txt.
     Corpus row 4404 retains the unmodified source alongside the generated SDK,
     with Python comments stripped.
+
+LoonFS HTTP API description and generated SDK golden:
+    https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json
+    Apache-2.0 (the document's info.license and the publisher repository's
+    LICENSE, retained in licenses/loonfs-Apache-2.0.txt). Corpus row 4405
+    retains the unmodified source alongside the generated SDK, with Python
+    comments stripped.

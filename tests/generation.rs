@@ -16054,8 +16054,9 @@ fn inline_named_media_examples_keep_json_headers_beside_surviving_ref_control() 
 
 #[test]
 fn global_header_constructor_names_are_checked_before_python_emission() {
-    let source =
-        include_str!("../docs/openapi-surface/handwritten/warehouse-header-token/openapi.yml");
+    let source = include_str!(
+        "../docs/fern-measurements/parameter-lowering/warehouse-header-token/openapi.yml"
+    );
     for spelling in ["x-fern-global-headers", "x-crozier-global-headers"] {
         for name in ["", "/", "ledger"] {
             let mut document: serde_json::Value = serde_json::from_str(source).unwrap();

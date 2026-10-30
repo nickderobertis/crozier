@@ -2009,6 +2009,11 @@ in OpenAPI by its author in `cvdlinden/wiim-httpapi` under the repository's
 GPL-3.0 `LICENSE` (retained in `licenses/wiim-httpapi-GPL-3.0.txt`); its command
 routes put an integer parameter after literal text in one segment
 (`/setPlayerCmd:vol:{value}`).
+LoonFS publishes its HTTP API description in its own `loonfs/loonfs`
+repository; the document's `info.license` and the repository's `LICENSE` are
+Apache-2.0 (retained in `licenses/loonfs-Apache-2.0.txt`). It declares
+`x-fern-global-headers` entries marked `optional: true` and an operation whose
+`x-fern-retries` is `{disabled: true}`.
 
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
@@ -2017,3 +2022,4 @@ routes put an integer parameter after literal text in one segment
 | 4402 | `mcp-handle` | github-raw | https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json | `9c59f16950d25e08c1058d8174e12b22861280d8` | Apache-2.0 (publisher repository LICENSE) | committed | A bearer scheme naming its credential by `x-fern-bearer`; a nullable query array of an inline union |
 | 4403 | `microsoft-adme-crs-converter` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/crs_converter_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | MIT (publisher repository LICENSE) | committed | An http scheme spelled `Bearer` with a capital |
 | 4404 | `wiim-httpapi` | github-raw | https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json | `3dce4a722aa2b30fdb06d720b58714e224d26eb6` | GPL-3.0 (author repository LICENSE) | committed | Integer path parameters after literal text in one segment |
+| 4405 | `loonfs` | github-raw | https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json | `1e9aebea7e6fca3ea5f32d33b066e39228131208` | Apache-2.0 (document info.license and publisher repository LICENSE) | committed | Optional global headers; retries disabled on one operation |

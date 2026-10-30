@@ -519,6 +519,40 @@ Witness {
         &[],
     )],
 },
+Witness {
+    shape: "global-headers-extension",
+    corpus: "loonfs",
+    declares: |doc| {
+        let headers = at(doc, "/x-fern-global-headers")?;
+        expect(
+            headers.as_array().is_some_and(|list| {
+                list.iter().any(|h| h["header"] == "Loonfs-Actor" && h["name"] == "actorId" && h["optional"] == true)
+            }),
+            "`Loonfs-Actor` is an optional global header named `actorId`",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &["actor_id: typing.Optional[str] = None,", "if self._actor_id is not None:"],
+        &["actor_id: str,"],
+    )],
+},
+Witness {
+    shape: "operation-retries-disabled",
+    corpus: "loonfs",
+    declares: |doc| {
+        let operation = at(doc, "/paths/~1v0~1namespaces~1{namespace_id}~1uploads/post")?;
+        expect(
+            operation["x-fern-retries"]["disabled"] == true,
+            "`create_upload` disables retries",
+        )
+    },
+    golden: &[(
+        "src/fern/uploads/raw_client.py",
+        &["{**request_options, \"max_retries\": 0} if request_options is not None else {\"max_retries\": 0}"],
+        &[],
+    )],
+},
 ];
 
 /// Every fixture-only-search witness still declares its shape and carries its

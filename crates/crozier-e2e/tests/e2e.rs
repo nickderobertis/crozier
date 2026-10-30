@@ -7072,12 +7072,30 @@ fn sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key()
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// Where one parameter extension or serialization document lives: under
+/// `docs/openapi-surface/handwritten/`, except the two corpus row 4405 (loonfs)
+/// retired as hand-written proofs, which stay measured as parameter-lowering
+/// cases.
+fn parameter_case_dir(name: &str) -> PathBuf {
+    if matches!(
+        name,
+        "observatory-client-headers" | "warehouse-header-token"
+    ) {
+        repo_root()
+            .join("docs/fern-measurements/parameter-lowering")
+            .join(name)
+    } else {
+        repo_root()
+            .join("docs/openapi-surface/handwritten")
+            .join(name)
+    }
+}
+
 /// Complete certified trees for the parameter extension and serialization
 /// shapes. These inputs contain no enums: both modes must preserve all bytes,
 /// apart from the catalogued generator-configuration provenance.
 #[test]
 fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     let mut failures = Vec::new();
     for case in [
         "declared-rename-control",
@@ -7091,7 +7109,7 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
         "warehouse-header-token",
     ] {
         for mode in ["literals", "python-enums"] {
-            let expected = root.join(case).join("fern-expected");
+            let expected = parameter_case_dir(case).join("fern-expected");
             let literal_tree = tempfile::tempdir().unwrap();
             let comparison_root = if mode == "literals" {
                 for rel in walk_files(&expected) {
@@ -7125,7 +7143,7 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
                 expected.as_path()
             };
             let out = tempfile::tempdir().unwrap();
-            probe_command(&root.join(case).join("openapi.yml"), out.path())
+            probe_command(&parameter_case_dir(case).join("openapi.yml"), out.path())
                 .args(["--enum-type", mode])
                 .assert()
                 .success();
@@ -7215,14 +7233,13 @@ fn parameter_extension_aliases_match_and_win() {
             _ => {}
         }
     }
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     for name in [
         "observatory-query-extensions",
         "observatory-client-headers",
         "observatory-client-variable",
         "warehouse-header-token",
     ] {
-        let case = root.join(name);
+        let case = parameter_case_dir(name);
         let original: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(case.join("openapi.yml")).unwrap())
                 .unwrap();
@@ -7246,7 +7263,7 @@ fn parameter_extension_aliases_match_and_win() {
 
 #[test]
 fn global_header_wire_names_match_certified_pass_through_for_both_aliases() {
-    let root = repo_root().join("docs/openapi-surface/handwritten/warehouse-header-token");
+    let root = parameter_case_dir("warehouse-header-token");
     let original: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
     for mode in ["fern", "crozier", "canonical-wins"] {
@@ -7860,7 +7877,6 @@ def start_wire_server(answer):
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     for case in [
         "observatory-query-extensions",
         "observatory-client-date",
@@ -7874,7 +7890,7 @@ fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
         let sdk = dir.path().join("sdk");
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join(case).join("openapi.yml"))
+            .arg(parameter_case_dir(case).join("openapi.yml"))
             .arg("--output")
             .arg(&sdk)
             .args([
@@ -10458,6 +10474,7 @@ const CORPORA: &[&Corpus] = &[
     &MCP_HANDLE,
     &MICROSOFT_ADME_CRS_CONVERTER,
     &WIIM_HTTPAPI,
+    &LOONFS,
 ];
 
 #[test]
@@ -14624,6 +14641,25 @@ const WIIM_HTTPAPI: Corpus = Corpus {
 #[test]
 fn wiim_httpapi_matches_fern_output() {
     assert_committed_corpus_matches(&WIIM_HTTPAPI);
+}
+
+/// LoonFS's HTTP API description — corpus row 4405. Its global headers are
+/// marked `optional: true`, and seven operations disable retries by
+/// `x-fern-retries`.
+const LOONFS: Corpus = Corpus {
+    api: "loonfs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn loonfs_matches_fern_output() {
+    assert_committed_corpus_matches(&LOONFS);
 }
 
 #[test]

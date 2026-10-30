@@ -1,0 +1,10 @@
+
+
+NamespaceId = str
+"""
+The durable ID of one namespace.
+
+Each namespace ID refers to one namespace lifetime, and it isn't a display name. Its
+serialized form is 1 to 128 lowercase ASCII letters, digits, dots, underscores, or hyphens,
+and it starts with a letter or digit. The `loonfs-` prefix is reserved for system use.
+"""
