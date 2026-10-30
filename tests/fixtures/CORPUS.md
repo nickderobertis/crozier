@@ -1981,3 +1981,15 @@ measured beside them are recorded in
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 3478 | `ingef-conquery` | github-raw | https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml | `0379408a4b681575daf311d37bd12ff08ccc409d` | MIT (repository LICENSE; the document's info.license is a placeholder) | committed | A discriminator mapping target naming no component beside targets that do, and union variants over an `allOf`-only base |
+
+## Blank descriptions on inline response objects
+
+Stellastra's review API answers `POST /post-review` with inline object
+schemas whose `description` is the empty string, which both generators turn
+into a blank docstring block on the hoisted response model rather than none.
+Found by the [fixture-only `schemas` witness search](../../docs/openapi-surface/witness-search-fixture-only-schemas/README.md),
+it replaced the hand-written `blank-reading-description` fixture.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4000 | `stellastra-com` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/stellastra.com/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | committed | The Stellastra review API the publisher describes (`info.x-origin` records `https://stellastra.com/stellastra.json`): its `POST /post-review` `200` and `400` responses are inline objects with `description: ''`, the shape `empty-description-inline-response-docstring` names, and they send `InlineHoister::hoist_object` down its blank-description arm |

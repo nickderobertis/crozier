@@ -1773,7 +1773,7 @@ now `golden` on.
 
 | allof-union-branch-not-schema-overrides-property | both | Composed object schema | handwritten | handwritten: sampling-branches; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
 
-| empty-description-inline-response-docstring | both | Object property or response schema metadata | handwritten | handwritten: blank-reading-description; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+| empty-description-inline-response-docstring | both | Object property or response schema metadata | golden | census `operation.responses:blank-description-inline-object`: **2** declaration sites in **1** registered source — `stellastra-com` (2, corpus row 4000): `POST /post-review`'s `200` and `400` responses are inline objects with `description: ''`, which its complete certified-pair golden, byte-matching whole, hoists with an empty docstring block. Found and registered by the [record](witness-search-fixture-only-schemas/README.md#the-real-witnesses), which retired the `blank-reading-description` hand-written fixture. |  |  |  |
 
 | enum-value-description-extension-dropped | both | Object property or response schema metadata | handwritten | handwritten: compass-member-notes; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
 

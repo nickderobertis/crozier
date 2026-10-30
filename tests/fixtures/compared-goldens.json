@@ -1229,6 +1229,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/stellastra-com/expected": {},
     "tests/fixtures/strapi-rest-api/expected": {},
     "tests/fixtures/subsloth/expected": {},
     "tests/fixtures/subsloth/expected-literals": {

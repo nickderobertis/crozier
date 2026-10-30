@@ -5961,6 +5961,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:complex-module-name",
             "components.schemas:described-object-ref-union",
             "components.schemas:variant-own-fields-before-base",
+            "operation.responses:blank-description-inline-object",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
             "operation.operationId:tag-spelled-split-prefix",
@@ -16290,6 +16291,41 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "any-of"): 1}, rows(completed))
+
+    def test_blank_description_inline_response_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.responses:blank-description-inline-object"
+        reading = {"type": "object", "properties": {"depth": {"type": "integer"}}}
+
+        def document(schema: dict[str, Any], media: str = "application/json") -> dict[str, Any]:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": "gauge", "version": "1"},
+                "paths": {
+                    "/gauge": {
+                        "get": {
+                            "operationId": "read_gauge",
+                            "responses": {"200": {"description": "Reading", "content": {media: {"schema": schema}}}},
+                        }
+                    }
+                },
+                "components": {"schemas": {"Reading": {**reading, "description": ""}}},
+            }
+
+        cases = {
+            "positive": document({**reading, "description": ""}),
+            "described": document({**reading, "description": "A reading."}),
+            "undescribed": document(reading),
+            "referenced": document({"$ref": "#/components/schemas/Reading"}),
+            "scalar": document({"type": "integer", "description": ""}),
+            "text": document({**reading, "description": ""}, "text/plain"),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, body in cases.items():
+                write_fixture(root, fixture, json.dumps(body))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
 
     def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:tag-spelled-split-prefix"

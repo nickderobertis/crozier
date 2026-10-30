@@ -1371,6 +1371,12 @@ PREDICATES = {
         "`application/json` beside it: the download `is_download_media_type` of "
         "`src/ir.rs` streams"
     ),
+    "operation.responses:blank-description-inline-object": (
+        "one per JSON-like media type of an Operation Object's inline Response "
+        "Object whose schema is an inline object (`type: object` or `properties`, "
+        "no `$ref`) writing `description: ''`: the model `InlineHoister::hoist_object` "
+        "of `src/ir.rs` hoists with an empty docstring block, as Fern does"
+    ),
     "operation.requestBody:blank-description-optional-object": (
         "one per Operation Object declaring no parameter itself or on its Path Item "
         "whose request body's `description` is the empty string and whose "
@@ -6167,6 +6173,26 @@ def reference_cycles(schemas: dict[Any, Any]) -> dict[str, frozenset[str]]:
     return cycles
 
 
+def blank_description_inline_responses(operation: dict[Any, Any]) -> list[str]:
+    """`operation.responses:blank-description-inline-object`, read off inline responses only."""
+    responses = operation.get("responses")
+    found: list[str] = []
+    for response in responses.values() if isinstance(responses, dict) else []:
+        content = response.get("content") if isinstance(response, dict) else None
+        for media_type, media in content.items() if isinstance(content, dict) else []:
+            schema = media.get("schema") if isinstance(media, dict) else None
+            if (
+                isinstance(media_type, str)
+                and "json" in media_type.lower()
+                and isinstance(schema, dict)
+                and "$ref" not in schema
+                and (schema.get("type") == "object" or isinstance(schema.get("properties"), dict))
+                and schema.get("description") == ""
+            ):
+                found.append("operation.responses:blank-description-inline-object")
+    return found
+
+
 def reference_cycle_predicates(schemas: Any) -> list[str]:
     """`components.schemas:fields-reach-cycles-unsorted` and `:cycle-into-cycle`."""
     if not isinstance(schemas, dict):
@@ -6514,6 +6540,7 @@ class Census:
                 found.append("operation.operationId:hyphenated-tag-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
+            found += blank_description_inline_responses(node)
             found += self.body_and_response_predicates(node, method, url)
         if kind_name == "mediaType":
             schema = node.get("schema")

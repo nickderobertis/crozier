@@ -496,7 +496,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-159, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+160, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
@@ -748,6 +748,11 @@ drift gate over the pair:
   success response holds an `audio/*`, `video/*` or `application/pdf` media type
   declaring no `schema`, and no `application/json` beside it: the download
   `is_download_media_type` of `src/ir.rs` streams
+- `operation.responses:blank-description-inline-object` — one per JSON-like media type
+  of an Operation Object's inline Response Object whose schema is an inline object
+  (`type: object` or `properties`, no `$ref`) writing `description: ''`: the model
+  `InlineHoister::hoist_object` of `src/ir.rs` hoists with an empty docstring block, as
+  Fern does
 - `operation.requestBody:blank-description-optional-object` — one per Operation Object
   declaring no parameter itself or on its Path Item whose request body's `description`
   is the empty string and whose `application/json` schema, inline or behind one local
@@ -1041,7 +1046,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Eighty-eight of the 159 are node-local**, which is what makes them one family:
+**Eighty-nine of the 160 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local

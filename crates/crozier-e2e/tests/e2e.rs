@@ -10313,6 +10313,7 @@ const CORPORA: &[&Corpus] = &[
     &FLOWDAPT,
     &K8S_CONTAINER_SERVICE_PROVIDER,
     &DANIWEB_CONNECT,
+    &STELLASTRA_COM,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
@@ -11791,6 +11792,20 @@ const FLOWDAPT: Corpus = Corpus {
 /// has no narrower Python type for, over three paths and 18 component schemas.
 const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
     api: "k8s-container-service-provider",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `stellastra-com`: corpus row 4000, Stellastra's review API from the APIs.guru
+/// directory, whose inline response objects carry `description: ''` — the
+/// registered witness of `empty-description-inline-response-docstring`.
+const STELLASTRA_COM: Corpus = Corpus {
+    api: "stellastra-com",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14108,6 +14123,11 @@ fn k8s_container_service_provider_matches_fern_output() {
 #[test]
 fn daniweb_connect_matches_fern_output() {
     assert_committed_corpus_matches(&DANIWEB_CONNECT);
+}
+
+#[test]
+fn stellastra_com_matches_fern_output() {
+    assert_committed_corpus_matches(&STELLASTRA_COM);
 }
 
 #[test]

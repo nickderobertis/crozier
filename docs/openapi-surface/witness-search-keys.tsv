@@ -113,7 +113,6 @@ component-same-primitive-union	components.schemas:same-primitive-union	schemas.m
 discriminated-extension	schema.x-fern-discriminated	oas31-extensions.md	supported
 discriminated-variant-date-value-snippet	schema.format=date	schemas.md	supported
 discriminator-property-name-extension	schema.discriminator.x-fern-property-name	oas31-extensions.md	supported
-empty-description-inline-response-docstring	schema.description	schemas.md	supported
 empty-path-segment-double-slash-kept	openapi.paths:several-template-expressions	document-paths.md	supported
 enum-union-body-example-first-member-value	schema.enum:string-valued	bodies-media.md	supported
 enum-value-description-extension-dropped	schema.enum	schemas.md	supported

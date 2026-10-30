@@ -9299,6 +9299,11 @@ tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	38	sdk-iden
 tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/steaminputdb/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/steaminputdb/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/__init__.py	32	init-type-checking-import-order
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
