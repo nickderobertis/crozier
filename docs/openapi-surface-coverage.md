@@ -46,8 +46,8 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  14 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 127 read `search-incomplete`. Of those,
+  10 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 131 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -95,8 +95,11 @@ split five ways:
   (corpus rows 2200 and 2201).
   The 33 `handwritten` rows of `bodies-media` and `document-paths` cite the
   [fixture-only bodies and paths search](openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts):
-  8 read `exhausted`, 24 `search-incomplete` with each unscreened candidate's
-  reason named, and 1 `witness-blocked`. It read the acquired pools and a
+  4 read `exhausted`, 28 `search-incomplete` with each unscreened candidate's
+  reason named, and 1 `witness-blocked`. A `search-incomplete` row whose
+  admissible declarers the certified pair generates names each one and the
+  root causes it is handed off under, crozier's differences from it left
+  unrepaired for a separate plan. It read the acquired pools and a
   bounded live code search, and registered real witnesses (corpus rows 4200 to
   4212) that, with the reused row 2801, moved ten of those regions' rows to
   `golden` and retired seven of their arm-level covers and one outside them.
@@ -142,7 +145,7 @@ provenance and records scoped updates beside their rows.
   golden test executes the site; file-level residuals remain recorded separately.
 - **104 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 104 is still one of the 109 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 51 read `exhausted`, 53 read `search-incomplete` and 0 read `config-gated`.
+  The cited records of 49 read `exhausted`, 55 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -3035,7 +3038,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
 The golden rows split in two. **501** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 109 unreached arms in all. By the verdict each arm's linked record states, 58 read `exhausted`, 51 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 109 unreached arms in all. By the verdict each arm's linked record states, 56 read `exhausted`, 53 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources or, for an arm no arm-search
@@ -3146,8 +3149,8 @@ why. The changes that took the arm off:
 |---|---|---|---|---|---|
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 1 | `search-incomplete` | `json-request-shapes` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | 27 | `search-incomplete` | `json-request-shapes` |
-| 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]` | 4 | `exhausted` | `request-media-methods` |
-| 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `exhausted` | `request-media-methods` |
+| 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]` | 4 | `search-incomplete` | `request-media-methods` |
+| 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `search-incomplete` | `request-media-methods` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `search-incomplete` | `inline-body-readonly-own-overlap` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]` | 26 | `search-incomplete` | `query-array-items-union` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |

@@ -5,4 +5,5 @@ digest = "075c7d1e96a2096a1c4fe92d8f7ced917b1bb38004f86713d9df77cf85f52c80"
 [[covers]]
 key = "text-response-drops-request-example"
 search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
-verdict = "exhausted"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
