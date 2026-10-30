@@ -10851,11 +10851,14 @@ fn build_example_inner(
     // apideck-file-storage's `filesDownload` takes a required `id` beside an
     // optional `fields` exampled `id,updated_at`, and documents
     // `download(id="id")` (measured at fern-python-sdk 5.41.3, where 5.20.0
-    // documented no argument at all). Any binary download reads the same way:
-    // loonfs's `files.content` answers `application/octet-stream` and is
-    // documented with its required `namespace_id` and `path` alone, where the
-    // JSON `files.retrieve` beside it also shows its exampled `snapshot_id`.
-    let declared_examples = !(ep.wildcard_binary_response || ep.binary_response);
+    // documented no argument at all). A download its media type makes, under a
+    // schema that is no `format: binary` string, reads the same way: loonfs's
+    // `files.content` answers `application/octet-stream` with an integer array
+    // and is documented with its required `namespace_id` and `path` alone, where
+    // the JSON `files.retrieve` beside it also shows its exampled `snapshot_id`.
+    // A `format: binary` download under any other media keeps its examples.
+    let declared_examples =
+        !(ep.wildcard_binary_response || (ep.binary_response && !ep.binary_schema_response));
     // A path parameter whose schema declares no type is one Fern's example
     // generator cannot sample, and the endpoint is then exampled by its other
     // writer: the parameter by its own name, and a free-form map body as one
@@ -18877,9 +18880,10 @@ mod parameter_lowering_tests {
         );
     }
 
-    /// loonfs's `files.content`: a binary download answering an error is worked
-    /// with its required arguments alone, while a JSON operation beside it keeps
-    /// an optional argument's declared example.
+    /// loonfs's `files.content`: a download its media type makes, under an
+    /// integer-array schema, is worked with its required arguments alone, while a
+    /// JSON operation and a `format: binary` download beside it keep an optional
+    /// argument's declared example.
     #[test]
     fn a_binary_download_is_worked_without_its_optional_examples() {
         let files = files(json!({
@@ -18894,6 +18898,19 @@ mod parameter_lowering_tests {
                     ],
                     "responses": { "200": { "description": "Bytes", "content": { "application/octet-stream": {
                         "schema": { "type": "array", "items": { "type": "integer", "format": "int32", "minimum": 0 } }
+                    } } },
+                    "404": { "description": "Missing", "content": { "application/json": {
+                        "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+                    } } } }
+                } },
+                "/bytes": { "get": {
+                    "operationId": "bytes",
+                    "parameters": [
+                        { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
+                        { "name": "snapshot", "in": "query", "required": false, "schema": { "type": "string", "example": "pin_1" } }
+                    ],
+                    "responses": { "200": { "description": "Bytes", "content": { "application/octet-stream": {
+                        "schema": { "type": "string", "format": "binary" }
                     } } },
                     "404": { "description": "Missing", "content": { "application/json": {
                         "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
@@ -18918,6 +18935,10 @@ mod parameter_lowering_tests {
         );
         assert!(
             client.contains("client.entry(\n            path=\"path\",\n            snapshot=\"pin_1\",\n        )"),
+            "{client}"
+        );
+        assert!(
+            client.contains("client.bytes(\n            path=\"path\",\n            snapshot=\"pin_1\",\n        )"),
             "{client}"
         );
     }
