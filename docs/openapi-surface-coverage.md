@@ -496,7 +496,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-157, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+159, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
@@ -794,6 +794,16 @@ drift gate over the pair:
   primitive and nothing else is declared beside them, which
   `normalize_same_primitive_unions` of `src/openapi.rs` renames after its last
   alternative's ordinal
+- `components.schemas:described-object-ref-union` — one per component schema writing a
+  non-empty `description` and a `oneOf` of two or more Reference Objects, each to an
+  object component, with no `discriminator`, `properties` or `allOf` beside it and no
+  property every member tags with one string value: the `typing.Union` alias
+  `render_type_decl` of `src/emit.rs` writes without that description, as Fern does
+- `components.schemas:variant-own-fields-before-base` — one per Reference Object member
+  of a component's discriminated `oneOf` or `anyOf` whose target declares a property
+  other than the discriminator's and an `allOf` Reference Object to a base declaring one
+  too: `member_fields` of `src/ir.rs` writes the variant's own fields before the base's
+  in the union wrapper, the reverse of the `allOf` order
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
   Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
   `src/openapi.rs` resolves
@@ -1031,7 +1041,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Eighty-six of the 157 are node-local**, which is what makes them one family:
+**Eighty-eight of the 159 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local

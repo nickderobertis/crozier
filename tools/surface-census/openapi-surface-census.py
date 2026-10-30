@@ -1438,6 +1438,20 @@ PREDICATES = {
         "else is declared beside them, which `normalize_same_primitive_unions` of "
         "`src/openapi.rs` renames after its last alternative's ordinal"
     ),
+    "components.schemas:described-object-ref-union": (
+        "one per component schema writing a non-empty `description` and a `oneOf` of "
+        "two or more Reference Objects, each to an object component, with no "
+        "`discriminator`, `properties` or `allOf` beside it and no property every "
+        "member tags with one string value: the `typing.Union` alias `render_type_decl` "
+        "of `src/emit.rs` writes without that description, as Fern does"
+    ),
+    "components.schemas:variant-own-fields-before-base": (
+        "one per Reference Object member of a component's discriminated `oneOf` or "
+        "`anyOf` whose target declares a property other than the discriminator's and "
+        "an `allOf` Reference Object to a base declaring one too: `member_fields` of "
+        "`src/ir.rs` writes the variant's own fields before the base's in the union "
+        "wrapper, the reverse of the `allOf` order"
+    ),
     "securityScheme:$ref": (
         "one per `components.securitySchemes` entry that is a Reference Object rather "
         "than a Security Scheme Object, which `normalize_security_scheme_refs` of "
@@ -7239,6 +7253,8 @@ class Census:
             found += self.class_name_sanitizations(node.get("schemas"))
             found += self.complex_module_names(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
+            found += self.described_object_ref_unions(node.get("schemas"))
+            found += self.variant_own_fields_before_bases(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
@@ -7715,6 +7731,108 @@ class Census:
             for key, schema in node.items()
             if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
+
+    @staticmethod
+    def described_object_ref_unions(node: Any) -> list[str]:
+        """`components.schemas:described-object-ref-union`: a described union alias.
+
+        Read at the Components Object, because whether each member is an object
+        and whether the members share a one-value string tag (the property
+        `inferred_discriminant_property` of `src/ir.rs` would read, making the
+        union a tagged wrapper instead of an alias) are answered by the members'
+        targets, not by the union's own node.
+        """
+        if not isinstance(node, dict):
+            return []
+
+        def target(member: Any) -> Any:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            prefix = "#/components/schemas/"
+            if not isinstance(reference, str) or not reference.startswith(prefix):
+                return None
+            name = reference[len(prefix) :].replace("~1", "/").replace("~0", "~")
+            return node.get(name)
+
+        def is_object(schema: Any) -> bool:
+            return isinstance(schema, dict) and (
+                schema.get("type") == "object" or isinstance(schema.get("properties"), dict)
+            )
+
+        def tag(schema: dict[str, Any], name: str) -> bool:
+            field = (schema.get("properties") or {}).get(name)
+            if not isinstance(field, dict):
+                return False
+            values = field.get("enum")
+            return isinstance(field.get("const"), str) or (
+                isinstance(values, list) and len(values) == 1 and isinstance(values[0], str)
+            )
+
+        def described_alias(schema: Any) -> bool:
+            if (
+                not isinstance(schema, dict)
+                or not isinstance(schema.get("description"), str)
+                or not schema["description"]
+                or any(field in schema for field in ("discriminator", "properties", "allOf"))
+            ):
+                return False
+            members = schema.get("oneOf")
+            if not isinstance(members, list) or len(members) < 2:
+                return False
+            targets = [target(member) for member in members]
+            if not all(is_object(found) for found in targets):
+                return False
+            names = (targets[0].get("properties") or {}).keys()
+            return not any(all(tag(found, name) for found in targets) for name in names)
+
+        return [
+            "components.schemas:described-object-ref-union"
+            for key, schema in node.items()
+            if isinstance(key, str) and not key.startswith("x-") and described_alias(schema)
+        ]
+
+    @staticmethod
+    def variant_own_fields_before_bases(node: Any) -> list[str]:
+        """`components.schemas:variant-own-fields-before-base`: one per such variant reference.
+
+        Read at the Components Object, because the variant's own properties and its
+        base's are on the targets the union's members name.
+        """
+        if not isinstance(node, dict):
+            return []
+
+        def target(member: Any) -> Any:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            prefix = "#/components/schemas/"
+            if not isinstance(reference, str) or not reference.startswith(prefix):
+                return None
+            found = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+            return found if isinstance(found, dict) else None
+
+        def own(schema: dict[str, Any], tag: Any) -> bool:
+            properties = schema.get("properties")
+            return isinstance(properties, dict) and any(name != tag for name in properties)
+
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            discriminator = schema.get("discriminator")
+            if not isinstance(discriminator, dict):
+                continue
+            tag = discriminator.get("propertyName")
+            for composition in ("oneOf", "anyOf"):
+                members = schema.get(composition)
+                for member in members if isinstance(members, list) else []:
+                    variant = target(member)
+                    if variant is None or not own(variant, tag):
+                        continue
+                    bases = variant.get("allOf")
+                    if any(
+                        (base := target(entry)) is not None and own(base, tag)
+                        for entry in (bases if isinstance(bases, list) else [])
+                    ):
+                        found.append("components.schemas:variant-own-fields-before-base")
+        return found
 
     @staticmethod
     def class_name_sanitizations(node: Any) -> list[str]:

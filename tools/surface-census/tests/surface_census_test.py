@@ -5959,6 +5959,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:nonidentifier-name",
             "components.schemas:same-primitive-union",
             "components.schemas:complex-module-name",
+            "components.schemas:described-object-ref-union",
+            "components.schemas:variant-own-fields-before-base",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
             "operation.operationId:tag-spelled-split-prefix",
@@ -16205,6 +16207,89 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_described_object_ref_union_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:described-object-ref-union"
+        crate = {"type": "object", "properties": {"slats": {"type": "integer"}}}
+        sack = {"type": "object", "properties": {"weight": {"type": "number"}}}
+
+        def tagged(value: str) -> dict[str, Any]:
+            return {"type": "object", "properties": {"kind": {"type": "string", "enum": [value]}}}
+
+        union = {"description": "Any packing.", "oneOf": [{"$ref": "#/components/schemas/Crate"}, {"$ref": "#/components/schemas/Sack"}]}
+        cases = {
+            "positive": {"Crate": crate, "Sack": sack, "Packing": union},
+            "undescribed": {"Crate": crate, "Sack": sack, "Packing": {"oneOf": union["oneOf"]}},
+            "one-member": {"Crate": crate, "Packing": {**union, "oneOf": union["oneOf"][:1]}},
+            "discriminated": {"Crate": crate, "Sack": sack, "Packing": {**union, "discriminator": {"propertyName": "kind"}}},
+            "with-properties": {"Crate": crate, "Sack": sack, "Packing": {**union, "properties": {"label": {"type": "string"}}}},
+            "scalar-member": {"Crate": crate, "Sack": {"type": "string"}, "Packing": union},
+            "inline-member": {"Crate": crate, "Packing": {**union, "oneOf": [union["oneOf"][0], sack]}},
+            "tagged-members": {"Crate": tagged("crate"), "Sack": tagged("sack"), "Packing": union},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_variant_own_fields_before_base_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:variant-own-fields-before-base"
+        base = {"type": "object", "properties": {"kind": {"type": "string"}, "inspector": {"type": "string"}}}
+        tag_only_base = {"type": "object", "properties": {"kind": {"type": "string"}}}
+
+        def variant(*names: str, bases: tuple[str, ...] = ("Inspected",)) -> dict[str, Any]:
+            return {
+                "type": "object",
+                "properties": {name: {"type": "string"} for name in names},
+                "allOf": [{"$ref": f"#/components/schemas/{name}"} for name in bases],
+            }
+
+        def union(*members: str, discriminated: bool = True, composition: str = "oneOf") -> dict[str, Any]:
+            schema: dict[str, Any] = {composition: [{"$ref": f"#/components/schemas/{name}"} for name in members]}
+            if discriminated:
+                schema["discriminator"] = {"propertyName": "kind"}
+            return schema
+
+        cases = {
+            "positive": {"Inspected": base, "Dam": variant("kind", "height"), "Wall": union("Dam")},
+            "any-of": {"Inspected": base, "Dam": variant("height"), "Wall": union("Dam", composition="anyOf")},
+            "undiscriminated": {"Inspected": base, "Dam": variant("height"), "Wall": union("Dam", discriminated=False)},
+            "tag-only-variant": {"Inspected": base, "Dam": variant("kind"), "Wall": union("Dam")},
+            "tag-only-base": {"Inspected": tag_only_base, "Dam": variant("height"), "Wall": union("Dam")},
+            "no-base": {"Inspected": base, "Dam": variant("height", bases=()), "Wall": union("Dam")},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "any-of"): 1}, rows(completed))
 
     def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:tag-spelled-split-prefix"
