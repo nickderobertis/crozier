@@ -7780,13 +7780,17 @@ class Census:
             name = reference[len(prefix) :].replace("~1", "/").replace("~0", "~")
             return node.get(name)
 
+        def properties(schema: dict[str, Any]) -> dict[Any, Any]:
+            found = schema.get("properties")
+            return found if isinstance(found, dict) else {}
+
         def is_object(schema: Any) -> bool:
             return isinstance(schema, dict) and (
                 schema.get("type") == "object" or isinstance(schema.get("properties"), dict)
             )
 
         def tag(schema: dict[str, Any], name: str) -> bool:
-            field = (schema.get("properties") or {}).get(name)
+            field = properties(schema).get(name)
             if not isinstance(field, dict):
                 return False
             values = field.get("enum")
@@ -7808,7 +7812,7 @@ class Census:
             targets = [target(member) for member in members]
             if not all(is_object(found) for found in targets):
                 return False
-            names = (targets[0].get("properties") or {}).keys()
+            names = properties(targets[0]).keys()
             return not any(all(tag(found, name) for found in targets) for name in names)
 
         return [

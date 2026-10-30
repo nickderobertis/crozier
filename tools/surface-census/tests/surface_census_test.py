@@ -16238,6 +16238,26 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "scalar-member": {"Crate": crate, "Sack": {"type": "string"}, "Packing": union},
             "inline-member": {"Crate": crate, "Packing": {**union, "oneOf": [union["oneOf"][0], sack]}},
             "tagged-members": {"Crate": tagged("crate"), "Sack": tagged("sack"), "Packing": union},
+            "const-tagged-members": {
+                "Crate": {"type": "object", "properties": {"kind": {"type": "string", "const": "crate"}}},
+                "Sack": {"type": "object", "properties": {"kind": {"type": "string", "const": "sack"}}},
+                "Packing": union,
+            },
+            "with-all-of": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "allOf": [{"$ref": "#/components/schemas/Crate"}]},
+            },
+            "escaped-reference": {
+                "Crate": crate,
+                "bulk/Sack": sack,
+                "Packing": {**union, "oneOf": [union["oneOf"][0], {"$ref": "#/components/schemas/bulk~1Sack"}]},
+            },
+            "malformed-properties": {
+                "Crate": {"type": "object", "properties": ["slats"]},
+                "Sack": sack,
+                "Packing": union,
+            },
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -16256,7 +16276,10 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+        self.assertEqual(
+            {(selector, "positive"): 1, (selector, "escaped-reference"): 1, (selector, "malformed-properties"): 1},
+            rows(completed),
+        )
 
     def test_variant_own_fields_before_base_has_a_positive_and_decoys(self) -> None:
         selector = "components.schemas:variant-own-fields-before-base"
@@ -16283,6 +16306,20 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "tag-only-variant": {"Inspected": base, "Dam": variant("kind"), "Wall": union("Dam")},
             "tag-only-base": {"Inspected": tag_only_base, "Dam": variant("height"), "Wall": union("Dam")},
             "no-base": {"Inspected": base, "Dam": variant("height", bases=()), "Wall": union("Dam")},
+            "two-variants": {
+                "Inspected": base,
+                "Dam": variant("height"),
+                "Weir": variant("crest"),
+                "Wall": union("Dam", "Weir"),
+            },
+            "escaped-reference": {
+                "Inspected": base,
+                "dam/Gravity": variant("height"),
+                "Wall": {
+                    "oneOf": [{"$ref": "#/components/schemas/dam~1Gravity"}],
+                    "discriminator": {"propertyName": "kind"},
+                },
+            },
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -16301,13 +16338,21 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 1, (selector, "any-of"): 1}, rows(completed))
+        self.assertEqual(
+            {
+                (selector, "positive"): 1,
+                (selector, "any-of"): 1,
+                (selector, "two-variants"): 2,
+                (selector, "escaped-reference"): 1,
+            },
+            rows(completed),
+        )
 
     def test_blank_description_inline_response_has_a_positive_and_decoys(self) -> None:
         selector = "operation.responses:blank-description-inline-object"
         reading = {"type": "object", "properties": {"depth": {"type": "integer"}}}
 
-        def document(schema: dict[str, Any], media: str = "application/json") -> dict[str, Any]:
+        def document(schema: dict[str, Any], *media: str) -> dict[str, Any]:
             return {
                 "openapi": "3.0.3",
                 "info": {"title": "gauge", "version": "1"},
@@ -16315,7 +16360,12 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                     "/gauge": {
                         "get": {
                             "operationId": "read_gauge",
-                            "responses": {"200": {"description": "Reading", "content": {media: {"schema": schema}}}},
+                            "responses": {
+                                "200": {
+                                    "description": "Reading",
+                                    "content": {kind: {"schema": schema} for kind in media or ("application/json",)},
+                                }
+                            },
                         }
                     }
                 },
@@ -16329,6 +16379,8 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "referenced": document({"$ref": "#/components/schemas/Reading"}),
             "scalar": document({"type": "integer", "description": ""}),
             "text": document({**reading, "description": ""}, "text/plain"),
+            "properties-only": document({"properties": reading["properties"], "description": ""}),
+            "two-media": document({**reading, "description": ""}, "application/json", "application/problem+json"),
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -16336,7 +16388,10 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 write_fixture(root, fixture, json.dumps(body))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+        self.assertEqual(
+            {(selector, "positive"): 1, (selector, "properties-only"): 1, (selector, "two-media"): 2},
+            rows(completed),
+        )
 
     def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:tag-spelled-split-prefix"
@@ -19618,12 +19673,13 @@ class NamingWireCensusTests(unittest.TestCase):
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
-                if fixture == "langchain-agent-server":
-                    path = REPO / "tests/fixtures/corpus-sources" / fixture / "openapi.json"
-                elif fixture == "ledger-batch-upload":
-                    path = REPO / "docs/fern-measurements/naming-wire" / fixture / "openapi.yml"
-                else:
-                    path = REPO / "docs/openapi-surface/handwritten" / fixture / "openapi.yml"
+                match fixture:
+                    case "langchain-agent-server":
+                        path = REPO / "tests/fixtures/corpus-sources" / fixture / "openapi.json"
+                    case "ledger-batch-upload":
+                        path = REPO / "docs/fern-measurements/naming-wire" / fixture / "openapi.yml"
+                    case _:
+                        path = REPO / "docs/openapi-surface/handwritten" / fixture / "openapi.yml"
                 document = census.load_document(path)
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
