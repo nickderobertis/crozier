@@ -767,3 +767,13 @@ synthwerk-llm API specification and generated SDK golden:
     https://raw.githubusercontent.com/VelimirMueller/synthwerk-sdk/f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae/packages/sdk/contracts/llm.yaml
     MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4207 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+parcelis-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/parcelis/parcelis/f2dd42be20acc7c8640ebf20abc10f41e45417b4/apps/api/openapi/parcelis.openapi.json
+    AGPL-3.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4208 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+blufiles-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/BluDood/BluFiles/1cfeb12a476f8fc50354be8961596a1fdd1bbeed/docs/src/openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4209 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

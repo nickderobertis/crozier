@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .patch_admin_config_request_disable_registration_one import PatchAdminConfigRequestDisableRegistrationOne
+
+PatchAdminConfigRequestDisableRegistration = typing.Union[bool, PatchAdminConfigRequestDisableRegistrationOne]

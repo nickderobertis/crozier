@@ -394,9 +394,11 @@
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/ferry-berth-desk/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/gallery-plaque-groups/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/kiln-form-mode/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/multipart-request-name/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/patch-inline-nullable-unrequired-props-omit/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-alias/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
@@ -539,7 +541,6 @@
     "docs/openapi-surface/handwritten/event-stream-binary-download/fern-expected": {},
     "docs/openapi-surface/handwritten/event-stream-const-tagged-union/fern-expected": {},
     "docs/openapi-surface/handwritten/event-stream-item-schema/fern-expected": {},
-    "docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-desk-header-collision/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected": {},
     "docs/openapi-surface/handwritten/ferry-slot-query/fern-expected": {},
@@ -618,7 +619,6 @@
     "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},
     "docs/openapi-surface/handwritten/passport-scan/fern-expected": {},
-    "docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected": {},
     "docs/openapi-surface/handwritten/poster-upload/fern-expected": {},
     "docs/openapi-surface/handwritten/prompt-variable/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-composed-member/fern-expected": {},
@@ -894,6 +894,12 @@
     "tests/fixtures/billie/expected": {},
     "tests/fixtures/bintable.com/expected": {},
     "tests/fixtures/blackadi-oauth2/expected": {},
+    "tests/fixtures/blufiles-api/expected": {},
+    "tests/fixtures/blufiles-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/bracketed-property-names/expected": {},
     "tests/fixtures/braintrust-dev/expected": {},
     "tests/fixtures/breizhsport-catalogue/expected": {},
@@ -1214,6 +1220,12 @@
     "tests/fixtures/paloalto-cspm-search-manager/expected": {},
     "tests/fixtures/paloalto-remote-networks/expected": {},
     "tests/fixtures/panoptes/expected": {},
+    "tests/fixtures/parcelis-api/expected": {},
+    "tests/fixtures/parcelis-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/paypal-catalog-products/expected": {},
     "tests/fixtures/peopledatalabs/expected": {},
     "tests/fixtures/portfoliooptimizer.io/expected": {},

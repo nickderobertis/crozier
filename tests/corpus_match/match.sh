@@ -345,6 +345,8 @@ inventory=(
   openapi_generator_composed_schema_lowering_matches_fern_output
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
+  blufiles_api_matches_fern_output
+  parcelis_api_matches_fern_output
   synthwerk_llm_matches_fern_output
   kompaz_web_frontend_matches_fern_output
   jobster_api_matches_fern_output

@@ -20,7 +20,7 @@ clients-extensions/crane-hire-cursor	docs/fern-measurements/clients-extensions/c
 clients-extensions/crane-hire-cursor-flat	docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml	python-enums	flat	-
 clients-extensions/depot-bin-ledger-literals	docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml	literals	packaged	-
 clients-extensions/dock-yard-bookings-literals	docs/openapi-surface/handwritten/dock-yard-bookings/openapi.yml	literals	packaged	-
-clients-extensions/ferry-berth-desk-literals	docs/openapi-surface/handwritten/ferry-berth-desk/openapi.yml	literals	packaged	-
+clients-extensions/ferry-berth-desk-literals	docs/fern-measurements/superseded-fixtures/ferry-berth-desk/openapi.yml	literals	packaged	-
 clients-extensions/film-shot-planner-literals	docs/openapi-surface/handwritten/film-shot-planner/openapi.yml	literals	packaged	-
 clients-extensions/grid-valve-console-literals	docs/openapi-surface/handwritten/grid-valve-console/openapi.yml	literals	packaged	-
 clients-extensions/harbour-pilot-regions-literals	docs/openapi-surface/handwritten/harbour-pilot-regions/openapi.yml	literals	packaged	-
@@ -87,7 +87,7 @@ literals-mode/odometer-reading	docs/openapi-surface/handwritten/odometer-reading
 literals-mode/oneof-duplicate-members-collapsed	docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected
 literals-mode/open-object-body-example-extra-keys-dropped	docs/fern-measurements/literals-mode/open-object-body-example-extra-keys-dropped/openapi.yml	literals	packaged	expected:-
 literals-mode/passport-scan	docs/openapi-surface/handwritten/passport-scan/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/passport-scan/fern-expected
-literals-mode/patch-inline-nullable-unrequired-props-omit	docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected
+literals-mode/patch-inline-nullable-unrequired-props-omit	docs/fern-measurements/superseded-fixtures/patch-inline-nullable-unrequired-props-omit/openapi.yml	literals	packaged	expected:docs/fern-measurements/superseded-fixtures/patch-inline-nullable-unrequired-props-omit/fern-expected
 literals-mode/poster-upload	docs/openapi-surface/handwritten/poster-upload/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/poster-upload/fern-expected
 literals-mode/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	literals	packaged	expected:docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected
 literals-mode/prompt-variable	docs/openapi-surface/handwritten/prompt-variable/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/prompt-variable/fern-expected
