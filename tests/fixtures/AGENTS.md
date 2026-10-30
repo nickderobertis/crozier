@@ -149,6 +149,9 @@ turned up, and writes the same 35-file empty SDK for each: apis.guru's
 `jeffmikels/ProPresenter-API` `pro7.9`. They carry no screen, so they stay out of
 the table above; their pins and Fern logs are in
 [`../../docs/refusal-parity-ten-documents.md`](../../docs/refusal-parity-ten-documents.md).
+The same holds for jentic's `setu.co/main/1.0.0`: an error response names an
+undeclared `components/responses` entry. It is recorded in
+[`../../docs/refusal-parity-dangling-response-ref.md`](../../docs/refusal-parity-dangling-response-ref.md).
 
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.
