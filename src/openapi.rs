@@ -5124,7 +5124,7 @@ mod tests {
             {
                 let correct: f64 = literal.parse().unwrap();
                 if value.as_f64().map(f64::to_bits) != Some(correct.to_bits())
-                    || value.to_string() != format!("{correct:?}")
+                    || serde_json::to_string(value).unwrap() != format!("{correct:?}")
                 {
                     let name = path.file_name().unwrap().to_string_lossy();
                     misread.push(format!("{name}: {literal} read as {value}"));
