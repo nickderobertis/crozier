@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 724 features. By category, 512 are `golden`, 56
-`limitations`, 142 `handwritten` and 14 `gap`. Taken back from the region files,
+The walk enumerates 724 features. By category, 513 are `golden`, 56
+`limitations`, 141 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 724
 split five ways:
 
-- **511 carry byte-match evidence against a registered real-world
+- **512 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **143 rest on a hand-written fixture, a weaker proof than a real
+- **142 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -46,8 +46,8 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  11 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 131 read `search-incomplete`. Of those,
+  14 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 127 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -93,16 +93,16 @@ split five ways:
   read the APIs.guru archive and every registered document and found each
   `none-registrable`, while registering the real witnesses of two neighbours
   (corpus rows 2200 and 2201).
-  The 34 `handwritten` rows of `bodies-media` and `document-paths` cite the
+  The 33 `handwritten` rows of `bodies-media` and `document-paths` cite the
   [fixture-only bodies and paths search](openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts):
-  5 read `exhausted`, 28 `search-incomplete` with what is outstanding named,
-  and 1 `witness-blocked`. It read the acquired pools and a bounded live code
-  search, and registered real witnesses (corpus rows 4200 to 4211) that, with
-  the reused row 2801, moved nine of those regions' rows to `golden` and
-  retired seven of their arm-level covers and one outside them.
+  8 read `exhausted`, 24 `search-incomplete` with each unscreened candidate's
+  reason named, and 1 `witness-blocked`. It read the acquired pools and a
+  bounded live code search, and registered real witnesses (corpus rows 4200 to
+  4212) that, with the reused row 2801, moved ten of those regions' rows to
+  `golden` and retired seven of their arm-level covers and one outside them.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  511 and never count as a real-specification match.
+  512 and never count as a real-specification match.
 - **0 are decided output-insensitive.** Deleting the feature leaves both generators'
   complete trees byte-identical, as [the shared
   table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
@@ -114,7 +114,7 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-511 + 70 + 143 + 0 + 0 = 724.
+512 + 70 + 142 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
 ([the list](openapi-surface/combinations.md)): 12 are `gap`, 68 are `golden` and 11 are `handwritten`.
@@ -133,12 +133,12 @@ None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 580 `golden` rows declare 1036 handling sites in
+same way. The 581 `golden` rows declare 1037 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **927 are reached by a registered real specification.** Its scoped
+- **928 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **104 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 104 is still one of the 109 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -151,7 +151,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-927 + 104 + 5 + 0 + 0 = 1036. Fourteen sites left the table with the two functions
+928 + 104 + 5 + 0 + 0 = 1037. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -222,7 +222,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (143 features, 104
+- **Features and arms resting on hand-written fixtures only (142 features, 104
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -2211,7 +2211,7 @@ link and expect the named failure. The counts below are the output of
 
 ```text
 shapes: 160
-by kind: handwritten 129, measurement 5, real 21, refusal 5
+by kind: handwritten 128, measurement 5, real 22, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 52, match 103
 closed with no open residual: 160
@@ -2364,8 +2364,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 305 sources. The walk reads the
-  **288** registered sources, of which **288** carry a committed golden; the 17
+  acquires 306 sources. The walk reads the
+  **289** registered sources, of which **289** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2407,12 +2407,12 @@ for either; each bullet below says where its number comes from.
 | [`schemas`](openapi-surface/schemas.md) | 342 | 255 | 18 | 67 | 2 | 0 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 54 | 5 | 19 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 84 | 71 | 3 | 10 | 0 | 0 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 84 | 72 | 3 | 9 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
-| **total** | **724** | **512** | **56** | **142** | **14** | **0** | **0** | **14** |
+| **total** | **724** | **513** | **56** | **141** | **14** | **0** | **0** | **14** |
 
 The walk enumerated **724** features and landed each in exactly one category:
-**512** `golden`, **56** `limitations`, **142** `handwritten`, **14** `gap`. The `gap` column splits by
+**513** `golden`, **56** `limitations`, **141** `handwritten`, **14** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2808,7 +2808,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **500** golden rows reach every handling site and tie below every row
+then key. **501** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -2854,29 +2854,29 @@ unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | golden-only witnesses | boundary |
 |---|---|---|---|---|---|---|
-| 1 | `request-body-content` | `bodies-media` | **5** | **55** | **245** | open — real-specification witness search remains open |
-| 2 | `parameter-schema` | `parameters` | **4** | **78** | **238** | open — real-specification witness search remains open |
+| 1 | `request-body-content` | `bodies-media` | **5** | **55** | **246** | open — real-specification witness search remains open |
+| 2 | `parameter-schema` | `parameters` | **4** | **78** | **239** | open — real-specification witness search remains open |
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
 | 4 | `allof` | `schemas` | **4** | **31** | **104** | open — real-specification witness search remains open |
 | 5 | `discriminator-mapping` | `schemas` | **3** | **242** | **39** | open — real-specification witness search remains open |
 | 6 | `oneof-anyof-variant` | `schemas` | **3** | **80** | **3** | open — real-specification witness search remains open |
 | 7 | `parameter-in-header` | `parameters` | **3** | **20** | **74** | open — real-specification witness search remains open |
-| 8 | `oneof` | `schemas` | **2** | **188** | **106** | open — real-specification witness search remains open |
+| 8 | `oneof` | `schemas` | **2** | **188** | **107** | open — real-specification witness search remains open |
 | 9 | `oneof-discriminated-union` | `schemas` | **2** | **166** | **53** | owned — first-pass search record below |
 | 10 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **5** | open — real-specification witness search remains open |
 | 11 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **13** | open — real-specification witness search remains open |
-| 12 | `parameter-in-path` | `parameters` | **2** | **28** | **201** | open — real-specification witness search remains open |
+| 12 | `parameter-in-path` | `parameters` | **2** | **28** | **202** | open — real-specification witness search remains open |
 | 13 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 14 | `media-type-multipart` | `bodies-media` | **2** | **7** | **29** | open — real-specification witness search remains open |
 | 15 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
-| 16 | `format-binary` | `schemas` | **2** | **4** | **52** | open — real-specification witness search remains open |
+| 16 | `format-binary` | `schemas` | **2** | **4** | **53** | open — real-specification witness search remains open |
 | 17 | `format-byte` | `schemas` | **2** | **4** | **14** | open — real-specification witness search remains open |
 | 18 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **195** | **17** | open — real-specification witness search remains open |
 | 19 | `anyof-discriminated-union` | `schemas` | **1** | **194** | **19** | owned — first-pass search record below |
 | 20 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **188** | **11** | open — real-specification witness search remains open |
 | 21 | `anyof-oneof-variant` | `schemas` | **1** | **68** | **9** | owned — first-pass search record below |
 | 22 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **7** | open — real-specification witness search remains open |
-| 23 | `additional-properties-schema` | `schemas` | **1** | **51** | **163** | open — real-specification witness search remains open |
+| 23 | `additional-properties-schema` | `schemas` | **1** | **51** | **164** | open — real-specification witness search remains open |
 | 24 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
 | 25 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 26 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
@@ -2890,7 +2890,7 @@ unreached by any Fern-accepted document.
 | 34 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — no real witness reaches the operation-scoped map-value arm; see the named gaps |
 | 35 | `annotated-ref-target-anyof` | `schemas` | **1** | **17** | **1** | open — real-specification witness search remains open |
 | 36 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
-| 37 | `type-single` | `schemas` | **1** | **14** | **285** | open — real-specification witness search remains open |
+| 37 | `type-single` | `schemas` | **1** | **14** | **286** | open — real-specification witness search remains open |
 | 38 | `anyof-allof-variant` | `schemas` | **1** | **13** | **3** | owned — first-pass search record below |
 | 39 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **13** | **1** | open — real-specification witness search remains open |
 | 40 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
@@ -2903,20 +2903,20 @@ unreached by any Fern-accepted document.
 | 47 | `property-sole-anyof-closed-object-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 48 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 49 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **2** | open — real-specification witness search remains open |
-| 50 | `enum` | `schemas` | **1** | **5** | **211** | open — real-specification witness search remains open |
+| 50 | `enum` | `schemas` | **1** | **5** | **212** | open — real-specification witness search remains open |
 | 51 | `http-dpop` | `security` | **1** | **5** | **3** | open — real-specification witness search remains open |
 | 52 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
 | 53 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
 | 54 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
 | 55 | `nullable` | `schemas` | **1** | **4** | **84** | open — real-specification witness search remains open |
 | 56 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
-| 57 | `description` | `schemas` | **1** | **3** | **223** | open — real-specification witness search remains open |
+| 57 | `description` | `schemas` | **1** | **3** | **224** | open — real-specification witness search remains open |
 | 58 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **6** | open — real-specification witness search remains open |
 | 59 | `format-int64` | `schemas` | **1** | **3** | **51** | open — real-specification witness search remains open |
 | 60 | `format-uuid` | `schemas` | **1** | **3** | **56** | open — real-specification witness search remains open |
 | 61 | `format-date` | `schemas` | **1** | **2** | **39** | open — real-specification witness search remains open |
-| 62 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **257** | open — real-specification witness search remains open |
-| 63 | `recursive-graph` | `schemas` | **1** | **2** | **257** | open — real-specification witness search remains open |
+| 62 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **258** | open — real-specification witness search remains open |
+| 63 | `recursive-graph` | `schemas` | **1** | **2** | **258** | open — real-specification witness search remains open |
 | 64 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
 | 65 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
 | 66 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
@@ -2930,10 +2930,10 @@ unreached by any Fern-accepted document.
 | 74 | `format-password` | `schemas` | **1** | **1** | **10** | open — real-specification witness search remains open |
 | 75 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
 | 76 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 77 | `format-uri` | `schemas` | **1** | **1** | **72** | open — real-specification witness search remains open |
+| 77 | `format-uri` | `schemas` | **1** | **1** | **73** | open — real-specification witness search remains open |
 | 78 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
 | 79 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 80 | `property-oneof-residual` | `schemas` | **1** | **1** | **38** | open — real-specification witness search remains open |
+| 80 | `property-oneof-residual` | `schemas` | **1** | **1** | **39** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
@@ -3034,7 +3034,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **500** reach every handling site their
+The golden rows split in two. **501** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 109 unreached arms in all. By the verdict each arm's linked record states, 58 read `exhausted`, 51 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3410,7 +3410,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**65** golden rows rest on one document: a single golden-only witness declares
+**66** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3454,6 +3454,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `enum-uuid-member` | `schemas` | `reverb.com` |
 | `extension-paths` | `oas31-extensions` | `apicurio.local-registry` |
 | `is-beta-extension` | `oas31-extensions` | `squareup.com` |
+| `operation-id-untagged-list-or-set` | `document-paths` | `ollama-api` |
 | `boolean-schema-false` | `schemas` | `tamoss` |
 | `boolean-schema-true` | `schemas` | `webflow-v2` |
 | `contains` | `schemas` | `auto-agent-protocol` |

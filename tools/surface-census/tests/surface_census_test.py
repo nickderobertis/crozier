@@ -15028,6 +15028,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         "relative-file-ref",
         "operation-id-hyphenated-tag-method",
         "camel-case-tag-group-and-prefix",
+        "operation-id-untagged-list-or-set",
     }
 
     @classmethod
@@ -15168,6 +15169,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             ("operation-id-digit-leading-method", "operation.operationId:digit-leading-method"),
             ("operation-id-hyphenated-tag-method", "operation.operationId:hyphenated-tag-method"),
             ("camel-case-tag-group-and-prefix", "operation.operationId:camel-case-tag-prefix"),
+            ("operation-id-untagged-list-or-set", "operation.operationId:untagged-list-or-set"),
         ):
             with self.subTest(key=key):
                 transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
@@ -19944,7 +19946,7 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater("--combinations-only").returncode)
 
     def test_native_snapshot_json_restates_the_operation_id_predicate_rows(self) -> None:
-        """The two operationId-predicate golden rows take their census list from their own predicate.
+        """The three operationId-predicate golden rows take their census list from their own predicate.
 
         Their spec location names `operationId`, so without their predicate selector the
         restatement would list every source declaring any operationId; censusing only their
@@ -19960,6 +19962,8 @@ class CoverageRestatementTests(unittest.TestCase):
                 "parcelis-api",
                 "--fixture",
                 "kompaz-web-frontend",
+                "--fixture",
+                "ollama-api",
                 "--fixture",
                 "onmyshelf-api",
             ],
@@ -19977,6 +19981,7 @@ class CoverageRestatementTests(unittest.TestCase):
         for key, cell in (
             ("operation-id-hyphenated-tag-method", "`parcelis-api` (9)"),
             ("camel-case-tag-group-and-prefix", "`kompaz-web-frontend` (3)"),
+            ("operation-id-untagged-list-or-set", "`ollama-api` (1)"),
         ):
             line = next(line for line in text.splitlines() if line.startswith(f"| {key} |"))
             text = text.replace(line, line.replace(cell, "`stale-source` (1)"), 1)
@@ -19992,6 +19997,10 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(
             [("kompaz-web-frontend", "3")],
             DocumentPathsSnapshotTests.PAIR.findall(actual["camel-case-tag-group-and-prefix"][4]),
+        )
+        self.assertEqual(
+            [("ollama-api", "1")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["operation-id-untagged-list-or-set"][4]),
         )
         settled = self.run_restater("--snapshot-json", str(source))
         self.assertEqual(0, settled.returncode, settled.stderr)

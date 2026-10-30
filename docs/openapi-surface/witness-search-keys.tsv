@@ -161,7 +161,6 @@ oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.t
 operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported
-operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
 operation-idempotent-with-root-headers	operation.x-fern-idempotent:with-root-headers	oas31-extensions.md	supported
 operation-pagination-boolean	operation.x-fern-pagination:boolean-over-root	oas31-extensions.md	supported
 operation-pagination-offset	operation.x-fern-pagination:offset	oas31-extensions.md	supported

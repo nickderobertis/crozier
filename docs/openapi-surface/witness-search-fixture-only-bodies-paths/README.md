@@ -32,7 +32,7 @@ arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 | `media-type-event-stream-inline-const-union` | feature | `bodies-media` | `event-stream-const-tagged-union` | exhausted |
 | `media-type-event-stream-item-schema` | feature | `bodies-media` | `event-stream-item-schema` | search-incomplete |
 | `response-contentless-200-with-created` | feature | `bodies-media` | `contentless-created-success` | proven: corpus row 4211 |
-| `response-status-space-suffixed` | feature | `bodies-media` | `suffixed-status-keys` | search-incomplete |
+| `response-status-space-suffixed` | feature | `bodies-media` | `suffixed-status-keys` | exhausted |
 | `get-request-body-union-member` | feature | `bodies-media` | `bakery-get-body-member` | search-incomplete |
 | `allof-parent-request-body` | feature | `bodies-media` | `allof-parent-body-order` | search-incomplete |
 | `request-example-nested-null` | feature | `bodies-media` | `request-example-nulls` | proven: corpus row 2801 |
@@ -48,15 +48,15 @@ arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 | `example-imports-case-insensitive-order` | feature | `bodies-media` | `avionics-booking` | search-incomplete |
 | `readme-multipart-file-params-listed-first` | feature | `bodies-media` | `poster-upload` | search-incomplete |
 | `readme-multipart-optional-file-params` | feature | `bodies-media` | `passport-scan` | search-incomplete |
-| `readme-streaming-snippet-omits-type-import` | feature | `bodies-media` | `weather-radar-stream` | search-incomplete |
+| `readme-streaming-snippet-omits-type-import` | feature | `bodies-media` | `weather-radar-stream` | exhausted |
 | `response-without-description-blank-line` | feature | `bodies-media` | `buoy-depth-response` | proven: corpus row 4200 |
-| `text-response-drops-request-example` | feature | `bodies-media` | `invoice-renderer` | search-incomplete |
+| `text-response-drops-request-example` | feature | `bodies-media` | `invoice-renderer` | exhausted |
 | `multipart-optional-enum-part-plain-field` | feature | `bodies-media` | `transcript-format-part` | search-incomplete |
 | `combo-inline-body-read-only-property` | combination | `bodies-media` | `harbor-relay-registration` | witness-blocked |
 | `server-default-url-templated` | feature | `document-paths` | `harbour-pilot-regions` | exhausted |
 | `server-name-several` | feature | `document-paths` | `orbit-ground-stations` | search-incomplete |
 | `operation-servers-named` | feature | `document-paths` | `locker-archive-hosts` | search-incomplete |
-| `operation-id-untagged-list-or-set` | feature | `document-paths` | `depot-bin-ledger` | search-incomplete |
+| `operation-id-untagged-list-or-set` | feature | `document-paths` | `depot-bin-ledger` | proven: corpus row 4212 |
 | `operation-id-hyphenated-tag-method` | feature | `document-paths` | `ferry-berth-desk` | proven: corpus row 4208 |
 | `operation-id-all-caps-tag-split-prefix` | feature | `document-paths` | `rfid-door-panel` | search-incomplete |
 | `operation-empty-tag` | feature | `document-paths` | `lamp-room-log` | exhausted |
@@ -85,7 +85,7 @@ arm-level cover of a `golden` row there that `handwritten-reach.tsv` listed.
 | `media-type-malformed-key` | arm `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | `bodies-media` | `slashless-json-response` | search-incomplete |
 | `media-type-multipart` | arm `src/ir.rs::nullable_enum_part[    member$]` | `bodies-media` | `transcript-format-part` | proven: corpus row 4202 |
 
-Of the 58 targets, 16 are proven by a registered real witness, 7 read `exhausted`, 34 read `search-incomplete` and 1 reads `witness-blocked`.
+Of the 58 targets, 17 are proven by a registered real witness, 10 read `exhausted`, 30 read `search-incomplete` and 1 reads `witness-blocked`.
 
 ## Populations read
 
@@ -165,8 +165,13 @@ In this order, the first that applies deciding it:
    and compared with crozier's output through `crozier compare` (the parity
    engine with every catalogued departure): a byte-match whose golden shows the
    shape is registered unless the target already has a witness, and a
-   difference is recorded with the files it touches. Candidates this dispatch
-   did not generate are named in `census.tsv` as outstanding.
+   difference is recorded with the files it touches. A candidate that was
+   not generated says why in `census.tsv`: its target is already proven by a
+   named corpus row; or it falls outside the manager's workload bound for this
+   search (`readme-multipart-file-params-listed-first`'s 10 smallest declarers
+   generated, the rest not), or the second screening pass's two-hour cap,
+   begun at 2026-10-30T14:23:11Z. That pass generated all 48 of its candidates by 2026-10-30T15:50:34Z, so
+   none was left at the cap.
 
 An arm's or combination's declarers are the documents whose instrumented
 crozier run (the build `just golden-reach` measures with, through
@@ -254,6 +259,7 @@ wired into the e2e gate as `<name>_matches_fern_output` and the literals overlay
 | `patch-inline-nullable-unrequired-props-omit` | corpus row 4209, `blufiles-api` |
 | `request-body-described-inline-scalar` | corpus row 4210, `tuxedo-dapp` |
 | `response-contentless-200-with-created` | corpus row 4211, `osparc-director-v2` |
+| `operation-id-untagged-list-or-set` | corpus row 4212, `ollama-api` |
 | `response-description` arm `src/emit.rs::push_return_doc[=None => \{\}]` | corpus row 4200, `amrc-acs-directory` |
 | `media-type-event-stream` arm `src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]` | corpus row 4207, `synthwerk-llm` |
 | `media-type-event-stream` arm `src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]` | corpus row 4207, `synthwerk-llm` |
@@ -271,26 +277,25 @@ One line per open feature or combination target; `census.tsv` names every declar
 | `media-type-event-stream-binary-schema` | `exhausted` | 3 | every one of the 3 declarer(s) is decided and the live window was read whole |
 | `media-type-event-stream-inline-const-union` | `exhausted` | 1 | every one of the 1 declarer(s) is decided and the live window was read whole |
 | `media-type-event-stream-item-schema` | `search-incomplete` | 6 | GitHub reported 3604 results for `"text/event-stream" "itemSchema"` and its first 300 were read |
-| `response-status-space-suffixed` | `search-incomplete` | 6 | 2 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
+| `response-status-space-suffixed` | `exhausted` | 6 | every one of the 6 declarer(s) is decided and the live window was read whole |
 | `get-request-body-union-member` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `allof-parent-request-body` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `request-example-deprecated-property` | `search-incomplete` | 302 | 6 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `request-example-deprecated-property` | `search-incomplete` | 302 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `enum-union-body-example-first-member-value` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `multipart-inline-object-part-json-encoded` | `search-incomplete` | 39 | 11 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `multipart-inline-object-part-json-encoded` | `search-incomplete` | 39 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `multipart-part-encoding-charset-tuple` | `search-incomplete` | 6 | GitHub reported 418 results for `"multipart/form-data" "encoding:" "contentType:" "charset="` and its first 300 were read; GitHub reported 312 results for `"multipart/form-data" "\"encoding\"" "\"contentType\"" "charset="` and its first 300 were read |
 | `stream-error-status-raises-typed-error` | `exhausted` | 0 | every one of the 0 declarer(s) is decided and the live window was read whole |
 | `string-body-example-backslash-escaped` | `search-incomplete` | 1 | GitHub reported 135 results for `"requestBody:" "type: string" "example:" "\\n" "text/plain" path:openapi` and its first 133 were read |
 | `binary-download-with-body-has-no-example` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `example-imports-case-insensitive-order` | `search-incomplete` | 2 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `readme-multipart-file-params-listed-first` | `search-incomplete` | 135 | 63 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `readme-multipart-file-params-listed-first` | `search-incomplete` | 135 | 45 admissible declarer(s) left ungenerated by the manager's workload bound (the 10 smallest were generated), each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `readme-multipart-optional-file-params` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `readme-streaming-snippet-omits-type-import` | `search-incomplete` | 60 | 8 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
-| `text-response-drops-request-example` | `search-incomplete` | 6 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv |
+| `readme-streaming-snippet-omits-type-import` | `exhausted` | 60 | every one of the 60 declarer(s) is decided and the live window was read whole |
+| `text-response-drops-request-example` | `exhausted` | 6 | every one of the 6 declarer(s) is decided and the live window was read whole |
 | `multipart-optional-enum-part-plain-field` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `server-default-url-templated` | `exhausted` | 9 | every one of the 9 declarer(s) is decided and the live window was read whole |
-| `server-name-several` | `search-incomplete` | 47 | 4 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; GitHub reported 411 results for `"x-fern-server-name" "servers"` and its first 300 were read |
-| `operation-servers-named` | `search-incomplete` | 8 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; GitHub reported 303 results for `"x-fern-server-name" "operationId"` and its first 300 were read |
-| `operation-id-untagged-list-or-set` | `search-incomplete` | 18 | 2 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `server-name-several` | `search-incomplete` | 47 | GitHub reported 411 results for `"x-fern-server-name" "servers"` and its first 300 were read |
+| `operation-servers-named` | `search-incomplete` | 8 | GitHub reported 303 results for `"x-fern-server-name" "operationId"` and its first 300 were read |
 | `operation-id-all-caps-tag-split-prefix` | `search-incomplete` | 0 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `operation-empty-tag` | `exhausted` | 10 | every one of the 10 declarer(s) is decided and the live window was read whole |
 | `empty-path-segment-double-slash-kept` | `search-incomplete` | 4 | GitHub reported 683 results for `"paths:" "//{" path:openapi` and its first 300 were read |
@@ -300,7 +305,7 @@ One line per open feature or combination target; `census.tsv` names every declar
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1487 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `combo-body-property-named-as-header-param` | `search-incomplete` | 7 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 | `combo-success-oneof-nullable` | `search-incomplete` | 27 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
-| `combo-success-anyof-nullable` | `search-incomplete` | 84 | 1 admissible declarer(s) not generated against the certified pair in this dispatch, each named in census.tsv; no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
+| `combo-success-anyof-nullable` | `search-incomplete` | 84 | no live GitHub query phrasing reaches the shape, so only the acquired pools were read |
 
 ## Arm verdicts
 
@@ -358,7 +363,6 @@ Every open target, and why no declarer this search found is registrable.
 | `server-default-url-templated` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
 | `server-name-several` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
 | `operation-servers-named` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
-| `operation-id-untagged-list-or-set` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
 | `operation-id-all-caps-tag-split-prefix` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
 | `operation-empty-tag` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
 | `empty-path-segment-double-slash-kept` | `none-registrable` | no declarer is both admissible and byte-matched by the certified pair with the shape shown; see `census.tsv` |
@@ -386,12 +390,11 @@ feature-level cover and loses only its `nullable_enum_part` arm cover.
 ## Not counted as real witnesses
 
 - Registered rows 3473 (`openapitools-csharp-allof`) and 3474
-  (`swagger-parser-null-types`) declare `operation-id-untagged-list-or-set`,
-  and their byte-matched goldens write the untagged `list` operation as an
-  unsuffixed `def list(`. Both are generator test resources, synthetic in the
-  way a hand-written fixture is, so under the manager's 2026-10-29 ruling they
-  corroborate the fixture's shape but are not the real witness;
-  `depot-bin-ledger` stays.
+  (`swagger-parser-null-types`) also declare `operation-id-untagged-list-or-set`
+  and write the untagged `list` operation as an unsuffixed `def list(`. Both
+  are generator test resources, so under the manager's 2026-10-29 ruling they
+  only corroborate; the real witness is corpus row 4212, `ollama-api`, found by
+  the second screening pass, which retired `depot-bin-ledger`.
 - `tamoss` (corpus row with a byte-matched golden) renders string request
   bodies whose examples hold a newline and quotes, escaped in its worked
   examples; none holds a backslash, so it does not declare
