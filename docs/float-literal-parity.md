@@ -146,3 +146,18 @@ and the pinned ruff 0.11.5 in use. The shell sets `UV_NO_SYNC=1`, so
 - `tests/corpus_match/corpus_surface_census_test.py` passed over 290 sources.
 - The `surface-census` project's `test-census` suite passed: 639 passed,
   1 skipped and 8,023 subtests passed.
+
+### Unit tests, gate wiring, clippy and rustfmt
+
+These ran on `ab46663f8`, the merge plus the record above, with the same
+`.venv` first on `PATH`:
+
+| command | result |
+|---|---|
+| `cargo test -q -p crozier --lib --locked -- openapi:: emit::` | 198 passed, 0 failed, including the three tests listed under Tests |
+| `cargo test -q -p crozier-e2e --test e2e --locked -- --exact every_registered_corpus_is_wired_into_the_gate` | 1 passed |
+| `cargo clippy -p crozier --all-targets --all-features --locked -- -D warnings` | exit 0, no diagnostics |
+| `cargo clippy -p crozier-e2e --all-targets --all-features --locked -- -D warnings` | exit 0, no diagnostics |
+| `cargo fmt --all --check` | exit 0, no output |
+
+The commit that adds this table changes only this file.
