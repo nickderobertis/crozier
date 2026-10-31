@@ -297,18 +297,18 @@ modes.
 
 ## Verification
 
-Every check below ran on `adb4c0279`, the merged, restated and recounted tree.
-The census suite and the judged lint are the exceptions: they ran on the
-commit that adds this table. Commits after `adb4c0279` change only this record.
+Every check below ran on `a9c8c561e`, the merged, restated and recounted tree
+with this table's first version. The commit after it changes only this record,
+filling in the results.
 
 | check | result |
 |---|---|
-| `just nx run-many --targets=test,lint,format --projects=crozier,crozier-e2e --skip-nx-cache` (unit tests, clippy, rustfmt, and the complete e2e suite: `vtex_marketplace_protocol_matches_fern_output`, `nixtla_timegpt_matches_fern_output`, `overlay_goldens_match_fern_output`, all 291 corpus goldens, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates) | E2E_RESULT |
+| `just nx run-many --targets=test,lint,format --projects=crozier,crozier-e2e --skip-nx-cache` (unit tests, clippy, rustfmt, and the complete e2e suite: `vtex_marketplace_protocol_matches_fern_output`, `nixtla_timegpt_matches_fern_output`, `overlay_goldens_match_fern_output`, all 291 corpus goldens, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates) | passed; 1,108 unit tests, and 846 e2e tests passed with 45 skipped (the ignored tiers) |
 | VTEX's and Nixtla's golden tests and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 3 passed |
 | `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
 | `restate-coverage.py` drift check | no drift |
-| the `surface-census` project's `test-census` suite, complete | CENSUS_RESULT |
-| judged lint over the diff against `e4eec3d65`, `origin/main` as merged (`just lint-llm-diff e4eec3d65`) | LINT_RESULT |
+| the `surface-census` project's `test-census` suite, complete | 639 passed, 1 skipped |
+| judged lint over the diff against `e4eec3d65`, `origin/main` as merged (`just lint-llm-diff e4eec3d65`) | all 5 batches passed, 0 rules failed |
 
 The previous verification ran on `8584228f0` and `564e46794`, before this
 merge. That run passed the same checks, along with
