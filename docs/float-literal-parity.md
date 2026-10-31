@@ -77,3 +77,12 @@ None of the goldens registered before this node. Every corpus generation of a
 full `tests/corpus_match/match.sh` run, the literals-mode overlays included, ran
 both crozier with the repairs and crozier at this node's base, and compared the
 two trees. No tree differed, and all 286 golden tests passed.
+
+## Census suite provenance
+
+The `surface-census` project's `test-census` suite passed on the finished tree
+(638 passed, 1 skipped), run as that target's own command, `uv run --locked
+--all-packages pytest --cov --cov-report= …`, under the worktree's `.venv`
+interpreter. An earlier run of the suite fell through to another project's
+`pytest` on `PATH`, because the worktree's `.venv` held none then; its result
+is not cited here.
