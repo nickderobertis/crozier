@@ -1519,7 +1519,7 @@ mod tests {
     #[test]
     fn multipart_existing_request_component_is_not_a_second_declaration() {
         let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/openapi-surface/handwritten/multipart-request-name/openapi.yml");
+            .join("docs/fern-measurements/superseded-fixtures/multipart-request-name/openapi.yml");
         let mut doc = crate::openapi::load(&fixture).unwrap();
         let config = crate::config::GenerateConfig::new(
             fixture.clone(),

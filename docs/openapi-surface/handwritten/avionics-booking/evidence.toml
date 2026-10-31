@@ -4,6 +4,6 @@ digest = "430ac71010922700082416d684330532190a2c2984f5128956b3a0c0d9db2bb2"
 
 [[covers]]
 key = "example-imports-case-insensitive-order"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

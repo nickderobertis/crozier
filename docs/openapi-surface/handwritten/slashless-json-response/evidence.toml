@@ -5,6 +5,6 @@ digest = "9c479a4e69ba24ba23e2f6ecb14c5ecf5cc084da9a581f6541a2f85fccef89fb"
 [[covers]]
 key = "media-type-malformed-key"
 arm = 'src/ir.rs::has_dispatchable_media[=^ {16}return true;$]'
-search = "docs/openapi-surface/witness-search-slashless-json-response/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-slashless-json-response/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

@@ -4,6 +4,6 @@ digest = "f298576c7b4509586523a29187b877825e8fc363a09c08fc40d4a508e470ce8b"
 
 [[covers]]
 key = "operation-servers-named"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#named-operation-server"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

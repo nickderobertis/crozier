@@ -3,10 +3,12 @@
 //! cases under [`NAMING_WIRE_DIR`], and, for each shape, the proof that an
 //! unexplained byte beside the matched one still fails the comparison.
 //!
-//! The hand-written fixtures of these shapes (`gallery-plaque-groups`,
-//! `transcript-format-part`, `survey-field-selector`) are
-//! held whole, in both enum modes, by `handwritten_fixtures_match_fern_goldens`
-//! and `literals_mode_measurements_match_fern`; the reordered root imports are
+//! The hand-written fixtures of these shapes (`transcript-format-part`,
+//! `survey-field-selector`) are held whole, in both enum modes, by
+//! `handwritten_fixtures_match_fern_goldens` and
+//! `literals_mode_measurements_match_fern`, and the camel-case tag shape by
+//! registered `kompaz-web-frontend` (the superseded `gallery-plaque-groups`
+//! fixture stays a test input); the reordered root imports are
 //! held by every registered corpus golden that re-exports a tag subpackage's
 //! types. The retained `ledger-batch-upload` control is a measurement beside the
 //! registered tamoss feature proof, held in both modes by this module.
@@ -19,7 +21,7 @@ use crozier::parity;
 use super::literals_mode::LITERALS_MODE_DIR;
 use super::{
     copy_dir, corpus_command, departure_ledger, golden_path, golden_tree_failures, probe_command,
-    repo_root, GoldenLedger, ALMA_FRANCE, HANDWRITTEN_DIR,
+    repo_root, GoldenLedger, ALMA_FRANCE, HANDWRITTEN_DIR, SUPERSEDED_FIXTURES_DIR,
 };
 
 /// Where the `python_enums` measurement cases live; see its README.
@@ -128,6 +130,12 @@ fn fern_copy(tree: &Path, spec: PathBuf) -> (tempfile::TempDir, String, PathBuf)
 
 fn handwritten_copy(fixture: &str) -> (tempfile::TempDir, String, PathBuf) {
     let root = repo_root().join(HANDWRITTEN_DIR).join(fixture);
+    fern_copy(&root.join(TREE), root.join("openapi.yml"))
+}
+
+/// A fixture a registered real witness superseded as a proof, kept as a test input.
+fn superseded_copy(fixture: &str) -> (tempfile::TempDir, String, PathBuf) {
+    let root = repo_root().join(SUPERSEDED_FIXTURES_DIR).join(fixture);
     fern_copy(&root.join(TREE), root.join("openapi.yml"))
 }
 
@@ -245,7 +253,7 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
     let cases: [Case<'_>; 7] = [
         (
             "gallery-plaque-groups",
-            handwritten_copy,
+            superseded_copy,
             &[
                 ("reference.md", "## Galleryplaque\n", "## GalleryPlaque\n"),
                 (

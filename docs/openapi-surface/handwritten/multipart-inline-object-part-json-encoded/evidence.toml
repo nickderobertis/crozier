@@ -4,6 +4,6 @@ digest = "ff8d78fa21c19d3179c0e35aeddbb59341adc79708236004833c0f8c0474c007"
 
 [[covers]]
 key = "multipart-inline-object-part-json-encoded"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

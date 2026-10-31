@@ -4,6 +4,5 @@ digest = "6ad5e005a662a3e7d9625adb97477ecb9c7447c88c74666aafd365e06ebcc57e"
 
 [[covers]]
 key = "operation-empty-tag"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#empty-string-tag"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
+verdict = "exhausted"

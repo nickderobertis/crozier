@@ -4,6 +4,5 @@ digest = "f96aa4aa0c8d34afbe06ddef0491b1eea8ff18887f5e537393d706231944a50b"
 
 [[covers]]
 key = "stream-error-status-raises-typed-error"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
+verdict = "exhausted"

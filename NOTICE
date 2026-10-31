@@ -727,3 +727,68 @@ ingef-conquery API specification and generated SDK golden:
     https://raw.githubusercontent.com/ingef/conquery/0379408a4b681575daf311d37bd12ff08ccc409d/openapi.yaml
     MIT (the repository's own LICENSE); corpus row 3478 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+amrc-acs-directory API specification and generated SDK golden:
+    https://raw.githubusercontent.com/AMRC-FactoryPlus/amrc-connectivity-stack/6e52501e7d21f26ea584013e71e2152a9c4f0f6b/acs-directory/api/openapi.yaml
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4200 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ummaya-agent-delegation API specification and generated SDK golden:
+    https://raw.githubusercontent.com/umyunsang/UMMAYA/72ed9b5bbcc4fbfb018e55559cfa20fbd2c1903e/docs/security/agent-delegation.openapi.yaml
+    Apache-2.0 (the document's info.license and the repository's own LICENSE); corpus row 4201 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+speech-ai-forge API specification and generated SDK golden:
+    https://raw.githubusercontent.com/lenML/Speech-AI-Forge/a41b70abba866ecded6e1e90beea6cc68e3fd0ae/docs/openapi.json
+    AGPL-3.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4202 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openiap-opencore API specification and generated SDK golden:
+    https://raw.githubusercontent.com/openiap/opencore/c9e560b656cb14c7f82fc9ed1c44820acce43ea3/public.template/swagger.json
+    MPL-2.0 (the document's info.license and the repository's own LICENSE); corpus row 4203 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openparser-ocr API specification and generated SDK golden:
+    https://raw.githubusercontent.com/eigenpal/openparser/bc71fecfbd228a785963db37c48bfc7e427da08c/docs/OCR_API_OPENAPI.yaml
+    Apache-2.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4204 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+jobster-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/harjasae2001/Jobster-API/8690a283add7cd81bdb5a4447e04556504cdc6e0/openapi.yaml
+    ISC (the repository's own LICENSE; the document declares no info.license); corpus row 4205 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+kompaz-web-frontend API specification and generated SDK golden:
+    https://raw.githubusercontent.com/Stichting-KOMPAZ-1/KOMPAZ-web-frontend/a847053e46b98324c57183af2b2c09abe01f8ecf/openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4206 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+synthwerk-llm API specification and generated SDK golden:
+    https://raw.githubusercontent.com/VelimirMueller/synthwerk-sdk/f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae/packages/sdk/contracts/llm.yaml
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4207 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+parcelis-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/parcelis/parcelis/f2dd42be20acc7c8640ebf20abc10f41e45417b4/apps/api/openapi/parcelis.openapi.json
+    AGPL-3.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4208 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+blufiles-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/BluDood/BluFiles/1cfeb12a476f8fc50354be8961596a1fdd1bbeed/docs/src/openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4209 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+tuxedo-dapp API specification and generated SDK golden:
+    https://raw.githubusercontent.com/mlabs-haskell/TuxedoDapp/0160b433517a61aa249f40b8e684a93c0281441d/openapi.yaml
+    Apache-2.0 (the repository's own LICENSE; the document declares no info.license); corpus row 4210 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+osparc-director-v2 API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4211 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ollama-api API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ollama/ollama/16b4376aeadbec58a18b9817d49c37b1b64e33d0/docs/openapi.yaml
+    MIT (the document's info.license and the repository's own LICENSE); corpus row 4212 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

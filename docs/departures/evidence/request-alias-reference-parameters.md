@@ -1,8 +1,11 @@
 # Alias request reference contradicts the generated method
 
-The independent [Manifest Cabinet source](../../openapi-surface/handwritten/request-alias/openapi.yml)
+The independent [Manifest Cabinet source](../../fern-measurements/superseded-fixtures/request-alias/openapi.yml)
 uses a pure component alias of an object with required `ticket` and optional,
 documented `caption`. It recreates the alias body shape without other inputs.
+It is retained as a test input, not as a hand-written proof: registered
+`openiap-opencore` (corpus row 4203) now proves the alias body arm against a
+real specification.
 The committed renewed [search](../../openapi-surface/witness-search-request-alias/README.md)
 finds no complete witness in its bounded source walk; it claims no real witness.
 

@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "2de2244590ee66b4004f6361f63ae9ce8e00e986eedad4763dffc2160ff4dcd4"
-
-[[covers]]
-key = "operation-id-hyphenated-tag-method"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#hyphenated-tag-method"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

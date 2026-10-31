@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 use super::{
     crozier, departure_ledger, golden_tree_failures, probe_fern_pins, repo_root, walk_files,
-    GoldenLedger, HANDWRITTEN_DIR,
+    GoldenLedger, HANDWRITTEN_DIR, SUPERSEDED_FIXTURES_DIR,
 };
 
 pub(super) const LITERALS_MODE_DIR: &str = "docs/fern-measurements/literals-mode";
@@ -155,7 +155,13 @@ fn cases_in(repo: &Path) -> Result<Vec<Case>, Vec<String>> {
             continue;
         };
         let own_spec = dir.join("openapi.yml");
-        let fixture = repo.join(HANDWRITTEN_DIR).join(&name);
+        // A fixture a registered witness superseded as a proof keeps its overlay.
+        let superseded = repo.join(SUPERSEDED_FIXTURES_DIR).join(&name);
+        let fixture = if superseded.is_dir() {
+            superseded
+        } else {
+            repo.join(HANDWRITTEN_DIR).join(&name)
+        };
         let case = match (own_spec.is_file(), fixture.join("fern-expected").is_dir()) {
             (true, false) if removed.is_empty() => Case {
                 name,
