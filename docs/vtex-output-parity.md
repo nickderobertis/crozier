@@ -283,6 +283,13 @@ The reach cells keep this branch's values, which are the values in the
 merged `golden-reach.tsv`. Main registered row 4301 without re-measuring
 golden reach, so neither side's ledger counts Nixtla's golden yet.
 
+The merge also lost one count. Both sides had raised the census script's
+stated registered-source split, and the matching assertion in
+`corpus_surface_census_test.py`, from 258 of 289 to 259 of 290. Git merged the
+two identical edits as one, which hid that the merged tree registers both rows.
+The census suite's `test_the_stated_corpus_sizes_are_the_measured_ones` caught
+it, and `adb4c0279` states 260 of 291.
+
 The repair's own `src/` changes did not move Nixtla's output:
 `nixtla_timegpt_matches_fern_output` and its literals tree in
 `overlay_goldens_match_fern_output` both pass on the merged tree, in both enum
@@ -290,22 +297,20 @@ modes.
 
 ## Verification
 
-Every check below ran on `b8a10a818`, the merged and restated tree. The
-census suite and the judged lint are the exceptions: they ran on the commit
-that adds this table. Commits after `b8a10a818` change only this record.
+Every check below ran on `adb4c0279`, the merged, restated and recounted tree.
+The census suite and the judged lint are the exceptions: they ran on the
+commit that adds this table. Commits after `adb4c0279` change only this record.
 
 | check | result |
 |---|---|
-| `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | passed |
-| `cargo nextest run -p crozier` (unit tests of every `src/` module) | 1,108 passed |
-| `cargo nextest run -p crozier-e2e`, the complete suite: `vtex_marketplace_protocol_matches_fern_output`, `nixtla_timegpt_matches_fern_output`, `overlay_goldens_match_fern_output`, all 291 corpus goldens, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates | 846 passed, 45 skipped (the ignored tiers) |
+| `just nx run-many --targets=test,lint,format --projects=crozier,crozier-e2e --skip-nx-cache` (unit tests, clippy, rustfmt, and the complete e2e suite: `vtex_marketplace_protocol_matches_fern_output`, `nixtla_timegpt_matches_fern_output`, `overlay_goldens_match_fern_output`, all 291 corpus goldens, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates) | E2E_RESULT |
 | VTEX's and Nixtla's golden tests and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 3 passed |
-| `corpus_sources.py check`, `corpus-licensing-drift.py`, `licence-rescreening-check.py` (the commands behind `just lint-corpus-sources`, `lint-corpus-licensing`, `lint-licence-rescreening`) | passed |
+| `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
 | `restate-coverage.py` drift check | no drift |
 | the `surface-census` project's `test-census` suite, complete | CENSUS_RESULT |
 | judged lint over the diff against `e4eec3d65`, `origin/main` as merged (`just lint-llm-diff e4eec3d65`) | LINT_RESULT |
 
 The previous verification ran on `8584228f0` and `564e46794`, before this
 merge. That run passed the same checks, along with
-`witness_search_acquisition_test.py` (33 passed), which held the two tests
+`just test-witness-search-acquisition` (33 passed), which held the two tests
 behind the first failed publication.
