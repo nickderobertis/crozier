@@ -82,7 +82,7 @@ combo-param-example-beside-ref-schema	acquired	jentic/jentic-public-apis:apis/op
 combo-param-example-beside-ref-schema	acquired	jentic/jentic-public-apis:apis/openapi/up.com.au/main/v1/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	4	outstanding: not screened in this dispatch (time-bounded)
 combo-param-example-beside-ref-schema	acquired	jordiup/91wal:utils/openapi.json@c04d230de836c43458bfb7cdd2124d98359074c9	2	outstanding: not screened in this dispatch (time-bounded)
 combo-param-example-beside-ref-schema	acquired	justmert/SiaQL:openapi.yml@a315bea1fd4b9dfeaacbd9e33b9b59cc4d0fbf40	1	outstanding: not screened in this dispatch (time-bounded)
-combo-param-example-beside-ref-schema	acquired	khulnasoft/RapidDocs:seed/openapi/literal/openapi.yml@5fb28dba3c6353351814c757628b64918809e329	4	outstanding: not screened in this dispatch (time-bounded)
+combo-param-example-beside-ref-schema	acquired	screened-nonpublic-input:v2:aea24bcd7b44484aab5572c50dedc2f9:1	4	excluded by repository provenance rule; not screened
 combo-param-example-beside-ref-schema	acquired	konfig-dev/konfig:sdks/db/browser-downloads/reference.token.io/swagger.json@bec3d36b9a341f30707a4ab3d9de6c4154809ada	1	outstanding: not screened in this dispatch (time-bounded)
 combo-param-example-beside-ref-schema	acquired	konfig-dev/konfig:sdks/db/intermediate-fixed-specs/drivewealth/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	9	outstanding: not screened in this dispatch (time-bounded)
 combo-param-example-beside-ref-schema	acquired	konfig-dev/konfig:sdks/db/intermediate-fixed-specs/shutterstock/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	10	outstanding: not screened in this dispatch (time-bounded)

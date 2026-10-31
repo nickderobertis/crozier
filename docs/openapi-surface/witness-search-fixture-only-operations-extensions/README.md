@@ -246,7 +246,7 @@ The cover of each `search-incomplete` and `exhausted` key cites this table; a `g
 | `base-path-extension` | `exhausted` | 1 acquired, 1 GitHub | both declarers are refused by Fern: `danielkov/solder`'s example (`fern check` exit 1) and OpenRouter's description in `jentic/jentic-public-apis` (`type-name-collision`, an earlier record) |
 | `discriminated-extension` | `exhausted` | 0 | no real document declares it |
 | `discriminator-property-name-extension` | `exhausted` | 0 | no real document declares it |
-| `combo-param-example-beside-ref-schema` | `search-incomplete` | 118 acquired, 13 APIs.guru, 6 GitHub, 5 registered, 5 sibling | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 125 declarer(s) outstanding |
+| `combo-param-example-beside-ref-schema` | `search-incomplete` | 118 acquired, 13 APIs.guru, 6 GitHub, 5 registered, 5 sibling | GitHub code search has no phrase that selects the shape, so the public documents outside the populations read cannot be enumerated; the declarers those populations hold are each decided or named outstanding in [`census.tsv`](census.tsv); 124 declarer(s) outstanding |
 
 ## Arm verdicts
 
