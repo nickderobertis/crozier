@@ -10320,6 +10320,9 @@ const CORPORA: &[&Corpus] = &[
     &KONFIG_LUCCA_ORGANIZATION,
     &ABLY_SDK_TEST_PROXY,
     &DIPJYOTIMETIA_FRIDAY,
+    &OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT,
+    &TRPC_OPENAPI_APP_ROUTER,
+    &AZURE_DATABOX_MANAGEMENT,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
@@ -11904,6 +11907,45 @@ const ABLY_SDK_TEST_PROXY: Corpus = Corpus {
 /// `format-binary`.
 const DIPJYOTIMETIA_FRIDAY: Corpus = Corpus {
     api: "dipjyotimetia-friday",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-allof-extension-parent`: corpus row 4008, the OpenAPI Generator project's `allOf` parent-extension document — the registered witness of
+/// `nullable-single-allof-ref-component-not-optional`.
+const OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT: Corpus = Corpus {
+    api: "openapi-generator-allof-extension-parent",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `trpc-openapi-app-router`: corpus row 4009, the tRPC OpenAPI package's application-router document — the registered witness of
+/// `integer-format-fallback`.
+const TRPC_OPENAPI_APP_ROUTER: Corpus = Corpus {
+    api: "trpc-openapi-app-router",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `azure-databox-management`: corpus row 4010, Microsoft's Data Box management API as the Jentic directory redistributes it — the registered witness of
+/// `allof-single-ref-empty-properties-alias`.
+const AZURE_DATABOX_MANAGEMENT: Corpus = Corpus {
+    api: "azure-databox-management",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14261,6 +14303,21 @@ fn ably_sdk_test_proxy_matches_fern_output() {
 #[test]
 fn dipjyotimetia_friday_matches_fern_output() {
     assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
+}
+
+#[test]
+fn openapi_generator_allof_extension_parent_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT);
+}
+
+#[test]
+fn trpc_openapi_app_router_matches_fern_output() {
+    assert_committed_corpus_matches(&TRPC_OPENAPI_APP_ROUTER);
+}
+
+#[test]
+fn azure_databox_management_matches_fern_output() {
+    assert_committed_corpus_matches(&AZURE_DATABOX_MANAGEMENT);
 }
 
 #[test]

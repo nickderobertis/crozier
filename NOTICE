@@ -769,3 +769,18 @@ dipjyotimetia-friday API specification and generated SDK golden:
     https://raw.githubusercontent.com/dipjyotimetia/friday/50f326aabeba90edb0d5bab75efeeaa6d4f6accd/openapi.json
     MIT (the repository's own LICENSE); corpus row 4007 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+openapi-generator-allof-extension-parent API specification and generated SDK golden:
+    https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/modules/openapi-generator/src/test/resources/3_0/allOf_extension_parent.yaml
+    MIT (the document's own `info.license`; the repository is Apache-2.0); corpus row 4008 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+trpc-openapi-app-router API specification and generated SDK golden:
+    https://raw.githubusercontent.com/trpc/trpc/8b649ad874a8fe97c73962d4617912231b975736/packages/openapi/test/routers/appRouter.openapi.json
+    MIT (repository `LICENSE` at the commit); corpus row 4009 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+azure-databox-management API specification and generated SDK golden:
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/047e4ec2befca70c4bcdd05f162b2c005fc7cdfe/apis/openapi/azure.com/databoxmanagementclient/2019-09-01/openapi.json
+    CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`); corpus row 4010 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

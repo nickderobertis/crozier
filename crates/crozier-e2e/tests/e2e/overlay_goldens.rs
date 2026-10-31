@@ -81,6 +81,10 @@ const KINDS: &[Kind] = &[
     //   scheme, beside its scalar `format: byte` request body.
     // - `sourcefuse-bpmn-service`: the inline string-enum element of an array
     //   `oneOf` member, and an inline relation enum.
+    // - `trpc-openapi-app-router`: inline property and union-member enums of a
+    //   router's inferred inputs and returns.
+    // - `azure-databox-management`: the referenced enums of a large management
+    //   API's job, SKU and validation models.
     // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
     // read-only properties of referenced request bodies.
     Kind {
@@ -134,6 +138,8 @@ const KINDS: &[Kind] = &[
             "ingef-conquery",
             "contribly-com",
             "sourcefuse-bpmn-service",
+            "trpc-openapi-app-router",
+            "azure-databox-management",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

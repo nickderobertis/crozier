@@ -862,6 +862,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/azure-databox-management/expected": {},
+    "tests/fixtures/azure-databox-management/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/basic-auth/expected": {},
     "tests/fixtures/billie-entry/expected": {},
     "tests/fixtures/billie/expected": {},
@@ -1128,6 +1134,7 @@
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/onmyshelf-api/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
+    "tests/fixtures/openapi-generator-allof-extension-parent/expected": {},
     "tests/fixtures/openapi-generator-composed-schema-lowering/expected": {},
     "tests/fixtures/openapi-generator-composed-schema-lowering/expected-literals": {
       "excluded": [
@@ -1284,6 +1291,12 @@
     },
     "tests/fixtures/torrentarr/expected": {},
     "tests/fixtures/traccar.org/expected": {},
+    "tests/fixtures/trpc-openapi-app-router/expected": {},
+    "tests/fixtures/trpc-openapi-app-router/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/truefoundry-trueforge-5adde28/expected": {},
     "tests/fixtures/truefoundry-trueforge/expected": {},
     "tests/fixtures/truefoundry-trueforge/expected-flat": {},

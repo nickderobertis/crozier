@@ -353,6 +353,9 @@ inventory=(
   konfig_lucca_organization_matches_fern_output
   ably_sdk_test_proxy_matches_fern_output
   dipjyotimetia_friday_matches_fern_output
+  openapi_generator_allof_extension_parent_matches_fern_output
+  trpc_openapi_app_router_matches_fern_output
+  azure_databox_management_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

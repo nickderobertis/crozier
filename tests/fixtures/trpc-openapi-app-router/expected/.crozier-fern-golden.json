@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "trpc-openapi-app-router",
+  "corpus_spec_ref": "8b649ad874a8fe97c73962d4617912231b975736",
+  "corpus_spec_url": "https://raw.githubusercontent.com/trpc/trpc/8b649ad874a8fe97c73962d4617912231b975736/packages/openapi/test/routers/appRouter.openapi.json"
+}

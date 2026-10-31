@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "azure-databox-management",
+  "corpus_spec_ref": "047e4ec2befca70c4bcdd05f162b2c005fc7cdfe",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jentic/jentic-public-apis/047e4ec2befca70c4bcdd05f162b2c005fc7cdfe/apis/openapi/azure.com/databoxmanagementclient/2019-09-01/openapi.json"
+}
