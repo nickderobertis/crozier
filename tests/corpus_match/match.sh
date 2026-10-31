@@ -346,6 +346,7 @@ inventory=(
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
   vtex_marketplace_protocol_matches_fern_output
+  nixtla_timegpt_matches_fern_output
   ollama_api_matches_fern_output
   osparc_director_v2_matches_fern_output
   tuxedo_dapp_matches_fern_output

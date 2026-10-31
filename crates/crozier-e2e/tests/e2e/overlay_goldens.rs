@@ -129,6 +129,7 @@ const KINDS: &[Kind] = &[
             "rs-server",
             "ingef-conquery",
             "vtex-marketplace-protocol",
+            "nixtla-timegpt",
             "ollama-api",
             "osparc-director-v2",
             "tuxedo-dapp",

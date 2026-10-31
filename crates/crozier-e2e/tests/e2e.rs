@@ -10466,6 +10466,7 @@ const CORPORA: &[&Corpus] = &[
     &RS_SERVER,
     &INGEF_CONQUERY,
     &VTEX_MARKETPLACE_PROTOCOL,
+    &NIXTLA_TIMEGPT,
     &OLLAMA_API,
     &OSPARC_DIRECTOR_V2,
     &TUXEDO_DAPP,
@@ -12924,6 +12925,21 @@ const INGEF_CONQUERY: Corpus = Corpus {
 /// `items: {}` beside `properties`.
 const VTEX_MARKETPLACE_PROTOCOL: Corpus = Corpus {
     api: "vtex-marketplace-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Nixtla's TimeGPT document — corpus row 4301, witnessing JSON float
+/// literals a fast decimal reader rounds one unit off and example-matrix rows
+/// that end at the snippet width with their trailing comma
+/// (docs/float-literal-parity.md).
+const NIXTLA_TIMEGPT: Corpus = Corpus {
+    api: "nixtla-timegpt",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -21170,6 +21186,13 @@ fn ingef_conquery_matches_fern_output() {
 #[test]
 fn vtex_marketplace_protocol_matches_fern_output() {
     assert_committed_corpus_matches(&VTEX_MARKETPLACE_PROTOCOL);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn nixtla_timegpt_matches_fern_output() {
+    assert_committed_corpus_matches(&NIXTLA_TIMEGPT);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

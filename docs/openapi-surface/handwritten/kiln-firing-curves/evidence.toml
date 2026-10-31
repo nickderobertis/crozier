@@ -1,0 +1,9 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "52bc6636e4ae7d1d308950f9e6da3a6de5d226904710a1715240ddf02a0f2321"
+
+[[covers]]
+key = "required-param-and-body-defaults-ignored"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
