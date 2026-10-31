@@ -5077,6 +5077,68 @@ pub(crate) fn collect_schema_refs(schema: &Schema, out: &mut std::collections::B
 mod tests {
     use super::*;
 
+    /// Each float literal of a document reads as its correctly rounded binary64
+    /// value, and renders as that value's shortest round-tripping spelling. A
+    /// fast, approximate decimal reader lands one unit in the last place away
+    /// from the first, second and fourth literal; the first two are worked
+    /// values of nixtla's TimeGPT document, which Fern 5.163.1 with
+    /// fern-python-sdk 5.41.3 renders as written. The third is the second's
+    /// one-unit neighbour, which must stay distinct from it.
+    #[test]
+    fn a_documents_float_literals_read_as_their_correctly_rounded_values() {
+        const LITERALS: [&str; 4] = [
+            "0.9345407030264767",
+            "0.48729867539182836",
+            "0.4872986753918283",
+            "2.2250738585072011e-308",
+        ];
+        let list = LITERALS.join(", ");
+        let dir = tempfile::tempdir().unwrap();
+        let json = dir.path().join("openapi.json");
+        std::fs::write(
+            &json,
+            format!(
+                r#"{{"openapi": "3.0.3", "info": {{"title": "t", "version": "1"}}, "paths": {{}},
+                "components": {{"schemas": {{"Reading": {{"type": "array",
+                "items": {{"type": "number", "default": {}}}, "example": [{list}]}}}}}}}}"#,
+                LITERALS[1]
+            ),
+        )
+        .unwrap();
+        let yaml = dir.path().join("openapi.yml");
+        std::fs::write(
+            &yaml,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\n\
+                 components:\n  schemas:\n    Reading:\n      type: array\n      \
+                 items: {{type: number, default: {}}}\n      example: [{list}]\n",
+                LITERALS[1]
+            ),
+        )
+        .unwrap();
+        let mut misread = Vec::new();
+        for path in [json, yaml] {
+            let doc = load(&path).unwrap();
+            let reading = &doc.components.schemas["Reading"];
+            let example = reading.example.as_ref().unwrap().as_array().unwrap();
+            let default = reading.items.as_ref().unwrap().default.as_ref().unwrap();
+            for (literal, value) in LITERALS
+                .iter()
+                .zip(example)
+                .chain([(&LITERALS[1], default)])
+            {
+                let correct: f64 = literal.parse().unwrap();
+                if value.as_f64().map(f64::to_bits) != Some(correct.to_bits())
+                    || serde_json::to_string(value).unwrap() != format!("{correct:?}")
+                {
+                    let name = path.file_name().unwrap().to_string_lossy();
+                    misread.push(format!("{name}: {literal} read as {value}"));
+                }
+            }
+        }
+        assert!(misread.is_empty(), "{misread:#?}");
+    }
+
     #[test]
     fn a_global_header_reads_optional_only_where_the_key_is_written() {
         let headers: Vec<GlobalHeaderExtension> = serde_json::from_value(serde_json::json!([

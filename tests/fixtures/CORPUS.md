@@ -2045,3 +2045,16 @@ Apache-2.0 (retained in `licenses/loonfs-Apache-2.0.txt`). It declares
 | 4403 | `microsoft-adme-crs-converter` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/crs_converter_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | MIT (publisher repository LICENSE) | committed | An http scheme spelled `Bearer` with a capital |
 | 4404 | `wiim-httpapi` | github-raw | https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json | `3dce4a722aa2b30fdb06d720b58714e224d26eb6` | GPL-3.0 (author repository LICENSE) | committed | Integer path parameters after literal text in one segment |
 | 4405 | `loonfs` | github-raw | https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json | `1e9aebea7e6fca3ea5f32d33b066e39228131208` | Apache-2.0 (document info.license and publisher repository LICENSE) | committed | Optional global headers; retries disabled on one operation |
+
+## Float literals a fast decimal reader rounds one unit off
+
+Nixtla's TimeGPT document, vendored in ourofoundation/wrappers, carries
+seventeen-digit floats in its worked examples, several of which a fast,
+approximate decimal reader lands one unit in the last place away from their
+correctly rounded value, and rows of an example matrix that end exactly at the
+snippet width once their trailing comma is counted. Both repairs are recorded
+in [`float-literal-parity.md`](../../docs/float-literal-parity.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4301 | `nixtla-timegpt` | github-raw | https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json | `79688dd65e7fb2fb670ad30b01b5db5208c1d928` | MIT (repository LICENSE; the document declares no info.license) | committed | JSON float literals whose correctly rounded value a fast reader misses by one unit in the last place, in worked examples; example-matrix rows that end at the snippet width with their trailing comma |

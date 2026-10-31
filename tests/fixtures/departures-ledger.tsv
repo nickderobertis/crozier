@@ -1665,6 +1665,11 @@ docs/openapi-surface/handwritten/kiln-array-variants/fern-expected	src/fern/core
 docs/openapi-surface/handwritten/kiln-array-variants/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/kiln-array-variants/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/kiln-array-variants/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/kiln-firing-curves/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8317,6 +8322,12 @@ tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	36	sdk-identit
 tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/nimisampo/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/nimisampo/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/nixtla-timegpt/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/nixtla-timegpt/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/nixtla-timegpt/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/nixtla-timegpt/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/nixtla-timegpt/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/nixtla-timegpt/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/notion-mcp-server/expected	reference.md	38	schema-rejected-name-example
 tests/fixtures/notion-mcp-server/expected	reference.md	953	schema-rejected-name-example
 tests/fixtures/notion-mcp-server/expected	reference.md	1640	schema-rejected-name-example
