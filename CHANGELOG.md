@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.146](https://github.com/nickderobertis/crozier/compare/v0.0.145...v0.0.146) - 2026-10-31
+
+### Fixed
+
+- *(parity)* seek real witnesses for fixture-only body and path features ([#668](https://github.com/nickderobertis/crozier/pull/668))
+
 ## [0.0.145](https://github.com/nickderobertis/crozier/compare/v0.0.144...v0.0.145) - 2026-10-29
 
 ### Fixed
