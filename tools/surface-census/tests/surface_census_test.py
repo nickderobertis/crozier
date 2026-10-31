@@ -5965,6 +5965,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:empty-properties-single-allof-ref",
             "schema.oneOf:duplicate-members",
             "components.schemas:two-string-enum-ref-union",
+            "components.schemas:discriminated-variant-required-nullable",
             "operation.responses:blank-description-inline-object",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
@@ -13797,17 +13798,19 @@ class CompletenessTierTests(unittest.TestCase):
                 target = root / relative
                 target.unlink()
                 overlay(REPO / relative, target)
-            fixture = root / "docs/openapi-surface/handwritten/turbine-pulse-counter"
+            fixture = root / "docs/openapi-surface/handwritten/lunar-null-labels"
             fixture.unlink()
             shutil.copytree(HANDWRITTEN / fixture.name, fixture)
             text = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
             cells = next(
-                row for row in RankedBacklogTests.region_rows(text) if row[0].strip("`") == "integer-format-fallback"
+                row
+                for row in RankedBacklogTests.region_rows(text)
+                if row[0].strip("`") == "schema-example-array-null-element"
             )
 
             def check() -> list[str]:
                 return completeness_failures(
-                    {"integer-format-fallback": ("schemas", cells)}, {"schemas": text}, {}, root=root
+                    {"schema-example-array-null-element": ("schemas", cells)}, {"schemas": text}, {}, root=root
                 )
 
             self.assertEqual([], check())
@@ -13816,7 +13819,7 @@ class CompletenessTierTests(unittest.TestCase):
             evidence.unlink()
             self.assertTrue(check(), "missing evidence accepted")
             evidence.write_text(
-                original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8", newline="\n"
+                original.replace("schema-example-array-null-element", "uncovered-shape"), encoding="utf-8", newline="\n"
             )
             self.assertTrue(check(), "a cover naming another key accepted")
             evidence.write_text(
@@ -16354,6 +16357,31 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Aspect": {"oneOf": both, "discriminator": {"propertyName": "kind"}},
             },
             "any-of": {"Lens": lens, "Arm": arm, "Aspect": {"anyOf": both}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_discriminated_variant_required_nullable_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:discriminated-variant-required-nullable"
+
+        def variant(nullable: bool, required: bool, tag_only: bool = False) -> dict[str, Any]:
+            properties: dict[str, Any] = {"status": {"type": "string", "enum": ["open"]}}
+            if not tag_only:
+                properties["closes_at"] = {"type": "string", "nullable": nullable}
+            names = ["status"] + (["closes_at"] if required and not tag_only else [])
+            return {"type": "object", "properties": properties, "required": names}
+
+        def union(discriminated: bool = True) -> dict[str, Any]:
+            schema: dict[str, Any] = {"oneOf": [{"$ref": "#/components/schemas/Open"}]}
+            if discriminated:
+                schema["discriminator"] = {"propertyName": "status"}
+            return schema
+
+        cases = {
+            "positive": {"Open": variant(True, True), "Gate": union()},
+            "not-nullable": {"Open": variant(False, True), "Gate": union()},
+            "not-required": {"Open": variant(True, False), "Gate": union()},
+            "undiscriminated": {"Open": variant(True, True), "Gate": union(discriminated=False)},
+            "tag-only": {"Open": variant(True, True, tag_only=True), "Gate": union()},
         }
         self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
 

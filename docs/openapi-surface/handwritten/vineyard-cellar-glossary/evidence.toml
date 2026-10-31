@@ -7,9 +7,3 @@ key = "schema-sdk-group-name"
 search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
-
-[[covers]]
-key = "schema-x-tags"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

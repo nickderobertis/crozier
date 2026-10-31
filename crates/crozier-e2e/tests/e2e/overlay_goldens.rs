@@ -91,6 +91,10 @@ const KINDS: &[Kind] = &[
     //   application.
     // - `chrome-webstatus-backend`: referenced string enums, two of them joined
     //   in a `oneOf` alias, across a web-platform status API.
+    // - `andreychh-coopera`: the one-value status enums tagging a task
+    //   tracker's discriminated state variants.
+    // - `nvke-controller`: a cluster controller's status and provider enums,
+    //   beside properties written `x-fern-ignore`.
     // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
     // read-only properties of referenced request bodies.
     Kind {
@@ -149,6 +153,8 @@ const KINDS: &[Kind] = &[
             "canonical-test-observer",
             "psychic-spec-helpers-testapp",
             "chrome-webstatus-backend",
+            "andreychh-coopera",
+            "nvke-controller",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

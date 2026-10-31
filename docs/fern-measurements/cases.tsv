@@ -6,7 +6,8 @@ bodies-responses/json-binary-path-literals	docs/openapi-surface/handwritten/json
 bodies-responses/json-request-shapes-literals	docs/openapi-surface/handwritten/json-request-shapes/openapi.yml	literals	packaged	-
 bodies-responses/multipart-alias-object-literals	docs/openapi-surface/handwritten/multipart-alias-object/openapi.yml	literals	packaged	-
 bodies-responses/multipart-json-module-literals	docs/openapi-surface/handwritten/multipart-json-module/openapi.yml	literals	packaged	-
-bodies-responses/multipart-nullable-array-literals	docs/openapi-surface/handwritten/multipart-nullable-array/openapi.yml	literals	packaged	-
+bodies-responses/multipart-nullable-array	docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml	python-enums	packaged	-
+bodies-responses/multipart-nullable-array-literals	docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml	literals	packaged	-
 bodies-responses/multipart-request-name-literals	docs/openapi-surface/handwritten/multipart-request-name/openapi.yml	literals	packaged	-
 bodies-responses/request-alias-literals	docs/openapi-surface/handwritten/request-alias/openapi.yml	literals	packaged	-
 bodies-responses/request-media-methods-literals	docs/openapi-surface/handwritten/request-media-methods/openapi.yml	literals	packaged	-
@@ -24,7 +25,6 @@ clients-extensions/ferry-berth-desk-literals	docs/openapi-surface/handwritten/fe
 clients-extensions/film-shot-planner-literals	docs/openapi-surface/handwritten/film-shot-planner/openapi.yml	literals	packaged	-
 clients-extensions/grid-valve-console-literals	docs/openapi-surface/handwritten/grid-valve-console/openapi.yml	literals	packaged	-
 clients-extensions/harbour-pilot-regions-literals	docs/openapi-surface/handwritten/harbour-pilot-regions/openapi.yml	literals	packaged	-
-clients-extensions/impedance-complex-reading-literals	docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml	literals	packaged	-
 clients-extensions/keyword-bearer-name	docs/fern-measurements/clients-extensions/keyword-bearer-name/openapi.yml	python-enums	packaged	-
 clients-extensions/keyword-server-field	docs/fern-measurements/clients-extensions/keyword-server-field/openapi.yml	python-enums	packaged	-
 clients-extensions/lamp-room-log-literals	docs/openapi-surface/handwritten/lamp-room-log/openapi.yml	literals	packaged	-
@@ -63,7 +63,6 @@ examples-docs/marina-skipper-refs	docs/fern-measurements/examples-docs/marina-sk
 examples-docs/marina-tide-channels	docs/fern-measurements/examples-docs/marina-tide-channels/openapi.yml	python-enums	packaged	-
 examples-docs/unread-date-time-examples	docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml	python-enums	packaged	-
 literals-mode/avionics-booking	docs/openapi-surface/handwritten/avionics-booking/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/avionics-booking/fern-expected
-literals-mode/bigint-format-string-typed-str	docs/openapi-surface/handwritten/bigint-format-string-typed-str/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected
 literals-mode/buoy-depth-response	docs/openapi-surface/handwritten/buoy-depth-response/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/buoy-depth-response/fern-expected
 literals-mode/discriminated-variant-date-value-snippet	docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected
 literals-mode/dotted-mapping-key-variant-class-name	docs/fern-measurements/literals-mode/dotted-mapping-key-variant-class-name/openapi.yml	literals	packaged	expected:-
@@ -84,7 +83,6 @@ literals-mode/multipart-inline-object-part-json-encoded	docs/openapi-surface/han
 literals-mode/multipart-part-encoding-charset-tuple	docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected
 literals-mode/multipart-single-value-enum-part-kept-optional	docs/fern-measurements/literals-mode/multipart-single-value-enum-part-kept-optional/openapi.yml	literals	packaged	expected:-
 literals-mode/odometer-reading	docs/openapi-surface/handwritten/odometer-reading/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/odometer-reading/fern-expected
-literals-mode/oneof-duplicate-members-collapsed	docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected
 literals-mode/open-object-body-example-extra-keys-dropped	docs/fern-measurements/literals-mode/open-object-body-example-extra-keys-dropped/openapi.yml	literals	packaged	expected:-
 literals-mode/passport-scan	docs/openapi-surface/handwritten/passport-scan/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/passport-scan/fern-expected
 literals-mode/patch-inline-nullable-unrequired-props-omit	docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/fern-expected
@@ -103,8 +101,6 @@ literals-mode/tram-route-query	docs/openapi-surface/handwritten/tram-route-query
 literals-mode/transcript-format-part	docs/openapi-surface/handwritten/transcript-format-part/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/transcript-format-part/fern-expected
 literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped	docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected
 literals-mode/union-of-enum-ref-const-and-string-members	docs/openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/fern-expected
-literals-mode/union-of-two-enum-refs-alias	docs/openapi-surface/handwritten/union-of-two-enum-refs-alias/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/union-of-two-enum-refs-alias/fern-expected
-literals-mode/variant-nullable-value-optional-default-none	docs/openapi-surface/handwritten/variant-nullable-value-optional-default-none/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/variant-nullable-value-optional-default-none/fern-expected
 literals-mode/variant-optional-const-discriminant-merged	docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/openapi.yml	literals	packaged	expected:-
 literals-mode/water-pump-station	docs/openapi-surface/handwritten/water-pump-station/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/water-pump-station/fern-expected
 literals-mode/weather-radar-stream	docs/openapi-surface/handwritten/weather-radar-stream/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/weather-radar-stream/fern-expected
@@ -114,14 +110,13 @@ models-refs-literals/circuit-readings	docs/openapi-surface/handwritten/circuit-r
 models-refs-literals/compass-member-notes	docs/openapi-surface/handwritten/compass-member-notes/openapi.yml	literals	packaged	-
 models-refs-literals/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	literals	packaged	-
 models-refs-literals/garden-crown	docs/openapi-surface/handwritten/garden-crown/openapi.yml	literals	packaged	-
-models-refs-literals/gauge-public-fields	docs/openapi-surface/handwritten/gauge-public-fields/openapi.yml	literals	packaged	-
+models-refs/gauge-public-fields	docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml	python-enums	packaged	-
+models-refs-literals/gauge-public-fields	docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml	literals	packaged	-
 models-refs-literals/harbour-window	docs/openapi-surface/handwritten/harbour-window/openapi.yml	literals	packaged	-
 models-refs-literals/library-records	docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml	literals	packaged	-
 models-refs-literals/material-register	docs/openapi-surface/handwritten/material-register/openapi.yml	literals	packaged	-
 models-refs-literals/measurement-phase	docs/openapi-surface/handwritten/measurement-phase/openapi.yml	literals	packaged	-
-models-refs-literals/mineral-sample	docs/openapi-surface/handwritten/mineral-sample/openapi.yml	literals	packaged	-
 models-refs-literals/nullable-observer-notes	docs/openapi-surface/handwritten/nullable-observer-notes/openapi.yml	literals	packaged	-
-models-refs-literals/nullable-store	docs/openapi-surface/handwritten/nullable-store/openapi.yml	literals	packaged	-
 models-refs-literals/parcel-response	docs/openapi-surface/handwritten/parcel-response/openapi.yml	literals	packaged	-
 models-refs-literals/required-marker-point	docs/openapi-surface/handwritten/required-marker-point/openapi.yml	literals	packaged	-
 models-refs-literals/reservoir-ledger	docs/openapi-surface/handwritten/reservoir-ledger/openapi.yml	literals	packaged	-
@@ -158,7 +153,6 @@ parameter-lowering/query-union-enum-member	docs/fern-measurements/parameter-lowe
 parameter-lowering/query-union-placement	docs/fern-measurements/parameter-lowering/query-union-placement/openapi.yml	python-enums	packaged	-
 parameter-lowering/query-union-temporal-member	docs/fern-measurements/parameter-lowering/query-union-temporal-member/openapi.yml	python-enums	packaged	-
 parameter-lowering/single-operation-headers	docs/fern-measurements/parameter-lowering/single-operation-headers/openapi.yml	python-enums	packaged	-
-remaining-examples/compass-choice-control	docs/fern-measurements/remaining-examples/compass-choice-control/openapi.yml	python-enums	packaged	-
 remaining-examples/enum-media-selection-control	docs/fern-measurements/remaining-examples/enum-media-selection-control/openapi.yml	python-enums	packaged	-
 remaining-examples/fletch-mcp-no-enum-map-value	docs/fern-measurements/remaining-examples/fletch-mcp-no-enum-map-value/openapi.yml	python-enums	packaged	-
 remaining-examples/formbricks-no-map-example	docs/fern-measurements/remaining-examples/formbricks-no-map-example/openapi.yml	python-enums	packaged	-

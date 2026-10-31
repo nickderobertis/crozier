@@ -9,6 +9,7 @@
     "docs/fern-measurements/bodies-responses/multipart-alias-object-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/multipart-nullable-array/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-request-name-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected": {},
@@ -28,7 +29,6 @@
     "docs/fern-measurements/clients-extensions/harbour-chart-vault/fern-expected": {},
     "docs/fern-measurements/clients-extensions/harbour-pilot-regions-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/harbour-tide-desk/fern-expected": {},
-    "docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected": {},
     "docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected": {},
     "docs/fern-measurements/clients-extensions/lamp-room-log-literals/fern-expected": {},
@@ -79,11 +79,6 @@
     "docs/fern-measurements/examples-docs/unread-date-time-examples/fern-expected": {},
     "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
-    "docs/fern-measurements/literals-mode/bigint-format-string-typed-str/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -188,11 +183,6 @@
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/oneof-duplicate-members-collapsed/fern-expected": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "docs/fern-measurements/literals-mode/open-object-body-example-extra-keys-dropped/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -283,16 +273,6 @@
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/union-of-two-enum-refs-alias/fern-expected": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
-    "docs/fern-measurements/literals-mode/variant-nullable-value-optional-default-none/fern-expected": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -319,9 +299,7 @@
     "docs/fern-measurements/models-refs-literals/library-records/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/material-register/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected": {},
-    "docs/fern-measurements/models-refs-literals/mineral-sample/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/nullable-observer-notes/fern-expected": {},
-    "docs/fern-measurements/models-refs-literals/nullable-store/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/parcel-response/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/required-marker-point/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/reservoir-ledger/fern-expected": {},
@@ -330,6 +308,7 @@
     "docs/fern-measurements/models-refs-literals/verified-seal/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/woven-thread/fern-expected": {},
     "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
+    "docs/fern-measurements/models-refs/gauge-public-fields/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected": {},
     "docs/fern-measurements/naming-wire/ledger-batch-upload-literals/fern-expected": {
@@ -489,14 +468,12 @@
     "docs/openapi-surface/handwritten/base-path-client-argument/fern-expected": {},
     "docs/openapi-surface/handwritten/beacon-registry-pages/fern-expected": {},
     "docs/openapi-surface/handwritten/beacon-signal-results/fern-expected": {},
-    "docs/openapi-surface/handwritten/bigint-format-string-typed-str/fern-expected": {},
     "docs/openapi-surface/handwritten/buoy-depth-response/fern-expected": {},
     "docs/openapi-surface/handwritten/byte-text-response-controls/fern-expected": {},
     "docs/openapi-surface/handwritten/byte-text-response/fern-expected": {},
     "docs/openapi-surface/handwritten/cargo-hold-pallets/fern-expected": {},
     "docs/openapi-surface/handwritten/circuit-readings/fern-expected": {},
     "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected": {},
-    "docs/openapi-surface/handwritten/compass-choice/fern-expected": {},
     "docs/openapi-surface/handwritten/compass-member-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
     "docs/openapi-surface/handwritten/contentless-created-success/fern-expected": {},
@@ -524,7 +501,6 @@
     "docs/openapi-surface/handwritten/fortune-cookie-const/fern-expected": {},
     "docs/openapi-surface/handwritten/gallery-plaque-groups/fern-expected": {},
     "docs/openapi-surface/handwritten/garden-crown/fern-expected": {},
-    "docs/openapi-surface/handwritten/gauge-public-fields/fern-expected": {},
     "docs/openapi-surface/handwritten/glaze-ledger-coats/fern-expected": {},
     "docs/openapi-surface/handwritten/greenhouse-undiscriminated-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/greenhouse-vents/fern-expected": {},
@@ -540,7 +516,6 @@
     "docs/openapi-surface/handwritten/http-dpop-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-mutual-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-negotiate-unrequired/fern-expected": {},
-    "docs/openapi-surface/handwritten/impedance-complex-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
@@ -567,18 +542,15 @@
     "docs/openapi-surface/handwritten/meadow-tag-code/fern-expected": {},
     "docs/openapi-surface/handwritten/measurement-phase/fern-expected": {},
     "docs/openapi-surface/handwritten/meter-reader-gateway/fern-expected": {},
-    "docs/openapi-surface/handwritten/mineral-sample/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-alias-object/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-inline-object-part-json-encoded/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-json-module/fern-expected": {},
-    "docs/openapi-surface/handwritten/multipart-nullable-array/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-part-encoding-charset-tuple/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-request-name/fern-expected": {},
     "docs/openapi-surface/handwritten/nested-array-discriminated-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/nested-array-elements/fern-expected": {},
     "docs/openapi-surface/handwritten/nullable-observer-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected": {},
-    "docs/openapi-surface/handwritten/nullable-store/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-base-path/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-date/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-headers/fern-expected": {},
@@ -589,7 +561,6 @@
     "docs/openapi-surface/handwritten/observatory-route-order/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
-    "docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected": {},
     "docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected": {},
     "docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected": {},
     "docs/openapi-surface/handwritten/ore-bin-screen/fern-expected": {},
@@ -617,16 +588,13 @@
     "docs/openapi-surface/handwritten/required-param-and-body-defaults-ignored/fern-expected": {},
     "docs/openapi-surface/handwritten/reservoir-ledger/fern-expected": {},
     "docs/openapi-surface/handwritten/rfid-door-panel/fern-expected": {},
-    "docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected": {},
     "docs/openapi-surface/handwritten/sampling-branches/fern-expected": {},
     "docs/openapi-surface/handwritten/seismic-trace-export/fern-expected": {},
     "docs/openapi-surface/handwritten/sensor-batch-query/fern-expected": {},
     "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/signal-box-relays/fern-expected": {},
     "docs/openapi-surface/handwritten/ski-lift-gates/fern-expected": {},
-    "docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected": {},
     "docs/openapi-surface/handwritten/slashless-json-response/fern-expected": {},
-    "docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected": {},
     "docs/openapi-surface/handwritten/stream-condition-ref-body-header/fern-expected": {},
     "docs/openapi-surface/handwritten/stream-condition-shared-body/fern-expected": {},
     "docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected": {},
@@ -643,13 +611,10 @@
     "docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected": {},
     "docs/openapi-surface/handwritten/tram-route-query/fern-expected": {},
     "docs/openapi-surface/handwritten/transcript-format-part/fern-expected": {},
-    "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},
     "docs/openapi-surface/handwritten/twin-key-relay/fern-expected": {},
     "docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected": {},
     "docs/openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/fern-expected": {},
-    "docs/openapi-surface/handwritten/union-of-two-enum-refs-alias/fern-expected": {},
     "docs/openapi-surface/handwritten/union-sample/fern-expected": {},
-    "docs/openapi-surface/handwritten/variant-nullable-value-optional-default-none/fern-expected": {},
     "docs/openapi-surface/handwritten/verified-seal/fern-expected": {},
     "docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected": {},
     "docs/openapi-surface/handwritten/warehouse-header-token/fern-expected": {},
@@ -824,6 +789,12 @@
     "tests/fixtures/amazonaws.com-cloudformation/expected": {},
     "tests/fixtures/amazonaws.com-cloudfront/expected": {},
     "tests/fixtures/anchore.io/expected": {},
+    "tests/fixtures/andreychh-coopera/expected": {},
+    "tests/fixtures/andreychh-coopera/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/apache.org-airflow/expected": {},
     "tests/fixtures/apache.org-qakka/expected": {},
     "tests/fixtures/apache.org/expected": {},
@@ -1134,6 +1105,12 @@
       ]
     },
     "tests/fixtures/npq-registration/expected": {},
+    "tests/fixtures/nvke-controller/expected": {},
+    "tests/fixtures/nvke-controller/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/oal-example/expected": {},
     "tests/fixtures/oauth-client-credentials/expected": {},
     "tests/fixtures/offchain-metadata-tools/expected": {},
@@ -1153,6 +1130,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/openapi-generator-model-deprecated/expected": {},
     "tests/fixtures/openapi-generator-oneof-two-primitives/expected": {},
     "tests/fixtures/openapitools-csharp-allof/expected": {},
     "tests/fixtures/openapitools-csharp-allof/expected-literals": {

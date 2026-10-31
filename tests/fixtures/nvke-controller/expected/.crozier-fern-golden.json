@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "nvke-controller",
+  "corpus_spec_ref": "ca3f7c025c1474d9b0b9a19a830a3006168c6de7",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dsx-ai-factory/nvke/ca3f7c025c1474d9b0b9a19a830a3006168c6de7/controller/api/openapi.yaml"
+}

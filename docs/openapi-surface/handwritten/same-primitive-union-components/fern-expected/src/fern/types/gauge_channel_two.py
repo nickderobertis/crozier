@@ -1,3 +1,0 @@
-
-
-GaugeChannelTwo = int

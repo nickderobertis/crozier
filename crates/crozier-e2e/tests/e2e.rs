@@ -2255,11 +2255,6 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
-        "impedance-complex-reading-literals",
-        "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
-        &["--enum-type", "literals"],
-    ),
-    (
         "keyword-bearer-name",
         "docs/fern-measurements/clients-extensions/keyword-bearer-name/openapi.yml",
         &[],
@@ -3000,14 +2995,6 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
             "remaining-examples/enum-media-selection-control",
             "/paths/~1probe/post/requestBody/content/application~1json",
             "example",
-        ),
-        (
-            "compass-choice",
-            "docs/openapi-surface/handwritten/compass-choice/openapi.yml",
-            "docs/openapi-surface/handwritten/compass-choice/fern-expected",
-            "remaining-examples/compass-choice-control",
-            "/paths/~1choices/post/requestBody/content/application~1json/schema/properties/direction/oneOf/0",
-            "const",
         ),
         (
             "shelf-labels-map-variants",
@@ -3788,8 +3775,6 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
         "circuit-readings",
         "garden-crown",
         "artefact-catalogue",
-        "mineral-sample",
-        "nullable-store",
         "sampling-branches",
     ] {
         let fixture = root.join("docs/openapi-surface/handwritten").join(name);
@@ -3822,6 +3807,16 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
     assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
 }
 
+/// Where a vendor-extension test bed lives: under the hand-written fixtures,
+/// except `gauge-public-fields`, a measurement since corpus row 4015 proved its row.
+fn handwritten_or_measured(name: &str) -> String {
+    if name == "gauge-public-fields" {
+        format!("docs/fern-measurements/models-refs/{name}")
+    } else {
+        format!("docs/openapi-surface/handwritten/{name}")
+    }
+}
+
 #[test]
 fn property_metadata_shapes_match_the_certified_fern_trees() {
     let root = repo_root();
@@ -3834,8 +3829,8 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
         "reservoir-ledger",
         "required-marker-point",
     ] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
-        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let fixture = root.join(handwritten_or_measured(name));
+        let golden = format!("{}/fern-expected", handwritten_or_measured(name));
         let failures = filtered_tree_failures(
             name,
             &golden,
@@ -3989,13 +3984,13 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
         assert_eq!(rows, vec![vec![fern.as_str(), canonical.as_str(), placement, effect]],
             "vendor-extension table drift: restore the documented {extension} contract or update its real-binary proof");
     }
-    let root = repo_root().join("docs/openapi-surface/handwritten");
+    let root = repo_root();
     for (fixture, extension, conflict, module, expected) in [
         ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
         ("gauge-public-fields", "ignore", "          x-crozier-ignore: false\n", "gauge", "calibration_note: typing.Optional[str]"),
         ("compass-member-notes", "enum", "      x-crozier-enum:\n        south:\n          description: A revised southern direction.\n", "compass", "A revised southern direction."),
     ] {
-        let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let original = std::fs::read_to_string(root.join(handwritten_or_measured(fixture)).join("openapi.yml")).unwrap();
         for spec in [original.replace(&format!("x-fern-{extension}"), &format!("x-crozier-{extension}")), if extension == "type" {
             let needle = "          x-fern-type: literal<true>\n";
             assert_eq!(original.matches(needle).count(), 1);
@@ -4010,8 +4005,8 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             if spec.contains(conflict) {
                 assert!(model.contains(expected), "{fixture}: {model}");
             } else {
-                let reference = root.join(fixture).join("fern-expected");
-                let golden = format!("docs/openapi-surface/handwritten/{fixture}/fern-expected");
+                let reference = root.join(handwritten_or_measured(fixture)).join("fern-expected");
+                let golden = format!("{}/fern-expected", handwritten_or_measured(fixture));
                 let ledger = departure_ledger().golden(&golden, &[]).unwrap();
                 let failures = golden_tree_failures(fixture, &source.display().to_string(), &ledger, &reference, &out);
                 assert!(failures.is_empty(), "{}", failures.join("\n"));
@@ -4026,7 +4021,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             "compass-member-notes",
             "verified-seal",
         ] {
-            let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+            let original = std::fs::read_to_string(root.join(handwritten_or_measured(fixture)).join("openapi.yml")).unwrap();
             let mut document: serde_json::Value = crate::yaml::from_str(&original).unwrap();
             let prefix = format!("x-{spelling}");
             let (module, expected) = match fixture {
@@ -4082,7 +4077,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             }
         }
     }
-    let original = std::fs::read_to_string(root.join("verified-seal/openapi.yml")).unwrap();
+    let original = std::fs::read_to_string(root.join("docs/openapi-surface/handwritten/verified-seal/openapi.yml")).unwrap();
     let source = original.replace(
         "          x-fern-type: literal<true>\n",
         "          x-fern-type: literal<true>\n          x-crozier-type: literal<unsupported>\n",
@@ -5414,15 +5409,15 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
 fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["multipart-nullable-array"] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        let fixture = root.join("docs/fern-measurements/bodies-responses").join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                format!("docs/fern-measurements/bodies-responses/{shape}/fern-expected")
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
             let expected = root.join(&golden);
-            if mode == "literals" {
+            {
                 let evidence =
                     std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
                         .unwrap();
@@ -5497,7 +5492,7 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join("docs/openapi-surface/handwritten/multipart-nullable-array/openapi.yml"))
+            .arg(root.join("docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml"))
             .arg("--output")
             .arg(out.path())
             .args([
@@ -10320,6 +10315,9 @@ const CORPORA: &[&Corpus] = &[
     &KONFIG_LUCCA_ORGANIZATION,
     &ABLY_SDK_TEST_PROXY,
     &DIPJYOTIMETIA_FRIDAY,
+    &OPENAPI_GENERATOR_MODEL_DEPRECATED,
+    &NVKE_CONTROLLER,
+    &ANDREYCHH_COOPERA,
     &CHROME_WEBSTATUS_BACKEND,
     &CANONICAL_TEST_OBSERVER,
     &PSYCHIC_SPEC_HELPERS_TESTAPP,
@@ -11988,6 +11986,45 @@ const PSYCHIC_SPEC_HELPERS_TESTAPP: Corpus = Corpus {
 /// `union-of-two-enum-refs-alias`.
 const CHROME_WEBSTATUS_BACKEND: Corpus = Corpus {
     api: "chrome-webstatus-backend",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `andreychh-coopera`: corpus row 4014, the Coopera team task tracker's API — the registered witness of
+/// `variant-nullable-value-optional-default-none`.
+const ANDREYCHH_COOPERA: Corpus = Corpus {
+    api: "andreychh-coopera",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `nvke-controller`: corpus row 4015, the NVKE cluster controller API — the registered witness of
+/// `ignore-extension-on-property-kept`.
+const NVKE_CONTROLLER: Corpus = Corpus {
+    api: "nvke-controller",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-model-deprecated`: corpus row 4016, the OpenAPI Generator project's deprecated-model document, as a fork of that repository carries it — the registered witness of
+/// `schema-name-builtin-complex`.
+const OPENAPI_GENERATOR_MODEL_DEPRECATED: Corpus = Corpus {
+    api: "openapi-generator-model-deprecated",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14345,6 +14382,21 @@ fn ably_sdk_test_proxy_matches_fern_output() {
 #[test]
 fn dipjyotimetia_friday_matches_fern_output() {
     assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
+}
+
+#[test]
+fn openapi_generator_model_deprecated_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_MODEL_DEPRECATED);
+}
+
+#[test]
+fn nvke_controller_matches_fern_output() {
+    assert_committed_corpus_matches(&NVKE_CONTROLLER);
+}
+
+#[test]
+fn andreychh_coopera_matches_fern_output() {
+    assert_committed_corpus_matches(&ANDREYCHH_COOPERA);
 }
 
 #[test]

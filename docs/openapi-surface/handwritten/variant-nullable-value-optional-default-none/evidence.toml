@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "dde24fe09873ae1acda3ae25be530aa6cf3a59cbb2d142f896301cd2c8d30d06"
-
-[[covers]]
-key = "variant-nullable-value-optional-default-none"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

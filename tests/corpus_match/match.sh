@@ -353,6 +353,9 @@ inventory=(
   konfig_lucca_organization_matches_fern_output
   ably_sdk_test_proxy_matches_fern_output
   dipjyotimetia_friday_matches_fern_output
+  openapi_generator_model_deprecated_matches_fern_output
+  nvke_controller_matches_fern_output
+  andreychh_coopera_matches_fern_output
   chrome_webstatus_backend_matches_fern_output
   canonical_test_observer_matches_fern_output
   psychic_spec_helpers_testapp_matches_fern_output

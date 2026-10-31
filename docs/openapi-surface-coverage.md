@@ -499,7 +499,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-164, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+165, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
@@ -825,6 +825,11 @@ drift gate over the pair:
   `oneOf` is exactly two Reference Objects, each to a string-enum component, with
   nothing else declared beside it: the `typing.Union` alias of the two enums
   `render_type_decl` of `src/emit.rs` writes, as Fern does
+- `components.schemas:discriminated-variant-required-nullable` — one per Reference
+  Object member of a component's `oneOf` with a `discriminator` whose target requires a
+  property other than the discriminator's and writes it `nullable: true`: the variant
+  field `Builder::discriminated_union` of `src/ir.rs` types `Optional[...] = None`, as
+  Fern does
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
   Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
   `src/openapi.rs` resolves
@@ -1065,7 +1070,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Ninety-three of the 164 are node-local**, which is what makes them one family:
+**Ninety-four of the 165 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -2104,7 +2109,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | gap | shape | classification | closing node | committed proof | comparison test | defect ids |
 |---|---|---|---|---|---|---|
 | operation-id-digit-leading-method | Digit-leading method references | Fern defect | `prove-unproven-features` | tests/fixtures/onmyshelf-api/expected | `onmyshelf_api_matches_fern_output` | `digit-leading-method-reference-identifiers` |
-| same-type-anyof-alias-name | Named component union of members with the same primitive type | Fern behaviour | `fix-unions` | docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected | `handwritten_fixtures_match_fern_goldens` | — |
+| same-type-anyof-alias-name | Named component union of members with the same primitive type | Fern behaviour | `fix-unions` | tests/fixtures/openapi-generator-oneof-two-primitives/expected | `openapi_generator_oneof_two_primitives_matches_fern_output` | — |
 | nested-discriminated-union-in-anyof | Discriminated union nested inside an ordinary union | Fern behaviour | `fix-unions` | tests/fixtures/oal-example/expected | `oal_example_matches_fern_output` | — |
 | discriminated-union-variant-classes | Tagged member wrappers and classes | Fern behaviour | `fix-unions` | tests/fixtures/qontract-api/expected | `qontract_api_matches_fern_output` | — |
 | variant-required-fields-optional | Optional properties of tagged union variants | Fern behaviour | `fix-unions` | tests/fixtures/openfoodfacts-taxonomy-editor/expected | `openfoodfacts_taxonomy_editor_matches_fern_output` | — |
@@ -4090,9 +4095,11 @@ corpus admits real specifications only.
 A twelfth joined later, `handwritten` from the start and never a `FIXTURE` row:
 `component-same-primitive-union`, a component composition whose alternatives
 all convert to one primitive, which Fern names after its last alternative. No
-`MANIFEST.tsv` probe measures it; its
-[hand-written fixture](openapi-surface/handwritten/same-primitive-union-components/)
-is the measurement. Its line reads `search-incomplete` because no declared
+`MANIFEST.tsv` probe measures it; its hand-written fixture
+(`same-primitive-union-components`) was the measurement until corpus row 4002,
+`openapi-generator-oneof-two-primitives`, made the row `golden` and retired it
+([the record](openapi-surface/witness-search-fixture-only-schemas/README.md#the-real-witnesses)).
+Its line below, the frozen redo contract's, still reads `search-incomplete` because no declared
 source has been walked or queried for it, and its
 [renewed search](openapi-surface/witness-search-union-shapes/README.md) found
 the 35 documents declaring it among 693 a bounded code search returned, every

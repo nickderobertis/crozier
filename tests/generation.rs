@@ -362,7 +362,10 @@ fn property_metadata_survives_the_public_generation_pipeline() {
         let files = render(&source);
         assert!(files[file].contains(expected), "{fixture}: {}", files[file]);
     }
-    let source = std::fs::read_to_string(root.join("gauge-public-fields/openapi.yml")).unwrap();
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml"),
+    )
+    .unwrap();
     let files = render(&source);
     assert!(!files["src/acme/types/gauge.py"].contains("calibration_note"));
     let required = source.replace(
@@ -401,12 +404,6 @@ fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
             "artefact-catalogue",
             "artifact",
             "class Artifact(UniversalBaseModel):",
-        ),
-        ("mineral-sample", "pebble", "Pebble = Rock"),
-        (
-            "nullable-store",
-            "vacant_store",
-            "VacantStore = typing.Optional[Store]",
         ),
         (
             "sampling-branches",
