@@ -490,7 +490,7 @@ property-optional-example	schema.properties:optional-example	src/emit.rs::Exampl
 parameter-example-non-scalar-query	parameter.example:non-scalar-query	src/ir.rs::build_endpoint[let example_is_scalar = schema.is_some_and],src/emit.rs::build_example_inner[let v = if let Some\(ex\) = qp.example.as_ref\(\).filter]	
 request-media-named-beside-example	mediaType.examples:named-beside-example	src/ir.rs::reference_body_example	
 request-media-named-only-example	mediaType.examples:named-only	src/ir.rs::reference_body_example	
-operation-wildcard-binary-response	operation.responses:wildcard-binary	src/ir.rs::has_wildcard_binary_response,src/emit.rs::build_example_inner[=let declared_examples = !ep.wildcard_binary_response]	
+operation-wildcard-binary-response	operation.responses:wildcard-binary	src/ir.rs::has_wildcard_binary_response,src/emit.rs::build_example_inner[=let declared_examples =]	
 request-body-string-map	operation.requestBody:plain-string-map	src/ir.rs::resolve_request_body[if is_map\(schema\) \{],src/emit.rs::build_example_inner[Some\(RequestBody::Single\(s\)\) => \{]	The plain string-map body preserves its declared media example in documentation.
 anyof-map-variant-oneof-value	schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	
 anyof-map-variant-anyof-value	schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	
@@ -587,3 +587,5 @@ security-scheme-basic-extension-named	securityScheme.x-fern-basic:named-or-env	s
 security-scheme-bearer-extension-named	securityScheme.x-fern-bearer:named	src/openapi.rs::SecurityScheme::bearer_credential	
 security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{]	The scheme name is read case-insensitively, so a capitalised `Bearer` takes the bearer arm.
 literal-prefixed-integer-path-segment	fixture=wiim-httpapi	none	No census selector isolates the segment shape; the witness is named.
+global-headers-extension	openapi.x-fern-global-headers	src/ir.rs::global_headers[for header in doc\.global_header_extensions],src/openapi.rs::OpenApi::global_header_extensions	loonfs marks every global header optional, so the optional presence arm is the one reached.
+operation-retries-disabled	operation.x-fern-retries:disabled	src/openapi.rs::Operation::retries_disabled,src/emit.rs::retries_disabled_preamble	

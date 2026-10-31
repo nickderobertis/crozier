@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 250 of the 281 registered sources live in `corpus-sources/` (a split
+  and 251 of the 282 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -5910,7 +5910,7 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # the port: it decides the element's annotation, not which parameters hoist.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "cd66a155d41f0dfd",
-    "global_headers": "811a7d2a03cc038b",
+    "global_headers": "dfc5358f962e3b3f",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
