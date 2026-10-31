@@ -499,7 +499,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-163, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+164, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
@@ -821,6 +821,10 @@ drift gate over the pair:
   writing `properties: {}` and an `allOf` of exactly one Reference Object, with no
   `additionalProperties`: the annotated reference `Builder::add_named_shape` of
   `src/ir.rs` writes as an alias of its target, not as a model inheriting from it
+- `components.schemas:two-string-enum-ref-union` — one per component schema whose
+  `oneOf` is exactly two Reference Objects, each to a string-enum component, with
+  nothing else declared beside it: the `typing.Union` alias of the two enums
+  `render_type_decl` of `src/emit.rs` writes, as Fern does
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
   Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
   `src/openapi.rs` resolves
@@ -1061,7 +1065,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Ninety-two of the 163 are node-local**, which is what makes them one family:
+**Ninety-three of the 164 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local

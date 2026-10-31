@@ -5964,6 +5964,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:nullable-single-allof-ref",
             "components.schemas:empty-properties-single-allof-ref",
             "schema.oneOf:duplicate-members",
+            "components.schemas:two-string-enum-ref-union",
             "operation.responses:blank-description-inline-object",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
@@ -16334,6 +16335,25 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "own-properties": {"Quarry": quarry, "Pit": {"properties": {"rim": {"type": "string"}}, "allOf": one}},
             "two-members": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": [*one, *one]}},
             "open-map": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": one, "additionalProperties": {}}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_two_string_enum_ref_union_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:two-string-enum-ref-union"
+        lens = {"type": "string", "enum": ["amber", "white"]}
+        arm = {"type": "string", "enum": ["raised", "lowered"]}
+        both = [{"$ref": "#/components/schemas/Lens"}, {"$ref": "#/components/schemas/Arm"}]
+        cases = {
+            "positive": {"Lens": lens, "Arm": arm, "Aspect": {"oneOf": both}},
+            "three-members": {"Lens": lens, "Arm": arm, "Aspect": {"oneOf": [*both, {"type": "string"}]}},
+            "object-member": {"Lens": lens, "Arm": {"type": "object"}, "Aspect": {"oneOf": both}},
+            "numeric-enum": {"Lens": lens, "Arm": {"type": "integer", "enum": [1, 2]}, "Aspect": {"oneOf": both}},
+            "discriminated": {
+                "Lens": lens,
+                "Arm": arm,
+                "Aspect": {"oneOf": both, "discriminator": {"propertyName": "kind"}},
+            },
+            "any-of": {"Lens": lens, "Arm": arm, "Aspect": {"anyOf": both}},
         }
         self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
 

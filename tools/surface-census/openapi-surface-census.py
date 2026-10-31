@@ -1456,6 +1456,12 @@ PREDICATES = {
         "`Builder::add_named_shape` of `src/ir.rs` writes as an alias of its target, "
         "not as a model inheriting from it"
     ),
+    "components.schemas:two-string-enum-ref-union": (
+        "one per component schema whose `oneOf` is exactly two Reference Objects, each "
+        "to a string-enum component, with nothing else declared beside it: the "
+        "`typing.Union` alias of the two enums `render_type_decl` of `src/emit.rs` "
+        "writes, as Fern does"
+    ),
     "schema.oneOf:duplicate-members": (
         "one per Schema Object whose `oneOf` holds two inline members (no `$ref`) that "
         "are equal as JSON values: `dedupe_union_members` of `src/ir.rs` writes the "
@@ -7299,6 +7305,7 @@ class Census:
             found += self.same_primitive_unions(node.get("schemas"))
             found += self.described_object_ref_unions(node.get("schemas"))
             found += self.single_all_of_ref_aliases(node.get("schemas"))
+            found += self.two_string_enum_ref_unions(node.get("schemas"))
             found += self.variant_own_fields_before_bases(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
@@ -7785,6 +7792,35 @@ class Census:
             for key, schema in node.items()
             if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
+
+    @staticmethod
+    def two_string_enum_ref_unions(node: Any) -> list[str]:
+        """`components.schemas:two-string-enum-ref-union`: a union alias of two enums.
+
+        Read at the Components Object, because whether each member is a string
+        enum is answered by the component the member names.
+        """
+        if not isinstance(node, dict):
+            return []
+        prefix = "#/components/schemas/"
+
+        def string_enum(member: Any) -> bool:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            if not isinstance(reference, str) or not reference.startswith(prefix) or len(member) != 1:
+                return False
+            target = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+            values = target.get("enum") if isinstance(target, dict) else None
+            return isinstance(values, list) and bool(values) and all(isinstance(value, str) for value in values)
+
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            members = schema.get("oneOf")
+            beside = set(schema) - {"oneOf", "description", "title"}
+            if isinstance(members, list) and len(members) == 2 and not beside and all(map(string_enum, members)):
+                found.append("components.schemas:two-string-enum-ref-union")
+        return found
 
     @staticmethod
     def single_all_of_ref_aliases(node: Any) -> list[str]:
