@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "microsoft-adme-crs-converter",
+  "corpus_spec_ref": "df39d22ed32acfe80fcdbc5b554871b2c752a39a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/crs_converter_openapi.yaml"
+}

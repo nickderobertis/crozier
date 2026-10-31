@@ -4,13 +4,13 @@ digest = "bc32819b2b56617ca632a2f61e19058a7c8559275bd38aa861248db2be600499"
 
 [[covers]]
 key = "required-query-array-nullable-union-items"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"
 
 [[covers]]
 key = "parameter-schema"
 arm = 'src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]'
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

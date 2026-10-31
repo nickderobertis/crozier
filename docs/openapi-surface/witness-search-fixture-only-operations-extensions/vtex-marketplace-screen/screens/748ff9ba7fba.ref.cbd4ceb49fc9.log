@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml
+HTTP 200
+244858 bytes, sha256 748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743
+pinned sha256 748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743
+outcome: passed: 244858 bytes read at the immutable commit f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49, sha256 748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743

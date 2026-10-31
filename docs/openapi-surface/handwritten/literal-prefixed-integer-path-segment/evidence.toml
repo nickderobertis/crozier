@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "db91261f36e18f77176cee14d4e281952b87a0d98a75264f313f53facf68569e"
-
-[[covers]]
-key = "literal-prefixed-integer-path-segment"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

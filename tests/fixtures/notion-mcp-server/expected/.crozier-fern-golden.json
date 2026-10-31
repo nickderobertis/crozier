@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "notion-mcp-server",
+  "corpus_spec_ref": "730ae781ba28beeaf0865025a3f2ed4c25ea2387",
+  "corpus_spec_url": "https://raw.githubusercontent.com/makenotion/notion-mcp-server/730ae781ba28beeaf0865025a3f2ed4c25ea2387/scripts/notion-openapi.json"
+}

@@ -4,6 +4,6 @@ digest = "e120938a6da52b69e90ab70bd15ddc74218a294466abc827e26cc0e1ef5b06a3"
 
 [[covers]]
 key = "security-schemes-duplicate-api-key-header"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#duplicate-api-key-header-schemes"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

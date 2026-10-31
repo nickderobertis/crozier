@@ -114,6 +114,11 @@ pub struct GlobalHeaderExtension {
     pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.163.1/SDK 5.41.3): docs/fern-measurements/header-token-alias/README.md.
     /// The client constructor argument name.
     pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
+    /// `optional: true` makes the constructor argument `Optional[str] = None`,
+    /// sent only when given and left out of the worked calls; absent, the
+    /// header is required, as before the key was read.
+    #[serde(default)]
+    pub optional: Option<bool>,
 }
 
 /// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
@@ -5132,6 +5137,18 @@ mod tests {
             }
         }
         assert!(misread.is_empty(), "{misread:#?}");
+    }
+
+    #[test]
+    fn a_global_header_reads_optional_only_where_the_key_is_written() {
+        let headers: Vec<GlobalHeaderExtension> = serde_json::from_value(serde_json::json!([
+            { "header": "Store-Tenant", "name": "tenant" },
+            { "header": "Store-Actor", "name": "actorId", "optional": true },
+            { "header": "Store-Region", "name": "region", "optional": false }
+        ]))
+        .expect("the extension deserializes");
+        let optional: Vec<Option<bool>> = headers.iter().map(|header| header.optional).collect();
+        assert_eq!(vec![None, Some(true), Some(false)], optional);
     }
 
     #[test]

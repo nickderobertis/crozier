@@ -873,10 +873,18 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             .iter()
             .any(|existing| existing.wire_name == header.header)
         {
+            // loonfs declares its actor and principal headers `optional: true`,
+            // and Fern types each `Optional[str] = None` and sends it only when
+            // given; without the key the header stays required.
+            let presence = if header.optional == Some(true) {
+                HeaderPresence::Optional(HeaderType::Str)
+            } else {
+                HeaderPresence::Required(HeaderType::Str)
+            };
             headers.push(GlobalHeader {
                 py_name: naming::field_name(&header.name),
                 wire_name: header.header.clone(),
-                presence: HeaderPresence::Required(HeaderType::Str),
+                presence,
                 credential: None,
             });
         }
@@ -5017,14 +5025,14 @@ fn parameter_example_value<'a>(
                 .find_map(|example| component_example_value(doc, example))
         })
         .filter(|_| declared_string)
-        .or_else(|| parameter.schema.as_ref().and_then(schema_example))
+        .or_else(|| parameter.schema.as_ref().and_then(typed_schema_example))
         .or_else(|| {
             parameter
                 .schema
                 .as_ref()
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
-                .and_then(schema_example)
+                .and_then(typed_schema_example)
         })
 }
 
@@ -5428,6 +5436,23 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
     schema.example.as_ref().or_else(|| schema.examples.first())
 }
 
+/// [`schema_example`], unless it is a JSON string on a schema typed `boolean`,
+/// `integer` or `number`: Fern's importer drops such an example, so a worked
+/// call falls back to the type's own placeholder (`True`) or, for an optional
+/// parameter, leaves the argument out. Laposta's form fields write
+/// `type: boolean, examples: ["false"]` and its history `limit` writes
+/// `type: integer, examples: ["100"]`; a from-scratch probe measured the same
+/// for the singular `example` keyword.
+fn typed_schema_example(schema: &Schema) -> Option<&serde_json::Value> {
+    schema_example(schema).filter(|value| {
+        !value.is_string()
+            || !matches!(
+                schema.ty.as_ref().and_then(TypeField::primary),
+                Some("boolean" | "integer" | "number")
+            )
+    })
+}
+
 /// Render a schema example for a generated call. Arrays commonly put the example
 /// on `items` rather than on the array itself; Fern promotes that to a one-element
 /// list in worked examples.
@@ -5439,7 +5464,7 @@ fn resolved_schema_example_literal(
     schema: &Schema,
     schemas: Option<&IndexMap<String, Schema>>,
 ) -> Option<String> {
-    schema_example(schema)
+    typed_schema_example(schema)
         .and_then(|value| bounded_example_literal(value, declares_int64(schema)))
         .or_else(|| {
             let items = schema.items.as_deref()?;
@@ -5453,7 +5478,9 @@ fn resolved_schema_example_literal(
                         schemas,
                     )?
                 }
-                None => bounded_example_literal(schema_example(items)?, declares_int64(items))?,
+                None => {
+                    bounded_example_literal(typed_schema_example(items)?, declares_int64(items))?
+                }
             };
             Some(format!("[{item}]"))
         })
@@ -8847,6 +8874,19 @@ impl InlineHoister<'_> {
             if is_map(non_null[0]) {
                 return wrap(nullable_map_value_type_ref(non_null[0]));
             }
+            // A sole array member whose element is an inline union names that
+            // element `{Param}Item`, exactly as the same array does without the
+            // `type: null` beside it: MCP Handle's `servers` is `anyOf: [array of
+            // anyOf [$ref McpServerName, const ALL], null]`, and Fern's signature
+            // is `Optional[Sequence[…ServersItem]]` over the hoisted union.
+            if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array")
+                && non_null[0]
+                    .items
+                    .as_deref()
+                    .is_some_and(inline_multi_member_union)
+            {
+                return wrap(self.hoist_param_enum(request_ctx, param, non_null[0]));
+            }
             return wrap(self.schemas.map_or_else(
                 || base_type_ref(non_null[0]),
                 |schemas| full_type_ref_resolved(non_null[0], schemas),
@@ -11507,7 +11547,7 @@ fn inferred_discriminant_property_with(
                     if !supported {
                         return None;
                     }
-                } else if !singleton_enum {
+                } else if !singleton_enum || untyped_const_tag(field) {
                     return None;
                 }
                 let value = discriminant_value(field)?;
@@ -11531,6 +11571,18 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
     tag.enum_values.is_some() && !is_string_type(tag)
 }
 
+/// A `const` tag on a union member that declares no `type: string`. Fern reads
+/// it as a one-member enum of no declared type, so an inline-only union tagged
+/// that way stays ordinary, as [`untyped_enum_tag`]'s bare `enum` does: the
+/// Notion API's `movePageParentRequest` members tag `type` with a bare
+/// `const: page_id`, `database_id` and `workspace`, and Fern's tree is the plain
+/// `typing.Union` of three models. It is read only where no member is a `$ref`;
+/// the `$ref`-only spellings in [`inferred_discriminant_property_with`] keep
+/// their own rules.
+fn untyped_const_tag(tag: &Schema) -> bool {
+    tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
+}
+
 fn inferred_union_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -11540,6 +11592,7 @@ fn inferred_union_discriminant_property(
     }
     inferred_discriminant_property(schema, schemas).or_else(|| {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        let inline_only = variants.iter().all(|variant| variant.reference.is_none());
         let values: Option<Vec<String>> = variants
             .iter()
             .map(|variant| {
@@ -11556,7 +11609,9 @@ fn inferred_union_discriminant_property(
                     .flatten()
                     // The `anyOf` rule of `inferred_discriminant_property_with`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
-                    .filter(|tag| !untyped_enum_tag(tag))
+                    .filter(|tag| {
+                        !(untyped_enum_tag(tag) || (inline_only && untyped_const_tag(tag)))
+                    })
                     .and_then(discriminant_value)
             })
             .collect();
@@ -12058,7 +12113,7 @@ fn member_fields(
             );
         }
     }
-    append_member_fields(schema, discriminant, &required, owner, &mut fields);
+    append_member_fields(schema, discriminant, &required, owner, schemas, &mut fields);
     let mut visited = Vec::new();
     append_base_fields(schema, discriminant, schemas, &mut visited, &mut fields);
     fields
@@ -12108,7 +12163,14 @@ fn append_base_fields<'a>(
                 );
             }
         }
-        append_member_fields(base, discriminant, &base_required, Some(&base_name), fields);
+        append_member_fields(
+            base,
+            discriminant,
+            &base_required,
+            Some(&base_name),
+            schemas,
+            fields,
+        );
         append_base_fields(base, discriminant, schemas, visited, fields);
         visited.pop();
     }
@@ -12131,9 +12193,9 @@ fn append_inline_member_fields(
     match branch_union_properties(member, schemas) {
         Some(BranchUnion::Tagged) => {}
         Some(BranchUnion::Merged(merged)) => {
-            append_member_fields(&merged, discriminant, &[], owner, fields);
+            append_member_fields(&merged, discriminant, &[], owner, schemas, fields);
         }
-        None => append_member_fields(member, discriminant, required, owner, fields),
+        None => append_member_fields(member, discriminant, required, owner, schemas, fields),
     }
 }
 
@@ -12342,6 +12404,7 @@ fn append_member_fields(
     discriminant: &str,
     required: &[&str],
     enum_owner: Option<&str>,
+    schemas: &IndexMap<String, Schema>,
     fields: &mut Vec<Field>,
 ) {
     for (prop, prop_schema) in &schema.properties {
@@ -12429,7 +12492,14 @@ fn append_member_fields(
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
             docstring: None,
-            example: schema_example_literal(prop_schema),
+            // A property naming a component takes that component's example:
+            // loonfs's `FilesystemOperationAppendFile.path` is an annotated `$ref`
+            // to `AbsolutePath`, exampled `/docs/report.txt`, and Fern's variant
+            // constructor passes it.
+            example: resolved_schema_example_literal(prop_schema, Some(schemas)).or_else(|| {
+                let reference = prop_schema.reference.as_deref()?;
+                referenced_example_literal(resolve_ref_from_schemas(schemas, reference)?, schemas)
+            }),
             admits_only_empty_object: admits_only_empty_object(prop_schema),
             inherited_from_flattened_parent: false,
             min_length: string_lengths(prop_schema).0,
@@ -22434,6 +22504,62 @@ mod tests {
     }
 
     #[test]
+    fn untyped_const_tags_leave_an_inline_union_ordinary() {
+        let schemas = indexmap::IndexMap::new();
+        let member = |tag: serde_json::Value, extra: &str| {
+            let mut properties = serde_json::Map::new();
+            properties.insert("type".into(), tag);
+            if !extra.is_empty() {
+                properties.insert(extra.into(), serde_json::json!({ "type": "string" }));
+            }
+            serde_json::json!({
+                "type": "object",
+                "required": ["type"],
+                "properties": properties
+            })
+        };
+        // The Notion API's move-page parent: each inline member tags `type` with
+        // a bare `const`, declaring no `type: string`.
+        let bare = schema(serde_json::json!({ "oneOf": [
+            member(serde_json::json!({ "const": "page_id" }), "page_id"),
+            member(serde_json::json!({ "const": "database_id" }), "database_id"),
+            member(serde_json::json!({ "const": "workspace" }), "")
+        ] }));
+        assert_eq!(super::inferred_discriminant_property(&bare, &schemas), None);
+        assert_eq!(
+            super::inferred_union_discriminant_property(&bare, &schemas),
+            None
+        );
+        // The same tags declaring `type: string` still discriminate.
+        let typed = schema(serde_json::json!({ "oneOf": [
+            member(serde_json::json!({ "type": "string", "const": "page_id" }), "page_id"),
+            member(serde_json::json!({ "type": "string", "const": "database_id" }), "database_id"),
+            member(serde_json::json!({ "type": "string", "const": "workspace" }), "")
+        ] }));
+        assert_eq!(
+            super::inferred_union_discriminant_property(&typed, &schemas).as_deref(),
+            Some("type")
+        );
+        // A `$ref`-only union keeps its own rule: a bare string `const` on a
+        // required `type` still discriminates there.
+        let mut referenced = indexmap::IndexMap::new();
+        for (name, tag) in [("PageParent", "page_id"), ("WorkspaceParent", "workspace")] {
+            referenced.insert(
+                name.to_string(),
+                schema(member(serde_json::json!({ "const": tag }), "")),
+            );
+        }
+        let by_reference = schema(serde_json::json!({ "oneOf": [
+            { "$ref": "#/components/schemas/PageParent" },
+            { "$ref": "#/components/schemas/WorkspaceParent" }
+        ] }));
+        assert_eq!(
+            super::inferred_union_discriminant_property(&by_reference, &referenced).as_deref(),
+            Some("type")
+        );
+    }
+
+    #[test]
     fn a_discriminator_beside_any_of_strips_as_though_unwritten() {
         let mut schemas = indexmap::IndexMap::new();
         for (name, tag) in [("Sealed", "sealed"), ("Vented", "vented")] {
@@ -22732,6 +22858,7 @@ mod tests {
             "category",
             &["category", "vin", "axles"],
             None,
+            &indexmap::IndexMap::new(),
             &mut fields,
         );
         let optional: Vec<(&str, bool, bool)> = fields
@@ -23280,6 +23407,57 @@ mod tests {
             .out
             .iter()
             .any(|decl| decl.name() == "ListEntriesRequestLabelsValue"));
+    }
+
+    #[test]
+    fn a_nullable_query_array_hoists_its_inline_union_item() {
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: None,
+            out: Vec::new(),
+        };
+        // MCP Handle's `servers`: a nullable array whose element is an `anyOf`
+        // of a component enum and a `const` string.
+        let servers = schema(serde_json::json!({
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": { "anyOf": [
+                        { "$ref": "#/components/schemas/McpServerName" },
+                        { "const": "ALL", "type": "string" }
+                    ] }
+                },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("DeleteServersRequest", "servers", &servers),
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Named(
+                "DeleteServersRequestServersItem".to_string()
+            )))))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias) if alias.name == "DeleteServersRequestServersItem"
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enumeration) if enumeration.name == "DeleteServersRequestServersItemOne"
+        )));
+        // A nullable array of plain scalars stays an optional list of them.
+        let tags = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("DeleteServersRequest", "tags", &tags),
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
+        );
     }
 
     #[test]
@@ -25868,6 +26046,54 @@ mod tests {
         }))
         .expect("array schema");
         assert_eq!(super::schema_example_literal(&array), None);
+    }
+
+    #[test]
+    fn string_examples_on_boolean_and_numeric_schemas_are_not_worked_values() {
+        let literal = |value: serde_json::Value| {
+            let schema: crate::openapi::Schema =
+                serde_json::from_value(value).expect("example schema");
+            super::schema_example_literal(&schema)
+        };
+        // Laposta's form fields and history limit: the 3.1 `examples` keyword
+        // holding a string on a boolean and an integer.
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "examples": ["false"] })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "integer", "examples": ["100"] })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "number", "example": "1.5" })),
+            None
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "example": "true" })),
+            None
+        );
+        // A value of the declared type, and a string on a string schema, stay.
+        assert_eq!(
+            literal(serde_json::json!({ "type": "boolean", "examples": [false] })).as_deref(),
+            Some("False")
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "integer", "example": 100 })).as_deref(),
+            Some("100")
+        );
+        assert_eq!(
+            literal(serde_json::json!({ "type": "string", "examples": ["100"] })).as_deref(),
+            Some("\"100\"")
+        );
+        // An array's item example is held to the item's type the same way.
+        assert_eq!(
+            literal(serde_json::json!({
+                "type": "array",
+                "items": { "type": "integer", "examples": ["7"] }
+            })),
+            None
+        );
     }
 
     #[test]

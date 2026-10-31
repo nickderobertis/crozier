@@ -1,0 +1,6 @@
+
+
+InodeId = str
+"""
+The stable ID of one inode within a namespace. An inode's ID doesn't change.
+"""

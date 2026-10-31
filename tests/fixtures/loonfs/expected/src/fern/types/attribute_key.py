@@ -1,0 +1,10 @@
+
+
+AttributeKey = str
+"""
+The validated name of an inode attribute, from 1 to 128 UTF-8 bytes without control
+characters.
+
+Keys are compared byte for byte. Writes reject the reserved `loonfs.` prefix, even though
+the type accepts it.
+"""
