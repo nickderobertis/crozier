@@ -18511,6 +18511,7 @@ fn path_parameters_follow_url_template_order() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey generates one small SDK in 0.25 s (measured alone), on the crozier-e2e edge every other `generate_ok` journey in this file shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
     // Measured at the certified pair (Fern CLI 5.163.1, fern-python-sdk 5.41.3)
@@ -18537,6 +18538,7 @@ fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
         );
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn pydantic_model_api_fields_are_aliased() {
