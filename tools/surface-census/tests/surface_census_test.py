@@ -42,7 +42,7 @@ import tomllib
 import unicodedata
 import unittest
 from collections import Counter
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
@@ -16294,7 +16294,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             rows(completed),
         )
 
-    def _component_cases(self, selector: str, cases: dict[str, dict[str, object]]) -> dict[tuple[str, str], int]:
+    def _component_cases(self, selector: str, cases: Mapping[str, Mapping[str, object]]) -> dict[tuple[str, str], int]:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, schemas in cases.items():
@@ -16475,7 +16475,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         selector = "operation.responses:blank-description-inline-object"
         reading = {"type": "object", "properties": {"depth": {"type": "integer"}}}
 
-        def document(schema: dict[str, object], *media: str) -> dict[str, object]:
+        def document(schema: Mapping[str, object], *media: str) -> dict[str, object]:
             return {
                 "openapi": "3.0.3",
                 "info": {"title": "gauge", "version": "1"},
