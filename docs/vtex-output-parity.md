@@ -262,19 +262,50 @@ outstanding inventory still listed the key, and the single-feature key count
 was not lowered. `9a9c7621f` regenerates the inventory and states the count,
 now 141 after main's merge.
 
+### The third merge and the second failed publication
+
+The second publication ended in a sync conflict: main had moved to
+`e4eec3d65`, which registered Nixtla's TimeGPT document as corpus row 4301 in
+the same places VTEX's row 3479 is registered. Merge `e21a59682` concludes that
+merge. It keeps both registrations in the `CORPORA` list, the corpus constants,
+the golden tests, `overlay_goldens.rs` and `tests/corpus_match/match.sh`. Two
+derived region files, `document-paths.md` and `oas31-extensions.md`, also
+conflicted. The merge commit takes this branch's side for them, and
+`b8a10a818` regenerates them:
+
+- the census walk was re-run over 291 sources (917 selectors, 1,358,448
+  declaration sites).
+- `restate-coverage.py --snapshot-json` and `restate-coverage.py --write`
+  restated the document-path snapshot and the coverage index's source totals
+  (291 registered, 308 acquired). Its drift check passes.
+
+The reach cells keep this branch's values, which are the values in the
+merged `golden-reach.tsv`. Main registered row 4301 without re-measuring
+golden reach, so neither side's ledger counts Nixtla's golden yet.
+
+The repair's own `src/` changes did not move Nixtla's output:
+`nixtla_timegpt_matches_fern_output` and its literals tree in
+`overlay_goldens_match_fern_output` both pass on the merged tree, in both enum
+modes.
+
 ## Verification
 
-Every check below ran on `8584228f0`, apart from the census suite and the
-judged lint, which ran on `564e46794`, the commit adding this table. Commits
-after `8584228f0` change only this record.
+Every check below ran on `b8a10a818`, the merged and restated tree. The
+census suite and the judged lint are the exceptions: they ran on the commit
+that adds this table. Commits after `b8a10a818` change only this record.
 
 | check | result |
 |---|---|
-| `just nx run-many --targets=test,lint,format --projects=crozier` (unit tests, clippy, rustfmt) | passed; 1,105 tests |
-| `just nx run crozier-e2e:test`, the complete suite: `vtex_marketplace_protocol_matches_fern_output`, `overlay_goldens_match_fern_output`, all 290 `*_matches_fern_output` corpus goldens (main's rows 4200 to 4212 among them), `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates | 845 passed, 45 skipped (the ignored tiers) |
-| VTEX's golden test and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 2 passed |
-| `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
+| `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | passed |
+| `cargo nextest run -p crozier` (unit tests of every `src/` module) | 1,108 passed |
+| `cargo nextest run -p crozier-e2e`, the complete suite: `vtex_marketplace_protocol_matches_fern_output`, `nixtla_timegpt_matches_fern_output`, `overlay_goldens_match_fern_output`, all 291 corpus goldens, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate`, the `emission_parity` tests and the departures-ledger gates | 846 passed, 45 skipped (the ignored tiers) |
+| VTEX's and Nixtla's golden tests and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 3 passed |
+| `corpus_sources.py check`, `corpus-licensing-drift.py`, `licence-rescreening-check.py` (the commands behind `just lint-corpus-sources`, `lint-corpus-licensing`, `lint-licence-rescreening`) | passed |
 | `restate-coverage.py` drift check | no drift |
-| `witness_search_acquisition_test.py`, the file holding the two tests that failed the publication | 33 passed |
-| the `surface-census` project's `test-census` suite, complete | 639 passed, 1 skipped |
-| judged lint over the diff against `8c0170eb7`, `origin/main` as merged (`just lint-llm-diff 8c0170eb7`) | all 5 batches passed, 0 rules failed |
+| the `surface-census` project's `test-census` suite, complete | CENSUS_RESULT |
+| judged lint over the diff against `e4eec3d65`, `origin/main` as merged (`just lint-llm-diff e4eec3d65`) | LINT_RESULT |
+
+The previous verification ran on `8584228f0` and `564e46794`, before this
+merge. That run passed the same checks, along with
+`witness_search_acquisition_test.py` (33 passed), which held the two tests
+behind the first failed publication.
