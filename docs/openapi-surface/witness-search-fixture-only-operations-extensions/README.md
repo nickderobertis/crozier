@@ -86,6 +86,8 @@ Every document was censused with the repository's census selectors and with this
 
 - **The documents a sibling search acquired**, re-screened at the manager's direction before any further live request: the fixture-only search of the bodies and paths region files fetched 2070 documents this record's pools did not already hold, 832 of them OpenAPI 3. Each new declarer of a target here is in [`census.tsv`](census.tsv) as `sibling-acquired`; none declares a target this record reads `exhausted` outside Fern's own repositories, and none was screened (no further request was made), so those of open targets are named `outstanding`.
 
+- **The rows registered since**, taken in when this branch merged its base at `8c0170eb7`: corpus rows 4200 to 4212, which the bodies and paths search registered. Each was censused with this record's census selectors and its detectors (the five shapes whose tracked selector is broader than the shape were read with the detector itself, which finds every hand-written fixture of those five and none of the 13 documents), and the full golden-reach measurement of the merged tree (295 golden tests) was read for the arm targets. The only target any of them declares is `security-scheme-capitalised-http` (`amrc-acs-directory`, two sites), which corpus row 4403 already proves; none executes an arm this record leaves open, and no verdict below moves.
+
 Code search reads only each repository's default branch and only files it indexes, so a document on another branch, or one too large to index, is outside it. Sourcegraph, the vendor portals and the registries were not queried for these targets.
 
 | family | query | reported | distinct results retrieved | OpenAPI 3 documents among them |
