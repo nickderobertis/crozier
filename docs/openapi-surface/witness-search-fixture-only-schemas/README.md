@@ -452,7 +452,9 @@ Every difference met while screening, none repaired: crozier's output is unchang
 | `search` | 0 | 0 |
 | `code_search` | 97 | 4 |
 
-Each admission was decided on a free `GET /rate_limit` reading; 1254 further readings were taken while the guard waited for a bucket above its floor.
+The guard's own readings are free requests to a GitHub host, outside every bucket: authenticated `GET https://api.github.com/rate_limit`, in the same window. Each of the 8793 live requests above was admitted on one such reading taken immediately before it, and 1254 further readings were taken while the guard waited for a bucket above its floor (10047 in all).
+
+The merge of `main` at `e4eec3d65` into this branch, and the reach re-measure that followed it, made no GitHub request: the merge was opened by the orchestrator before this branch's last session began, and every golden test the re-measure ran reads its committed source and its committed remote documents (`tests/fixtures/corpus-sources/<row>/remote/`), opening no socket.
 
 **Outside the guard**, each authenticated as stated:
 

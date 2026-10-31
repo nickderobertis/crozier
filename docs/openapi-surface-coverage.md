@@ -2899,7 +2899,7 @@ unreached by any Fern-accepted document.
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
 | 4 | `discriminator-mapping` | `schemas` | **3** | **242** | **39** | open — real-specification witness search remains open |
 | 5 | `oneof-anyof-variant` | `schemas` | **3** | **80** | **3** | open — real-specification witness search remains open |
-| 6 | `allof` | `schemas` | **3** | **29** | **106** | open — real-specification witness search remains open |
+| 6 | `allof` | `schemas` | **3** | **29** | **111** | open — real-specification witness search remains open |
 | 7 | `parameter-in-header` | `parameters` | **3** | **20** | **74** | open — real-specification witness search remains open |
 | 8 | `oneof` | `schemas` | **2** | **188** | **107** | open — real-specification witness search remains open |
 | 9 | `oneof-discriminated-union` | `schemas` | **2** | **166** | **53** | owned — first-pass search record below |
@@ -2909,7 +2909,7 @@ unreached by any Fern-accepted document.
 | 13 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 14 | `media-type-multipart` | `bodies-media` | **2** | **7** | **29** | open — real-specification witness search remains open |
 | 15 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
-| 16 | `format-binary` | `schemas` | **2** | **4** | **51** | open — real-specification witness search remains open |
+| 16 | `format-binary` | `schemas` | **2** | **4** | **55** | open — real-specification witness search remains open |
 | 17 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **195** | **17** | open — real-specification witness search remains open |
 | 18 | `anyof-discriminated-union` | `schemas` | **1** | **194** | **19** | owned — first-pass search record below |
 | 19 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **188** | **11** | open — real-specification witness search remains open |
@@ -2950,7 +2950,7 @@ unreached by any Fern-accepted document.
 | 54 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
 | 55 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **6** | open — real-specification witness search remains open |
 | 56 | `format-int64` | `schemas` | **1** | **3** | **51** | open — real-specification witness search remains open |
-| 57 | `format-uuid` | `schemas` | **1** | **3** | **55** | open — real-specification witness search remains open |
+| 57 | `format-uuid` | `schemas` | **1** | **3** | **59** | open — real-specification witness search remains open |
 | 58 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **258** | open — real-specification witness search remains open |
 | 59 | `recursive-graph` | `schemas` | **1** | **2** | **258** | open — real-specification witness search remains open |
 | 60 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
