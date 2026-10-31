@@ -80,9 +80,37 @@ two trees. No tree differed, and all 286 golden tests passed.
 
 ## Census suite provenance
 
-The `surface-census` project's `test-census` suite passed on the finished tree
-(638 passed, 1 skipped), run as that target's own command, `uv run --locked
---all-packages pytest --cov --cov-report= …`, under the worktree's `.venv`
-interpreter. An earlier run of the suite fell through to another project's
-`pytest` on `PATH`, because the worktree's `.venv` held none then; its result
-is not cited here.
+The `surface-census` project's `test-census` suite ran twice. The first run
+started under `/home/whoop/ai-orchestrator/.venv/bin/pytest`: pytest 9.1.1, the
+version `uv.lock` pins, on the same CPython 3.14.7 as the worktree's `.venv`. It
+ran under that pytest because the worktree's `.venv` had no pytest installed. It
+found two prose counts this row moves, and it stopped at its time limit at
+about 53% before reporting a total. After those counts and the census snapshot
+were restated (`e84ac3072`), the suite ran to completion as its target's own
+command, `uv run --locked --all-packages pytest --cov --cov-report= …`, under
+the worktree's `.venv` once that held pytest: 638 passed, 1 skipped. Its tree
+differs from the finished one only in this record and in one prose paragraph
+of `document-paths.md` (below).
+
+## The census re-pin
+
+Registering the row moves the census to 277 sources (246 under
+`corpus-sources/`). `restate-coverage.py --snapshot-json` re-transcribed
+`document-paths.md`'s cells and snapshot digest from that walk: `7fe4dde2…`,
+over 276 sources, became `514a87c4…`, over 277. That file's history paragraph
+for the re-pin was dropped, because `licence-rescreening.md` cites
+`document-paths.md` by line number and the added lines broke those citations.
+
+## Offline, source and licence checks
+
+On commit `8bfcd035f`, with neither ignored corpus cache (`.local/corpus`,
+`.local/census-fallback-sample`) present before or after:
+`nixtla_timegpt_matches_fern_output` (python-enums) and
+`overlay_goldens_match_fern_output` (literals mode, this row among its corpora)
+passed under `tests/corpus_match/corpus_offline_test.py --deny-network`, whose
+socket probe was refused in the same environment. `just test-corpus-sources`,
+`just lint-corpus-sources`, `just lint-corpus-licensing`,
+`just lint-licence-rescreening` and `just test-licence-rescreening` passed. The
+re-screening pair ran on the working tree that became `8bfcd035f`; the other
+three ran on `1bbd47399`, which differs from it only in `document-paths.md`'s
+paragraph above.
