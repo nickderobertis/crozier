@@ -1,6 +1,5 @@
 key	selector	region	census_status
 allof-base-in-cycle-imported-after-class	schema.allOf	schemas.md	supported
-allof-body-example-id-field-order	schema.allOf	bodies-media.md	supported
 allof-child-of-cyclic-base-imports-base-deferred	schema.allOf	schemas.md	supported
 allof-enum-ref-narrowed-by-scalar-member	schema.allOf	schemas.md	supported
 allof-extends-oneof-object-refused	schema.allOf	schemas.md	supported
@@ -13,7 +12,6 @@ array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union
 array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf	schemas.md	supported
 base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
 binary-download-with-body-has-no-example	operation.requestBody	bodies-media.md	supported
-camel-case-tag-group-and-prefix	operation.operationId:camel-case-tag-prefix	document-paths.md	supported
 client-header-date-format	parameter.schema:promoted-date-header	parameters.md	supported
 combo-allof-deprecated	schema.allOf&schema.deprecated	schemas.md	supported
 combo-allof-nullable	schema.allOf&schema.nullable	schemas.md	supported
@@ -131,7 +129,6 @@ literal-example-dollar-escaped-in-docstring	schema.const	schemas.md	supported
 literal-prefixed-integer-path-segment	openapi.paths:templated-key	parameters.md	supported
 literal-type-extension-ignored	schema.type=boolean	schemas.md	supported
 media-type-event-stream-binary-schema	operation.responses:event-stream-binary	bodies-media.md	supported
-media-type-event-stream-event-dispatch	operation.responses:event-stream-event-dispatch	bodies-media.md	supported
 media-type-event-stream-inline-const-union	operation.responses:event-stream-inline-const-union	bodies-media.md	supported
 media-type-event-stream-item-schema	operation.responses:event-stream-item-schema-ref	bodies-media.md	supported
 multipart-inline-object-part-json-encoded	requestBody.content	bodies-media.md	supported
@@ -150,8 +147,6 @@ oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.t
 operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported
-operation-id-hyphenated-tag-method	operation.operationId:hyphenated-tag-method	document-paths.md	supported
-operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
 operation-idempotent-with-root-headers	operation.x-fern-idempotent:with-root-headers	oas31-extensions.md	supported
 operation-pagination-boolean	operation.x-fern-pagination:boolean-over-root	oas31-extensions.md	supported
 operation-pagination-offset	operation.x-fern-pagination:offset	oas31-extensions.md	supported
@@ -165,7 +160,6 @@ parameter-default-extension	parameter.x-fern-default	parameters.md	supported
 parameter-ignore-extension	parameter.x-fern-ignore	parameters.md	supported
 parameter-name-extension	parameter.x-fern-parameter-name	parameters.md	supported
 parameter-without-location	parameter.in:absent	parameters.md	supported
-patch-inline-nullable-unrequired-props-omit	pathItem.patch	bodies-media.md	supported
 path-parameters-template-order-31	operation.parameters:path-order-oas-three-one	parameters.md	supported
 property-anyof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.anyOf:sole-member&schema.anyOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
 property-oneof-sole-string-enum-member	schema.properties>!schema.nullable&!schema.type&schema.oneOf:sole-member&schema.oneOf>!schema.$ref&schema.enum:string-valued	schemas.md	supported
@@ -188,16 +182,12 @@ ref-with-nullable-sibling-made-optional	schema.$ref	schemas.md	supported
 reference-literal-single-quote-escaped	schema.const	schemas.md	supported
 remote-document-local-pointer-resolved-against-root	schema.$ref:cross-document	schemas.md	supported
 remote-ref-at-use-site-inlined	schema.$ref:cross-document	schemas.md	supported
-request-body-described-inline-scalar	operation.requestBody:described-inline-scalar	bodies-media.md	supported
 request-body-property-closed-empty-object	mediaType.schema:closed-empty-object-property	schemas.md	supported
 request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
-request-example-nested-null	mediaType.example:nested-null-member	bodies-media.md	supported
 required-nullable-query-scalar	parameter.schema:required-nullable-scalar-oas-three-zero	parameters.md	supported
 required-param-and-body-defaults-ignored	schema.default	parameters.md	supported
 required-query-array-nullable-union-items	parameter.schema	parameters.md	supported
-response-contentless-200-with-created	operation.responses:contentless-two-hundred-with-created	bodies-media.md	supported
 response-status-space-suffixed	operation.responses:space-suffixed-status-key	bodies-media.md	supported
-response-without-description-blank-line	operation.responses	bodies-media.md	supported
 schema-example-array-null-element	schema.example:array-null-element	schemas.md	supported
 schema-example-null	schema.example=null	schemas.md	supported
 schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-element	schemas.md	supported

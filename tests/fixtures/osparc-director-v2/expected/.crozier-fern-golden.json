@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "osparc-director-v2",
+  "corpus_spec_ref": "2f18c3f6f8e082153be7f55de930bc134fab3213",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json"
+}

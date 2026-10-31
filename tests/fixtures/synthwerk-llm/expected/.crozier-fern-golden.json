@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "synthwerk-llm",
+  "corpus_spec_ref": "f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae",
+  "corpus_spec_url": "https://raw.githubusercontent.com/VelimirMueller/synthwerk-sdk/f0bc0cc2bd87f9787bf795bfdb8575d87fafcbae/packages/sdk/contracts/llm.yaml"
+}

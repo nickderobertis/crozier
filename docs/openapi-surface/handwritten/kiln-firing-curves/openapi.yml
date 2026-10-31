@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Kiln Firing",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/curves": {
+      "post": {
+        "operationId": "recordCurve",
+        "tags": [
+          "curves"
+        ],
+        "parameters": [
+          {
+            "name": "tolerance",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "default": 0.9466866865342667,
+              "example": 0.9584673068551939
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Curve"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The curve was recorded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Curve"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Curve": {
+        "type": "object",
+        "required": [
+          "glaze",
+          "readings"
+        ],
+        "properties": {
+          "glaze": {
+            "type": "number",
+            "default": 0.012620061451095621,
+            "example": 0.9921600467158583
+          },
+          "readings": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "example": {
+          "glaze": 0.9921600467158583,
+          "readings": [
+            [
+              "kiln-east-b",
+              "2026-03-01",
+              0.24200106749781558,
+              0.36454792138880565
+            ],
+            [
+              "kiln-north-a",
+              "2026-03-01",
+              0.24200106749781558,
+              0.36454792138880565
+            ],
+            [
+              "kiln-east-b",
+              "2026-03-02",
+              0.38480342994262373,
+              0.46566309815988427
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

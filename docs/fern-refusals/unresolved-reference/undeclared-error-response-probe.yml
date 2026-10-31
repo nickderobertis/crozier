@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info: {title: Undeclared error response probe, version: '1'}
+paths:
+  /orders:
+    post:
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Order'}
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Order'}
+        '400': {$ref: '#/components/responses/Rejected'}
+components:
+  schemas:
+    Order:
+      type: object
+      required: [sku]
+      properties:
+        sku: {type: string}
+        quantity: {type: integer}

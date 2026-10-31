@@ -15017,7 +15017,7 @@ fn worked_example_goldens_match_in_process() {
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
     let cases = [
         (
-            "docs/openapi-surface/handwritten/request-example-nulls",
+            "docs/fern-measurements/superseded-fixtures/request-example-nulls",
             "openapi.yml",
             "fern-expected",
             "fern",

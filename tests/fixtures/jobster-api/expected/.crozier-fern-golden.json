@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "jobster-api",
+  "corpus_spec_ref": "8690a283add7cd81bdb5a4447e04556504cdc6e0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/harjasae2001/Jobster-API/8690a283add7cd81bdb5a4447e04556504cdc6e0/openapi.yaml"
+}

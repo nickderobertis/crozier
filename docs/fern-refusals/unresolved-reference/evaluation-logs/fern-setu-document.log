@@ -1,0 +1,31 @@
+Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3 over jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743 apis/openapi/setu.co/main/1.0.0/openapi.json (sha256 d2dc23e9de5690536e870a5719d6bd9d2afc25349a30ec1bcd06d05526370414); generate exit 0, 35 files
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document API Setu
+::error title=[api]%3A python-sdk::Failed to parse openapi document API Setu
+[api]: python-sdk Failed to resolve #/components/responses/BAD_REQUEST 
+                  CliError: Failed to resolve #/components/responses/BAD_REQUEST
+                      at k4t.resolveResponseReference (<npx>/node_modules/fern-api/cli.cjs:210:144014)
+                      at gyd (<npx>/node_modules/fern-api/cli.cjs:210:113167)
+                      at KLr (<npx>/node_modules/fern-api/cli.cjs:210:109080)
+                      at lde (<npx>/node_modules/fern-api/cli.cjs:210:117421)
+                      at pxo (<npx>/node_modules/fern-api/cli.cjs:210:132894)
+                      at Hzc (<npx>/node_modules/fern-api/cli.cjs:210:134164)
+                      at <npx>/node_modules/fern-api/cli.cjs:210:150346
+                      at Array.forEach (<anonymous>)
+                      at DQc (<npx>/node_modules/fern-api/cli.cjs:210:150300)
+                      at s3e (<npx>/node_modules/fern-api/cli.cjs:210:158340)
+::error title=[api]%3A python-sdk::Failed to resolve #/components/responses/BAD_REQUEST %0ACliError: Failed to resolve #/components/responses/BAD_REQUEST%0A    at k4t.resolveResponseReference (<npx>/node_modules/fern-api/cli.cjs:210:144014)%0A    at gyd (<npx>/node_modules/fern-api/cli.cjs:210:113167)%0A    at KLr (<npx>/node_modules/fern-api/cli.cjs:210:109080)%0A    at lde (<npx>/node_modules/fern-api/cli.cjs:210:117421)%0A    at pxo (<npx>/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (<npx>/node_modules/fern-api/cli.cjs:210:134164)%0A    at <npx>/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (<npx>/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (<npx>/node_modules/fern-api/cli.cjs:210:158340)
+[api]: python-sdk Found 0 errors and 34 warnings in 1.086 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning title=[api]%3A python-sdk::Found 0 errors and 34 warnings in 1.086 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+generate-fern-fixture: wrote 35 files to <tree> (python-sdk@5.41.3, packaged) — review, then wire them into the e2e manifest (see docs/matching.md)

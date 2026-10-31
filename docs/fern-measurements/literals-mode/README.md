@@ -26,7 +26,7 @@ under the corpus gate's normalization, every departure held to
 
 | case | what it pins | document | tree |
 |---|---|---|---|
-| `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [hand-written fixture](../../openapi-surface/handwritten/buoy-depth-response/) | overlay |
+| `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [superseded fixture](../superseded-fixtures/buoy-depth-response/) | overlay |
 | `discriminated-variant-date-value-snippet` | discriminated variants valued `date` and `date-time` take `dt.date` and `dt.datetime`, and the worked call passes `datetime.date.fromisoformat(...)` | [hand-written fixture](../../openapi-surface/handwritten/discriminated-variant-date-value-snippet/) | overlay |
 | `dotted-mapping-key-variant-class-name` | mapping keys `door.locked` and `door.unlocked` name `Notice_DoorLocked` and `Notice_DoorUnlocked`, not the target schemas | [document](dotted-mapping-key-variant-class-name/openapi.yml) | complete tree |
 | `empty-path-segment-double-slash-kept` | a path with an empty segment keeps its `//` in the request URL | [hand-written fixture](../../openapi-surface/handwritten/empty-path-segment-double-slash-kept/) | overlay |
@@ -48,9 +48,9 @@ under the corpus gate's normalization, every departure held to
 | `odometer-reading` | an int64 example past 2^53 takes its nearest double, except where that leaves the int64 range (the `int64-example-rounded-out-of-range` departure) | [hand-written fixture](../../openapi-surface/handwritten/odometer-reading/) | overlay |
 | `open-object-body-example-extra-keys-dropped` | an open body's example key outside `properties` is left out of the worked call | [document](open-object-body-example-extra-keys-dropped/openapi.yml) | complete tree |
 | `passport-scan` | the README passes a multipart body's optional file part beside its required one | [hand-written fixture](../../openapi-surface/handwritten/passport-scan/) | overlay |
-| `patch-inline-nullable-unrequired-props-omit` | a PATCH body of unrequired nullable properties takes each as `Optional[...] = OMIT`, sent with `omit=OMIT` | [hand-written fixture](../../openapi-surface/handwritten/patch-inline-nullable-unrequired-props-omit/) | overlay |
+| `patch-inline-nullable-unrequired-props-omit` | a PATCH body of unrequired nullable properties takes each as `Optional[...] = OMIT`, sent with `omit=OMIT` | [superseded fixture](../superseded-fixtures/patch-inline-nullable-unrequired-props-omit/) | overlay |
 | `poster-upload` | the README passes a multipart body's file part before the scalar parts declared ahead of it | [hand-written fixture](../../openapi-surface/handwritten/poster-upload/) | overlay |
-| `pottery-commission` | a body `$ref` to an `allOf` of a base and an inline member is worked base field first | [hand-written fixture](../../openapi-surface/handwritten/pottery-commission/) | overlay |
+| `pottery-commission` | a body `$ref` to an `allOf` of a base and an inline member is worked base field first | [superseded fixture](../superseded-fixtures/pottery-commission/) | overlay |
 | `prompt-variable` | a const holding `$` is a one-value `Literal` alias, passed bare everywhere but Fern's docstrings (the `docstring-literal-dollar-escape` departure) | [hand-written fixture](../../openapi-surface/handwritten/prompt-variable/) | overlay |
 | `query-param-ref-to-enum-or-array-union-converted` | an optional query parameter naming a one-or-many enum union is sent through `convert_and_respect_annotation_metadata` | [hand-written fixture](../../openapi-surface/handwritten/query-param-ref-to-enum-or-array-union-converted/) | overlay |
 | `required-and-nullable-property-defaults-none` | a required `nullable: true` property is `Optional[...] = None` | [document](required-and-nullable-property-defaults-none/openapi.yml) | complete tree |

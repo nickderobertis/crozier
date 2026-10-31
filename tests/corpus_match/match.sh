@@ -362,6 +362,20 @@ inventory=(
   openapi_generator_allof_extension_parent_matches_fern_output
   trpc_openapi_app_router_matches_fern_output
   azure_databox_management_matches_fern_output
+  nixtla_timegpt_matches_fern_output
+  ollama_api_matches_fern_output
+  osparc_director_v2_matches_fern_output
+  tuxedo_dapp_matches_fern_output
+  blufiles_api_matches_fern_output
+  parcelis_api_matches_fern_output
+  synthwerk_llm_matches_fern_output
+  kompaz_web_frontend_matches_fern_output
+  jobster_api_matches_fern_output
+  openparser_ocr_matches_fern_output
+  openiap_opencore_matches_fern_output
+  speech_ai_forge_matches_fern_output
+  ummaya_agent_delegation_matches_fern_output
+  amrc_acs_directory_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

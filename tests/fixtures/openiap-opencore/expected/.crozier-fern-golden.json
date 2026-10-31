@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "openiap-opencore",
+  "corpus_spec_ref": "c9e560b656cb14c7f82fc9ed1c44820acce43ea3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/openiap/opencore/c9e560b656cb14c7f82fc9ed1c44820acce43ea3/public.template/swagger.json"
+}

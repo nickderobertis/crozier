@@ -1,6 +1,6 @@
 # Nullable multipart and 3.1 array bodies, literals
 
-Source: `docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml`.
+Source: `docs/fern-measurements/superseded-fixtures/multipart-nullable-array/openapi.yml`.
 Fern CLI 5.163.1; fernapi/fern-python-sdk 5.41.3; enum_type: literals;
 package_name: fern; project_name: default_package_name. Complete unedited
 comment-stripped certified output. The Dock orientation enum exercises the

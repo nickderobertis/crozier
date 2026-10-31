@@ -1,0 +1,301 @@
+openapi: 3.0.2
+servers:
+  - url: wasm
+info:
+  description: |-
+  version: 0.0.2
+  title: WIP UI driven api
+
+tags:
+  - name: Kitty
+    description: everything to do with kitties
+paths:
+  /show-all-kitties:
+    get:
+      tags:
+        - list
+      summary: Get all kitties
+      description: Get all kitties
+      operationId: show-all-kitties
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Kitty'
+        '405':
+          description: Invalid input
+  /show-owned-kitties:
+    get:
+      tags:
+        - list
+      summary: Get owned kitties
+      description: Get owned kitties
+      operationId: show-owned-kitties
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Kitty'
+
+  /show-balance:
+    get:
+      tags:
+        - wallet
+      summary: Get balance
+      description: Get amount of money
+      operationId: show-balance
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: number
+              example:
+                100
+  /breed-kitty:
+    post:
+      tags:
+        - breeding
+      summary: Breed two kitties
+      description: Breed two ready for it kitties, to get a new one
+      operationId: breed-kitty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mom:
+                  type: string
+                  example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+                  description: dna of mom
+                dad:
+                  type: string
+                  example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+                  description: dna of dad
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                description: new kitty owned by user
+                items:
+                  $ref: "#/components/schemas/Kitty"
+  /breed-tradable-kitty:
+    post:
+      tags:
+        - breeding
+      summary: Breed two tradable kitties
+      description: Breed two tradable, ready for it kitties, to get a new one
+      operationId: breed-kitty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mom:
+                  type: string
+                  example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+                  description: dna of mom
+                dad:
+                  type: string
+                  example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+                  description: dna of dad
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                description: new kitty owned by user
+                items:
+                  $ref: "#/components/schemas/Kitty"
+  /set-kitty-property:
+    post:
+      tags:
+        - mutation
+      summary: Change kitty property
+      description: Change any property of the kitty, should accept partial properties of kitty
+      operationId: set-kitty-property
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Kitty"
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                description: updated kitty
+                items:
+                  $ref: "#/components/schemas/Kitty"
+  /buy-kitty:
+    post:
+      tags:
+        - wallet
+        - mutation
+      summary: Buy kitty
+      description: Trade your money for a kitty, there sign from wallet will be required
+      operationId: buy-kitty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: kitties dna
+              example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kitty"
+        402:
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Errors from wallet
+                example: "Not enough dots"
+        410:
+          description: Gone
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Kitty is gone
+                example: "Kitty is gone"
+  /mint-kitty:
+    post:
+      tags:
+        - minting
+      summary: Mint kitty
+      description: Mint new kitty
+      operationId: mint-kitty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: name of the new kitty, if not present random name will be selected
+              example: Bella
+              required: false
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kitty"
+  /mint-tradable-kitty:
+    post:
+      tags:
+        - minting
+        - wallet
+        - mutation
+      summary: Mint tradable kitty
+      description: Mint new tradable kitty
+      operationId: mint-tradable-kitty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: name of the new kitty, if not present random name will be selected
+                  example: Bella
+                  required: false
+                is-available-for-sale:
+                  type: boolean
+                  description: false by default
+                  example: false
+                  required: false
+                price:
+                  type: number
+                  description: Price of Kitty if is-available-for-sale is false, then the price will be ignored. If  is-available-for-sale is false and price is not provided then default price will be selected.
+                  example: 10
+                  required: false
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kitty"
+
+
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+components:
+  schemas:
+    Kitty:
+      properties:
+        owner:
+          type: string
+          example: "0x04c6722d964a98266951...8646"
+          description: address of owner
+        dna:
+          type: string
+          example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+          description: should be string, as js can't handle long format
+        name:
+          type: string
+          example: Bella
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+          example: male
+        mom:
+          $ref: '#/components/schemas/Parent'
+        dad:
+          $ref: '#/components/schemas/Parent'
+        breedings:
+          type: number
+          example: 1
+        status:
+          type: string
+          enum:
+            - tired
+            - ready to bread
+            - had birth recently
+        forSale:
+          type: boolean
+          example: true
+        price:
+          type: number
+          example: 10
+          description: if not present, will be considered not for sale
+      type: object
+    Parent:
+      type: object
+      properties:
+        dna:
+          type: string
+          example: "515315728237564593861820790636439631664048948986843239490053062984016986"
+          description: should be string, as js can't handle long format
+        name:
+          type: string
+          example: Bella

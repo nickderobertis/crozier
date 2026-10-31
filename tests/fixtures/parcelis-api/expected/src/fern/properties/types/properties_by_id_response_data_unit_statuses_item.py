@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .properties_by_id_response_data_unit_statuses_item_one import PropertiesByIdResponseDataUnitStatusesItemOne
+from .properties_by_id_response_data_unit_statuses_item_zero import PropertiesByIdResponseDataUnitStatusesItemZero
+
+PropertiesByIdResponseDataUnitStatusesItem = typing.Union[
+    PropertiesByIdResponseDataUnitStatusesItemZero, PropertiesByIdResponseDataUnitStatusesItemOne
+]

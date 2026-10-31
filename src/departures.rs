@@ -5862,7 +5862,7 @@ mod tests {
     #[test]
     fn alias_reference_correction_requires_the_actual_alias_signature_json_and_descriptions() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/openapi-surface/handwritten/request-alias/fern-expected");
+            .join("docs/fern-measurements/superseded-fixtures/request-alias/fern-expected");
         let fern = std::fs::read_to_string(root.join("reference.md")).unwrap();
         let before = "<dl>\n<dd>\n\n**request:** `TitleAlias` \n    \n</dd>\n</dl>";
         let after = "<dl>\n<dd>\n\n**ticket:** `int` \n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**caption:** `typing.Optional[str]` — Shown on cabinet labels.\n    \n</dd>\n</dl>";
