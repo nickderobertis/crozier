@@ -88,9 +88,11 @@ found two prose counts this row moves, and it stopped at its time limit at
 about 53% before reporting a total. After those counts and the census snapshot
 were restated (`e84ac3072`), the suite ran to completion as its target's own
 command, `uv run --locked --all-packages pytest --cov --cov-report= …`, under
-the worktree's `.venv` once that held pytest: 638 passed, 1 skipped. Its tree
-differs from the finished one only in this record and in one prose paragraph
-of `document-paths.md` (below).
+the worktree's `.venv` once that held pytest: 638 passed, 1 skipped. That tree
+differed from the finished one in this record and in one prose paragraph of
+`document-paths.md` (below), so the suite ran once more, the same way, on
+`aeb18f4e6`: 638 passed, 1 skipped, 7,981 subtests passed. That commit differs
+from the finished tree only in this paragraph.
 
 ## The census re-pin
 
