@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse Keeper
+  version: 1.0.0
+paths:
+  /lamps/{lampId}/readings:
+    get:
+      operationId: listReadings
+      summary: List a lamp's readings
+      parameters:
+        - name: since
+          in: query
+          required: false
+          description: Earliest reading to include.
+          schema:
+            type: string
+            example: '2024-03-01'
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: north-tower
+        - name: unit
+          in: query
+          required: true
+          description: Unit the readings are reported in.
+          schema:
+            type: string
+            example: lumen
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 25
+        - name: shift
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The readings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reading'
+  /lamps/{lampId}/logbook:
+    post:
+      operationId: writeLogbook
+      summary: Write a logbook entry
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: north-tower
+        - name: X-Watch-Note
+          in: header
+          required: false
+          schema:
+            type: string
+            example: calm seas
+        - name: draft
+          in: query
+          required: false
+          schema:
+            type: boolean
+            example: true
+        - name: X-Keeper-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            example: keeper-7
+        - name: tide
+          in: query
+          required: true
+          schema:
+            type: string
+            example: high
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogbookEntry'
+      responses:
+        '201':
+          description: Written
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogbookEntry'
+  /lamps/{lampId}/photos:
+    post:
+      operationId: uploadPhoto
+      summary: Upload a photo of the lamp
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caption
+          in: query
+          required: false
+          schema:
+            type: string
+            example: dusk
+        - name: X-Camera
+          in: header
+          required: false
+          schema:
+            type: string
+            example: brass-lens
+        - name: album
+          in: query
+          required: true
+          schema:
+            type: string
+            example: winter
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: Uploaded
+  /lamps:
+    get:
+      operationId: listLamps
+      summary: List lamps in declaration order of required first
+      parameters:
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+            example: coast
+        - name: lit
+          in: query
+          required: false
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: The lamps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Reading:
+      type: object
+      required: [lumens]
+      properties:
+        lumens:
+          type: integer
+        takenAt:
+          type: string
+    LogbookEntry:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          example: Fog rolled in at six.

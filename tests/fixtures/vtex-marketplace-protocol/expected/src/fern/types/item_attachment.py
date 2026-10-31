@@ -1,0 +1,27 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class ItemAttachment(UniversalBaseModel):
+    content: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Content referring to the customization requested by the customer.
+    """
+
+    name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Attachment name.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

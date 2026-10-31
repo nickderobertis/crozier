@@ -728,6 +728,11 @@ ingef-conquery API specification and generated SDK golden:
     MIT (the repository's own LICENSE); corpus row 3478 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
 
+vtex-marketplace-protocol API specification and generated SDK golden:
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml
+    CC0-1.0 (the aggregating repository's own LICENSE; the document declares no info.license); corpus row 3479 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
 amrc-acs-directory API specification and generated SDK golden:
     https://raw.githubusercontent.com/AMRC-FactoryPlus/amrc-connectivity-stack/6e52501e7d21f26ea584013e71e2152a9c4f0f6b/acs-directory/api/openapi.yaml
     MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4200 retains the immutable

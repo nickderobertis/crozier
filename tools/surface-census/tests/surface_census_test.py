@@ -17070,7 +17070,8 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         The positive declares `X-Region` with a string default on three of four
         operations. The decoys declare it on every operation, on two of four,
         with an empty default, and under names promotion never takes: one an
-        apiKey scheme writes, and `Origin`.
+        apiKey scheme writes, `Origin`, and the framing and forwarding headers
+        `Content-Length`, `Content-Disposition` and `X-Forwarded-For`.
         """
         selector = "parameter.schema:subset-header-string-default"
 
@@ -17098,6 +17099,9 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "empty": document("X-Region", 3, ""),
             "apikey": document("X-Key", 3),
             "origin": document("Origin", 3),
+            "content-length": document("Content-Length", 3),
+            "content-disposition": document("content-disposition", 3),
+            "forwarded-for": document("X-Forwarded-For", 3),
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

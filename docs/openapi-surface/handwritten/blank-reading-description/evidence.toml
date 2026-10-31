@@ -7,10 +7,3 @@ key = "empty-description-inline-response-docstring"
 search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
-
-[[covers]]
-key = "description"
-arm = 'src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

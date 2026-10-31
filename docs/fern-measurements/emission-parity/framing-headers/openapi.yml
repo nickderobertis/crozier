@@ -1,0 +1,687 @@
+openapi: 3.0.3
+info:
+  title: Relay Station
+  version: 1.0.0
+paths:
+  /relays/lower:
+    post:
+      operationId: sendLower
+      summary: Every header spelled in lower case, each required
+      parameters:
+        - name: content-length
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v0'
+        - name: x-forwarded-for
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v1'
+        - name: x-forwarded-proto
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v2'
+        - name: x-forwarded-host
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v3'
+        - name: x-forwarded-port
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v4'
+        - name: forwarded
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v5'
+        - name: x-real-ip
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v6'
+        - name: host
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v7'
+        - name: connection
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v8'
+        - name: transfer-encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v9'
+        - name: te
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v10'
+        - name: trailer
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v11'
+        - name: upgrade
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v12'
+        - name: via
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v13'
+        - name: keep-alive
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v14'
+        - name: expect
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v15'
+        - name: date
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v16'
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v17'
+        - name: accept-encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v18'
+        - name: accept-charset
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v19'
+        - name: accept-language
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v20'
+        - name: referer
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v21'
+        - name: content-encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v22'
+        - name: content-md5
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v23'
+        - name: content-language
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v24'
+        - name: cache-control
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v25'
+        - name: pragma
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v26'
+        - name: proxy-authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v27'
+        - name: dnt
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v28'
+        - name: sec-fetch-mode
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v29'
+        - name: x-request-id
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v30'
+        - name: if-match
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v31'
+        - name: range
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v32'
+        - name: authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v33'
+        - name: x-csrf-token
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v34'
+        - name: x-http-method-override
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v35'
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v36'
+        - name: user-agent
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v37'
+        - name: origin
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v38'
+        - name: cookie
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v39'
+        - name: set-cookie
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v40'
+        - name: x-forwarded-server
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v41'
+        - name: x-client-ip
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v42'
+        - name: true-client-ip
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v43'
+        - name: x-original-forwarded-for
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v44'
+        - name: content-range
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v45'
+        - name: content-disposition
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v46'
+        - name: idempotency-key
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'v47'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parcel'
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+  /relays/canonical:
+    post:
+      operationId: sendCanonical
+      summary: Every header spelled in canonical case, each required
+      parameters:
+        - name: Content-Length
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c0'
+        - name: X-Forwarded-For
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c1'
+        - name: X-Forwarded-Proto
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c2'
+        - name: X-Forwarded-Host
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c3'
+        - name: X-Forwarded-Port
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c4'
+        - name: Forwarded
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c5'
+        - name: X-Real-IP
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c6'
+        - name: Host
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c7'
+        - name: Connection
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c8'
+        - name: Transfer-Encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c9'
+        - name: TE
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c10'
+        - name: Trailer
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c11'
+        - name: Upgrade
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c12'
+        - name: Via
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c13'
+        - name: Keep-Alive
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c14'
+        - name: Expect
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c15'
+        - name: Date
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c16'
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c17'
+        - name: Accept-Encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c18'
+        - name: Accept-Charset
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c19'
+        - name: Accept-Language
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c20'
+        - name: Referer
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c21'
+        - name: Content-Encoding
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c22'
+        - name: Content-MD5
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c23'
+        - name: Content-Language
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c24'
+        - name: Cache-Control
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c25'
+        - name: Pragma
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c26'
+        - name: Proxy-Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c27'
+        - name: DNT
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c28'
+        - name: Sec-Fetch-Mode
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c29'
+        - name: X-Request-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c30'
+        - name: If-Match
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c31'
+        - name: Range
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c32'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c33'
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c34'
+        - name: X-HTTP-Method-Override
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c35'
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c36'
+        - name: User-Agent
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c37'
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c38'
+        - name: Cookie
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c39'
+        - name: Set-Cookie
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c40'
+        - name: X-Forwarded-Server
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c41'
+        - name: X-Client-IP
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c42'
+        - name: True-Client-IP
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c43'
+        - name: X-Original-Forwarded-For
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c44'
+        - name: Content-Range
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c45'
+        - name: Content-Disposition
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c46'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 'c47'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parcel'
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+  /relays/optional:
+    post:
+      operationId: sendOptional
+      summary: The framing headers, each optional
+      parameters:
+        - name: content-length
+          in: header
+          required: false
+          schema:
+            type: string
+            example: 'o0'
+        - name: x-forwarded-for
+          in: header
+          required: false
+          schema:
+            type: string
+            example: 'o1'
+        - name: x-forwarded-proto
+          in: header
+          required: false
+          schema:
+            type: string
+            example: 'o2'
+        - name: host
+          in: header
+          required: false
+          schema:
+            type: string
+            example: 'o3'
+        - name: transfer-encoding
+          in: header
+          required: false
+          schema:
+            type: string
+            example: 'o4'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parcel'
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+  /relays:
+    get:
+      operationId: listRelays
+      summary: No headers at all
+      responses:
+        '200':
+          description: The relays
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parcel'
+components:
+  schemas:
+    Parcel:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+          example: crate

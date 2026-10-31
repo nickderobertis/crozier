@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Orchard Ledger
+  version: 1.0.0
+paths:
+  /harvests/{harvestId}:
+    get:
+      operationId: getHarvest
+      summary: Read one harvest
+      parameters:
+        - name: harvestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The harvest
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  crates:
+                    description: Crates filled, each one an object.
+                    type: array
+                    items: {}
+                    properties:
+                      count:
+                        type: integer
+                      variety:
+                        type: string
+                      grades:
+                        description: Grades given to the crate.
+                        type: array
+                        items: {}
+                        properties:
+                          letter:
+                            type: string
+                  pickers:
+                    description: Pickers, declared with string items beside properties.
+                    type: array
+                    items:
+                      type: string
+                    properties:
+                      name:
+                        type: string
+                  rows:
+                    description: Rows walked, declared without items.
+                    type: array
+                    properties:
+                      number:
+                        type: integer
+                  weather:
+                    description: No declared type, empty items and properties.
+                    items: {}
+                    properties:
+                      sky:
+                        type: string
+                  plot:
+                    description: A plain inline object beside them.
+                    type: object
+                    properties:
+                      acres:
+                        type: number
+              example:
+                crates:
+                  - count: 12
+                    variety: russet
+                    grades:
+                      - letter: A
+                pickers: [Ada]
+                rows:
+                  - number: 4
+                weather:
+                  sky: clear
+                plot:
+                  acres: 2.5
+  /bundles:
+    post:
+      operationId: createBundle
+      summary: Create a bundle of baskets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bundle'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Basket'
+components:
+  schemas:
+    Basket:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+        fruit:
+          description: Fruit in the basket.
+          type: array
+          items: {}
+          properties:
+            kind:
+              type: string
+            ripe:
+              type: boolean
+    Bundle:
+      description: A bundle, declared as an array that also lists properties.
+      type: array
+      items: {}
+      properties:
+        label:
+          type: string
