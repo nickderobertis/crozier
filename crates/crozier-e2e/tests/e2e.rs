@@ -14547,6 +14547,7 @@ fn subsloth_matches_fern_output() {
     assert_committed_corpus_matches(&SUBSLOTH);
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Rows 4400-4405 replay registered corpus documents, and a registered row's replay must sit on this crozier-e2e edge, where `every_registered_corpus_is_wired_into_the_gate` and `tests/corpus_match/match.sh` require it, beside every other corpus replay; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Notion's API description as its MCP server publishes it — corpus row 4400.
 /// Its `Notion-Version` header defaults to one string on most but not all
 /// operations, and its move-page body is an inline union whose members tag
@@ -14661,6 +14662,7 @@ const LOONFS: Corpus = Corpus {
 fn loonfs_matches_fern_output() {
     assert_committed_corpus_matches(&LOONFS);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn letta_matches_fern_output() {
