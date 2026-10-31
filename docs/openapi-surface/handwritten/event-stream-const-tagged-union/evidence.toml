@@ -4,6 +4,5 @@ digest = "282300917a219a924e4dfdd25bd662c5b8a60c3cb95b4a0e3609af53907bac4a"
 
 [[covers]]
 key = "media-type-event-stream-inline-const-union"
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
+verdict = "exhausted"

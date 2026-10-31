@@ -4,6 +4,5 @@ digest = "da09e1e0d47abcf2318cc8e4adffc32f8d17bcd6ec8d2f299c09561cf2daf5e2"
 
 [[covers]]
 key = "server-default-url-templated"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#server-default-url-extension"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
+verdict = "exhausted"

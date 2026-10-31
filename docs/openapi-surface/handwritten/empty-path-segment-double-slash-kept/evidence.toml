@@ -4,6 +4,6 @@ digest = "276372c3dd350fb28c62d2378b0428fbac448c31c467d762e6547a2ce025a50e"
 
 [[covers]]
 key = "empty-path-segment-double-slash-kept"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

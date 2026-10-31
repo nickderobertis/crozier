@@ -5,6 +5,6 @@ digest = "1415f269c75d7628a2b85263270205297e069d8f3513405e9c9cb314a5dbad2c"
 [[covers]]
 key = "request-body-content"
 arm = 'src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]'
-search = "docs/openapi-surface/witness-search-inline-body-readonly-own-overlap/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-inline-body-readonly-own-overlap/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

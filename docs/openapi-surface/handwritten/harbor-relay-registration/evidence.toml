@@ -4,5 +4,5 @@ digest = "5fd9b3edcf20b6bfcc64c9fab458559d7bc191317b8b9d446a12cf627e6413c4"
 
 [[covers]]
 key = "combo-inline-body-read-only-property"
-search = "docs/openapi-surface/witness-search-operation-combinations-bodies-responses/README.md#blocked-witnesses"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#blocked-witnesses"
 verdict = "witness-blocked"

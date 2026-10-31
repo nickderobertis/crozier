@@ -15026,6 +15026,9 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         "operation-id-digit-leading-method",
         "pathitem-ref",
         "relative-file-ref",
+        "operation-id-hyphenated-tag-method",
+        "camel-case-tag-group-and-prefix",
+        "operation-id-untagged-list-or-set",
     }
 
     @classmethod
@@ -15164,6 +15167,9 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             ("relative-file-ref", "pathItem.$ref:relative-file"),
             ("nonascii-info-title", "info.title:non-ascii"),
             ("operation-id-digit-leading-method", "operation.operationId:digit-leading-method"),
+            ("operation-id-hyphenated-tag-method", "operation.operationId:hyphenated-tag-method"),
+            ("camel-case-tag-group-and-prefix", "operation.operationId:camel-case-tag-prefix"),
+            ("operation-id-untagged-list-or-set", "operation.operationId:untagged-list-or-set"),
         ):
             with self.subTest(key=key):
                 transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
@@ -19541,11 +19547,10 @@ class NamingWireCensusTests(unittest.TestCase):
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
-                area = (
-                    "docs/fern-measurements/naming-wire"
-                    if fixture == "ledger-batch-upload"
-                    else "docs/openapi-surface/handwritten"
-                )
+                area = {
+                    "ledger-batch-upload": "docs/fern-measurements/naming-wire",
+                    "gallery-plaque-groups": "docs/fern-measurements/superseded-fixtures",
+                }.get(fixture, "docs/openapi-surface/handwritten")
                 document = census.load_document(REPO / area / fixture / "openapi.yml")
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
@@ -19584,7 +19589,7 @@ class NamingWireCensusTests(unittest.TestCase):
 
     def test_camel_tag_shape_excludes_upper_prefix_and_lower_tag(self) -> None:
         census = load_census()
-        source = REPO / "docs/openapi-surface/handwritten/gallery-plaque-groups/openapi.yml"
+        source = REPO / "docs/fern-measurements/superseded-fixtures/gallery-plaque-groups/openapi.yml"
         for variant in ("upper-prefix", "lower-tag"):
             with self.subTest(variant=variant):
                 document = census.load_document(source)
@@ -19994,6 +19999,66 @@ class CoverageRestatementTests(unittest.TestCase):
                     self.assertEqual(original, self.index.read_text(encoding="utf-8"))
         region.write_text(source, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only").returncode)
+
+    def test_native_snapshot_json_restates_the_operation_id_predicate_rows(self) -> None:
+        """The three operationId-predicate golden rows take their census list from their own predicate.
+
+        Their spec location names `operationId`, so without their predicate selector the
+        restatement would list every source declaring any operationId; censusing only their
+        registered witnesses proves each row is rewritten from its predicate's own counts.
+        """
+        measured = subprocess.run(
+            # `onmyshelf-api` keeps the digit-leading-method row's own listing populated.
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--json",
+                "--fixture",
+                "parcelis-api",
+                "--fixture",
+                "kompaz-web-frontend",
+                "--fixture",
+                "ollama-api",
+                "--fixture",
+                "onmyshelf-api",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(0, measured.returncode, measured.stderr)
+        source = self.root / "operation-id-predicates.json"
+        source.write_text(measured.stdout, encoding="utf-8")
+        snapshot = self.root / "docs/openapi-surface/document-paths.md"
+        text = snapshot.read_text(encoding="utf-8")
+        for key, cell in (
+            ("operation-id-hyphenated-tag-method", "`parcelis-api` (9)"),
+            ("camel-case-tag-group-and-prefix", "`kompaz-web-frontend` (3)"),
+            ("operation-id-untagged-list-or-set", "`ollama-api` (1)"),
+        ):
+            line = next(line for line in text.splitlines() if line.startswith(f"| {key} |"))
+            text = text.replace(line, line.replace(cell, "`stale-source` (1)"), 1)
+        snapshot.write_text(text, encoding="utf-8")
+        self.assertEqual(1, self.run_restater("--snapshot-json", str(source)).returncode)
+        written = self.run_restater("--snapshot-json", str(source), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        actual = DocumentPathsSnapshotTests.entries(snapshot.read_text(encoding="utf-8"))
+        self.assertEqual(
+            [("parcelis-api", "9")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["operation-id-hyphenated-tag-method"][4]),
+        )
+        self.assertEqual(
+            [("kompaz-web-frontend", "3")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["camel-case-tag-group-and-prefix"][4]),
+        )
+        self.assertEqual(
+            [("ollama-api", "1")],
+            DocumentPathsSnapshotTests.PAIR.findall(actual["operation-id-untagged-list-or-set"][4]),
+        )
+        settled = self.run_restater("--snapshot-json", str(source))
+        self.assertEqual(0, settled.returncode, settled.stderr)
 
     def test_native_snapshot_json_writes_refuses_bad_input_and_recovers(self) -> None:
         measured = subprocess.run(

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "speech-ai-forge",
+  "corpus_spec_ref": "a41b70abba866ecded6e1e90beea6cc68e3fd0ae",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lenML/Speech-AI-Forge/a41b70abba866ecded6e1e90beea6cc68e3fd0ae/docs/openapi.json"
+}

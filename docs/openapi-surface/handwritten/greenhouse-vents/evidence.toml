@@ -4,6 +4,6 @@ digest = "aecde2e06e88d90e3d87406d7e979a31437cc4dabd36d32a65a04e991d62ec90"
 
 [[covers]]
 key = "readme-endpoint-prefers-argless-non-get"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

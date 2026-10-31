@@ -4,6 +4,6 @@ digest = "6bf8bb8bb70e62690d8b9c0697ad5f8c1d339d8e88f110a70be7b7bc80178646"
 
 [[covers]]
 key = "string-body-example-backslash-escaped"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

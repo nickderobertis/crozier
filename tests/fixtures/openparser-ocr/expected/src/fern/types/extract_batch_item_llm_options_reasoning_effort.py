@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .extract_batch_item_llm_options_reasoning_effort_one import ExtractBatchItemLlmOptionsReasoningEffortOne
+from .extract_batch_item_llm_options_reasoning_effort_zero import ExtractBatchItemLlmOptionsReasoningEffortZero
+
+ExtractBatchItemLlmOptionsReasoningEffort = typing.Union[
+    ExtractBatchItemLlmOptionsReasoningEffortZero, ExtractBatchItemLlmOptionsReasoningEffortOne
+]

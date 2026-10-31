@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "ummaya-agent-delegation",
+  "corpus_spec_ref": "72ed9b5bbcc4fbfb018e55559cfa20fbd2c1903e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/umyunsang/UMMAYA/72ed9b5bbcc4fbfb018e55559cfa20fbd2c1903e/docs/security/agent-delegation.openapi.yaml"
+}

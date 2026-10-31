@@ -784,6 +784,9 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
         "path-leading-literal-segment": "openapi.paths:leading-literal-segment",
         "path-template-before-literal-segment": "openapi.paths:template-before-literal-segment",
         "path-all-segments-templated": "openapi.paths:all-segments-templated",
+        "operation-id-hyphenated-tag-method": "operation.operationId:hyphenated-tag-method",
+        "camel-case-tag-group-and-prefix": "operation.operationId:camel-case-tag-prefix",
+        "operation-id-untagged-list-or-set": "operation.operationId:untagged-list-or-set",
     }
     methods = [f"pathItem.{method}" for method in ("get", "put", "post", "delete", "options", "head", "patch", "trace")]
     for key, field in (("missing-operation-id", "operation.operationId"), ("untagged-operation", "operation.tags")):

@@ -4,6 +4,6 @@ digest = "d462ece7f7d7d5b6d325158763b5a5de103847910e1ad3c6dce1a880ce954d89"
 
 [[covers]]
 key = "readme-nested-group-post-preferred"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

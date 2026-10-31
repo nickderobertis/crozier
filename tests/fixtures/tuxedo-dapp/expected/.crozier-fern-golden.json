@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "tuxedo-dapp",
+  "corpus_spec_ref": "0160b433517a61aa249f40b8e684a93c0281441d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/mlabs-haskell/TuxedoDapp/0160b433517a61aa249f40b8e684a93c0281441d/openapi.yaml"
+}
