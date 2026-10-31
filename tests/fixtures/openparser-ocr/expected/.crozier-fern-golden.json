@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "openparser-ocr",
+  "corpus_spec_ref": "bc71fecfbd228a785963db37c48bfc7e427da08c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/eigenpal/openparser/bc71fecfbd228a785963db37c48bfc7e427da08c/docs/OCR_API_OPENAPI.yaml"
+}

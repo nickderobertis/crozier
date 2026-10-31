@@ -4,6 +4,6 @@ digest = "a39ac9420e7125c491cbfa7ba96e8d9b678a06424e89876b08fa5a35540aad1e"
 
 [[covers]]
 key = "operation-id-all-caps-tag-split-prefix"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#all-caps-tag-spelled-by-a-split-prefix"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .extraction_review_event_one import ExtractionReviewEventOne
+from .extraction_review_event_previous_value import ExtractionReviewEventPreviousValue
+from .extraction_review_event_three import ExtractionReviewEventThree
+from .extraction_review_event_two import ExtractionReviewEventTwo
+
+ExtractionReviewEvent = typing.Union[
+    ExtractionReviewEventPreviousValue, ExtractionReviewEventOne, ExtractionReviewEventTwo, ExtractionReviewEventThree
+]

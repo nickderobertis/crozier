@@ -1182,13 +1182,25 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
         self.assertEqual(2, len(security_queries["sourcegraph"]))
         self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))
         # A request-body Media Type shape names the request body and its own field.
-        for key, fields, phrase in (
-            ("allof-parent-request-body", ("requestBody", "schema", "allOf"), None),
-            ("request-example-deprecated-property", ("requestBody", "example", "deprecated"), None),
-            ("request-example-nested-null", ("requestBody", "example"), "null"),
+        # `request-example-nested-null` is `golden` now, so no longer a derived
+        # key; its selector still exercises the `null` phrasing.
+        for key, selector, fields, phrase in (
+            (
+                "allof-parent-request-body",
+                keys["allof-parent-request-body"]["selector"],
+                ("requestBody", "schema", "allOf"),
+                None,
+            ),
+            (
+                "request-example-deprecated-property",
+                keys["request-example-deprecated-property"]["selector"],
+                ("requestBody", "example", "deprecated"),
+                None,
+            ),
+            ("request-example-nested-null", "mediaType.example:nested-null-member", ("requestBody", "example"), "null"),
         ):
             with self.subTest(key=key):
-                plan = SEARCH.query_plan(keys[key]["selector"])
+                plan = SEARCH.query_plan(selector)
                 for query in plan["github-code-search"]:
                     for field in fields:
                         self.assertTrue(f'"{field}:"' in query or f'\\"{field}\\"' in query, query)

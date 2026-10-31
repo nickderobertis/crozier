@@ -904,6 +904,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
+        (SUPERSEDED_FIXTURES_DIR, "fern-expected"),
         (MODELS_REFS_LITERALS_DIR, "fern-expected"),
         (SCHEMA_SHAPES_LITERALS_DIR, "fern-expected"),
         (SCHEMA_SHAPES_DIR, "fern-expected"),
@@ -2226,7 +2227,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "depot-bin-ledger-literals",
-        "docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml",
+        "docs/fern-measurements/superseded-fixtures/depot-bin-ledger/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -2236,7 +2237,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "ferry-berth-desk-literals",
-        "docs/openapi-surface/handwritten/ferry-berth-desk/openapi.yml",
+        "docs/fern-measurements/superseded-fixtures/ferry-berth-desk/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -2940,6 +2941,9 @@ fn unwritten_module_imports_names_a_missing_module() {
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+/// Authored documents retained as test inputs after a registered real witness
+/// superseded them as hand-written proofs (see its README).
+const SUPERSEDED_FIXTURES_DIR: &str = "docs/fern-measurements/superseded-fixtures";
 const SCHEMA_SHAPES_DIR: &str = "docs/fern-measurements/schema-shapes";
 const SCHEMA_SHAPES_LITERALS_DIR: &str = "docs/fern-measurements/schema-shapes-literals";
 const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
@@ -3409,6 +3413,12 @@ fn schema_shape_arms_match_complete_certified_trees() {
         for &mode in modes {
             let fixture_dir = if repo_root().join(&measured).is_dir() {
                 SCHEMA_SHAPES_DIR
+            } else if repo_root()
+                .join(SUPERSEDED_FIXTURES_DIR)
+                .join(shape)
+                .is_dir()
+            {
+                SUPERSEDED_FIXTURES_DIR
             } else {
                 HANDWRITTEN_DIR
             };
@@ -5219,7 +5229,8 @@ fn alias_reference_scope_controls_keep_their_reference_body_through_the_cli() {
     let root = repo_root();
     let original: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(
-            root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+            root.join(SUPERSEDED_FIXTURES_DIR)
+                .join("request-alias/openapi.yml"),
         )
         .unwrap(),
     )
@@ -5415,10 +5426,10 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
 fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["multipart-nullable-array"] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        let fixture = root.join(SUPERSEDED_FIXTURES_DIR).join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                format!("{SUPERSEDED_FIXTURES_DIR}/{shape}/fern-expected")
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
@@ -5498,7 +5509,10 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join("docs/openapi-surface/handwritten/multipart-nullable-array/openapi.yml"))
+            .arg(
+                root.join(SUPERSEDED_FIXTURES_DIR)
+                    .join("multipart-nullable-array/openapi.yml"),
+            )
             .arg("--output")
             .arg(out.path())
             .args([
@@ -5540,10 +5554,10 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
 fn multipart_request_component_name_matches_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["multipart-request-name"] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        let fixture = root.join(SUPERSEDED_FIXTURES_DIR).join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                format!("{SUPERSEDED_FIXTURES_DIR}/{shape}/fern-expected")
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
@@ -5610,10 +5624,10 @@ fn multipart_request_component_name_matches_certified_output_in_both_enum_modes(
 fn alias_object_request_matches_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["request-alias"] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        let fixture = root.join(SUPERSEDED_FIXTURES_DIR).join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                format!("{SUPERSEDED_FIXTURES_DIR}/{shape}/fern-expected")
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
@@ -5685,7 +5699,10 @@ fn sdk_env_alias_body_reference_matches_the_actual_flattened_signature() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"))
+            .arg(
+                root.join(SUPERSEDED_FIXTURES_DIR)
+                    .join("request-alias/openapi.yml"),
+            )
             .arg("--output")
             .arg(out.path())
             .args([
@@ -10449,6 +10466,19 @@ const CORPORA: &[&Corpus] = &[
     &RS_SERVER,
     &INGEF_CONQUERY,
     &VTEX_MARKETPLACE_PROTOCOL,
+    &OLLAMA_API,
+    &OSPARC_DIRECTOR_V2,
+    &TUXEDO_DAPP,
+    &BLUFILES_API,
+    &PARCELIS_API,
+    &SYNTHWERK_LLM,
+    &KOMPAZ_WEB_FRONTEND,
+    &JOBSTER_API,
+    &OPENPARSER_OCR,
+    &OPENIAP_OPENCORE,
+    &SPEECH_AI_FORGE,
+    &UMMAYA_AGENT_DELEGATION,
+    &AMRC_ACS_DIRECTORY,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12894,6 +12924,175 @@ const INGEF_CONQUERY: Corpus = Corpus {
 /// `items: {}` beside `properties`.
 const VTEX_MARKETPLACE_PROTOCOL: Corpus = Corpus {
     api: "vtex-marketplace-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Ollama's API document — corpus row 4212, witnessing an untagged operation
+/// whose `operationId` is `list`.
+const OLLAMA_API: Corpus = Corpus {
+    api: "ollama-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// osparc-simcore's director-v2 document — corpus row 4211, witnessing a
+/// contentless `200` beside a `201` declaring content.
+const OSPARC_DIRECTOR_V2: Corpus = Corpus {
+    api: "osparc-director-v2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// TuxedoDapp's API document — corpus row 4210, witnessing inline scalar JSON
+/// request bodies declaring a `description`, in operations declaring no parameter.
+const TUXEDO_DAPP: Corpus = Corpus {
+    api: "tuxedo-dapp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// BluFiles's API document — corpus row 4209, witnessing a PATCH inline JSON
+/// body whose properties are all unrequired and `nullable: true`.
+const BLUFILES_API: Corpus = Corpus {
+    api: "blufiles-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Parcelis's API document — corpus row 4208, witnessing tagged operations
+/// whose ids are `<tag>-<camelCaseMethod>`.
+const PARCELIS_API: Corpus = Corpus {
+    api: "parcelis-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Synthwerk's LLM gateway contract — corpus row 4207, witnessing an event
+/// stream whose union is discriminated on `event` with a mapping.
+const SYNTHWERK_LLM: Corpus = Corpus {
+    api: "synthwerk-llm",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// KOMPAZ web frontend's API document — corpus row 4206, witnessing camelCase
+/// tags whose operation ids prefix the method with the tag in lower camel case.
+const KOMPAZ_WEB_FRONTEND: Corpus = Corpus {
+    api: "kompaz-web-frontend",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Jobster API's document — corpus row 4205, witnessing a JSON request body
+/// `$ref` to an `allOf` of a `$ref` base and an inline member, each requiring properties.
+const JOBSTER_API: Corpus = Corpus {
+    api: "jobster-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// eigenpal/openparser's OCR API document — corpus row 4204, witnessing a
+/// multipart part naming the component its operation's request would be named.
+const OPENPARSER_OCR: Corpus = Corpus {
+    api: "openparser-ocr",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// openiap/opencore's API document — corpus row 4203, witnessing a request
+/// property naming a component that is only a `$ref` to an object.
+const OPENIAP_OPENCORE: Corpus = Corpus {
+    api: "openiap-opencore",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Speech-AI Forge's document — corpus row 4202, witnessing optional
+/// multipart parts whose `anyOf` is a string-enum `$ref` beside `null`.
+const SPEECH_AI_FORGE: Corpus = Corpus {
+    api: "speech-ai-forge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// UMMAYA's agent delegation document — corpus row 4201, witnessing a
+/// urlencoded `$ref` request body whose component declares an inline string enum.
+const UMMAYA_AGENT_DELEGATION: Corpus = Corpus {
+    api: "ummaya-agent-delegation",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// AMRC-FactoryPlus's ACS Directory document — corpus row 4200, witnessing
+/// JSON success responses written without a `description` key.
+const AMRC_ACS_DIRECTORY: Corpus = Corpus {
+    api: "amrc-acs-directory",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -20974,6 +21173,97 @@ fn vtex_marketplace_protocol_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ollama_api_matches_fern_output() {
+    assert_committed_corpus_matches(&OLLAMA_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn osparc_director_v2_matches_fern_output() {
+    assert_committed_corpus_matches(&OSPARC_DIRECTOR_V2);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn tuxedo_dapp_matches_fern_output() {
+    assert_committed_corpus_matches(&TUXEDO_DAPP);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn blufiles_api_matches_fern_output() {
+    assert_committed_corpus_matches(&BLUFILES_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn parcelis_api_matches_fern_output() {
+    assert_committed_corpus_matches(&PARCELIS_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn synthwerk_llm_matches_fern_output() {
+    assert_committed_corpus_matches(&SYNTHWERK_LLM);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn kompaz_web_frontend_matches_fern_output() {
+    assert_committed_corpus_matches(&KOMPAZ_WEB_FRONTEND);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn jobster_api_matches_fern_output() {
+    assert_committed_corpus_matches(&JOBSTER_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn openparser_ocr_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENPARSER_OCR);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn openiap_opencore_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENIAP_OPENCORE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn speech_ai_forge_matches_fern_output() {
+    assert_committed_corpus_matches(&SPEECH_AI_FORGE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn ummaya_agent_delegation_matches_fern_output() {
+    assert_committed_corpus_matches(&UMMAYA_AGENT_DELEGATION);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn amrc_acs_directory_matches_fern_output() {
+    assert_committed_corpus_matches(&AMRC_ACS_DIRECTORY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison uses the existing corpus golden gate and inventory, as its adjacent witnesses do; splitting that shared Nx family is the recorded follow-up rather than part of this example proof.
 #[test]
 fn rgb_lightning_node_matches_fern_output() {
@@ -28599,11 +28889,14 @@ fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
     ]
     .into_iter()
     .map(|name| {
-        (
-            name,
-            handwritten.join(name).join("openapi.yml"),
-            handwritten.join(name).join("fern-expected/src"),
-        )
+        // A fixture a registered witness superseded stays a journey input.
+        let superseded = repo_root().join(SUPERSEDED_FIXTURES_DIR).join(name);
+        let dir = if superseded.is_dir() {
+            superseded
+        } else {
+            handwritten.join(name)
+        };
+        (name, dir.join("openapi.yml"), dir.join("fern-expected/src"))
     })
     .collect();
     cases.push((

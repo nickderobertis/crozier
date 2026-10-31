@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "681e7cc3ec60de02eafc1e266ee044cbf64c3408863ba059f598577b75a705b4"
-
-[[covers]]
-key = "request-body-described-inline-scalar"
-search = "docs/openapi-surface/bodies-media.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-bodies-responses/README.md"

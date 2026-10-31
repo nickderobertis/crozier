@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "kompaz-web-frontend",
+  "corpus_spec_ref": "a847053e46b98324c57183af2b2c09abe01f8ecf",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Stichting-KOMPAZ-1/KOMPAZ-web-frontend/a847053e46b98324c57183af2b2c09abe01f8ecf/openapi.json"
+}

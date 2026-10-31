@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "86fbac341eb657c2292ca2964c9c19cbc3b91e8d0b2b33bc8188f18ca159aee4"
-
-[[covers]]
-key = "response-contentless-200-with-created"
-search = "docs/openapi-surface/witness-search-contentless-success/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-contentless-success/README.md"
