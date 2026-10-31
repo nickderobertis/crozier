@@ -14365,6 +14365,7 @@ fn stellastra_com_matches_fern_output() {
     assert_committed_corpus_matches(&STELLASTRA_COM);
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Rows 4001 to 4016 are registered corpus rows, and each row's byte-match runs here and in `just test-corpus-match` like every other `*_matches_fern_output` test (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); the sixteen together take about two minutes, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for these rows.
 #[test]
 fn contribly_com_matches_fern_output() {
     assert_committed_corpus_matches(&CONTRIBLY_COM);
@@ -14444,6 +14445,7 @@ fn trpc_openapi_app_router_matches_fern_output() {
 fn azure_databox_management_matches_fern_output() {
     assert_committed_corpus_matches(&AZURE_DATABOX_MANAGEMENT);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn chaingateway_io_matches_fern_output() {

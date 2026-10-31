@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 246 of the 277 registered sources live in `corpus-sources/` (a split
+  and 262 of the 293 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -7615,12 +7615,8 @@ class Census:
                 found.append(f"schema.{field}:sole-member")
         one_of = node.get("oneOf")
         if isinstance(one_of, list):
-            inline = [
-                json.dumps(member, sort_keys=True)
-                for member in one_of
-                if isinstance(member, dict) and "$ref" not in member
-            ]
-            if len(inline) != len(set(inline)):
+            inline = [member for member in one_of if isinstance(member, dict) and "$ref" not in member]
+            if any(member == other for index, member in enumerate(inline) for other in inline[:index]):
                 found.append("schema.oneOf:duplicate-members")
         if "enum" in node and string_valued(node, node.get("enum")):
             found.append("schema.enum:string-valued")
@@ -7830,7 +7826,10 @@ class Census:
                 properties = variant.get("properties") if isinstance(variant.get("properties"), dict) else {}
                 required = variant.get("required") if isinstance(variant.get("required"), list) else []
                 if any(
-                    name != tag and isinstance(properties.get(name), dict) and properties[name].get("nullable") is True
+                    isinstance(name, str)
+                    and name != tag
+                    and isinstance(properties.get(name), dict)
+                    and properties[name].get("nullable") is True
                     for name in required
                 ):
                     found.append("components.schemas:discriminated-variant-required-nullable")

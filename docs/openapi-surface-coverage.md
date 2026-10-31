@@ -802,21 +802,11 @@ drift gate over the pair:
   primitive and nothing else is declared beside them, which
   `normalize_same_primitive_unions` of `src/openapi.rs` renames after its last
   alternative's ordinal
-- `components.schemas:described-object-ref-union` — one per component schema writing a
-  non-empty `description` and a `oneOf` of two or more Reference Objects, each to an
-  object component, with no `discriminator`, `properties` or `allOf` beside it and no
-  property every member tags with one string value: the `typing.Union` alias
-  `render_type_decl` of `src/emit.rs` writes without that description, as Fern does
-- `components.schemas:variant-own-fields-before-base` — one per Reference Object member
-  of a component's discriminated `oneOf` or `anyOf` whose target declares a property
-  other than the discriminator's and an `allOf` Reference Object to a base declaring one
-  too: `member_fields` of `src/ir.rs` writes the variant's own fields before the base's
-  in the union wrapper, the reverse of the `allOf` order
 - `components.schemas:nullable-single-allof-ref` — one per component schema writing
   `nullable: true` and an `allOf` of exactly one Reference Object, with no `properties`
   and no `additionalProperties`: the annotated reference `Builder::add_named_shape` of
-  `src/ir.rs` writes as an `Optional` alias of its target through its explicitly-nullable
-  arm
+  `src/ir.rs` writes as an `Optional` alias of its target through its explicitly-
+  nullable arm
 - `components.schemas:empty-properties-single-allof-ref` — one per component schema
   writing `properties: {}` and an `allOf` of exactly one Reference Object, with no
   `additionalProperties`: the annotated reference `Builder::add_named_shape` of
@@ -830,6 +820,19 @@ drift gate over the pair:
   property other than the discriminator's and writes it `nullable: true`: the variant
   field `Builder::discriminated_union` of `src/ir.rs` types `Optional[...] = None`, as
   Fern does
+- `schema.oneOf:duplicate-members` — one per Schema Object whose `oneOf` holds two
+  inline members (no `$ref`) that are equal as JSON values: `dedupe_union_members` of
+  `src/ir.rs` writes the union with that member once, as Fern does
+- `components.schemas:described-object-ref-union` — one per component schema writing a
+  non-empty `description` and a `oneOf` of two or more Reference Objects, each to an
+  object component, with no `discriminator`, `properties` or `allOf` beside it and no
+  property every member tags with one string value: the `typing.Union` alias
+  `render_type_decl` of `src/emit.rs` writes without that description, as Fern does
+- `components.schemas:variant-own-fields-before-base` — one per Reference Object member
+  of a component's discriminated `oneOf` or `anyOf` whose target declares a property
+  other than the discriminator's and an `allOf` Reference Object to a base declaring one
+  too: `member_fields` of `src/ir.rs` writes the variant's own fields before the base's
+  in the union wrapper, the reverse of the `allOf` order
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
   Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
   `src/openapi.rs` resolves
@@ -972,9 +975,6 @@ drift gate over the pair:
   one member
 - `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds exactly
   one member
-- `schema.oneOf:duplicate-members` — one per Schema Object whose `oneOf` holds two
-  inline members (no `$ref`) that are equal as JSON values: `dedupe_union_members` of
-  `src/ir.rs` writes the union with that member once, as Fern does
 - `schema.enum:string-valued` — one per Schema Object whose `enum` array yields at least
   one string value under crozier's own `string_enum_values` — the schema is `type:
   string`, or declares no `type` and every member is a string
