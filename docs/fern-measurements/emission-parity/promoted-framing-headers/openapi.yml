@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Signal Tower
+  version: 1.0.0
+paths:
+  /signals:
+    get:
+      operationId: listSignals
+      summary: List signals
+      parameters:
+        - $ref: '#/components/parameters/ContentLength'
+        - $ref: '#/components/parameters/ForwardedFor'
+        - $ref: '#/components/parameters/ForwardedProto'
+        - $ref: '#/components/parameters/Tower'
+      responses:
+        '200':
+          description: The signals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Signal'
+    post:
+      operationId: raiseSignal
+      summary: Raise a signal
+      parameters:
+        - $ref: '#/components/parameters/ContentLength'
+        - $ref: '#/components/parameters/ForwardedFor'
+        - $ref: '#/components/parameters/ForwardedProto'
+        - $ref: '#/components/parameters/Tower'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Signal'
+      responses:
+        '201':
+          description: Raised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signal'
+components:
+  parameters:
+    ContentLength:
+      name: Content-Length
+      in: header
+      required: true
+      schema:
+        type: string
+        example: '120'
+    ForwardedFor:
+      name: X-Forwarded-For
+      in: header
+      required: true
+      schema:
+        type: string
+        example: 203.0.113.9
+    ForwardedProto:
+      name: X-Forwarded-Proto
+      in: header
+      required: true
+      schema:
+        type: string
+        example: https
+    Tower:
+      name: X-Tower
+      in: header
+      required: true
+      schema:
+        type: string
+        example: east
+  schemas:
+    Signal:
+      type: object
+      required: [flag]
+      properties:
+        flag:
+          type: string
+          example: amber

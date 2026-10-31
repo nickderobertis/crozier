@@ -52,10 +52,18 @@
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
     "docs/fern-measurements/emission-parity/allof-only-base-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/allof-only-base/fern-expected": {},
+    "docs/fern-measurements/emission-parity/array-with-properties-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/array-with-properties/fern-expected": {},
     "docs/fern-measurements/emission-parity/dangling-mapping-target-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected": {},
+    "docs/fern-measurements/emission-parity/framing-headers-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/framing-headers/fern-expected": {},
     "docs/fern-measurements/emission-parity/lantern-open-ping-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/lantern-open-ping/fern-expected": {},
+    "docs/fern-measurements/emission-parity/promoted-framing-headers-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/promoted-framing-headers/fern-expected": {},
+    "docs/fern-measurements/emission-parity/query-declaration-order-literals/fern-expected": {},
+    "docs/fern-measurements/emission-parity/query-declaration-order/fern-expected": {},
     "docs/fern-measurements/emission-parity/survey-shapes-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/survey-shapes/fern-expected": {},
     "docs/fern-measurements/emission-parity/tide-windows-literals/fern-expected": {},
@@ -1386,6 +1394,12 @@
       ]
     },
     "tests/fixtures/volview-backend-contract/expected": {},
+    "tests/fixtures/vtex-marketplace-protocol/expected": {},
+    "tests/fixtures/vtex-marketplace-protocol/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/vtex-pricing/expected": {},
     "tests/fixtures/waylay-queries/expected": {},
     "tests/fixtures/webflow-v2/expected": {

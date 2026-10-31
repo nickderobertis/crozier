@@ -7,6 +7,9 @@
 //! - `allof-only-base`, `dangling-mapping-target`, `unaffected-control`:
 //!   conquery's two union shapes, each beside its control, recorded in
 //!   `docs/fern-measurements/emission-parity/README.md`.
+//! - `query-declaration-order`, `framing-headers`, `promoted-framing-headers`,
+//!   `array-with-properties`: VTEX Marketplace Protocol's three causes,
+//!   recorded in `docs/vtex-output-parity.md`.
 
 use std::path::{Path, PathBuf};
 
@@ -753,6 +756,69 @@ fn an_empty_root_security_list_departs_only_on_the_credential() {
             text.replacen(
                 "api_key: typing.Optional[str] = None,",
                 "api_key: typing.Optional[str] = \"\",",
+                1,
+            )
+        },
+    );
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK through the binary, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// VTEX cause 1: an optional query or header parameter declared before a
+/// required one keeps its place in every worked example. Restoring the
+/// required-first order crozier wrote fails the comparison.
+#[test]
+fn worked_examples_keep_parameter_declaration_order() {
+    holds_in_both_modes("query-declaration-order", "reference.md", |text| {
+        text.replacen(
+            "    since=\"2024-03-01\",\n    unit=\"lumen\",\n",
+            "    unit=\"lumen\",\n    since=\"2024-03-01\",\n",
+            1,
+        )
+    });
+}
+
+/// VTEX cause 2: `Content-Length`, `X-Forwarded-For` and `Content-Disposition`
+/// leave the method in lower and canonical case, required or optional, while
+/// 41 neighbouring names stay. A `content_length` argument fails the
+/// comparison.
+#[test]
+fn framing_headers_leave_the_method() {
+    holds_in_both_modes("framing-headers", "src/fern/client.py", |text| {
+        text.replacen(
+            "        forwarded_proto: str,\n",
+            "        content_length: str,\n        forwarded_proto: str,\n",
+            1,
+        )
+    });
+}
+
+/// VTEX cause 2: the same headers on every operation are no constructor
+/// field, while `X-Forwarded-Proto` and `X-Tower` are. A `forwarded_for` field
+/// fails the comparison.
+#[test]
+fn framing_headers_on_every_operation_stay_off_the_client() {
+    holds_in_both_modes("promoted-framing-headers", "src/fern/client.py", |text| {
+        text.replacen(
+            "        forwarded_proto: str,\n",
+            "        forwarded_for: str,\n        forwarded_proto: str,\n",
+            1,
+        )
+    });
+}
+
+/// VTEX cause 3: a schema declaring `type: array` is a list of its items,
+/// whatever `properties` sit beside them, as a property and as a component.
+/// The object model crozier hoisted in its place fails the comparison.
+#[test]
+fn an_array_declaring_properties_is_a_list_of_its_items() {
+    holds_in_both_modes(
+        "array-with-properties",
+        "src/fern/types/get_harvest_response.py",
+        |text| {
+            text.replacen(
+                "crates: typing.Optional[typing.List[typing.Any]]",
+                "crates: typing.Optional[GetHarvestResponseCrates]",
                 1,
             )
         },

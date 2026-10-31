@@ -1,0 +1,29 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .fields import Fields
+
+
+class CustomApp(UniversalBaseModel):
+    fields: Fields
+    id: str = pydantic.Field()
+    """
+    App's ID.
+    """
+
+    major: int = pydantic.Field()
+    """
+    Integer with the major version of the app. Optional, defaulting to one.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

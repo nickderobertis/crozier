@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.147](https://github.com/nickderobertis/crozier/compare/v0.0.146...v0.0.147) - 2026-10-31
+
+### Fixed
+
+- *(parity)* read a JSON document's float literals at their correctly rounded value ([#670](https://github.com/nickderobertis/crozier/pull/670))
+
 ## [0.0.146](https://github.com/nickderobertis/crozier/compare/v0.0.145...v0.0.146) - 2026-10-31
 
 ### Fixed

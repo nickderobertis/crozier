@@ -72,6 +72,16 @@ split five ways:
   where every declarer is decided and none is registrable, and leaves the
   shapes no code-search phrase selects `search-incomplete`, naming each
   outstanding declarer.
+  The parameter-lowering shapes `query-array-items-union` and
+  `base-path-extension` have not been
+  searched at any declared source either: their
+  [search](openapi-surface/witness-search-parameter-lowering/README.md) read the
+  documents already acquired for the coverage searches, issued no live query,
+  and found each `none-registrable`.
+  The thirteen parameter extension and serialization shapes read
+  `search-incomplete` on their
+  [search](openapi-surface/witness-search-parameters-extension-evidence/README.md),
+  which screened the candidate real specifications it names against Fern.
   Three more — `cycle-into-cycle`,
   `request-body-property-closed-empty-object` and `type-misspelled-scalar` —
   have not been searched at any declared source either; their
@@ -2909,32 +2919,31 @@ unreached by any Fern-accepted document.
 | 52 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
 | 53 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
 | 54 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
-| 55 | `nullable` | `schemas` | **1** | **4** | **84** | open — real-specification witness search remains open |
+| 55 | `nullable` | `schemas` | **1** | **4** | **85** | open — real-specification witness search remains open |
 | 56 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
 | 57 | `description` | `schemas` | **1** | **3** | **229** | open — real-specification witness search remains open |
-| 58 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **6** | open — real-specification witness search remains open |
+| 58 | `format-int64` | `schemas` | **1** | **3** | **51** | open — real-specification witness search remains open |
 | 59 | `format-int64` | `schemas` | **1** | **3** | **52** | open — real-specification witness search remains open |
 | 60 | `format-uuid` | `schemas` | **1** | **3** | **58** | open — real-specification witness search remains open |
-| 61 | `format-date` | `schemas` | **1** | **2** | **39** | open — real-specification witness search remains open |
+| 61 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **259** | open — real-specification witness search remains open |
 | 62 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **264** | open — real-specification witness search remains open |
 | 63 | `recursive-graph` | `schemas` | **1** | **2** | **264** | open — real-specification witness search remains open |
-| 64 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
+| 64 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
 | 65 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **3** | owned — first-pass search record below |
-| 66 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 67 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 68 | `format-email` | `schemas` | **1** | **1** | **46** | open — real-specification witness search remains open |
-| 69 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 70 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 71 | `format-ipv4` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
-| 72 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 73 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 74 | `format-password` | `schemas` | **1** | **1** | **10** | open — real-specification witness search remains open |
-| 75 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 76 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 77 | `format-uri` | `schemas` | **1** | **1** | **73** | open — real-specification witness search remains open |
-| 78 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
-| 79 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 80 | `property-oneof-residual` | `schemas` | **1** | **1** | **40** | open — real-specification witness search remains open |
+| 66 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 67 | `format-email` | `schemas` | **1** | **1** | **46** | open — real-specification witness search remains open |
+| 68 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 69 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 70 | `format-ipv4` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
+| 71 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 72 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 73 | `format-password` | `schemas` | **1** | **1** | **10** | open — real-specification witness search remains open |
+| 74 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 75 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 76 | `format-uri` | `schemas` | **1** | **1** | **73** | open — real-specification witness search remains open |
+| 77 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
+| 78 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
+| 79 | `property-oneof-residual` | `schemas` | **1** | **1** | **39** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
@@ -3226,30 +3235,29 @@ why. The changes that took the arm off:
 | 54 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `search-incomplete` | `slashless-json-response` |
 | 55 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
 | 56 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 57 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `search-incomplete` | `blank-reading-description` |
-| 58 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
-| 59 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
-| 60 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `meadow-tag-code` |
-| 61 | `format-date` | `src/ir.rs::scalar_body[=Some\("date"\) =>]` | 2 | `search-incomplete` | `skyglass-observation-date` |
-| 62 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
-| 63 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
-| 64 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `search-incomplete` | `enum-media-selection` |
-| 65 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
-| 66 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
-| 67 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
-| 68 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 69 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 70 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 71 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 72 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 73 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 74 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 75 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 76 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 77 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 78 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 79 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 80 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
+| 57 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
+| 58 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
+| 59 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `meadow-tag-code` |
+| 60 | `format-date` | `src/ir.rs::scalar_body[=Some\("date"\) =>]` | 2 | `search-incomplete` | `skyglass-observation-date` |
+| 61 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
+| 62 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
+| 63 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `search-incomplete` | `enum-media-selection` |
+| 64 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `search-incomplete` | `x-fern-ignore-schema` |
+| 65 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
+| 66 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
+| 67 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 68 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 69 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 70 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 71 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 72 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 73 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 74 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 75 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 76 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 77 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 78 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 79 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
 <!-- END GENERATED ARM TABLE -->
 
 **Configuration-gated arms.** An arm only a generation setting reaches is
@@ -4067,6 +4075,10 @@ were run over the documents already acquired for the coverage searches, with no
 live query, so each reads `search-incomplete`;
 [the record](openapi-surface/witness-search-parameter-lowering/README.md) names
 every declarer that search found and why none is registrable.
+`header-subset-string-default` has since left the section: its first declarer
+there, VTEX's Marketplace Protocol, is corpus row 3479, so the row reads `golden`
+and its hand-written fixture is retired
+([`vtex-output-parity.md`](vtex-output-parity.md)).
 
 Four more joined with the worked-example repairs, `handwritten` from the start
 in the same way: `unread-date-time-example` here, and three `bodies-media` rows

@@ -1012,15 +1012,28 @@ fn is_transport_managed_header(wire_name: &str) -> bool {
 /// api-key security scheme. `Content-Type` is additionally dropped there: the
 /// request's own media type decides that header, so Chaingateway.io's five
 /// `Content-Type` parameters reach neither the client wrapper nor a method
-/// signature. So are `Origin` and `Cookie`, in any letter case, which Fern drops
-/// from a method and from promotion alike, while `Referer`, `Host` and
-/// `Accept-Encoding` stay ordinary arguments. A security scheme that happens to
-/// name one of these headers is a credential and keeps its constructor field.
+/// signature. So are `Origin`, `Cookie`, `Content-Length`, `Content-Disposition`
+/// and `X-Forwarded-For`, in lower or canonical case, which Fern drops from a
+/// method and from promotion alike: VTEX's `order_placement` (corpus row 3479)
+/// takes neither its required `content-length` nor its `x-forwarded-for`. The
+/// `framing-headers` measurement sends 48 header names. These seven are the
+/// only ones it drops. `Referer`, `Host`, `Accept-Encoding`,
+/// `Transfer-Encoding`, `X-Forwarded-Proto`, `X-Real-IP` and the rest stay
+/// ordinary arguments, and `promoted-framing-headers` shows the same seven kept
+/// off the client wrapper. A security scheme that happens to name one of these
+/// headers is a credential and keeps its constructor field.
 fn is_transport_managed_parameter(wire_name: &str) -> bool {
     is_transport_managed_header(wire_name)
-        || ["content-type", "origin", "cookie"]
-            .iter()
-            .any(|managed| wire_name.eq_ignore_ascii_case(managed))
+        || [
+            "content-type",
+            "origin",
+            "cookie",
+            "content-length",
+            "content-disposition",
+            "x-forwarded-for",
+        ]
+        .iter()
+        .any(|managed| wire_name.eq_ignore_ascii_case(managed))
 }
 
 /// Whether a header parameter is reserved from client-wrapper promotion.
@@ -20225,6 +20238,55 @@ mod tests {
             ))
             .expect("document deserializes");
             assert!(global_headers(&doc).is_empty(), "{managed}");
+        }
+    }
+
+    #[test]
+    fn framing_and_forwarding_headers_leave_the_method_and_the_wrapper_and_their_neighbours_stay() {
+        let dropped = [
+            "content-length",
+            "Content-Length",
+            "x-forwarded-for",
+            "X-Forwarded-For",
+            "content-disposition",
+            "Content-Disposition",
+        ];
+        let kept = [
+            "x-forwarded-proto",
+            "X-Forwarded-Host",
+            "x-real-ip",
+            "X-Original-Forwarded-For",
+            "transfer-encoding",
+            "Content-Encoding",
+            "content-range",
+            "Host",
+        ];
+        for (name, managed) in dropped
+            .iter()
+            .map(|name| (*name, true))
+            .chain(kept.iter().map(|name| (*name, false)))
+        {
+            let doc: crate::openapi::OpenApi = crate::yaml::from_str(&format!(
+                "paths:\n  /relays:\n    post:\n      parameters:\n        - {{name: {name}, in: header, required: true, schema: {{type: string}}}}\n      responses: {{'204': {{description: OK}}}}\n  /other:\n    get:\n      responses: {{'204': {{description: OK}}}}\n"
+            ))
+            .expect("document deserializes");
+            let operation = doc.paths["/relays"].post.as_ref().expect("POST operation");
+            let endpoint = build_endpoint(
+                &doc,
+                &[],
+                "/relays",
+                "POST",
+                operation,
+                &mut Vec::new(),
+                &std::collections::HashSet::new(),
+            );
+            assert_eq!(endpoint.header_params.is_empty(), managed, "{name}");
+            // On every operation it would be a constructor field, unless managed.
+            let promoted: crate::openapi::OpenApi = crate::yaml::from_str(&format!(
+                "paths:\n  /relays:\n    post:\n      parameters:\n        - {{name: {name}, in: header, required: true, schema: {{type: string}}}}\n      responses: {{'204': {{description: OK}}}}\n"
+            ))
+            .expect("document deserializes");
+            assert_eq!(global_headers(&promoted).is_empty(), managed, "{name}");
         }
     }
 

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 265 of the 296 registered sources live in `corpus-sources/` (a split
+  and 266 of the 297 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -5896,7 +5896,18 @@ def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
 # The header names `global_headers` of `src/ir.rs` never promotes, in any letter
 # case: the transport's own (`is_transport_managed_parameter`) and the reserved
 # `Authorization` (`is_promotion_reserved_header`).
-UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie", "authorization"})
+UNPROMOTED_HEADERS = frozenset(
+    {
+        "user-agent",
+        "content-type",
+        "origin",
+        "cookie",
+        "content-length",
+        "content-disposition",
+        "x-forwarded-for",
+        "authorization",
+    }
+)
 
 # The two parameter predicates port `src/ir.rs` rules:
 # `parameter.schema:query-items-union` the items-union hoist of
@@ -5912,7 +5923,7 @@ PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "cd66a155d41f0dfd",
     "global_headers": "dfc5358f962e3b3f",
     "is_transport_managed_header": "c0b5057117ba1977",
-    "is_transport_managed_parameter": "a3891f0bee5ebb90",
+    "is_transport_managed_parameter": "390fcb123906c067",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
     "is_auth_managed_header": "eb1879f6314209d6",
 }
