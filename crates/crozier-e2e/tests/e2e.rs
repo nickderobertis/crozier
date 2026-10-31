@@ -10313,6 +10313,7 @@ const CORPORA: &[&Corpus] = &[
     &K8S_CONTAINER_SERVICE_PROVIDER,
     &DANIWEB_CONNECT,
     &STELLASTRA_COM,
+    &CONTRIBLY_COM,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
@@ -11805,6 +11806,20 @@ const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
 /// registered witness of `empty-description-inline-response-docstring`.
 const STELLASTRA_COM: Corpus = Corpus {
     api: "stellastra-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `contribly-com`: corpus row 4001, Contribly's contribution API from the
+/// APIs.guru directory, whose `POST /media` body is a bare `format: byte`
+/// string — the registered witness of `format-byte`'s `scalar_body` arm.
+const CONTRIBLY_COM: Corpus = Corpus {
+    api: "contribly-com",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14127,6 +14142,11 @@ fn daniweb_connect_matches_fern_output() {
 #[test]
 fn stellastra_com_matches_fern_output() {
     assert_committed_corpus_matches(&STELLASTRA_COM);
+}
+
+#[test]
+fn contribly_com_matches_fern_output() {
+    assert_committed_corpus_matches(&CONTRIBLY_COM);
 }
 
 #[test]

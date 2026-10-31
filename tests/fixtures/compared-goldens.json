@@ -879,6 +879,12 @@
     "tests/fixtures/client-class-name/expected-flat": {},
     "tests/fixtures/color.pizza/expected": {},
     "tests/fixtures/confluent-kafka-connect/expected": {},
+    "tests/fixtures/contribly-com/expected": {},
+    "tests/fixtures/contribly-com/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/cookie-parameters/expected": {},
     "tests/fixtures/cphos-ai-question/expected": {},
     "tests/fixtures/cradl/expected": {},

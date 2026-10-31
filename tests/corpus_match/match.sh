@@ -346,6 +346,7 @@ inventory=(
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
   stellastra_com_matches_fern_output
+  contribly_com_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

@@ -77,6 +77,8 @@ const KINDS: &[Kind] = &[
     // - `supabase-api-v1`: inline property and query enums across a large
     //   management API's request and response models.
     // - `rta-in-japan-twitter`: a posting API's one media-type enum.
+    // - `contribly-com`: the OAuth scope enum of a contribution API's security
+    //   scheme, beside its scalar `format: byte` request body.
     // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
     // read-only properties of referenced request bodies.
     Kind {
@@ -128,6 +130,7 @@ const KINDS: &[Kind] = &[
             "openapi-generator-composed-schema-lowering",
             "rs-server",
             "ingef-conquery",
+            "contribly-com",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

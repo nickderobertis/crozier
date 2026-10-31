@@ -1993,3 +1993,15 @@ it replaced the hand-written `blank-reading-description` fixture.
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 4000 | `stellastra-com` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/stellastra.com/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | committed | The Stellastra review API the publisher describes (`info.x-origin` records `https://stellastra.com/stellastra.json`): its `POST /post-review` `200` and `400` responses are inline objects with `description: ''`, the shape `empty-description-inline-response-docstring` names, and they send `InlineHoister::hoist_object` down its blank-description arm |
+
+## A scalar `byte` request body
+
+Contribly's contribution API takes its `POST /media` upload as a bare
+`type: string, format: byte` JSON body, a scalar body both generators type as
+`str` and send with a `content-type` header. Found by the
+[fixture-only `schemas` witness search](../../docs/openapi-surface/witness-search-fixture-only-schemas/README.md),
+it replaced the hand-written `sonar-packet-envelope` fixture.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4001 | `contribly-com` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/contribly.com/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | committed | The Contribly API the publisher describes (`info.x-origin` records `https://api.contribly.com/1/swagger.json`): `POST /media` takes a `format: byte` string body, sending `scalar_body` down its `uuid`/`byte` arm |

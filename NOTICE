@@ -733,3 +733,9 @@ stellastra-com API specification and generated SDK golden:
     CC0-1.0 (the APIs.guru OpenAPI Directory's own LICENSE; the document declares no info.license);
     corpus row 4000 retains the immutable revision. Source bytes and the complete generated tree are
     vendored, with Python comments stripped.
+
+contribly-com API specification and generated SDK golden:
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/contribly.com/1.0.0/openapi.yaml
+    CC0-1.0 (the APIs.guru OpenAPI Directory's own LICENSE; the document declares no info.license);
+    corpus row 4001 retains the immutable revision. Source bytes and the complete generated tree are
+    vendored, with Python comments stripped.
