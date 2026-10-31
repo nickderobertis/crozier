@@ -888,6 +888,12 @@
     },
     "tests/fixtures/chaingateway-io/expected": {},
     "tests/fixtures/chat-rest-api/expected": {},
+    "tests/fixtures/chrome-webstatus-backend/expected": {},
+    "tests/fixtures/chrome-webstatus-backend/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/client-class-name/expected": {},
     "tests/fixtures/client-class-name/expected-flat": {},
     "tests/fixtures/color.pizza/expected": {},

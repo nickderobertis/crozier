@@ -10320,6 +10320,7 @@ const CORPORA: &[&Corpus] = &[
     &KONFIG_LUCCA_ORGANIZATION,
     &ABLY_SDK_TEST_PROXY,
     &DIPJYOTIMETIA_FRIDAY,
+    &CHROME_WEBSTATUS_BACKEND,
     &CANONICAL_TEST_OBSERVER,
     &PSYCHIC_SPEC_HELPERS_TESTAPP,
     &OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT,
@@ -11974,6 +11975,19 @@ const CANONICAL_TEST_OBSERVER: Corpus = Corpus {
 /// `bigint-format-string-typed-str`.
 const PSYCHIC_SPEC_HELPERS_TESTAPP: Corpus = Corpus {
     api: "psychic-spec-helpers-testapp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `chrome-webstatus-backend`: corpus row 4013, Chrome's web platform status backend API — the registered witness of
+/// `union-of-two-enum-refs-alias`.
+const CHROME_WEBSTATUS_BACKEND: Corpus = Corpus {
+    api: "chrome-webstatus-backend",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14331,6 +14345,11 @@ fn ably_sdk_test_proxy_matches_fern_output() {
 #[test]
 fn dipjyotimetia_friday_matches_fern_output() {
     assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
+}
+
+#[test]
+fn chrome_webstatus_backend_matches_fern_output() {
+    assert_committed_corpus_matches(&CHROME_WEBSTATUS_BACKEND);
 }
 
 #[test]

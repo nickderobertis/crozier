@@ -1209,6 +1209,12 @@ tests/fixtures/canonical-test-observer/expected-literals	src/fern/test_execution
 tests/fixtures/canonical-test-observer/expected-literals	src/fern/test_executions/client.py	226	url	"url"	format=uri	schema-rejected-name-example	repaired
 tests/fixtures/canonical-test-observer/expected-literals	src/fern/test_executions/client.py	927	ci_link	"ci_link"	format=uri	schema-rejected-name-example	repaired
 tests/fixtures/canonical-test-observer/expected-literals	src/fern/test_executions/client.py	1080	url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected	reference.md	1199	config.url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected	src/fern/client.py	949	config.url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected	src/fern/client.py	2716	config.url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected-literals	reference.md	1199	config.url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected-literals	src/fern/client.py	939	config.url	"url"	format=uri	schema-rejected-name-example	repaired
+tests/fixtures/chrome-webstatus-backend/expected-literals	src/fern/client.py	2696	config.url	"url"	format=uri	schema-rejected-name-example	repaired
 tests/fixtures/cradl/expected	reference.md	4333	model_id	"modelId"	pattern=^(|(cradl|las):organization:[a-z0-9-_]+/)(cradl|las):model:[a-z0-9-_]+$	schema-rejected-name-example	repaired
 tests/fixtures/cradl/expected	reference.md	4334	document_id	"documentId"	pattern=^(cradl|las):document:[a-f0-9]{32}$	schema-rejected-name-example	repaired
 tests/fixtures/cradl/expected	reference.md	4984	email	"email"	pattern=^[A-Za-z0-9][-+._A-Za-z0-9]*@([-_.A-Za-z0-9]+\.)+[A-Za-z]{2,}$	schema-rejected-name-example	repaired

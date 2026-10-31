@@ -794,3 +794,8 @@ psychic-spec-helpers-testapp API specification and generated SDK golden:
     https://raw.githubusercontent.com/rvohealth/psychic-spec-helpers/b8f5436891f64e6d988ab20969f7f71b45e7b332/openapi.json
     MIT (repository `LICENSE` at the commit); corpus row 4012 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+chrome-webstatus-backend API specification and generated SDK golden:
+    https://raw.githubusercontent.com/GoogleChrome/webstatus.dev/a0746a61a88c65d94bdee498617d48e73e97f724/openapi/backend/openapi.yaml
+    Apache-2.0 (repository `LICENSE` at the commit); corpus row 4013 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
