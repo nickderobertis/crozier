@@ -67,8 +67,8 @@ split five ways:
   [fixture-only search](openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts),
   which read the registered corpus, the pinned APIs.guru archive, the
   documents earlier searches acquired and a guarded GitHub code search for
-  every `x-fern-*` extension they name. It registered real witnesses for six
-  of them (corpus rows 4400 to 4404, and row 3001 reused), reads `exhausted`
+  every `x-fern-*` extension they name. It registered real witnesses for eight
+  of them (corpus rows 4400 to 4405, and row 3001 reused), reads `exhausted`
   where every declarer is decided and none is registrable, and leaves the
   shapes no code-search phrase selects `search-incomplete`, naming each
   outstanding declarer.
@@ -3035,8 +3035,8 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **501** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 109 unreached arms in all. By the verdict each arm's linked record states, 56 read `exhausted`, 53 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
+The golden rows split in two. **509** reach every handling site their
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 105 unreached arms in all. By the verdict each arm's linked record states, 59 read `exhausted`, 46 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources or, for an arm no arm-search
@@ -3150,73 +3150,69 @@ why. The changes that took the arm off:
 | 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]` | 4 | `search-incomplete` | `request-media-methods` |
 | 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `search-incomplete` | `request-media-methods` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `search-incomplete` | `inline-body-readonly-own-overlap` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]` | 26 | `search-incomplete` | `query-array-items-union` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]` | 2 | `search-incomplete` | `query-array-items-union` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | 2 | `search-incomplete` | `sensor-batch-query` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 4 | `allof` | `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` | 2 | `search-incomplete` | `nullable-store` |
-| 4 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `search-incomplete` | `union-sample` |
-| 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `search-incomplete` | `harbour-window`, `measurement-phase` |
-| 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `search-incomplete` | `kiln-variant-trigger` |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
-| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
-| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
-| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
-| 6 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
-| 7 | `parameter-in-header` | `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]` | 1 | `search-incomplete` | `header-subset-string-default` |
-| 7 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
-| 7 | `parameter-in-header` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | 12 | `search-incomplete` | `observatory-client-headers` |
-| 8 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
-| 8 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
-| 9 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
-| 9 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
-| 10 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `search-incomplete` | `streaming-extension-terminator` |
-| 10 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `search-incomplete` | `stream-condition-union-body` |
-| 11 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
-| 11 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 28 | `search-incomplete` | `ferry-mapping-outside-schemas` |
-| 12 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
-| 12 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
-| 13 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
-| 13 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
-| 14 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `search-incomplete` | `multipart-alias-object` |
-| 14 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `search-incomplete` | `multipart-json-module` |
-| 15 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 15 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 16 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
-| 16 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
-| 17 | `format-byte` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `sonar-packet-envelope` |
-| 17 | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | 1 | `search-incomplete` | `byte-text-response`, `byte-text-response-controls` |
-| 18 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 19 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 20 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 21 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-anyof-variants` |
-| 22 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
-| 23 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 24 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 25 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 26 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 27 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
-| 28 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
-| 29 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `search-incomplete` | `compass-choice` |
-| 30 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
-| 31 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
-| 32 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
-| 33 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-oneof-variants` |
-| 34 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | 18 | `search-incomplete` | `shelf-labels-map-variants` |
-| 35 | `annotated-ref-target-anyof` | `src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]` | 15 | `exhausted` | `inline-property-unions` |
-| 36 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
-| 37 | `type-single` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]` | 1 | `search-incomplete` | `verified-seal` |
-| 38 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-anyof-variants` |
-| 39 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-oneof-variants` |
-| 40 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` | `nested-array-elements` |
-| 41 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 42 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 43 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `search-incomplete` | `observatory-query-extensions` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 3 | `allof` | `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` | 2 | `search-incomplete` | `nullable-store` |
+| 3 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `search-incomplete` | `union-sample` |
+| 3 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `search-incomplete` | `harbour-window`, `measurement-phase` |
+| 3 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `search-incomplete` | `kiln-variant-trigger` |
+| 4 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
+| 4 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
+| 4 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
+| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
+| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
+| 5 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
+| 6 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
+| 6 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
+| 7 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
+| 7 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
+| 8 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `exhausted` | `streaming-extension-terminator` |
+| 8 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `exhausted` | `stream-condition-union-body` |
+| 9 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
+| 9 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 28 | `search-incomplete` | `ferry-mapping-outside-schemas` |
+| 10 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
+| 10 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
+| 11 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |
+| 11 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | 2 | `search-incomplete` | `sensor-batch-query` |
+| 12 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
+| 12 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
+| 13 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `search-incomplete` | `multipart-alias-object` |
+| 13 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `search-incomplete` | `multipart-json-module` |
+| 14 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 14 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 15 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
+| 15 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
+| 16 | `format-byte` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `sonar-packet-envelope` |
+| 16 | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | 1 | `search-incomplete` | `byte-text-response`, `byte-text-response-controls` |
+| 17 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 18 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 19 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 20 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-anyof-variants` |
+| 21 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
+| 22 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 23 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 24 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 25 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 26 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
+| 27 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
+| 28 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `search-incomplete` | `compass-choice` |
+| 29 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
+| 30 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
+| 31 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
+| 32 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-oneof-variants` |
+| 33 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | 18 | `search-incomplete` | `shelf-labels-map-variants` |
+| 34 | `annotated-ref-target-anyof` | `src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]` | 15 | `exhausted` | `inline-property-unions` |
+| 35 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
+| 36 | `type-single` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]` | 1 | `search-incomplete` | `verified-seal` |
+| 37 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-anyof-variants` |
+| 38 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-oneof-variants` |
+| 39 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` | `nested-array-elements` |
+| 40 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 41 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 42 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
+| 43 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `exhausted` | `observatory-query-extensions` |
 | 44 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 45 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 46 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
