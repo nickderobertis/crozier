@@ -264,9 +264,9 @@ now 141 after main's merge.
 
 ## Verification
 
-Every check below ran on `8584228f0`, apart from the judged lint, which ran
-on the commit adding this table. Commits after `8584228f0` change only this
-record.
+Every check below ran on `8584228f0`, apart from the census suite and the
+judged lint, which ran on `564e46794`, the commit adding this table. Commits
+after `8584228f0` change only this record.
 
 | check | result |
 |---|---|
@@ -276,5 +276,5 @@ record.
 | `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
 | `restate-coverage.py` drift check | no drift |
 | `witness_search_acquisition_test.py`, the file holding the two tests that failed the publication | 33 passed |
-| the `surface-census` project's `test-census` suite, complete | pending |
-| judged lint over the diff against `origin/main` (`just lint-llm-diff`) | pending |
+| the `surface-census` project's `test-census` suite, complete | 639 passed, 1 skipped |
+| judged lint over the diff against `8c0170eb7`, `origin/main` as merged (`just lint-llm-diff 8c0170eb7`) | all 5 batches passed, 0 rules failed |
