@@ -77,7 +77,11 @@ adds `Content-Length`, `X-Forwarded-For` and `Content-Disposition`.
 the set. That function already gates both a method's header parameters
 (`build_endpoint`) and client-wrapper promotion (`global_headers`). Unit test:
 `ir::tests::framing_and_forwarding_headers_leave_the_method_and_the_wrapper_and_their_neighbours_stay`.
-It fails against the previous set.
+It fails against the previous set. The census's port of the same rule,
+`UNPROMOTED_HEADERS` in `tools/surface-census/openapi-surface-census.py`,
+takes the three names too, under the function's new pinned digest. Its
+subset-header test gains a decoy for each, and fails without the port change.
+The port moves no census count.
 
 ## 3. A declared array that also lists properties
 
@@ -238,7 +242,7 @@ by the merge.
 | [`departures-ledger.tsv`](../tests/fixtures/departures-ledger.tsv) and the invalid-example inventory | `crates/crozier-e2e/departures-ledger.sh` (`just departures-ledger`), every comparison passing |
 | [`compared-goldens.json`](../tests/fixtures/compared-goldens.json) | `CROZIER_UPDATE_COMPARED_GOLDENS=1` over `compared_goldens_inventory_is_current` |
 | [`golden-reach.tsv`](openapi-surface/golden-reach.tsv) and the region files' reach cells | `just golden-reach` over 277 golden tests, then `just golden-reach-report` after the site row was added |
-| the document-path snapshot and the coverage restatements | `restate-coverage.py --snapshot-json .local/golden-reach/census.json --write` (904 selectors, 1,334,438 declaration sites, 277 sources), `restate-coverage.py --write`, `golden-reach.py arms --headline` |
+| the document-path snapshot and the coverage restatements | `restate-coverage.py --snapshot-json .local/golden-reach/census.json --write` (904 selectors, 1,334,438 declaration sites, 277 sources), `restate-coverage.py --write`, and the arm restatement of `just golden-reach-arms` with its `--headline` flag |
 | the reach ranking in the coverage index | the uncommitted `restate-reach-ranking.py` earlier registrations used, restating 82 rows from the ledger, one fewer than before |
 | [`handwritten-reach.tsv`](openapi-surface/handwritten-reach.tsv) | `just handwritten-reach`: 115 arm covers, 20 combination interaction sites, no configuration gates |
 | [`witness-search-keys.tsv`](openapi-surface/witness-search-keys.tsv) | `witness-search-region-keys.py` |
@@ -246,16 +250,24 @@ by the merge.
 
 ## Verification
 
-Every check below ran on commit `96f937328`, whose `src/` is `27ef9c038`'s.
-Later commits change only this record.
+Every check below ran on commit `a4a092146`, or, where marked, on
+`96f937328`. `src/` is `27ef9c038`'s at both. The only difference between them
+is the census port and the restated counts described above. Later commits
+change only this record.
 
 | check | result |
 |---|---|
-| `crozier` unit and integration tests (`cargo nextest run -p crozier`), every touched module's included | 1,105 passed |
-| the complete crozier-e2e suite, under `just departures-ledger` (among them `vtex_marketplace_protocol_matches_fern_output`, `overlay_goldens_match_fern_output`, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate` and the `emission_parity` tests) | all passed; the ledger changes only as described above |
-| VTEX's golden test and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 2 passed |
-| `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
-| `restate-coverage.py` drift check | no drift |
-| clippy with `-D warnings` over `crozier` and `crozier-e2e`, rustfmt's check | clean |
-| judged lint over the diff against `origin/main` (`just lint-llm-diff`) | all 4 batches passed, 0 rules failed |
-| the `surface-census` project's `test-census` suite, complete | CENSUS-PENDING |
+| `just nx run crozier:test`, every touched module's unit tests included | 1,105 passed |
+| the complete crozier-e2e suite, under `just departures-ledger` (`96f937328`) (among them `vtex_marketplace_protocol_matches_fern_output`, `overlay_goldens_match_fern_output`, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate` and the `emission_parity` tests) | all passed; the ledger changes only as described above |
+| `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate` | 2 passed |
+| VTEX's golden test and the overlay test (`96f937328`), with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 2 passed |
+| `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` (`96f937328`) | passed |
+| `restate-coverage.py` drift check (`96f937328`) | no drift |
+| the `lint` and `format` targets of `crozier` and `crozier-e2e` (`just nx run-many`) | passed |
+| the `surface-census` project's `test-census` suite, complete | 638 passed, 1 skipped |
+
+The census suite's first complete run, on `96f937328`, failed 8 of its tests.
+One was the census port's digest. The rest were counts the coverage index and
+the census docstring state, which no restater writes: the source split, the
+blind-spot rows' unreached-arm counts and the hand-written totals.
+`a4a092146` repairs both, and the run above supersedes that first one.
