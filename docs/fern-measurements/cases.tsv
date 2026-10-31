@@ -211,3 +211,16 @@ emission-parity/allof-only-base	docs/fern-measurements/emission-parity/allof-onl
 emission-parity/allof-only-base-literals	docs/fern-measurements/emission-parity/allof-only-base/openapi.yml	literals	packaged	-
 emission-parity/dangling-mapping-target	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	python-enums	packaged	-
 emission-parity/dangling-mapping-target-literals	docs/fern-measurements/emission-parity/dangling-mapping-target/openapi.yml	literals	packaged	-
+superseded-fixtures/buoy-depth-response	docs/fern-measurements/superseded-fixtures/buoy-depth-response/openapi.yml	python-enums	packaged	-
+superseded-fixtures/depot-bin-ledger	docs/fern-measurements/superseded-fixtures/depot-bin-ledger/openapi.yml	python-enums	packaged	-
+superseded-fixtures/described-scalar-bodies	docs/fern-measurements/superseded-fixtures/described-scalar-bodies/openapi.yml	python-enums	packaged	-
+superseded-fixtures/event-stream-event-dispatch	docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/openapi.yml	python-enums	packaged	-
+superseded-fixtures/ferry-berth-desk	docs/fern-measurements/superseded-fixtures/ferry-berth-desk/openapi.yml	python-enums	packaged	-
+superseded-fixtures/gallery-plaque-groups	docs/fern-measurements/superseded-fixtures/gallery-plaque-groups/openapi.yml	python-enums	packaged	-
+superseded-fixtures/kiln-form-mode	docs/fern-measurements/superseded-fixtures/kiln-form-mode/openapi.yml	python-enums	packaged	-
+superseded-fixtures/multipart-nullable-array	docs/fern-measurements/superseded-fixtures/multipart-nullable-array/openapi.yml	python-enums	packaged	-
+superseded-fixtures/multipart-request-name	docs/fern-measurements/superseded-fixtures/multipart-request-name/openapi.yml	python-enums	packaged	-
+superseded-fixtures/patch-inline-nullable-unrequired-props-omit	docs/fern-measurements/superseded-fixtures/patch-inline-nullable-unrequired-props-omit/openapi.yml	python-enums	packaged	-
+superseded-fixtures/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	python-enums	packaged	-
+superseded-fixtures/request-alias	docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml	python-enums	packaged	-
+superseded-fixtures/request-example-nulls	docs/fern-measurements/superseded-fixtures/request-example-nulls/openapi.yml	python-enums	packaged	-
