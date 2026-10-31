@@ -277,11 +277,6 @@ re-transcribe every cell the test names from that one walk, and replace the
 digest and counts above together. The paragraphs below are the history of the
 pins before this one; the digests they name are not checked.
 
-**Corpus row 4301 re-pins it.** `7fe4dde2…`, over 276 sources,
-became the digest above when `nixtla-timegpt` registered; every census cell
-this table reconciles was re-transcribed from that 277-source walk by
-`restate-coverage.py --snapshot-json`.
-
 **Corpus row 3300 re-pins it.** `5b0e590a…`, over 265 sources,
 became the digest above when `rapidata-identity` registered; every census cell
 this table reconciles was re-transcribed from that 266-source walk.
