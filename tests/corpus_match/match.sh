@@ -353,6 +353,8 @@ inventory=(
   konfig_lucca_organization_matches_fern_output
   ably_sdk_test_proxy_matches_fern_output
   dipjyotimetia_friday_matches_fern_output
+  canonical_test_observer_matches_fern_output
+  psychic_spec_helpers_testapp_matches_fern_output
   openapi_generator_allof_extension_parent_matches_fern_output
   trpc_openapi_app_router_matches_fern_output
   azure_databox_management_matches_fern_output

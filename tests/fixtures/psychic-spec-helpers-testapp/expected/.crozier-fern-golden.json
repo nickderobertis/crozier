@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "psychic-spec-helpers-testapp",
+  "corpus_spec_ref": "b8f5436891f64e6d988ab20969f7f71b45e7b332",
+  "corpus_spec_url": "https://raw.githubusercontent.com/rvohealth/psychic-spec-helpers/b8f5436891f64e6d988ab20969f7f71b45e7b332/openapi.json"
+}

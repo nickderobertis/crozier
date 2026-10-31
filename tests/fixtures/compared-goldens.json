@@ -880,6 +880,12 @@
     "tests/fixtures/bungie.net/expected": {},
     "tests/fixtures/bunq.com/expected": {},
     "tests/fixtures/byautomata.io/expected": {},
+    "tests/fixtures/canonical-test-observer/expected": {},
+    "tests/fixtures/canonical-test-observer/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/chaingateway-io/expected": {},
     "tests/fixtures/chat-rest-api/expected": {},
     "tests/fixtures/client-class-name/expected": {},
@@ -1184,6 +1190,12 @@
     "tests/fixtures/portfoliooptimizer.io/expected": {},
     "tests/fixtures/prometheus-x-edge-computing/expected": {},
     "tests/fixtures/protoform-conformance/expected": {},
+    "tests/fixtures/psychic-spec-helpers-testapp/expected": {},
+    "tests/fixtures/psychic-spec-helpers-testapp/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/pydantic-extra-fields/expected": {},
     "tests/fixtures/qontract-api/expected": {},
     "tests/fixtures/qredence-fleet-rlm/expected": {},

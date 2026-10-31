@@ -10320,6 +10320,8 @@ const CORPORA: &[&Corpus] = &[
     &KONFIG_LUCCA_ORGANIZATION,
     &ABLY_SDK_TEST_PROXY,
     &DIPJYOTIMETIA_FRIDAY,
+    &CANONICAL_TEST_OBSERVER,
+    &PSYCHIC_SPEC_HELPERS_TESTAPP,
     &OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT,
     &TRPC_OPENAPI_APP_ROUTER,
     &AZURE_DATABOX_MANAGEMENT,
@@ -11946,6 +11948,32 @@ const TRPC_OPENAPI_APP_ROUTER: Corpus = Corpus {
 /// `allof-single-ref-empty-properties-alias`.
 const AZURE_DATABOX_MANAGEMENT: Corpus = Corpus {
     api: "azure-databox-management",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `canonical-test-observer`: corpus row 4011, Canonical's Test Observer API — the registered witness of
+/// `anyof-array-variant-inline-const-item`.
+const CANONICAL_TEST_OBSERVER: Corpus = Corpus {
+    api: "canonical-test-observer",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `psychic-spec-helpers-testapp`: corpus row 4012, the Psychic framework spec helpers' test application — the registered witness of
+/// `bigint-format-string-typed-str`.
+const PSYCHIC_SPEC_HELPERS_TESTAPP: Corpus = Corpus {
+    api: "psychic-spec-helpers-testapp",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14303,6 +14331,16 @@ fn ably_sdk_test_proxy_matches_fern_output() {
 #[test]
 fn dipjyotimetia_friday_matches_fern_output() {
     assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
+}
+
+#[test]
+fn canonical_test_observer_matches_fern_output() {
+    assert_committed_corpus_matches(&CANONICAL_TEST_OBSERVER);
+}
+
+#[test]
+fn psychic_spec_helpers_testapp_matches_fern_output() {
+    assert_committed_corpus_matches(&PSYCHIC_SPEC_HELPERS_TESTAPP);
 }
 
 #[test]

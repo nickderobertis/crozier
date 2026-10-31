@@ -784,3 +784,13 @@ azure-databox-management API specification and generated SDK golden:
     https://raw.githubusercontent.com/jentic/jentic-public-apis/047e4ec2befca70c4bcdd05f162b2c005fc7cdfe/apis/openapi/azure.com/databoxmanagementclient/2019-09-01/openapi.json
     CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`); corpus row 4010 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+canonical-test-observer API specification and generated SDK golden:
+    https://raw.githubusercontent.com/canonical/test_observer/1095319380ea5979f6f538b96e0516a46bbd6f89/backend/schemata/openapi.json
+    AGPL-3.0 (the document's own `info.license`); corpus row 4011 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+psychic-spec-helpers-testapp API specification and generated SDK golden:
+    https://raw.githubusercontent.com/rvohealth/psychic-spec-helpers/b8f5436891f64e6d988ab20969f7f71b45e7b332/openapi.json
+    MIT (repository `LICENSE` at the commit); corpus row 4012 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
