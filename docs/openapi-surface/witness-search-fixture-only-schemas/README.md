@@ -78,7 +78,7 @@ The base's instrumented run covered the registered and APIs.guru populations who
 
 ## The real witnesses
 
-The first pass's nine:
+The first pass's nine: the eight rows below and the `description` arm `stellastra-com` reaches.
 
 | key | witness | golden | comparison test |
 |---|---|---|---|
