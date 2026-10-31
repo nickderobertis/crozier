@@ -16221,7 +16221,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         crate = {"type": "object", "properties": {"slats": {"type": "integer"}}}
         sack = {"type": "object", "properties": {"weight": {"type": "number"}}}
 
-        def tagged(value: str) -> dict[str, Any]:
+        def tagged(value: str) -> dict[str, object]:
             return {"type": "object", "properties": {"kind": {"type": "string", "enum": [value]}}}
 
         union = {
@@ -16288,7 +16288,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             rows(completed),
         )
 
-    def _component_cases(self, selector: str, cases: dict[str, dict[str, Any]]) -> dict[tuple[str, str], int]:
+    def _component_cases(self, selector: str, cases: dict[str, dict[str, object]]) -> dict[tuple[str, str], int]:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, schemas in cases.items():
@@ -16363,15 +16363,15 @@ class ShapePredicateSelectorControls(unittest.TestCase):
     def test_discriminated_variant_required_nullable_has_a_positive_and_decoys(self) -> None:
         selector = "components.schemas:discriminated-variant-required-nullable"
 
-        def variant(nullable: bool, required: bool, tag_only: bool = False) -> dict[str, Any]:
-            properties: dict[str, Any] = {"status": {"type": "string", "enum": ["open"]}}
+        def variant(nullable: bool, required: bool, tag_only: bool = False) -> dict[str, object]:
+            properties: dict[str, object] = {"status": {"type": "string", "enum": ["open"]}}
             if not tag_only:
                 properties["closes_at"] = {"type": "string", "nullable": nullable}
             names = ["status"] + (["closes_at"] if required and not tag_only else [])
             return {"type": "object", "properties": properties, "required": names}
 
-        def union(discriminated: bool = True) -> dict[str, Any]:
-            schema: dict[str, Any] = {"oneOf": [{"$ref": "#/components/schemas/Open"}]}
+        def union(discriminated: bool = True) -> dict[str, object]:
+            schema: dict[str, object] = {"oneOf": [{"$ref": "#/components/schemas/Open"}]}
             if discriminated:
                 schema["discriminator"] = {"propertyName": "status"}
             return schema
@@ -16403,15 +16403,15 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         base = {"type": "object", "properties": {"kind": {"type": "string"}, "inspector": {"type": "string"}}}
         tag_only_base = {"type": "object", "properties": {"kind": {"type": "string"}}}
 
-        def variant(*names: str, bases: tuple[str, ...] = ("Inspected",)) -> dict[str, Any]:
+        def variant(*names: str, bases: tuple[str, ...] = ("Inspected",)) -> dict[str, object]:
             return {
                 "type": "object",
                 "properties": {name: {"type": "string"} for name in names},
                 "allOf": [{"$ref": f"#/components/schemas/{name}"} for name in bases],
             }
 
-        def union(*members: str, discriminated: bool = True, composition: str = "oneOf") -> dict[str, Any]:
-            schema: dict[str, Any] = {composition: [{"$ref": f"#/components/schemas/{name}"} for name in members]}
+        def union(*members: str, discriminated: bool = True, composition: str = "oneOf") -> dict[str, object]:
+            schema: dict[str, object] = {composition: [{"$ref": f"#/components/schemas/{name}"} for name in members]}
             if discriminated:
                 schema["discriminator"] = {"propertyName": "kind"}
             return schema
@@ -16469,7 +16469,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         selector = "operation.responses:blank-description-inline-object"
         reading = {"type": "object", "properties": {"depth": {"type": "integer"}}}
 
-        def document(schema: dict[str, Any], *media: str) -> dict[str, Any]:
+        def document(schema: dict[str, object], *media: str) -> dict[str, object]:
             return {
                 "openapi": "3.0.3",
                 "info": {"title": "gauge", "version": "1"},
