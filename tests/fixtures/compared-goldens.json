@@ -25,6 +25,7 @@
     "docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected": {},
     "docs/fern-measurements/clients-extensions/grid-valve-console-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/harbour-chart-vault/fern-expected": {},
     "docs/fern-measurements/clients-extensions/harbour-pilot-regions-literals/fern-expected": {},
@@ -308,7 +309,6 @@
     "docs/fern-measurements/models-refs-literals/verified-seal/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/woven-thread/fern-expected": {},
     "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
-    "docs/fern-measurements/models-refs/gauge-public-fields/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected": {},
     "docs/fern-measurements/naming-wire/ledger-batch-upload-literals/fern-expected": {

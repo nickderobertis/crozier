@@ -364,7 +364,7 @@ fn property_metadata_survives_the_public_generation_pipeline() {
     }
     let source = std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml"),
+            .join("docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml"),
     )
     .unwrap();
     let files = render(&source);

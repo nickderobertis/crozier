@@ -162,6 +162,11 @@ docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expect
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/grid-valve-console-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/grid-valve-console-literals/fern-expected	README.md	42	repeated-credential-example-keyword
 docs/fern-measurements/clients-extensions/grid-valve-console-literals/fern-expected	reference.md	20	repeated-credential-example-keyword
@@ -760,11 +765,6 @@ docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/models-refs/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/fern-measurements/models-refs/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/fern-measurements/models-refs/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/fern-measurements/models-refs/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/fern-measurements/models-refs/gauge-public-fields/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

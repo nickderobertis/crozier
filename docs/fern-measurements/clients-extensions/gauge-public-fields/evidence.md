@@ -1,6 +1,6 @@
 # A property written `x-fern-ignore: true`
 
-Source: `docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml`, an
+Source: `docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml`, an
 independently authored document. Fern CLI 5.163.1; fernapi/fern-python-sdk
 5.41.3; enum_type: python_enums; package_name: fern; project_name:
 default_package_name. Complete unedited comment-stripped certified output.

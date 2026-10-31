@@ -2255,6 +2255,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "gauge-public-fields",
+        "docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml",
+        &[],
+    ),
+    (
         "keyword-bearer-name",
         "docs/fern-measurements/clients-extensions/keyword-bearer-name/openapi.yml",
         &[],
@@ -3811,7 +3816,7 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
 /// except `gauge-public-fields`, a measurement since corpus row 4015 proved its row.
 fn handwritten_or_measured(name: &str) -> String {
     if name == "gauge-public-fields" {
-        format!("docs/fern-measurements/models-refs/{name}")
+        format!("docs/fern-measurements/clients-extensions/{name}")
     } else {
         format!("docs/openapi-surface/handwritten/{name}")
     }

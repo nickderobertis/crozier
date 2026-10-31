@@ -110,8 +110,8 @@ models-refs-literals/circuit-readings	docs/openapi-surface/handwritten/circuit-r
 models-refs-literals/compass-member-notes	docs/openapi-surface/handwritten/compass-member-notes/openapi.yml	literals	packaged	-
 models-refs-literals/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	literals	packaged	-
 models-refs-literals/garden-crown	docs/openapi-surface/handwritten/garden-crown/openapi.yml	literals	packaged	-
-models-refs/gauge-public-fields	docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml	python-enums	packaged	-
-models-refs-literals/gauge-public-fields	docs/fern-measurements/models-refs/gauge-public-fields/openapi.yml	literals	packaged	-
+clients-extensions/gauge-public-fields	docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml	python-enums	packaged	-
+models-refs-literals/gauge-public-fields	docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml	literals	packaged	-
 models-refs-literals/harbour-window	docs/openapi-surface/handwritten/harbour-window/openapi.yml	literals	packaged	-
 models-refs-literals/library-records	docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml	literals	packaged	-
 models-refs-literals/material-register	docs/openapi-surface/handwritten/material-register/openapi.yml	literals	packaged	-
