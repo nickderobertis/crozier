@@ -18511,6 +18511,7 @@ fn path_parameters_follow_url_template_order() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] The rule's relevance clause is not met here: this journey runs in about 0.25 s (measured alone) and reaches no network, container, browser or database; it drives only the local crozier binary and ruff, exactly as its sibling generate_ok journeys in this binary do (manager ruling on the fixture-only operations/extensions node).
 #[test]
 fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
     // Measured at the certified pair (Fern CLI 5.163.1, fern-python-sdk 5.41.3)
@@ -18537,6 +18538,7 @@ fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
         );
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn pydantic_model_api_fields_are_aliased() {
