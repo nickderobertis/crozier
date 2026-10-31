@@ -1192,8 +1192,9 @@ def shard_count(weights: list[float], limit: float) -> tuple[int, list[list[int]
     """How many bins the units take: from the fewest the total allows under
     `limit` (its lower bound), one more each time longest-processing-time
     packing overflows a bin, and one bin per unit at most (a unit alone past the
-    limit cannot be split). It is the minimum whenever the packing reaches the
-    lower bound, which the test over the real inventory holds it to."""
+    limit cannot be split). It is the fewest bins the packing fits, and the
+    lower bound itself whenever the packing reaches it, which the test over the
+    real inventory holds it to."""
     if not weights:
         return 0, []
     count = max(1, math.ceil(sum(weights) / limit))
