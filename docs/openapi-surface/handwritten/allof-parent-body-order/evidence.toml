@@ -4,6 +4,6 @@ digest = "a2dd1d4cca0ba70d0f17973e70c7b6a776e3022bd0efd4d5423bfc97415868a2"
 
 [[covers]]
 key = "allof-parent-request-body"
-search = "docs/openapi-surface/witness-search-example-shapes/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-example-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

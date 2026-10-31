@@ -5,6 +5,6 @@ digest = "3e234002832e754b4c73995e8630157809ffb9a8ae4c837808fa0b66fae12828"
 [[covers]]
 key = "media-type-multipart"
 arm = 'src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]'
-search = "docs/openapi-surface/witness-search-multipart-objects/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-multipart-objects/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

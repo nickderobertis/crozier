@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "amrc-acs-directory",
+  "corpus_spec_ref": "6e52501e7d21f26ea584013e71e2152a9c4f0f6b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/AMRC-FactoryPlus/amrc-connectivity-stack/6e52501e7d21f26ea584013e71e2152a9c4f0f6b/acs-directory/api/openapi.yaml"
+}

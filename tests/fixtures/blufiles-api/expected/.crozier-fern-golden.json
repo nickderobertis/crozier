@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "blufiles-api",
+  "corpus_spec_ref": "1cfeb12a476f8fc50354be8961596a1fdd1bbeed",
+  "corpus_spec_url": "https://raw.githubusercontent.com/BluDood/BluFiles/1cfeb12a476f8fc50354be8961596a1fdd1bbeed/docs/src/openapi.json"
+}

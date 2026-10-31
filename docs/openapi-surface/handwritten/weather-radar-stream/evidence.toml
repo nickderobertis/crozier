@@ -4,6 +4,6 @@ digest = "1ed9f1091e484b84fc851df58674b08908d12a165bdf5913c55cd4c4411f1c07"
 
 [[covers]]
 key = "readme-streaming-snippet-omits-type-import"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"

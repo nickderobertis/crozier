@@ -1,0 +1,287 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.unprocessable_entity_error import UnprocessableEntityError
+from ..types.adjust_config import AdjustConfig
+from ..types.audio_format import AudioFormat
+from ..types.enhancer_config import EnhancerConfig
+from ..types.http_validation_error import HttpValidationError
+from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawSsmlClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def synthesize_ssml_api(
+        self,
+        *,
+        ssml: str,
+        format: typing.Optional[AudioFormat] = OMIT,
+        batch_size: typing.Optional[int] = OMIT,
+        eos: typing.Optional[str] = OMIT,
+        model: typing.Optional[str] = OMIT,
+        spliter_thr: typing.Optional[int] = OMIT,
+        enhancer: typing.Optional[EnhancerConfig] = OMIT,
+        adjuster: typing.Optional[AdjustConfig] = OMIT,
+        stream: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        Synthesize speech from SSML-formatted input using a specified TTS model.
+
+        This endpoint supports multi-speaker, multi-style speech synthesis based on structured SSML input.
+        It can return audio in various formats (e.g., `raw`, `wav`, `mp3`), with optional enhancements and prosody adjustments.
+
+        ### Supported Features
+        - Multiple speakers via `<voice spk="...">`
+        - Arbitrary text segmentation with sentence break markers (e.g., `eos="[uv_break]"`)
+        - Streaming or full-response audio
+        - Audio enhancement & pitch/speed adjustment via `EnhancerConfig` / `AdjustConfig`
+        - Custom batch size & segment length control via `batch_size` / `spliter_thr`
+
+        ### Parameters
+        - `ssml` (str): SSML XML string containing structured speech content (required)
+        - `format` (str): Output audio format. One of: `raw`, `wav`, `mp3` (default: `raw`)
+        - `batch_size` (int): Batch size for internal TTS inference, must be > 0
+        - `eos` (str): End-of-sentence token for segmentation (default: `[uv_break]`)
+        - `model` (str): TTS model identifier to be used (default: `chat-tts`)
+        - `spliter_thr` (int): Threshold to split long texts (default: 100, minimum: 50)
+        - `enhancer` (EnhancerConfig): Optional audio enhancer settings
+        - `adjuster` (AdjustConfig): Optional pitch/speed/volume control
+        - `stream` (bool): If true, returns a streaming response; otherwise, file response
+
+        ### Example SSML Input
+
+        ```xml
+        <speak version="0.1">
+            <voice spk="mona">ChatTTS 用于合成多角色多情感的有声书示例</voice>
+            <voice spk="mona">黛玉冷笑道：</voice>
+            <voice spk="doubao" emotion="happy">我说呢，亏了绊住，不然，早就飞起来了。</voice>
+            <voice spk="mona">宝玉道：</voice>
+            <voice spk="mona">“只许和你玩，替你解闷。不过偶然到他那里，就说这些闲话。”</voice>
+            <voice spk="doubao" emotion="angry">“好没意思的话！ 去不去，关我什么事儿？ 又没叫你替我解闷儿 ，还许你不理我呢”</voice>
+            <voice spk="mona">说着，便赌气回房去了。</voice>
+        </speak>
+        ````
+
+        The endpoint returns a synthesized audio file or stream based on the provided SSML and configuration.
+
+        Parameters
+        ----------
+        ssml : str
+
+        format : typing.Optional[AudioFormat]
+
+        batch_size : typing.Optional[int]
+
+        eos : typing.Optional[str]
+
+        model : typing.Optional[str]
+
+        spliter_thr : typing.Optional[int]
+
+        enhancer : typing.Optional[EnhancerConfig]
+
+        adjuster : typing.Optional[AdjustConfig]
+
+        stream : typing.Optional[bool]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/ssml",
+            method="POST",
+            json={
+                "ssml": ssml,
+                "format": format,
+                "batch_size": batch_size,
+                "eos": eos,
+                "model": model,
+                "spliter_thr": spliter_thr,
+                "enhancer": convert_and_respect_annotation_metadata(
+                    object_=enhancer, annotation=EnhancerConfig, direction="write"
+                ),
+                "adjuster": convert_and_respect_annotation_metadata(
+                    object_=adjuster, annotation=AdjustConfig, direction="write"
+                ),
+                "stream": stream,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        HttpValidationError,
+                        parse_obj_as(
+                            type_=HttpValidationError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawSsmlClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def synthesize_ssml_api(
+        self,
+        *,
+        ssml: str,
+        format: typing.Optional[AudioFormat] = OMIT,
+        batch_size: typing.Optional[int] = OMIT,
+        eos: typing.Optional[str] = OMIT,
+        model: typing.Optional[str] = OMIT,
+        spliter_thr: typing.Optional[int] = OMIT,
+        enhancer: typing.Optional[EnhancerConfig] = OMIT,
+        adjuster: typing.Optional[AdjustConfig] = OMIT,
+        stream: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        Synthesize speech from SSML-formatted input using a specified TTS model.
+
+        This endpoint supports multi-speaker, multi-style speech synthesis based on structured SSML input.
+        It can return audio in various formats (e.g., `raw`, `wav`, `mp3`), with optional enhancements and prosody adjustments.
+
+        ### Supported Features
+        - Multiple speakers via `<voice spk="...">`
+        - Arbitrary text segmentation with sentence break markers (e.g., `eos="[uv_break]"`)
+        - Streaming or full-response audio
+        - Audio enhancement & pitch/speed adjustment via `EnhancerConfig` / `AdjustConfig`
+        - Custom batch size & segment length control via `batch_size` / `spliter_thr`
+
+        ### Parameters
+        - `ssml` (str): SSML XML string containing structured speech content (required)
+        - `format` (str): Output audio format. One of: `raw`, `wav`, `mp3` (default: `raw`)
+        - `batch_size` (int): Batch size for internal TTS inference, must be > 0
+        - `eos` (str): End-of-sentence token for segmentation (default: `[uv_break]`)
+        - `model` (str): TTS model identifier to be used (default: `chat-tts`)
+        - `spliter_thr` (int): Threshold to split long texts (default: 100, minimum: 50)
+        - `enhancer` (EnhancerConfig): Optional audio enhancer settings
+        - `adjuster` (AdjustConfig): Optional pitch/speed/volume control
+        - `stream` (bool): If true, returns a streaming response; otherwise, file response
+
+        ### Example SSML Input
+
+        ```xml
+        <speak version="0.1">
+            <voice spk="mona">ChatTTS 用于合成多角色多情感的有声书示例</voice>
+            <voice spk="mona">黛玉冷笑道：</voice>
+            <voice spk="doubao" emotion="happy">我说呢，亏了绊住，不然，早就飞起来了。</voice>
+            <voice spk="mona">宝玉道：</voice>
+            <voice spk="mona">“只许和你玩，替你解闷。不过偶然到他那里，就说这些闲话。”</voice>
+            <voice spk="doubao" emotion="angry">“好没意思的话！ 去不去，关我什么事儿？ 又没叫你替我解闷儿 ，还许你不理我呢”</voice>
+            <voice spk="mona">说着，便赌气回房去了。</voice>
+        </speak>
+        ````
+
+        The endpoint returns a synthesized audio file or stream based on the provided SSML and configuration.
+
+        Parameters
+        ----------
+        ssml : str
+
+        format : typing.Optional[AudioFormat]
+
+        batch_size : typing.Optional[int]
+
+        eos : typing.Optional[str]
+
+        model : typing.Optional[str]
+
+        spliter_thr : typing.Optional[int]
+
+        enhancer : typing.Optional[EnhancerConfig]
+
+        adjuster : typing.Optional[AdjustConfig]
+
+        stream : typing.Optional[bool]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/ssml",
+            method="POST",
+            json={
+                "ssml": ssml,
+                "format": format,
+                "batch_size": batch_size,
+                "eos": eos,
+                "model": model,
+                "spliter_thr": spliter_thr,
+                "enhancer": convert_and_respect_annotation_metadata(
+                    object_=enhancer, annotation=EnhancerConfig, direction="write"
+                ),
+                "adjuster": convert_and_respect_annotation_metadata(
+                    object_=adjuster, annotation=AdjustConfig, direction="write"
+                ),
+                "stream": stream,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        HttpValidationError,
+                        parse_obj_as(
+                            type_=HttpValidationError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
