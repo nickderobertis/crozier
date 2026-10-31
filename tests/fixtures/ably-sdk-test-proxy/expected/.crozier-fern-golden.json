@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "ably-sdk-test-proxy",
+  "corpus_spec_ref": "03cf24a09ff0d12c877d08be2fb588c7cd441a07",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ably/sdk-test-proxy/03cf24a09ff0d12c877d08be2fb588c7cd441a07/openapi.yaml"
+}

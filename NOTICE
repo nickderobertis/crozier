@@ -739,3 +739,33 @@ contribly-com API specification and generated SDK golden:
     CC0-1.0 (the APIs.guru OpenAPI Directory's own LICENSE; the document declares no info.license);
     corpus row 4001 retains the immutable revision. Source bytes and the complete generated tree are
     vendored, with Python comments stripped.
+
+openapi-generator-oneof-two-primitives API specification and generated SDK golden:
+    https://raw.githubusercontent.com/OpenAPITools/openapi-generator/10e6c21c97abb098cc67f14dfdd02171ce56b115/samples/client/others/java/okhttp-gson-oneOf/api/openapi.yaml
+    Apache-2.0 (the repository's own LICENSE); corpus row 4002 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+sourcefuse-bpmn-service API specification and generated SDK golden:
+    https://raw.githubusercontent.com/sourcefuse/loopback4-microservice-catalog/dc07e992ea1549b22a0db576fcde8b251fccfcbb/services/bpmn-service/openapi.json
+    MIT (the repository's own LICENSE); corpus row 4003 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+readme-api-application-json API specification and generated SDK golden:
+    https://raw.githubusercontent.com/readmeio/api/64df99461f5aef56934341a48a1f004936483f4c/packages/httpsnippet-client-api/test/__datasets__/application-json/openapi.json
+    MIT (the repository's own LICENSE); corpus row 4004 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+konfig-lucca-organization API specification and generated SDK golden:
+    https://raw.githubusercontent.com/konfig-dev/konfig/bec3d36b9a341f30707a4ab3d9de6c4154809ada/sdks/db/intermediate-fixed-specs/lucca/organization/openapi.yaml
+    MIT (the repository's own LICENSE); corpus row 4005 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+ably-sdk-test-proxy API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ably/sdk-test-proxy/03cf24a09ff0d12c877d08be2fb588c7cd441a07/openapi.yaml
+    Apache-2.0 (the repository's own LICENSE); corpus row 4006 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+dipjyotimetia-friday API specification and generated SDK golden:
+    https://raw.githubusercontent.com/dipjyotimetia/friday/50f326aabeba90edb0d5bab75efeeaa6d4f6accd/openapi.json
+    MIT (the repository's own LICENSE); corpus row 4007 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

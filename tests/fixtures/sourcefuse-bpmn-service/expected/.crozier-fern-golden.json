@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "sourcefuse-bpmn-service",
+  "corpus_spec_ref": "dc07e992ea1549b22a0db576fcde8b251fccfcbb",
+  "corpus_spec_url": "https://raw.githubusercontent.com/sourcefuse/loopback4-microservice-catalog/dc07e992ea1549b22a0db576fcde8b251fccfcbb/services/bpmn-service/openapi.json"
+}

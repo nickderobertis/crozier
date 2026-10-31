@@ -10314,6 +10314,12 @@ const CORPORA: &[&Corpus] = &[
     &DANIWEB_CONNECT,
     &STELLASTRA_COM,
     &CONTRIBLY_COM,
+    &OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES,
+    &SOURCEFUSE_BPMN_SERVICE,
+    &README_API_APPLICATION_JSON,
+    &KONFIG_LUCCA_ORGANIZATION,
+    &ABLY_SDK_TEST_PROXY,
+    &DIPJYOTIMETIA_FRIDAY,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
@@ -11820,6 +11826,84 @@ const STELLASTRA_COM: Corpus = Corpus {
 /// string — the registered witness of `format-byte`'s `scalar_body` arm.
 const CONTRIBLY_COM: Corpus = Corpus {
     api: "contribly-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-oneof-two-primitives`: corpus row 4002, the OpenAPI Generator project's two-primitive `oneOf` sample — the registered witness of
+/// `component-same-primitive-union`.
+const OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES: Corpus = Corpus {
+    api: "openapi-generator-oneof-two-primitives",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sourcefuse-bpmn-service`: corpus row 4003, SourceFuse's LoopBack 4 BPMN service — the registered witness of
+/// `oneof-array-variant-inline-enum-item`.
+const SOURCEFUSE_BPMN_SERVICE: Corpus = Corpus {
+    api: "sourcefuse-bpmn-service",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `readme-api-application-json`: corpus row 4004, ReadMe's `api` code-snippet dataset for JSON bodies — the registered witness of
+/// `oneof-duplicate-members-collapsed`.
+const README_API_APPLICATION_JSON: Corpus = Corpus {
+    api: "readme-api-application-json",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `konfig-lucca-organization`: corpus row 4005, Konfig's corrected copy of Lucca's organization API — the registered witness of
+/// `schema-x-tags`.
+const KONFIG_LUCCA_ORGANIZATION: Corpus = Corpus {
+    api: "konfig-lucca-organization",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ably-sdk-test-proxy`: corpus row 4006, Ably's asset-tracking fault-simulation proxy — the registered witness of
+/// `combo-oneof-schema-example`.
+const ABLY_SDK_TEST_PROXY: Corpus = Corpus {
+    api: "ably-sdk-test-proxy",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `dipjyotimetia-friday`: corpus row 4007, the Friday testing-agent API — the registered witness of
+/// `format-binary`.
+const DIPJYOTIMETIA_FRIDAY: Corpus = Corpus {
+    api: "dipjyotimetia-friday",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14147,6 +14231,36 @@ fn stellastra_com_matches_fern_output() {
 #[test]
 fn contribly_com_matches_fern_output() {
     assert_committed_corpus_matches(&CONTRIBLY_COM);
+}
+
+#[test]
+fn openapi_generator_oneof_two_primitives_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES);
+}
+
+#[test]
+fn sourcefuse_bpmn_service_matches_fern_output() {
+    assert_committed_corpus_matches(&SOURCEFUSE_BPMN_SERVICE);
+}
+
+#[test]
+fn readme_api_application_json_matches_fern_output() {
+    assert_committed_corpus_matches(&README_API_APPLICATION_JSON);
+}
+
+#[test]
+fn konfig_lucca_organization_matches_fern_output() {
+    assert_committed_corpus_matches(&KONFIG_LUCCA_ORGANIZATION);
+}
+
+#[test]
+fn ably_sdk_test_proxy_matches_fern_output() {
+    assert_committed_corpus_matches(&ABLY_SDK_TEST_PROXY);
+}
+
+#[test]
+fn dipjyotimetia_friday_matches_fern_output() {
+    assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
 }
 
 #[test]

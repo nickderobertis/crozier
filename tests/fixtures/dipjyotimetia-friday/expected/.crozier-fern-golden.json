@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "dipjyotimetia-friday",
+  "corpus_spec_ref": "50f326aabeba90edb0d5bab75efeeaa6d4f6accd",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dipjyotimetia/friday/50f326aabeba90edb0d5bab75efeeaa6d4f6accd/openapi.json"
+}

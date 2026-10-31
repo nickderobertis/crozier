@@ -347,6 +347,12 @@ inventory=(
   ingef_conquery_matches_fern_output
   stellastra_com_matches_fern_output
   contribly_com_matches_fern_output
+  openapi_generator_oneof_two_primitives_matches_fern_output
+  sourcefuse_bpmn_service_matches_fern_output
+  readme_api_application_json_matches_fern_output
+  konfig_lucca_organization_matches_fern_output
+  ably_sdk_test_proxy_matches_fern_output
+  dipjyotimetia_friday_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

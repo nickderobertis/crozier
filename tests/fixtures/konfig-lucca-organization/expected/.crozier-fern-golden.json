@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "konfig-lucca-organization",
+  "corpus_spec_ref": "bec3d36b9a341f30707a4ab3d9de6c4154809ada",
+  "corpus_spec_url": "https://raw.githubusercontent.com/konfig-dev/konfig/bec3d36b9a341f30707a4ab3d9de6c4154809ada/sdks/db/intermediate-fixed-specs/lucca/organization/openapi.yaml"
+}

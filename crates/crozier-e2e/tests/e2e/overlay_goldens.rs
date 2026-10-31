@@ -79,6 +79,8 @@ const KINDS: &[Kind] = &[
     // - `rta-in-japan-twitter`: a posting API's one media-type enum.
     // - `contribly-com`: the OAuth scope enum of a contribution API's security
     //   scheme, beside its scalar `format: byte` request body.
+    // - `sourcefuse-bpmn-service`: the inline string-enum element of an array
+    //   `oneOf` member, and an inline relation enum.
     // Webflow pins singleton-allOf query enums and map values; SteamInputDB pins
     // read-only properties of referenced request bodies.
     Kind {
@@ -131,6 +133,7 @@ const KINDS: &[Kind] = &[
             "rs-server",
             "ingef-conquery",
             "contribly-com",
+            "sourcefuse-bpmn-service",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

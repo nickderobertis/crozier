@@ -1,0 +1,829 @@
+openapi: 3.1.0
+info:
+  title: Organization structure API
+  version: '1.0'
+  contact:
+    name: Lucca
+    url: www.lucca.fr
+    email: developers@lucca.fr
+  description: |
+    Welcome on the documentation for the Organization Structure API
+servers:
+  - url: https://example.ilucca.net
+    description: Your production environment (France)
+  - url: https://example.ilucca-test.net
+    description: Your test environment (France)
+tags:
+  - name: Axis-sections
+  - name: Departments
+paths:
+  /api/v3/axes:
+    get:
+      summary: List Axes
+      tags:
+        - Axis-sections
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Axis'
+      operationId: get-api-v3-axes
+      description: List all Axes satisfying query filters.
+      parameters:
+        - schema:
+            type: array
+            items:
+              type: integer
+          in: query
+          name: id
+          description: Filter on axes unique identifiers.
+          style: form
+        - schema:
+            type: boolean
+            default: true
+          in: query
+          name: isActive
+          description: Filter on axes active status.
+        - $ref: '#/components/parameters/paging'
+  /api/v3/axisSections:
+    parameters: []
+    get:
+      summary: List AxisSections
+      tags:
+        - Axis-sections
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        $ref: '#/components/schemas/AxisSection'
+              examples:
+                Get User Alice Smith:
+                  value:
+                    id: 142
+                    firstName: Alice
+                    lastName: Smith
+                    email: alice.smith@gmail.com
+                    dateOfBirth: '1997-10-31'
+                    emailVerified: true
+                    signUpDate: '2019-08-24'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      operationId: get-api-v3-axissections
+      description: List all AxisSections satisfying query filters.
+      parameters:
+        - $ref: '#/components/parameters/paging'
+        - schema:
+            type: array
+            items:
+              type: integer
+          in: query
+          name: axisId
+          description: Filter on the axis it belongs to.
+          style: form
+        - schema:
+            type: array
+            items:
+              type: integer
+          in: query
+          name: ownerId
+          description: Filter on the owner managing it.
+          style: form
+        - schema:
+            type: boolean
+            default: true
+          in: query
+          name: active
+          description: Filter on active status.
+    post:
+      summary: Create a new AxisSection
+      operationId: post-api-v3-axisSections
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AxisSection'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      description: Create a new AxisSection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AxisSection'
+      tags:
+        - Axis-sections
+  /api/v3/axisSections/{axisSectionId}:
+    parameters:
+      - schema:
+          type: integer
+        name: axisSectionId
+        in: path
+        required: true
+    get:
+      summary: Get an AxisSection by id
+      tags:
+        - Axis-sections
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AxisSection'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      operationId: get-api-v3-axisSections-axisSectionId
+      description: Retrieve a single AxisSection by its unique identifier.
+    put:
+      summary: Update an AxisSection by id
+      operationId: put-api-v3-axisSections-axisSectionId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AxisSection'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      description: Partial or complete update to an existing AxisSection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AxisSection'
+      tags:
+        - Axis-sections
+    delete:
+      summary: Delete an AxisSection by id
+      operationId: delete-api-v3-axisSections-axisSectionId
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      description: ''
+      tags:
+        - Axis-sections
+  /api/v3/departments:
+    get:
+      summary: List Departments
+      tags:
+        - Departments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Department'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '500':
+          description: Internal Server Error
+      operationId: get-api-v3-departments
+      description: List all Departments satisfying query filters.
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: headId
+        - schema:
+            type: integer
+          in: query
+          name: parentId
+        - $ref: '#/components/parameters/paging'
+  /api/v3/departments/tree:
+    get:
+      summary: List Departements as a tree
+      tags:
+        - Departments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  example-1:
+                    node: null
+                    children:
+                      - node:
+                          id: 0
+                          name: string
+                          url: string
+                        children:
+                          - null
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      node:
+                        type: 'null'
+                        description: Root department. Always null.
+                      children:
+                        type:
+                          - array
+                          - 'null'
+                        description: 'Max depth: 9 levels'
+                        items:
+                          $ref: '#/components/schemas/DepartmentTreeNode'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '500':
+          description: Internal Server Error
+      operationId: get-api-v3-departments-tree
+      description: >-
+        List all departments as a tree.
+
+        Remark: first node is always empty and represents the starting point of
+        the tree as multiple departments might be set to the highest level. 
+  /api/v3/departments/{departmentId}:
+    parameters:
+      - schema:
+          type: integer
+        name: departmentId
+        in: path
+        required: true
+    get:
+      summary: Get Departement by id
+      tags:
+        - Departments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Department'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      operationId: get-api-v3-departments-departmentId
+      description: Retrieve a single Department by its unique identifier.
+components:
+  schemas:
+    AxisSection:
+      title: The Axis Section resource
+      type: object
+      description: >-
+        ## Introduction
+
+
+        In some application contexts, resources can be attached to analytical
+        items. In most cases, the goal is to answer the needs of cost
+        accounting. Axes are primarily used by Timmi Timesheet & Cleemy
+        Expenses.
+
+
+        Both in Timmi Timesheet and Cleemy Expense, users can enter their
+        working hours or expenses spent on projects, tasks, work sites, cost
+        centers, etc... These are the `AxisSection[]`, categorized in `Axis[]`.
+        These axes can have parent-children relationships, and their
+        axis-sections as well.
+
+
+        ![axis-section-diagram.png](https://stoplight.io/api/v1/projects/cHJqOjEwNjgxNg/images/y74HUrks5dQ)
+
+
+        ## Example
+
+
+        Let's take an example. Say you expect your users to enter spent working
+        hours on each project. Each project belongs to a single client, and is
+        divided into tasks.
+
+
+        In other words:
+
+
+        - Clients
+          - (1..n) Projects: each project belongs to one, and one only, client.
+            - (n..n) Tasks: each task belongs to one or more project(s). 
+
+        Then:
+
+        - Each client is an `AxisSection` in the "Clients" `Axis`.
+
+        - One client has zero or more projects, which are `AxisSection[]` in the
+        "Projects" `Axis`. A project is child to one and only one client.
+
+        - One project has zero or more tasks, which are `AxisSection[]` in the
+        "Tasks" `Axis`. Each task axis-section is child to one or more
+        project(s) axis-sections.
+
+
+        The JSON representation of these axes in the API would be:
+
+
+        ```json
+
+        // GET /api/v3/axes HTTP/1.1
+
+        {
+          "data": {
+            "items": [
+              {
+                "id": 1,
+                "name": "Clients",
+                "parentAxisId": null,
+                "isNNRelation": false
+              },
+              {
+                "id": 2,
+                "name": "Projects",
+                "parentAxisId": 1,
+                "isNNRelation": false
+              },
+              {
+                "id": 3,
+                "name": "Tasks",
+                "parentAxisId": 2,
+                "isNNRelation": true
+              }
+            ]
+          }
+        }
+
+        ```
+
+
+        Regarding axis-sections:
+
+
+        ```json
+
+        // GET /api/v3/axisSections HTTP/1.1
+
+        {
+          "data": {
+            "items": [
+              {
+                "id": 1,
+                "name": "Acme Corporation",
+                "axis": {
+                  "id": 1,
+                  "name": "Clients",
+                  "parentAxisId": null,
+                  "isNNRelation": false
+                },
+                "parentAxisSections": []
+              },
+              {
+                "id": 2,
+                "name": "My awesome project",
+                "axis": {
+                  "id": 2,
+                  "name": "Projects",
+                  "parentAxisId": 1,
+                  "isNNRelation": false
+                },
+                "parentAxisSections": [
+                  {
+                    "id": 1,
+                    "axisId": 1
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "name": "My #2 project",
+                "axis": {
+                  "id": 2,
+                  "name": "Projects",
+                  "parentAxisId": 1,
+                  "isNNRelation": false
+                },
+                "parentAxisSections": [
+                  {
+                    "id": 1,
+                    "axisId": 1
+                  }
+                ]
+              },
+              {
+                "id": 4,
+                "name": "User tests",
+                "axis": {
+                  "id": 3,
+                  "name": "Tasks",
+                  "parentAxisId": 2,
+                  "isNNRelation": true
+                },
+                "parentAxisSections": [
+                  {
+                    "id": 2,
+                    "axisId": 2
+                  },
+                  {
+                    "id": 3,
+                    "axisId": 2
+                  }
+                ]
+              }
+            ]
+          }
+        }
+
+        ```
+
+        ## Fields
+      allOf:
+        - $ref: '#/components/schemas/AxisSectionTreeless'
+        - properties:
+            parentAxisSections:
+              type: array
+              items:
+                $ref: '#/components/schemas/AxisSectionTreeless'
+            childrenAxisSections:
+              type: array
+              items:
+                $ref: '#/components/schemas/AxisSectionTreeless'
+      x-tags:
+        - Axis-sections
+    Axis:
+      title: The Axis resource
+      description: >-
+        Read more about axes in the [definition for the axisSection
+        resource](reference/Organization-v3.yaml/components/schemas/AxisSection).
+      x-tags:
+        - Axis-sections
+      allOf:
+        - $ref: '#/components/schemas/AxisTreeless'
+        - type: object
+          properties:
+            parentAxis:
+              $ref: '#/components/schemas/AxisTreeless'
+            childrenAxes:
+              type: array
+              items:
+                $ref: '#/components/schemas/AxisTreeless'
+              readOnly: true
+    Department:
+      type: object
+      description: >-
+        Departments, to which users must be attached, are used by the different
+        Lucca solutions for different purposes:
+
+
+        * Define access scopes: for example to restrict the visibility of
+        absences in the Timmi Absences schedule.
+
+        * Filtering data in a report: our different reports generally allow to
+        filter data according to the legal entity, the SSC, but also the
+        department of the user.
+
+        * Build the organization chart in Poplee Core HR.
+
+        The departments are represented as a hierarchical tree with a
+        parent/child relationship.
+
+
+        *NB:* You can have up to 9 levels of departments, and up to 99
+        departments under a single parent department. However, limiting the
+        number of levels to 7 is recommended.
+      examples:
+        - id: 2
+          name: Administration
+          code: Administration
+          hierarchy: /1.0/
+          parentId: /
+          position: 10000000000000000000
+          sortOrder: 1
+          level: 1
+          isActive: true
+          headID: null
+          head: null
+          users:
+            - id: 11
+              name: Daniel Hernandez
+              url: https://sandbox.ilucca-demo.net/api/v3/users/11
+            - id: 36
+              name: henri paul
+              url: https://sandbox.ilucca-demo.net/api/v3/users/36
+          currentUsers:
+            - id: 11
+              name: Daniel Hernandez
+              url: https://sandbox.ilucca-demo.net/api/v3/users/11
+            - id: 36
+              name: henri paul
+              url: https://sandbox.ilucca-demo.net/api/v3/users/36
+          url: https://sandbox.ilucca-demo.net/api/v3/departments/2
+      title: The Department resource
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          maxLength: 255
+        hierarchy:
+          type: string
+          description: Position of the departement in the hierarchical tree
+        parentId:
+          type: string
+          description: Position of the parent department in the hierarchical tree
+          pattern: \/[0-9]\/
+        isActive:
+          type: boolean
+        position:
+          type: integer
+          description: Department's general position in the hierarchy
+          minimum: 10000000000000000000
+          maximum: 100000000000000000000
+        level:
+          type: integer
+          description: level of the Department. Deduce from Position.
+        sortOrder:
+          type: integer
+          description: >-
+            Order of the current Department among the children of the Parent
+            Department
+          minimum: 1
+        headID:
+          type: integer
+          description: ID of the User who is the head of the department
+        head:
+          $ref: '#/components/schemas/User'
+        users:
+          type: array
+          description: Users of the department, including inactive users.
+          items:
+            $ref: '#/components/schemas/User'
+        currentUsers:
+          type: array
+          description: Only active users of the department
+          items:
+            $ref: '#/components/schemas/User'
+        currentUsersCount:
+          type: integer
+          minimum: 0
+          description: Number of active users in the department
+          readOnly: true
+      required:
+        - name
+        - code
+      x-tags:
+        - Departments
+    AxisSectionTreeless:
+      title: AxisSectionTreeless
+      x-stoplight:
+        id: kgwih8x8ajea8
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        code:
+          type: string
+        multilingualName:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        ownerId:
+          type:
+            - integer
+            - 'null'
+        startOn:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          readOnly: true
+        endOn:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        active:
+          type: boolean
+          default: true
+        axisId:
+          type: integer
+      required:
+        - code
+        - multilingualName
+        - axisId
+    AxisTreeless:
+      title: AxisTreeless
+      x-stoplight:
+        id: ptjr91y412040
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          minimum: 0
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        multilingualName:
+          type: string
+        position:
+          type: integer
+          minimum: 0
+          default: 0
+          format: int32
+        parentAxisId:
+          type:
+            - integer
+            - 'null'
+          format: int32
+          default: null
+          minimum: 0
+        isActive:
+          type: boolean
+          default: true
+        isReadOnly:
+          type: boolean
+          default: false
+          readOnly: true
+        isNNRelation:
+          type: boolean
+          default: false
+        level:
+          type: integer
+          format: int32
+          default: 0
+          readOnly: true
+      required:
+        - multilingualName
+    DepartmentTreeNode:
+      title: DepartmentTreeNode
+      x-stoplight:
+        id: trn3naznwv1de
+      type: object
+      properties:
+        node:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: Department id
+            name:
+              type: string
+              maxLength: 255
+              minLength: 1
+              description: Department name
+            url:
+              type: string
+              format: uri
+              description: Department URL
+        children:
+          type: array
+          description: List of all children departments.
+          items:
+            $ref: '#/components/schemas/DepartmentTreeNode'
+    User:
+      title: User
+      x-stoplight:
+        id: 237yfq2tyul16
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+  securitySchemes:
+    Authorization:
+      name: Authorization
+      type: apiKey
+      in: header
+      description: Header value must be equal to `lucca application={apiKey}`
+  parameters:
+    paging:
+      name: paging
+      in: query
+      required: true
+      schema:
+        type: string
+        example: 100,0
+      description: '{offset},{limit}. Defaults to 0,1000.'
+  responses:
+    Error:
+      description: Generique error message response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+              Message:
+                type: string
+            x-examples:
+              example-1:
+                Status: 404
+                Message: Resource Department with ID 13651 not found
+security:
+  - Authorization: []

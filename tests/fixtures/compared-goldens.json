@@ -807,6 +807,7 @@
     "docs/openapi-surface/probe-expected/xml-wrapped": {},
     "docs/openapi-surface/probe-expected/xml-wrapped-control": {},
     "tests/fixtures/6-dot-authentiqio.appspot.com/expected": {},
+    "tests/fixtures/ably-sdk-test-proxy/expected": {},
     "tests/fixtures/adyen-acs-notification/expected": {},
     "tests/fixtures/adyen-capital/expected": {},
     "tests/fixtures/adyen-managed-risk-notification/expected": {},
@@ -902,6 +903,7 @@
     "tests/fixtures/deepsearch-ds-v2/expected": {},
     "tests/fixtures/descope-authzcache/expected": {},
     "tests/fixtures/digit-leading-property/expected": {},
+    "tests/fixtures/dipjyotimetia-friday/expected": {},
     "tests/fixtures/discord-com/expected": {},
     "tests/fixtures/discourse.local/expected": {},
     "tests/fixtures/discriminated-unions/expected": {},
@@ -1062,6 +1064,7 @@
         ]
       }
     },
+    "tests/fixtures/konfig-lucca-organization/expected": {},
     "tests/fixtures/kytos-sdntrace-cp/expected": {},
     "tests/fixtures/langchain-agent-protocol/expected": {},
     "tests/fixtures/langchain-agent-server/expected": {},
@@ -1131,6 +1134,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/openapi-generator-oneof-two-primitives/expected": {},
     "tests/fixtures/openapitools-csharp-allof/expected": {},
     "tests/fixtures/openapitools-csharp-allof/expected-literals": {
       "excluded": [
@@ -1184,6 +1188,7 @@
       ]
     },
     "tests/fixtures/raybot/expected": {},
+    "tests/fixtures/readme-api-application-json/expected": {},
     "tests/fixtures/recursive-types/expected": {},
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},
     "tests/fixtures/redocly.com-museum/expected": {},
@@ -1223,6 +1228,12 @@
     "tests/fixtures/skool-entry/expected": {},
     "tests/fixtures/skool/expected": {},
     "tests/fixtures/slurmdb-rest/expected": {},
+    "tests/fixtures/sourcefuse-bpmn-service/expected": {},
+    "tests/fixtures/sourcefuse-bpmn-service/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/spendesk/expected": {},
     "tests/fixtures/squareup.com/expected": {},
     "tests/fixtures/sse-streaming/expected": {},

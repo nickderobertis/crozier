@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .workflows_filter_fields_created_by import WorkflowsFilterFieldsCreatedBy
+from .workflows_filter_fields_one_item import WorkflowsFilterFieldsOneItem
+
+WorkflowsFilterFields = typing.Union[WorkflowsFilterFieldsCreatedBy, typing.List[WorkflowsFilterFieldsOneItem]]
