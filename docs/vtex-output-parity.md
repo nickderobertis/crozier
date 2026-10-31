@@ -265,6 +265,7 @@ change only this record.
 | `restate-coverage.py` drift check (`96f937328`) | no drift |
 | the `lint` and `format` targets of `crozier` and `crozier-e2e` (`just nx run-many`) | passed |
 | the `surface-census` project's `test-census` suite, complete | 638 passed, 1 skipped |
+| judged lint over the diff against `origin/main` (`just lint-llm-diff`), on `bb8f55235`, which adds this table | all 5 batches passed, 0 rules failed |
 
 The census suite's first complete run, on `96f937328`, failed 8 of its tests.
 One was the census port's digest. The rest were counts the coverage index and
