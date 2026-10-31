@@ -15291,14 +15291,20 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         self.assertIn(
             f"The other {len(webhooks & paths)} webhook declarers also declare paths", rows["webhooks-without-paths"][4]
         )
+        others = sum(sum(self.measured.get(selector, {}).values()) for selector in ignore_selectors[1:])
         self.assertIn(
-            f"All {sum(ignored.values())} declarations are on operations under the Fern spelling",
+            f"All {sum(ignored.values())} declarations are on operations under the Fern spelling"
+            if not others
+            else f"The {sum(ignored.values())} declarations combine the supported ignore extensions",
             rows["x-fern-or-crozier-ignore"][4],
         )
-        for selector in ignore_selectors[1:]:
-            self.assertEqual(
-                {}, self.measured.get(selector, {}), "the cell's zero-declaration claim must change with this selector"
-            )
+        self.assertIn(
+            "The other three selectors have zero declarations in the registered-source walk"
+            if not others
+            else f"The other three selectors carry {others} declarations in the registered-source walk",
+            rows["x-fern-or-crozier-ignore"][4],
+            "the cell's count of the other three selectors must change with them",
+        )
 
 
 class NamingMirrorTests(unittest.TestCase):
