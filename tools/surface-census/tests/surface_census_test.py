@@ -5961,6 +5961,9 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:complex-module-name",
             "components.schemas:described-object-ref-union",
             "components.schemas:variant-own-fields-before-base",
+            "components.schemas:nullable-single-allof-ref",
+            "components.schemas:empty-properties-single-allof-ref",
+            "schema.oneOf:duplicate-members",
             "operation.responses:blank-description-inline-object",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
@@ -16280,6 +16283,72 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             {(selector, "positive"): 1, (selector, "escaped-reference"): 1, (selector, "malformed-properties"): 1},
             rows(completed),
         )
+
+    def _component_cases(self, selector: str, cases: dict[str, dict[str, Any]]) -> dict[tuple[str, str], int]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return rows(completed)
+
+    def test_nullable_single_allof_ref_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:nullable-single-allof-ref"
+        ledger = {"type": "object", "properties": {"pages": {"type": "integer"}}}
+        one = [{"$ref": "#/components/schemas/Ledger"}]
+        cases = {
+            "positive": {"Ledger": ledger, "MaybeLedger": {"nullable": True, "allOf": one}},
+            "not-nullable": {"Ledger": ledger, "MaybeLedger": {"allOf": one}},
+            "two-members": {"Ledger": ledger, "MaybeLedger": {"nullable": True, "allOf": [*one, {"type": "object"}]}},
+            "inline-member": {"MaybeLedger": {"nullable": True, "allOf": [ledger]}},
+            "own-properties": {
+                "Ledger": ledger,
+                "MaybeLedger": {"nullable": True, "allOf": one, "properties": {"note": {"type": "string"}}},
+            },
+            "open-map": {
+                "Ledger": ledger,
+                "MaybeLedger": {"nullable": True, "allOf": one, "additionalProperties": True},
+            },
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_empty_properties_single_allof_ref_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:empty-properties-single-allof-ref"
+        quarry = {"type": "object", "properties": {"depth": {"type": "number"}}}
+        one = [{"$ref": "#/components/schemas/Quarry"}]
+        cases = {
+            "positive": {"Quarry": quarry, "Pit": {"type": "object", "properties": {}, "allOf": one}},
+            "no-properties-key": {"Quarry": quarry, "Pit": {"type": "object", "allOf": one}},
+            "own-properties": {"Quarry": quarry, "Pit": {"properties": {"rim": {"type": "string"}}, "allOf": one}},
+            "two-members": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": [*one, *one]}},
+            "open-map": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": one, "additionalProperties": {}}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_oneof_duplicate_members_has_a_positive_and_decoys(self) -> None:
+        selector = "schema.oneOf:duplicate-members"
+        member = {"type": "number"}
+        ref = {"$ref": "#/components/schemas/Weight"}
+        weight = {"type": "number"}
+        cases = {
+            "positive": {"Weight": weight, "Reading": {"oneOf": [member, {"type": "string"}, dict(member)]}},
+            "distinct": {"Weight": weight, "Reading": {"oneOf": [member, {"type": "string"}]}},
+            "repeated-ref": {"Weight": weight, "Reading": {"oneOf": [ref, dict(ref)]}},
+            "any-of": {"Weight": weight, "Reading": {"anyOf": [member, dict(member)]}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
 
     def test_variant_own_fields_before_base_has_a_positive_and_decoys(self) -> None:
         selector = "components.schemas:variant-own-fields-before-base"

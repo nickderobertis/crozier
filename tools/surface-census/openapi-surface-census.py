@@ -1444,6 +1444,23 @@ PREDICATES = {
         "else is declared beside them, which `normalize_same_primitive_unions` of "
         "`src/openapi.rs` renames after its last alternative's ordinal"
     ),
+    "components.schemas:nullable-single-allof-ref": (
+        "one per component schema writing `nullable: true` and an `allOf` of exactly "
+        "one Reference Object, with no `properties` and no `additionalProperties`: the "
+        "annotated reference `Builder::add_named_shape` of `src/ir.rs` writes as an "
+        "`Optional` alias of its target through its explicitly-nullable arm"
+    ),
+    "components.schemas:empty-properties-single-allof-ref": (
+        "one per component schema writing `properties: {}` and an `allOf` of exactly "
+        "one Reference Object, with no `additionalProperties`: the annotated reference "
+        "`Builder::add_named_shape` of `src/ir.rs` writes as an alias of its target, "
+        "not as a model inheriting from it"
+    ),
+    "schema.oneOf:duplicate-members": (
+        "one per Schema Object whose `oneOf` holds two inline members (no `$ref`) that "
+        "are equal as JSON values: `dedupe_union_members` of `src/ir.rs` writes the "
+        "union with that member once, as Fern does"
+    ),
     "components.schemas:described-object-ref-union": (
         "one per component schema writing a non-empty `description` and a `oneOf` of "
         "two or more Reference Objects, each to an object component, with no "
@@ -7281,6 +7298,7 @@ class Census:
             found += self.complex_module_names(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
             found += self.described_object_ref_unions(node.get("schemas"))
+            found += self.single_all_of_ref_aliases(node.get("schemas"))
             found += self.variant_own_fields_before_bases(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
@@ -7580,6 +7598,15 @@ class Census:
                 found.append(f"schema.{field}:several-non-null-members")
             if len(members) == 1:
                 found.append(f"schema.{field}:sole-member")
+        one_of = node.get("oneOf")
+        if isinstance(one_of, list):
+            inline = [
+                json.dumps(member, sort_keys=True)
+                for member in one_of
+                if isinstance(member, dict) and "$ref" not in member
+            ]
+            if len(inline) != len(set(inline)):
+                found.append("schema.oneOf:duplicate-members")
         if "enum" in node and string_valued(node, node.get("enum")):
             found.append("schema.enum:string-valued")
         found += enum_member_predicates(node)
@@ -7758,6 +7785,36 @@ class Census:
             for key, schema in node.items()
             if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
+
+    @staticmethod
+    def single_all_of_ref_aliases(node: Any) -> list[str]:
+        """`components.schemas:nullable-single-allof-ref` and `…:empty-properties-single-allof-ref`.
+
+        Read at the Components Object, because the alias `Builder::add_named_shape`
+        writes for an `allOf` of one `$ref` is a component declaration's: the same
+        composition inline is a property's annotated reference instead.
+        """
+        if not isinstance(node, dict):
+            return []
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            members = schema.get("allOf")
+            if (
+                not isinstance(members, list)
+                or len(members) != 1
+                or not isinstance(members[0], dict)
+                or not isinstance(members[0].get("$ref"), str)
+                or "additionalProperties" in schema
+            ):
+                continue
+            properties = schema.get("properties")
+            if schema.get("nullable") is True and not properties:
+                found.append("components.schemas:nullable-single-allof-ref")
+            if isinstance(properties, dict) and not properties:
+                found.append("components.schemas:empty-properties-single-allof-ref")
+        return found
 
     @staticmethod
     def described_object_ref_unions(node: Any) -> list[str]:

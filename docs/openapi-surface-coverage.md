@@ -499,7 +499,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-160, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+163, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
@@ -812,6 +812,15 @@ drift gate over the pair:
   other than the discriminator's and an `allOf` Reference Object to a base declaring one
   too: `member_fields` of `src/ir.rs` writes the variant's own fields before the base's
   in the union wrapper, the reverse of the `allOf` order
+- `components.schemas:nullable-single-allof-ref` — one per component schema writing
+  `nullable: true` and an `allOf` of exactly one Reference Object, with no `properties`
+  and no `additionalProperties`: the annotated reference `Builder::add_named_shape` of
+  `src/ir.rs` writes as an `Optional` alias of its target through its explicitly-nullable
+  arm
+- `components.schemas:empty-properties-single-allof-ref` — one per component schema
+  writing `properties: {}` and an `allOf` of exactly one Reference Object, with no
+  `additionalProperties`: the annotated reference `Builder::add_named_shape` of
+  `src/ir.rs` writes as an alias of its target, not as a model inheriting from it
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
   Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
   `src/openapi.rs` resolves
@@ -954,6 +963,9 @@ drift gate over the pair:
   one member
 - `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds exactly
   one member
+- `schema.oneOf:duplicate-members` — one per Schema Object whose `oneOf` holds two
+  inline members (no `$ref`) that are equal as JSON values: `dedupe_union_members` of
+  `src/ir.rs` writes the union with that member once, as Fern does
 - `schema.enum:string-valued` — one per Schema Object whose `enum` array yields at least
   one string value under crozier's own `string_enum_values` — the schema is `type:
   string`, or declares no `type` and every member is a string
@@ -1049,7 +1061,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Eighty-nine of the 160 are node-local**, which is what makes them one family:
+**Ninety-two of the 163 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
