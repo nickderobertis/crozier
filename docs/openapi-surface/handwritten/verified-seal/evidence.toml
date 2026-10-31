@@ -5,8 +5,7 @@ digest = "f56e9e4bab1c05ecd046e640df8a867c6c39ebe10e6624524eace8d2b766ddd9"
 [[covers]]
 key = "literal-type-extension-ignored"
 search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+verdict = "exhausted"
 
 [[covers]]
 key = "type-single"

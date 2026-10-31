@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 724 features. By category, 511 are `golden`, 56
-`limitations`, 143 `handwritten` and 14 `gap`. Taken back from the region files,
+The walk enumerates 724 features. By category, 524 are `golden`, 56
+`limitations`, 130 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 724
 split five ways:
 
-- **510 carry byte-match evidence against a registered real-world
+- **523 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **144 rest on a hand-written fixture, a weaker proof than a real
+- **131 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -46,8 +46,8 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  6 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 137 read `search-incomplete`. Of those,
+  8 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 122 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -108,7 +108,7 @@ split five ways:
   (corpus rows 2200 and 2201).
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  510 and never count as a real-specification match.
+  523 and never count as a real-specification match.
 - **0 are decided output-insensitive.** Deleting the feature leaves both generators'
   complete trees byte-identical, as [the shared
   table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
@@ -120,21 +120,21 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-510 + 70 + 144 + 0 + 0 = 724.
+523 + 70 + 131 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
-([the list](openapi-surface/combinations.md)): 12 are `gap`, 68 are `golden` and 11 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 12 are `gap`, 70 are `golden` and 9 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where the run that byte-matches Fern
 executes the branch where its two features meet. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) holds that bar, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**16** are byte-matched against a registered real specification at their
+**18** are byte-matched against a registered real specification at their
 interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **11** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **0** remain
-unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 16 + 52 + 0 + 11 + 0 + 12 = 91.
+non-generation, **9** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **0** remain
+unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 18 + 52 + 0 + 9 + 0 + 12 = 91.
 None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -228,7 +228,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (144 features, 112
+- **Features and arms resting on hand-written fixtures only (131 features, 112
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -2253,9 +2253,9 @@ link and expect the named failure. The counts below are the output of
 
 ```text
 shapes: 160
-by kind: handwritten 136, measurement 2, real 17, refusal 5
+by kind: handwritten 125, measurement 5, real 25, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 49, match 106
+by outcome: default=refuse;strict=refuse 5, departure 52, match 103
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
@@ -2406,8 +2406,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 294 sources. The walk reads the
-  **277** registered sources, of which **277** carry a committed golden; the 17
+  acquires 310 sources. The walk reads the
+  **293** registered sources, of which **293** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2446,15 +2446,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 93 | 53 | 19 | 21 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 342 | 263 | 18 | 59 | 2 | 0 | 0 | 2 |
+| [`schemas`](openapi-surface/schemas.md) | 342 | 276 | 18 | 46 | 2 | 0 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 47 | 5 | 26 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 84 | 69 | 3 | 12 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
-| **total** | **724** | **511** | **56** | **143** | **14** | **0** | **0** | **14** |
+| **total** | **724** | **524** | **56** | **130** | **14** | **0** | **0** | **14** |
 
 The walk enumerated **724** features and landed each in exactly one category:
-**511** `golden`, **56** `limitations`, **143** `handwritten`, **14** `gap`. The `gap` column splits by
+**524** `golden`, **56** `limitations`, **130** `handwritten`, **14** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2850,7 +2850,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **496** golden rows reach every handling site and tie below every row
+then key. **513** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3463,7 +3463,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**62** golden rows rest on one document: a single golden-only witness declares
+**73** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3490,8 +3490,11 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-regex` | `schemas` | `eozilla` |
 | `format-time` | `schemas` | `maif.local-otoroshi` |
 | `format-uri-template` | `schemas` | `openlinksw-osdb` |
+| `variant-nullable-value-optional-default-none` | `schemas` | `andreychh-coopera` |
 | `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |
 | `request-body-string-map` | `bodies-media` | `confluent-kafka-connect` |
+| `union-of-two-enum-refs-alias` | `schemas` | `chrome-webstatus-backend` |
+| `anyof-array-variant-inline-const-item` | `schemas` | `canonical-test-observer` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
@@ -3499,7 +3502,9 @@ ledger, so a registration that adds a second witness removes the row here.
 | `cycle-into-cycle` | `schemas` | `ingef-conquery` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
 | `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
+| `component-same-primitive-union` | `schemas` | `openapi-generator-oneof-two-primitives` |
 | `oneof-array-variant-empty-object-item` | `schemas` | `milvus-vector-operations` |
+| `allof-single-ref-empty-properties-alias` | `schemas` | `azure-databox-management` |
 | `oneof-array-variant-oneof-nullable-item` | `schemas` | `discord-com` |
 | `oneof-empty-object-variant` | `schemas` | `milvus-vector-operations` |
 | `enum-uuid-member` | `schemas` | `reverb.com` |
@@ -3519,14 +3524,20 @@ ledger, so a registration that adds a second witness removes the row here.
 | `header-allow-empty-value` | `parameters` | `ndw-accessibility-map` |
 | `header-content` | `parameters` | `vtex-pricing` |
 | `header-examples` | `parameters` | `microcks.local` |
+| `ignore-extension-on-property-kept` | `schemas` | `nvke-controller` |
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
+| `nullable-single-allof-ref-component-not-optional` | `schemas` | `openapi-generator-allof-extension-parent` |
+| `oneof-array-variant-inline-enum-item` | `schemas` | `sourcefuse-bpmn-service` |
+| `oneof-duplicate-members-collapsed` | `schemas` | `readme-api-application-json` |
 | `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |
 | `operation-id-digit-leading-method` | `document-paths` | `onmyshelf-api` |
 | `property-sole-oneof-closed-object-member` | `schemas` | `mistle-control-plane` |
 | `range-3XX` | `bodies-media` | `osparc-simcore-webserver` |
 | `ref-pointer-unnamed-segment` | `schemas` | `auto-agent-protocol` |
 | `request-media-named-beside-example` | `bodies-media` | `mockserver` |
+| `schema-name-builtin-complex` | `schemas` | `openapi-generator-model-deprecated` |
+| `schema-x-tags` | `schemas` | `konfig-lucca-organization` |
 | `type-misspelled-scalar` | `schemas` | `panoptes` |
 | `unevaluated-properties` | `schemas` | `tamoss` |
 | `unread-date-time-example` | `schemas` | `netgsm-sms` |

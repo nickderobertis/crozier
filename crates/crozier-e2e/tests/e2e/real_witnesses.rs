@@ -403,6 +403,184 @@ const SCHEMAS_FIXTURE_ONLY_WITNESSES: &[Witness] = &[
             &["dd.MM.yyyy"],
         )],
     },
+    Witness {
+        shape: "format-byte",
+        corpus: "contribly-com",
+        declares: |doc| {
+            let node = at(doc, "/paths/~1media/post/requestBody/content/application~1json/schema")?;
+            expect(node["type"] == "string" && node["format"] == "byte", "POST /media takes a format: byte string body")
+        },
+        golden: &[
+            ("src/fern/media/raw_client.py", &["self, *, request: str, request_options"], &[])
+        ],
+    },
+    Witness {
+        shape: "component-same-primitive-union",
+        corpus: "openapi-generator-oneof-two-primitives",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/_myExample_post_request/oneOf")?;
+            expect(node.as_array().is_some_and(|members| members.len() == 2 && members.iter().all(|member| member["type"] == "string")), "_myExample_post_request is a oneOf of two strings")
+        },
+        golden: &[
+            ("src/fern/types/my_example_post_request_one.py", &["MyExamplePostRequestOne = str"], &[])
+        ],
+    },
+    Witness {
+        shape: "oneof-array-variant-inline-enum-item",
+        corpus: "sourcefuse-bpmn-service",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/workflows.Filter/properties/fields/oneOf/1/items")?;
+            expect(node["type"] == "string" && node["enum"].is_array(), "workflows.Filter.fields' array member has inline string-enum items")
+        },
+        golden: &[
+            ("src/fern/types/workflows_filter_fields.py", &["typing.List[WorkflowsFilterFieldsOneItem]"], &[])
+        ],
+    },
+    Witness {
+        shape: "oneof-duplicate-members-collapsed",
+        corpus: "readme-api-application-json",
+        declares: |doc| {
+            let node = at(doc, "/paths/~1anything/post/requestBody/content/application~1json/schema/properties/arr_mix/items/oneOf")?;
+            expect(node[0] == node[1], "arr_mix's items repeat a oneOf member")
+        },
+        golden: &[
+            ("src/fern/types/post_anything_request_arr_mix_item.py", &["typing.Union[float, str, PostAnythingRequestArrMixItemArrMixNested]"], &[])
+        ],
+    },
+    Witness {
+        shape: "schema-x-tags",
+        corpus: "konfig-lucca-organization",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/Axis/x-tags")?;
+            expect(node.is_array(), "the Axis component carries x-tags")
+        },
+        golden: &[],
+    },
+    Witness {
+        shape: "combo-oneof-schema-example",
+        corpus: "ably-sdk-test-proxy",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/FaultTypeDto")?;
+            expect(node["example"].is_object() && node["oneOf"].is_array(), "FaultTypeDto carries an example beside a oneOf")
+        },
+        golden: &[],
+    },
+    Witness {
+        shape: "format-binary",
+        corpus: "dipjyotimetia-friday",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/Body_test_api_api_v1_testapi_post/properties/spec_upload/anyOf/0")?;
+            expect(node["format"] == "binary", "spec_upload is an anyOf of a binary string and null")
+        },
+        golden: &[
+            ("src/fern/api_testing/raw_client.py", &["spec_upload: typing.Optional[core.File] = OMIT"], &[])
+        ],
+    },
+    Witness {
+        shape: "nullable-single-allof-ref-component-not-optional",
+        corpus: "openapi-generator-allof-extension-parent",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/allOfWithSingleItem")?;
+            expect(node["nullable"] == true && node["allOf"].as_array().is_some_and(|members| members.len() == 1), "allOfWithSingleItem is a nullable allOf of one $ref")
+        },
+        golden: &[
+            ("src/fern/types/all_of_with_single_item.py", &["AllOfWithSingleItem = typing.Optional[AnotherParent]"], &[])
+        ],
+    },
+    Witness {
+        shape: "integer-format-fallback",
+        corpus: "trpc-openapi-app-router",
+        declares: |doc| {
+            let node = at(
+                doc,
+                "/paths/~1inferredReturns.bigintReturn/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/amount",
+            )?;
+            expect(
+                node["type"] == "integer" && node["format"] == "bigint",
+                "the bigint return's amount is an integer written format: bigint",
+            )
+        },
+        golden: &[
+            ("src/fern/inferred_returns/types/inferred_returns_bigint_return_response_result_data.py", &["    amount: int\n"], &[])
+        ],
+    },
+    Witness {
+        shape: "allof-single-ref-empty-properties-alias",
+        corpus: "azure-databox-management",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/HeavyScheduleAvailabilityRequest")?;
+            expect(node["properties"].as_object().is_some_and(serde_json::Map::is_empty) && node["allOf"].as_array().is_some_and(|members| members.len() == 1), "HeavyScheduleAvailabilityRequest writes properties: {} beside one allOf $ref")
+        },
+        golden: &[
+            ("src/fern/types/heavy_schedule_availability_request.py", &["HeavyScheduleAvailabilityRequest = ScheduleAvailabilityRequest"], &[])
+        ],
+    },
+    Witness {
+        shape: "anyof-array-variant-inline-const-item",
+        corpus: "canonical-test-observer",
+        declares: |doc| {
+            let node = at(doc, "/paths/~1v1~1test-executions/get/parameters/9/schema/anyOf/1/items")?;
+            expect(node["const"] == "any", "reviewer_ids' second anyOf member is an array of the const any")
+        },
+        golden: &[
+            ("src/fern/test_executions/types/search_test_executions_v1test_executions_get_request_reviewer_ids.py", &["typing.List[SearchTestExecutionsV1TestExecutionsGetRequestReviewerIdsOneItem]"], &[])
+        ],
+    },
+    Witness {
+        shape: "bigint-format-string-typed-str",
+        corpus: "psychic-spec-helpers-testapp",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/Balloon/properties/id")?;
+            expect(node["type"] == "string" && node["format"] == "bigint", "Balloon.id is a format: bigint string")
+        },
+        golden: &[
+            ("src/fern/types/balloon.py", &["    id: str\n"], &[])
+        ],
+    },
+    Witness {
+        shape: "union-of-two-enum-refs-alias",
+        corpus: "chrome-webstatus-backend",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/SubscriptionTriggerResponseValue/oneOf")?;
+            expect(node.as_array().is_some_and(|members| members.len() == 2), "SubscriptionTriggerResponseValue is a oneOf of two $refs")
+        },
+        golden: &[
+            ("src/fern/types/subscription_trigger_response_value.py", &["typing.Union[SubscriptionTriggerWritable, EnumUnknown]"], &[])
+        ],
+    },
+    Witness {
+        shape: "variant-nullable-value-optional-default-none",
+        corpus: "andreychh-coopera",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/ActiveInviteLinkState")?;
+            expect(node["properties"]["expires_at"]["nullable"] == true && node["required"].as_array().is_some_and(|names| names.iter().any(|name| name == "expires_at")), "ActiveInviteLinkState requires the nullable expires_at")
+        },
+        golden: &[
+            ("src/fern/types/invite_link_state.py", &["expires_at: typing.Optional[dt.datetime] = None"], &[])
+        ],
+    },
+    Witness {
+        shape: "ignore-extension-on-property-kept",
+        corpus: "nvke-controller",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/Cluster/properties/teleportEnabled")?;
+            expect(node["x-fern-ignore"] == true, "Cluster.teleportEnabled writes x-fern-ignore: true")
+        },
+        golden: &[
+            ("src/fern/types/cluster.py", &["cni_plugin"], &["teleport_enabled"])
+        ],
+    },
+    Witness {
+        shape: "schema-name-builtin-complex",
+        corpus: "openapi-generator-model-deprecated",
+        declares: |doc| {
+            let node = at(doc, "/components/schemas/complex")?;
+            expect(node["properties"].is_object(), "a component is named complex")
+        },
+        golden: &[
+            ("src/fern/types/complex_.py", &["class Complex(UniversalBaseModel):"], &[])
+        ],
+    },
 ];
 
 fn parse(path: &std::path::Path) -> serde_json::Value {

@@ -4021,7 +4021,11 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             "compass-member-notes",
             "verified-seal",
         ] {
-            let original = std::fs::read_to_string(root.join(handwritten_or_measured(fixture)).join("openapi.yml")).unwrap();
+            let original = std::fs::read_to_string(
+                root.join(handwritten_or_measured(fixture))
+                    .join("openapi.yml"),
+            )
+            .unwrap();
             let mut document: serde_json::Value = crate::yaml::from_str(&original).unwrap();
             let prefix = format!("x-{spelling}");
             let (module, expected) = match fixture {
@@ -4077,7 +4081,10 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             }
         }
     }
-    let original = std::fs::read_to_string(root.join("docs/openapi-surface/handwritten/verified-seal/openapi.yml")).unwrap();
+    let original = std::fs::read_to_string(
+        root.join("docs/openapi-surface/handwritten/verified-seal/openapi.yml"),
+    )
+    .unwrap();
     let source = original.replace(
         "          x-fern-type: literal<true>\n",
         "          x-fern-type: literal<true>\n          x-crozier-type: literal<unsupported>\n",
@@ -5409,7 +5416,9 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
 fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {
     let root = repo_root();
     for shape in ["multipart-nullable-array"] {
-        let fixture = root.join("docs/fern-measurements/bodies-responses").join(shape);
+        let fixture = root
+            .join("docs/fern-measurements/bodies-responses")
+            .join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
                 format!("docs/fern-measurements/bodies-responses/{shape}/fern-expected")
@@ -5492,7 +5501,9 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join("docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml"))
+            .arg(root.join(
+                "docs/fern-measurements/bodies-responses/multipart-nullable-array/openapi.yml",
+            ))
             .arg("--output")
             .arg(out.path())
             .args([

@@ -5,5 +5,4 @@ digest = "3714a4caccb07884f3b02a4d153ec04bf1af685eb69f2809f77408c5cf9630b7"
 [[covers]]
 key = "schema-type-name-inline-property"
 search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+verdict = "exhausted"
