@@ -345,6 +345,7 @@ inventory=(
   openapi_generator_composed_schema_lowering_matches_fern_output
   rs_server_matches_fern_output
   ingef_conquery_matches_fern_output
+  vtex_marketplace_protocol_matches_fern_output
   stellastra_com_matches_fern_output
   contribly_com_matches_fern_output
   openapi_generator_oneof_two_primitives_matches_fern_output

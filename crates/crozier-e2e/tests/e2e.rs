@@ -120,8 +120,8 @@ mod refusal_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
-/// The shapes behind RS-Server's and ingef/conquery's emission differences,
-/// each in a document written for it under
+/// The shapes behind RS-Server's, ingef/conquery's and VTEX's emission
+/// differences, each in a document written for it under
 /// `docs/fern-measurements/emission-parity/`, held whole against the
 /// certified pair's tree in both enum modes, with the conquery departure's
 /// control and runtime journey.
@@ -10488,6 +10488,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENAPI_GENERATOR_COMPOSED_SCHEMA_LOWERING,
     &RS_SERVER,
     &INGEF_CONQUERY,
+    &VTEX_MARKETPLACE_PROTOCOL,
     &NIXTLA_TIMEGPT,
     &OLLAMA_API,
     &OSPARC_DIRECTOR_V2,
@@ -13155,6 +13156,21 @@ const RS_SERVER: Corpus = Corpus {
 /// (`Filter`, `Select`, `UniversalSelect`).
 const INGEF_CONQUERY: Corpus = Corpus {
     api: "ingef-conquery",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// VTEX's Marketplace Protocol — corpus row 3479, witnessing an optional
+/// query parameter declared before a required one, required `Content-Length`
+/// and `X-Forwarded-For` header parameters, and untyped schemas carrying
+/// `items: {}` beside `properties`.
+const VTEX_MARKETPLACE_PROTOCOL: Corpus = Corpus {
+    api: "vtex-marketplace-protocol",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -21496,6 +21512,13 @@ fn rs_server_matches_fern_output() {
 #[test]
 fn ingef_conquery_matches_fern_output() {
     assert_committed_corpus_matches(&INGEF_CONQUERY);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus comparison belongs to the existing e2e binary and corpus-match inventory, as every adjacent corpus row does (crates/crozier-e2e/AGENTS.md); changing that shared project boundary is outside this witness registration.
+#[test]
+fn vtex_marketplace_protocol_matches_fern_output() {
+    assert_committed_corpus_matches(&VTEX_MARKETPLACE_PROTOCOL);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

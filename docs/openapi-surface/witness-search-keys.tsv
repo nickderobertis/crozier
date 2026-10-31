@@ -122,7 +122,6 @@ forward-refs-omit-hoisted-variant-models	schema.oneOf	schemas.md	supported
 get-request-body-union-member	operation.requestBody:get-union-member	bodies-media.md	supported
 global-headers-extension	openapi.x-fern-global-headers	parameters.md	supported
 group-path-ending-in-api-nested-package	operation.x-fern-sdk-group-name	document-paths.md	supported
-header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
 integer-example-beyond-double-precision	schema.format=int64	schemas.md	supported
 literal-enum-value-quote-escaping	schema.enum:apostrophe-member	schemas.md	supported
 literal-example-dollar-escaped-in-docstring	schema.const	schemas.md	supported

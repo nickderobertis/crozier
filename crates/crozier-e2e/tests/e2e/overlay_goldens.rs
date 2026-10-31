@@ -146,6 +146,7 @@ const KINDS: &[Kind] = &[
             "openapi-generator-composed-schema-lowering",
             "rs-server",
             "ingef-conquery",
+            "vtex-marketplace-protocol",
             "contribly-com",
             "sourcefuse-bpmn-service",
             "trpc-openapi-app-router",
