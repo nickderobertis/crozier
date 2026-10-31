@@ -116,3 +116,33 @@ socket probe was refused in the same environment. `just test-corpus-sources`,
 re-screening pair ran on the working tree that became `8bfcd035f`; the other
 three ran on `1bbd47399`, which differs from it only in `document-paths.md`'s
 paragraph above.
+
+## After merging main
+
+The sections above record evidence taken before `main` at `8c0170eb7` was
+merged in. That merge, `932d3b266`, added `main`'s thirteen witness rows (4200
+to 4212) beside this one. The census then walks 290 registered sources (259
+under `corpus-sources/`), and `restate-coverage.py --snapshot-json` re-wrote
+`document-paths.md`'s cells and snapshot digest from that walk. All of the
+following ran on `932d3b266`. Each ran with the worktree's own `.venv`, synced
+with `uv sync --locked --all-packages`, first on `PATH`. That put pytest 9.1.1
+and the pinned ruff 0.11.5 in use. The shell sets `UV_NO_SYNC=1`, so
+`uv run` alone had left that `.venv` empty.
+
+- Under the repairs, the golden tests of `nixtla-timegpt` and of each of
+  `main`'s thirteen new rows passed in python-enums mode. The same run passed
+  `handwritten_fixtures_match_fern_goldens`.
+- `overlay_goldens_match_fern_output` passed in literals mode, with all
+  fourteen rows among its corpora. The same run passed the departures ledger's
+  contract test, its compared-goldens inventory test and the example-values
+  inventory test.
+- `nixtla_timegpt_matches_fern_output` and `overlay_goldens_match_fern_output`
+  passed again under `tests/corpus_match/corpus_offline_test.py
+  --deny-network`. The wrapper refused a socket probe in the same environment,
+  and neither ignored corpus cache was present.
+- These checks passed: `just test-corpus-sources`, `just lint-corpus-sources`,
+  `just lint-corpus-licensing`, `just lint-licence-rescreening` and
+  `just test-licence-rescreening`.
+- `tests/corpus_match/corpus_surface_census_test.py` passed over 290 sources.
+- The `surface-census` project's `test-census` suite passed: 639 passed,
+  1 skipped and 8,023 subtests passed.
