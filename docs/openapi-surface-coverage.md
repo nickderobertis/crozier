@@ -149,11 +149,11 @@ same way. The 589 `golden` rows declare 1046 handling sites in
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **941 are reached by a registered real specification.** Its scoped
+- **942 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
-- **100 are reached only by a hand-written fixture.** Each arm-level
-  cover executes the site and byte-matches the certified tree. Thus each of the 100 is still one of the 105 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 54 read `exhausted`, 46 read `search-incomplete` and 0 read `config-gated`.
+- **99 are reached only by a hand-written fixture.** Each arm-level
+  cover executes the site and byte-matches the certified tree. Thus each of the 99 is still one of the 104 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 54 read `exhausted`, 45 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -162,7 +162,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-941 + 100 + 5 + 0 + 0 = 1046. Fourteen sites left the table with the two functions
+942 + 99 + 5 + 0 + 0 = 1046. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2375,8 +2375,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 313 sources. The walk reads the
-  **296** registered sources, of which **296** carry a committed golden; the 17
+  acquires 314 sources. The walk reads the
+  **297** registered sources, of which **297** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2819,7 +2819,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **509** golden rows reach every handling site and tie below every row
+then key. **510** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3044,8 +3044,8 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **509** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **80** carry at least one handling site no golden-only witness executes: 105 unreached arms in all. By the verdict each arm's linked record states, 59 read `exhausted`, 46 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
+The golden rows split in two. **510** reach every handling site their
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **79** carry at least one handling site no golden-only witness executes: 104 unreached arms in all. By the verdict each arm's linked record states, 59 read `exhausted`, 45 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources or, for an arm no arm-search
@@ -3415,7 +3415,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**72** golden rows rest on one document: a single golden-only witness declares
+**71** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3474,7 +3474,6 @@ ledger, so a registration that adds a second witness removes the row here.
 | `header-allow-empty-value` | `parameters` | `ndw-accessibility-map` |
 | `header-content` | `parameters` | `vtex-pricing` |
 | `header-examples` | `parameters` | `microcks.local` |
-| `header-subset-string-default` | `parameters` | `notion-mcp-server` |
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
 | `literal-prefixed-integer-path-segment` | `parameters` | `wiim-httpapi` |
