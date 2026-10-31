@@ -792,3 +792,8 @@ ollama-api API specification and generated SDK golden:
     https://raw.githubusercontent.com/ollama/ollama/16b4376aeadbec58a18b9817d49c37b1b64e33d0/docs/openapi.yaml
     MIT (the document's info.license and the repository's own LICENSE); corpus row 4212 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
+
+nixtla-timegpt API specification and generated SDK golden:
+    https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json
+    MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4301 retains the immutable
+    revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.

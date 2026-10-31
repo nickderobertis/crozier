@@ -1,0 +1,42 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class SingleSeriesForecastFewshotLoss(enum.StrEnum):
+    """
+    Deprecated. Please use finetune_loss instead.
+    """
+
+    DEFAULT = "default"
+    MAE = "mae"
+    MSE = "mse"
+    RMSE = "rmse"
+    MAPE = "mape"
+    SMAPE = "smape"
+
+    def visit(
+        self,
+        default: typing.Callable[[], T_Result],
+        mae: typing.Callable[[], T_Result],
+        mse: typing.Callable[[], T_Result],
+        rmse: typing.Callable[[], T_Result],
+        mape: typing.Callable[[], T_Result],
+        smape: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is SingleSeriesForecastFewshotLoss.DEFAULT:
+            return default()
+        if self is SingleSeriesForecastFewshotLoss.MAE:
+            return mae()
+        if self is SingleSeriesForecastFewshotLoss.MSE:
+            return mse()
+        if self is SingleSeriesForecastFewshotLoss.RMSE:
+            return rmse()
+        if self is SingleSeriesForecastFewshotLoss.MAPE:
+            return mape()
+        if self is SingleSeriesForecastFewshotLoss.SMAPE:
+            return smape()

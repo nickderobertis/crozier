@@ -2003,3 +2003,16 @@ Real specifications that replace hand-written proofs in the `bodies-media` and
 | 4210 | `tuxedo-dapp` | github-raw | https://raw.githubusercontent.com/mlabs-haskell/TuxedoDapp/0160b433517a61aa249f40b8e684a93c0281441d/openapi.yaml | `0160b433517a61aa249f40b8e684a93c0281441d` | Apache-2.0 (repository LICENSE; the document declares no info.license) | committed | Inline scalar JSON request bodies declaring a `description`, in operations declaring no parameter |
 | 4211 | `osparc-director-v2` | github-raw | https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json | `2f18c3f6f8e082153be7f55de930bc134fab3213` | MIT (repository LICENSE; the document declares no info.license) | committed | A contentless `200` beside a `201` declaring content |
 | 4212 | `ollama-api` | github-raw | https://raw.githubusercontent.com/ollama/ollama/16b4376aeadbec58a18b9817d49c37b1b64e33d0/docs/openapi.yaml | `16b4376aeadbec58a18b9817d49c37b1b64e33d0` | MIT (info.license and repository LICENSE) | committed | An untagged operation whose `operationId` is `list` |
+
+## Float literals a fast decimal reader rounds one unit off
+
+Nixtla's TimeGPT document, vendored in ourofoundation/wrappers, carries
+seventeen-digit floats in its worked examples, several of which a fast,
+approximate decimal reader lands one unit in the last place away from their
+correctly rounded value, and rows of an example matrix that end exactly at the
+snippet width once their trailing comma is counted. Both repairs are recorded
+in [`float-literal-parity.md`](../../docs/float-literal-parity.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4301 | `nixtla-timegpt` | github-raw | https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json | `79688dd65e7fb2fb670ad30b01b5db5208c1d928` | MIT (repository LICENSE; the document declares no info.license) | committed | JSON float literals whose correctly rounded value a fast reader misses by one unit in the last place, in worked examples; example-matrix rows that end at the snippet width with their trailing comma |

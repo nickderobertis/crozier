@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "nixtla-timegpt",
+  "corpus_spec_ref": "79688dd65e7fb2fb670ad30b01b5db5208c1d928",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json"
+}

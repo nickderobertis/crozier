@@ -8537,12 +8537,15 @@ impl Example {
                 // Several wrapped items keep Python's magic trailing comma, as
                 // Groupe PSA's two-item `remote_types` example does; one does not.
                 let trailing_comma = if items.len() == 1 { "" } else { "," };
+                // An item's line ends with its comma, which the width counts:
+                // TimeGPT's `["TomBrady", "2015-12-03", …]` rows are 80 columns
+                // and wrap, as their comma takes the line to 81.
                 let body = items
                     .iter()
                     .map(|it| {
                         format!(
                             "{inner_pad}{}{trailing_comma}",
-                            it.render_at(indent + 4, indent + 4)
+                            it.render_at(indent + 4, indent + 4 + trailing_comma.len())
                         )
                     })
                     .collect::<Vec<_>>()
@@ -8565,12 +8568,13 @@ impl Example {
                 // `grant_types` examples wrap exactly that way — while a list of
                 // several keeps Python's magic trailing comma.
                 let trailing_comma = if items.len() == 1 { "" } else { "," };
+                // The width counts each item's comma, as a list's does above.
                 let body = items
                     .iter()
                     .map(|it| {
                         format!(
                             "{inner_pad}{}{trailing_comma}",
-                            it.render_at(indent + 4, indent + 4)
+                            it.render_at(indent + 4, indent + 4 + trailing_comma.len())
                         )
                     })
                     .collect::<Vec<_>>()
@@ -15536,6 +15540,66 @@ mod tests {
                 .forces_multiline()
         );
         assert!(Example::ReferenceList(vec![Example::Atom("1".to_string())]).forces_multiline());
+    }
+
+    /// A worked example re-read from its JSON text keeps each float's correctly
+    /// rounded value, whichever reader loaded the document: a fast, approximate
+    /// decimal reader lands one unit in the last place away from each literal
+    /// here, so a YAML document's examples changed in its last digit too.
+    #[test]
+    fn an_example_rereads_its_floats_as_their_correctly_rounded_values() {
+        for (example, json) in [
+            ("0.9345407030264767", "0.9345407030264767"),
+            ("0.48729867539182836", "0.48729867539182836"),
+            (
+                "[0.24200106749781558, 0.36454792138880565]",
+                "[0.24200106749781558,0.36454792138880565]",
+            ),
+            // The Python-spelling fallback reads its numbers the same way.
+            ("[0.9921600467158583, True]", "[0.9921600467158583,true]"),
+        ] {
+            let value = super::parse_example_value(example).expect("the example parses");
+            assert_eq!(value.to_string(), json, "{example}");
+        }
+    }
+
+    /// A wrapped list's item stays on one line only while it fits the width
+    /// with its trailing comma: an item 79 columns wide ends its line at 80 and
+    /// stays flat, one 80 wide ends at 81 and wraps (TimeGPT's `TomBrady` rows,
+    /// Fern CLI 5.163.1 with fern-python-sdk 5.41.3). A lone item has no comma,
+    /// so an 80-wide one still fits.
+    #[test]
+    fn a_wrapped_lists_item_counts_its_trailing_comma_against_the_width() {
+        // A row `["x…x"]` whose flat spelling is `width` columns.
+        let row = |width: usize| {
+            Example::List(vec![Example::Atom(format!(
+                "\"{}\"",
+                "x".repeat(width - 4)
+            ))])
+        };
+        type Wrap = fn(Vec<Example>) -> Example;
+        for (kind, wrap) in [
+            ("list", Example::List as Wrap),
+            ("explicit list", Example::ExplicitList as Wrap),
+        ] {
+            // Rendered on a line indented by 8, the items start at column 12.
+            let rendered = wrap(vec![row(67), row(68)]).render(8);
+            let lines: Vec<&str> = rendered.lines().collect();
+            let fits = format!("{}{},", " ".repeat(12), row(67).flat());
+            assert_eq!(lines[1], fits, "{kind}: a row ending at 80 with its comma");
+            assert_eq!(fits.chars().count(), 80);
+            assert_eq!(
+                lines[2],
+                format!("{}[", " ".repeat(12)),
+                "{kind}: a row its comma takes to 81 wraps:\n{rendered}"
+            );
+            let lone = wrap(vec![row(68)]).render_at(8, 81);
+            assert_eq!(
+                lone.lines().nth(1),
+                Some(format!("{}{}", " ".repeat(12), row(68).flat()).as_str()),
+                "{kind}: a lone 80-column row has no comma and fits"
+            );
+        }
     }
 
     #[test]
