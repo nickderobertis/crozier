@@ -1462,6 +1462,13 @@ PREDICATES = {
         "`typing.Union` alias of the two enums `render_type_decl` of `src/emit.rs` "
         "writes, as Fern does"
     ),
+    "components.schemas:discriminated-variant-required-nullable": (
+        "one per Reference Object member of a component's `oneOf` with a "
+        "`discriminator` whose target requires a property other than the "
+        "discriminator's and writes it `nullable: true`: the variant field "
+        "`Builder::discriminated_union` of `src/ir.rs` types `Optional[...] = None`, "
+        "as Fern does"
+    ),
     "schema.oneOf:duplicate-members": (
         "one per Schema Object whose `oneOf` holds two inline members (no `$ref`) that "
         "are equal as JSON values: `dedupe_union_members` of `src/ir.rs` writes the "
@@ -7306,6 +7313,7 @@ class Census:
             found += self.described_object_ref_unions(node.get("schemas"))
             found += self.single_all_of_ref_aliases(node.get("schemas"))
             found += self.two_string_enum_ref_unions(node.get("schemas"))
+            found += self.discriminated_variant_required_nullables(node.get("schemas"))
             found += self.variant_own_fields_before_bases(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
@@ -7792,6 +7800,41 @@ class Census:
             for key, schema in node.items()
             if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
+
+    @staticmethod
+    def discriminated_variant_required_nullables(node: Any) -> list[str]:
+        """`components.schemas:discriminated-variant-required-nullable`: one per such variant reference.
+
+        Read at the Components Object, because whether the variant requires a
+        nullable property is answered by the component the member names.
+        """
+        if not isinstance(node, dict):
+            return []
+        prefix = "#/components/schemas/"
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            discriminator = schema.get("discriminator")
+            members = schema.get("oneOf")
+            if not isinstance(discriminator, dict) or not isinstance(members, list):
+                continue
+            tag = discriminator.get("propertyName")
+            for member in members:
+                reference = member.get("$ref") if isinstance(member, dict) else None
+                if not isinstance(reference, str) or not reference.startswith(prefix):
+                    continue
+                variant = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+                if not isinstance(variant, dict):
+                    continue
+                properties = variant.get("properties") if isinstance(variant.get("properties"), dict) else {}
+                required = variant.get("required") if isinstance(variant.get("required"), list) else []
+                if any(
+                    name != tag and isinstance(properties.get(name), dict) and properties[name].get("nullable") is True
+                    for name in required
+                ):
+                    found.append("components.schemas:discriminated-variant-required-nullable")
+        return found
 
     @staticmethod
     def two_string_enum_ref_unions(node: Any) -> list[str]:
