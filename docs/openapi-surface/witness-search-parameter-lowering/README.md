@@ -79,3 +79,9 @@ include a `$ref` to a component string enum and no array, found Ego's
 microservices description (`dreek1337/Ego`, MIT), which passes every screen
 and which crozier byte-matches whole. It is corpus row 318,
 `ego-microservices`, so that shape carries no hand-written fixture.
+
+The first `header-subset-string-default` declarer above, VTEX's Marketplace
+Protocol, became that witness once its three differing shapes matched. It is
+corpus row 3479, `vtex-marketplace-protocol`
+([`../../vtex-output-parity.md`](../../vtex-output-parity.md)), and its
+registration retired the `header-subset-string-default` hand-written fixture.

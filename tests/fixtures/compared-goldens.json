@@ -563,7 +563,6 @@
     "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-window/fern-expected": {},
-    "docs/openapi-surface/handwritten/header-subset-string-default/fern-expected": {},
     "docs/openapi-surface/handwritten/http-dpop-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-mutual-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-negotiate-unrequired/fern-expected": {},
