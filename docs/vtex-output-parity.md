@@ -243,3 +243,19 @@ by the merge.
 | [`handwritten-reach.tsv`](openapi-surface/handwritten-reach.tsv) | `just handwritten-reach`: 115 arm covers, 20 combination interaction sites, no configuration gates |
 | [`witness-search-keys.tsv`](openapi-surface/witness-search-keys.tsv) | `witness-search-region-keys.py` |
 | [`outstanding.tsv`](openapi-surface/golden-reach-witnesses/outstanding.tsv) | `golden-reach-search.py outstanding`: 171 items across six searches, unchanged apart from its commit column |
+
+## Verification
+
+Every check below ran on commit `96f937328`, whose `src/` is `27ef9c038`'s.
+Later commits change only this record.
+
+| check | result |
+|---|---|
+| `crozier` unit and integration tests (`cargo nextest run -p crozier`), every touched module's included | 1,105 passed |
+| the complete crozier-e2e suite, under `just departures-ledger` (among them `vtex_marketplace_protocol_matches_fern_output`, `overlay_goldens_match_fern_output`, `handwritten_fixtures_match_fern_goldens`, `every_registered_corpus_is_wired_into_the_gate` and the `emission_parity` tests) | all passed; the ledger changes only as described above |
+| VTEX's golden test and the overlay test, with sockets denied by `corpus_offline_test.py --deny-network` and `.local/corpus` and `.local/census-fallback-sample` absent | 2 passed |
+| `just lint-corpus-sources`, `just lint-corpus-licensing`, `just lint-licence-rescreening` | passed |
+| `restate-coverage.py` drift check | no drift |
+| clippy with `-D warnings` over `crozier` and `crozier-e2e`, rustfmt's check | clean |
+| judged lint over the diff against `origin/main` (`just lint-llm-diff`) | all 4 batches passed, 0 rules failed |
+| the `surface-census` project's `test-census` suite, complete | CENSUS-PENDING |
