@@ -6370,8 +6370,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // `x-codegen-request-body-name` names it: a described inline body offered
         // as JSON and YAML with only optional members (measured in
         // `docs/fern-measurements/handed-off/bodies-media/request-content-type-header/`).
+        // The shape reads the first media type's schema, so the selected JSON
+        // media must name no component either: a body offering an inline
+        // `application/xml` object before `application/json: $ref` is a `$ref` body.
         Some(RequestBody::Inline(_))
             if ep.body_schema_shape == BodySchemaShape::Other
+                && ep.reference_body_type.is_none()
                 && !ep.body_collapses_to_type_reference =>
         {
             Some("application/json".to_string())

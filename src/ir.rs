@@ -4781,19 +4781,11 @@ fn build_endpoint(
             .map(|(media_type, _)| media_type)
             .filter(|media_type| *media_type != "application/json")
             .map(str::to_string),
-        // The shape is the selected JSON media's schema, the one Fern reads the
-        // body from, before any other media type's: a body offering an inline
-        // `application/xml` object before `application/json: $ref` is a `$ref`
-        // body. Without a JSON media type it is the first schema declared.
         body_schema_shape: BodySchemaShape::of(
             op.request_body.as_ref().and_then(|body| {
-                selected_json_request_media(body)
-                    .and_then(|(_, media)| media.schema.as_ref())
-                    .or_else(|| {
-                        body.content
-                            .values()
-                            .find_map(|media| media.schema.as_ref())
-                    })
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
             }),
             &doc.components.schemas,
         ),
