@@ -61,10 +61,12 @@ error. `request` and the response are `typing.Any`, and `BadRequestError` takes
   `#/components/schemas/`-only case NDW's golden pinned to every relative file
   that does not exist. `Resolver::missing_file_warnings` and
   `reference_pointers` write the warnings.
-- `src/ir.rs`: `bare_name_mapped_union` counts a mapping target that is a local
-  pointer outside `#/components/schemas/`. `error_body_type` and
-  `hoist_error_body_types` type such an inline body as unknown and hoist no
-  model for it.
+- `src/ir.rs`: `unresolvable_mapped_error_body` is true of a body mapped to a
+  bare name or to a local pointer outside `#/components/schemas/`.
+  `error_body_type` and `hoist_error_body_types` type such a body as unknown
+  and hoist no model for it. Only the error-body form is measured, so the
+  named-union, request and success-response paths keep `bare_name_mapped_union`
+  unchanged.
 
 **Comparison on the finished tree.**
 
