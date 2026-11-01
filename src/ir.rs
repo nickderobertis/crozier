@@ -30921,6 +30921,77 @@ mod bodies_media_tests {
         assert!(declared(&ir, "ScoreSubmission"));
     }
 
+    /// A path union with a member outside the four primitives httpx sends as
+    /// data (`uint64` here) converts before it is encoded; the same union over a
+    /// format-less `integer`, a `double` or an enum does not.
+    #[test]
+    fn a_path_union_with_a_non_data_primitive_converts() {
+        let (doc, ir) = measured("path-param-serialization");
+        let block = endpoint(&ir, "get_block");
+        assert!(block.path_params.iter().all(|param| param.convert));
+        let union = |members: serde_json::Value| -> super::Schema {
+            serde_json::from_value(serde_json::json!({ "oneOf": members })).expect("a schema")
+        };
+        let schemas = &doc.components.schemas;
+        for (members, converts) in [
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer", "format": "uint64"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer", "format": "int64"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string", "format": "date-time"}, {"type": "integer"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "number", "format": "float"}, {"type": "string"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer"}]),
+                false,
+            ),
+            (
+                serde_json::json!([{"type": "number", "format": "double"}, {"type": "boolean"}]),
+                false,
+            ),
+            (
+                serde_json::json!([{"type": "string", "enum": ["a"]}, {"type": "integer", "format": "int32"}]),
+                false,
+            ),
+        ] {
+            assert_eq!(
+                super::union_has_non_data_primitive(&union(members.clone()), schemas),
+                converts,
+                "{members}"
+            );
+        }
+    }
+
+    /// An `allOf` member carrying its own `anyOf` of required-only branches adds
+    /// neither properties nor `required` to the body the composition builds.
+    #[test]
+    fn an_any_of_all_of_member_adds_nothing_to_the_body() {
+        let (doc, ir) = measured("body-property-set");
+        let fields: Vec<&str> = match &endpoint(&ir, "create_dispatch").request_body {
+            Some(RequestBody::Inline(fields)) => fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect(),
+            other => panic!("create_dispatch spreads its body: {other:?}"),
+        };
+        assert_eq!(fields, ["parcel", "fragile"]);
+        let members = doc.components.schemas["DispatchRequest"]
+            .all_of
+            .as_deref()
+            .expect("the composition stays");
+        assert_eq!(members.len(), 2);
+        assert!(members[1].properties.is_empty() && members[1].any_of.is_none());
+    }
+
     /// A `text/plain` error typed by a union of one and the same string is a
     /// `str` body, and declares no `{Class}Body` model.
     #[test]
