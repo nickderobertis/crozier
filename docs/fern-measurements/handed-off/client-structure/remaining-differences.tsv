@@ -1,0 +1,966 @@
+document	file	side	root_cause	source
+boruta	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+boruta	src/fern/assets/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	src/fern/shards/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	src/fern/types/validation_error.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+crystalshards	src/fern/types/validation_error_errors_item_item.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+darwin	src/fern/__init__.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/__init__.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_approve_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_end_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_get_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_pay_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_start_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_stop_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_update_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+darwin	src/fern/types/act_action_response_interaction.py	certified pair only	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	reference.md	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/settings/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/settings/client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/settings/raw_client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/settings/types/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-e82	src/fern/settings/types/toggle_ask_ai_request_locations_item.py	certified pair only	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	reference.md	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/settings/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/settings/client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/settings/raw_client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/settings/types/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+fai-6f9	src/fern/settings/types/toggle_ask_ai_request_locations_item.py	certified pair only	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	reference.md	differs	R15	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	src/fern/core_avatar/client.py	differs	R15	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	src/fern/core_guest_avatar/client.py	differs	R15	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	src/fern/core_preview/client.py	differs	R15	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	src/fern/theming_theming/client.py	differs	R15	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+nextcloud	src/fern/types/files_sharing_share_status.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+resemble	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+resemble	src/fern/custom_pronunciations/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+skyvern-docs	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+skyvern-fern	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
+valtown	reference.md	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/types/membership_role.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/types/v1blobs_store_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+valtown	src/fern/blobs/types/v2blobs_store_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatsapp	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatsapp	src/fern/group/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+zalando	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+zalando	src/fern/o_auth2token/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	reference.md	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/bootstrap_katana/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/bootstrap_katana/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/slice/raw_client.py	differs	request-content-type-header	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+katana	src/fern/types/bootstrap.py	crozier only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/maintenance/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/sd_card/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/sd_card/types/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/sd_card/types/get_sd_path_response.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/sd_card/types/get_sd_path_response_files_item.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-clean	src/fern/sd_card/types/get_sd_path_response_files_item_type.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/maintenance/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/sd_card/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/sd_card/types/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/sd_card/types/get_sd_path_response.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/sd_card/types/get_sd_path_response_files_item.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+whatwatt-bundle	src/fern/sd_card/types/get_sd_path_response_files_item_type.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/external_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/internal_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_integration.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_system.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_three_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/activity_author_model_two_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/external_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-konfig	src/fern/types/internal_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/external_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/internal_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_integration.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_system.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_three_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/activity_author_model_two_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/external_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/internal_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/workflows_create_comment_request.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/recordings/types/recordings_event_list_request_after.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/recordings/types/recordings_event_list_request_before.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/recordings/types/recordings_event_list_request_limit.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/recordings/types/recordings_event_list_request_offset.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/recordings/types/recordings_event_list_request_order.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/sse/types/sse_subscribe_request_types.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/test/types/test_test_request_parameters.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/types/bad_request_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/types/not_found_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/types/bad_request_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+gecko	src/fern/types/not_found_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/prerecordings/types/prerecordings_event_list_request_after.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/prerecordings/types/prerecordings_event_list_request_before.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/prerecordings/types/prerecordings_event_list_request_limit.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/prerecordings/types/prerecordings_event_list_request_offset.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/prerecordings/types/prerecordings_event_list_request_order.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/sse/types/sse_subscribe_request_types.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/test/types/test_test_request_parameters.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/types/bad_request_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/types/not_found_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/types/bad_request_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+numbat	src/fern/types/not_found_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	reference.md	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/client.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/raw_client.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_callback_method.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_custom_intent_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_custom_topic_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_encoding.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_response.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/types/analyze_text_request_custom_intent_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/read/v1/text/types/analyze_text_request_custom_topic_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/types/generate_audio_request_container.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/speak/v1/audio/types/generate_audio_request_encoding.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_detect_language.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_model.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_redact.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_redact_one_item.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_summarize.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_version.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_url_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_url_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/listen/v1/media/types/transcribe_url_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/analyze_text_request_custom_intent_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/analyze_text_request_custom_topic_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_container_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_six.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/generate_audio_request_encoding_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	reference.md	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/client.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/raw_client.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_callback_method.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_custom_intent_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_custom_topic_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_encoding.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_media_response.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/types/analyze_text_request_custom_intent_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/read/v1/text/types/analyze_text_request_custom_topic_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/types/generate_audio_request_container.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/speak/v1/audio/types/generate_audio_request_encoding.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_detect_language.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_model.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_redact.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_redact_one_item.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_summarize.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_version.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_url_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_url_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/listen/v1/media/types/transcribe_url_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/analyze_text_request_custom_intent_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/analyze_text_request_custom_topic_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_container_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_six.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/generate_audio_request_encoding_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	reference.md	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/telemetry/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/telemetry/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/telemetry/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/telemetry/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/raw_client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/types/ai_classify_survey_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/types/ai_gateway_info_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/types/ai_gateway_quota_alert_get_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/ai/types/ai_translate_survey_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/types/application_info_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/application/types/application_info_response_application_store_infos_item.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/types/billing_current_subscription_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/billing/types/billing_current_tier_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/types/feed_channel_info_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/types/feed_channel_info_response_notify_frequency.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/types/feed_update_channel_info_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/feed/types/feed_update_channel_info_response_notify_frequency.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/monitor_get_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/monitor_get_response_notifications_item.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/monitor_get_status_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/monitor_get_status_response_payload.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/monitor/types/server_status_public_info_response_value.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_static.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_status.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_status_monitor_list_item.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_get_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_get_response_payload.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_get_response_payload_items_item.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_get_response_payload_items_item_type.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_get_result_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/survey/types/survey_submit_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/telemetry/types/telemetry_info_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/website_info_response.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/types/worker_get_response.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/worker/types/worker_get_response_visibility.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_static.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_status.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_status_monitor_list_item.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/website_add_request_domain.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/website_add_request_domain_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/website_update_info_request_domain.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/website/types/website_update_info_request_domain_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	reference.md	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/activities/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/app/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/components/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/deployments/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/dictionary/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/errors/bad_request_error.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/errors/unauthorized_error.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/live_data/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/migrations/raw_client.py	differs	request-content-type-header	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/nodes/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/nodes/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/notifications/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/scenario_labels/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/statistics/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/testing/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/testing/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/expression_suggestion_dto_ref_clazz.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/map_typing_result_in_json_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_validation_result_dto_expression_type.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/parameter_dto_ref_clazz.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/single_typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_class.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_dict.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_null.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_object_typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_object_with_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_tagged_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typed_union.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/ui_parameter_typ.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/ui_value_parameter_dto_typ.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/unknown.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/variable.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/variable_builder.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/user/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/version_control/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_branch_end_data.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_custom_node.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_enricher.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_filter.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_fragment_input.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_fragment_input_definition.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_fragment_output_definition.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_join.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_processor.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_sink.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_source.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_split.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_switch.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_branch_parameters.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_branch_parameters_template.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_definition.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_eleven.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_fields.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_fragment_params.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_output.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_ref.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_seven.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_ten.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_thirteen.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/types/node_data_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	README.md	differs	snippet-rendering	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	reference.md	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/__init__.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/raw_client.py	differs	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/types/addons_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/types/addons_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/addons/types/addons_list_response_item_attributes_categories_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/types/citations_styles_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/types/citations_styles_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/types/citations_styles_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/citations/types/citations_styles_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_detail_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_detail_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_detail_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_detail_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/collections/types/collections_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/types/comments_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/types/comments_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/types/comments_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/comments/types/comments_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_response_attributes_node_license.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_read_response_attributes_node_license.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_institutions_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_institutions_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_institutions_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_institutions_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_response_attributes_node_license.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/get_draft_registrations_draft_id_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_read_response_attributes_node_license.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_embeds.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_embeds_parent.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_embeds_parent_data.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_embeds_parent_data_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_embeds_parent_data_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/nodes_draft_registrations_subjects_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_detail_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_detail_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_detail_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_detail_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_version_detail_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_version_detail_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_version_detail_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_versions_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_versions_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/files/types/files_versions_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_detail_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_detail_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_detail_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_detail_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_node_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_node_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_node_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_node_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_node_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_users_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_users_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_users_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/institutions/types/institutions_users_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/license_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/license_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/license_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/licenses_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/licenses_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/licenses/types/licenses_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addon_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addon_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addon_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_folders_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_folders_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_folders_list_response_item_attributes_categories_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_addons_list_response_item_attributes_categories_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_citation_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_citation_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_citation_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_citation_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_citation_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_comments_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_comments_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_comments_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_comments_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_list_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_read_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_read_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_read_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_read_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_read_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_list_response_item_attributes_node_license.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_files_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_identifiers_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_identifiers_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_identifiers_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_identifiers_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_identifiers_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_institutions_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_institutions_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_institutions_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_institutions_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_linked_nodes_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_linked_nodes_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_linked_nodes_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_linked_nodes_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_linked_nodes_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_logs_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_logs_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_logs_list_response_item_attributes_params.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_logs_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_logs_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_preprints_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_preprints_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_preprints_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_preprints_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_providers_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_read_response_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_registrations_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_registrations_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_registrations_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_registrations_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_registrations_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_view_only_links_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_wikis_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_wikis_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_wikis_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_wikis_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_detail_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_detail_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_detail_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_detail_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_licenses_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_licenses_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_licenses_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_list_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_taxonomies_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_taxonomies_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_provider_taxonomies_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_providers_preprints_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_providers_preprints_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_providers_preprints_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprint_providers/types/preprint_providers_preprints_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_bibliographic_contributors_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_bibliographic_contributors_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_bibliographic_contributors_list_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_bibliographic_contributors_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_bibliographic_contributors_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_citation_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_citation_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_citation_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_citation_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_citation_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_list_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/get_schema_responses_schema_response_id_schema_blocks_schema_response_block_id_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/get_schema_responses_schema_response_id_schema_blocks_schema_response_block_id_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/get_schema_responses_schema_response_id_schema_blocks_schema_response_block_id_response_attributes_block_type.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/get_schema_responses_schema_response_id_schema_blocks_schema_response_block_id_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/get_schema_responses_schema_response_id_schema_blocks_schema_response_block_id_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/schema_response_blocks_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/schema_response_blocks_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/schema_response_blocks_read_response_attributes_block_type.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/schema_response_blocks_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schema_blocks/types/schema_response_blocks_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schema_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schema_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schema_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schema_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schemas_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schemas_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schemas_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registration_schemas/types/registration_schemas_list_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_children_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_children_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_children_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_children_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_children_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_citation_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_citation_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_citation_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_citations_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_citations_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_comments_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_comments_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_comments_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_comments_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_list_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_read_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_read_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_read_response_item_attributes_permission.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_read_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_contributors_read_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_files_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_identifiers_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_identifiers_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_identifiers_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_identifiers_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_identifiers_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_institutions_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_institutions_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_institutions_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_institutions_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_linked_nodes_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_linked_nodes_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_linked_nodes_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_linked_nodes_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_linked_nodes_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_logs_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_logs_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_logs_list_response_item_attributes_params.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_logs_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_logs_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_providers_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_providers_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_providers_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_providers_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_view_only_links_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_wikis_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_wikis_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_wikis_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_wikis_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_attributes_from_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_attributes_to_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_attributes_trigger.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/get_schema_responses_schema_response_id_actions_schema_response_action_id_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_attributes_from_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_attributes_to_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_attributes_trigger.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_response_actions/types/schema_response_action_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_patch_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_patch_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_patch_response_attributes_reviews_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_patch_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_patch_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_ppost_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_ppost_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_ppost_response_attributes_reviews_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_ppost_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_response_ppost_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_list_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_list_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_list_response_attributes_reviews_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_list_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_list_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_read_response_attributes_reviews_state.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/schema_responses/types/schema_responses_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/taxonomies/types/taxonomies_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addon_accounts_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_addons_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_institutions_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_institutions_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_institutions_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_institutions_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_nodes_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_nodes_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_nodes_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_nodes_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_nodes_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_preprints_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_preprints_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_preprints_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_preprints_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_node_list_response_item.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_node_list_response_item_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_node_list_response_item_attributes_category.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_node_list_response_item_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_node_list_response_item_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/view_only_links/types/view_only_links_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/types/__init__.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/types/wiki_read_response.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/types/wiki_read_response_attributes.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/types/wiki_read_response_links.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/wikis/types/wiki_read_response_relationships.py	certified pair only	media-type-recognition	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registration_contributors_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/draft_registrations/types/draft_registrations_create_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_children_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_comment_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_contributors_partial_update_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_create_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_partial_update_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_draft_registrations_partial_update_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/nodes/types/nodes_forks_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_contributors_create_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/preprints/types/preprints_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_create_request_attributes.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_create_request_attributes_category.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_create_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_forks_create_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_partial_update_request_attributes.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_partial_update_request_attributes_category.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_partial_update_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/registrations/types/registrations_partial_update_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_partial_update_request_links.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+osf	src/fern/users/types/users_partial_update_request_relationships.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
