@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Telescope Booking Office
+  version: 1.0.0
+paths:
+  /telescopes/{name}:
+    get:
+      operationId: getTelescope
+      summary: Read one telescope
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Telescope dome name.
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/DomeName'
+              - description: Telescope dome name.
+        - name: night
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/NightCount'
+              - description: Nights since first light.
+      responses:
+        '200':
+          description: The telescope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telescope'
+    delete:
+      operationId: retireTelescope
+      summary: Retire a telescope
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/DomeName'
+              - description: Dome to retire.
+      responses:
+        '204':
+          description: Retired
+  /bookings:
+    post:
+      operationId: createBooking
+      summary: Book observing time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+      responses:
+        '200':
+          description: The booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+components:
+  schemas:
+    DomeName:
+      type: string
+      description: A dome's painted name.
+      pattern: '^[a-z][a-z0-9-]*$'
+    NightCount:
+      type: integer
+    Hash:
+      type: string
+      description: A hex digest.
+    SlotId:
+      allOf:
+        - $ref: '#/components/schemas/Hash'
+        - description: Identifier of an observing slot.
+    Observer:
+      type: object
+      properties:
+        handle:
+          type: string
+    Telescope:
+      type: object
+      properties:
+        dome:
+          allOf:
+            - $ref: '#/components/schemas/DomeName'
+            - description: Where the telescope sits.
+        slot:
+          $ref: '#/components/schemas/SlotId'
+        aperture:
+          type: integer
+    Booking:
+      type: object
+      required:
+        - dome
+      properties:
+        dome:
+          allOf:
+            - $ref: '#/components/schemas/DomeName'
+            - description: Dome booked.
+        bookedBy:
+          allOf:
+            - $ref: '#/components/schemas/Observer'
+            - description: Who booked the time.
+        backup:
+          allOf:
+            - $ref: '#/components/schemas/Observer'
+            - nullable: true
+        slot:
+          allOf:
+            - $ref: '#/components/schemas/SlotId'
+            - description: The slot reserved.
+        nights:
+          allOf:
+            - $ref: '#/components/schemas/NightCount'
+            - description: Nights requested.

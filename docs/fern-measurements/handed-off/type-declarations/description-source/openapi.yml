@@ -1,0 +1,99 @@
+openapi: 3.1.0
+info:
+  title: Glassblowing Studio
+  version: 1.0.0
+paths:
+  /pieces/{pieceId}:
+    get:
+      operationId: getPiece
+      summary: Read one piece
+      parameters:
+        - name: pieceId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/PieceId'
+      responses:
+        '200':
+          description: The piece
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Piece'
+  /firings/{firingId}:
+    get:
+      operationId: getFiring
+      summary: Read one firing
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The firing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  firingId:
+                    type: string
+                  outcome:
+                    anyOf:
+                      - title: FiringOutcome
+                        description: What the kiln produced, once the firing finished.
+                        type: object
+                        required:
+                          - pieces
+                        properties:
+                          pieces:
+                            type: integer
+                          cracked:
+                            type: integer
+                      - type: 'null'
+                    description: Present once the firing is complete; null while it is still running.
+components:
+  schemas:
+    Digest:
+      type: string
+      description: A hex digest.
+    PieceId:
+      allOf:
+        - $ref: '#/components/schemas/Digest'
+        - description: Identifier of a finished piece.
+    Glassblower:
+      type: object
+      properties:
+        name:
+          type: string
+    Apprentice:
+      type: object
+      properties:
+        mentor:
+          type: string
+    Maker:
+      oneOf:
+        - $ref: '#/components/schemas/Glassblower'
+          description: A qualified glassblower.
+        - $ref: '#/components/schemas/Apprentice'
+    Piece:
+      type: object
+      description: ''
+      properties:
+        pieceId:
+          $ref: '#/components/schemas/PieceId'
+        maker:
+          $ref: '#/components/schemas/Maker'
+        links:
+          title: ''
+          description: ''
+          type: object
+          properties:
+            photo:
+              description: ''
+              type: string
+            catalogue:
+              description: Where the piece is listed.
+              type: string

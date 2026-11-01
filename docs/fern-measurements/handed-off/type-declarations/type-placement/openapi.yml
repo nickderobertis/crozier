@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Postal Sorting Hub
+  version: 1.0.0
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      tags:
+        - Parcels
+      parameters:
+        - $ref: '#/components/parameters/SharedPriority'
+        - $ref: '#/components/parameters/SharedCarrier'
+      responses:
+        '200':
+          description: The parcels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /letters:
+    get:
+      operationId: listLetters
+      summary: List letters
+      tags:
+        - Letters
+      parameters:
+        - $ref: '#/components/parameters/SharedPriority'
+        - $ref: '#/components/parameters/SharedCarrier'
+      responses:
+        '200':
+          description: The letters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /depots/{depotId}/sacks:
+    get:
+      operationId: listSacks
+      summary: List sacks at a depot
+      x-fern-sdk-group-name:
+        - depots
+        - sacks
+      x-fern-sdk-method-name: list
+      parameters:
+        - name: depotId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SharedPriority'
+      responses:
+        '200':
+          description: The sacks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /health:
+    get:
+      operationId: checkHealth
+      summary: Check the hub's health
+      parameters:
+        - name: depth
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - shallow
+              - deep
+      responses:
+        '200':
+          description: The health report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    type: string
+                    enum:
+                      - up
+                      - degraded
+                  checkedAt:
+                    type: string
+                    format: date-time
+components:
+  parameters:
+    SharedPriority:
+      name: priority
+      in: query
+      required: false
+      x-fern-type-name: SharedPriority
+      description: Sorting priority.
+      schema:
+        type: string
+        enum:
+          - standard
+          - express
+    SharedCarrier:
+      name: carrier
+      in: query
+      required: false
+      description: Carrier to filter by.
+      schema:
+        type: string
+        enum:
+          - road
+          - rail
+          - air

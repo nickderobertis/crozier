@@ -224,3 +224,17 @@ superseded-fixtures/patch-inline-nullable-unrequired-props-omit	docs/fern-measur
 superseded-fixtures/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-alias	docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-example-nulls	docs/fern-measurements/superseded-fixtures/request-example-nulls/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/digit-leading-schema-name	docs/fern-measurements/handed-off/type-declarations/digit-leading-schema-name/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/number-uint32-format	docs/fern-measurements/handed-off/type-declarations/number-uint32-format/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/allof-description-wrapper	docs/fern-measurements/handed-off/type-declarations/allof-description-wrapper/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/schema-type-resolution	docs/fern-measurements/handed-off/type-declarations/schema-type-resolution/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/map-value-modelling	docs/fern-measurements/handed-off/type-declarations/map-value-modelling/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/parameter-type-resolution	docs/fern-measurements/handed-off/type-declarations/parameter-type-resolution/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/allof-member-description-docstring	docs/fern-measurements/handed-off/type-declarations/allof-member-description-docstring/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/blank-description-enum-docstring	docs/fern-measurements/handed-off/type-declarations/blank-description-enum-docstring/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/nullable-anyof-member-description-alias-docstring	docs/fern-measurements/handed-off/type-declarations/nullable-anyof-member-description-alias-docstring/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/nullable-anyof-allof-described-member	docs/fern-measurements/handed-off/type-declarations/nullable-anyof-allof-described-member/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/type-placement	docs/fern-measurements/handed-off/type-declarations/type-placement/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/inline-type-naming	docs/fern-measurements/handed-off/type-declarations/inline-type-naming/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/orphan-type-emission	docs/fern-measurements/handed-off/type-declarations/orphan-type-emission/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/description-source	docs/fern-measurements/handed-off/type-declarations/description-source/openapi.yml	python-enums	packaged	-

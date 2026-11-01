@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse Lamp Registry
+  version: 1.0.0
+paths:
+  /lamps/{lampId}:
+    get:
+      operationId: getLamp
+      summary: Read one lamp
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: minLumens
+          in: query
+          description: Brightness floor, a whole number declared as a number.
+          schema:
+            type: number
+            format: uint32
+      responses:
+        '200':
+          description: The lamp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lamp'
+components:
+  schemas:
+    Lamp:
+      type: object
+      properties:
+        rotations:
+          type: number
+          format: uint32
+        flashCount:
+          type: number
+          format: uint64
+        bulbs:
+          type: number
+          format: uint8
+        lensRings:
+          type: number
+          format: uint16
+        keeperShifts:
+          type: number
+          format: int32
+        beamYears:
+          type: number
+          format: int64
+        wattage:
+          type: number
+          format: float
+        range:
+          type: number
+          format: double
+        heightMeters:
+          type: number
+        sweepRate:
+          type: integer
+          format: uint32
+        towerIds:
+          type: array
+          items:
+            type: number
+            format: uint32
