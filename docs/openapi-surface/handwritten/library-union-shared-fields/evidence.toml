@@ -5,6 +5,6 @@ digest = "0082ee0223a76709800831a72411437c6c0013f8eb49158f769ac5db90751b5d"
 [[covers]]
 key = "oneof-discriminated-union"
 arm = 'src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]'
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -4,6 +4,6 @@ digest = "ad990e2ec21fd147df3eb6a4a58198ec96635b06811b71fe7d39f0f14419449e"
 
 [[covers]]
 key = "request-body-property-closed-empty-object"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-type-and-cycle-shapes/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

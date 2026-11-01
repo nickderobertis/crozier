@@ -4,6 +4,6 @@ digest = "b948b64d73873db426be842368d1a1a1c3c4afd43bd8c71991d4bc1e8a40bb17"
 
 [[covers]]
 key = "allof-child-of-cyclic-base-imports-base-deferred"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

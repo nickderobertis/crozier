@@ -42,7 +42,7 @@ import tomllib
 import unicodedata
 import unittest
 from collections import Counter
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
@@ -5959,6 +5959,14 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "components.schemas:nonidentifier-name",
             "components.schemas:same-primitive-union",
             "components.schemas:complex-module-name",
+            "components.schemas:described-object-ref-union",
+            "components.schemas:variant-own-fields-before-base",
+            "components.schemas:nullable-single-allof-ref",
+            "components.schemas:empty-properties-single-allof-ref",
+            "schema.oneOf:duplicate-members",
+            "components.schemas:two-string-enum-ref-union",
+            "components.schemas:discriminated-variant-required-nullable",
+            "operation.responses:blank-description-inline-object",
             "operation.operationId:untagged-list-or-set",
             "operation.operationId:hyphenated-tag-method",
             "operation.operationId:tag-spelled-split-prefix",
@@ -13790,17 +13798,19 @@ class CompletenessTierTests(unittest.TestCase):
                 target = root / relative
                 target.unlink()
                 overlay(REPO / relative, target)
-            fixture = root / "docs/openapi-surface/handwritten/turbine-pulse-counter"
+            fixture = root / "docs/openapi-surface/handwritten/lunar-null-labels"
             fixture.unlink()
             shutil.copytree(HANDWRITTEN / fixture.name, fixture)
             text = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
             cells = next(
-                row for row in RankedBacklogTests.region_rows(text) if row[0].strip("`") == "integer-format-fallback"
+                row
+                for row in RankedBacklogTests.region_rows(text)
+                if row[0].strip("`") == "schema-example-array-null-element"
             )
 
             def check() -> list[str]:
                 return completeness_failures(
-                    {"integer-format-fallback": ("schemas", cells)}, {"schemas": text}, {}, root=root
+                    {"schema-example-array-null-element": ("schemas", cells)}, {"schemas": text}, {}, root=root
                 )
 
             self.assertEqual([], check())
@@ -13809,11 +13819,11 @@ class CompletenessTierTests(unittest.TestCase):
             evidence.unlink()
             self.assertTrue(check(), "missing evidence accepted")
             evidence.write_text(
-                original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8", newline="\n"
+                original.replace("schema-example-array-null-element", "uncovered-shape"), encoding="utf-8", newline="\n"
             )
             self.assertTrue(check(), "a cover naming another key accepted")
             evidence.write_text(
-                original.replace("witness-search-integer-format/README.md", "missing-search.md"),
+                original.replace("witness-search-fixture-only-schemas/README.md", "missing-search.md"),
                 encoding="utf-8",
                 newline="\n",
             )
@@ -13822,7 +13832,7 @@ class CompletenessTierTests(unittest.TestCase):
                 "No search table.\n", encoding="utf-8", newline="\n"
             )
             evidence.write_text(
-                original.replace("witness-search-integer-format/README.md", "invalid-search.md"),
+                original.replace("witness-search-fixture-only-schemas/README.md", "invalid-search.md"),
                 encoding="utf-8",
                 newline="\n",
             )
@@ -15287,14 +15297,20 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         self.assertIn(
             f"The other {len(webhooks & paths)} webhook declarers also declare paths", rows["webhooks-without-paths"][4]
         )
+        others = sum(sum(self.measured.get(selector, {}).values()) for selector in ignore_selectors[1:])
         self.assertIn(
-            f"All {sum(ignored.values())} declarations are on operations under the Fern spelling",
+            f"All {sum(ignored.values())} declarations are on operations under the Fern spelling"
+            if not others
+            else f"The {sum(ignored.values())} declarations combine the supported ignore extensions",
             rows["x-fern-or-crozier-ignore"][4],
         )
-        for selector in ignore_selectors[1:]:
-            self.assertEqual(
-                {}, self.measured.get(selector, {}), "the cell's zero-declaration claim must change with this selector"
-            )
+        self.assertIn(
+            "The other three selectors have zero declarations in the registered-source walk"
+            if not others
+            else f"The other three selectors carry {others} declarations in the registered-source walk",
+            rows["x-fern-or-crozier-ignore"][4],
+            "the cell's count of the other three selectors must change with them",
+        )
 
 
 class NamingMirrorTests(unittest.TestCase):
@@ -16266,6 +16282,300 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_described_object_ref_union_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:described-object-ref-union"
+        crate = {"type": "object", "properties": {"slats": {"type": "integer"}}}
+        sack = {"type": "object", "properties": {"weight": {"type": "number"}}}
+
+        def tagged(value: str) -> dict[str, object]:
+            return {"type": "object", "properties": {"kind": {"type": "string", "enum": [value]}}}
+
+        union = {
+            "description": "Any packing.",
+            "oneOf": [{"$ref": "#/components/schemas/Crate"}, {"$ref": "#/components/schemas/Sack"}],
+        }
+        cases = {
+            "positive": {"Crate": crate, "Sack": sack, "Packing": union},
+            "undescribed": {"Crate": crate, "Sack": sack, "Packing": {"oneOf": union["oneOf"]}},
+            "one-member": {"Crate": crate, "Packing": {**union, "oneOf": union["oneOf"][:1]}},
+            "discriminated": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "discriminator": {"propertyName": "kind"}},
+            },
+            "with-properties": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "properties": {"label": {"type": "string"}}},
+            },
+            "scalar-member": {"Crate": crate, "Sack": {"type": "string"}, "Packing": union},
+            "inline-member": {"Crate": crate, "Packing": {**union, "oneOf": [union["oneOf"][0], sack]}},
+            "tagged-members": {"Crate": tagged("crate"), "Sack": tagged("sack"), "Packing": union},
+            "const-tagged-members": {
+                "Crate": {"type": "object", "properties": {"kind": {"type": "string", "const": "crate"}}},
+                "Sack": {"type": "object", "properties": {"kind": {"type": "string", "const": "sack"}}},
+                "Packing": union,
+            },
+            "with-all-of": {
+                "Crate": crate,
+                "Sack": sack,
+                "Packing": {**union, "allOf": [{"$ref": "#/components/schemas/Crate"}]},
+            },
+            "escaped-reference": {
+                "Crate": crate,
+                "bulk/Sack": sack,
+                "Packing": {**union, "oneOf": [union["oneOf"][0], {"$ref": "#/components/schemas/bulk~1Sack"}]},
+            },
+            "malformed-properties": {
+                "Crate": {"type": "object", "properties": ["slats"]},
+                "Sack": sack,
+                "Packing": union,
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(selector, "positive"): 1, (selector, "escaped-reference"): 1, (selector, "malformed-properties"): 1},
+            rows(completed),
+        )
+
+    def _component_cases(self, selector: str, cases: Mapping[str, Mapping[str, object]]) -> dict[tuple[str, str], int]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return rows(completed)
+
+    def test_nullable_single_allof_ref_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:nullable-single-allof-ref"
+        ledger = {"type": "object", "properties": {"pages": {"type": "integer"}}}
+        one = [{"$ref": "#/components/schemas/Ledger"}]
+        cases = {
+            "positive": {"Ledger": ledger, "MaybeLedger": {"nullable": True, "allOf": one}},
+            "not-nullable": {"Ledger": ledger, "MaybeLedger": {"allOf": one}},
+            "two-members": {"Ledger": ledger, "MaybeLedger": {"nullable": True, "allOf": [*one, {"type": "object"}]}},
+            "inline-member": {"MaybeLedger": {"nullable": True, "allOf": [ledger]}},
+            "own-properties": {
+                "Ledger": ledger,
+                "MaybeLedger": {"nullable": True, "allOf": one, "properties": {"note": {"type": "string"}}},
+            },
+            "open-map": {
+                "Ledger": ledger,
+                "MaybeLedger": {"nullable": True, "allOf": one, "additionalProperties": True},
+            },
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_empty_properties_single_allof_ref_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:empty-properties-single-allof-ref"
+        quarry = {"type": "object", "properties": {"depth": {"type": "number"}}}
+        one = [{"$ref": "#/components/schemas/Quarry"}]
+        cases = {
+            "positive": {"Quarry": quarry, "Pit": {"type": "object", "properties": {}, "allOf": one}},
+            "no-properties-key": {"Quarry": quarry, "Pit": {"type": "object", "allOf": one}},
+            "own-properties": {"Quarry": quarry, "Pit": {"properties": {"rim": {"type": "string"}}, "allOf": one}},
+            "two-members": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": [*one, *one]}},
+            "open-map": {"Quarry": quarry, "Pit": {"properties": {}, "allOf": one, "additionalProperties": {}}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_two_string_enum_ref_union_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:two-string-enum-ref-union"
+        lens = {"type": "string", "enum": ["amber", "white"]}
+        arm = {"type": "string", "enum": ["raised", "lowered"]}
+        both = [{"$ref": "#/components/schemas/Lens"}, {"$ref": "#/components/schemas/Arm"}]
+        cases = {
+            "positive": {"Lens": lens, "Arm": arm, "Aspect": {"oneOf": both}},
+            "three-members": {"Lens": lens, "Arm": arm, "Aspect": {"oneOf": [*both, {"type": "string"}]}},
+            "object-member": {"Lens": lens, "Arm": {"type": "object"}, "Aspect": {"oneOf": both}},
+            "numeric-enum": {"Lens": lens, "Arm": {"type": "integer", "enum": [1, 2]}, "Aspect": {"oneOf": both}},
+            "discriminated": {
+                "Lens": lens,
+                "Arm": arm,
+                "Aspect": {"oneOf": both, "discriminator": {"propertyName": "kind"}},
+            },
+            "any-of": {"Lens": lens, "Arm": arm, "Aspect": {"anyOf": both}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_discriminated_variant_required_nullable_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:discriminated-variant-required-nullable"
+
+        def variant(nullable: bool, required: bool, tag_only: bool = False) -> dict[str, object]:
+            properties: dict[str, object] = {"status": {"type": "string", "enum": ["open"]}}
+            if not tag_only:
+                properties["closes_at"] = {"type": "string", "nullable": nullable}
+            names = ["status"] + (["closes_at"] if required and not tag_only else [])
+            return {"type": "object", "properties": properties, "required": names}
+
+        def union(discriminated: bool = True) -> dict[str, object]:
+            schema: dict[str, object] = {"oneOf": [{"$ref": "#/components/schemas/Open"}]}
+            if discriminated:
+                schema["discriminator"] = {"propertyName": "status"}
+            return schema
+
+        cases = {
+            "positive": {"Open": variant(True, True), "Gate": union()},
+            "not-nullable": {"Open": variant(False, True), "Gate": union()},
+            "not-required": {"Open": variant(True, False), "Gate": union()},
+            "undiscriminated": {"Open": variant(True, True), "Gate": union(discriminated=False)},
+            "tag-only": {"Open": variant(True, True, tag_only=True), "Gate": union()},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_oneof_duplicate_members_has_a_positive_and_decoys(self) -> None:
+        selector = "schema.oneOf:duplicate-members"
+        member = {"type": "number"}
+        ref = {"$ref": "#/components/schemas/Weight"}
+        weight = {"type": "number"}
+        cases = {
+            "positive": {"Weight": weight, "Reading": {"oneOf": [member, {"type": "string"}, dict(member)]}},
+            "distinct": {"Weight": weight, "Reading": {"oneOf": [member, {"type": "string"}]}},
+            "repeated-ref": {"Weight": weight, "Reading": {"oneOf": [ref, dict(ref)]}},
+            "any-of": {"Weight": weight, "Reading": {"anyOf": [member, dict(member)]}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self._component_cases(selector, cases))
+
+    def test_variant_own_fields_before_base_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:variant-own-fields-before-base"
+        base = {"type": "object", "properties": {"kind": {"type": "string"}, "inspector": {"type": "string"}}}
+        tag_only_base = {"type": "object", "properties": {"kind": {"type": "string"}}}
+
+        def variant(*names: str, bases: tuple[str, ...] = ("Inspected",)) -> dict[str, object]:
+            return {
+                "type": "object",
+                "properties": {name: {"type": "string"} for name in names},
+                "allOf": [{"$ref": f"#/components/schemas/{name}"} for name in bases],
+            }
+
+        def union(*members: str, discriminated: bool = True, composition: str = "oneOf") -> dict[str, object]:
+            schema: dict[str, object] = {composition: [{"$ref": f"#/components/schemas/{name}"} for name in members]}
+            if discriminated:
+                schema["discriminator"] = {"propertyName": "kind"}
+            return schema
+
+        cases = {
+            "positive": {"Inspected": base, "Dam": variant("kind", "height"), "Wall": union("Dam")},
+            "any-of": {"Inspected": base, "Dam": variant("height"), "Wall": union("Dam", composition="anyOf")},
+            "undiscriminated": {"Inspected": base, "Dam": variant("height"), "Wall": union("Dam", discriminated=False)},
+            "tag-only-variant": {"Inspected": base, "Dam": variant("kind"), "Wall": union("Dam")},
+            "tag-only-base": {"Inspected": tag_only_base, "Dam": variant("height"), "Wall": union("Dam")},
+            "no-base": {"Inspected": base, "Dam": variant("height", bases=()), "Wall": union("Dam")},
+            "two-variants": {
+                "Inspected": base,
+                "Dam": variant("height"),
+                "Weir": variant("crest"),
+                "Wall": union("Dam", "Weir"),
+            },
+            "escaped-reference": {
+                "Inspected": base,
+                "dam/Gravity": variant("height"),
+                "Wall": {
+                    "oneOf": [{"$ref": "#/components/schemas/dam~1Gravity"}],
+                    "discriminator": {"propertyName": "kind"},
+                },
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in cases.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {
+                (selector, "positive"): 1,
+                (selector, "any-of"): 1,
+                (selector, "two-variants"): 2,
+                (selector, "escaped-reference"): 1,
+            },
+            rows(completed),
+        )
+
+    def test_blank_description_inline_response_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.responses:blank-description-inline-object"
+        reading = {"type": "object", "properties": {"depth": {"type": "integer"}}}
+
+        def document(schema: Mapping[str, object], *media: str) -> dict[str, object]:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": "gauge", "version": "1"},
+                "paths": {
+                    "/gauge": {
+                        "get": {
+                            "operationId": "read_gauge",
+                            "responses": {
+                                "200": {
+                                    "description": "Reading",
+                                    "content": {kind: {"schema": schema} for kind in media or ("application/json",)},
+                                }
+                            },
+                        }
+                    }
+                },
+                "components": {"schemas": {"Reading": {**reading, "description": ""}}},
+            }
+
+        cases = {
+            "positive": document({**reading, "description": ""}),
+            "described": document({**reading, "description": "A reading."}),
+            "undescribed": document(reading),
+            "referenced": document({"$ref": "#/components/schemas/Reading"}),
+            "scalar": document({"type": "integer", "description": ""}),
+            "text": document({**reading, "description": ""}, "text/plain"),
+            "properties-only": document({"properties": reading["properties"], "description": ""}),
+            "two-media": document({**reading, "description": ""}, "application/json", "application/problem+json"),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, body in cases.items():
+                write_fixture(root, fixture, json.dumps(body))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(selector, "positive"): 1, (selector, "properties-only"): 1, (selector, "two-media"): 2},
+            rows(completed),
+        )
 
     def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:tag-spelled-split-prefix"
@@ -18336,7 +18646,7 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
             paths = [
                 "docs/openapi-surface/handwritten-e2e.toml",
                 "docs/openapi-surface/schemas.md",
-                "docs/openapi-surface/witness-search-models-refs/README.md",
+                "docs/openapi-surface/witness-search-fixture-only-schemas/README.md",
                 "docs/fern-measurements/models-refs-remote/library-records/evidence.md",
                 "docs/fern-measurements/models-refs-remote/library-records/fern-expected/.fern/metadata.json",
                 "docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml",
@@ -19547,15 +19857,17 @@ class NamingWireCensusTests(unittest.TestCase):
             ("gallery-plaque-groups", "operation.operationId:camel-case-tag-prefix"),
             ("transcript-format-part", "operation.requestBody:optional-nullable-enum-multipart-part"),
             ("ledger-batch-upload", "operation.requestBody:titled-array-component-oas-three-one"),
-            ("survey-field-selector", "schema.enum:kwargs-member"),
+            ("langchain-agent-server", "schema.enum:kwargs-member"),
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
                 area = {
+                    "langchain-agent-server": "tests/fixtures/corpus-sources",
                     "ledger-batch-upload": "docs/fern-measurements/naming-wire",
                     "gallery-plaque-groups": "docs/fern-measurements/superseded-fixtures",
                 }.get(fixture, "docs/openapi-surface/handwritten")
-                document = census.load_document(REPO / area / fixture / "openapi.yml")
+                name = "openapi.json" if fixture == "langchain-agent-server" else "openapi.yml"
+                document = census.load_document(REPO / area / fixture / name)
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
                 match fixture:
@@ -19567,10 +19879,10 @@ class NamingWireCensusTests(unittest.TestCase):
                         control["components"]["schemas"]["CaptionFormat"] = {"type": "object"}
                     case "ledger-batch-upload":
                         control["openapi"] = "3.0.3"
-                    case "survey-field-selector":
-                        control["paths"]["/responses"]["get"]["parameters"][0]["schema"]["items"]["enum"].remove(
-                            "kwargs"
-                        )
+                    case "langchain-agent-server":
+                        control["paths"]["/threads/{thread_id}/runs"]["get"]["parameters"][4]["schema"]["items"][
+                            "enum"
+                        ].remove("kwargs")
                 self.assertEqual(census.census_document(control).get(selector, 0), 0)
                 self.assertIsNone(census.selector_error(selector))
 

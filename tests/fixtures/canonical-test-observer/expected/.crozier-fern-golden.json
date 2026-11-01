@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "canonical-test-observer",
+  "corpus_spec_ref": "1095319380ea5979f6f538b96e0516a46bbd6f89",
+  "corpus_spec_url": "https://raw.githubusercontent.com/canonical/test_observer/1095319380ea5979f6f538b96e0516a46bbd6f89/backend/schemata/openapi.json"
+}

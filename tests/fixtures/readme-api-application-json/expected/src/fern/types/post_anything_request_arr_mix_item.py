@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .post_anything_request_arr_mix_item_arr_mix_nested import PostAnythingRequestArrMixItemArrMixNested
+
+PostAnythingRequestArrMixItem = typing.Union[float, str, PostAnythingRequestArrMixItemArrMixNested]

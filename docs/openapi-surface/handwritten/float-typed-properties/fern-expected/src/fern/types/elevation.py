@@ -1,3 +1,0 @@
-
-
-Elevation = float

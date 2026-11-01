@@ -7,6 +7,6 @@ digest = "b0ec50688ae4fa526321decb6e2f56b47832603e62b905faf0ce92a2b66dd484"
 [[covers]]
 key = "ref-pointer-undeclared-component-head"
 arm = 'src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -4,13 +4,13 @@ digest = "97b6f8ecc21c7a991770a2884b321cf9927e1e26c101cebb1f9e34cf280b8e16"
 
 [[covers]]
 key = "integer-example-beyond-double-precision"
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
 
 [[covers]]
 key = "format-int64"
 arm = 'src/ir.rs::bounded_example_literal[=^ {16}exact$]'
-search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

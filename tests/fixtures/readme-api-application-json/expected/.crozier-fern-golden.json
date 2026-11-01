@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "readme-api-application-json",
+  "corpus_spec_ref": "64df99461f5aef56934341a48a1f004936483f4c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/readmeio/api/64df99461f5aef56934341a48a1f004936483f4c/packages/httpsnippet-client-api/test/__datasets__/application-json/openapi.json"
+}

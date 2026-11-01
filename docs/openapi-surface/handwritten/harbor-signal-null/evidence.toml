@@ -4,6 +4,6 @@ digest = "24b849f045c8b6a298154244b62b19ef9a1870b74f9d4d1dc330daec0a7fbe9e"
 
 [[covers]]
 key = "schema-example-null"
-search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

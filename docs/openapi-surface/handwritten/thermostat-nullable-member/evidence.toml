@@ -5,6 +5,6 @@ digest = "a19f11f60bf80b07d900a30d9d3a2ebd2af6465f7ba7d3d4df23d1d8911eb46c"
 [[covers]]
 key = "nullable"
 arm = 'src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]'
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

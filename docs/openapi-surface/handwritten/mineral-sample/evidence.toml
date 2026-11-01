@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "da09ee26d912f3ba8bd4db8be4a2ee8c841d33de92979683a93cb78829937b32"
-
-[[covers]]
-key = "allof-single-ref-empty-properties-alias"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

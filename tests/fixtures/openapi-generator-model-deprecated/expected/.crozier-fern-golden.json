@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "openapi-generator-model-deprecated",
+  "corpus_spec_ref": "fe895442245841be0f0d0ff761cd0c4639efd774",
+  "corpus_spec_url": "https://raw.githubusercontent.com/sorinvisan89/openapi/fe895442245841be0f0d0ff761cd0c4639efd774/modules/openapi-generator/src/test/resources/3_0/model-deprecated.yaml"
+}

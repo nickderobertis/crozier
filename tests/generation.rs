@@ -338,11 +338,6 @@ fn property_metadata_survives_the_public_generation_pipeline() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
     for (fixture, file, expected) in [
         (
-            "blank-reading-description",
-            "src/acme/types/read_records_response.py",
-            "\"\"\" \"\"\"",
-        ),
-        (
             "compass-member-notes",
             "src/acme/types/compass.py",
             "Towards the southern horizon.",
@@ -367,7 +362,11 @@ fn property_metadata_survives_the_public_generation_pipeline() {
         let files = render(&source);
         assert!(files[file].contains(expected), "{fixture}: {}", files[file]);
     }
-    let source = std::fs::read_to_string(root.join("gauge-public-fields/openapi.yml")).unwrap();
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml"),
+    )
+    .unwrap();
     let files = render(&source);
     assert!(!files["src/acme/types/gauge.py"].contains("calibration_note"));
     let required = source.replace(
@@ -406,12 +405,6 @@ fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
             "artefact-catalogue",
             "artifact",
             "class Artifact(UniversalBaseModel):",
-        ),
-        ("mineral-sample", "pebble", "Pebble = Rock"),
-        (
-            "nullable-store",
-            "vacant_store",
-            "VacantStore = typing.Optional[Store]",
         ),
         (
             "sampling-branches",
@@ -15040,7 +15033,7 @@ fn worked_example_goldens_match_in_process() {
             Layout::Packaged,
         ),
         (
-            "docs/openapi-surface/handwritten/unread-date-time-examples",
+            "docs/fern-measurements/examples-docs/unread-date-time-examples",
             "openapi.yml",
             "fern-expected",
             "fern",

@@ -1,0 +1,5 @@
+
+
+import typing
+
+PreferencesValidationResponsePropertiesStatus = typing.Union[typing.Literal["Valid", "Invalid", "Skipped"], typing.Any]

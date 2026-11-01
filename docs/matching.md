@@ -350,9 +350,10 @@ attribute at a time (not re-measured at the certified pair), and held at CLI
   the appended `Z` breaks. The default is valid for the schema and contradicts no
   code, so this too is Fern behaviour; every value crozier writes parses with
   `datetime.datetime.fromisoformat`, and the docstring writer changes only the
-  date-time separator. The hand-written fixture `unread-date-time-examples`
-  holds a zone name and a negative offset (each Fern's default) beside a `Z`
-  value (its own instant).
+  date-time separator. The registered `netgsm-sms` golden carries an unread
+  pattern string as Fern's default, and the examples-docs measurement
+  `unread-date-time-examples` holds a zone name and a negative offset (each
+  Fern's default) beside a `Z` value (its own instant).
 - *A composed (`allOf`) request body* lists its bases' fields ahead of its own,
   in declaration order and whatever `required` says: the docstring every base's
   first all the way down, the Markdown writers each base's own fields before that
@@ -1338,8 +1339,9 @@ byte-match target like the rest of the corpus.
   `ImportSessionRequest` and every type they reach although the three ignored
   `/api/internal/import/*` operations are their only references. Ignoring a
   schema removes that schema alone: Fern 5.41.3 keeps `LegacyPart` when its one
-  referrer is ignored (the hand-written fixture
-  [`x-fern-ignore-schema`](openapi-surface/handwritten/x-fern-ignore-schema/)), so
+  referrer is ignored (measured on a hand-written document, the fixture
+  `x-fern-ignore-schema` added in `ffe331be4`, retired once corpus row 4015
+  `nvke-controller` reached the arm with its eleven ignored component schemas), so
   the ignore is inert on a spec that carries no markers and never perturbs a full
   generation. An explicit
   `x-crozier-ignore: false` wins over a sibling `x-fern-ignore: true`, which is what

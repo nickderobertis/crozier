@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "chrome-webstatus-backend",
+  "corpus_spec_ref": "a0746a61a88c65d94bdee498617d48e73e97f724",
+  "corpus_spec_url": "https://raw.githubusercontent.com/GoogleChrome/webstatus.dev/a0746a61a88c65d94bdee498617d48e73e97f724/openapi/backend/openapi.yaml"
+}

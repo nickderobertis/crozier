@@ -234,8 +234,8 @@ const FERN_DEFAULT_DATETIME: &str = "2024-01-15T09:30:00+00:00";
 /// A declared `date-time` example as a worked call writes it: the instant it
 /// names, in UTC, as `YYYY-MM-DDTHH:MM:SS+00:00` (a fraction of a second is
 /// dropped). Measured against `fernapi/fern-python-sdk` 5.20.0 (at the certified
-/// pair, Fergus's golden and the hand-written `unread-date-time-examples`
-/// fixture re-verify an offset, a zone name and `Z`), Fern reads the value after
+/// pair, Fergus's golden and the `unread-date-time-examples` examples-docs
+/// measurement re-verify an offset, a zone name and `Z`), Fern reads the value after
 /// appending `Z` unless it already ends in `Z` or holds a `+`, so Fergus's
 /// `2025-12-02T00:00:00+13:00` passes `2025-12-01 11:00:00+00:00`, a value with
 /// no zone (`2023-03-04 05:06:07`, `2023-03-04`) is read as UTC and a day past

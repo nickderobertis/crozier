@@ -4,6 +4,6 @@ digest = "75d65860e612d42f5b3079fce2be457cb98f3d60bcc0b50c150f0415acf2ca97"
 
 [[covers]]
 key = "enum-value-description-extension-dropped"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

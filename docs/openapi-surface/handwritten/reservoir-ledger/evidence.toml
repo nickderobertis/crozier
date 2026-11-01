@@ -4,6 +4,6 @@ digest = "519bb732523618037d3d9a97e3571bc95322d1e1bbd81750d7f5fdf98ca4eb10"
 
 [[covers]]
 key = "property-ref-to-nullable-component-annotation"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "2faa9e2dbfd69034199405d0c9d5255c01dc3ac79b6fb2e4241dce1d404d9d00"
-
-[[covers]]
-key = "ignore-extension-on-property-kept"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

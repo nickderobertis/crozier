@@ -2256,9 +2256,9 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
-        "impedance-complex-reading-literals",
-        "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
-        &["--enum-type", "literals"],
+        "gauge-public-fields",
+        "docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml",
+        &[],
     ),
     (
         "keyword-bearer-name",
@@ -3004,14 +3004,6 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
             "remaining-examples/enum-media-selection-control",
             "/paths/~1probe/post/requestBody/content/application~1json",
             "example",
-        ),
-        (
-            "compass-choice",
-            "docs/openapi-surface/handwritten/compass-choice/openapi.yml",
-            "docs/openapi-surface/handwritten/compass-choice/fern-expected",
-            "remaining-examples/compass-choice-control",
-            "/paths/~1choices/post/requestBody/content/application~1json/schema/properties/direction/oneOf/0",
-            "const",
         ),
         (
             "shelf-labels-map-variants",
@@ -3798,8 +3790,6 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
         "circuit-readings",
         "garden-crown",
         "artefact-catalogue",
-        "mineral-sample",
-        "nullable-store",
         "sampling-branches",
     ] {
         let fixture = root.join("docs/openapi-surface/handwritten").join(name);
@@ -3832,12 +3822,21 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
     assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
 }
 
+/// Where a vendor-extension test bed lives: under the hand-written fixtures,
+/// except `gauge-public-fields`, a measurement since corpus row 4015 proved its row.
+fn handwritten_or_measured(name: &str) -> String {
+    if name == "gauge-public-fields" {
+        format!("docs/fern-measurements/clients-extensions/{name}")
+    } else {
+        format!("docs/openapi-surface/handwritten/{name}")
+    }
+}
+
 #[test]
 fn property_metadata_shapes_match_the_certified_fern_trees() {
     let root = repo_root();
     let mut all_failures = Vec::new();
     for name in [
-        "blank-reading-description",
         "compass-member-notes",
         "gauge-public-fields",
         "verified-seal",
@@ -3845,8 +3844,8 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
         "reservoir-ledger",
         "required-marker-point",
     ] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
-        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let fixture = root.join(handwritten_or_measured(name));
+        let golden = format!("{}/fern-expected", handwritten_or_measured(name));
         let failures = filtered_tree_failures(
             name,
             &golden,
@@ -4000,13 +3999,13 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
         assert_eq!(rows, vec![vec![fern.as_str(), canonical.as_str(), placement, effect]],
             "vendor-extension table drift: restore the documented {extension} contract or update its real-binary proof");
     }
-    let root = repo_root().join("docs/openapi-surface/handwritten");
+    let root = repo_root();
     for (fixture, extension, conflict, module, expected) in [
         ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
         ("gauge-public-fields", "ignore", "          x-crozier-ignore: false\n", "gauge", "calibration_note: typing.Optional[str]"),
         ("compass-member-notes", "enum", "      x-crozier-enum:\n        south:\n          description: A revised southern direction.\n", "compass", "A revised southern direction."),
     ] {
-        let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let original = std::fs::read_to_string(root.join(handwritten_or_measured(fixture)).join("openapi.yml")).unwrap();
         for spec in [original.replace(&format!("x-fern-{extension}"), &format!("x-crozier-{extension}")), if extension == "type" {
             let needle = "          x-fern-type: literal<true>\n";
             assert_eq!(original.matches(needle).count(), 1);
@@ -4021,8 +4020,8 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             if spec.contains(conflict) {
                 assert!(model.contains(expected), "{fixture}: {model}");
             } else {
-                let reference = root.join(fixture).join("fern-expected");
-                let golden = format!("docs/openapi-surface/handwritten/{fixture}/fern-expected");
+                let reference = root.join(handwritten_or_measured(fixture)).join("fern-expected");
+                let golden = format!("{}/fern-expected", handwritten_or_measured(fixture));
                 let ledger = departure_ledger().golden(&golden, &[]).unwrap();
                 let failures = golden_tree_failures(fixture, &source.display().to_string(), &ledger, &reference, &out);
                 assert!(failures.is_empty(), "{}", failures.join("\n"));
@@ -4037,7 +4036,11 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             "compass-member-notes",
             "verified-seal",
         ] {
-            let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+            let original = std::fs::read_to_string(
+                root.join(handwritten_or_measured(fixture))
+                    .join("openapi.yml"),
+            )
+            .unwrap();
             let mut document: serde_json::Value = crate::yaml::from_str(&original).unwrap();
             let prefix = format!("x-{spelling}");
             let (module, expected) = match fixture {
@@ -4093,7 +4096,10 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             }
         }
     }
-    let original = std::fs::read_to_string(root.join("verified-seal/openapi.yml")).unwrap();
+    let original = std::fs::read_to_string(
+        root.join("docs/openapi-surface/handwritten/verified-seal/openapi.yml"),
+    )
+    .unwrap();
     let source = original.replace(
         "          x-fern-type: literal<true>\n",
         "          x-fern-type: literal<true>\n          x-crozier-type: literal<unsupported>\n",
@@ -5953,7 +5959,7 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
 }
 
 /// Every `date-time` value crozier's worked examples write over the
-/// `unread-date-time-examples` hand-written fixture is an instant
+/// `unread-date-time-examples` examples-docs measurement is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
 /// with each field in range. The document's examples are a zone name and a
 /// negative offset, which Fern replaces with its default, beside a `Z` value it
@@ -5961,8 +5967,8 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
 /// changes nothing but the date-time separator.
 #[test]
 fn worked_date_time_examples_always_parse() {
-    let fixture =
-        repo_root().join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
+    let fixture = repo_root()
+        .join("docs/fern-measurements/examples-docs/unread-date-time-examples/openapi.yml");
     let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "python", "--spec"])
@@ -10339,6 +10345,23 @@ const CORPORA: &[&Corpus] = &[
     &FLOWDAPT,
     &K8S_CONTAINER_SERVICE_PROVIDER,
     &DANIWEB_CONNECT,
+    &STELLASTRA_COM,
+    &CONTRIBLY_COM,
+    &OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES,
+    &SOURCEFUSE_BPMN_SERVICE,
+    &README_API_APPLICATION_JSON,
+    &KONFIG_LUCCA_ORGANIZATION,
+    &ABLY_SDK_TEST_PROXY,
+    &DIPJYOTIMETIA_FRIDAY,
+    &OPENAPI_GENERATOR_MODEL_DEPRECATED,
+    &NVKE_CONTROLLER,
+    &ANDREYCHH_COOPERA,
+    &CHROME_WEBSTATUS_BACKEND,
+    &CANONICAL_TEST_OBSERVER,
+    &PSYCHIC_SPEC_HELPERS_TESTAPP,
+    &OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT,
+    &TRPC_OPENAPI_APP_ROUTER,
+    &AZURE_DATABOX_MANAGEMENT,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
@@ -11838,6 +11861,229 @@ const FLOWDAPT: Corpus = Corpus {
 /// has no narrower Python type for, over three paths and 18 component schemas.
 const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
     api: "k8s-container-service-provider",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `stellastra-com`: corpus row 4000, Stellastra's review API from the APIs.guru
+/// directory, whose inline response objects carry `description: ''` — the
+/// registered witness of `empty-description-inline-response-docstring`.
+const STELLASTRA_COM: Corpus = Corpus {
+    api: "stellastra-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `contribly-com`: corpus row 4001, Contribly's contribution API from the
+/// APIs.guru directory, whose `POST /media` body is a bare `format: byte`
+/// string — the registered witness of `format-byte`'s `scalar_body` arm.
+const CONTRIBLY_COM: Corpus = Corpus {
+    api: "contribly-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-oneof-two-primitives`: corpus row 4002, the OpenAPI Generator project's two-primitive `oneOf` sample — the registered witness of
+/// `component-same-primitive-union`.
+const OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES: Corpus = Corpus {
+    api: "openapi-generator-oneof-two-primitives",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sourcefuse-bpmn-service`: corpus row 4003, SourceFuse's LoopBack 4 BPMN service — the registered witness of
+/// `oneof-array-variant-inline-enum-item`.
+const SOURCEFUSE_BPMN_SERVICE: Corpus = Corpus {
+    api: "sourcefuse-bpmn-service",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `readme-api-application-json`: corpus row 4004, ReadMe's `api` code-snippet dataset for JSON bodies — the registered witness of
+/// `oneof-duplicate-members-collapsed`.
+const README_API_APPLICATION_JSON: Corpus = Corpus {
+    api: "readme-api-application-json",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `konfig-lucca-organization`: corpus row 4005, Konfig's corrected copy of Lucca's organization API — the registered witness of
+/// `schema-x-tags`.
+const KONFIG_LUCCA_ORGANIZATION: Corpus = Corpus {
+    api: "konfig-lucca-organization",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ably-sdk-test-proxy`: corpus row 4006, Ably's asset-tracking fault-simulation proxy — the registered witness of
+/// `combo-oneof-schema-example`.
+const ABLY_SDK_TEST_PROXY: Corpus = Corpus {
+    api: "ably-sdk-test-proxy",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `dipjyotimetia-friday`: corpus row 4007, the Friday testing-agent API — the registered witness of
+/// `format-binary`.
+const DIPJYOTIMETIA_FRIDAY: Corpus = Corpus {
+    api: "dipjyotimetia-friday",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-allof-extension-parent`: corpus row 4008, the OpenAPI Generator project's `allOf` parent-extension document — the registered witness of
+/// `nullable-single-allof-ref-component-not-optional`.
+const OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT: Corpus = Corpus {
+    api: "openapi-generator-allof-extension-parent",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `trpc-openapi-app-router`: corpus row 4009, the tRPC OpenAPI package's application-router document — the registered witness of
+/// `integer-format-fallback`.
+const TRPC_OPENAPI_APP_ROUTER: Corpus = Corpus {
+    api: "trpc-openapi-app-router",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `azure-databox-management`: corpus row 4010, Microsoft's Data Box management API as the Jentic directory redistributes it — the registered witness of
+/// `allof-single-ref-empty-properties-alias`.
+const AZURE_DATABOX_MANAGEMENT: Corpus = Corpus {
+    api: "azure-databox-management",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `canonical-test-observer`: corpus row 4011, Canonical's Test Observer API — the registered witness of
+/// `anyof-array-variant-inline-const-item`.
+const CANONICAL_TEST_OBSERVER: Corpus = Corpus {
+    api: "canonical-test-observer",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `psychic-spec-helpers-testapp`: corpus row 4012, the Psychic framework spec helpers' test application — the registered witness of
+/// `bigint-format-string-typed-str`.
+const PSYCHIC_SPEC_HELPERS_TESTAPP: Corpus = Corpus {
+    api: "psychic-spec-helpers-testapp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `chrome-webstatus-backend`: corpus row 4013, Chrome's web platform status backend API — the registered witness of
+/// `union-of-two-enum-refs-alias`.
+const CHROME_WEBSTATUS_BACKEND: Corpus = Corpus {
+    api: "chrome-webstatus-backend",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `andreychh-coopera`: corpus row 4014, the Coopera team task tracker's API — the registered witness of
+/// `variant-nullable-value-optional-default-none`.
+const ANDREYCHH_COOPERA: Corpus = Corpus {
+    api: "andreychh-coopera",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `nvke-controller`: corpus row 4015, the NVKE cluster controller API — the registered witness of
+/// `ignore-extension-on-property-kept`.
+const NVKE_CONTROLLER: Corpus = Corpus {
+    api: "nvke-controller",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openapi-generator-model-deprecated`: corpus row 4016, the OpenAPI Generator project's deprecated-model document, as a fork of that repository carries it — the registered witness of
+/// `schema-name-builtin-complex`.
+const OPENAPI_GENERATOR_MODEL_DEPRECATED: Corpus = Corpus {
+    api: "openapi-generator-model-deprecated",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14355,6 +14601,93 @@ fn k8s_container_service_provider_matches_fern_output() {
 fn daniweb_connect_matches_fern_output() {
     assert_committed_corpus_matches(&DANIWEB_CONNECT);
 }
+
+#[test]
+fn stellastra_com_matches_fern_output() {
+    assert_committed_corpus_matches(&STELLASTRA_COM);
+}
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Rows 4001 to 4016 are registered corpus rows, and each row's byte-match runs here and in `just test-corpus-match` like every other `*_matches_fern_output` test (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); the sixteen together take about two minutes, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for these rows.
+#[test]
+fn contribly_com_matches_fern_output() {
+    assert_committed_corpus_matches(&CONTRIBLY_COM);
+}
+
+#[test]
+fn openapi_generator_oneof_two_primitives_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_ONEOF_TWO_PRIMITIVES);
+}
+
+#[test]
+fn sourcefuse_bpmn_service_matches_fern_output() {
+    assert_committed_corpus_matches(&SOURCEFUSE_BPMN_SERVICE);
+}
+
+#[test]
+fn readme_api_application_json_matches_fern_output() {
+    assert_committed_corpus_matches(&README_API_APPLICATION_JSON);
+}
+
+#[test]
+fn konfig_lucca_organization_matches_fern_output() {
+    assert_committed_corpus_matches(&KONFIG_LUCCA_ORGANIZATION);
+}
+
+#[test]
+fn ably_sdk_test_proxy_matches_fern_output() {
+    assert_committed_corpus_matches(&ABLY_SDK_TEST_PROXY);
+}
+
+#[test]
+fn dipjyotimetia_friday_matches_fern_output() {
+    assert_committed_corpus_matches(&DIPJYOTIMETIA_FRIDAY);
+}
+
+#[test]
+fn openapi_generator_model_deprecated_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_MODEL_DEPRECATED);
+}
+
+#[test]
+fn nvke_controller_matches_fern_output() {
+    assert_committed_corpus_matches(&NVKE_CONTROLLER);
+}
+
+#[test]
+fn andreychh_coopera_matches_fern_output() {
+    assert_committed_corpus_matches(&ANDREYCHH_COOPERA);
+}
+
+#[test]
+fn chrome_webstatus_backend_matches_fern_output() {
+    assert_committed_corpus_matches(&CHROME_WEBSTATUS_BACKEND);
+}
+
+#[test]
+fn canonical_test_observer_matches_fern_output() {
+    assert_committed_corpus_matches(&CANONICAL_TEST_OBSERVER);
+}
+
+#[test]
+fn psychic_spec_helpers_testapp_matches_fern_output() {
+    assert_committed_corpus_matches(&PSYCHIC_SPEC_HELPERS_TESTAPP);
+}
+
+#[test]
+fn openapi_generator_allof_extension_parent_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_GENERATOR_ALLOF_EXTENSION_PARENT);
+}
+
+#[test]
+fn trpc_openapi_app_router_matches_fern_output() {
+    assert_committed_corpus_matches(&TRPC_OPENAPI_APP_ROUTER);
+}
+
+#[test]
+fn azure_databox_management_matches_fern_output() {
+    assert_committed_corpus_matches(&AZURE_DATABOX_MANAGEMENT);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn chaingateway_io_matches_fern_output() {

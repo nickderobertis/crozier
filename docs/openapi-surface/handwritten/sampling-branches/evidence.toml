@@ -4,6 +4,6 @@ digest = "c40b7f875945f43097f2147f2b00b5f68b03fe0f95ac48a7d0b718656bff7f2a"
 
 [[covers]]
 key = "allof-union-branch-not-schema-overrides-property"
-search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

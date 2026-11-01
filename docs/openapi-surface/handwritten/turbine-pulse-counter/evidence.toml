@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "0c01ef99b0548ff047c9b46a9900b07f08c7cf681b43dc229e6b73e918b6fbcd"
-
-[[covers]]
-key = "integer-format-fallback"
-search = "docs/openapi-surface/witness-search-integer-format/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-integer-format/README.md"

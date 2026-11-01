@@ -4,6 +4,6 @@ digest = "3057c4efd1dba093af97ba2fd86cbcd6c7effcd1351552846a30fa0f3a65f2c9"
 
 [[covers]]
 key = "literal-enum-value-quote-escaping"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

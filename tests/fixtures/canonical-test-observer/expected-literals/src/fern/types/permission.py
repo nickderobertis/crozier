@@ -1,0 +1,41 @@
+
+
+import typing
+
+Permission = typing.Union[
+    typing.Literal[
+        "view_user",
+        "change_user",
+        "view_team",
+        "change_team",
+        "add_application",
+        "change_application",
+        "view_application",
+        "view_permission",
+        "view_issue",
+        "change_issue",
+        "change_issue_attachment",
+        "change_issue_attachment_bulk",
+        "change_attachment_rule",
+        "change_auto_rerun",
+        "view_test",
+        "change_test",
+        "view_rerun",
+        "change_rerun",
+        "change_rerun_bulk",
+        "view_artefact",
+        "change_artefact",
+        "delete_artefact",
+        "view_environment_review",
+        "change_environment_review",
+        "view_report",
+        "view_test_case_reported_issue",
+        "change_test_case_reported_issue",
+        "view_environment_reported_issue",
+        "change_environment_reported_issue",
+        "view_notification",
+        "change_notification",
+        "view_sentry_debug",
+    ],
+    typing.Any,
+]

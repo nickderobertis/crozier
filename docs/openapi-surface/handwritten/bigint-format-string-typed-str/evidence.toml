@@ -1,9 +1,0 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "5883771b9a484660fc26100b56d6069898beaaff77ae447f157ca482171ef814"
-
-[[covers]]
-key = "bigint-format-string-typed-str"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 266 of the 297 registered sources live in `corpus-sources/` (a split
+  and 283 of the 314 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1371,6 +1371,12 @@ PREDICATES = {
         "`application/json` beside it: the download `is_download_media_type` of "
         "`src/ir.rs` streams"
     ),
+    "operation.responses:blank-description-inline-object": (
+        "one per JSON-like media type of an Operation Object's inline Response "
+        "Object whose schema is an inline object (`type: object` or `properties`, "
+        "no `$ref`) writing `description: ''`: the model `InlineHoister::hoist_object` "
+        "of `src/ir.rs` hoists with an empty docstring block, as Fern does"
+    ),
     "operation.requestBody:blank-description-optional-object": (
         "one per Operation Object declaring no parameter itself or on its Path Item "
         "whose request body's `description` is the empty string and whose "
@@ -1437,6 +1443,50 @@ PREDICATES = {
         "inline scalar alternatives that all convert to one primitive and nothing "
         "else is declared beside them, which `normalize_same_primitive_unions` of "
         "`src/openapi.rs` renames after its last alternative's ordinal"
+    ),
+    "components.schemas:nullable-single-allof-ref": (
+        "one per component schema writing `nullable: true` and an `allOf` of exactly "
+        "one Reference Object, with no `properties` and no `additionalProperties`: the "
+        "annotated reference `Builder::add_named_shape` of `src/ir.rs` writes as an "
+        "`Optional` alias of its target through its explicitly-nullable arm"
+    ),
+    "components.schemas:empty-properties-single-allof-ref": (
+        "one per component schema writing `properties: {}` and an `allOf` of exactly "
+        "one Reference Object, with no `additionalProperties`: the annotated reference "
+        "`Builder::add_named_shape` of `src/ir.rs` writes as an alias of its target, "
+        "not as a model inheriting from it"
+    ),
+    "components.schemas:two-string-enum-ref-union": (
+        "one per component schema whose `oneOf` is exactly two Reference Objects, each "
+        "to a string-enum component, with nothing else declared beside it: the "
+        "`typing.Union` alias of the two enums `render_type_decl` of `src/emit.rs` "
+        "writes, as Fern does"
+    ),
+    "components.schemas:discriminated-variant-required-nullable": (
+        "one per Reference Object member of a component's `oneOf` with a "
+        "`discriminator` whose target requires a property other than the "
+        "discriminator's and writes it `nullable: true`: the variant field "
+        "`Builder::discriminated_union` of `src/ir.rs` types `Optional[...] = None`, "
+        "as Fern does"
+    ),
+    "schema.oneOf:duplicate-members": (
+        "one per Schema Object whose `oneOf` holds two inline members (no `$ref`) that "
+        "are equal as JSON values: `dedupe_union_members` of `src/ir.rs` writes the "
+        "union with that member once, as Fern does"
+    ),
+    "components.schemas:described-object-ref-union": (
+        "one per component schema writing a non-empty `description` and a `oneOf` of "
+        "two or more Reference Objects, each to an object component, with no "
+        "`discriminator`, `properties` or `allOf` beside it and no property every "
+        "member tags with one string value: the `typing.Union` alias `render_type_decl` "
+        "of `src/emit.rs` writes without that description, as Fern does"
+    ),
+    "components.schemas:variant-own-fields-before-base": (
+        "one per Reference Object member of a component's discriminated `oneOf` or "
+        "`anyOf` whose target declares a property other than the discriminator's and "
+        "an `allOf` Reference Object to a base declaring one too: `member_fields` of "
+        "`src/ir.rs` writes the variant's own fields before the base's in the union "
+        "wrapper, the reverse of the `allOf` order"
     ),
     "securityScheme:$ref": (
         "one per `components.securitySchemes` entry that is a Reference Object rather "
@@ -6179,6 +6229,26 @@ def reference_cycles(schemas: dict[Any, Any]) -> dict[str, frozenset[str]]:
     return cycles
 
 
+def blank_description_inline_responses(operation: dict[Any, Any]) -> list[str]:
+    """`operation.responses:blank-description-inline-object`, read off inline responses only."""
+    responses = operation.get("responses")
+    found: list[str] = []
+    for response in responses.values() if isinstance(responses, dict) else []:
+        content = response.get("content") if isinstance(response, dict) else None
+        for media_type, media in content.items() if isinstance(content, dict) else []:
+            schema = media.get("schema") if isinstance(media, dict) else None
+            if (
+                isinstance(media_type, str)
+                and "json" in media_type.lower()
+                and isinstance(schema, dict)
+                and "$ref" not in schema
+                and (schema.get("type") == "object" or isinstance(schema.get("properties"), dict))
+                and schema.get("description") == ""
+            ):
+                found.append("operation.responses:blank-description-inline-object")
+    return found
+
+
 def reference_cycle_predicates(schemas: Any) -> list[str]:
     """`components.schemas:fields-reach-cycles-unsorted` and `:cycle-into-cycle`."""
     if not isinstance(schemas, dict):
@@ -6526,6 +6596,7 @@ class Census:
                 found.append("operation.operationId:hyphenated-tag-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
+            found += blank_description_inline_responses(node)
             found += self.body_and_response_predicates(node, method, url)
         if kind_name == "mediaType":
             schema = node.get("schema")
@@ -7265,6 +7336,11 @@ class Census:
             found += self.class_name_sanitizations(node.get("schemas"))
             found += self.complex_module_names(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
+            found += self.described_object_ref_unions(node.get("schemas"))
+            found += self.single_all_of_ref_aliases(node.get("schemas"))
+            found += self.two_string_enum_ref_unions(node.get("schemas"))
+            found += self.discriminated_variant_required_nullables(node.get("schemas"))
+            found += self.variant_own_fields_before_bases(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
@@ -7563,6 +7639,11 @@ class Census:
                 found.append(f"schema.{field}:several-non-null-members")
             if len(members) == 1:
                 found.append(f"schema.{field}:sole-member")
+        one_of = node.get("oneOf")
+        if isinstance(one_of, list):
+            inline = [member for member in one_of if isinstance(member, dict) and "$ref" not in member]
+            if any(member == other for index, member in enumerate(inline) for other in inline[:index]):
+                found.append("schema.oneOf:duplicate-members")
         if "enum" in node and string_valued(node, node.get("enum")):
             found.append("schema.enum:string-valued")
         found += enum_member_predicates(node)
@@ -7741,6 +7822,209 @@ class Census:
             for key, schema in node.items()
             if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
+
+    @staticmethod
+    def discriminated_variant_required_nullables(node: Any) -> list[str]:
+        """`components.schemas:discriminated-variant-required-nullable`: one per such variant reference.
+
+        Read at the Components Object, because whether the variant requires a
+        nullable property is answered by the component the member names.
+        """
+        if not isinstance(node, dict):
+            return []
+        prefix = "#/components/schemas/"
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            discriminator = schema.get("discriminator")
+            members = schema.get("oneOf")
+            if not isinstance(discriminator, dict) or not isinstance(members, list):
+                continue
+            tag = discriminator.get("propertyName")
+            for member in members:
+                reference = member.get("$ref") if isinstance(member, dict) else None
+                if not isinstance(reference, str) or not reference.startswith(prefix):
+                    continue
+                variant = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+                if not isinstance(variant, dict):
+                    continue
+                properties = variant.get("properties") if isinstance(variant.get("properties"), dict) else {}
+                required = variant.get("required") if isinstance(variant.get("required"), list) else []
+                if any(
+                    isinstance(name, str)
+                    and name != tag
+                    and isinstance(properties.get(name), dict)
+                    and properties[name].get("nullable") is True
+                    for name in required
+                ):
+                    found.append("components.schemas:discriminated-variant-required-nullable")
+        return found
+
+    @staticmethod
+    def two_string_enum_ref_unions(node: Any) -> list[str]:
+        """`components.schemas:two-string-enum-ref-union`: a union alias of two enums.
+
+        Read at the Components Object, because whether each member is a string
+        enum is answered by the component the member names.
+        """
+        if not isinstance(node, dict):
+            return []
+        prefix = "#/components/schemas/"
+
+        def string_enum(member: Any) -> bool:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            if not isinstance(reference, str) or not reference.startswith(prefix) or len(member) != 1:
+                return False
+            target = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+            values = target.get("enum") if isinstance(target, dict) else None
+            return isinstance(values, list) and bool(values) and all(isinstance(value, str) for value in values)
+
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            members = schema.get("oneOf")
+            beside = set(schema) - {"oneOf", "description", "title"}
+            if isinstance(members, list) and len(members) == 2 and not beside and all(map(string_enum, members)):
+                found.append("components.schemas:two-string-enum-ref-union")
+        return found
+
+    @staticmethod
+    def single_all_of_ref_aliases(node: Any) -> list[str]:
+        """`components.schemas:nullable-single-allof-ref` and `…:empty-properties-single-allof-ref`.
+
+        Read at the Components Object, because the alias `Builder::add_named_shape`
+        writes for an `allOf` of one `$ref` is a component declaration's: the same
+        composition inline is a property's annotated reference instead.
+        """
+        if not isinstance(node, dict):
+            return []
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            members = schema.get("allOf")
+            if (
+                not isinstance(members, list)
+                or len(members) != 1
+                or not isinstance(members[0], dict)
+                or not isinstance(members[0].get("$ref"), str)
+                or "additionalProperties" in schema
+            ):
+                continue
+            properties = schema.get("properties")
+            if schema.get("nullable") is True and not properties:
+                found.append("components.schemas:nullable-single-allof-ref")
+            if isinstance(properties, dict) and not properties:
+                found.append("components.schemas:empty-properties-single-allof-ref")
+        return found
+
+    @staticmethod
+    def described_object_ref_unions(node: Any) -> list[str]:
+        """`components.schemas:described-object-ref-union`: a described union alias.
+
+        Read at the Components Object, because whether each member is an object
+        and whether the members share a one-value string tag (the property
+        `inferred_discriminant_property` of `src/ir.rs` would read, making the
+        union a tagged wrapper instead of an alias) are answered by the members'
+        targets, not by the union's own node.
+        """
+        if not isinstance(node, dict):
+            return []
+
+        def target(member: Any) -> Any:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            prefix = "#/components/schemas/"
+            if not isinstance(reference, str) or not reference.startswith(prefix):
+                return None
+            name = reference[len(prefix) :].replace("~1", "/").replace("~0", "~")
+            return node.get(name)
+
+        def properties(schema: dict[str, Any]) -> dict[Any, Any]:
+            found = schema.get("properties")
+            return found if isinstance(found, dict) else {}
+
+        def is_object(schema: Any) -> bool:
+            return isinstance(schema, dict) and (
+                schema.get("type") == "object" or isinstance(schema.get("properties"), dict)
+            )
+
+        def tag(schema: dict[str, Any], name: str) -> bool:
+            field = properties(schema).get(name)
+            if not isinstance(field, dict):
+                return False
+            values = field.get("enum")
+            return isinstance(field.get("const"), str) or (
+                isinstance(values, list) and len(values) == 1 and isinstance(values[0], str)
+            )
+
+        def described_alias(schema: Any) -> bool:
+            if (
+                not isinstance(schema, dict)
+                or not isinstance(schema.get("description"), str)
+                or not schema["description"]
+                or any(field in schema for field in ("discriminator", "properties", "allOf"))
+            ):
+                return False
+            members = schema.get("oneOf")
+            if not isinstance(members, list) or len(members) < 2:
+                return False
+            targets = [target(member) for member in members]
+            if not all(is_object(found) for found in targets):
+                return False
+            names = properties(targets[0]).keys()
+            return not any(all(tag(found, name) for found in targets) for name in names)
+
+        return [
+            "components.schemas:described-object-ref-union"
+            for key, schema in node.items()
+            if isinstance(key, str) and not key.startswith("x-") and described_alias(schema)
+        ]
+
+    @staticmethod
+    def variant_own_fields_before_bases(node: Any) -> list[str]:
+        """`components.schemas:variant-own-fields-before-base`: one per such variant reference.
+
+        Read at the Components Object, because the variant's own properties and its
+        base's are on the targets the union's members name.
+        """
+        if not isinstance(node, dict):
+            return []
+
+        def target(member: Any) -> Any:
+            reference = member.get("$ref") if isinstance(member, dict) else None
+            prefix = "#/components/schemas/"
+            if not isinstance(reference, str) or not reference.startswith(prefix):
+                return None
+            found = node.get(reference[len(prefix) :].replace("~1", "/").replace("~0", "~"))
+            return found if isinstance(found, dict) else None
+
+        def own(schema: dict[str, Any], tag: Any) -> bool:
+            properties = schema.get("properties")
+            return isinstance(properties, dict) and any(name != tag for name in properties)
+
+        found: list[str] = []
+        for key, schema in node.items():
+            if not isinstance(key, str) or key.startswith("x-") or not isinstance(schema, dict):
+                continue
+            discriminator = schema.get("discriminator")
+            if not isinstance(discriminator, dict):
+                continue
+            tag = discriminator.get("propertyName")
+            for composition in ("oneOf", "anyOf"):
+                members = schema.get(composition)
+                for member in members if isinstance(members, list) else []:
+                    variant = target(member)
+                    if variant is None or not own(variant, tag):
+                        continue
+                    bases = variant.get("allOf")
+                    if any(
+                        (base := target(entry)) is not None and own(base, tag)
+                        for entry in (bases if isinstance(bases, list) else [])
+                    ):
+                        found.append("components.schemas:variant-own-fields-before-base")
+        return found
 
     @staticmethod
     def class_name_sanitizations(node: Any) -> list[str]:

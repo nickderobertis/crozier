@@ -5,6 +5,6 @@ digest = "58a20481c757955214a6a50683a0f006030209ab086eb6fd78007b97507f11c2"
 [[covers]]
 key = "oneof-sole-non-null-member"
 arm = 'src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]'
-search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

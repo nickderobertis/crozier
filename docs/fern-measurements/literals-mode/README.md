@@ -26,9 +26,7 @@ under the corpus gate's normalization, every departure held to
 
 | case | what it pins | document | tree |
 |---|---|---|---|
-| `bigint-format-string-typed-str` | a `type: string, format: bigint` property is typed `str` | [hand-written fixture](../../openapi-surface/handwritten/bigint-format-string-typed-str/) | overlay |
 | `buoy-depth-response` | a JSON success response with no `description` key ends the docstring's `Returns` at its type | [superseded fixture](../superseded-fixtures/buoy-depth-response/) | overlay |
-| `described-ref-oneof-alias-without-docstring` | a described component `oneOf` of two object `$ref`s is a `typing.Union` alias with no docstring | [hand-written fixture](../../openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/) | overlay |
 | `discriminated-variant-date-value-snippet` | discriminated variants valued `date` and `date-time` take `dt.date` and `dt.datetime`, and the worked call passes `datetime.date.fromisoformat(...)` | [hand-written fixture](../../openapi-surface/handwritten/discriminated-variant-date-value-snippet/) | overlay |
 | `dotted-mapping-key-variant-class-name` | mapping keys `door.locked` and `door.unlocked` name `Notice_DoorLocked` and `Notice_DoorUnlocked`, not the target schemas | [document](dotted-mapping-key-variant-class-name/openapi.yml) | complete tree |
 | `empty-path-segment-double-slash-kept` | a path with an empty segment keeps its `//` in the request URL | [hand-written fixture](../../openapi-surface/handwritten/empty-path-segment-double-slash-kept/) | overlay |
@@ -48,7 +46,6 @@ under the corpus gate's normalization, every departure held to
 | `multipart-part-encoding-charset-tuple` | `encoding.<part>.contentType` reaches the file part's default content type and the JSON part's tuple, `charset` included | [hand-written fixture](../../openapi-surface/handwritten/multipart-part-encoding-charset-tuple/) | overlay |
 | `multipart-single-value-enum-part-kept-optional` | an optional one-value string enum part stays an optional argument defaulting to `OMIT` | [document](multipart-single-value-enum-part-kept-optional/openapi.yml) | complete tree |
 | `odometer-reading` | an int64 example past 2^53 takes its nearest double, except where that leaves the int64 range (the `int64-example-rounded-out-of-range` departure) | [hand-written fixture](../../openapi-surface/handwritten/odometer-reading/) | overlay |
-| `oneof-duplicate-members-collapsed` | repeated inline `oneOf` members collapse to one union member each | [hand-written fixture](../../openapi-surface/handwritten/oneof-duplicate-members-collapsed/) | overlay |
 | `open-object-body-example-extra-keys-dropped` | an open body's example key outside `properties` is left out of the worked call | [document](open-object-body-example-extra-keys-dropped/openapi.yml) | complete tree |
 | `passport-scan` | the README passes a multipart body's optional file part beside its required one | [hand-written fixture](../../openapi-surface/handwritten/passport-scan/) | overlay |
 | `patch-inline-nullable-unrequired-props-omit` | a PATCH body of unrequired nullable properties takes each as `Optional[...] = OMIT`, sent with `omit=OMIT` | [superseded fixture](../superseded-fixtures/patch-inline-nullable-unrequired-props-omit/) | overlay |
@@ -66,10 +63,7 @@ under the corpus gate's normalization, every departure held to
 | `tram-route-query` | a required object query parameter's array field is worked with two items | [hand-written fixture](../../openapi-surface/handwritten/tram-route-query/) | overlay |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | properties beside an undiscriminated `oneOf` of two `$ref`s are dropped from the union alias | [hand-written fixture](../../openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/) | overlay |
 | `union-of-enum-ref-const-and-string-members` | a union of an enum `$ref`, a string `const` and a plain string is `typing.Union[Mordant, ShadeOne, str]` | [hand-written fixture](../../openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/) | overlay |
-| `union-of-two-enum-refs-alias` | a component union of two enum `$ref`s is an alias importing both | [hand-written fixture](../../openapi-surface/handwritten/union-of-two-enum-refs-alias/) | overlay |
-| `variant-nullable-value-optional-default-none` | a variant's required nullable value and its unrequired one are both `Optional[...] = None` | [hand-written fixture](../../openapi-surface/handwritten/variant-nullable-value-optional-default-none/) | overlay |
 | `variant-optional-const-discriminant-merged` | a variant's optional `const` named like the discriminator leaves only the variant literal, first | [document](variant-optional-const-discriminant-merged/openapi.yml) | complete tree |
-| `variant-own-fields-before-allof-parent-fields` | a variant's own field comes before the field its `allOf` parent adds | [hand-written fixture](../../openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/) | overlay |
 | `water-pump-station` | the README demonstrates a nested group's `POST` over top-level groups' `GET`s | [hand-written fixture](../../openapi-surface/handwritten/water-pump-station/) | overlay |
 | `weather-radar-stream` | the README's streaming section imports the model its call constructs | [hand-written fixture](../../openapi-surface/handwritten/weather-radar-stream/) | overlay |
 

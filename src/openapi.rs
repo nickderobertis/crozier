@@ -4962,8 +4962,8 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 /// `ImportAgentsRequest`, `ImportSessionRequest` and every schema they reach,
 /// though nothing else references them. Removing a schema keeps the schemas it
 /// referenced the same way: Fern still declares `LegacyPart` when its one
-/// referrer `LegacyWidget` is ignored (the hand-written fixture
-/// `x-fern-ignore-schema`). So the ignore is inert on a spec with no markers and
+/// referrer `LegacyWidget` is ignored (the retired hand-written fixture
+/// `x-fern-ignore-schema`, `ffe331be4`). So the ignore is inert on a spec with no markers and
 /// never changes a full, unfiltered generation.
 ///
 /// Unlike [`filter_by_audience`], the ignore honours **both** operation- and
@@ -6250,7 +6250,7 @@ components:
     #[test]
     fn schema_level_ignore_keeps_the_schemas_only_it_referenced() {
         // Fern keeps `LegacyPart`, whose one referrer is the ignored
-        // `LegacyWidget` (the hand-written fixture `x-fern-ignore-schema`).
+        // `LegacyWidget` (the retired hand-written fixture `x-fern-ignore-schema`).
         let mut doc = parse(
             r##"
 openapi: 3.0.3
