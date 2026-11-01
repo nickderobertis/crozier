@@ -259,14 +259,21 @@ pub fn request_field_name(wire_name: &str) -> String {
 /// delimited chunk (`user_fields[1]` → `user_fields1`, `PF 17,5%` → `pf_175`)
 /// but never reaches across a space, so `EAN 1` stays `ean_1` and `PF 17% ALC`
 /// stays `pf_17_alc`. Chunking first is what keeps the two apart; every name
-/// without whitespace is a single chunk and folds exactly as before.
+/// without whitespace is a single chunk and folds exactly as before. A chunk
+/// that folds to nothing still leaves its separator, so Resemble's
+/// `certainty (%)` is `certainty_` beside its `certainty`.
 fn field_snake_case(wire_name: &str) -> String {
-    wire_name
+    let chunks: Vec<String> = wire_name
         .split_whitespace()
         .map(|chunk| collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(chunk))))
-        .filter(|chunk| !chunk.is_empty())
-        .collect::<Vec<String>>()
-        .join("_")
+        .collect();
+    // A leading empty chunk would make the name start with `_`; only one after
+    // a word keeps its separator.
+    let first = chunks
+        .iter()
+        .position(|chunk| !chunk.is_empty())
+        .unwrap_or(chunks.len());
+    chunks[first..].join("_")
 }
 
 /// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
@@ -985,7 +992,8 @@ pub fn is_reserved(name: &str) -> bool {
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
 /// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
 /// `json_`, and `construct` (`BaseModel.construct()`) is `construct_`, measured
-/// on the authored probe `376-354-model-property-construct`. The protection
+/// on the authored probe `376-354-model-property-construct`, and `dict`
+/// (`BaseModel.dict()`) is `dict_`, as Nussknacker's `TypedDict.dict` is. The protection
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 #[must_use]
@@ -993,7 +1001,7 @@ pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
     if matches!(
         name.as_str(),
-        "construct" | "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
+        "construct" | "copy" | "dict" | "json" | "kwargs" | "schema" | "self" | "validate"
     ) {
         format!("{name}_")
     } else {

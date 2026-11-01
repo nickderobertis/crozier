@@ -967,16 +967,14 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // here even if an unsupported cookie scheme was declared before it. Fern
     // selects the first supported scheme (Tlon Notes declares cookie, then header)
     // and does not expose the selected key a second time as a global header.
-    let primary = auth_model(doc);
-    let skip_first_api_key = matches!(primary, Auth::ApiKey { .. });
+    let skip_first_api_key = matches!(auth_model(doc), Auth::ApiKey { .. });
     let mut skipped_primary = !skip_first_api_key;
-    // Two schemes naming one header are one credential: Fern takes the first,
-    // so zalando's `PrincipalHeader` and `preAuth`, both `X-Remote-User`, give
-    // the client one `remote_user` argument, assignment and header line.
-    let mut sent: std::collections::HashSet<String> = match primary {
-        Auth::ApiKey { header, .. } => std::iter::once(header).collect(),
-        _ => std::collections::HashSet::new(),
-    };
+    // Two additional schemes naming one header are one credential: Fern takes
+    // the first, so zalando's `PrincipalHeader` and `preAuth`, both
+    // `X-Remote-User` beside a bearer token, give the client one `remote_user`
+    // argument, assignment and header line. One sharing the *primary* key's
+    // header is still its own (the hand-written `twin-key-relay`).
+    let mut sent: std::collections::HashSet<String> = std::collections::HashSet::new();
     doc.components
         .security_schemes
         .values()
@@ -3038,6 +3036,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 let field_names: std::collections::HashSet<&str> =
                     fields.iter().map(|field| field.py_name.as_str()).collect();
                 for path_param in &mut endpoint.path_params {
+                    // Only a collision's `_` comes off: a reserved name keeps its
+                    // own (GravitLauncher's `uuid` is `uuid_` on every operation,
+                    // a JSON body beside it or not).
+                    if path_param.py_name == naming::field_name(&path_param.wire_name) {
+                        continue;
+                    }
                     if let Some(base) = path_param.py_name.strip_suffix('_') {
                         if !field_names.contains(base) {
                             path_param.py_name = base.to_string();

@@ -124,6 +124,11 @@ enum RefLoc {
     Errors,
 }
 
+/// The runtime package every SDK carries. A group of that name shares its
+/// directory: its clients sit beside the runtime modules, and the runtime's own
+/// `__init__.py` is the package's, as Fern keeps it (nextcloud's `core` tag).
+const RUNTIME_PACKAGE: &str = "core";
+
 /// How many directory segments a client module name holds. A module is normally
 /// one (`videos`), but an `x-crozier-sdk-group-name` list nests it
 /// (`catalogs/mcp_servers`), and the package root is zero.
@@ -546,6 +551,12 @@ impl Imports {
     /// deep, and a nested client path (`{pkg}/catalogs/mcp_servers/`) is as deep as
     /// its own segments, so the count comes from [`Imports::root_prefix`].
     fn core_prefix(&self) -> String {
+        // A group named `core` writes its clients into the runtime package
+        // itself, and Fern's import the runtime as their siblings
+        // (`from .client_wrapper import …`): nextcloud's `core` tag.
+        if matches!(&self.loc, RefLoc::Client(module) if module == RUNTIME_PACKAGE) {
+            return String::new();
+        }
         format!("{}core", self.root_prefix())
     }
 
@@ -1830,7 +1841,7 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 names,
                 &child_types,
             )?);
-        } else {
+        } else if module != RUNTIME_PACKAGE {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
                 contents: "\n\n\n\n".to_string(),
@@ -2251,6 +2262,25 @@ fn render_lazy_loader(
     )
 }
 
+/// A `TYPE_CHECKING` block over sorted `(name, module)` pairs: every name a
+/// module exports in one `from .mod import a, b` statement, at the place of the
+/// module's first name. Fern imports a discriminated union and its variant
+/// wrappers in one statement, so darwin's `ActPayRequestSource`, sorted ahead of
+/// `ActPayRequestSourceOneTime`, carries `ActPayRequestSource_OneTime` with it.
+fn module_grouped_imports(named: &[(String, String)]) -> String {
+    let mut groups: indexmap::IndexMap<&str, Vec<&str>> = indexmap::IndexMap::new();
+    for (name, module) in named {
+        groups
+            .entry(module.as_str())
+            .or_default()
+            .push(name.as_str());
+    }
+    groups
+        .iter()
+        .map(|(module, names)| format!("    from .{module} import {}\n", names.join(", ")))
+        .collect()
+}
+
 /// The `types/__init__.py` lazy loader. `_dynamic_imports`, `__all__`, and the
 /// `TYPE_CHECKING` block are all emitted alphabetically.
 fn types_init_file(
@@ -2276,26 +2306,18 @@ fn types_init_file(
     let mut ordered = names.clone();
     ordered.sort();
 
-    // Consecutive names sharing a module collapse into one `from .mod import a, b`
-    // line (Fern groups a discriminated union's names on a single import).
     let module = |n: &str| {
         module_of
             .get(n)
             .cloned()
             .unwrap_or_else(|| naming::module_name(n))
     };
-    let mut type_checking = String::new();
-    let mut i = 0;
-    while i < ordered.len() {
-        let m = module(&ordered[i]);
-        let mut group = vec![ordered[i].clone()];
-        while i + 1 < ordered.len() && module(&ordered[i + 1]) == m {
-            i += 1;
-            group.push(ordered[i].clone());
-        }
-        type_checking.push_str(&format!("    from .{m} import {}\n", group.join(", ")));
-        i += 1;
-    }
+    let type_checking = module_grouped_imports(
+        &ordered
+            .iter()
+            .map(|n| (n.clone(), module(n)))
+            .collect::<Vec<_>>(),
+    );
 
     let pairs: Vec<(String, String)> = names
         .iter()
@@ -2328,15 +2350,7 @@ fn tag_types_init_file(
     // Consecutive names sharing a module collapse into one import, as in
     // `types_init_file`: RS-Server's create-item body union and its two
     // wrappers come from one `from .create_item_… import (…)`.
-    let mut type_checking = String::new();
-    for group in named.chunk_by(|a, b| a.1 == b.1) {
-        let names: Vec<&str> = group.iter().map(|(n, _)| n.as_str()).collect();
-        type_checking.push_str(&format!(
-            "    from .{} import {}\n",
-            group[0].1,
-            names.join(", ")
-        ));
-    }
+    let type_checking = module_grouped_imports(&named);
     let pairs: Vec<(String, String)> = named
         .iter()
         .map(|(n, m)| (n.clone(), format!(".{m}")))
@@ -12438,8 +12452,12 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
         // `client_wrapper.py`, which crozier generates from the auth/global-header
         // model and so must be wrapped like every other generated file.
+        // A `core` group's own clients are generated there too.
         let is_vendored = file.path.starts_with(&core_root)
-            && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
+            && !matches!(
+                file.path.file_name().and_then(|n| n.to_str()),
+                Some("client_wrapper.py" | "client.py" | "raw_client.py")
+            );
         let is_vendored_scaffolding = file.path == default_clients
             || file.path == generated_aiohttp_test
             || file.path == generated_conftest;

@@ -5007,6 +5007,34 @@ pub fn filter_ignored(doc: &mut OpenApi) {
     for key in &ignored_schemas {
         doc.components.schemas.shift_remove(key);
     }
+    // A request body naming an ignored component keeps its operation, typed
+    // by nothing: Fern's FAI `create_code_record` takes `request: typing.Any`
+    // and `batch_create_code_records` `request: typing.Sequence[typing.Any]`
+    // where the body `$ref`s the ignored `CreateCodeRecordRequest`.
+    if !ignored_schemas.is_empty() {
+        for item in doc.paths.values_mut() {
+            for slot in item.operation_slots() {
+                let Some(body) = slot.as_mut().and_then(|op| op.request_body.as_mut()) else {
+                    continue;
+                };
+                for media in body.content.values_mut() {
+                    let Some(schema) = media.schema.as_mut() else {
+                        continue;
+                    };
+                    for_each_schema_in(schema, &mut |node| {
+                        if node
+                            .reference
+                            .as_deref()
+                            .and_then(referenced_component_schema)
+                            .is_some_and(|key| ignored_schemas.iter().any(|ignored| ignored == key))
+                        {
+                            *node = Schema::default();
+                        }
+                    });
+                }
+            }
+        }
+    }
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
             let ignored: std::collections::HashSet<String> = node
