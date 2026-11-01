@@ -1,5 +1,5 @@
 Recorded 2026-11-01 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7, driving each SDK through httpx.MockTransport (the script below).
-crozier built at fd957cb9d, generated from openapi.yml with --package-name fern --project-name default_package_name.
+crozier built at 3033324d3, generated from openapi.yml with --package-name fern --project-name default_package_name.
 
 ## certified (fern-expected/)
 GET https://desk.example.com/tickets {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
@@ -18,7 +18,7 @@ GET https://desk.example.com/tickets/escalated {"authorization": "Bearer k-123",
     seen = []
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
-        return httpx.Response(200, json=[])
+        return httpx.Response(200, json="flagged" if request.method == "POST" else [])
     client_http = httpx.Client(transport=httpx.MockTransport(handler))
     if case == "auth-shape":
         from fern import FernApi
@@ -31,6 +31,7 @@ GET https://desk.example.com/tickets/escalated {"authorization": "Bearer k-123",
         client = FernApi(environment=FernApiEnvironment.PRODUCTION, httpx_client=client_http)
         client.nights.list_nights()
         client.plates.list_plates()
+        client.plates.flag_plate()
         client.alerts.list_alerts()
     for request in seen:
         headers = {k: v for k, v in request.headers.items() if k.lower() in ("authorization", "x-desk-agent")}
