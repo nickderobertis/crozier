@@ -170,19 +170,32 @@ pub fn class_name(schema_key: &str) -> String {
             }
         })
         .collect();
-    let pascal =
-        to_pascal_case(&numeric_enum_identifier(schema_key).unwrap_or_else(|| words.clone()));
-    let expanded = pascal
-        .chars()
-        .next()
-        .and_then(|digit| digit.to_digit(10))
-        .map_or(pascal.clone(), |digit| {
-            let word = [
-                "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-            ][digit as usize];
-            format!("{word}{}", &pascal[1..])
-        });
-    sanitize_identifier(&expanded)
+    // A name opening with digits has its whole leading number spelled in
+    // words, the rest re-cased after it: measured at fern-python-sdk 5.41.3
+    // (`docs/fern-measurements/handed-off/type-declarations/digit-leading-schema-name`),
+    // `401Response` is `FourHundredOneResponse`, `007Agent` `SevenAgent` and
+    // `2FAStatus` `TwoFaStatus`. Fern's speller stops at 9,999: a larger leading
+    // number spells `undefined`, so `999999Seats` is `UndefinedSeats`.
+    let digits = words.len() - words.trim_start_matches(|c: char| c.is_ascii_digit()).len();
+    let pascal = if digits == 0 {
+        to_pascal_case(&words)
+    } else {
+        let (number, rest) = words.split_at(digits);
+        to_pascal_case(&format!("{} {rest}", spelled_leading_number(number)))
+    };
+    sanitize_identifier(&pascal)
+}
+
+/// The words Fern spells a name's leading run of digits as: its integer value
+/// (leading zeros dropped) up to 9,999, `undefined` above that.
+fn spelled_leading_number(digits: &str) -> String {
+    let significant = digits.trim_start_matches('0');
+    let value = if significant.is_empty() {
+        "0"
+    } else {
+        significant
+    };
+    numeric_enum_identifier(value).unwrap_or_else(|| "undefined".to_string())
 }
 
 /// The class segment a *parameter* name contributes to a hoisted type
@@ -1125,6 +1138,35 @@ mod tests {
         assert_eq!(class_name("Widget"), "Widget");
         assert_eq!(class_name("400"), "FourHundred");
         assert_eq!(class_name("422"), "FourHundredTwentyTwo");
+    }
+
+    #[test]
+    fn a_leading_number_is_spelled_whole_up_to_fern_s_bound() {
+        // The digit-leading-schema-name measurement's component names.
+        for (key, class) in [
+            ("401Response", "FourHundredOneResponse"),
+            ("404NotFound", "FourHundredFourNotFound"),
+            ("12HourCycle", "TwelveHourCycle"),
+            ("1000Cone", "OneThousandCone"),
+            ("1234Plan", "OneThousandTwoHundredThirtyFourPlan"),
+            ("110Crew", "OneHundredTenCrew"),
+            ("21Club", "TwentyOneClub"),
+            ("007Agent", "SevenAgent"),
+            ("3dKilnModel", "ThreeDKilnModel"),
+            ("2FAStatus", "TwoFaStatus"),
+            ("9999Stock", "NineThousandNineHundredNinetyNineStock"),
+            ("10000Steps", "UndefinedSteps"),
+            ("999999Seats", "UndefinedSeats"),
+            ("1000000Pixels", "UndefinedPixels"),
+            ("2500000Viewers", "UndefinedViewers"),
+            ("99999999999999999999999Huge", "UndefinedHuge"),
+        ] {
+            assert_eq!(class_name(key), class, "{key}");
+        }
+        assert_eq!(
+            module_name(&class_name("401Response")),
+            "four_hundred_one_response"
+        );
     }
 
     #[test]

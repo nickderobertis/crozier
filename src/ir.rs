@@ -1318,6 +1318,62 @@ fn collect_named(t: &TypeRef, set: &mut std::collections::HashSet<String>) {
     }
 }
 
+/// Drop the types hoisted at or after `from` that a dropped body field reaches
+/// and no kept one does, directly or through another of those types.
+fn prune_dropped_hoisted(
+    out: &mut Vec<TypeDecl>,
+    from: usize,
+    dropped: &[BodyField],
+    kept: &[BodyField],
+) {
+    let reach = |fields: &[BodyField]| {
+        let mut reached = std::collections::HashSet::new();
+        for field in fields {
+            collect_named(&field.type_ref, &mut reached);
+        }
+        loop {
+            let before = reached.len();
+            for decl in &out[from..] {
+                if reached.contains(decl.name()) {
+                    let mut inner = std::collections::HashSet::new();
+                    collect_decl_names(decl, &mut inner);
+                    reached.extend(inner);
+                }
+            }
+            if reached.len() == before {
+                return reached;
+            }
+        }
+    };
+    let only_dropped: std::collections::HashSet<String> =
+        reach(dropped).difference(&reach(kept)).cloned().collect();
+    let mut index = 0;
+    out.retain(|decl| {
+        index += 1;
+        index <= from || !only_dropped.contains(decl.name())
+    });
+}
+
+/// The class names one declaration references: its fields', bases', alias
+/// target's and union members' types.
+fn collect_decl_names(decl: &TypeDecl, set: &mut std::collections::HashSet<String>) {
+    match decl {
+        TypeDecl::Object(o) => {
+            set.extend(o.bases.iter().cloned());
+            o.fields
+                .iter()
+                .for_each(|f| collect_named(&f.type_ref, set));
+        }
+        TypeDecl::Alias(a) => collect_named(&a.target, set),
+        TypeDecl::Enum(_) => {}
+        TypeDecl::DiscriminatedUnion(u) => u
+            .members
+            .iter()
+            .flat_map(|m| &m.fields)
+            .for_each(|f| collect_named(&f.type_ref, set)),
+    }
+}
+
 /// Class names referenced by anything other than an inlined request body: type
 /// fields/bases/alias targets/union members, and endpoint responses, parameters,
 /// error bodies, single (non-inlined) bodies, and inlined-body field types.
@@ -1401,15 +1457,17 @@ fn inline_body_source_names(
         .map(|endpoint| (endpoint.path.as_str(), endpoint.http_method))
         .collect();
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut replaced: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for (path, item) in &doc.paths {
         for (method, op) in item.operations() {
             // A GET or HEAD body is ignored, so it inlines nothing and its schema
             // keeps its model whatever it is named: Letta's `Body_export_agent`
             // (a GET) is kept, while a FastAPI `Body_*` posted once is dropped
             // like any other single-use body.
-            if !surviving.contains(&(path.as_str(), method)) || matches!(method, "GET" | "HEAD") {
+            if matches!(method, "GET" | "HEAD") {
                 continue;
             }
+            let survived = surviving.contains(&(path.as_str(), method));
             // Nor does a `stream-condition` operation's body count as a use: Fern
             // copies it into each half's own request, so a schema a buffered
             // operation also posts is that operation's single use, and dropped
@@ -1422,6 +1480,19 @@ fn inline_body_source_names(
                 continue;
             }
             let Some(rb) = &op.request_body else { continue };
+            // A body offered as `application/octet-stream` is bytes whatever else
+            // it offers, so it inlines nothing and the schema keeps its model:
+            // Confluent's `createDek` posts `CreateDekRequest` as JSON, vendor
+            // JSON and octet-stream, takes bytes, and Fern still declares the
+            // model (the `orphan-type-emission` measurement's `createKey`).
+            // An operation split into one method per media type is not: its
+            // JSON method inlines the schema (Deepgram's `transcribe_url` and
+            // `ListenV1RequestUrl`).
+            if rb.content.contains_key("application/octet-stream")
+                && request_media_variants(op)[0].is_none()
+            {
+                continue;
+            }
             // The JSON representation is found the way the body itself selects
             // it, parameters and all: Prisma Cloud posts its single-use
             // `FilterSuggestionModel` under `application/json; charset=UTF-8`
@@ -1456,13 +1527,26 @@ fn inline_body_source_names(
                 && (!is_map(target) || target.all_of.is_some())
                 && (target.properties.declared() || target.all_of.is_some())
             {
-                *counts.entry(ref_to_class(reference)).or_default() += 1;
+                let tally = if survived { &mut counts } else { &mut replaced };
+                *tally.entry(ref_to_class(reference)).or_default() += 1;
             }
         }
     }
+    // A body posted once, by an operation a later one of the same method name
+    // replaced, was inlined into a method that no longer exists, so Fern
+    // declares no model for it either: the `orphan-type-emission`
+    // measurement's two `Sensors_addNote` operations post `SensorsAddNoteRequest`
+    // and `SensorsAddNoteRequest1`, and neither is written (as Ironclad's
+    // `WorkflowsCreateCommentRequest`).
+    let replaced_only = replaced
+        .into_iter()
+        .filter(|(name, uses)| *uses == 1 && !counts.contains_key(name))
+        .map(|(name, _)| name)
+        .collect::<Vec<_>>();
     counts
         .into_iter()
         .filter_map(|(name, uses)| (uses == 1).then_some(name))
+        .chain(replaced_only)
         .collect()
 }
 
@@ -3428,7 +3512,10 @@ fn endpoints(
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
             for media_view in request_media_variants(op) {
-                let op = media_view.as_ref().unwrap_or(op);
+                let (op, media_method) = match &media_view {
+                    Some((view, name)) => (view, Some(name.as_str())),
+                    None => (op, None),
+                };
                 // A `stream-condition` makes one operation two methods: `<name>_stream`
                 // with the condition set, and `<name>` with it cleared. Each is built
                 // from its own view of the operation, so the response type, the chunk
@@ -3447,6 +3534,13 @@ fn endpoints(
                         &global_names,
                     );
                     let mut endpoint = endpoint;
+                    if let Some(name) = media_method {
+                        endpoint.method_name = endpoint_method_name(
+                            &view.with_sdk_method_name(name),
+                            http_method,
+                            path,
+                        );
+                    }
                     if let Some(split) = variant {
                         declare_split_union_body(&mut endpoint, split, types, &mut tag_types);
                     }
@@ -3498,7 +3592,15 @@ fn endpoints(
 
 /// Give each explicitly named request representation its own existing endpoint.
 /// Unnamed alternatives retain the operation's established media selection.
-fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
+///
+/// Each view keeps the operation's own naming, so the inline types its methods
+/// share are named once from the base operation, and carries the method name
+/// its media type declares beside it: measured at fern-python-sdk 5.41.3
+/// (`docs/fern-measurements/handed-off/type-declarations/inline-type-naming`),
+/// Deepgram's `transcribe` split into `transcribe_url`/`transcribe_file` names
+/// its query enum `TranscribeMediaRequestEncoding`, not
+/// `TranscribeUrlMediaRequestEncoding`.
+fn request_media_variants(op: &Operation) -> Vec<Option<(Operation, String)>> {
     let Some(body) = op.request_body.as_ref() else {
         return vec![None];
     };
@@ -3513,11 +3615,11 @@ fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
     body.content
         .iter()
         .map(|(media_type, media)| {
-            let mut view = op.with_sdk_method_name(media.sdk_method_name().unwrap());
+            let mut view = op.clone();
             if let Some(body) = view.request_body.as_mut() {
                 body.content.retain(|name, _| name == media_type);
             }
-            Some(view)
+            Some((view, media.sdk_method_name().unwrap().to_string()))
         })
         .collect()
 }
@@ -4132,7 +4234,17 @@ fn build_endpoint(
     let streaming = is_streaming(doc, op);
     let stream_view = streaming.then(|| stream_chunk_view(op));
     let response_op = stream_view.as_ref().unwrap_or(op);
-    let response = match success_response_schema(response_op) {
+    // A download returns bytes whatever JSON alternative it also offers, and Fern
+    // declares nothing from that alternative: whatwatt's `getSdPath` offers a
+    // listing object beside `text/csv` and `application/octet-stream`, and no
+    // `GetSdPathResponse` model exists (the `orphan-type-emission` measurement's
+    // `getArchivePath`).
+    let response_schema = if !streaming && is_binary_response(doc, op) {
+        None
+    } else {
+        success_response_schema(response_op)
+    };
+    let response = match response_schema {
         Some(schema) if simple_nullable_member(schema).is_some() => {
             let member = simple_nullable_member(schema).expect("guard checked nullable member");
             let base = member.reference.as_deref().map_or_else(
@@ -4140,6 +4252,14 @@ fn build_endpoint(
                 |reference| TypeRef::Named(ref_to_class(reference)),
             );
             Some(optional_type_ref(base))
+        }
+        // A nullable one-member `oneOf`/`anyOf` around a component returns that
+        // component, optional: keyserv's `KeysApi_Current` answers
+        // `{nullable: true, oneOf: [$ref CurrentKey]}` and returns
+        // `typing.Optional[CurrentKey]` (the `R3` measurement).
+        Some(schema) if nullable_sole_member_ref(schema).is_some() => {
+            nullable_sole_member_ref(schema)
+                .map(|reference| optional_type_ref(TypeRef::Named(ref_to_class(reference))))
         }
         // A composition of exactly one `$ref` is that reference: the
         // offchain-metadata-tools corpus answers its specific-property query with
@@ -4261,6 +4381,22 @@ fn build_endpoint(
                         min_length: None,
                         max_length: None,
                     }));
+                    Some(TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(name)),
+                    ))
+                } else if value.reference.is_none()
+                    && value.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                    && is_inline_struct(value)
+                {
+                    // A map whose value declares `type: object` with properties
+                    // names that value `{Ctx}ResponseValue`, as a property's map
+                    // names `{Owner}{Prop}Value`: Tianji's `publicInfo` answers
+                    // one and returns `Dict[str, …ResponseValue]` at
+                    // fern-python-sdk 5.41.3 (the `map-value-modelling`
+                    // measurement's `getCraneSummary`).
+                    let name = format!("{pascal_ctx}ResponseValue");
+                    hoister.hoist_object(&name, value);
                     Some(TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
                         Box::new(TypeRef::Named(name)),
@@ -4396,16 +4532,34 @@ fn build_endpoint(
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
+    let parameter_type_names: Vec<String> = op
+        .parameters
+        .iter()
+        .map(|parameter| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
+        .collect();
     // Register the hoisted inline types under this tag's `types/` package.
     for decl in hoister.out {
         // A type the union itself names — its variants and their elements, all
         // spelled `{Union}…` — sits beside it: braintrust's
         // `GetProjectScoreRequestScoreTypeOneItem` is in the package root with the
         // `GetProjectScoreRequestScoreType` alias that lists it.
-        let decl_module = if global_parameter_unions
+        // The parameter a type belongs to is the one whose type name is its
+        // longest prefix: Deepgram's `custom_intent_mode` enum,
+        // `…RequestCustomIntentMode`, is no member of the `custom_intent`
+        // union beside it, and stays in the operation's package (the
+        // `type-placement` measurement's `label_style` beside `label`).
+        let owner = parameter_type_names
             .iter()
-            .any(|root| decl.name().starts_with(root.as_str()))
-        {
+            .filter(|name| decl.name().starts_with(name.as_str()))
+            .max_by_key(|name| name.len());
+        let decl_module = if owner.map_or_else(
+            || {
+                global_parameter_unions
+                    .iter()
+                    .any(|root| decl.name().starts_with(root.as_str()))
+            },
+            |owner| global_parameter_unions.contains(owner),
+        ) {
             String::new()
         } else {
             module.clone()
@@ -6863,6 +7017,19 @@ fn resolve_request_body(
             ))
         && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
+    // A nullable one-member composition around a component keeps the component,
+    // optional, rather than flattening it: keyserv's `ProductsApi_PatchProduct`
+    // body is `{nullable: true, oneOf: [$ref ProductCreateModify]}`, and Fern
+    // takes `request: Optional[ProductCreateModify] = None` (the `R3`
+    // measurement).
+    if let Some(reference) = nullable_sole_member_ref(schema) {
+        return Some(single(
+            TypeRef::Named(ref_to_class(reference)),
+            false,
+            true,
+            false,
+        ));
+    }
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let target = if target.reference.is_some() {
@@ -6912,7 +7079,21 @@ fn resolve_request_body(
         // mapping a value to a bare schema name is `typing.Any` and is sent as
         // it is, in either spelling: the hand-written `orchard-crate-labels`
         // document's `Label` and `Crate`.
-        if target.one_of.is_some() || target.any_of.is_some() || bare_name_mapped_union(target) {
+        // A component that only re-names a union through its own `$ref` is that
+        // union as a body too: agentstack's `ContextHistoryItemCreateRequest` is
+        // `{$ref: ContextHistoryItemData-Input, title}` over an `anyOf`, and Fern
+        // takes `request: ContextHistoryItemCreateRequest`, where crozier used to
+        // drop the operation and with it every method of its group.
+        let renamed_union = target
+            .reference
+            .as_deref()
+            .and_then(|inner| resolve_ref(doc, inner))
+            .is_some_and(|inner| inner.one_of.is_some() || inner.any_of.is_some());
+        if target.one_of.is_some()
+            || target.any_of.is_some()
+            || renamed_union
+            || bare_name_mapped_union(target)
+        {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
                 single.convert = !bare_name_mapped_union(target);
@@ -7185,6 +7366,7 @@ fn resolve_request_body(
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
+        let hoisted_before = hoister.out.len();
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
             let parents: Vec<Vec<BodyField>> = schema
                 .all_of
@@ -7197,16 +7379,24 @@ fn resolve_request_body(
             // it: Webflow's redirect `create` takes no `id` and its webhook
             // `create` no `workspaceId` or `createdOn`. One an `allOf` parent
             // also declares keeps its slot, below.
-            fields.retain(|field| {
-                schema
-                    .properties
-                    .get(&field.wire_name)
-                    .is_none_or(|property| property.read_only != Some(true))
-                    || parents
-                        .iter()
-                        .flatten()
-                        .any(|inherited| inherited.wire_name == field.wire_name)
-            });
+            let (kept, dropped): (Vec<BodyField>, Vec<BodyField>) =
+                fields.into_iter().partition(|field| {
+                    schema
+                        .properties
+                        .get(&field.wire_name)
+                        .is_none_or(|property| property.read_only != Some(true))
+                        || parents
+                            .iter()
+                            .flatten()
+                            .any(|inherited| inherited.wire_name == field.wire_name)
+                });
+            fields = kept;
+            // …and so does every type hoisted only for a property it drops: the
+            // `orphan-type-emission` measurement's `registerSensor` body declares
+            // a `readOnly` inline `calibration` object, and Fern writes no
+            // `RegisterSensorRequestCalibration` (as whatwatt's read-only
+            // `status` writes none).
+            prune_dropped_hoisted(&mut hoister.out, hoisted_before, &dropped, &fields);
             // Own fields precede inherited fields; reuse the parent's resolved types.
             let own_count = fields.len();
             for reference in schema
@@ -7303,6 +7493,12 @@ fn resolve_request_body(
             };
             hoister.hoist_object(&name, items);
             TypeRef::Named(name)
+        } else if items.boolean_stand_in {
+            // A tuple body (`items: false` beside `prefixItems`) is a list of
+            // Fern's bare unknown: SeekStorm's `update_document` takes
+            // `Sequence[Any]` at fern-python-sdk 5.41.3 (the
+            // `parameter-type-resolution` measurement's `tagBroadcast`).
+            TypeRef::Primitive(Prim::Any)
         } else {
             base_type_ref(items)
         };
@@ -7633,9 +7829,8 @@ fn hoist_inline_object(
             media_example: false,
             schema_body_example: false,
             docstring: declared_doc(
-                prop_schema
-                    .description
-                    .as_deref()
+                rewrapped_alias_description(prop_schema, hoister.schemas)
+                    .or(prop_schema.description.as_deref())
                     // An annotating `allOf` member documents the argument, as it
                     // documents a model field: the `617-annotated-inherited-union`
                     // measurement's `recoatPot` body declares `coat: allOf: [$ref
@@ -7651,7 +7846,17 @@ fn hoist_inline_object(
                     // description: Physical location}, {type: 'null'}]`.
                     .or_else(|| {
                         sole_non_null_member(prop_schema)
+                            .filter(|member| !wraps_sole_reference(member))
                             .and_then(|member| member.description.as_deref())
+                    })
+                    // …and so does that alternative's annotation of a `$ref`:
+                    // OpenResponses' `tool_choice` is `anyOf: [allOf: [$ref,
+                    // {description}], null]`, documented in `reference.md` (the
+                    // `nullable-anyof-allof-described-member` measurement).
+                    .or_else(|| {
+                        sole_non_null_member(prop_schema)
+                            .and_then(described_all_of_ref)
+                            .and_then(|(_, doc)| doc)
                     }),
             ),
             is_file: false,
@@ -8351,15 +8556,17 @@ impl InlineHoister<'_> {
                 nullable: referenced_nullable
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema, optional).or_else(
-                    || {
-                        self.schemas.and_then(|schemas| {
-                            scalar_narrowed_enum_ref(prop_schema, schemas)
-                                .and_then(|(_, member)| member.description.as_deref())
-                                .or_else(|| merged_all_of_ref_description(prop_schema, schemas))
-                        })
-                    },
-                )),
+                docstring: declared_doc(
+                    rewrapped_alias_description(prop_schema, self.schemas)
+                        .or_else(|| property_description(prop_schema, optional))
+                        .or_else(|| {
+                            self.schemas.and_then(|schemas| {
+                                scalar_narrowed_enum_ref(prop_schema, schemas)
+                                    .and_then(|(_, member)| member.description.as_deref())
+                                    .or_else(|| merged_all_of_ref_description(prop_schema, schemas))
+                            })
+                        }),
+                ),
                 example: resolved_schema_example_literal(prop_schema, self.schemas).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
@@ -8519,7 +8726,7 @@ impl InlineHoister<'_> {
                     prop_schema,
                     &name,
                     values,
-                    clean_doc(prop_schema.description.as_deref()),
+                    inline_enum_doc(prop_schema.description.as_deref()),
                 )));
                 return TypeRef::Named(name);
             }
@@ -8564,6 +8771,21 @@ impl InlineHoister<'_> {
                     if is_unknown(member) {
                         return TypeRef::Primitive(Prim::Any);
                     }
+                    // An annotated `$ref` beside `null` is copied where it is used,
+                    // as the bare annotation is: OpenResponses' `tool_choice` is
+                    // `anyOf: [allOf: [$ref ToolChoiceParam, {description}], null]`,
+                    // and Fern's copy of an enum target is an enum documented by
+                    // the annotation, never a model subclassing the enum (the
+                    // `nullable-anyof-allof-described-member` measurement).
+                    if let Some(target) = annotated_target(member, self.schemas) {
+                        // A map target is the nullable map: OpenResponses'
+                        // `metadata` annotates `MetadataParam` and is
+                        // `Dict[str, Optional[str]]`.
+                        if is_map(target) {
+                            return nullable_map_value_type_ref(target);
+                        }
+                        return self.prop_type_ref(parent, prop, member);
+                    }
                     if is_map(member) {
                         return nullable_map_value_type_ref(member);
                     }
@@ -8583,15 +8805,20 @@ impl InlineHoister<'_> {
                             .or_else(|| member.description.clone());
                         return self.prop_type_ref(parent, prop, &union);
                     }
+                    // The hoisted object is documented by its own description
+                    // first: LandingAI's `result` is `anyOf: [{title, description,
+                    // properties}, null]` beside a description of the property,
+                    // and Fern's `V2ExtractGetJobResponseResult` carries the
+                    // inner object's (the `description-source` measurement).
                     if is_inline_struct(member) {
                         self.hoist_object_with_doc(
                             &name,
                             member,
                             clean_doc(
-                                prop_schema
+                                member
                                     .description
                                     .as_deref()
-                                    .or(member.description.as_deref()),
+                                    .or(prop_schema.description.as_deref()),
                             ),
                         );
                         return TypeRef::Named(name);
@@ -8979,7 +9206,22 @@ impl InlineHoister<'_> {
                     continue;
                 }
             }
-            variants.push(base_type_ref(member));
+            // A member naming a component that admits `null` is that component
+            // made optional inside the union: Radio Aktywne's `after` query
+            // parameter is `anyOf: [$ref ListRequestAfter, string with a
+            // contentSchema]` over `ListRequestAfter: anyOf: [$ref NaiveDatetime,
+            // null]`, and Fern's alias is `Union[Optional[ListRequestAfter], str]`
+            // (the `parameter-type-resolution` measurement's `before`).
+            let variant = base_type_ref(member);
+            variants.push(match self.schemas {
+                Some(schemas)
+                    if member.reference.is_some()
+                        && referenced_schema_accepts_none(member, schemas) =>
+                {
+                    optional_type_ref(variant)
+                }
+                _ => variant,
+            });
         }
         let mut variants = dedupe_union_members(variants);
         // A composition whose members all lower to the same type is no
@@ -9099,6 +9341,9 @@ impl InlineHoister<'_> {
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
+            if let Some(scalar) = self.described_scalar_ref(schema) {
+                return scalar;
+            }
             return base_type_ref(schema);
         }
         // A `$ref` to a nullable schema carries that nullability to its use site
@@ -9106,6 +9351,20 @@ impl InlineHoister<'_> {
         // one is typed `Optional[..]` — which Fern also passes as the annotation
         // it serializes the value against.
         full_type_ref(schema)
+    }
+
+    /// The primitive an annotation-only `allOf` around one `$ref` to a plain
+    /// scalar component resolves to as a parameter: measured at
+    /// fern-python-sdk 5.41.3
+    /// (`docs/fern-measurements/handed-off/type-declarations/allof-description-wrapper`),
+    /// TrueFoundry's path parameter `allOf: [{$ref: ResourceName}, {description}]`
+    /// over a `type: string` component is `str`, and an integer one `int`.
+    fn described_scalar_ref(&self, schema: &Schema) -> Option<TypeRef> {
+        let (reference, _) = described_all_of_ref(schema)?;
+        let target = self
+            .schemas?
+            .get(reference.strip_prefix("#/components/schemas/")?)?;
+        is_plain_scalar(target).then(|| base_type_ref(target))
     }
 
     /// Hoist an inline string enum array item to `{ctx}Item`, preserving the
@@ -10275,7 +10534,7 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
 /// only a non-integer format (or none) stays a float.
 fn number_prim(schema: &Schema) -> Prim {
     match schema.format.as_deref() {
-        Some("int32" | "int64" | "uint64") => int_prim(schema),
+        Some("int32" | "int64" | "uint32" | "uint64") => int_prim(schema),
         _ => Prim::Float,
     }
 }
@@ -10962,7 +11221,11 @@ pub(crate) fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &s
         // method, but their hoisted request/response classes spell out the digit.
         naming::class_name(id)
     } else {
-        naming::sanitize_identifier(&naming::to_pascal_case(id))
+        // Re-cased once more, the way Fern's casing re-reads its own PascalCase:
+        // a run of one-letter words becomes one word, so OpenAQ's
+        // `…_generalized__z___x___y__pbf_get` names `…GeneralizedZxyPbfGet…`,
+        // not `…ZXYPbfGet…` (the `R7` measurement).
+        naming::sanitize_identifier(&naming::to_pascal_case(&naming::to_pascal_case(id)))
     }
 }
 
@@ -12737,6 +13000,12 @@ impl Builder<'_> {
         // positiveInteger, {default: 0}]`, and MockServer's golden declares
         // `PositiveIntegerDefault0 = int`.
         if let Some(scalar) = self.annotated_scalar_all_of(schema) {
+            // The annotating member's description documents the alias: walletd's
+            // `BlockID` is `allOf: [$ref Hash256, {description}]`, and Fern writes
+            // `BlockId = str` under that description (the
+            // `allof-description-wrapper` measurement's `SlotId`).
+            let docstring = docstring
+                .or_else(|| operation_doc(described_all_of_ref(schema).and_then(|(_, doc)| doc)));
             self.push_alias(name, module, scalar, docstring);
             return;
         }
@@ -12872,6 +13141,18 @@ impl Builder<'_> {
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
                 let mut members = dedupe_union_members(members);
+                // One described scalar beside `null` documents the alias when the
+                // schema does not: EWMS's `QueryNextAfter` is `anyOf: [{type:
+                // string, description}, {type: null}]`, and Fern's optional alias
+                // carries that description (the
+                // `nullable-anyof-member-description-alias-docstring`
+                // measurement's `NextCursor`).
+                let docstring = docstring.or_else(|| match (dropped_null, members.len()) {
+                    (true, 1) => sole_non_null_member(schema)
+                        .filter(|member| is_plain_scalar(member))
+                        .and_then(|member| clean_doc(member.description.as_deref())),
+                    _ => None,
+                });
                 let target = match (dropped_null, members.len()) {
                     (true, 1) => optional_type_ref(members.remove(0)),
                     (true, _) => TypeRef::Union(members),
@@ -13877,7 +14158,10 @@ impl Builder<'_> {
                 // `FilterSuggestion`'s own description.
                 docstring: declared_doc(collapsed_doc.or_else(|| {
                     annotation_lost_description(prop_schema, self.schemas, optional)
-                        .unwrap_or_else(|| property_description(prop_schema, optional))
+                        .unwrap_or_else(|| {
+                            rewrapped_alias_description(prop_schema, Some(self.schemas))
+                                .or_else(|| property_description(prop_schema, optional))
+                        })
                         .or_else(|| {
                             described_all_of_ref(prop_schema)
                                 .and_then(|(reference, _)| {
@@ -14541,6 +14825,16 @@ impl Builder<'_> {
             self.add_named(ctx, &annotated);
             return TypeRef::Named(ctx.to_string());
         }
+        // A target that only annotates a plain scalar component is that scalar,
+        // not a model: `Booking.slot` annotates `SlotId`, itself `allOf: [$ref
+        // Hash, {description}]` over `type: string`, and Fern types it `str`
+        // (the `allof-description-wrapper` measurement).
+        if let Some(scalar) = described_all_of_ref(target)
+            .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
+            .filter(|inner| is_plain_scalar(inner))
+        {
+            return base_type_ref(scalar);
+        }
         if !is_map(target)
             && !is_bare_object(target)
             && (!target.properties.is_empty() || target.all_of.is_some() || is_object_type(target))
@@ -14775,6 +15069,17 @@ impl Builder<'_> {
                             }
                         }
                     }
+                    // A value declaring `properties` but no `type` is Fern's unknown,
+                    // not a model: measured at fern-python-sdk 5.41.3 (the
+                    // `map-value-modelling` measurement's `Crane.inspections`, as
+                    // runZero's `Certificate.attributes`), it is
+                    // `Dict[str, typing.Any]`.
+                    if untyped_properties_only(value) {
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Primitive(Prim::Any)),
+                        );
+                    }
                     if is_inline_struct(value) {
                         self.add_object(
                             &value_name,
@@ -14815,7 +15120,7 @@ impl Builder<'_> {
                     prop_schema,
                     &hoisted,
                     values,
-                    clean_doc(prop_schema.description.as_deref()),
+                    inline_enum_doc(prop_schema.description.as_deref()),
                 )));
                 return TypeRef::Named(hoisted);
             }
@@ -14855,9 +15160,20 @@ impl Builder<'_> {
                     // (dnd5eapi's `Monster.senses`); any other composition keeps
                     // it (Zulip's `GetMessageResponse.message`, `allOf: [$ref
                     // MessagesBase, {properties}]`).
+                    // A declared but empty description is an empty docstring,
+                    // as the inline hoister writes it: Ironclad's
+                    // `WorkflowAsyncLaunchSuccessResponse.workflowUrls` declares
+                    // `description: ""`, and Fern's model opens `""" """` (the
+                    // `description-source` measurement's `PieceLinks`).
                     sole_inline_all_of_element(prop_schema)
                         .is_none()
-                        .then(|| clean_doc(prop_schema.description.as_deref()))
+                        .then(|| {
+                            if prop_schema.description.as_deref() == Some("") {
+                                Some(String::new())
+                            } else {
+                                clean_doc(prop_schema.description.as_deref())
+                            }
+                        })
                         .flatten(),
                 );
                 return TypeRef::Named(name);
@@ -15024,7 +15340,7 @@ impl Builder<'_> {
                             items,
                             &name,
                             values,
-                            clean_doc(items.description.as_deref()),
+                            inline_enum_doc(items.description.as_deref()),
                         )));
                         return TypeRef::List(Box::new(TypeRef::Named(name)));
                     }
@@ -15220,11 +15536,17 @@ impl Builder<'_> {
                             return TypeRef::Named(name);
                         }
                         if let Some(values) = string_enum_values(non_null[0]) {
+                            // The lone enum alternative documents its hoisted
+                            // class: EWMS's `WorkflowObject.deactivated` is
+                            // `anyOf: [{enum, description}, null]`, and Fern's
+                            // `WorkflowObjectDeactivated` carries that description
+                            // (the `nullable-anyof-member-description-alias-docstring`
+                            // measurement's `JobStopped`).
                             self.types.push(TypeDecl::Enum(build_enum(
                                 non_null[0],
                                 &name,
                                 values,
-                                None,
+                                clean_doc(non_null[0].description.as_deref()),
                             )));
                             return TypeRef::Named(name);
                         }
@@ -15327,6 +15649,21 @@ impl Builder<'_> {
                     if let Some(member) = simple_nullable_member(prop_schema) {
                         if let Some(reference) = member.reference.as_deref() {
                             return TypeRef::Named(ref_to_class(reference));
+                        }
+                        // An annotated `$ref` beside `null` is copied where it is
+                        // used, as the bare annotation is: an enum target is an
+                        // enum documented by the annotation, never a model
+                        // subclassing the enum (the
+                        // `nullable-anyof-allof-described-member` measurement's
+                        // `CreatePlanBodyCourse`).
+                        if let Some(target) = annotated_target(member, Some(self.schemas)) {
+                            // A map target is the nullable map: OpenResponses'
+                            // `metadata` annotates `MetadataParam` and is
+                            // `Dict[str, Optional[str]]`.
+                            if is_map(target) {
+                                return nullable_map_value_type_ref(target);
+                            }
+                            return self.field_type_ref(owner, prop, member);
                         }
                         // An inline object beside `null` is a model named for the
                         // property: Fergus's `Company.contact` is `anyOf:
@@ -17510,6 +17847,13 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                     // `List[Optional[Any]]`.
                     if matches!(&i.ty, Some(TypeField::Single(ty)) if ty == "null") {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+                    } else if i.boolean_stand_in {
+                        // A boolean `items` (3.1's tuple form, `items: false`
+                        // beside `prefixItems`) is a bare unknown element: SeekStorm's
+                        // `update_document` body is `Sequence[Any]` at
+                        // fern-python-sdk 5.41.3 (the `parameter-type-resolution`
+                        // measurement).
+                        TypeRef::Primitive(Prim::Any)
                     } else if is_unknown(i) {
                         // An unknown element spelled `{nullable: true}` keeps its
                         // `Optional`, which the collapsing wrapper would drop:
@@ -17726,6 +18070,22 @@ fn collapsed_member_description<'a>(schema: &'a Schema, type_ref: &TypeRef) -> O
     first.description.as_deref()
 }
 
+/// The description a property takes when it annotates a component that is
+/// itself only an annotated `$ref`: the inner annotation, not the property's.
+/// Measured at fern-python-sdk 5.41.3
+/// (`docs/fern-measurements/handed-off/type-declarations/allof-description-wrapper`):
+/// `Booking.slot` is `allOf: [$ref SlotId, {description: The slot reserved.}]`
+/// over `SlotId: allOf: [$ref Hash, {description: Identifier of an observing
+/// slot.}]`, and Fern documents `slot: str` with SlotId's sentence.
+fn rewrapped_alias_description<'a>(
+    schema: &Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+) -> Option<&'a str> {
+    let (reference, _) = described_all_of_ref(schema)?;
+    let target = resolve_ref_from_schemas(schemas?, reference)?;
+    described_all_of_ref(target).and_then(|(_, description)| description)
+}
+
 fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     // Fern's *bare* unknown type carries no docs: its schema converter passes the
     // description to every other kind and to `unknown` passes nothing, so
@@ -17760,7 +18120,19 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         // The lone alternative to `null` documents the property when the
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
-        .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+        .or_else(|| {
+            sole_non_null_member(schema)
+                .filter(|member| !wraps_sole_reference(member))
+                .and_then(|member| member.description.as_deref())
+        })
+        // …or that alternative's annotation of a `$ref`: OpenResponses'
+        // `tool_choice` is `anyOf: [allOf: [$ref, {description}], null]` (the
+        // `nullable-anyof-allof-described-member` measurement).
+        .or_else(|| {
+            sole_non_null_member(schema)
+                .and_then(described_all_of_ref)
+                .and_then(|(_, description)| description)
+        })
         // …and so does a composition's only member (NPQ's one-member `anyOf`
         // `attributes`).
         .or_else(
@@ -18132,8 +18504,15 @@ fn short_circuit_description(
         .iter()
         .filter(|member| member.reference.is_some() || !is_empty_schema(member))
         .collect();
+    // A nested `allOf` member is an object member too: journy.io's `400` body is
+    // `allOf: [{allOf: [envelope, message]}, {description, properties}]`, and
+    // with two objects to merge Fern's `BadRequestErrorBody` carries no
+    // docstring (the `allof-member-description-docstring` measurement).
     let object_member = |member: &Schema| {
-        member.reference.is_some() || is_object_type(member) || member.properties.declared()
+        member.reference.is_some()
+            || is_object_type(member)
+            || member.properties.declared()
+            || member.all_of.is_some()
     };
     let objects: Vec<&Schema> = members
         .iter()
@@ -18157,6 +18536,50 @@ fn short_circuit_description(
         .find_map(|member| member.description.as_deref())
         .or(object_description)
         .and_then(|description| clean_doc(Some(description)))
+}
+
+/// The component a `nullable: true` schema names through a one-member
+/// `oneOf`/`anyOf` and nothing else: keyserv's `{nullable: true, oneOf: [$ref
+/// CurrentKey]}`. Fern keeps that component and makes it optional (the `R3`
+/// measurement).
+fn nullable_sole_member_ref(schema: &Schema) -> Option<&str> {
+    let members = schema.one_of.as_deref().or(schema.any_of.as_deref())?;
+    let [member] = members else {
+        return None;
+    };
+    (schema.reference.is_none()
+        && schema.nullable == Some(true)
+        && schema.ty.is_none()
+        && !schema.properties.declared()
+        && schema.additional_properties.is_none()
+        && schema.all_of.is_none()
+        && (schema.one_of.is_none() || schema.any_of.is_none()))
+    .then_some(member.reference.as_deref())
+    .flatten()
+}
+
+/// The resolved target of a schema that only annotates one `$ref`.
+fn annotated_target<'a>(
+    member: &Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+) -> Option<&'a Schema> {
+    described_all_of_ref(member)
+        .and_then(|(reference, _)| resolve_ref_from_schemas(schemas?, reference))
+}
+
+/// A `$ref`, or a `oneOf`/`anyOf` of one `$ref`, whose description sits beside
+/// the reference: Fern drops that description, so as the alternative to `null`
+/// it documents nothing. OpenResponses' `ReasoningParam.effort` is `anyOf:
+/// [{oneOf: [$ref ReasoningEffortEnum], description}, null]` and SeekStorm's
+/// `CreateIndexRequest.query_completion` is `oneOf: [null, {$ref
+/// QueryCompletion, description}]`, and neither is documented (the
+/// `description-source` measurement's `Piece.glaze` and `Piece.firedBy`).
+fn wraps_sole_reference(schema: &Schema) -> bool {
+    schema.reference.is_some()
+        || matches!(
+            schema.one_of.as_deref().or(schema.any_of.as_deref()),
+            Some([only]) if only.reference.is_some()
+        )
 }
 
 /// Whether `schema` declares nothing at all (`{}`).
@@ -18651,6 +19074,18 @@ fn is_int_enum(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("integer") && schema.enum_values.is_some()
 }
 
+/// A schema declaring `properties` (or an empty `properties` map) but no
+/// `type` and no `allOf`: Fern reads it as its unknown type when it is a map's
+/// value.
+fn untyped_properties_only(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.all_of.is_none()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && schema.properties.declared()
+}
+
 /// Is this schema declared as `type: object`?
 fn is_object_type(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("object")
@@ -18677,6 +19112,19 @@ fn trim_doc_end(text: &str) -> &str {
             lines_trimmed
         }
         _ => trimmed,
+    }
+}
+
+/// The docstring of an enum hoisted from a property or array element: as
+/// [`clean_doc`], except that a declared but blank description is an empty
+/// docstring rather than none. Measured at fern-python-sdk 5.41.3 (the
+/// `blank-description-enum-docstring` measurement, as OpenBanking Brasil's
+/// `indemnityPaymentFrequencies` items): Fern writes `""" """` for an inline
+/// enum declaring `description: ''`, where a component enum gets none.
+fn inline_enum_doc(desc: Option<&str>) -> Option<String> {
+    match desc {
+        Some(text) if text.trim().is_empty() => Some(String::new()),
+        other => clean_doc(other),
     }
 }
 
@@ -24413,17 +24861,16 @@ mod tests {
         .unwrap();
         let views = super::request_media_variants(&operation);
         assert_eq!(views.len(), 2);
-        assert_eq!(
-            views[0].as_ref().unwrap().sdk_method_name(),
-            Some("card_note")
-        );
-        assert_eq!(
-            views[1].as_ref().unwrap().sdk_method_name(),
-            Some("card_scan")
-        );
+        assert_eq!(views[0].as_ref().unwrap().1, "card_note");
+        assert_eq!(views[1].as_ref().unwrap().1, "card_scan");
+        // Each view keeps the base operation's naming for its shared types.
+        assert!(views
+            .iter()
+            .all(|view| view.as_ref().unwrap().0.sdk_method_name().is_none()));
         assert!(views.iter().all(|view| view
             .as_ref()
             .unwrap()
+            .0
             .request_body
             .as_ref()
             .unwrap()
@@ -27923,9 +28370,11 @@ components:
                 && declared > 0
         };
         let tagged = |kind: &str| serde_json::json!({ "type": "object", "properties": { "kind": { "type": "string", "enum": [kind] } } });
+        let typed_struct =
+            serde_json::json!({ "type": "object", "properties": { "id": { "type": "string" } } });
         for value in [
             serde_json::json!({ "type": "string", "enum": ["alpha", "beta"] }),
-            struct_schema(),
+            typed_struct,
             serde_json::json!({ "oneOf": [tagged("a"), tagged("b")] }),
             serde_json::json!({ "anyOf": [{ "type": "string" }, struct_schema()] }),
             serde_json::json!({ "type": "array", "items": struct_schema() }),
@@ -27942,6 +28391,18 @@ components:
         ] {
             assert_eq!(map(value.clone()).1, 0, "{value}");
         }
+        // A value declaring properties but no `type` is Fern's unknown (the
+        // `map-value-modelling` measurement's `Crane.inspections`).
+        assert_eq!(
+            map(struct_schema()),
+            (
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any))
+                ),
+                0
+            )
+        );
     }
 
     #[test]
@@ -30545,5 +31006,308 @@ mod emission_parity_tests {
             }
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
+    }
+}
+
+/// The handed-off type-declaration causes, each driven through the IR from the
+/// from-scratch document its measurement under
+/// `docs/fern-measurements/handed-off/type-declarations/` committed with the
+/// certified pair's tree (Fern CLI 5.163.1, fern-python-sdk 5.41.3).
+#[cfg(test)]
+mod handed_off_type_declarations_tests {
+    use super::*;
+
+    fn measured(cause: &str) -> Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/type-declarations")
+            .join(cause)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        build(&doc, &config)
+    }
+
+    fn declared<'a>(ir: &'a Ir, name: &str) -> Option<&'a TypeDecl> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag_type| &tag_type.decl))
+            .find(|decl| decl.name() == name)
+    }
+
+    fn object<'a>(ir: &'a Ir, name: &str) -> &'a ObjectType {
+        match declared(ir, name) {
+            Some(TypeDecl::Object(object)) => object,
+            other => panic!("{name} is no model: {other:?}"),
+        }
+    }
+
+    fn field<'a>(object: &'a ObjectType, wire: &str) -> &'a Field {
+        object
+            .fields
+            .iter()
+            .find(|field| field.wire_name == wire)
+            .unwrap_or_else(|| panic!("{} has no {wire}", object.name))
+    }
+
+    fn endpoint<'a>(ir: &'a Ir, method: &str) -> &'a Endpoint {
+        ir.endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == method)
+            .unwrap_or_else(|| panic!("no endpoint {method}"))
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn prim(prim: Prim) -> TypeRef {
+        TypeRef::Primitive(prim)
+    }
+
+    fn optional(inner: TypeRef) -> TypeRef {
+        TypeRef::Optional(Box::new(inner))
+    }
+
+    fn dict(value: TypeRef) -> TypeRef {
+        TypeRef::Dict(Box::new(prim(Prim::Str)), Box::new(value))
+    }
+
+    #[test]
+    fn digit_leading_components_spell_their_whole_leading_number() {
+        let ir = measured("digit-leading-schema-name");
+        for name in [
+            "FourHundredOneResponse",
+            "TwelveHourCycle",
+            "SevenAgent",
+            "OneThousandTwoHundredThirtyFourPlan",
+            "NineThousandNineHundredNinetyNineStock",
+            "UndefinedSteps",
+            "TwoFaStatus",
+        ] {
+            assert!(declared(&ir, name).is_some(), "{name}");
+        }
+        assert!(declared(&ir, "Four01Response").is_none());
+    }
+
+    #[test]
+    fn number_prim_reads_uint32_as_an_integer() {
+        let ir = measured("number-uint32-format");
+        let lamp = object(&ir, "Lamp");
+        assert_eq!(field(lamp, "rotations").type_ref, prim(Prim::Int));
+        assert_eq!(field(lamp, "bulbs").type_ref, prim(Prim::Float));
+        assert_eq!(field(lamp, "lensRings").type_ref, prim(Prim::Float));
+    }
+
+    #[test]
+    fn split_media_methods_name_their_shared_types_from_the_base_operation() {
+        let ir = measured("inline-type-naming");
+        assert!(declared(&ir, "CaptionMediaRequestDialect").is_some());
+        assert!(declared(&ir, "CaptionUrlMediaRequestDialect").is_none());
+        for method in ["caption_url", "caption_file"] {
+            assert_eq!(endpoint(&ir, method).module, "captions/media");
+        }
+    }
+
+    #[test]
+    fn described_all_of_wrappers_resolve_to_their_scalar() {
+        let ir = measured("allof-description-wrapper");
+        let telescope = endpoint(&ir, "get_telescope");
+        assert_eq!(telescope.path_params[0].type_ref, prim(Prim::Str));
+        assert_eq!(telescope.query_params[0].type_ref, prim(Prim::Int));
+        let booking = object(&ir, "Booking");
+        assert_eq!(field(booking, "slot").type_ref, prim(Prim::Str));
+        assert_eq!(
+            field(booking, "slot").docstring.as_deref(),
+            Some("Identifier of an observing slot.")
+        );
+        assert!(declared(&ir, "BookingSlot").is_none());
+        match declared(&ir, "SlotId") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.docstring.as_deref(),
+                Some("Identifier of an observing slot.")
+            ),
+            other => panic!("SlotId is no alias: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_union_member_naming_a_nullable_component_is_optional() {
+        let ir = measured("parameter-type-resolution");
+        match declared(&ir, "ListBroadcastsRequestBefore") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.target,
+                TypeRef::Union(vec![optional(named("BroadcastBefore")), prim(Prim::Str)])
+            ),
+            other => panic!("ListBroadcastsRequestBefore is no alias: {other:?}"),
+        }
+        match declared(&ir, "ListBroadcastsRequestAfter") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.target,
+                TypeRef::Union(vec![named("LocalTime"), prim(Prim::Str)])
+            ),
+            other => panic!("ListBroadcastsRequestAfter is no alias: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_tuple_body_is_a_list_of_bare_unknowns() {
+        let ir = measured("parameter-type-resolution");
+        match &endpoint(&ir, "tag_broadcast").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, TypeRef::List(Box::new(prim(Prim::Any))));
+            }
+            other => panic!("tag_broadcast's body: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn map_values_hoist_only_when_typed_object() {
+        let ir = measured("map-value-modelling");
+        let crane = object(&ir, "Crane");
+        assert_eq!(
+            field(crane, "operators").type_ref,
+            dict(named("CraneOperatorsValue"))
+        );
+        assert_eq!(field(crane, "inspections").type_ref, dict(prim(Prim::Any)));
+        assert!(declared(&ir, "CraneInspectionsValue").is_none());
+        assert_eq!(
+            endpoint(&ir, "get_crane_summary").response,
+            Some(dict(named("GetCraneSummaryResponseValue")))
+        );
+    }
+
+    #[test]
+    fn blank_inline_enum_descriptions_are_empty_docstrings() {
+        let ir = measured("blank-description-enum-docstring");
+        for name in ["CrossingDaysItem", "CrossingWeather", "CrossingDeck"] {
+            match declared(&ir, name) {
+                Some(TypeDecl::Enum(e)) => assert_eq!(e.docstring.as_deref(), Some(""), "{name}"),
+                other => panic!("{name} is no enum: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn a_nested_all_of_body_takes_no_member_docstring() {
+        let ir = measured("allof-member-description-docstring");
+        assert_eq!(object(&ir, "BadRequestErrorBody").docstring, None);
+    }
+
+    #[test]
+    fn nullable_alternatives_document_their_types() {
+        let ir = measured("nullable-anyof-member-description-alias-docstring");
+        match declared(&ir, "NextCursor") {
+            Some(TypeDecl::Alias(alias)) => assert!(alias
+                .docstring
+                .as_deref()
+                .is_some_and(|doc| doc.starts_with("The value to pass as 'after'"))),
+            other => panic!("NextCursor is no alias: {other:?}"),
+        }
+        match declared(&ir, "JobStopped") {
+            Some(TypeDecl::Enum(e)) => {
+                assert_eq!(e.docstring.as_deref(), Some("Why the job stopped."));
+            }
+            other => panic!("JobStopped is no enum: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn an_annotated_enum_beside_null_is_copied_as_an_enum() {
+        let ir = measured("nullable-anyof-allof-described-member");
+        match declared(&ir, "CreatePlanBodyCourse") {
+            Some(TypeDecl::Enum(e)) => assert_eq!(
+                e.docstring.as_deref(),
+                Some("Which course to plan, if any.")
+            ),
+            other => panic!("CreatePlanBodyCourse is no enum: {other:?}"),
+        }
+        let Some(RequestBody::Inline(fields)) = &endpoint(&ir, "create_plan").request_body else {
+            panic!("create_plan's body is inlined");
+        };
+        let diet = fields
+            .iter()
+            .find(|field| field.wire_name == "diet")
+            .unwrap();
+        assert_eq!(
+            diet.docstring.as_deref(),
+            Some("Dietary needs the plan must respect.")
+        );
+    }
+
+    #[test]
+    fn hoisted_objects_prefer_their_own_description_and_keep_an_empty_one() {
+        let ir = measured("description-source");
+        assert_eq!(
+            object(&ir, "GetFiringResponseOutcome").docstring.as_deref(),
+            Some("What the kiln produced, once the firing finished.")
+        );
+        assert_eq!(object(&ir, "PieceLinks").docstring.as_deref(), Some(""));
+        assert_eq!(field(object(&ir, "Piece"), "glaze").docstring, None);
+        assert_eq!(field(object(&ir, "Piece"), "firedBy").docstring, None);
+    }
+
+    #[test]
+    fn one_letter_operation_id_words_run_together() {
+        let ir = measured("R7");
+        let tile = endpoint(&ir, "get_tile_v2tiles_coastal_z_x_y_pbf_get");
+        assert_eq!(
+            tile.query_params[0].type_ref,
+            named("GetTileV2TilesCoastalZxyPbfGetRequestShading")
+        );
+    }
+
+    #[test]
+    fn a_nullable_sole_member_keeps_its_component_optional() {
+        let ir = measured("R3");
+        assert_eq!(
+            endpoint(&ir, "get_current_reading").response,
+            Some(optional(named("ClimateReading")))
+        );
+        match &endpoint(&ir, "create_greenhouse").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, named("GreenhouseCreate"));
+                assert!(!single.required);
+            }
+            other => panic!("create_greenhouse's body: {other:?}"),
+        }
+        assert!(declared(&ir, "VentCommand").is_some());
+    }
+
+    #[test]
+    fn a_body_naming_a_renamed_union_keeps_its_operation() {
+        let ir = measured("reference-description-leading-newline");
+        match &endpoint(&ir, "add_packet_note").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, named("PacketNoteCreateRequest"));
+            }
+            other => panic!("add_packet_note's body: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn orphan_types_follow_the_certified_pair() {
+        let ir = measured("orphan-type-emission");
+        // A download declares nothing from its JSON alternative.
+        assert!(declared(&ir, "GetArchivePathResponse").is_none());
+        // A dropped readOnly body property hoists nothing.
+        assert!(declared(&ir, "RegisterSensorRequestCalibration").is_none());
+        // A body posted only by a replaced operation is inlined away.
+        assert!(declared(&ir, "SensorsAddNoteRequest").is_none());
+        assert!(declared(&ir, "SensorsAddNoteRequest1").is_none());
+        // A bytes body keeps the component it names.
+        assert!(declared(&ir, "CreateKeyRequest").is_some());
+        assert!(matches!(
+            endpoint(&ir, "create_key").request_body,
+            Some(RequestBody::Bytes { .. })
+        ));
     }
 }

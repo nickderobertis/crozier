@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Quarry Survey Log
+  version: 1.0.0
+paths:
+  /surveys/{surveyId}:
+    get:
+      operationId: getSurvey
+      summary: Read one survey
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The survey
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Survey'
+components:
+  schemas:
+    Survey:
+      type: object
+      properties:
+        strata:
+          description: Rock layers recorded, declared untyped with empty items beside properties.
+          items: {}
+          properties:
+            depth:
+              type: number
+            mineral:
+              type: string
+        cores:
+          description: Drill cores, untyped with empty items and nested properties.
+          items: {}
+          properties:
+            length:
+              type: number
+            fragments:
+              items: {}
+              properties:
+                grade:
+                  type: string
+        surveyor:
+          type: string

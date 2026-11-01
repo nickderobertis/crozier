@@ -1,0 +1,173 @@
+openapi: 3.0.3
+info:
+  title: Weather Station Console
+  version: 1.0.0
+paths:
+  /archive/{path}:
+    get:
+      operationId: getArchivePath
+      summary: Download a file or list a directory
+      tags:
+        - Archive
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File download or directory listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        kind:
+                          type: string
+                          enum:
+                            - file
+                            - dir
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No such file
+  /sensors:
+    post:
+      operationId: registerSensor
+      summary: Register a sensor
+      tags:
+        - Sensors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                calibration:
+                  readOnly: true
+                  type: object
+                  properties:
+                    offset:
+                      type: number
+                    checkedBy:
+                      type: string
+      responses:
+        '204':
+          description: Registered
+  /sensors/{sensorId}/note:
+    post:
+      operationId: Sensors_addNote
+      summary: Add a note to a sensor
+      tags:
+        - Sensors
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorsAddNoteRequest'
+      responses:
+        '204':
+          description: Added
+  /sensors/{sensorId}/notes:
+    post:
+      operationId: Sensors_addNote
+      summary: Add a note to a sensor
+      tags:
+        - Sensors
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorsAddNoteRequest1'
+      responses:
+        '204':
+          description: Added
+  /keys:
+    post:
+      operationId: createKey
+      summary: Create a signing key
+      tags:
+        - Keys
+      requestBody:
+        required: true
+        description: The create request
+        content:
+          application/vnd.station.v1+json:
+            schema:
+              $ref: '#/components/schemas/CreateKeyRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateKeyRequest'
+          application/octet-stream:
+            schema:
+              $ref: '#/components/schemas/CreateKeyRequest'
+      responses:
+        '200':
+          description: The key
+          content:
+            application/vnd.station.v1+json:
+              schema:
+                $ref: '#/components/schemas/KeyMode'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyMode'
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/KeyMode'
+components:
+  schemas:
+    SensorsAddNoteRequest:
+      type: object
+      properties:
+        text:
+          type: string
+    SensorsAddNoteRequest1:
+      type: object
+      properties:
+        text:
+          type: string
+    CreateKeyRequest:
+      type: object
+      properties:
+        algorithm:
+          type: string
+        bits:
+          type: integer
+    KeyMode:
+      type: object
+      properties:
+        mode:
+          type: string

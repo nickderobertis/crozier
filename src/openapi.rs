@@ -4772,6 +4772,13 @@ fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
     {
         return;
     }
+    // A nullable one-member `oneOf`/`anyOf` naming a component stays as it is:
+    // Fern keeps the component and makes it optional (keyserv's
+    // `{nullable: true, oneOf: [$ref ProductCreateModify]}`, the `R3`
+    // measurement), which collapsing to the bare `$ref` would lose.
+    if !all_of && schema.nullable == Some(true) && member.reference.is_some() {
+        return;
+    }
     if all_of {
         member.title.clone_from(&schema.title);
         member.description.clone_from(&schema.description);

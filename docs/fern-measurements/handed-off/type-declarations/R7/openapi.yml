@@ -1,0 +1,76 @@
+openapi: 3.0.3
+info:
+  title: Map Tile Server
+  version: 1.0.0
+paths:
+  /tiles/coastal/{z}/{x}/{y}.pbf:
+    get:
+      operationId: get_tile_v2_tiles_coastal__z___x___y__pbf_get
+      summary: Read one coastal tile
+      parameters:
+        - name: z
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: x
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: y
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: shading
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date-time
+              - type: integer
+      responses:
+        '200':
+          description: The tile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  size:
+                    type: integer
+  /tiles/{a}/{b}:
+    get:
+      operationId: read__a_b___c_d__tile
+      summary: Read a tile by two letters
+      parameters:
+        - name: a
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: b
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: palette
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date
+              - type: integer
+      responses:
+        '200':
+          description: The tile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bytes:
+                    type: integer

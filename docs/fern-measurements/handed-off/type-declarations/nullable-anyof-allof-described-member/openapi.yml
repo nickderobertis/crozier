@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: Recipe Planner
+  version: 1.0.0
+paths:
+  /plans:
+    post:
+      operationId: createPlan
+      summary: Create a meal plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanBody'
+      responses:
+        '200':
+          description: The plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+components:
+  schemas:
+    Course:
+      type: string
+      enum:
+        - starter
+        - main
+        - dessert
+    Diet:
+      type: object
+      properties:
+        vegetarian:
+          type: boolean
+    CreatePlanBody:
+      type: object
+      properties:
+        course:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Course'
+                - description: Which course to plan, if any.
+            - type: 'null'
+        diet:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Diet'
+                - description: Dietary needs the plan must respect.
+            - type: 'null'
+        servings:
+          anyOf:
+            - type: integer
+              description: How many people eat.
+            - type: 'null'
+    Plan:
+      type: object
+      properties:
+        planId:
+          type: string
+        course:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Course'
+                - description: The planned course.
+            - type: 'null'

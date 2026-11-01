@@ -3149,8 +3149,15 @@ pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
         // Importers sometimes retain leading blank lines around a one-line
         // description. Fern still renders those through the ordinary em-dash
         // form; only multiple substantive lines become a separate paragraph.
-        Some(d) if d.trim().contains('\n') => {
-            format!(" \n\n{}", d.trim_matches(['\r', '\n']))
+        // That paragraph keeps a leading line break, so the description opens
+        // with a blank line, and loses only its trailing ones: measured at
+        // fern-python-sdk 5.41.3 (`docs/fern-measurements/handed-off/
+        // type-declarations/R6`), agentstack's `metadata` and OpenAQ's
+        // `country_id`.
+        // The test is the same text: leading whitespace aside, does a line
+        // break remain once trailing line breaks (not trailing spaces) go?
+        Some(d) if d.trim_end_matches(['\r', '\n']).trim_start().contains('\n') => {
+            format!(" \n\n{}", d.trim_end_matches(['\r', '\n']))
         }
         Some(d) => format!(" — {d}"),
         None => " ".to_string(),
@@ -12475,6 +12482,33 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 
 #[cfg(test)]
 mod tests {
+    /// The `R6` measurement's descriptions (Fern CLI 5.163.1, fern-python-sdk
+    /// 5.41.3): a paragraph keeps its leading line break and only loses its
+    /// trailing ones; a lone line after a break stays in the em-dash form.
+    #[test]
+    fn reference_param_suffix_keeps_a_leading_break_in_a_paragraph() {
+        assert_eq!(
+            super::reference_param_suffix(Some("\n        The lock.\n        (ex. /L7)\n        ")),
+            " \n\n\n        The lock.\n        (ex. /L7)\n        "
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\n        The boat's name.\n        ")),
+            " \n\n\n        The boat's name.\n        "
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\nSet of pairs.\n\nKeys are short.\n")),
+            " \n\n\nSet of pairs.\n\nKeys are short."
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\nUpstream or downstream.")),
+            " — \nUpstream or downstream."
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("One line.\n")),
+            " — One line.\n"
+        );
+    }
+
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, cycle_components, environment,

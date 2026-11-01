@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: Beehive Census
+  version: 1.0.0
+paths:
+  /hives:
+    post:
+      operationId: registerHive
+      summary: Register a hive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiary:
+                  type: string
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - description: The envelope every answer carries
+                    type: object
+                    required:
+                      - meta
+                    properties:
+                      meta:
+                        type: object
+                        required:
+                          - traceId
+                        properties:
+                          traceId:
+                            type: string
+                  - description: The outcome in words
+                    type: object
+                    required:
+                      - message
+                    properties:
+                      message:
+                        type: string
+        '400':
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - allOf:
+                      - description: The envelope every answer carries
+                        type: object
+                        required:
+                          - meta
+                        properties:
+                          meta:
+                            type: object
+                            properties:
+                              traceId:
+                                type: string
+                      - description: The outcome in words
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - description: The fields that were rejected
+                    type: object
+                    properties:
+                      rejected:
+                        type: array
+                        items:
+                          type: string
+  /hives/{hiveId}:
+    get:
+      operationId: getHive
+      summary: Read one hive
+      parameters:
+        - name: hiveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The hive
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      frames:
+                        type: integer
+                  - description: The queen's markings
+                    type: object
+                    properties:
+                      queenColour:
+                        type: string
