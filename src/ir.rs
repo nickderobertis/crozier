@@ -3807,20 +3807,22 @@ fn build_endpoint(
                         hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                     })
             };
-            PathParam {
+            // A union one of whose members is a primitive outside the four httpx
+            // sends as data is converted before it is interpolated, scalar or not:
+            // fern-python-sdk 5.41.3 converts it first (measured in
+            // `docs/fern-measurements/handed-off/bodies-media/path-param-serialization/`).
+            let converts_union = hoister.needs_convert(&type_ref)
+                && p.schema.as_ref().is_some_and(|schema| {
+                    union_has_non_data_primitive(schema, &doc.components.schemas)
+                });
+            let mut param = PathParam {
                 constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
-                // text, the same guard the query arm applies — unless it is a union
-                // one of whose members is a primitive outside the four httpx sends
-                // as data, which fern-python-sdk 5.41.3 converts first (measured in
-                // `docs/fern-measurements/handed-off/bodies-media/path-param-serialization/`).
+                // text, the same guard the query arm applies.
                 convert: hoister.needs_convert(&type_ref)
-                    && (!hoister.reaches_url_as_scalars(&type_ref)
-                        || p.schema.as_ref().is_some_and(|schema| {
-                            union_has_non_data_primitive(schema, &doc.components.schemas)
-                        })),
+                    && !hoister.reaches_url_as_scalars(&type_ref),
                 type_ref,
                 docstring: parameter_doc(p),
                 // Without an importer example Fern's IR fallback reads no declared
@@ -3842,7 +3844,9 @@ fn build_endpoint(
                         .and_then(|reference| resolve_ref(doc, reference))
                         .is_some_and(|target| target.pattern.is_some())
                 }),
-            }
+            };
+            param.convert |= converts_union;
+            param
         })
         .collect();
     // A path template expression the operation never declares as a Parameter
@@ -4772,11 +4776,19 @@ fn build_endpoint(
             .map(|(media_type, _)| media_type)
             .filter(|media_type| *media_type != "application/json")
             .map(str::to_string),
+        // The shape is the selected JSON media's schema, the one Fern reads the
+        // body from, before any other media type's: a body offering an inline
+        // `application/xml` object before `application/json: $ref` is a `$ref`
+        // body. Without a JSON media type it is the first schema declared.
         body_schema_shape: BodySchemaShape::of(
             op.request_body.as_ref().and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
+                selected_json_request_media(body)
+                    .and_then(|(_, media)| media.schema.as_ref())
+                    .or_else(|| {
+                        body.content
+                            .values()
+                            .find_map(|media| media.schema.as_ref())
+                    })
             }),
             &doc.components.schemas,
         ),
