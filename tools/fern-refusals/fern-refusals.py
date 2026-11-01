@@ -1099,7 +1099,7 @@ def diagnostics(log: str) -> list[str]:
         elif (api := API_LINE.match(text)) and re.match(
             r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack"
             r"|Response must be an object in order to return property |.* is undefined$|\w*(Error|Exception)\b.*:"
-            r"|Cannot use 'in' operator ",
+            r"|Cannot use 'in' operator |Cannot read properties of ",
             api.group(1),
         ):
             message = api.group(1)

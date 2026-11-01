@@ -23,6 +23,12 @@
 //!   to the unknown type rather than failing generation.
 //! - **A fetch that fails is a hard error.** A silently dropped schema would
 //!   generate a plausible SDK with the wrong types in it.
+//! - **A schema naming a relative file that does not exist is the unknown
+//!   type**, as Fern types it (`outstack/enveloper`; measured in
+//!   `docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`).
+//!   Each one is reported on stderr as a `warning:` naming the file and the `$ref`'s
+//!   location, so a mistyped path is not silent. A file that exists but cannot
+//!   be read, and every other reference kind, stay errors.
 //! - **A reference naming a whole document is one component named after its
 //!   file** (MockServer's draft-04 meta-schema is `Schema`), with `#` inside it
 //!   meaning that component and `#/definitions/<name>` a component of its own.
@@ -128,6 +134,7 @@ pub fn resolve(
         imported: IndexMap::new(),
         importing: HashSet::new(),
         root_schemas: doc.components.schemas.keys().cloned().collect(),
+        missing: Vec::new(),
     };
     let remote_origin = register_component_schemas(doc, &mut resolver)?;
     for scheme in doc.components.security_schemes.values_mut() {
@@ -167,6 +174,9 @@ pub fn resolve(
         for (name, schema) in imported {
             doc.components.schemas.entry(name).or_insert(schema);
         }
+    }
+    for warning in resolver.missing_file_warnings() {
+        eprintln!("crozier: warning: {warning}");
     }
     Ok(remote_origin)
 }
@@ -335,6 +345,9 @@ struct Resolver<'a> {
     /// The root document's own component schema names, which a sibling file's
     /// component never displaces.
     root_schemas: HashSet<String>,
+    /// Each schema `$ref` naming a relative file that does not exist, typed as
+    /// unknown: the referring document, the reference, and the file it names.
+    missing: Vec<(DocumentLocation, String, PathBuf)>,
 }
 
 impl Resolver<'_> {
@@ -488,19 +501,13 @@ impl Resolver<'_> {
                     }
                 }
             }
-            if let Some((_, fragment)) = split_external(&reference) {
-                // NDW's registered single-file golden has a sibling schema
-                // pointer whose file is absent. Fern types that nested field
-                // as unknown rather than refusing the document.
-                if fragment.starts_with("/components/schemas/") {
-                    let path = DocumentLocation::from_reference(&reference, source);
-                    if let DocumentLocation::Local(file) = path {
-                        if matches!(std::fs::metadata(file), Err(error) if error.kind() == std::io::ErrorKind::NotFound)
-                        {
-                            *schema = Schema::default();
-                            return Ok(());
-                        }
-                    }
+            if split_external(&reference).is_some() {
+                // A schema naming a relative file that is absent is unknown to
+                // Fern, which generates the rest of the document: NDW's sibling
+                // component pointer and enveloper's whole-file references.
+                if self.missing_local_file(&reference, source) {
+                    *schema = Schema::default();
+                    return Ok(());
                 }
                 if let Some(name) = self.import_external_component(&reference, source)? {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
@@ -690,6 +697,67 @@ impl Resolver<'_> {
         Ok(Some(name.to_string()))
     }
 
+    /// Whether `reference`, written in `source`, names a relative file that does
+    /// not exist, recording it for [`Self::missing_file_warnings`] when it does.
+    /// A remote address, or a file that exists but cannot be read, is not
+    /// missing: its fetch or read reports its own error.
+    fn missing_local_file(&mut self, reference: &str, source: &DocumentLocation) -> bool {
+        if split_external(reference).is_none() || split_remote(reference).is_some() {
+            return false;
+        }
+        let DocumentLocation::Local(file) = DocumentLocation::from_reference(reference, source)
+        else {
+            return false;
+        };
+        let absent = matches!(
+            std::fs::metadata(&file),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound
+        );
+        if absent
+            && !self.missing.iter().any(|(document, written, _)| {
+                document.key() == source.key() && written == reference
+            })
+        {
+            let file = file
+                .components()
+                .filter(|part| !matches!(part, std::path::Component::CurDir))
+                .collect();
+            self.missing
+                .push((source.clone(), reference.to_string(), file));
+        }
+        absent
+    }
+
+    /// One line per missing file a schema `$ref` names: the referring document,
+    /// the JSON pointer of each `$ref` writing it there, and the file.
+    fn missing_file_warnings(&mut self) -> Vec<String> {
+        let missing = std::mem::take(&mut self.missing);
+        let mut warnings = Vec::new();
+        for (document, reference, file) in missing {
+            let parsed = match &document {
+                DocumentLocation::Local(path) if path == self.spec => std::fs::read_to_string(path)
+                    .ok()
+                    .and_then(|text| crate::yaml::from_str::<serde_json::Value>(&text).ok()),
+                _ => self.documents.get(&document.key()).cloned(),
+            };
+            let mut pointers = Vec::new();
+            if let Some(parsed) = &parsed {
+                reference_pointers(parsed, &reference, String::new(), &mut pointers);
+            }
+            let location = if pointers.is_empty() {
+                document.key()
+            } else {
+                format!("{}#{}", document.key(), pointers.join(", #"))
+            };
+            warnings.push(format!(
+                "{location}: $ref `{reference}` names {}, which does not exist; \
+                 that schema is typed as unknown (`typing.Any`), as Fern types it",
+                file.display()
+            ));
+        }
+        warnings
+    }
+
     /// Fetch, locate and fully resolve the schema `reference` names.
     fn resolve_reference(&mut self, reference: &str, source: &DocumentLocation) -> Result<Schema> {
         // A reference cycle across documents has no name to emit, so it degrades
@@ -748,6 +816,33 @@ impl Resolver<'_> {
             reference: reference.to_string(),
             message: message.to_string(),
         }
+    }
+}
+
+/// The JSON pointer (RFC 6901) of every `$ref` in `node` whose value is
+/// `reference`, in document order.
+fn reference_pointers(
+    node: &serde_json::Value,
+    reference: &str,
+    at: String,
+    found: &mut Vec<String>,
+) {
+    let escape = |key: &str| key.replace('~', "~0").replace('/', "~1");
+    match node {
+        serde_json::Value::Object(mapping) => {
+            if mapping.get("$ref").and_then(serde_json::Value::as_str) == Some(reference) {
+                found.push(at.clone());
+            }
+            for (key, child) in mapping {
+                reference_pointers(child, reference, format!("{at}/{}", escape(key)), found);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for (index, child) in items.iter().enumerate() {
+                reference_pointers(child, reference, format!("{at}/{index}"), found);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -1498,16 +1593,36 @@ components:
             ("Health: []\n", "not a Path Item"),
             ("Health: 7\n", "not a Path Item"),
             (
-                "Health:\n  get:\n    responses:\n      '200':\n        description: OK\n        content:\n          application/json:\n            schema:\n              $ref: missing.yml#/Model\n",
-                "could not read",
+                "Health:\n  get:\n    responses:\n      '200':\n        description: OK\n        content:\n          application/json:\n            schema:\n              $ref: broken.yml#/Model\n",
+                "could not parse it",
             ),
         ] {
+            std::fs::write(directory.path().join("broken.yml"), "Model: [unclosed\n")
+                .expect("broken nested file");
             std::fs::write(&sibling, body).expect("sibling");
             let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
             let error = resolve(&mut document, &CurlFetcher, &root)
                 .expect_err("a malformed sibling must be diagnosed");
             assert!(error.to_string().contains(expected), "{error}");
         }
+        // A nested file that is absent is Fern's unknown type, not an error.
+        std::fs::write(
+            &sibling,
+            "Health:\n  get:\n    responses:\n      '200':\n        description: OK\n        content:\n          application/json:\n            schema:\n              $ref: missing.yml#/Model\n",
+        )
+        .expect("sibling");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root).expect("an absent nested file is unknown");
+        let schema = document.paths["/health"]
+            .get
+            .as_ref()
+            .expect("get")
+            .responses["200"]
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .expect("response schema");
+        assert_eq!(schema, &Schema::default());
     }
 
     #[test]
@@ -1529,6 +1644,7 @@ components:
             imported: IndexMap::new(),
             importing: HashSet::new(),
             root_schemas: HashSet::new(),
+            missing: Vec::new(),
         };
         assert_eq!(
             resolver
@@ -1560,6 +1676,21 @@ components:
         assert!(document.paths["/health"].get.is_none());
     }
 
+    /// A resolver over `root` with no fetcher reachable, for the tests that
+    /// read what it recorded.
+    fn local_resolver(root: &Path) -> Resolver<'_> {
+        Resolver {
+            fetcher: &CurlFetcher,
+            spec: root,
+            documents: HashMap::new(),
+            active: Vec::new(),
+            imported: IndexMap::new(),
+            importing: HashSet::new(),
+            root_schemas: HashSet::new(),
+            missing: Vec::new(),
+        }
+    }
+
     #[test]
     fn a_missing_relative_schema_is_an_actionable_error() {
         let directory = tempfile::tempdir().expect("temporary spec tree");
@@ -1574,6 +1705,90 @@ components:
         let message = error.to_string();
         assert!(message.contains("schemas/absent.yml"), "{message}");
         assert!(message.contains("could not read"), "{message}");
+    }
+
+    #[test]
+    fn a_whole_missing_relative_file_is_the_unknown_type_and_is_reported() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Missing, version: '1'}\npaths:\n  /parcels:\n    post:\n      operationId: sendParcel\n      requestBody:\n        content:\n          application/json:\n            schema:\n              $ref: ./generated/parcel.yml\n      responses:\n        '202':\n          description: Accepted\n",
+        )
+        .expect("root");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root).expect("Fern types the body as unknown");
+        let body = document.paths["/parcels"]
+            .post
+            .as_ref()
+            .expect("post")
+            .request_body
+            .as_ref()
+            .expect("body")
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .expect("body schema");
+        assert_eq!(body, &Schema::default());
+
+        let mut resolver = local_resolver(&root);
+        let source = DocumentLocation::Local(root.clone());
+        assert!(resolver.missing_local_file("./generated/parcel.yml", &source));
+        assert!(resolver.missing_local_file("./generated/parcel.yml", &source));
+        let warnings = resolver.missing_file_warnings();
+        assert_eq!(warnings.len(), 1, "{warnings:?}");
+        let expected_file = directory.path().join("generated").join("parcel.yml");
+        assert!(
+            warnings[0].contains(&format!(
+                "#/paths/~1parcels/post/requestBody/content/application~1json/schema: $ref `./generated/parcel.yml` names {}, which does not exist",
+                expected_file.display()
+            )),
+            "{}",
+            warnings[0]
+        );
+        assert!(warnings[0].contains("typing.Any"), "{}", warnings[0]);
+    }
+
+    #[test]
+    fn a_present_file_that_cannot_be_read_or_a_remote_one_is_not_missing() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::create_dir(directory.path().join("folder.yml")).expect("a directory, not a file");
+        let mut resolver = local_resolver(&root);
+        let source = DocumentLocation::Local(root.clone());
+        assert!(!resolver.missing_local_file("./folder.yml", &source));
+        assert!(!resolver.missing_local_file("https://example.test/absent.yml", &source));
+        assert!(!resolver.missing_local_file("#/components/schemas/Local", &source));
+        assert!(resolver.missing_file_warnings().is_empty());
+
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Unreadable, version: '1'}\npaths:\n  /parcels:\n    post:\n      operationId: sendParcel\n      requestBody:\n        content:\n          application/json:\n            schema:\n              $ref: ./folder.yml\n      responses:\n        '202':\n          description: Accepted\n",
+        )
+        .expect("root");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        let error = resolve(&mut document, &CurlFetcher, &root).expect_err("unreadable file");
+        assert!(error.to_string().contains("could not read"), "{error}");
+    }
+
+    #[test]
+    fn reference_pointers_finds_every_ref_writing_the_reference() {
+        let document = serde_json::json!({
+            "paths": { "/a/b": { "get": { "responses": { "200": { "content": {
+                "application/json": { "schema": { "$ref": "x.yml" } } } } } } } },
+            "Components": { "schemas": { "t~n": { "$ref": "x.yml" }, "other": { "$ref": "y.yml" } } },
+            "list": [{ "$ref": "x.yml" }]
+        });
+        let mut found = Vec::new();
+        reference_pointers(&document, "x.yml", String::new(), &mut found);
+        assert_eq!(
+            found,
+            [
+                "/paths/~1a~1b/get/responses/200/content/application~1json/schema",
+                "/Components/schemas/t~0n",
+                "/list/0",
+            ]
+        );
     }
 
     #[test]

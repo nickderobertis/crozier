@@ -8,6 +8,37 @@ What moved: A success response aliasing `#/x-fragment/…` through `components/r
 
 An error response naming an undeclared `components/responses` entry stays refused ([record](../../refusal-parity-dangling-response-ref.md)). On the `undeclared-error-response` probe, the certified pair logs `Failed to parse openapi document`, exits 0 and writes its 35-file empty SDK; on the Setu document ([log](evaluation-logs/fern-setu-document.log)) it does the same and drops 157 operations. That is class A of [`refusal-parity-ten-documents.md`](../../refusal-parity-ten-documents.md), a Fern refusal. The measured boundary is whether the named response is declared: the `undeclared-error-response` control declares it and generates 40 files. crozier refuses the probe by default, with `--enum-type literals` and with `--fern-strict`. In the same three modes it generates the control, and also the probe with the response inlined.
 
+**Ruling `empty-sdk-refused` (the user's design review, 2026-11-01).** crozier
+refuses, in default and `fern-strict` modes, every document the certified pair
+turns into an empty SDK, because an empty SDK is useless and crozier refuses
+rather than writes one. This is an intended departure from the pair's exit 0,
+recorded under [Intended departures](../README.md#intended-departures). Each
+document below was run through the certified pair on its exact bytes, SHA-256
+verified, and each wrote the 35-file empty SDK. crozier refuses each with this
+class in both modes:
+
+- A response `$ref` into another path's definition: APIs.guru DigitalOcean,
+  ogcincubator's dggs and jeffmikels' pro7.9.
+- A parameter `$ref` into another path's definition: propresenter-remote and
+  Codat's sync-for-expenses.
+- An undeclared `components/responses` entry: both Setu documents.
+
+The measurements are
+[`crozier-refuses-path-pointer-ref`](../../fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/README.md),
+[`unresolved-reference`](../../fern-measurements/handed-off/empty-sdk-documents/unresolved-reference/README.md) and
+[`undeclared-error-response`](../../fern-measurements/handed-off/empty-sdk-documents/undeclared-error-response/README.md).
+
+One pointer into `#/paths/` is not a refusal. A header `$ref` naming another
+operation's response header resolves at the pair, which generates the whole
+SDK, so crozier now generates it too (`path_header_pointer` in
+`src/document_refusals.rs`). A header pointer naming no header stays refused.
+
+A schema `$ref` to a relative file that does not exist is not this class
+either: the pair types it `typing.Any` and generates. crozier does the same, and
+writes one `warning:` line per reference
+([`missing-relative-file`](../../fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/README.md)). A missing file
+named by a security scheme, a response or a parameter stays refused here.
+
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repairs were

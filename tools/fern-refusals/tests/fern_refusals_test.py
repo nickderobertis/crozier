@@ -2373,6 +2373,17 @@ class DiagnosticExtraction(unittest.TestCase):
         )
         self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
 
+    def test_the_importers_type_error_over_a_null_node_is_its_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: Failed to parse openapi document Kiln Monitor",
+                "[api]: Cannot read properties of null (reading 'schema') ",
+                "       TypeError: Cannot read properties of null (reading 'schema')",
+                "All checks passed",
+            ]
+        )
+        self.assertEqual(["Cannot read properties of null (reading 'schema')"], self.module.diagnostics(log))
+
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
             [

@@ -49,6 +49,7 @@ enum Class {
     PaginatedNullableResponse,
     HeaderDefaultDiffersAcrossOperations,
     VersionHeaderRedeclaredAsParameter,
+    NullMediaType,
 }
 
 impl Class {
@@ -89,6 +90,7 @@ impl Class {
                 "header-default-differs-across-operations"
             }
             Self::VersionHeaderRedeclaredAsParameter => "version-header-redeclared-as-parameter",
+            Self::NullMediaType => "null-media-type",
         }
     }
 }
@@ -158,6 +160,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                 );
             }
         }
+    }
+    if let Some(element) = null_media_type(&root) {
+        return refusal(path, strict, Class::NullMediaType, &element);
     }
     if let Some(components) = root.get("components") {
         for name in ["securitySchemes", "requestBodies", "headers"] {
@@ -303,6 +308,62 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
         return refusal(path, strict, class, &element);
     }
     Ok(())
+}
+
+/// The first Media Type Object written as `null` (`image/png:` with no value)
+/// in a request body or a response, operation or component: no Media Type
+/// Object at all, so invalid OpenAPI. Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+/// fails to read it (`Cannot read properties of null (reading 'schema')`) and
+/// writes its empty SDK, so crozier refuses it in both modes under the user's
+/// `empty-sdk-refused` ruling (`docs/fern-refusals/null-media-type/`).
+fn null_media_type(root: &serde_json::Value) -> Option<String> {
+    use serde_json::Value;
+    fn in_content(owner: &Value, element: &str) -> Option<String> {
+        owner
+            .get("content")
+            .and_then(Value::as_object)?
+            .iter()
+            .find(|(_, media)| media.is_null())
+            .map(|(media_type, _)| format!("{element}/content/{media_type}"))
+    }
+    fn in_responses(responses: Option<&Value>, element: &str) -> Option<String> {
+        responses
+            .and_then(Value::as_object)?
+            .iter()
+            .find_map(|(code, response)| in_content(response, &format!("{element}/{code}")))
+    }
+    if let Some(paths) = root.get("paths").and_then(Value::as_object) {
+        for (route, item) in paths {
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                let element = format!("paths/{route}/{method}");
+                let found = operation
+                    .get("requestBody")
+                    .and_then(|body| in_content(body, &format!("{element}/requestBody")))
+                    .or_else(|| {
+                        in_responses(operation.get("responses"), &format!("{element}/responses"))
+                    });
+                if found.is_some() {
+                    return found;
+                }
+            }
+        }
+    }
+    let components = root.get("components")?;
+    in_responses(components.get("responses"), "components/responses").or_else(|| {
+        components
+            .get("requestBodies")
+            .and_then(Value::as_object)?
+            .iter()
+            .find_map(|(name, body)| in_content(body, &format!("components/requestBodies/{name}")))
+    })
 }
 
 #[derive(Default)]
@@ -2003,6 +2064,7 @@ fn check_reference_objects(
                     }
                     expected.is_some_and(|kind| {
                         !reference.starts_with(&format!("#/components/{kind}/"))
+                            && !(kind == "headers" && path_header_pointer(reference))
                     }) || yaml_pointer(root, pointer).is_none()
                 } else if let Some((file, _)) = reference.split_once('#') {
                     !file.contains("://")
@@ -2064,6 +2126,20 @@ fn check_reference_objects(
         _ => {}
     }
     Ok(())
+}
+
+/// Whether a header's `$ref` names a header another operation's response
+/// declares (`#/paths/<route>/<method>/responses/<code>/headers/<name>`). Fern
+/// CLI 5.163.1 / fern-python-sdk 5.41.3 resolves that and generates; a
+/// response's or a parameter's `$ref` into `#/paths/…` it fails to resolve and
+/// writes its empty SDK, so those stay `unresolved-reference`
+/// (`docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/`).
+fn path_header_pointer(reference: &str) -> bool {
+    let Some(pointer) = reference.strip_prefix("#/paths/") else {
+        return false;
+    };
+    let segments: Vec<&str> = pointer.split('/').collect();
+    matches!(segments.as_slice(), [.., "headers", name] if !name.is_empty())
 }
 
 fn yaml_pointer<'a>(root: &'a serde_json::Value, pointer: &str) -> Option<&'a serde_json::Value> {
@@ -2949,6 +3025,85 @@ fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A header's `$ref` to another operation's response header is one Fern
+    /// resolves; a pointer into `#/paths/` naming anything else is not.
+    #[test]
+    fn only_a_header_pointer_into_paths_is_a_path_header() {
+        assert!(path_header_pointer(
+            "#/paths/~1gauges/get/responses/200/headers/X-Rate-Remaining"
+        ));
+        assert!(!path_header_pointer("#/paths/~1gauges/get/responses/404"));
+        assert!(!path_header_pointer("#/paths/~1gauges/get/parameters/0"));
+        assert!(!path_header_pointer(
+            "#/paths/~1gauges/get/responses/200/headers/"
+        ));
+        assert!(!path_header_pointer(
+            "#/components/headers/X-Rate-Remaining"
+        ));
+    }
+
+    /// The structural pass over a document written to a temporary file.
+    fn structure_refusal(spec: &str) -> Option<String> {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("openapi.yml");
+        std::fs::write(&path, spec).unwrap();
+        check_structure_file(&path, false)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    const GAUGES: &str = "openapi: 3.0.3\ninfo: {title: Gauges, version: '1'}\npaths:\n  /gauges:\n    get:\n      responses:\n        '200':\n          description: OK\n          headers:\n            X-Left: {schema: {type: integer}}\n        '404': {description: none}\n  /readings:\n    get:\n      responses:\n        '200':\n          description: OK\n          headers:\n";
+
+    #[test]
+    fn a_header_pointer_into_paths_resolves_while_a_dangling_one_is_refused() {
+        let resolving =
+            format!("{GAUGES}            X-Left: {{$ref: '#/paths/~1gauges/get/responses/200/headers/X-Left'}}\n");
+        assert_eq!(structure_refusal(&resolving), None);
+        let dangling =
+            format!("{GAUGES}            X-Left: {{$ref: '#/paths/~1gauges/get/responses/200/headers/X-Gone'}}\n");
+        let refusal = structure_refusal(&dangling).expect("a dangling header pointer is refused");
+        assert!(refusal.contains("unresolved-reference"), "{refusal}");
+        let response = format!(
+            "{GAUGES}            X-Left: {{schema: {{type: integer}}}}\n        '404': {{$ref: '#/paths/~1gauges/get/responses/404'}}\n"
+        );
+        let refusal = structure_refusal(&response).expect("a response pointer is refused");
+        assert!(
+            refusal.contains("unresolved-reference")
+                && refusal.contains("#/paths/~1gauges/get/responses/404"),
+            "{refusal}"
+        );
+    }
+
+    #[test]
+    fn a_null_media_type_is_found_in_bodies_and_responses_of_operations_and_components() {
+        let find = |spec: &str| null_media_type(&crate::yaml::from_str(spec).unwrap());
+        assert_eq!(
+            find("paths:\n  /kiln:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            image/png:\n"),
+            Some("paths//kiln/get/responses/200/content/image/png".to_owned())
+        );
+        assert_eq!(
+            find("paths:\n  /kiln:\n    put:\n      requestBody:\n        content:\n          text/plain:\n      responses: {'204': {description: OK}}\n"),
+            Some("paths//kiln/put/requestBody/content/text/plain".to_owned())
+        );
+        assert_eq!(
+            find("paths: {}\ncomponents:\n  responses:\n    Picture:\n      description: OK\n      content:\n        image/png:\n"),
+            Some("components/responses/Picture/content/image/png".to_owned())
+        );
+        assert_eq!(
+            find("paths: {}\ncomponents:\n  requestBodies:\n    Label:\n      content:\n        text/plain:\n"),
+            Some("components/requestBodies/Label/content/text/plain".to_owned())
+        );
+        // An empty Media Type Object is valid, and an ignored operation is not read.
+        assert_eq!(
+            find("paths:\n  /kiln:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            image/png: {}\n"),
+            None
+        );
+        assert_eq!(
+            find("paths:\n  /kiln:\n    get:\n      x-fern-ignore: true\n      responses:\n        '200':\n          description: OK\n          content:\n            image/png:\n"),
+            None
+        );
+    }
 
     /// The header element `promoted_optional_array_header` reports for a
     /// document whose every operation carries `header`, or `None`.

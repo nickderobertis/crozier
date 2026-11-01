@@ -23,6 +23,7 @@ heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memor
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	14	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	14/14
 named-type-default	documents	check	1	Default values are not supported for the named type	10	refuse	ticket/properties/type/default	10/10
+null-media-type	documents	check	0	Cannot read properties of null (reading '<…>')	0	refuse	responses/200/content/image/png	0/0
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	115	refuse	Tagged/allOf	115/115
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	11	refuse	GET /hostnames response 200 property "errors"	11/11
 object-query-type-unsupported	documents	check	1	optional<…> is not a valid type for a query parameter	2	unevaluated	—	—
