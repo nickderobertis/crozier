@@ -3803,8 +3803,7 @@ fn build_endpoint(
                 // answering `application/xml` passes `lmp_8f2kq` (measured in
                 // docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/).
                 example: if fern_imports_no_endpoint_example(doc, op) {
-                    schema_level_parameter_example(p)
-                        .or_else(|| ir_fallback_parameter_example(p))
+                    schema_level_parameter_example(p).or_else(|| ir_fallback_parameter_example(p))
                 } else {
                     parameter_example(doc, p)
                 },
@@ -5087,7 +5086,8 @@ fn parameter_example_value<'a>(
                 .any(|member| member.const_value.is_some())
                 .then(|| {
                     members.iter().find_map(|member| {
-                        resolve_ref(doc, member.reference.as_deref()?).and_then(typed_schema_example)
+                        resolve_ref(doc, member.reference.as_deref()?)
+                            .and_then(typed_schema_example)
                     })
                 })
                 .flatten()
@@ -5478,7 +5478,10 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
 /// npq-registration's `id` refers to `IDAttribute`, whose example the certified
 /// pair's fallback passes over for `id="id"`.
 fn schema_level_parameter_example(parameter: &crate::openapi::Parameter) -> Option<String> {
-    let schema = parameter.schema.as_ref().filter(|schema| schema.reference.is_none())?;
+    let schema = parameter
+        .schema
+        .as_ref()
+        .filter(|schema| schema.reference.is_none())?;
     bounded_example_literal(typed_schema_example(schema)?, declares_int64(schema))
 }
 

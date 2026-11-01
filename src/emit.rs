@@ -10237,16 +10237,14 @@ impl<'a> ExampleCtx<'a> {
                     .declared_discriminant
                     .filter(|declared| {
                         !self.documentation
-                            || matches!(
-                                declared.documentation,
-                                DiscriminantDocumentation::Include
-                            )
+                            || matches!(declared.documentation, DiscriminantDocumentation::Include)
                     })
                     .map(|declared| declared.index)
                 {
-                    let enum_name = m.source.as_deref().map(|source| {
-                        naming::child_class_name(source, &u.discriminant_property)
-                    });
+                    let enum_name = m
+                        .source
+                        .as_deref()
+                        .map(|source| naming::child_class_name(source, &u.discriminant_property));
                     // The tag is a member access on its enum, imported by name,
                     // or — for a literal enum — the discriminant string alone.
                     let member =
@@ -11236,7 +11234,8 @@ fn build_example_inner(
     // Markdown does (the `constant-header-docs-arguments` departure).
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
-            let free_form_map = matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value));
+            let free_form_map =
+                matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value));
             let mut v = if let Some(example) = body_example {
                 let example = if matches!(&s.type_ref, TypeRef::Dict(..)) {
                     crate::ir::index_keyed_map_example(example)
