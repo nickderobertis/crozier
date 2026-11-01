@@ -21,7 +21,6 @@ use predicates::prelude::*;
 
 use super::{departure_ledger, golden_tree_failures, probe_command, repo_root};
 
-/// Where the measurements live.
 pub(crate) const EMPTY_SDK_DIR: &str = "docs/fern-measurements/handed-off/empty-sdk-documents";
 /// The measurements whose `fern-expected/` crozier is compared with whole; the
 /// others' trees are the pair's empty scaffold, the evidence of its refusal.
@@ -60,10 +59,10 @@ fn walkdir(tree: &Path) -> Vec<PathBuf> {
     files
 }
 
-/// The measurement records the pair's false success: its log reads `Failed to
-/// parse openapi document` and the phrase the class's template names, it exits
-/// 0, and its tree is the 35-file empty scaffold.
-fn assert_empty_scaffold(case: &str, log: &str, phrase: &str) {
+/// The committed log records the pair's false success: generation exits 0
+/// while the log reads `Failed to parse openapi document` and the phrase the
+/// class's template names. Callers count the scaffold's files apart.
+fn assert_log_records_false_success(case: &str, log: &str, phrase: &str) {
     let log = read(&case_dir(case).join(log));
     assert!(
         log.contains("generate exit: 0")
@@ -101,7 +100,7 @@ fn assert_refused(spec: &Path, class: &str, element: &str) {
 /// SDK for each, and crozier refuses them as `unresolved-reference`.
 #[test]
 fn a_response_or_parameter_pointer_into_paths_is_refused_in_both_modes() {
-    assert_empty_scaffold(
+    assert_log_records_false_success(
         "crozier-refuses-path-pointer-ref",
         "response-pointer.fern.log",
         "Failed to resolve #/paths/~1gauges/get/responses/404",
@@ -111,7 +110,7 @@ fn a_response_or_parameter_pointer_into_paths_is_refused_in_both_modes() {
         "unresolved-reference",
         "#/paths/~1gauges/get/responses/404",
     );
-    assert_empty_scaffold(
+    assert_log_records_false_success(
         "unresolved-reference",
         "fern.log",
         "Failed to resolve #/paths/~1gauges/get/parameters/0",
@@ -131,7 +130,7 @@ fn a_response_or_parameter_pointer_into_paths_is_refused_in_both_modes() {
 /// document never declares.
 #[test]
 fn an_undeclared_response_component_is_refused_in_both_modes() {
-    assert_empty_scaffold(
+    assert_log_records_false_success(
         "undeclared-error-response",
         "fern.log",
         "Failed to resolve #/components/responses/BAD_PORT",
@@ -152,7 +151,7 @@ fn an_undeclared_response_component_is_refused_in_both_modes() {
 /// same document with an empty Media Type Object generates.
 #[test]
 fn a_null_media_type_is_refused_in_both_modes() {
-    assert_empty_scaffold(
+    assert_log_records_false_success(
         "refusal-null-media-type",
         "fern.log",
         "Cannot read properties of null (reading 'schema')",
@@ -205,7 +204,7 @@ fn a_null_media_type_is_refused_in_both_modes() {
 #[test]
 fn a_required_self_reference_keeps_generating_under_the_valid_openapi_exception() {
     let dir = case_dir("R1");
-    assert_empty_scaffold("R1", "fern.log", "Maximum call stack size exceeded");
+    assert_log_records_false_success("R1", "fern.log", "Maximum call stack size exceeded");
     assert_eq!(file_count(&dir.join("fern-expected")), SCAFFOLD_FILES);
     let control = read(&dir.join("control.fern.log"));
     assert!(
