@@ -135,7 +135,8 @@ fn nested_sub_clients_follow_their_first_own_operation() {
 }
 
 /// `environment-shape`: path-item servers build the multi-URL environment; a
-/// path server that is a top-level server reads `base`.
+/// path server that is a top-level server reads `base`, and an operation's own
+/// server outranks its path item's.
 #[test]
 fn path_item_servers_build_the_multi_url_environment() {
     let case = "environment-shape";
@@ -146,6 +147,22 @@ fn path_item_servers_build_the_multi_url_environment() {
         .contains("base_url=self._client_wrapper.get_environment().base,"));
     assert!(read(&out, "src/fern/alerts/raw_client.py")
         .contains("base_url=self._client_wrapper.get_environment().alerts,"));
+    // An operation's own server outranks its path item's: `flagPlate`, under
+    // the `Archive` path item, names `Alerts` and reads it.
+    let plates = read(&out, "src/fern/plates/raw_client.py");
+    assert_eq!(
+        plates.matches("get_environment().alerts,").count(),
+        2,
+        "flag_plate reads its own server in the sync and async clients:\n{plates}"
+    );
+    regression_is_named(
+        case,
+        "python-enums",
+        &out,
+        "src/fern/plates/raw_client.py",
+        "get_environment().alerts,",
+        "get_environment().base,",
+    );
     regression_is_named(
         case,
         "python-enums",

@@ -44,6 +44,28 @@ class PlatesClient:
         _response = self._raw_client.list_plates(request_options=request_options)
         return _response.data
 
+    def flag_plate(self, *, request_options: typing.Optional[RequestOptions] = None) -> str:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The flagged plate.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.plates.flag_plate()
+        """
+        _response = self._raw_client.flag_plate(request_options=request_options)
+        return _response.data
+
 
 class AsyncPlatesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -88,4 +110,34 @@ class AsyncPlatesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_plates(request_options=request_options)
+        return _response.data
+
+    async def flag_plate(self, *, request_options: typing.Optional[RequestOptions] = None) -> str:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The flagged plate.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.plates.flag_plate()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.flag_plate(request_options=request_options)
         return _response.data

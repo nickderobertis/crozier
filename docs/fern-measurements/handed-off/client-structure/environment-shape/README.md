@@ -6,13 +6,13 @@ Root cause `environment-shape` of [`witness-search-fixture-only-bodies-paths`](.
 **Rule.** Servers declared on path items, named by `x-fern-server-name`, apply to their operations and build Fern's multi-URL environment; a path server that is one of the document's top-level servers reads `base`.
 
 **Document.** [`openapi.yml`](openapi.yml), authored from scratch for this
-measurement. Two named top-level servers (`Production`, `Archive`) and three path items: `/nights` and `/plates` name a top-level server, `/alerts` one of its own.
+measurement. Two named top-level servers (`Production`, `Archive`) and three path items: `/nights` and `/plates` name a top-level server, `/alerts` one of its own, and `POST /plates` (`flagPlate`) declares its own `Alerts` server over its path item's.
 
 **Certified pair.** `fern-expected/` (`enum_type: python_enums`) is the complete, comment-stripped tree Fern CLI
 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 freshly generated from
 `openapi.yml` through `tools/fern-goldens/fern-references.py`'s
 `generated_tree` pipeline (the one the `measurements` family uses), under the
-shared Fern generation lock. It writes a `FernApiEnvironment` class with fields `base`, `production`, `archive` and `alerts`, two members assigned without blank lines between them, `environment` kept in the client wrapper, and `base_url=...get_environment().base` on `/nights` and `/plates` but `.alerts` on `/alerts`.
+shared Fern generation lock. It writes a `FernApiEnvironment` class with fields `base`, `production`, `archive` and `alerts`, two members assigned without blank lines between them, `environment` kept in the client wrapper, and `base_url=...get_environment().base` on `/nights` and `/plates` but `.alerts` on `/alerts` and on `flagPlate`, whose own server outranks its path item's.
 
 **crozier before.** Built at this node's base, `6b4509ab9`, crozier ignored the path-item servers and wrote a single-URL enum and a `base_url` client argument.
 `crozier compare` against the tree then reported these files differing:

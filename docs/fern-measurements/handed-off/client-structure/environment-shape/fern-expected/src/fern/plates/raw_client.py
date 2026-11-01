@@ -53,6 +53,43 @@ class RawPlatesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def flag_plate(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[str]
+            The flagged plate.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "plates",
+            base_url=self._client_wrapper.get_environment().alerts,
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    str,
+                    parse_obj_as(
+                        type_=str,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPlatesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -84,6 +121,43 @@ class AsyncRawPlatesClient:
                     typing.List[str],
                     parse_obj_as(
                         type_=typing.List[str],
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def flag_plate(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[str]
+            The flagged plate.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "plates",
+            base_url=self._client_wrapper.get_environment().alerts,
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    str,
+                    parse_obj_as(
+                        type_=str,
                         object_=_response.json(),
                     ),
                 )

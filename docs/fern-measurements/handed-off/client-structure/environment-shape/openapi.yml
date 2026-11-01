@@ -29,6 +29,19 @@ paths:
     servers:
       - url: https://archive.observatory.example.org
         x-fern-server-name: Archive
+    post:
+      operationId: flagPlate
+      tags: [Plates]
+      servers:
+        - url: https://alerts.observatory.example.org
+          x-fern-server-name: Alerts
+      responses:
+        '200':
+          description: The flagged plate.
+          content:
+            application/json:
+              schema:
+                type: string
     get:
       operationId: listPlates
       tags: [Plates]
