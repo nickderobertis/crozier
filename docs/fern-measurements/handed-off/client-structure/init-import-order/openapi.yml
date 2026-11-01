@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Botanic Garden
+  version: 1.0.0
+  description: A botanic garden's catalogue, written to measure the order of the root package's type-checking imports.
+servers:
+  - url: https://garden.example.org
+    x-fern-server-name: Production
+  - url: https://staging.garden.example.org
+    x-fern-server-name: Staging
+paths:
+  /arboretum/trees:
+    post:
+      operationId: plantTree
+      tags: [Arboretum]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [species]
+              properties:
+                species:
+                  type: string
+                zone:
+                  type: string
+                  enum: [north, south]
+      responses:
+        '200':
+          description: The planted tree.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tree'
+  /yew-walk/hedges:
+    post:
+      operationId: trimHedge
+      tags: [YewWalk]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [length]
+              properties:
+                length:
+                  type: number
+                finish:
+                  type: string
+                  enum: [square, rounded]
+      responses:
+        '200':
+          description: The trimmed hedge.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  done:
+                    type: boolean
+components:
+  schemas:
+    Tree:
+      type: object
+      required: [species]
+      properties:
+        species:
+          type: string
+        planted:
+          type: string
+          format: date

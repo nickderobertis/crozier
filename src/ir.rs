@@ -21381,6 +21381,183 @@ mod tests {
         assert_eq!(argument("application/json"), "username");
     }
 
+    /// The IR of one `docs/fern-measurements/handed-off/client-structure/`
+    /// measurement document, built as `crozier generate` builds it.
+    fn client_structure_ir(case: &str) -> crate::ir::Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/client-structure")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        crate::ir::build(&doc, &config)
+    }
+
+    fn placed(ir: &crate::ir::Ir) -> Vec<(String, String)> {
+        ir.endpoints
+            .iter()
+            .map(|endpoint| (endpoint.module.clone(), endpoint.method_name.clone()))
+            .collect()
+    }
+
+    #[test]
+    fn a_method_name_alone_places_its_operation_on_the_root_client() {
+        let ir = client_structure_ir("untagged-operation-grouping");
+        assert_eq!(
+            placed(&ir),
+            [
+                ("stays".to_string(), "list_stays".to_string()),
+                (String::new(), "book_stay".to_string()),
+                ("stays".to_string(), "get_stay".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn method_names_follow_the_tag_token_rule_on_the_measured_documents() {
+        let ir = client_structure_ir("method-name-derivation");
+        let expected = [
+            ("ping", "ping_ping"),
+            ("ping", "deep"),
+            ("app", "info"),
+            ("app", "version"),
+            ("relay", "relay_gateway_info"),
+            ("relay", "currentstatus"),
+            ("relaygateway", "bandpricing"),
+            ("relaygateway", "all_"),
+            ("assets", "serve_robots_txt"),
+            ("assets", "list_badges_ega_page_of_them"),
+            ("", "lookup"),
+        ];
+        assert_eq!(
+            placed(&ir),
+            expected
+                .iter()
+                .map(|(module, method)| (module.to_string(), method.to_string()))
+                .collect::<Vec<_>>()
+        );
+        let ir = client_structure_ir("operation-id-tag-prefix-digit");
+        assert_eq!(
+            placed(&ir)
+                .into_iter()
+                .map(|(_, method)| method)
+                .collect::<Vec<_>>(),
+            ["alias_val2", "list", "alias_v3"]
+        );
+        let ir = client_structure_ir("single-operation-tag-root-method");
+        assert_eq!(placed(&ir)[0], (String::new(), "invoice_match".to_string()));
+    }
+
+    #[test]
+    fn a_path_parameter_not_declared_required_is_optional() {
+        let ir = client_structure_ir("R2");
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "delete_secret")
+            .expect("deleteSecret");
+        let optional: Vec<(&str, bool)> = endpoint
+            .path_params
+            .iter()
+            .map(|param| {
+                (
+                    param.py_name.as_str(),
+                    matches!(param.type_ref, TypeRef::Optional(_)),
+                )
+            })
+            .collect();
+        assert_eq!(optional, [("site", true), ("shelf", true), ("key", false)]);
+    }
+
+    #[test]
+    fn header_keys_dedupe_among_additional_schemes_and_honour_bearer_format() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/client-structure/auth-shape/openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let Auth::ApiKey { header, prefix, .. } = auth_model(&doc) else {
+            panic!("the header key is primary");
+        };
+        assert_eq!(
+            (header.as_str(), prefix.as_deref()),
+            ("Authorization", Some("Bearer"))
+        );
+        let extra: Vec<String> = additional_api_key_global_headers(&doc)
+            .into_iter()
+            .map(|header| header.wire_name)
+            .collect();
+        assert_eq!(extra, ["X-Desk-Agent"]);
+    }
+
+    #[test]
+    fn a_path_item_server_naming_a_top_level_server_reads_base() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/client-structure/environment-shape/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let field = |route: &str| {
+            super::environment_field(&doc, doc.paths[route].get.as_ref().unwrap()).to_string()
+        };
+        assert_eq!(field("/nights"), "base");
+        assert_eq!(field("/plates"), "base");
+        assert_eq!(field("/alerts"), "alerts");
+        assert_eq!(
+            super::operation_server_urls(&doc)
+                .into_iter()
+                .map(|(field, _)| field)
+                .collect::<Vec<_>>(),
+            ["production", "archive", "alerts"]
+        );
+    }
+
+    #[test]
+    fn a_body_naming_an_ignored_component_is_untyped() {
+        let ir = client_structure_ir("R12");
+        let bodies: Vec<String> = ir
+            .endpoints
+            .iter()
+            .map(|endpoint| {
+                format!(
+                    "{}:{:?}",
+                    endpoint.method_name,
+                    endpoint.request_body.is_some()
+                )
+            })
+            .collect();
+        assert_eq!(
+            bodies,
+            [
+                "create_snippet:true",
+                "create_snippets:true",
+                "get_snippet:false"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_reserved_path_parameter_keeps_its_suffix_beside_a_dropped_body() {
+        let ir = client_structure_ir("reserved-name-suffix");
+        let names: Vec<String> = ir
+            .endpoints
+            .iter()
+            .flat_map(|endpoint| {
+                endpoint
+                    .path_params
+                    .iter()
+                    .map(|param| param.py_name.clone())
+            })
+            .collect();
+        assert_eq!(names, ["uuid_", "uuid_"]);
+    }
+
     /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
     /// (docs/fern-measurements/output-defects/612-parameter-location-collision):
     /// a path parameter sharing its wire name with a query parameter, a header

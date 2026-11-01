@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: Observatory Feed
+  version: 1.0.0
+  description: An observatory's data service, written to measure the environment class path-item servers build.
+servers:
+  - url: https://api.observatory.example.org
+    x-fern-server-name: Production
+  - url: https://archive.observatory.example.org
+    x-fern-server-name: Archive
+paths:
+  /nights:
+    servers:
+      - url: https://api.observatory.example.org
+        x-fern-server-name: Production
+    get:
+      operationId: listNights
+      tags: [Nights]
+      responses:
+        '200':
+          description: Observing nights.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /plates:
+    servers:
+      - url: https://archive.observatory.example.org
+        x-fern-server-name: Archive
+    get:
+      operationId: listPlates
+      tags: [Plates]
+      responses:
+        '200':
+          description: Photographic plates.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /alerts:
+    servers:
+      - url: https://alerts.observatory.example.org
+        x-fern-server-name: Alerts
+    get:
+      operationId: listAlerts
+      tags: [Alerts]
+      responses:
+        '200':
+          description: Transient alerts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

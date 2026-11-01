@@ -1,0 +1,37 @@
+Recorded 2026-11-01 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7, driving each SDK through httpx.MockTransport (the script below).
+crozier at 8f30a1072 plus this change, generated from openapi.yml with --package-name fern --project-name default_package_name.
+
+## certified (fern-expected/)
+GET https://desk.example.com/tickets {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
+GET https://desk.example.com/tickets/escalated {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
+
+## crozier (crozier's SDK)
+GET https://desk.example.com/tickets {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
+GET https://desk.example.com/tickets/escalated {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
+
+## script
+
+    """Drive a generated SDK through httpx.MockTransport and print each request it sends."""
+    import sys, json
+    import httpx
+    case = sys.argv[1]
+    seen = []
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=[])
+    client_http = httpx.Client(transport=httpx.MockTransport(handler))
+    if case == "auth-shape":
+        from fern import FernApi
+        client = FernApi(api_key="k-123", desk_agent="agent-7", httpx_client=client_http)
+        client.tickets.list_tickets()
+        client.tickets.list_escalated_tickets()
+    elif case == "environment-shape":
+        from fern import FernApi
+        from fern.environment import FernApiEnvironment
+        client = FernApi(environment=FernApiEnvironment.PRODUCTION, httpx_client=client_http)
+        client.nights.list_nights()
+        client.plates.list_plates()
+        client.alerts.list_alerts()
+    for request in seen:
+        headers = {k: v for k, v in request.headers.items() if k.lower() in ("authorization", "x-desk-agent")}
+        print(request.method, str(request.url), json.dumps(headers, sort_keys=True))

@@ -5801,6 +5801,41 @@ mod tests {
         crate::yaml::from_str(spec).expect("valid spec")
     }
 
+    #[test]
+    fn path_item_servers_apply_to_operations_declaring_none() {
+        let mut doc = parse(
+            "openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths:\n  /a:\n    servers:\n      - {url: 'https://a.example', x-fern-server-name: A}\n    get: {responses: {'200': {description: ok}}}\n    post:\n      servers: [{url: 'https://own.example'}]\n      responses: {'200': {description: ok}}\n",
+        );
+        normalize_parameters(&mut doc);
+        let item = &doc.paths["/a"];
+        let url = |op: &Option<Operation>| op.as_ref().unwrap().servers[0].url.clone();
+        assert_eq!(url(&item.get), "https://a.example");
+        assert_eq!(url(&item.post), "https://own.example");
+        assert!(item.servers.is_empty());
+    }
+
+    #[test]
+    fn a_body_naming_an_ignored_schema_becomes_untyped() {
+        let mut doc = parse(
+            "openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths:\n  /a:\n    post:\n      requestBody:\n        content:\n          application/json:\n            schema: {type: array, items: {$ref: '#/components/schemas/In'}}\n      responses: {'200': {description: ok}}\ncomponents:\n  schemas:\n    In: {type: object, x-fern-ignore: true}\n",
+        );
+        filter_ignored(&mut doc);
+        let schema = doc.paths["/a"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        let items = schema.items.as_deref().unwrap();
+        assert!(items.reference.is_none() && items.ty.is_none());
+        assert!(doc.components.schemas.is_empty());
+    }
+
     fn op_ids(doc: &OpenApi) -> Vec<String> {
         doc.paths
             .values()

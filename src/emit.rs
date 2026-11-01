@@ -12554,6 +12554,62 @@ mod tests {
     };
     use crate::wrap::Doc;
 
+    #[test]
+    fn a_child_package_takes_its_place_at_its_own_first_operation() {
+        let modules: Vec<String> = [
+            "library/loans/renewals",
+            "library/archive/boxes",
+            "library/members",
+            "library/loans",
+        ]
+        .iter()
+        .map(|module| (*module).to_string())
+        .collect();
+        let children = super::module_children(&modules);
+        assert_eq!(
+            children["library"],
+            ["library/members", "library/loans", "library/archive"]
+        );
+        assert_eq!(children["library/loans"], ["library/loans/renewals"]);
+    }
+
+    #[test]
+    fn a_module_s_names_share_one_type_checking_import() {
+        let named: Vec<(String, String)> = [
+            ("PaymentRequest", "payment_request"),
+            ("PaymentRequestSource", "payment_request_source"),
+            ("PaymentRequestSourceCard", "payment_request_source_card"),
+            ("PaymentRequestSource_Card", "payment_request_source"),
+        ]
+        .iter()
+        .map(|(name, module)| ((*name).to_string(), (*module).to_string()))
+        .collect();
+        assert_eq!(
+            super::module_grouped_imports(&named),
+            "    from .payment_request import PaymentRequest\n    from .payment_request_source import PaymentRequestSource, PaymentRequestSource_Card\n    from .payment_request_source_card import PaymentRequestSourceCard\n"
+        );
+    }
+
+    #[test]
+    fn a_core_group_imports_the_runtime_as_siblings() {
+        let mut core = Imports {
+            loc: RefLoc::Client("core".to_string()),
+            ..Imports::default()
+        };
+        core.add_core("client_wrapper", "SyncClientWrapper");
+        assert!(core
+            .render()
+            .contains("from .client_wrapper import SyncClientWrapper"));
+        let mut files = Imports {
+            loc: RefLoc::Client("files".to_string()),
+            ..Imports::default()
+        };
+        files.add_core("client_wrapper", "SyncClientWrapper");
+        assert!(files
+            .render()
+            .contains("from ..core.client_wrapper import SyncClientWrapper"));
+    }
+
     /// Every file the generator writes for `document`, before `ruff format`.
     fn files_for(document: serde_json::Value) -> Vec<(String, String)> {
         let doc: crate::openapi::OpenApi =

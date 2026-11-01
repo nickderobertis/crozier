@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Expense Inbox
+  version: 1.0.0
+  description: An expense inbox, written to measure a tag whose one operation's operationId is the tag's own name.
+servers:
+  - url: https://expenses.example.com
+tags:
+  - name: Invoice Match
+    description: Match an uploaded invoice to an expense.
+paths:
+  /invoice-match:
+    post:
+      operationId: invoiceMatch
+      tags: [Invoice Match]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceName]
+              properties:
+                invoiceName:
+                  type: string
+      responses:
+        '200':
+          description: The match.
+          content:
+            application/json:
+              schema:
+                type: string
+  /expenses:
+    get:
+      operationId: expensesList
+      tags: [Expenses]
+      responses:
+        '200':
+          description: Every expense.
+          content:
+            application/json:
+              schema:
+                type: string
+  /expenses/{expenseId}:
+    get:
+      operationId: expensesGet
+      tags: [Expenses]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One expense.
+          content:
+            application/json:
+              schema:
+                type: string
