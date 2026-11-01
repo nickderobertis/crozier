@@ -2063,8 +2063,9 @@ fn check_reference_objects(
                         );
                     }
                     expected.is_some_and(|kind| {
-                        !reference.starts_with(&format!("#/components/{kind}/"))
-                            && !(kind == "headers" && path_header_pointer(reference))
+                        let in_collection = reference.starts_with(&format!("#/components/{kind}/"))
+                            || (kind == "headers" && path_header_pointer(reference));
+                        !in_collection
                     }) || yaml_pointer(root, pointer).is_none()
                 } else if let Some((file, _)) = reference.split_once('#') {
                     !file.contains("://")
