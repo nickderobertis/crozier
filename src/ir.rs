@@ -10639,6 +10639,8 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
                 || synthesized_method_name(http_method, url),
                 naming::summary_identifier,
             )
+    } else if id_spells_tag(op, id) {
+        method_from_groupless_id(id, first_tag(op))
     } else if let Some(method) = dotted_tag_group_method(op, id) {
         naming::sanitize_identifier(&method.to_ascii_lowercase())
     } else if id.contains('.') && dotted_id_names_a_group(id) {
@@ -10668,32 +10670,10 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             // whole id is the method (bunq's `CREATE_AttachmentPublic`).
             naming::sanitize_identifier(&naming::to_snake_case(id))
         }
-    } else if let Some(name) = method_from_hyphenated_tag_id(id, first_tag(op)) {
-        name
     } else {
         method_from_groupless_id(id, first_tag(op))
     };
     naming::escape_python_keyword(method)
-}
-
-/// The method name for a `<tag>-<method>` operationId: one hyphen, whose prefix
-/// spells the operation's tag. Fern reads it like the `.`/`_` group forms and
-/// lowercases the method segment verbatim (`gates-checkStatus` under `Gates` is
-/// `checkstatus`), then safe-names a reserved builtin (`fences-all` is `all_`).
-/// Two hyphens, a prefix naming something else, or no tag fall through to
-/// [`method_from_groupless_id`] (`locks-check-status` is `check_status`).
-fn method_from_hyphenated_tag_id(id: &str, tag: Option<&str>) -> Option<String> {
-    let (prefix, method) = id.split_once('-')?;
-    if method.is_empty() || method.contains('-') || !operation_id_matches_tag_spelling(prefix, tag?)
-    {
-        return None;
-    }
-    let ident = naming::sanitize_identifier(&method.to_ascii_lowercase());
-    Some(if naming::is_reserved_method(&ident) {
-        format!("{ident}_")
-    } else {
-        ident
-    })
 }
 
 /// A FastAPI operationId under a tag, with the `{path}_{method}` suffix FastAPI
@@ -10804,66 +10784,90 @@ fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
     naming::sanitize_identifier(&naming::to_snake_case(id))
 }
 
-/// The method name for a groupless camelCase operationId (no `_`). Fern drops a
-/// leading run of words matching the operation's tag before deriving the method,
-/// so `activitiesAdd` under tag `Activities` becomes `add`, not `activities_add`
-/// (the tag already names the client the method hangs off). When the id does not
-/// begin with the tag — or the operation has no tag — the whole id is used.
+/// Where Fern's `getEndpointLocation` places an operation from its first tag
+/// and its `operationId`, both split into words by [`fern_location_tokens`].
+#[derive(Debug, PartialEq, Eq)]
+enum TagLocation {
+    /// The id's words are the tag's: the root client's method, named by the tag
+    /// (Brex's `receiptMatch` under `Receipt Match` is the root `receipt_match`).
+    Root,
+    /// The tag's words lead the id's: the group those words spell, camelCased,
+    /// and the method the remaining words camelCase to (`appInfo` under `app` is
+    /// `info`; `aiGateway-modelPricing` under `AIGateway` is `modelpricing` in
+    /// the `aigateway` group, its one hyphen-split word lowercased unsplit).
+    Stripped { group: String, method: String },
+    /// Anything else: under the tag, with the whole id as the method. An id one
+    /// of whose words only *begins* with the tag is this case, as is every id
+    /// that is not purely camelCase and so is one word until punctuation splits
+    /// it: `PingPing` under `ping`, `aliasVal2` under `alias`, `CatalogInfo`
+    /// under `Catalog` and `aiGateway-info` under `AI` all keep their whole id.
+    Whole,
+}
+
+/// Fern's location for an operation tagged `tag` whose `operationId` is `id`.
+fn tag_location(tag: &str, id: &str) -> TagLocation {
+    let tag_words = fern_location_tokens(tag);
+    let id_words = fern_location_tokens(id);
+    if tag_words.is_empty() || id_words.is_empty() {
+        return TagLocation::Whole;
+    }
+    if tag_words == id_words {
+        return TagLocation::Root;
+    }
+    if id_words.len() > tag_words.len() && id_words.starts_with(&tag_words) {
+        return TagLocation::Stripped {
+            group: camel_join(&tag_words),
+            method: camel_join(&id_words[tag_words.len()..]),
+        };
+    }
+    TagLocation::Whole
+}
+
+/// Lowercase words joined camelCase, as Fern's `camelCase` joins the tokens it
+/// takes from [`fern_location_tokens`].
+fn camel_join(words: &[String]) -> String {
+    words
+        .iter()
+        .enumerate()
+        .map(|(index, word)| {
+            if index == 0 {
+                word.clone()
+            } else {
+                let mut chars = word.chars();
+                chars.next().map_or_else(String::new, |first| {
+                    first.to_ascii_uppercase().to_string() + chars.as_str()
+                })
+            }
+        })
+        .collect()
+}
+
+/// Whether an operation's first tag and its `operationId` are the same words,
+/// which Fern hoists to the root client as a method named by the tag.
+fn id_spells_tag(op: &Operation, id: &str) -> bool {
+    first_tag(op).is_some_and(|tag| tag_location(tag, id) == TagLocation::Root)
+}
+
+/// The method name for an operationId with neither `_` nor `.`: its words
+/// after the tag's when the tag's words lead it ([`TagLocation::Stripped`]),
+/// the tag's own name when they are its words, and the whole id otherwise.
 fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
-    let snake = naming::to_snake_case(id);
-    let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
-    let tag_suffix = tag.and_then(|tag| operation_id_tag_prefix(id, tag));
-    let method = if tag_snake.is_empty()
-        || stripped_suffix_has_acronym(id, tag)
-        // Fern retains the group on a generic `Info` method (`CatalogInfo` →
-        // `catalog_info`) instead of producing the overly broad `info`.
-        || tag_suffix.is_some_and(|(_, suffix)| suffix.eq_ignore_ascii_case("info"))
-    {
-        snake.clone()
-    } else if let Some((_, suffix)) = tag_suffix {
-        naming::to_snake_case(suffix)
-    } else if id.contains('-')
-        && tag.is_some_and(|tag| !fern_location_tokens(id).starts_with(&fern_location_tokens(tag)))
-    {
-        // A hyphenated id is split at its hyphens, so it leads with its tag only
-        // when its words are the tag's: ADME seismic's `sub-project-list` under
-        // `SubProject` (one word, `subproject`) keeps the whole id.
-        snake.clone()
-    } else {
-        snake
-            .strip_prefix(&format!("{tag_snake}_"))
-            .unwrap_or(&snake)
-            .to_string()
+    let method = match tag.map(|tag| (tag, tag_location(tag, id))) {
+        Some((_, TagLocation::Stripped { method, .. })) => naming::to_snake_case(&method),
+        Some((tag, TagLocation::Root)) => naming::to_snake_case(tag),
+        _ => naming::to_snake_case(id),
     };
-    // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
-    // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
-    // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
-    // the builtin-shadowing `all`. Uses the method-specific reserved set, tagged or
-    // not, so appwrite's derived `list` and an untagged `set` stay as they are.
+    // This name is *derived*, so — unlike the verbatim `method_from_grouped_id` —
+    // reserved words are safe-named the way Fern does it: a "list all" endpoint
+    // under tag `Activities` becomes `all_`, not the builtin-shadowing `all`. Uses
+    // the method-specific reserved set, tagged or not, so appwrite's derived
+    // `list` and an untagged `set` stay as they are.
     let ident = naming::sanitize_identifier(&method);
     if naming::is_reserved_method(&ident) {
         format!("{ident}_")
     } else {
         ident
     }
-}
-
-/// Split a camelCase operation id whose leading characters spell its tag. The
-/// actual operation-id casing is retained so an acronym tag such as `APIs` paired
-/// with `apisAll` groups as `apis` rather than the generic tag spelling `ap_is`.
-fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a str)> {
-    let prefix = id.get(..tag.len())?;
-    let suffix = id.get(tag.len()..)?;
-    if suffix.is_empty()
-        || !operation_id_matches_tag_spelling(prefix, tag)
-        || !suffix
-            .chars()
-            .next()
-            .is_some_and(|ch| ch.is_ascii_uppercase())
-    {
-        return None;
-    }
-    Some((prefix, suffix))
 }
 
 /// An operationId that only repeats its first tag before one trailing `_`
@@ -10889,24 +10893,6 @@ fn operation_id_matches_tag_spelling(id: &str, tag: &str) -> bool {
     id.eq_ignore_ascii_case(tag)
         && (tag.chars().any(|ch| ch.is_ascii_uppercase())
             || naming::to_snake_case(id) == naming::to_snake_case(tag))
-}
-
-fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
-    let Some(tag) = tag else {
-        return false;
-    };
-    // `get` rather than an index: a tag's byte length can land inside a
-    // multi-byte character of the operationId (AEMET's Spanish ids hold `ñ`).
-    if id.len() <= tag.len()
-        || !id
-            .get(..tag.len())
-            .is_some_and(|prefix| prefix.eq_ignore_ascii_case(tag))
-    {
-        return false;
-    }
-    id.as_bytes()[tag.len()..]
-        .windows(2)
-        .any(|pair| pair[0].is_ascii_uppercase() && pair[1].is_ascii_uppercase())
 }
 
 /// The `PascalCase` context that names an operation's hoisted inline
@@ -11093,19 +11079,28 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
             return title_from_tag(doc, tag);
         }
     }
-    // The `<tag>-<method>` group [`endpoint_module`] reads off the prefix is
-    // titled by that one word, as an undeclared dotted one is: ADME seismic's
+    // The group [`endpoint_module`] reads off the words an undeclared tag leads
+    // is titled by those words, as an undeclared dotted one is: ADME seismic's
     // `subproject-create` under `SubProject` is `Subproject`.
     if let Some(tag) = first_tag(op).filter(|tag| {
         !id.contains('_')
-            && method_from_hyphenated_tag_id(id, Some(tag)).is_some()
             && !doc.tags.iter().any(|t| t.name == *tag)
+            && tag_location(tag, id) != TagLocation::Whole
     }) {
-        return naming::to_pascal_case(&tag.to_ascii_lowercase());
+        if let TagLocation::Stripped { group, .. } = tag_location(tag, id) {
+            return naming::to_pascal_case(&group);
+        }
     }
     if id.contains('_') {
-        // Grouped by the operationId prefix → PascalCase; grouped by tag → verbatim.
+        // Grouped by the operationId prefix → PascalCase, unless the prefix
+        // spells a tag the document declares, which titles the section verbatim
+        // as every other tagged group's does (OSF's `draft_registrations_list`
+        // under the declared `Draft Registrations` is `Draft Registrations`);
+        // grouped by tag → verbatim.
         if group_prefix_is_tag(op, id) {
+            if let Some(tag) = first_tag(op).filter(|tag| doc.tags.iter().any(|t| t.name == *tag)) {
+                return tag.to_string();
+            }
             return naming::to_pascal_case(&module_from_grouped_id(id));
         }
         return title_from_tag(doc, first_tag(op).expect("mismatch implies a tag"));
@@ -11157,7 +11152,7 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     if id.is_empty() && first_tag(op).is_none() {
         return String::new();
     }
-    if first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(id, tag)) {
+    if id_spells_tag(op, id) {
         return String::new();
     }
     if first_tag(op).is_none() && !id.contains('.') {
@@ -11204,15 +11199,12 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
         return snake_module(first_tag(op).expect("mismatch implies a tag"));
     }
     if let Some(tag) = first_tag(op) {
-        // A `<tag>-<method>` id is grouped by the one word its prefix spells, as
+        // An id the tag's words lead is grouped by those words camelCased, as
         // the dotted form is: ADME seismic's `subproject-create` under the tag
         // `SubProject` is `create` in the `subproject` group, beside the
         // `sub_project` group its `sub-project-list` keeps under the same tag.
-        if method_from_hyphenated_tag_id(id, Some(tag)).is_some() {
-            return compact_module(tag);
-        }
-        if let Some((prefix, _)) = operation_id_tag_prefix(id, tag) {
-            return snake_module(prefix);
+        if let TagLocation::Stripped { group, .. } = tag_location(tag, id) {
+            return snake_module(&group);
         }
         return snake_module(tag);
     }
@@ -11223,10 +11215,12 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
 /// declares, honoured only beside a declared method name: Fern places an
 /// operation that names a group but no method by its tag and `operationId`, as
 /// if no group were declared (an untagged `listHoists` under `[harbor, hoists]` is
-/// the root client's `list_hoists`).
+/// the root client's `list_hoists`). A declared method name with no group is the
+/// root client's whatever the operation's tags: Skyvern's `run_task` under the
+/// tag `Agent` is `client.run_task`, not `client.agent.run_task`.
 fn declared_group(op: &Operation) -> Option<Vec<&str>> {
     op.sdk_method_name()?;
-    op.sdk_group_name()
+    Some(op.sdk_group_name().unwrap_or_default())
 }
 
 /// The module a declared group segment names: [`snake_module`], keeping the
@@ -18957,7 +18951,7 @@ mod tests {
         build_endpoint, build_enum, described_all_of_ref, discriminant_strips,
         document_discriminant_strips, endpoint_module, environment_model, extensible_enum,
         fern_imports_no_endpoint_example, full_type_ref_resolved, global_headers, hoist_fields,
-        int_prim, member_fields, method_from_grouped_id, method_from_hyphenated_tag_id,
+        int_prim, member_fields, method_from_grouped_id, method_from_groupless_id,
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
         parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
         request_and_response_refs_match, request_schema_use_count, resolve_request_body,
@@ -19046,34 +19040,86 @@ mod tests {
     fn hyphenated_tag_ids_lowercase_the_method_segment() {
         let tag = Some("Gates");
         assert_eq!(
-            method_from_hyphenated_tag_id("gates-checkStatus", tag).as_deref(),
-            Some("checkstatus")
+            method_from_groupless_id("gates-checkStatus", tag),
+            "checkstatus"
+        );
+        assert_eq!(method_from_groupless_id("Gates-openAll", tag), "openall");
+        assert_eq!(method_from_groupless_id("gates-all", tag), "all_");
+        assert_eq!(method_from_groupless_id("gates-list", tag), "list");
+        // Two hyphens camelCase the words after the tag's.
+        assert_eq!(
+            method_from_groupless_id("gates-check-status", tag),
+            "check_status"
+        );
+        // A leading segment that only begins with the tag keeps the whole id.
+        assert_eq!(
+            method_from_groupless_id("aiGateway-info", Some("AI")),
+            "ai_gateway_info"
         );
         assert_eq!(
-            method_from_hyphenated_tag_id("Gates-openAll", tag).as_deref(),
-            Some("openall")
+            method_from_groupless_id("aiGateway-modelPricing", Some("AIGateway")),
+            "modelpricing"
         );
         assert_eq!(
-            method_from_hyphenated_tag_id("gates-all", tag).as_deref(),
-            Some("all_")
+            method_from_groupless_id("other-checkStatus", tag),
+            "other_check_status"
         );
         assert_eq!(
-            method_from_hyphenated_tag_id("gates-list", tag).as_deref(),
-            Some("list")
+            method_from_groupless_id("gates-checkStatus", None),
+            "gates_check_status"
         );
-        // Two hyphens, another prefix, no method or no tag are not this form.
+    }
+
+    #[test]
+    fn one_rule_derives_a_method_from_an_operation_id_and_its_tag() {
+        use super::TagLocation;
+        // A purely camelCase id splits at its capitals, so a tag spelling its
+        // first words is stripped (`appInfo` under `app`).
+        assert_eq!(method_from_groupless_id("appInfo", Some("app")), "info");
         assert_eq!(
-            method_from_hyphenated_tag_id("gates-check-status", tag),
-            None
+            method_from_groupless_id("activitiesAdd", Some("Activities")),
+            "add"
+        );
+        // Any other id is one word until punctuation splits it: a PascalCase id,
+        // or one with a digit, keeps its whole spelling.
+        assert_eq!(
+            method_from_groupless_id("PingPing", Some("ping")),
+            "ping_ping"
         );
         assert_eq!(
-            method_from_hyphenated_tag_id("other-checkStatus", tag),
-            None
+            method_from_groupless_id("aliasVal2", Some("alias")),
+            "alias_val2"
         );
-        assert_eq!(method_from_hyphenated_tag_id("gates-", tag), None);
         assert_eq!(
-            method_from_hyphenated_tag_id("gates-checkStatus", None),
-            None
+            method_from_groupless_id("CatalogInfo", Some("Catalog")),
+            "catalog_info"
+        );
+        assert_eq!(
+            method_from_groupless_id("widgetsGetHTML", Some("widgets")),
+            "widgets_get_html"
+        );
+        // The tag's own words are the root client's method, named by the tag.
+        assert_eq!(
+            super::tag_location("Receipt Match", "receiptMatch"),
+            TagLocation::Root
+        );
+        assert_eq!(
+            method_from_groupless_id("receiptMatch", Some("Receipt Match")),
+            "receipt_match"
+        );
+        assert_eq!(
+            super::tag_location("Receipt Match", "receiptMatchCreate"),
+            TagLocation::Stripped {
+                group: "receiptMatch".into(),
+                method: "create".into()
+            }
+        );
+        assert_eq!(super::tag_location("ping", "PingPing"), TagLocation::Whole);
+        // A byte length stopping inside a multi-byte character is no concern of
+        // a word split: AEMET's Spanish ids carry `ñ`.
+        assert_eq!(
+            super::tag_location("prediccio", "predicciónDeMontaña"),
+            TagLocation::Whole
         );
     }
 
@@ -19631,20 +19677,6 @@ mod tests {
         assert_eq!(int_prim(&schema("int64")), Prim::Long);
         assert_eq!(int_prim(&schema("uint32")), Prim::Int);
         assert_eq!(int_prim(&schema("int32")), Prim::Int);
-    }
-
-    #[test]
-    fn a_tag_prefix_ending_inside_a_multibyte_character_is_no_prefix() {
-        // AEMET's operationIds carry `ñ`; a tag whose byte length stops inside it
-        // is simply not a prefix, rather than a slice across a char boundary.
-        assert!(!super::stripped_suffix_has_acronym(
-            "predicciónDeMontaña",
-            Some("prediccio")
-        ));
-        assert!(super::stripped_suffix_has_acronym(
-            "widgetsGetHTML",
-            Some("widgets")
-        ));
     }
 
     #[test]
@@ -20974,12 +21006,14 @@ mod tests {
             module_title(&doc, &o, "/search"),
             module_title(&doc, &op("Search", "Search"), "/search")
         );
-        // Only the tag's own spelling before one `_` reads that way: another
-        // prefix keeps its `group_method` split, and a second `_` is no tag.
+        // Only the tag's own words read that way: another prefix keeps its
+        // `group_method` split, while a run of trailing `_` splits no new word
+        // (the measurement `handed-off/client-structure/method-name-derivation`).
         let o = op("Find_", "Search");
         assert_eq!(endpoint_module(&o, "/search"), "search");
         let o = op("Search__", "Search");
-        assert_eq!(endpoint_module(&o, "/search"), "search");
+        assert_eq!(endpoint_module(&o, "/search"), "");
+        assert_eq!(endpoint_method_name(&o, "GET", "/search"), "search");
     }
 
     #[test]

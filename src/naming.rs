@@ -102,15 +102,13 @@ pub fn prose_identifier(input: &str) -> String {
 }
 
 /// The identifier Fern derives from an operation **summary**, which is
-/// [`prose_identifier`] with full stops deleted rather than treated as word
-/// boundaries. Sentence punctuation is not a word break on this path: corpus row
-/// 123's `… CertificateOrKeyId e.g. revoke reason` names the method
-/// `…_certificate_or_key_id_eg_revoke_reason`, not `…_e_g_revoke_reason`. Every
-/// other separator still breaks — the same corpus derives `read/unread` as
-/// `read_unread` and `re-enabled` as `re_enabled` — and the URL path Fern falls
-/// back to when there is no summary keeps the full stop as a boundary
-/// (`/_proxy/openapi.json` → `get_proxy_openapi_json`), which is why this is a
-/// separate transform rather than a change to [`prose_identifier`].
+/// [`prose_identifier`] over a summary, a full stop breaking words as every
+/// other separator does: Boruta's `Serve robots.txt` names the method
+/// `serve_robots_txt`. Corpus row 123's `… CertificateOrKeyId e.g. revoke
+/// reason` still names its method `…_certificate_or_key_id_eg_revoke_reason`,
+/// because the one-letter words `e` and `g` join as described below, and an
+/// `e.g. a` joins all three (`…_ega_…`). The same corpus derives `read/unread`
+/// as `read_unread` and `re-enabled` as `re_enabled`.
 ///
 /// Fern camel-cases the summary before snake-casing it, so consecutive
 /// one-letter words after the first join as one capital run: MockServer's
@@ -118,7 +116,7 @@ pub fn prose_identifier(input: &str) -> String {
 /// `load_ag_rpc_…`, while `retrieve gRPC …` keeps `retrieve_g_rpc_…`.
 #[must_use]
 pub fn summary_identifier(input: &str) -> String {
-    let snake = prose_identifier(&input.replace('.', ""));
+    let snake = prose_identifier(&input.replace('.', " "));
     let is_letter = |word: &str| word.len() == 1 && word.chars().all(|c| c.is_ascii_alphabetic());
     let mut words: Vec<String> = Vec::new();
     let mut previous_letter = false;
@@ -1500,8 +1498,18 @@ mod tests {
     }
 
     #[test]
-    fn summary_identifier_deletes_full_stops_but_keeps_other_separators() {
-        // Sentence punctuation inside a summary is deleted, not broken on.
+    fn summary_identifier_breaks_words_at_full_stops_and_other_separators() {
+        // A full stop breaks words: `robots.txt` is two of them.
+        assert_eq!(summary_identifier("Serve robots.txt"), "serve_robots_txt");
+        assert_eq!(
+            summary_identifier("Serve the identity robots.txt"),
+            "serve_the_identity_robots_txt"
+        );
+        // One-letter words a full stop separates join as one capital run.
+        assert_eq!(
+            summary_identifier("List rows, e.g. a page of them"),
+            "list_rows_ega_page_of_them"
+        );
         assert_eq!(
             summary_identifier("Update a software statement certificate with the given CertificateOrKeyId e.g. revoke reason"),
             "update_a_software_statement_certificate_with_the_given_certificate_or_key_id_eg_revoke_reason"
