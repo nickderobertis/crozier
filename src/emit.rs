@@ -276,7 +276,7 @@ const FERN_DEFAULT_DATETIME: &str = "2024-01-15T09:30:00+00:00";
 /// replaced by [`FERN_DEFAULT_DATETIME`]: a zone name (`… CDT`), but equally a
 /// negative offset or a lower-case `z`, which the appended `Z` breaks. Every
 /// value returned parses with `datetime.datetime.fromisoformat`.
-fn datetime_example(value: &str) -> String {
+pub(crate) fn datetime_example(value: &str) -> String {
     let rewritten = if value.ends_with('Z') || value.contains('+') {
         value.to_string()
     } else {
@@ -9887,6 +9887,19 @@ impl<'a> ExampleCtx<'a> {
             .then(|| Example::Atom(example.to_string()))
     }
 
+    /// Whether a type is a number or a boolean, through optionality and aliases.
+    fn resolves_to_number_or_bool(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Int | Prim::Long | Prim::Float | Prim::Bool) => true,
+            TypeRef::Optional(inner) => self.resolves_to_number_or_bool(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_number_or_bool(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     fn resolves_to_string(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
@@ -11485,7 +11498,15 @@ fn build_example_inner(
                     // MockServer's file retrieval shows Fern's `name="name"`.
                     .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))
                     .map(str::to_string)
-                    .or_else(|| named_value(f).map(serde_json::Value::to_string));
+                    .or_else(|| named_value(f).map(serde_json::Value::to_string))
+                    // A string the request example gives a number or boolean
+                    // field is no example of it: guardian's policy comparison
+                    // example gives `eventsLvl: '0'` to a `type: number` field
+                    // and the certified pair writes `events_lvl=1.1` (measured in
+                    // docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/).
+                    .filter(|example| {
+                        !(ctx.resolves_to_number_or_bool(&f.type_ref) && example.starts_with('"'))
+                    });
                 let supplied_example = supplied_example.map(|example| {
                         if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner)
                             if !matches!(inner.as_ref(), TypeRef::Optional(_)) && ctx.resolves_to_string(inner))

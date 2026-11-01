@@ -202,7 +202,7 @@ when the two differ.
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
 | `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
-| `usefulness` | 1 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
+| `usefulness` | 4 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
 
 ### `anyof-path-param-schema-example`
 
@@ -275,6 +275,24 @@ when the two differ.
 - **crozier writes:** The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
 - **Why:** The placeholder is invalid for the declared date schema. The correction uses the certified generator's own date-example form and leaves string placeholders intact.
 - **Evidence:** [`docs/departures/evidence/date-header-constructor-example.md`](../../docs/departures/evidence/date-header-constructor-example.md)
+
+### `declared-example-over-placeholder`
+
+- **Kind:** `usefulness`
+- **Trigger:** A worked example (README.md, reference.md, each client.py docstring) passing a multipart form part or header parameter that declares an example, a query parameter declaring one on an operation whose success body is not JSON, a path parameter declaring one beside a path parameter whose schema is empty, or a list item of an enum whose schema declares an example member.
+- **Fern writes:** Its own placeholder: the argument's wire name (label="label", survey_ref="X-Survey-Ref"), 1 for an integer, or the enum's first member (AlertKind.ALL).
+- **crozier writes:** The value the specification declares for the argument (label="", depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT). Every other argument and line is retained.
+- **Why:** Design-review ruling 2 (falsy-property-example, 2026-11-01) keeps the value the API's author declared where the certified pair discards it for a synthesized placeholder, and its principle extends to the enum example member (example-enum-member) and to the kept example-value-source sub-rules; synthesized placeholders never count as more useful.
+- **Evidence:** [`docs/departures/evidence/declared-example-over-placeholder.md`](../../docs/departures/evidence/declared-example-over-placeholder.md)
+
+### `declared-examples-array-parameter-value`
+
+- **Kind:** `usefulness`
+- **Trigger:** A worked example passing a parameter whose (referenced) schema declares a JSON Schema examples array and no example, or which declares its own examples map, where the certified pair does not take that value.
+- **Fern writes:** The parameter's wire name as its placeholder (lamp_id="lampId"), or, beside an examples map, its schema's example (keeper_id="KPR-from-schema").
+- **crozier writes:** The examples array's first entry or the examples map's first value (lamp_id="lmp_8f2kq", keeper_id="KPR-from-map"). Every other argument and line is retained.
+- **Why:** Design-review ruling 5 (declared-examples-array, 2026-11-01) keeps crozier working a parameter's value from the schema's examples array or the parameter's examples map rather than the certified pair's placeholder.
+- **Evidence:** [`docs/departures/evidence/declared-examples-array-parameter-value.md`](../../docs/departures/evidence/declared-examples-array-parameter-value.md)
 
 ### `digit-leading-method-reference-identifiers`
 
@@ -518,6 +536,15 @@ when the two differ.
 - **crozier writes:** The same call also passing each such optional parameter's declared example (included_schemas="public,auth", pgdelta="true"), as it and Fern both do for a JSON success body.
 - **Why:** Both calls bind; crozier's documents the values the specification declares for the operation's optional parameters, each valid for its schema, where Fern's drops them only because the success body is text.
 - **Evidence:** [`docs/departures/evidence/text-response-optional-query-examples.md`](../../docs/departures/evidence/text-response-optional-query-examples.md)
+
+### `unquoted-timestamp-parameter-example`
+
+- **Kind:** `usefulness`
+- **Trigger:** A worked example passing a parameter whose example (its own, or its referenced schema's example or first examples entry) is an ISO date-time the YAML document writes unquoted, which YAML reads as a timestamp.
+- **Fern writes:** Its date-time placeholder (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")) or the parameter's name for a required parameter, and an optional parameter's declared example left out of the call.
+- **crozier writes:** The declared timestamp, as the call's datetime (datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")) or string ("2031-04-01T06:00:00Z"), including an optional parameter's, with the import datetime it needs. Every other argument and line is retained.
+- **Why:** Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01) keeps the unquoted ISO timestamp the API's author declared rather than the certified pair's placeholder.
+- **Evidence:** [`docs/departures/evidence/unquoted-timestamp-parameter-example.md`](../../docs/departures/evidence/unquoted-timestamp-parameter-example.md)
 
 ### `wrapped-union-member-docs-example`
 

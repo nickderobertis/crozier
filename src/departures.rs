@@ -20,6 +20,7 @@ use std::sync::OnceLock;
 use serde::Deserialize;
 
 mod declared_examples;
+mod declared_values;
 mod rejected_examples;
 
 /// The catalog's source, as compiled into the binary.
@@ -1070,7 +1071,33 @@ fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Regi
     else {
         return Ok(None);
     };
-    Ok((removed && reference == corrected)
+    // A kept declared example beside the file (a text part's own example, the
+    // `declared-example-over-placeholder` departure) is the one other difference
+    // the call may carry.
+    let same_call = reference.len() == corrected.len()
+        && reference.iter().zip(&corrected).all(|(fern, crozier)| {
+            fern == crozier
+                || declared_values::declared_example_over_placeholder(pair, fern, crozier)
+                || match (
+                    example_call_arguments(fern),
+                    example_call_arguments(crozier),
+                ) {
+                    (Some((fern_call, fern_args)), Some((call, args))) => {
+                        fern_call == call
+                            && fern_args.len() == args.len()
+                            && fern_args.iter().zip(&args).all(|(fern_arg, arg)| {
+                                fern_arg == arg
+                                    || declared_values::declared_example_over_placeholder(
+                                        pair,
+                                        &format!("    {fern_arg},"),
+                                        &format!("    {arg},"),
+                                    )
+                            })
+                    }
+                    _ => false,
+                }
+        });
+    Ok((removed && same_call)
         .then(|| differing_window(pair.fern, pair.crozier))
         .flatten())
 }
@@ -1723,7 +1750,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 36] = [
+pub const RULE_IDS: [&str; 39] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1732,6 +1759,8 @@ pub const RULE_IDS: [&str; 36] = [
     "constant-header-docs-arguments",
     "dangling-mapping-variant-fields",
     "date-header-constructor-example",
+    "declared-example-over-placeholder",
+    "declared-examples-array-parameter-value",
     "digit-leading-method-reference-identifiers",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
@@ -1759,6 +1788,7 @@ pub const RULE_IDS: [&str; 36] = [
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
     "text-response-optional-query-examples",
+    "unquoted-timestamp-parameter-example",
     "wrapped-union-member-docs-example",
 ];
 
@@ -1803,6 +1833,19 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "text-response-optional-query-examples" => Rule {
             added: Some(text_response_optional_query_examples),
+            ..none
+        },
+        "declared-example-over-placeholder" => Rule {
+            line: Some(declared_values::declared_example_over_placeholder),
+            ..none
+        },
+        "declared-examples-array-parameter-value" => Rule {
+            line: Some(declared_values::declared_examples_array_parameter_value),
+            ..none
+        },
+        "unquoted-timestamp-parameter-example" => Rule {
+            line: Some(declared_values::unquoted_timestamp_parameter_example),
+            added_at: Some(declared_values::unquoted_timestamp_parameter_line),
             ..none
         },
         "wrapped-union-member-docs-example" => Rule {
