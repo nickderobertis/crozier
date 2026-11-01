@@ -2016,6 +2016,48 @@ Real specifications that replace hand-written proofs in the `bodies-media` and
 | 4211 | `osparc-director-v2` | github-raw | https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/2f18c3f6f8e082153be7f55de930bc134fab3213/services/director-v2/openapi.json | `2f18c3f6f8e082153be7f55de930bc134fab3213` | MIT (repository LICENSE; the document declares no info.license) | committed | A contentless `200` beside a `201` declaring content |
 | 4212 | `ollama-api` | github-raw | https://raw.githubusercontent.com/ollama/ollama/16b4376aeadbec58a18b9817d49c37b1b64e33d0/docs/openapi.yaml | `16b4376aeadbec58a18b9817d49c37b1b64e33d0` | MIT (info.license and repository LICENSE) | committed | An untagged operation whose `operationId` is `list` |
 
+## Real witnesses that replaced hand-written fixtures
+
+Found by the [fixture-only search for the parameter, security and extension
+proofs](../../docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md).
+Notion publishes the description its MCP server serves in its own
+`makenotion/notion-mcp-server` repository; the document's `info.license` names
+MIT, and the pinned repository's `LICENSE` grants it, retained in
+`licenses/notion-mcp-server-MIT.txt`. Its `Notion-Version` header carries the
+string default `2025-09-03` on most but not all operations, the shape crozier
+promotes to a one-value client argument. Laposta publishes its own API
+description, generated from its sources, in the `laposta/laposta-skill`
+repository, whose `LICENSE` grants MIT (retained in
+`licenses/laposta-skill-MIT.txt`); its basic scheme's `x-fern-basic` names the
+username `api_key` and the password `leave_empty`. MCP Handle publishes its
+platform's API reference in its own `WeatherPal-AI/MCP-handle` repository (not
+a fork), under the repository's Apache-2.0 `LICENSE` (retained in
+`licenses/mcp-handle-Apache-2.0.txt`); its bearer scheme's `x-fern-bearer`
+names the credential `api_key`, and its `servers` query parameter is a nullable
+array of an inline union. Microsoft's `adme-samples` repository, whose
+seismic description row 3004 already registers at the same revision, also
+publishes the CRS converter description; its http scheme spells `scheme:
+Bearer` with a capital, and the repository grants MIT (retained in
+`licenses/microsoft-adme-samples.txt`). The WiiM device HTTP API is described
+in OpenAPI by its author in `cvdlinden/wiim-httpapi` under the repository's
+GPL-3.0 `LICENSE` (retained in `licenses/wiim-httpapi-GPL-3.0.txt`); its command
+routes put an integer parameter after literal text in one segment
+(`/setPlayerCmd:vol:{value}`).
+LoonFS publishes its HTTP API description in its own `loonfs/loonfs`
+repository; the document's `info.license` and the repository's `LICENSE` are
+Apache-2.0 (retained in `licenses/loonfs-Apache-2.0.txt`). It declares
+`x-fern-global-headers` entries marked `optional: true` and an operation whose
+`x-fern-retries` is `{disabled: true}`.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 4400 | `notion-mcp-server` | github-raw | https://raw.githubusercontent.com/makenotion/notion-mcp-server/730ae781ba28beeaf0865025a3f2ed4c25ea2387/scripts/notion-openapi.json | `730ae781ba28beeaf0865025a3f2ed4c25ea2387` | MIT (document info.license and publisher repository LICENSE) | committed | A string-defaulted header on a subset of operations; an inline union tagged by untyped `const` |
+| 4401 | `laposta` | github-raw | https://raw.githubusercontent.com/laposta/laposta-skill/a97773a9023708ab722e30f0e157a2b69fefc882/spec/openapi-en.yml | `a97773a9023708ab722e30f0e157a2b69fefc882` | MIT (publisher repository LICENSE) | committed | A basic scheme naming its credentials by `x-fern-basic`; string examples on boolean and integer schemas |
+| 4402 | `mcp-handle` | github-raw | https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json | `9c59f16950d25e08c1058d8174e12b22861280d8` | Apache-2.0 (publisher repository LICENSE) | committed | A bearer scheme naming its credential by `x-fern-bearer`; a nullable query array of an inline union |
+| 4403 | `microsoft-adme-crs-converter` | github-raw | https://raw.githubusercontent.com/microsoft/adme-samples/df39d22ed32acfe80fcdbc5b554871b2c752a39a/rest-apis/M18/crs_converter_openapi.yaml | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | MIT (publisher repository LICENSE) | committed | An http scheme spelled `Bearer` with a capital |
+| 4404 | `wiim-httpapi` | github-raw | https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json | `3dce4a722aa2b30fdb06d720b58714e224d26eb6` | GPL-3.0 (author repository LICENSE) | committed | Integer path parameters after literal text in one segment |
+| 4405 | `loonfs` | github-raw | https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json | `1e9aebea7e6fca3ea5f32d33b066e39228131208` | Apache-2.0 (document info.license and publisher repository LICENSE) | committed | Optional global headers; retries disabled on one operation |
+
 ## Float literals a fast decimal reader rounds one unit off
 
 Nixtla's TimeGPT document, vendored in ourofoundation/wrappers, carries

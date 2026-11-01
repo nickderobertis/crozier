@@ -375,6 +375,7 @@
     "docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/header-default-literal/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/header-defaults-managed/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/observatory-client-headers/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-array-union-items/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-nullable-30/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected": {},
@@ -383,6 +384,7 @@
     "docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected": {},
     "docs/fern-measurements/refusal-parity/discriminant-names-orchard-literals/fern-expected": {},
     "docs/fern-measurements/refusal-parity/discriminant-names-orchard/fern-expected": {},
     "docs/fern-measurements/refusal-parity/quoted-continuation-at-key-column/fern-expected": {},
@@ -590,8 +592,6 @@
     "docs/openapi-surface/handwritten/ledger-records-offset/fern-expected": {},
     "docs/openapi-surface/handwritten/library-union-shared-fields/fern-expected": {},
     "docs/openapi-surface/handwritten/literal-enum-value-quote-escaping/fern-expected": {},
-    "docs/openapi-surface/handwritten/literal-prefixed-integer-path-segment/fern-expected": {},
-    "docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected": {},
     "docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected": {},
     "docs/openapi-surface/handwritten/locker-bank-claims/fern-expected": {},
     "docs/openapi-surface/handwritten/lunar-null-labels/fern-expected": {},
@@ -611,12 +611,10 @@
     "docs/openapi-surface/handwritten/nullable-store/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-base-path/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-date/fern-expected": {},
-    "docs/openapi-surface/handwritten/observatory-client-headers/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-variable/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-example-arrays/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-nullable-query/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-query-extensions/fern-expected": {},
-    "docs/openapi-surface/handwritten/observatory-route-order/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/oneof-duplicate-members-collapsed/fern-expected": {},
@@ -649,7 +647,6 @@
     "docs/openapi-surface/handwritten/sensor-batch-query/fern-expected": {},
     "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/signal-box-relays/fern-expected": {},
-    "docs/openapi-surface/handwritten/ski-lift-gates/fern-expected": {},
     "docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected": {},
     "docs/openapi-surface/handwritten/slashless-json-response/fern-expected": {},
     "docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected": {},
@@ -666,7 +663,6 @@
     "docs/openapi-surface/handwritten/survey-map-value-union/fern-expected": {},
     "docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected": {},
     "docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected": {},
-    "docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected": {},
     "docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected": {},
     "docs/openapi-surface/handwritten/tram-route-query/fern-expected": {},
     "docs/openapi-surface/handwritten/transcript-format-part/fern-expected": {},
@@ -681,7 +677,6 @@
     "docs/openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/fern-expected": {},
     "docs/openapi-surface/handwritten/verified-seal/fern-expected": {},
     "docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected": {},
-    "docs/openapi-surface/handwritten/warehouse-header-token/fern-expected": {},
     "docs/openapi-surface/handwritten/water-pump-station/fern-expected": {},
     "docs/openapi-surface/handwritten/weather-radar-stream/fern-expected": {},
     "docs/openapi-surface/handwritten/woven-thread/fern-expected": {},
@@ -1117,9 +1112,21 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/laposta/expected": {},
+    "tests/fixtures/laposta/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/letta/expected": {},
     "tests/fixtures/listennotes/expected": {},
     "tests/fixtures/livepeer-ai-runner/expected": {},
+    "tests/fixtures/loonfs/expected": {},
+    "tests/fixtures/loonfs/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/lootlog-battlelog/expected": {},
     "tests/fixtures/loris-dataquery/expected": {},
     "tests/fixtures/maif.local-otoroshi/expected": {},
@@ -1128,10 +1135,22 @@
     "tests/fixtures/marimo-plugins/expected": {},
     "tests/fixtures/marimo/expected": {},
     "tests/fixtures/maximo-wxo-integration/expected": {},
+    "tests/fixtures/mcp-handle/expected": {},
+    "tests/fixtures/mcp-handle/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/med-anvisa-price/expected": {},
     "tests/fixtures/mermade-openapi-converter/expected": {},
     "tests/fixtures/mi-music/expected": {},
     "tests/fixtures/microcks.local/expected": {},
+    "tests/fixtures/microsoft-adme-crs-converter/expected": {},
+    "tests/fixtures/microsoft-adme-crs-converter/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/microsoft-adme-seismic/expected": {},
     "tests/fixtures/millenium-falcon-challenge/expected": {},
     "tests/fixtures/milvus-restful-v2-3/expected": {},
@@ -1161,6 +1180,12 @@
     },
     "tests/fixtures/nixtla-timegpt/expected": {},
     "tests/fixtures/nixtla-timegpt/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/notion-mcp-server/expected": {},
+    "tests/fixtures/notion-mcp-server/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -1510,6 +1535,12 @@
           "src/fern/workspaces/audit_logs/types/workspace_membership_user_type.py"
         ]
       }
+    },
+    "tests/fixtures/wiim-httpapi/expected": {},
+    "tests/fixtures/wiim-httpapi/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
     },
     "tests/fixtures/withsecure-gdpr-subject-rights/expected": {},
     "tests/fixtures/worldcoin-signup-sequencer/expected": {},

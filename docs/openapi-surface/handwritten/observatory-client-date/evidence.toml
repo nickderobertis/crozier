@@ -4,13 +4,13 @@ digest = "8c0cfeaef9c6b68330a943c3589f4f44408f33986f481fa00f290eb109e5c921"
 
 [[covers]]
 key = "client-header-date-format"
-search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"
 
 [[covers]]
 key = "parameter-in-header"
 arm = 'src/ir.rs::header_py_type[=^\s*HeaderType::Date]'
-search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

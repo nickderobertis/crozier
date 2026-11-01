@@ -347,3 +347,221 @@ fn examples_docs_real_witnesses_declare_their_shapes() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+
+/// The witnesses
+/// `docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md`
+/// records, each replacing a hand-written fixture.
+const FIXTURE_ONLY_WITNESSES: &[Witness] = &[Witness {
+    shape: "path-parameters-template-order-31",
+    corpus: "formbricks",
+    declares: |doc| {
+        expect(
+            doc["openapi"].as_str().is_some_and(|v| v.starts_with("3.1.")),
+            "the document is OpenAPI 3.1",
+        )?;
+        let item = at(doc, "/paths/~1organizations~1{organizationId}~1teams~1{id}")?;
+        expect(
+            item.get("parameters").is_none(),
+            "the path item declares no path-level parameters",
+        )?;
+        for method in ["get", "put", "delete"] {
+            let names: Vec<&str> = item[method]["parameters"]
+                .as_array()
+                .map(|list| {
+                    list.iter()
+                        .filter(|p| p["in"] == "path")
+                        .filter_map(|p| p["name"].as_str())
+                        .collect()
+                })
+                .unwrap_or_default();
+            expect(
+                names == ["id", "organizationId"],
+                &format!("{method} declares `id` before `organizationId`"),
+            )?;
+        }
+        Ok(())
+    },
+    golden: &[
+        (
+            "src/fern/organizations_api_teams/client.py",
+            &[
+                "def get_team(\n        self, organization_id: OrganizationId, id: TeamId, *,",
+                "def update_team(\n        self,\n        organization_id: OrganizationId,\n        id: TeamId,",
+                "def delete_team(\n        self, organization_id: OrganizationId, id: TeamId, *,",
+            ],
+            &["id: TeamId, organization_id: OrganizationId"],
+        ),
+        (
+            "src/fern/organizations_api_teams/raw_client.py",
+            &["def get_team(\n        self, organization_id: OrganizationId, id: TeamId, *,"],
+            &["id: TeamId, organization_id: OrganizationId"],
+        ),
+    ],
+},
+Witness {
+    shape: "header-subset-string-default",
+    corpus: "notion-mcp-server",
+    declares: |doc| {
+        let header = at(doc, "/components/parameters/notionVersion")?;
+        expect(
+            header["in"] == "header"
+                && header["name"] == "Notion-Version"
+                && header["schema"]["type"] == "string"
+                && header["schema"]["default"] == "2025-09-03",
+            "`Notion-Version` is a header defaulting to the string `2025-09-03`",
+        )?;
+        let methods = ["get", "put", "post", "patch", "delete"];
+        let (mut total, mut carrying) = (0, 0);
+        for item in at(doc, "/paths")?.as_object().into_iter().flat_map(|paths| paths.values()) {
+            for method in methods {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                total += 1;
+                let names_header = operation["parameters"].as_array().is_some_and(|list| {
+                    list.iter()
+                        .any(|p| p["$ref"] == "#/components/parameters/notionVersion")
+                });
+                carrying += usize::from(names_header);
+            }
+        }
+        expect(
+            carrying * 4 >= total * 3 && carrying < total,
+            "the header rides at least three quarters, but not all, of the operations",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &[
+            "notion_version: typing.Optional[typing.Literal[\"2025-09-03\"]] = None,",
+            "headers[\"Notion-Version\"] = self._notion_version",
+        ],
+        &[],
+    )],
+},
+Witness {
+    shape: "security-scheme-basic-extension-named",
+    corpus: "laposta",
+    declares: |doc| {
+        let scheme = at(doc, "/components/securitySchemes/apiKey")?;
+        expect(
+            scheme["type"] == "http"
+                && scheme["scheme"] == "basic"
+                && scheme["x-fern-basic"]["username"]["name"] == "api_key"
+                && scheme["x-fern-basic"]["password"]["name"] == "leave_empty",
+            "the basic scheme names its username `api_key` and password `leave_empty`",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &[
+            "api_key: typing.Union[str, typing.Callable[[], str]],",
+            "leave_empty: typing.Union[str, typing.Callable[[], str]],",
+            "httpx.BasicAuth(self._get_api_key(), self._get_leave_empty())",
+        ],
+        &["username: typing.Union[str"],
+    )],
+},
+Witness {
+    shape: "security-scheme-bearer-extension-named",
+    corpus: "mcp-handle",
+    declares: |doc| {
+        let scheme = at(doc, "/components/securitySchemes/HTTPBearer")?;
+        expect(
+            scheme["type"] == "http"
+                && scheme["scheme"] == "bearer"
+                && scheme["x-fern-bearer"]["name"] == "api_key",
+            "the bearer scheme names its credential `api_key`",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &[
+            "api_key: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,",
+            "self._api_key = api_key",
+        ],
+        &["token: typing.Optional[typing.Union[str"],
+    )],
+},
+Witness {
+    shape: "security-scheme-capitalised-http",
+    corpus: "microsoft-adme-crs-converter",
+    declares: |doc| {
+        let scheme = at(doc, "/components/securitySchemes/Authorization")?;
+        expect(
+            scheme["type"] == "http" && scheme["scheme"] == "Bearer",
+            "the http scheme spells `Bearer` with a capital",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &["headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""],
+        &[],
+    )],
+},
+Witness {
+    shape: "literal-prefixed-integer-path-segment",
+    corpus: "wiim-httpapi",
+    declares: |doc| {
+        let operation = at(doc, "/paths/~1setPlayerCmd:vol:{value}/get")?;
+        expect(
+            operation["parameters"].as_array().is_some_and(|list| {
+                list.iter().any(|p| {
+                    p["name"] == "value" && p["in"] == "path" && p["schema"]["type"] == "integer"
+                })
+            }),
+            "`/setPlayerCmd:vol:{value}` types `value` as an integer path parameter",
+        )
+    },
+    golden: &[(
+        "src/fern/playback_control/raw_client.py",
+        &["f\"setPlayerCmd:vol:{encode_path_param(value)}\","],
+        &[],
+    )],
+},
+Witness {
+    shape: "global-headers-extension",
+    corpus: "loonfs",
+    declares: |doc| {
+        let headers = at(doc, "/x-fern-global-headers")?;
+        expect(
+            headers.as_array().is_some_and(|list| {
+                list.iter().any(|h| h["header"] == "Loonfs-Actor" && h["name"] == "actorId" && h["optional"] == true)
+            }),
+            "`Loonfs-Actor` is an optional global header named `actorId`",
+        )
+    },
+    golden: &[(
+        "src/fern/core/client_wrapper.py",
+        &["actor_id: typing.Optional[str] = None,", "if self._actor_id is not None:"],
+        &["actor_id: str,"],
+    )],
+},
+Witness {
+    shape: "operation-retries-disabled",
+    corpus: "loonfs",
+    declares: |doc| {
+        let operation = at(doc, "/paths/~1v0~1namespaces~1{namespace_id}~1uploads/post")?;
+        expect(
+            operation["x-fern-retries"]["disabled"] == true,
+            "`create_upload` disables retries",
+        )
+    },
+    golden: &[(
+        "src/fern/uploads/raw_client.py",
+        &["{**request_options, \"max_retries\": 0} if request_options is not None else {\"max_retries\": 0}"],
+        &[],
+    )],
+},
+];
+
+/// Every fixture-only-search witness still declares its shape and carries its
+/// output.
+#[test]
+fn fixture_only_real_witnesses_declare_their_shapes() {
+    let failures: Vec<String> = FIXTURE_ONLY_WITNESSES
+        .iter()
+        .flat_map(witness_failures)
+        .collect();
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}

@@ -5,5 +5,5 @@ digest = "ec0be52e466cd25274a969438541b680df36440e31fc482e0ecf0fda1c4176ad"
 [[covers]]
 key = "http-dpop"
 arm = 'src/ir.rs::auth_model[=_ => Auth::None,]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/http-dpop.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
 verdict = "exhausted"

@@ -4,6 +4,5 @@ digest = "ff1c8c3ce0fc8fa4a4b7af4bd83ca747ff94d2c75d7fd9b2a67bab0a610add31"
 
 [[covers]]
 key = "fern-streaming-format-over-json"
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

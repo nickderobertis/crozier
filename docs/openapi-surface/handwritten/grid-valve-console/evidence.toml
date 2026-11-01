@@ -4,6 +4,5 @@ digest = "4f4810443ab53ee3f2c303a4715fdc01885923cf0b0337574f9e3cf2fed952d9"
 
 [[covers]]
 key = "security-scheme-token-variable-name"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#token-variable-name-extension"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

@@ -4,6 +4,5 @@ digest = "929efb2f69c253abc75c42e5813804227d7e9b190fb8b1eec0fbd58ef1f1ff88"
 
 [[covers]]
 key = "operation-sdk-method-name-sequence"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#method-name-written-as-a-sequence"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

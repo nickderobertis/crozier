@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "laposta",
+  "corpus_spec_ref": "a97773a9023708ab722e30f0e157a2b69fefc882",
+  "corpus_spec_url": "https://raw.githubusercontent.com/laposta/laposta-skill/a97773a9023708ab722e30f0e157a2b69fefc882/spec/openapi-en.yml"
+}

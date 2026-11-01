@@ -1,0 +1,37 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class CallToolResult(UniversalBaseModel):
+    """
+    The server's response to a tool call.
+    """
+
+    content: typing.List[typing.Any] = pydantic.Field()
+    """
+    The content of the tool call
+    """
+
+    is_error: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isError"),
+        pydantic.Field(alias="isError", description="Whether the tool call was successful"),
+    ] = None
+    """
+    Whether the tool call was successful
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

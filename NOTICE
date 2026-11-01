@@ -798,6 +798,48 @@ ollama-api API specification and generated SDK golden:
     MIT (the document's info.license and the repository's own LICENSE); corpus row 4212 retains the immutable
     revision. Source bytes and the complete generated tree are vendored, with Python comments stripped.
 
+Notion API description (Notion MCP server) and generated SDK golden:
+    https://raw.githubusercontent.com/makenotion/notion-mcp-server/730ae781ba28beeaf0865025a3f2ed4c25ea2387/scripts/notion-openapi.json
+    Copyright (c) 2025 Notion Labs, Inc. MIT (the document's info.license and
+    the publisher repository's LICENSE, retained in
+    licenses/notion-mcp-server-MIT.txt). Corpus row 4400 retains the unmodified
+    source alongside the generated SDK, with Python comments stripped.
+
+Laposta API description and generated SDK golden:
+    https://raw.githubusercontent.com/laposta/laposta-skill/a97773a9023708ab722e30f0e157a2b69fefc882/spec/openapi-en.yml
+    Copyright (c) 2026 Mees van Lier. MIT (the publisher repository's LICENSE,
+    retained in licenses/laposta-skill-MIT.txt). Corpus row 4401 retains the
+    unmodified source alongside the generated SDK, with Python comments
+    stripped.
+
+MCP Handle API reference and generated SDK golden:
+    https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json
+    Copyright 2025 WeatherPal-AI. Apache-2.0 (the publisher repository's
+    LICENSE, retained in licenses/mcp-handle-Apache-2.0.txt). Corpus row 4402
+    retains the unmodified source alongside the generated SDK, with Python
+    comments stripped.
+
+The CRS converter OpenAPI document in corpus row 4403 is distributed by
+Microsoft in microsoft/adme-samples at revision
+df39d22ed32acfe80fcdbc5b554871b2c752a39a, rest-apis/M18/crs_converter_openapi.yaml,
+under the publisher repository's MIT grant, Copyright (c) Microsoft
+Corporation, retained in licenses/microsoft-adme-samples.txt. The row retains
+the unmodified source alongside the generated SDK.
+
+Linkplay/WiiM HTTP API description and generated SDK golden:
+    https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json
+    Written and published by its author in cvdlinden/wiim-httpapi under the
+    repository's GPL-3.0 grant, retained in licenses/wiim-httpapi-GPL-3.0.txt.
+    Corpus row 4404 retains the unmodified source alongside the generated SDK,
+    with Python comments stripped.
+
+LoonFS HTTP API description and generated SDK golden:
+    https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json
+    Apache-2.0 (the document's info.license and the publisher repository's
+    LICENSE, retained in licenses/loonfs-Apache-2.0.txt). Corpus row 4405
+    retains the unmodified source alongside the generated SDK, with Python
+    comments stripped.
+
 nixtla-timegpt API specification and generated SDK golden:
     https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json
     MIT (the repository's own LICENSE; the document declares no info.license); corpus row 4301 retains the immutable

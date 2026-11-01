@@ -74,14 +74,16 @@ class RealPlanTests(unittest.TestCase):
         count = len(loads)
         total = sum(loads)
         weights = self.unit_weights()
-        if count > 1:
-            # One fewer cannot hold the total, or cannot be packed under the limit.
-            fewer = weekly.pack(weights, count - 1)
-            self.assertTrue(
-                total > (count - 1) * limit or max(sum(weights[i] for i in group) for group in fewer) > limit,
-                f"{count - 1} shard(s) would have fitted",
-            )
-        self.assertEqual(max(1, math.ceil(total / limit)), count, "the packing reached the lower bound")
+        bound = max(1, math.ceil(total / limit))
+        self.assertGreaterEqual(count, bound, "fewer shards than the total allows under the limit")
+        # Every count from the arithmetic lower bound up to one fewer than the
+        # plan's overflows a shard when packed, so the plan is the fewest the
+        # packer can fit. Where the packer fits the bound itself, the plan is it.
+        for fewer in range(bound, count):
+            longest = max(sum(weights[i] for i in group) for group in weekly.pack(weights, fewer))
+            self.assertGreater(longest, limit, f"{fewer} shard(s) would have fitted")
+        if max(sum(weights[i] for i in group) for group in weekly.pack(weights, bound)) <= limit:
+            self.assertEqual(bound, count, "the packer fits the lower bound, so the plan must use it")
         self.assertLessEqual(self.plan.estimate.minutes, weekly.BUDGET_MINUTES)
         for shard in self.plan.shards:
             self.assertLess(shard.minutes, weekly.SHARD_TIMEOUT_MINUTES)

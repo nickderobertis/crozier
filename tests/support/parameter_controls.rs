@@ -12,7 +12,7 @@ pub const CASES: &[&str] = &[
 pub fn document(case: &str) -> serde_json::Value {
     let source = match case {
         "promoted-header" | "security-header" => include_str!(
-            "../../docs/openapi-surface/handwritten/observatory-client-headers/openapi.yml"
+            "../../docs/fern-measurements/parameter-lowering/observatory-client-headers/openapi.yml"
         ),
         "base-collision" => {
             include_str!("../../docs/openapi-surface/handwritten/observatory-base-path/openapi.yml")

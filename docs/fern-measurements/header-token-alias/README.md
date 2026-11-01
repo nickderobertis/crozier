@@ -4,7 +4,7 @@ The independently authored Warehouse Ledger input declares `X Ledger` as a
 client-wide header. CLI 5.163.1 with Python SDK 5.41.3 accepts it and emits the
 required `ledger: str` constructor argument and the exact `X Ledger` wire key.
 The complete, unedited output (Python comments stripped) is committed at
-`docs/openapi-surface/handwritten/warehouse-header-token/fern-expected`.
+`docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected`.
 
 Settings: packaged layout, package `fern`, project `default_package_name`,
 client `FernApi`, `python_enums`, extra fields `allow`, default retries 2,
