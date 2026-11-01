@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .letters import ListLettersRequestCarrier, ListLettersRequestPriority
-    from .parcels import ListParcelsRequestCarrier, ListParcelsRequestPriority
+    from .parcels import ListParcelsRequestCarrier, ListParcelsRequestLabelStyle, ListParcelsRequestPriority
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
@@ -24,6 +24,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ListLettersRequestCarrier": ".letters",
     "ListLettersRequestPriority": ".letters",
     "ListParcelsRequestCarrier": ".parcels",
+    "ListParcelsRequestLabelStyle": ".parcels",
     "ListParcelsRequestPriority": ".parcels",
     "__version__": ".version",
     "depots": ".depots",
@@ -64,6 +65,7 @@ __all__ = [
     "ListLettersRequestCarrier",
     "ListLettersRequestPriority",
     "ListParcelsRequestCarrier",
+    "ListParcelsRequestLabelStyle",
     "ListParcelsRequestPriority",
     "__version__",
     "depots",

@@ -6,6 +6,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawParcelsClient, RawParcelsClient
 from .types.list_parcels_request_carrier import ListParcelsRequestCarrier
+from .types.list_parcels_request_label_style import ListParcelsRequestLabelStyle
 from .types.list_parcels_request_priority import ListParcelsRequestPriority
 
 
@@ -29,6 +30,8 @@ class ParcelsClient:
         *,
         priority: typing.Optional[ListParcelsRequestPriority] = None,
         carrier: typing.Optional[ListParcelsRequestCarrier] = None,
+        label: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        label_style: typing.Optional[ListParcelsRequestLabelStyle] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[str]:
         """
@@ -39,6 +42,12 @@ class ParcelsClient:
 
         carrier : typing.Optional[ListParcelsRequestCarrier]
             Carrier to filter by.
+
+        label : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            One label or several to print.
+
+        label_style : typing.Optional[ListParcelsRequestLabelStyle]
+            How the labels are printed.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -57,7 +66,9 @@ class ParcelsClient:
         )
         client.parcels.list_parcels()
         """
-        _response = self._raw_client.list_parcels(priority=priority, carrier=carrier, request_options=request_options)
+        _response = self._raw_client.list_parcels(
+            priority=priority, carrier=carrier, label=label, label_style=label_style, request_options=request_options
+        )
         return _response.data
 
 
@@ -81,6 +92,8 @@ class AsyncParcelsClient:
         *,
         priority: typing.Optional[ListParcelsRequestPriority] = None,
         carrier: typing.Optional[ListParcelsRequestCarrier] = None,
+        label: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        label_style: typing.Optional[ListParcelsRequestLabelStyle] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[str]:
         """
@@ -91,6 +104,12 @@ class AsyncParcelsClient:
 
         carrier : typing.Optional[ListParcelsRequestCarrier]
             Carrier to filter by.
+
+        label : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            One label or several to print.
+
+        label_style : typing.Optional[ListParcelsRequestLabelStyle]
+            How the labels are printed.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -118,6 +137,6 @@ class AsyncParcelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_parcels(
-            priority=priority, carrier=carrier, request_options=request_options
+            priority=priority, carrier=carrier, label=label, label_style=label_style, request_options=request_options
         )
         return _response.data

@@ -1485,7 +1485,12 @@ fn inline_body_source_names(
             // Confluent's `createDek` posts `CreateDekRequest` as JSON, vendor
             // JSON and octet-stream, takes bytes, and Fern still declares the
             // model (the `orphan-type-emission` measurement's `createKey`).
-            if rb.content.contains_key("application/octet-stream") {
+            // An operation split into one method per media type is not: its
+            // JSON method inlines the schema (Deepgram's `transcribe_url` and
+            // `ListenV1RequestUrl`).
+            if rb.content.contains_key("application/octet-stream")
+                && request_media_variants(op)[0].is_none()
+            {
                 continue;
             }
             // The JSON representation is found the way the body itself selects
@@ -4527,16 +4532,34 @@ fn build_endpoint(
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
+    let parameter_type_names: Vec<String> = op
+        .parameters
+        .iter()
+        .map(|parameter| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
+        .collect();
     // Register the hoisted inline types under this tag's `types/` package.
     for decl in hoister.out {
         // A type the union itself names — its variants and their elements, all
         // spelled `{Union}…` — sits beside it: braintrust's
         // `GetProjectScoreRequestScoreTypeOneItem` is in the package root with the
         // `GetProjectScoreRequestScoreType` alias that lists it.
-        let decl_module = if global_parameter_unions
+        // The parameter a type belongs to is the one whose type name is its
+        // longest prefix: Deepgram's `custom_intent_mode` enum,
+        // `…RequestCustomIntentMode`, is no member of the `custom_intent`
+        // union beside it, and stays in the operation's package (the
+        // `type-placement` measurement's `label_style` beside `label`).
+        let owner = parameter_type_names
             .iter()
-            .any(|root| decl.name().starts_with(root.as_str()))
-        {
+            .filter(|name| decl.name().starts_with(name.as_str()))
+            .max_by_key(|name| name.len());
+        let decl_module = if owner.map_or_else(
+            || {
+                global_parameter_unions
+                    .iter()
+                    .any(|root| decl.name().starts_with(root.as_str()))
+            },
+            |owner| global_parameter_unions.contains(owner),
+        ) {
             String::new()
         } else {
             module.clone()
@@ -30966,5 +30989,288 @@ mod emission_parity_tests {
             }
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
+    }
+}
+
+/// The handed-off type-declaration causes, each driven through the IR from the
+/// from-scratch document its measurement under
+/// `docs/fern-measurements/handed-off/type-declarations/` committed with the
+/// certified pair's tree (Fern CLI 5.163.1, fern-python-sdk 5.41.3).
+#[cfg(test)]
+mod handed_off_type_declarations_tests {
+    use super::*;
+
+    fn measured(cause: &str) -> Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/type-declarations")
+            .join(cause)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        build(&doc, &config)
+    }
+
+    fn declared<'a>(ir: &'a Ir, name: &str) -> Option<&'a TypeDecl> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag_type| &tag_type.decl))
+            .find(|decl| decl.name() == name)
+    }
+
+    fn object<'a>(ir: &'a Ir, name: &str) -> &'a ObjectType {
+        match declared(ir, name) {
+            Some(TypeDecl::Object(object)) => object,
+            other => panic!("{name} is no model: {other:?}"),
+        }
+    }
+
+    fn field<'a>(object: &'a ObjectType, wire: &str) -> &'a Field {
+        object
+            .fields
+            .iter()
+            .find(|field| field.wire_name == wire)
+            .unwrap_or_else(|| panic!("{} has no {wire}", object.name))
+    }
+
+    fn endpoint<'a>(ir: &'a Ir, method: &str) -> &'a Endpoint {
+        ir.endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == method)
+            .unwrap_or_else(|| panic!("no endpoint {method}"))
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn prim(prim: Prim) -> TypeRef {
+        TypeRef::Primitive(prim)
+    }
+
+    fn optional(inner: TypeRef) -> TypeRef {
+        TypeRef::Optional(Box::new(inner))
+    }
+
+    fn dict(value: TypeRef) -> TypeRef {
+        TypeRef::Dict(Box::new(prim(Prim::Str)), Box::new(value))
+    }
+
+    #[test]
+    fn digit_leading_components_spell_their_whole_leading_number() {
+        let ir = measured("digit-leading-schema-name");
+        for name in [
+            "FourHundredOneResponse",
+            "TwelveHourCycle",
+            "SevenAgent",
+            "OneThousandTwoHundredThirtyFourPlan",
+            "NineThousandNineHundredNinetyNineStock",
+            "UndefinedSteps",
+            "TwoFaStatus",
+        ] {
+            assert!(declared(&ir, name).is_some(), "{name}");
+        }
+        assert!(declared(&ir, "Four01Response").is_none());
+    }
+
+    #[test]
+    fn number_prim_reads_uint32_as_an_integer() {
+        let ir = measured("number-uint32-format");
+        let lamp = object(&ir, "Lamp");
+        assert_eq!(field(lamp, "rotations").type_ref, prim(Prim::Int));
+        assert_eq!(field(lamp, "bulbs").type_ref, prim(Prim::Float));
+        assert_eq!(field(lamp, "lensRings").type_ref, prim(Prim::Float));
+    }
+
+    #[test]
+    fn split_media_methods_name_their_shared_types_from_the_base_operation() {
+        let ir = measured("inline-type-naming");
+        assert!(declared(&ir, "CaptionMediaRequestDialect").is_some());
+        assert!(declared(&ir, "CaptionUrlMediaRequestDialect").is_none());
+        for method in ["caption_url", "caption_file"] {
+            assert_eq!(endpoint(&ir, method).module, "captions/media");
+        }
+    }
+
+    #[test]
+    fn described_all_of_wrappers_resolve_to_their_scalar() {
+        let ir = measured("allof-description-wrapper");
+        let telescope = endpoint(&ir, "get_telescope");
+        assert_eq!(telescope.path_params[0].type_ref, prim(Prim::Str));
+        assert_eq!(telescope.query_params[0].type_ref, prim(Prim::Int));
+        let booking = object(&ir, "Booking");
+        assert_eq!(field(booking, "slot").type_ref, prim(Prim::Str));
+        assert_eq!(
+            field(booking, "slot").docstring.as_deref(),
+            Some("Identifier of an observing slot.")
+        );
+        assert!(declared(&ir, "BookingSlot").is_none());
+        match declared(&ir, "SlotId") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.docstring.as_deref(),
+                Some("Identifier of an observing slot.")
+            ),
+            other => panic!("SlotId is no alias: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_tuple_body_is_a_list_of_bare_unknowns() {
+        let ir = measured("parameter-type-resolution");
+        match &endpoint(&ir, "tag_broadcast").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, TypeRef::List(Box::new(prim(Prim::Any))));
+            }
+            other => panic!("tag_broadcast's body: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn map_values_hoist_only_when_typed_object() {
+        let ir = measured("map-value-modelling");
+        let crane = object(&ir, "Crane");
+        assert_eq!(
+            field(crane, "operators").type_ref,
+            dict(named("CraneOperatorsValue"))
+        );
+        assert_eq!(field(crane, "inspections").type_ref, dict(prim(Prim::Any)));
+        assert!(declared(&ir, "CraneInspectionsValue").is_none());
+        assert_eq!(
+            endpoint(&ir, "get_crane_summary").response,
+            Some(dict(named("GetCraneSummaryResponseValue")))
+        );
+    }
+
+    #[test]
+    fn blank_inline_enum_descriptions_are_empty_docstrings() {
+        let ir = measured("blank-description-enum-docstring");
+        for name in ["CrossingDaysItem", "CrossingWeather", "CrossingDeck"] {
+            match declared(&ir, name) {
+                Some(TypeDecl::Enum(e)) => assert_eq!(e.docstring.as_deref(), Some(""), "{name}"),
+                other => panic!("{name} is no enum: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn a_nested_all_of_body_takes_no_member_docstring() {
+        let ir = measured("allof-member-description-docstring");
+        assert_eq!(object(&ir, "BadRequestErrorBody").docstring, None);
+    }
+
+    #[test]
+    fn nullable_alternatives_document_their_types() {
+        let ir = measured("nullable-anyof-member-description-alias-docstring");
+        match declared(&ir, "NextCursor") {
+            Some(TypeDecl::Alias(alias)) => assert!(alias
+                .docstring
+                .as_deref()
+                .is_some_and(|doc| doc.starts_with("The value to pass as 'after'"))),
+            other => panic!("NextCursor is no alias: {other:?}"),
+        }
+        match declared(&ir, "JobStopped") {
+            Some(TypeDecl::Enum(e)) => {
+                assert_eq!(e.docstring.as_deref(), Some("Why the job stopped."));
+            }
+            other => panic!("JobStopped is no enum: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn an_annotated_enum_beside_null_is_copied_as_an_enum() {
+        let ir = measured("nullable-anyof-allof-described-member");
+        match declared(&ir, "CreatePlanBodyCourse") {
+            Some(TypeDecl::Enum(e)) => assert_eq!(
+                e.docstring.as_deref(),
+                Some("Which course to plan, if any.")
+            ),
+            other => panic!("CreatePlanBodyCourse is no enum: {other:?}"),
+        }
+        let Some(RequestBody::Inline(fields)) = &endpoint(&ir, "create_plan").request_body else {
+            panic!("create_plan's body is inlined");
+        };
+        let diet = fields
+            .iter()
+            .find(|field| field.wire_name == "diet")
+            .unwrap();
+        assert_eq!(
+            diet.docstring.as_deref(),
+            Some("Dietary needs the plan must respect.")
+        );
+    }
+
+    #[test]
+    fn hoisted_objects_prefer_their_own_description_and_keep_an_empty_one() {
+        let ir = measured("description-source");
+        assert_eq!(
+            object(&ir, "GetFiringResponseOutcome").docstring.as_deref(),
+            Some("What the kiln produced, once the firing finished.")
+        );
+        assert_eq!(object(&ir, "PieceLinks").docstring.as_deref(), Some(""));
+        assert_eq!(field(object(&ir, "Piece"), "glaze").docstring, None);
+    }
+
+    #[test]
+    fn one_letter_operation_id_words_run_together() {
+        let ir = measured("R7");
+        let tile = endpoint(&ir, "get_tile_v2tiles_coastal_z_x_y_pbf_get");
+        assert_eq!(
+            tile.query_params[0].type_ref,
+            named("GetTileV2TilesCoastalZxyPbfGetRequestShading")
+        );
+    }
+
+    #[test]
+    fn a_nullable_sole_member_keeps_its_component_optional() {
+        let ir = measured("R3");
+        assert_eq!(
+            endpoint(&ir, "get_current_reading").response,
+            Some(optional(named("ClimateReading")))
+        );
+        match &endpoint(&ir, "create_greenhouse").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, named("GreenhouseCreate"));
+                assert!(!single.required);
+            }
+            other => panic!("create_greenhouse's body: {other:?}"),
+        }
+        assert!(declared(&ir, "VentCommand").is_some());
+    }
+
+    #[test]
+    fn a_body_naming_a_renamed_union_keeps_its_operation() {
+        let ir = measured("reference-description-leading-newline");
+        match &endpoint(&ir, "add_packet_note").request_body {
+            Some(RequestBody::Single(single)) => {
+                assert_eq!(single.type_ref, named("PacketNoteCreateRequest"));
+            }
+            other => panic!("add_packet_note's body: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn orphan_types_follow_the_certified_pair() {
+        let ir = measured("orphan-type-emission");
+        // A download declares nothing from its JSON alternative.
+        assert!(declared(&ir, "GetArchivePathResponse").is_none());
+        // A dropped readOnly body property hoists nothing.
+        assert!(declared(&ir, "RegisterSensorRequestCalibration").is_none());
+        // A body posted only by a replaced operation is inlined away.
+        assert!(declared(&ir, "SensorsAddNoteRequest").is_none());
+        assert!(declared(&ir, "SensorsAddNoteRequest1").is_none());
+        // A bytes body keeps the component it names.
+        assert!(declared(&ir, "CreateKeyRequest").is_some());
+        assert!(matches!(
+            endpoint(&ir, "create_key").request_body,
+            Some(RequestBody::Bytes { .. })
+        ));
     }
 }

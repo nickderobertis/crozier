@@ -7,9 +7,11 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .list_parcels_request_carrier import ListParcelsRequestCarrier
+    from .list_parcels_request_label_style import ListParcelsRequestLabelStyle
     from .list_parcels_request_priority import ListParcelsRequestPriority
 _dynamic_imports: typing.Dict[str, str] = {
     "ListParcelsRequestCarrier": ".list_parcels_request_carrier",
+    "ListParcelsRequestLabelStyle": ".list_parcels_request_label_style",
     "ListParcelsRequestPriority": ".list_parcels_request_priority",
 }
 
@@ -35,4 +37,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ListParcelsRequestCarrier", "ListParcelsRequestPriority"]
+__all__ = ["ListParcelsRequestCarrier", "ListParcelsRequestLabelStyle", "ListParcelsRequestPriority"]

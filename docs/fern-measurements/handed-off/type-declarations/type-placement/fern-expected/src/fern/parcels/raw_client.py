@@ -10,6 +10,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.list_parcels_request_carrier import ListParcelsRequestCarrier
+from .types.list_parcels_request_label_style import ListParcelsRequestLabelStyle
 from .types.list_parcels_request_priority import ListParcelsRequestPriority
 from pydantic import ValidationError
 
@@ -23,6 +24,8 @@ class RawParcelsClient:
         *,
         priority: typing.Optional[ListParcelsRequestPriority] = None,
         carrier: typing.Optional[ListParcelsRequestCarrier] = None,
+        label: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        label_style: typing.Optional[ListParcelsRequestLabelStyle] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[typing.List[str]]:
         """
@@ -33,6 +36,12 @@ class RawParcelsClient:
 
         carrier : typing.Optional[ListParcelsRequestCarrier]
             Carrier to filter by.
+
+        label : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            One label or several to print.
+
+        label_style : typing.Optional[ListParcelsRequestLabelStyle]
+            How the labels are printed.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -48,6 +57,8 @@ class RawParcelsClient:
             params={
                 "priority": priority,
                 "carrier": carrier,
+                "label": label,
+                "label_style": label_style,
             },
             request_options=request_options,
         )
@@ -80,6 +91,8 @@ class AsyncRawParcelsClient:
         *,
         priority: typing.Optional[ListParcelsRequestPriority] = None,
         carrier: typing.Optional[ListParcelsRequestCarrier] = None,
+        label: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        label_style: typing.Optional[ListParcelsRequestLabelStyle] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[typing.List[str]]:
         """
@@ -90,6 +103,12 @@ class AsyncRawParcelsClient:
 
         carrier : typing.Optional[ListParcelsRequestCarrier]
             Carrier to filter by.
+
+        label : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            One label or several to print.
+
+        label_style : typing.Optional[ListParcelsRequestLabelStyle]
+            How the labels are printed.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -105,6 +124,8 @@ class AsyncRawParcelsClient:
             params={
                 "priority": priority,
                 "carrier": carrier,
+                "label": label,
+                "label_style": label_style,
             },
             request_options=request_options,
         )

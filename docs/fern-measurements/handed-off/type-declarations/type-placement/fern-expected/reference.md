@@ -106,6 +106,22 @@ client.parcels.list_parcels()
 <dl>
 <dd>
 
+**label:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — One label or several to print.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**label_style:** `typing.Optional[ListParcelsRequestLabelStyle]` — How the labels are printed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>

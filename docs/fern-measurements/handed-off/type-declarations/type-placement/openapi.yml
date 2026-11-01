@@ -12,6 +12,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/SharedPriority'
         - $ref: '#/components/parameters/SharedCarrier'
+        - $ref: '#/components/parameters/SharedLabel'
+        - $ref: '#/components/parameters/SharedLabelStyle'
       responses:
         '200':
           description: The parcels
@@ -116,3 +118,26 @@ components:
           - road
           - rail
           - air
+    SharedLabel:
+      name: label
+      in: query
+      required: false
+      description: One label or several to print.
+      schema:
+        oneOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+    SharedLabelStyle:
+      name: label_style
+      in: query
+      required: false
+      x-fern-type-name: SharedLabelStyle
+      description: How the labels are printed.
+      schema:
+        type: string
+        default: plain
+        enum:
+          - plain
+          - bold

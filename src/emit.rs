@@ -12482,6 +12482,33 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 
 #[cfg(test)]
 mod tests {
+    /// The `R6` measurement's descriptions (Fern CLI 5.163.1, fern-python-sdk
+    /// 5.41.3): a paragraph keeps its leading line break and only loses its
+    /// trailing ones; a lone line after a break stays in the em-dash form.
+    #[test]
+    fn reference_param_suffix_keeps_a_leading_break_in_a_paragraph() {
+        assert_eq!(
+            super::reference_param_suffix(Some("\n        The lock.\n        (ex. /L7)\n        ")),
+            " \n\n\n        The lock.\n        (ex. /L7)\n        "
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\n        The boat's name.\n        ")),
+            " \n\n\n        The boat's name.\n        "
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\nSet of pairs.\n\nKeys are short.\n")),
+            " \n\n\nSet of pairs.\n\nKeys are short."
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\nUpstream or downstream.")),
+            " — \nUpstream or downstream."
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("One line.\n")),
+            " — One line.\n"
+        );
+    }
+
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, cycle_components, environment,
