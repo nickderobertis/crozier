@@ -3861,6 +3861,17 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
                     ..Schema::default()
                 });
             }
+            // An `additionalProperties` beside the list describes the `object`
+            // member alone: the `union-modelling/multi-type-open-object`
+            // measurement's `details: {type: [object, array, null],
+            // additionalProperties: {}}` is Fern's hoisted
+            // `BatchReceiptDetails = Union[Dict[str, Any], List[Any]]`.
+            if let Some(object) = members
+                .iter_mut()
+                .find(|member| matches!(&member.ty, Some(TypeField::Single(ty)) if ty == "object"))
+            {
+                object.additional_properties = node.additional_properties.take();
+            }
             node.ty = None;
             node.any_of = Some(members);
             node.multi_type_union = true;

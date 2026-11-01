@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Map tiles
+  version: "1.0"
+paths:
+  /tiles:
+    get:
+      operationId: listTiles
+      parameters:
+        - name: corners
+          in: query
+          required: false
+          style: form
+          explode: false
+          description: Two or three corner objects bounding the tiles.
+          schema:
+            oneOf:
+              - type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: object
+              - type: array
+                minItems: 3
+                maxItems: 3
+                items:
+                  type: object
+        - name: zoom
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: array
+                items:
+                  type: integer
+              - type: array
+                items:
+                  type: string
+      responses:
+        "200":
+          description: The tiles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

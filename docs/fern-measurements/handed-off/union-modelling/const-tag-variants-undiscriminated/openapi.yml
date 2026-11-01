@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: Harbour fleet
+  version: "1.0"
+paths:
+  /vessels/{vesselId}:
+    get:
+      operationId: getVessel
+      parameters:
+        - name: vesselId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The vessel.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vessel"
+components:
+  schemas:
+    Vessel:
+      description: A vessel, told apart by its hull without a discriminator.
+      type: object
+      properties:
+        callSign:
+          type: string
+      required:
+        - callSign
+        - hull
+      oneOf:
+        - $ref: "#/components/schemas/Sailboat"
+        - $ref: "#/components/schemas/Barge"
+    Sailboat:
+      description: A vessel under sail.
+      type: object
+      properties:
+        hull:
+          const: sail
+        mastCount:
+          type: integer
+      required:
+        - mastCount
+    Barge:
+      description: A towed vessel.
+      type: object
+      properties:
+        hull:
+          const: barge
+        cargoTonnes:
+          type: number
+      required:
+        - cargoTonnes

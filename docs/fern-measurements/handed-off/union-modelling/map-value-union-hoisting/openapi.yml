@@ -1,0 +1,80 @@
+openapi: 3.1.0
+info:
+  title: Tide gauges
+  version: "1.0"
+paths:
+  /stations:
+    get:
+      operationId: listStations
+      responses:
+        "200":
+          description: Every station.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationBoard"
+components:
+  schemas:
+    Depth:
+      oneOf:
+        - type: string
+        - type: number
+    Buoy:
+      oneOf:
+        - type: object
+          required:
+            - label
+            - lit
+          properties:
+            label:
+              type: string
+            lit:
+              type: boolean
+        - type: "null"
+    DepthsByStation:
+      description: Depth readings keyed by station.
+      type: object
+      additionalProperties:
+        allOf:
+          - $ref: "#/components/schemas/Depth"
+    BuoysByStation:
+      description: Buoys keyed by station, each possibly absent.
+      type: object
+      additionalProperties:
+        allOf:
+          - $ref: "#/components/schemas/Buoy"
+    SoundingsByStation:
+      description: Soundings keyed by station, as an inline union.
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: integer
+    TideGrid:
+      description: Rows of columns of readings keyed by gauge.
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              height:
+                type: number
+              trend:
+                type: object
+                properties:
+                  rising:
+                    type: boolean
+    StationBoard:
+      type: object
+      properties:
+        depths:
+          $ref: "#/components/schemas/DepthsByStation"
+        buoys:
+          $ref: "#/components/schemas/BuoysByStation"
+        soundings:
+          $ref: "#/components/schemas/SoundingsByStation"
+        grid:
+          $ref: "#/components/schemas/TideGrid"

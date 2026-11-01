@@ -8081,8 +8081,15 @@ impl InlineHoister<'_> {
             // `matchAuthorById` responds `oneOf: [author, authorUpdated]` and
             // `authorUpdated` is a `nullable: true` boolean, so its golden's alias
             // is `Union[Author, Optional[AuthorUpdated]]`.
+            // A target admitting null through a `type: null` member is no
+            // different: the `union-modelling/nullable-reference-member`
+            // measurement's `since` is `Union[Optional[Moment], str]`.
             let named = TypeRef::Named(ref_to_class(reference));
-            return if variant.nullable == Some(true) {
+            return if variant.nullable == Some(true)
+                || self
+                    .schemas
+                    .is_some_and(|schemas| referenced_schema_accepts_none(variant, schemas))
+            {
                 optional_type_ref(named)
             } else {
                 named
@@ -8978,6 +8985,18 @@ impl InlineHoister<'_> {
                     variants.push(TypeRef::List(Box::new(element)));
                     continue;
                 }
+            }
+            // A member naming a component that admits null is that component
+            // made optional in its own slot, as in a component union: the
+            // `union-modelling/nullable-reference-member` measurement's `since`
+            // is `Union[Optional[Moment], str]`.
+            if member.reference.is_some()
+                && self
+                    .schemas
+                    .is_some_and(|schemas| referenced_schema_accepts_none(member, schemas))
+            {
+                variants.push(optional_type_ref(base_type_ref(member)));
+                continue;
             }
             variants.push(base_type_ref(member));
         }
@@ -12898,12 +12917,18 @@ impl Builder<'_> {
                     (false, _) if !schema_accepts_none(schema, self.schemas) => {
                         TypeRef::Union(members)
                     }
-                    (false, _) if variants.iter().all(is_plain_scalar) => {
-                        // A 3.0 `nullable: true` beside two or more plain
-                        // scalars is not read onto the alias: the hand-written
+                    (false, _)
+                        if variants.iter().all(is_plain_scalar)
+                            || schema.nullable == Some(true) =>
+                    {
+                        // A 3.0 `nullable: true` beside two or more members is
+                        // not read onto the alias: the hand-written
                         // `pharmacy-nullable-scalar-unions` fixture's `Dose` is
                         // `{nullable: true, oneOf: [integer, string]}` and Fern's
-                        // alias is `typing.Union[int, str]`.
+                        // alias is `typing.Union[int, str]`, and a `$ref` member
+                        // is no different (the `nullable-anyof-ref-member-optional`
+                        // measurement's `{nullable: true, anyOf: [string, $ref
+                        // Swatch]}` is `typing.Union[str, Swatch]`).
                         TypeRef::Union(members)
                     }
                     (false, _) => optional_type_ref(TypeRef::Union(members)),
@@ -13296,11 +13321,24 @@ impl Builder<'_> {
             return Some(sequence_of(array, TypeRef::Named(name)));
         }
         if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
-            let variants = members
+            let hoisted = self.types.len();
+            let variants: Vec<TypeRef> = members
                 .iter()
                 .enumerate()
                 .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
                 .collect();
+            // Alternatives that all convert to one type are that type, as in
+            // [`Self::composed_variant`]: the `union-modelling/
+            // identical-primitive-members` measurement's `corners` element is
+            // `oneOf: [string, string]`, and Fern's field is
+            // `List[List[str]]` with nothing hoisted. Members collapsing to one
+            // model keep that model's named element.
+            if let Some(only) = collapsed_union(members, &dedupe_union_members(variants.clone()))
+                .filter(|only| !matches!(only, TypeRef::Named(_)))
+            {
+                self.types.truncate(hoisted);
+                return Some(sequence_of(array, only));
+            }
             self.push_alias(
                 &name,
                 module,
@@ -14969,13 +15007,26 @@ impl Builder<'_> {
                                 );
                             }
                             let name = format!("{owner}{}ItemItem", naming::class_name(prop));
-                            let variants = members
+                            let hoisted = self.types.len();
+                            let variants: Vec<TypeRef> = members
                                 .iter()
                                 .enumerate()
                                 .map(|(index, variant)| {
                                     self.variant_ref(&name, index, variant, members)
                                 })
                                 .collect();
+                            // Alternatives that all convert to one type are that
+                            // type, with nothing hoisted: the `union-modelling/
+                            // identical-primitive-members` measurement's
+                            // `corners` element is `oneOf: [string, string]`,
+                            // and Fern's field is `List[List[str]]`.
+                            if let Some(only) =
+                                collapsed_union(members, &dedupe_union_members(variants.clone()))
+                                    .filter(|only| !matches!(only, TypeRef::Named(_)))
+                            {
+                                self.types.truncate(hoisted);
+                                return sequence_of(prop_schema, sequence_of(items, only));
+                            }
                             self.push_alias(
                                 &name,
                                 naming::module_name(&name),
@@ -15568,7 +15619,15 @@ impl Builder<'_> {
                             };
                             // A `$ref`'s sibling `nullable` is not read: Cradl's
                             // `{$ref: groundTruthList, nullable: true}` member is
-                            // the bare `GroundTruthList` in Fern's union.
+                            // the bare `GroundTruthList` in Fern's union. A target
+                            // that itself admits null is: the `union-modelling/
+                            // nullable-reference-member` measurement's
+                            // `startedAt` is `Union[Optional[Moment], int]`.
+                            if m.reference.is_some()
+                                && referenced_schema_accepts_none(m, self.schemas)
+                            {
+                                return optional_type_ref(ty);
+                            }
                             nullable_member(m, ty)
                         })
                         .collect();
@@ -15618,7 +15677,15 @@ impl Builder<'_> {
             return type_ref;
         }
         if let Some(reference) = &variant.reference {
-            return TypeRef::Named(ref_to_class(reference));
+            let named = TypeRef::Named(ref_to_class(reference));
+            // A member naming a component that admits null is that component
+            // made optional, in the member's own slot (see
+            // `docs/fern-measurements/handed-off/union-modelling/`).
+            return if referenced_schema_accepts_none(variant, self.schemas) {
+                optional_type_ref(named)
+            } else {
+                named
+            };
         }
         if let Some(values) = string_enum_values(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
