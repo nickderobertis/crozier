@@ -23,7 +23,7 @@ encoding-headers	mediaType.encoding.headers	none
 encoding-style	mediaType.encoding.style	none	
 response-status-literal	operation.responses	src/ir.rs::success_response_entry,src/ir.rs::resolve_errors,src/ir.rs::error_class_name	`success_response_key` is the stream-condition split's helper, not a status-code read
 range-2XX	fixture=openlinksw-osdb,fixture=sigstore-rekor	src/ir.rs::uses_codegen_request_body_name,src/ir.rs::has_bodyless_success	
-response-default	operation.responses.default	src/ir.rs::success_response_entry[=code\.as_str\(\) == "default"]	`success_response_key` is the stream-condition split's helper; this row's arm is `success_response_entry`'s `default` fallback
+response-default	operation.responses.default	src/ir.rs::fern_default_response[=get_key_value\("default"\)]	`success_response_key` is the stream-condition split's helper; this row's arm is `fern_default_response`, the `default` fallback read only when no 200, 201, 202 or 204 is declared
 response-description	response.description	src/ir.rs::success_response_doc,src/emit.rs::push_return_doc[=None => \{\}]	A response with no description key adds no Returns line.
 response-headers	response.headers	none	
 response-content	response.content	src/ir.rs::success_response_schema,src/ir.rs::error_body_type,src/openapi.rs::response_schemas,src/ir.rs::hoist_error_body_types[=\.map\(\x7c\(_\x2c media\)\x7c media\)]	—
@@ -597,7 +597,7 @@ media-type-event-stream-event-dispatch	operation.responses:event-stream-event-di
 operation-id-hyphenated-tag-method	fixture=parcelis-api	src/ir.rs::method_from_hyphenated_tag_id	
 patch-inline-nullable-unrequired-props-omit	fixture=blufiles-api	src/ir.rs::hoist_inline_object[=nullable: is_optional\(prop_schema\)$]	
 request-body-described-inline-scalar	fixture=tuxedo-dapp	src/ir.rs::resolve_request_body[=let described = schema\.reference\.is_none\(\) && schema\.description\.is_some\(\);]	
-response-contentless-200-with-created	fixture=osparc-director-v2	src/ir.rs::success_response_with_content[\.or_else\(\x7c\x7c \{]	
+response-contentless-200-with-created	fixture=osparc-director-v2	src/ir.rs::success_response_with_content[=!response\.content\.is_empty\(\) && has_dispatchable_media]	
 operation-id-untagged-list-or-set	fixture=ollama-api	src/naming.rs::is_reserved_method	
 described-ref-oneof-alias-without-docstring	components.schemas:described-object-ref-union	src/emit.rs::render_type_decl[=let docstring = \(!matches!\(alias\.target, TypeRef::Union\(_\)\)\)]	The union test every alias passes drops the description from a union alias; scalar and collection aliases keep theirs.
 variant-own-fields-before-allof-parent-fields	components.schemas:variant-own-fields-before-base	src/ir.rs::append_base_fields[=^ {8}visited\.push\(reference\);]	A base's fields are appended after the variant's own, which member_fields collects first.
