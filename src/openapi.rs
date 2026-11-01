@@ -4871,6 +4871,21 @@ fn resolve_parameter(param: &Parameter, defs: &IndexMap<String, Parameter>) -> P
     param.clone()
 }
 
+/// Copy each path item's servers into every operation under it that declares
+/// none of its own, then empty the path item's list: Fern reads path-item
+/// servers as the operations' (Deepgram's `/v1/agent/...` path names the
+/// `Agent` server), and nothing downstream reads them on the path item.
+fn inherit_path_item_servers(doc: &mut OpenApi) {
+    for item in doc.paths.values_mut() {
+        let servers = std::mem::take(&mut item.servers);
+        for op in item.operation_slots().into_iter().flatten() {
+            if op.servers.is_empty() {
+                op.servers.clone_from(&servers);
+            }
+        }
+    }
+}
+
 /// Fold `components.parameters` `$ref`s and path-item-level parameters into each
 /// operation's own parameter list, so downstream generation sees one flat, inline
 /// list per operation.
@@ -4888,21 +4903,6 @@ fn resolve_parameter(param: &Parameter, defs: &IndexMap<String, Parameter>) -> P
 /// same name and location (per the spec). Inert on specs that already inline every
 /// parameter per operation (every synthetic fixture), so it changes no existing
 /// output.
-/// Copy each path item's servers into every operation under it that declares
-/// none of its own, then empty the path item's list: Fern reads path-item
-/// servers as the operations' (Deepgram's `/v1/agent/...` path names the
-/// `Agent` server), and nothing downstream reads them on the path item.
-fn inherit_path_item_servers(doc: &mut OpenApi) {
-    for item in doc.paths.values_mut() {
-        let servers = std::mem::take(&mut item.servers);
-        for op in item.operation_slots().into_iter().flatten() {
-            if op.servers.is_empty() {
-                op.servers.clone_from(&servers);
-            }
-        }
-    }
-}
-
 fn normalize_parameters(doc: &mut OpenApi) {
     let defs = doc.components.parameters.clone();
     for item in doc.paths.values_mut() {
