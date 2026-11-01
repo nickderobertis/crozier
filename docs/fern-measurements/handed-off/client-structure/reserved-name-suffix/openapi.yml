@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Seed Vault
+  version: 1.0.0
+  description: A seed bank's catalogue, written to measure how reserved and colliding names are suffixed.
+servers:
+  - url: https://vault.example.org
+paths:
+  /packets/{uuid}:
+    get:
+      operationId: getPacket
+      tags: [Packets]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The packet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packet'
+    put:
+      operationId: relabelPacket
+      tags: [Packets]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PacketLabel'
+      responses:
+        '200':
+          description: The relabelled packet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packet'
+components:
+  schemas:
+    PacketLabel:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+        note:
+          type: string
+    Packet:
+      type: object
+      required: [species, viability, dict]
+      properties:
+        species:
+          type: string
+        viability:
+          type: number
+          description: Germination rate as a fraction.
+        "viability (%)":
+          type: string
+          description: Germination rate as a percentage label.
+        dict:
+          $ref: '#/components/schemas/Glossary'
+        "moisture (%)":
+          type: number
+          description: Moisture content, with no sibling sharing its stem.
+        "seed % weight":
+          type: number
+          description: A punctuation-only word between two words.
+        lotCode:
+          type: string
+        lotCode_:
+          type: string
+          description: A second spelling of the lot code, differing by a trailing underscore.
+    Glossary:
+      type: object
+      properties:
+        common:
+          type: string
+        latin:
+          type: string

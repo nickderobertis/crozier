@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Cluster Vault
+  version: 1.0.0
+  description: An edge cluster's secret store, written to measure a path parameter declared without required.
+servers:
+  - url: https://vault.example.net
+components:
+  parameters:
+    site:
+      name: site
+      in: path
+      description: Site identifier.
+      schema:
+        type: string
+        format: uuid
+    shelf:
+      name: shelf
+      in: path
+      description: Shelf holding the secret.
+      schema:
+        type: string
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic
+security:
+  - basic: []
+paths:
+  /site/{site}/status:
+    get:
+      operationId: getSiteStatus
+      parameters:
+        - $ref: '#/components/parameters/site'
+      responses:
+        '200':
+          description: The site's status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: boolean
+  /site/{site}/shelf/{shelf}/secret/{key}:
+    parameters:
+      - $ref: '#/components/parameters/site'
+      - $ref: '#/components/parameters/shelf'
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: putSecret
+      requestBody:
+        required: true
+        description: The secret, as a binary blob.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Stored.
+    delete:
+      operationId: deleteSecret
+      parameters:
+        - name: reason
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removed.

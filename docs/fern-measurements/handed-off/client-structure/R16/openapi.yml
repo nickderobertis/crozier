@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Cloud Drive
+  version: 1.0.0
+  description: A file-sync server, written to measure a group named core.
+servers:
+  - url: https://drive.example.org
+paths:
+  /status:
+    get:
+      operationId: get_status
+      tags: [core]
+      responses:
+        '200':
+          description: Server status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatus'
+  /files:
+    get:
+      operationId: list_files
+      tags: [files]
+      responses:
+        '200':
+          description: Files.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    ServerStatus:
+      type: object
+      required: [installed, version]
+      properties:
+        installed:
+          type: boolean
+        version:
+          type: string

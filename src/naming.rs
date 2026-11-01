@@ -102,15 +102,13 @@ pub fn prose_identifier(input: &str) -> String {
 }
 
 /// The identifier Fern derives from an operation **summary**, which is
-/// [`prose_identifier`] with full stops deleted rather than treated as word
-/// boundaries. Sentence punctuation is not a word break on this path: corpus row
-/// 123's `… CertificateOrKeyId e.g. revoke reason` names the method
-/// `…_certificate_or_key_id_eg_revoke_reason`, not `…_e_g_revoke_reason`. Every
-/// other separator still breaks — the same corpus derives `read/unread` as
-/// `read_unread` and `re-enabled` as `re_enabled` — and the URL path Fern falls
-/// back to when there is no summary keeps the full stop as a boundary
-/// (`/_proxy/openapi.json` → `get_proxy_openapi_json`), which is why this is a
-/// separate transform rather than a change to [`prose_identifier`].
+/// [`prose_identifier`] over a summary, a full stop breaking words as every
+/// other separator does: Boruta's `Serve robots.txt` names the method
+/// `serve_robots_txt`. Corpus row 123's `… CertificateOrKeyId e.g. revoke
+/// reason` still names its method `…_certificate_or_key_id_eg_revoke_reason`,
+/// because the one-letter words `e` and `g` join as described below, and an
+/// `e.g. a` joins all three (`…_ega_…`). The same corpus derives `read/unread`
+/// as `read_unread` and `re-enabled` as `re_enabled`.
 ///
 /// Fern camel-cases the summary before snake-casing it, so consecutive
 /// one-letter words after the first join as one capital run: MockServer's
@@ -118,7 +116,7 @@ pub fn prose_identifier(input: &str) -> String {
 /// `load_ag_rpc_…`, while `retrieve gRPC …` keeps `retrieve_g_rpc_…`.
 #[must_use]
 pub fn summary_identifier(input: &str) -> String {
-    let snake = prose_identifier(&input.replace('.', ""));
+    let snake = prose_identifier(&input.replace('.', " "));
     let is_letter = |word: &str| word.len() == 1 && word.chars().all(|c| c.is_ascii_alphabetic());
     let mut words: Vec<String> = Vec::new();
     let mut previous_letter = false;
@@ -261,14 +259,21 @@ pub fn request_field_name(wire_name: &str) -> String {
 /// delimited chunk (`user_fields[1]` → `user_fields1`, `PF 17,5%` → `pf_175`)
 /// but never reaches across a space, so `EAN 1` stays `ean_1` and `PF 17% ALC`
 /// stays `pf_17_alc`. Chunking first is what keeps the two apart; every name
-/// without whitespace is a single chunk and folds exactly as before.
+/// without whitespace is a single chunk and folds exactly as before. A chunk
+/// that folds to nothing still leaves its separator, so Resemble's
+/// `certainty (%)` is `certainty_` beside its `certainty`.
 fn field_snake_case(wire_name: &str) -> String {
-    wire_name
+    let chunks: Vec<String> = wire_name
         .split_whitespace()
         .map(|chunk| collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(chunk))))
-        .filter(|chunk| !chunk.is_empty())
-        .collect::<Vec<String>>()
-        .join("_")
+        .collect();
+    // A leading empty chunk would make the name start with `_`; only one after
+    // a word keeps its separator.
+    let first = chunks
+        .iter()
+        .position(|chunk| !chunk.is_empty())
+        .unwrap_or(chunks.len());
+    chunks[first..].join("_")
 }
 
 /// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
@@ -987,7 +992,8 @@ pub fn is_reserved(name: &str) -> bool {
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
 /// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
 /// `json_`, and `construct` (`BaseModel.construct()`) is `construct_`, measured
-/// on the authored probe `376-354-model-property-construct`. The protection
+/// on the authored probe `376-354-model-property-construct`, and `dict`
+/// (`BaseModel.dict()`) is `dict_`, as Nussknacker's `TypedDict.dict` is. The protection
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 #[must_use]
@@ -995,7 +1001,7 @@ pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
     if matches!(
         name.as_str(),
-        "construct" | "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
+        "construct" | "copy" | "dict" | "json" | "kwargs" | "schema" | "self" | "validate"
     ) {
         format!("{name}_")
     } else {
@@ -1187,8 +1193,12 @@ mod tests {
         assert_eq!(field_name("PF 17% ALC"), "pf_17_alc");
         assert_eq!(field_name("PF 17,5%"), "pf_175");
         assert_eq!(field_name("PF 17,5% ALC"), "pf_175_alc");
-        // A chunk of pure punctuation contributes no segment at all.
-        assert_eq!(field_name("PF 17 % ALC"), "pf_17_alc");
+        // A chunk of pure punctuation contributes no word, but keeps its
+        // separator (the `reserved-name-suffix` measurement's `viability (%)`
+        // and `seed % weight`).
+        assert_eq!(field_name("PF 17 % ALC"), "pf_17__alc");
+        assert_eq!(field_name("certainty (%)"), "certainty_");
+        assert_eq!(field_name("(%) share"), "share");
         assert_eq!(field_name("   "), "");
         // Non-ASCII letters remain separators on this path — Fern does not fold
         // them here, unlike the enum path.
@@ -1500,8 +1510,18 @@ mod tests {
     }
 
     #[test]
-    fn summary_identifier_deletes_full_stops_but_keeps_other_separators() {
-        // Sentence punctuation inside a summary is deleted, not broken on.
+    fn summary_identifier_breaks_words_at_full_stops_and_other_separators() {
+        // A full stop breaks words: `robots.txt` is two of them.
+        assert_eq!(summary_identifier("Serve robots.txt"), "serve_robots_txt");
+        assert_eq!(
+            summary_identifier("Serve the identity robots.txt"),
+            "serve_the_identity_robots_txt"
+        );
+        // One-letter words a full stop separates join as one capital run.
+        assert_eq!(
+            summary_identifier("List rows, e.g. a page of them"),
+            "list_rows_ega_page_of_them"
+        );
         assert_eq!(
             summary_identifier("Update a software statement certificate with the given CertificateOrKeyId e.g. revoke reason"),
             "update_a_software_statement_certificate_with_the_given_certificate_or_key_id_eg_revoke_reason"

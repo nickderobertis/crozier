@@ -124,6 +124,11 @@ enum RefLoc {
     Errors,
 }
 
+/// The runtime package every SDK carries. A group of that name shares its
+/// directory: its clients sit beside the runtime modules, and the runtime's own
+/// `__init__.py` is the package's, as Fern keeps it (nextcloud's `core` tag).
+const RUNTIME_PACKAGE: &str = "core";
+
 /// How many directory segments a client module name holds. A module is normally
 /// one (`videos`), but an `x-crozier-sdk-group-name` list nests it
 /// (`catalogs/mcp_servers`), and the package root is zero.
@@ -154,9 +159,12 @@ fn module_stem(module: &str) -> &str {
 /// exposing their children.
 ///
 /// A package's children are ordered the way Fern writes them: those that own
-/// endpoints first, in the order the document declares them, then the pure parents
-/// sorted by name. `catalogs`, `internal` and `settings` land after `agents` …
-/// `skills` in TrueForge's root client for exactly that reason.
+/// endpoints first, each at the first operation the document declares directly in
+/// it (an operation of a grandchild places nothing), then the pure parents sorted
+/// by name. `catalogs`, `internal` and `settings` land after `agents` … `skills`
+/// in TrueForge's root client for exactly that reason, and Deepgram's `keys`
+/// precedes `members` under `projects` though a `members/invites` operation
+/// comes before both.
 fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>> {
     let owns_endpoints: BTreeSet<&str> = endpoint_modules.iter().map(String::as_str).collect();
     let mut owning: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -170,9 +178,11 @@ fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>>
             }
             path.push_str(segment);
             if owns_endpoints.contains(path.as_str()) {
-                let siblings = owning.entry(parent).or_default();
-                if !siblings.contains(&path) {
-                    siblings.push(path.clone());
+                if path == *module {
+                    let siblings = owning.entry(parent).or_default();
+                    if !siblings.contains(&path) {
+                        siblings.push(path.clone());
+                    }
                 }
             } else {
                 parents.entry(parent).or_default().insert(path.clone());
@@ -541,6 +551,12 @@ impl Imports {
     /// deep, and a nested client path (`{pkg}/catalogs/mcp_servers/`) is as deep as
     /// its own segments, so the count comes from [`Imports::root_prefix`].
     fn core_prefix(&self) -> String {
+        // A group named `core` writes its clients into the runtime package
+        // itself, and Fern's import the runtime as their siblings
+        // (`from .client_wrapper import …`): nextcloud's `core` tag.
+        if matches!(&self.loc, RefLoc::Client(module) if module == RUNTIME_PACKAGE) {
+            return String::new();
+        }
         format!("{}core", self.root_prefix())
     }
 
@@ -1825,7 +1841,7 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 names,
                 &child_types,
             )?);
-        } else {
+        } else if module != RUNTIME_PACKAGE {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
                 contents: "\n\n\n\n".to_string(),
@@ -2090,6 +2106,9 @@ fn environment_file(
         for field in &fields {
             body.push_str(&format!("        self.{field} = {field}\n"));
         }
+        // Two blank lines open the assignments and none part them, as Fern
+        // writes Deepgram's `PRODUCTION` and `AGENT`.
+        body.push_str("\n\n");
         for (member, url) in environment.members() {
             let arguments: Vec<String> =
                 std::iter::once(format!("base=\"{}\"", escape_py_str(url)))
@@ -2101,7 +2120,7 @@ fn environment_file(
                     )
                     .collect();
             body.push_str(&format!(
-                "\n\n{name}.{member} = {name}({})\n",
+                "{name}.{member} = {name}({})\n",
                 arguments.join(", ")
             ));
         }
@@ -2243,6 +2262,25 @@ fn render_lazy_loader(
     )
 }
 
+/// A `TYPE_CHECKING` block over sorted `(name, module)` pairs: every name a
+/// module exports in one `from .mod import a, b` statement, at the place of the
+/// module's first name. Fern imports a discriminated union and its variant
+/// wrappers in one statement, so darwin's `ActPayRequestSource`, sorted ahead of
+/// `ActPayRequestSourceOneTime`, carries `ActPayRequestSource_OneTime` with it.
+fn module_grouped_imports(named: &[(String, String)]) -> String {
+    let mut groups: indexmap::IndexMap<&str, Vec<&str>> = indexmap::IndexMap::new();
+    for (name, module) in named {
+        groups
+            .entry(module.as_str())
+            .or_default()
+            .push(name.as_str());
+    }
+    groups
+        .iter()
+        .map(|(module, names)| format!("    from .{module} import {}\n", names.join(", ")))
+        .collect()
+}
+
 /// The `types/__init__.py` lazy loader. `_dynamic_imports`, `__all__`, and the
 /// `TYPE_CHECKING` block are all emitted alphabetically.
 fn types_init_file(
@@ -2268,26 +2306,18 @@ fn types_init_file(
     let mut ordered = names.clone();
     ordered.sort();
 
-    // Consecutive names sharing a module collapse into one `from .mod import a, b`
-    // line (Fern groups a discriminated union's names on a single import).
     let module = |n: &str| {
         module_of
             .get(n)
             .cloned()
             .unwrap_or_else(|| naming::module_name(n))
     };
-    let mut type_checking = String::new();
-    let mut i = 0;
-    while i < ordered.len() {
-        let m = module(&ordered[i]);
-        let mut group = vec![ordered[i].clone()];
-        while i + 1 < ordered.len() && module(&ordered[i + 1]) == m {
-            i += 1;
-            group.push(ordered[i].clone());
-        }
-        type_checking.push_str(&format!("    from .{m} import {}\n", group.join(", ")));
-        i += 1;
-    }
+    let type_checking = module_grouped_imports(
+        &ordered
+            .iter()
+            .map(|n| (n.clone(), module(n)))
+            .collect::<Vec<_>>(),
+    );
 
     let pairs: Vec<(String, String)> = names
         .iter()
@@ -2320,15 +2350,7 @@ fn tag_types_init_file(
     // Consecutive names sharing a module collapse into one import, as in
     // `types_init_file`: RS-Server's create-item body union and its two
     // wrappers come from one `from .create_item_… import (…)`.
-    let mut type_checking = String::new();
-    for group in named.chunk_by(|a, b| a.1 == b.1) {
-        let names: Vec<&str> = group.iter().map(|(n, _)| n.as_str()).collect();
-        type_checking.push_str(&format!(
-            "    from .{} import {}\n",
-            group[0].1,
-            names.join(", ")
-        ));
-    }
+    let type_checking = module_grouped_imports(&named);
     let pairs: Vec<(String, String)> = named
         .iter()
         .map(|(n, m)| (n.clone(), format!(".{m}")))
@@ -3242,17 +3264,31 @@ fn reference_entry(
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
-    for (name, ty, desc) in &mp.path {
+    // Fern lists the required parameters before the optional ones, a path
+    // parameter included: AMRC's optional `cluster` follows the required `key`
+    // and the body.
+    let (required_path, optional_path): (Vec<_>, Vec<_>) = mp
+        .path
+        .iter()
+        .partition(|(_, ty, _)| !ty.starts_with("typing.Optional["));
+    let path_row = |(name, ty, desc): &(String, String, Option<String>)| {
         // A *declared* description — even the empty string — gets the ` — {desc}`
         // separator (Fern emits the em-dash whenever the parameter carries a
         // `description` key); only an omitted (`None`) one gets the bare space.
-        let suffix = reference_param_suffix(desc.as_deref());
-        params.push(ParamRow {
+        ParamRow {
             name: name.trim_end_matches('_').to_string(),
             annot: reference_param_annotation(&ty.replace("typing.Sequence[", "typing.List[")),
-            suffix,
-        });
-    }
+            suffix: reference_param_suffix(desc.as_deref()),
+        }
+    };
+    params.extend(required_path.iter().copied().map(path_row));
+    let mut optional_path_rows = Some(
+        optional_path
+            .iter()
+            .copied()
+            .map(path_row)
+            .collect::<Vec<_>>(),
+    );
     let reference_body = if !ep.body_schema_dropped {
         ep.request_body
             .as_ref()
@@ -3318,6 +3354,9 @@ fn reference_entry(
     // `constant-header-docs-arguments` departure).
     let reference_header = mp.header;
     for dp in ordered_keyword_params(&mp.query, &reference_header, &reference_body) {
+        if dp.default.is_some() {
+            params.extend(optional_path_rows.take().unwrap_or_default());
+        }
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let query_is_list = ep
             .query_params
@@ -3413,6 +3452,7 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
+    params.extend(optional_path_rows.take().unwrap_or_default());
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
@@ -10903,7 +10943,22 @@ fn build_example_inner(
             wire.to_string()
         }
     };
-    for pp in &ep.path_params {
+    // A docstring's worked call names the required path arguments before the
+    // optional ones, as Fern's docstring writer orders them: AMRC's
+    // `delete_a_secret_value_from_an_edge_cluster` passes `key` before the
+    // optional `cluster`, `namespace` and `name` it declares first. The
+    // reference writer keeps their declared order.
+    let optional_path = |pp: &&crate::ir::PathParam| matches!(pp.type_ref, TypeRef::Optional(_));
+    let ordered_path_params = ep
+        .path_params
+        .iter()
+        .filter(|pp| reference || !optional_path(pp))
+        .chain(
+            ep.path_params
+                .iter()
+                .filter(|pp| !reference && optional_path(pp)),
+        );
+    for pp in ordered_path_params {
         if (reference || documentation) && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
         {
             continue;
@@ -12397,8 +12452,12 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
         // `client_wrapper.py`, which crozier generates from the auth/global-header
         // model and so must be wrapped like every other generated file.
+        // A `core` group's own clients are generated there too.
         let is_vendored = file.path.starts_with(&core_root)
-            && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
+            && !matches!(
+                file.path.file_name().and_then(|n| n.to_str()),
+                Some("client_wrapper.py" | "client.py" | "raw_client.py")
+            );
         let is_vendored_scaffolding = file.path == default_clients
             || file.path == generated_aiohttp_test
             || file.path == generated_conftest;
@@ -12494,6 +12553,62 @@ mod tests {
         UnionMember,
     };
     use crate::wrap::Doc;
+
+    #[test]
+    fn a_child_package_takes_its_place_at_its_own_first_operation() {
+        let modules: Vec<String> = [
+            "library/loans/renewals",
+            "library/archive/boxes",
+            "library/members",
+            "library/loans",
+        ]
+        .iter()
+        .map(|module| (*module).to_string())
+        .collect();
+        let children = super::module_children(&modules);
+        assert_eq!(
+            children["library"],
+            ["library/members", "library/loans", "library/archive"]
+        );
+        assert_eq!(children["library/loans"], ["library/loans/renewals"]);
+    }
+
+    #[test]
+    fn a_module_s_names_share_one_type_checking_import() {
+        let named: Vec<(String, String)> = [
+            ("PaymentRequest", "payment_request"),
+            ("PaymentRequestSource", "payment_request_source"),
+            ("PaymentRequestSourceCard", "payment_request_source_card"),
+            ("PaymentRequestSource_Card", "payment_request_source"),
+        ]
+        .iter()
+        .map(|(name, module)| ((*name).to_string(), (*module).to_string()))
+        .collect();
+        assert_eq!(
+            super::module_grouped_imports(&named),
+            "    from .payment_request import PaymentRequest\n    from .payment_request_source import PaymentRequestSource, PaymentRequestSource_Card\n    from .payment_request_source_card import PaymentRequestSourceCard\n"
+        );
+    }
+
+    #[test]
+    fn a_core_group_imports_the_runtime_as_siblings() {
+        let mut core = Imports {
+            loc: RefLoc::Client("core".to_string()),
+            ..Imports::default()
+        };
+        core.add_core("client_wrapper", "SyncClientWrapper");
+        assert!(core
+            .render()
+            .contains("from .client_wrapper import SyncClientWrapper"));
+        let mut files = Imports {
+            loc: RefLoc::Client("files".to_string()),
+            ..Imports::default()
+        };
+        files.add_core("client_wrapper", "SyncClientWrapper");
+        assert!(files
+            .render()
+            .contains("from ..core.client_wrapper import SyncClientWrapper"));
+    }
 
     /// Every file the generator writes for `document`, before `ruff format`.
     fn files_for(document: serde_json::Value) -> Vec<(String, String)> {

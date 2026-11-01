@@ -455,6 +455,11 @@ pub struct SecurityScheme {
     pub(crate) token_variable_name_crozier: Option<serde_json::Value>,
     #[serde(rename = "x-fern-token-variable-name", default)]
     pub(crate) token_variable_name_fern: Option<serde_json::Value>,
+    /// `x-bearer-format`: on a header `apiKey` scheme, any value makes Fern send
+    /// the key behind `Bearer ` (Ironclad's `Authorization` key). Read by the
+    /// IR's auth model only.
+    #[serde(rename = "x-bearer-format", default)]
+    pub(crate) bearer_format: Option<serde_json::Value>,
 }
 
 /// How a security scheme's credential is named in the generated client: the
@@ -636,6 +641,12 @@ pub struct PathItem {
     /// operation at load time by `normalize_parameters`; empty after that pass.
     #[serde(default)]
     pub parameters: Vec<Parameter>,
+    /// Servers declared once on the path item. Fern reads them as each of its
+    /// operations' own unless the operation declares servers itself, so
+    /// `inherit_path_item_servers` copies them into every such operation and
+    /// empties this list; nothing downstream reads it.
+    #[serde(default)]
+    servers: Vec<Server>,
 }
 
 impl PathItem {
@@ -2953,6 +2964,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_array_properties(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
+    inherit_path_item_servers(&mut doc);
     reject_unemittable_parameters(&doc, path)?;
     reject_unemittable_operation_ids(&doc, path)?;
     normalize_responses(&mut doc);
@@ -4859,6 +4871,21 @@ fn resolve_parameter(param: &Parameter, defs: &IndexMap<String, Parameter>) -> P
     param.clone()
 }
 
+/// Copy each path item's servers into every operation under it that declares
+/// none of its own, then empty the path item's list: Fern reads path-item
+/// servers as the operations' (Deepgram's `/v1/agent/...` path names the
+/// `Agent` server), and nothing downstream reads them on the path item.
+fn inherit_path_item_servers(doc: &mut OpenApi) {
+    for item in doc.paths.values_mut() {
+        let servers = std::mem::take(&mut item.servers);
+        for op in item.operation_slots().into_iter().flatten() {
+            if op.servers.is_empty() {
+                op.servers.clone_from(&servers);
+            }
+        }
+    }
+}
+
 /// Fold `components.parameters` `$ref`s and path-item-level parameters into each
 /// operation's own parameter list, so downstream generation sees one flat, inline
 /// list per operation.
@@ -4991,6 +5018,34 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         .collect();
     for key in &ignored_schemas {
         doc.components.schemas.shift_remove(key);
+    }
+    // A request body naming an ignored component keeps its operation, typed
+    // by nothing: Fern's FAI `create_code_record` takes `request: typing.Any`
+    // and `batch_create_code_records` `request: typing.Sequence[typing.Any]`
+    // where the body `$ref`s the ignored `CreateCodeRecordRequest`.
+    if !ignored_schemas.is_empty() {
+        for item in doc.paths.values_mut() {
+            for slot in item.operation_slots() {
+                let Some(body) = slot.as_mut().and_then(|op| op.request_body.as_mut()) else {
+                    continue;
+                };
+                for media in body.content.values_mut() {
+                    let Some(schema) = media.schema.as_mut() else {
+                        continue;
+                    };
+                    for_each_schema_in(schema, &mut |node| {
+                        if node
+                            .reference
+                            .as_deref()
+                            .and_then(referenced_component_schema)
+                            .is_some_and(|key| ignored_schemas.iter().any(|ignored| ignored == key))
+                        {
+                            *node = Schema::default();
+                        }
+                    });
+                }
+            }
+        }
     }
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
@@ -5756,6 +5811,41 @@ mod tests {
     /// Parse a YAML spec string into an [`OpenApi`] for the pure-filter unit tests.
     fn parse(spec: &str) -> OpenApi {
         crate::yaml::from_str(spec).expect("valid spec")
+    }
+
+    #[test]
+    fn path_item_servers_apply_to_operations_declaring_none() {
+        let mut doc = parse(
+            "openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths:\n  /a:\n    servers:\n      - {url: 'https://a.example', x-fern-server-name: A}\n    get: {responses: {'200': {description: ok}}}\n    post:\n      servers: [{url: 'https://own.example'}]\n      responses: {'200': {description: ok}}\n",
+        );
+        inherit_path_item_servers(&mut doc);
+        let item = &doc.paths["/a"];
+        let url = |op: &Option<Operation>| op.as_ref().unwrap().servers[0].url.clone();
+        assert_eq!(url(&item.get), "https://a.example");
+        assert_eq!(url(&item.post), "https://own.example");
+        assert!(item.servers.is_empty());
+    }
+
+    #[test]
+    fn a_body_naming_an_ignored_schema_becomes_untyped() {
+        let mut doc = parse(
+            "openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths:\n  /a:\n    post:\n      requestBody:\n        content:\n          application/json:\n            schema: {type: array, items: {$ref: '#/components/schemas/In'}}\n      responses: {'200': {description: ok}}\ncomponents:\n  schemas:\n    In: {type: object, x-fern-ignore: true}\n",
+        );
+        filter_ignored(&mut doc);
+        let schema = doc.paths["/a"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        let items = schema.items.as_deref().unwrap();
+        assert!(items.reference.is_none() && items.ty.is_none());
+        assert!(doc.components.schemas.is_empty());
     }
 
     fn op_ids(doc: &OpenApi) -> Vec<String> {

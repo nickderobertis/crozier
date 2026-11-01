@@ -127,7 +127,12 @@ each enum mode (45 and 44 files). The control's whole generated tree, README.md
 and reference.md included, matches them byte for byte. After main was merged
 at `cea260ad4`, `sha256sum -c` over a binary built at `cea260ad4` itself, and
 over one built from the merged tree, passed for every file in both modes. The
-digests therefore hold for the new base too.
+digests therefore hold for the new base too. One digest per mode has since
+moved, `src/fern/types/__init__.py`'s: the client-structure repair of `R10`
+([`../handed-off/client-structure.tsv`](../handed-off/client-structure.tsv))
+imports a discriminated union and its variant wrappers in one statement, as
+the certified pair does, so `Door` and `Parcel` each carry their wrappers on
+their own import line. Every other file still matches the base tree.
 
 `crates/crozier-e2e/tests/e2e/emission_parity.rs` holds each tree whole
 through the parity engine and the departures ledger. Each test then induces a

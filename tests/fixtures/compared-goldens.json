@@ -86,6 +86,23 @@
     "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
     "docs/fern-measurements/examples-docs/unread-date-time-examples/fern-expected": {},
     "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/R10/expected-literals": {},
+    "docs/fern-measurements/handed-off/client-structure/R10/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/R12/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/R16/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/R18/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/R2/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/auth-shape/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/environment-shape/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals": {},
+    "docs/fern-measurements/handed-off/client-structure/init-import-order/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/method-name-derivation/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/operation-id-tag-prefix-digit/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/reference-section-title/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/single-operation-tag-root-method/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/subpackage-order/fern-expected": {},
+    "docs/fern-measurements/handed-off/client-structure/untagged-operation-grouping/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
