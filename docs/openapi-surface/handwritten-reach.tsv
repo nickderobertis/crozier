@@ -9,7 +9,7 @@ byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 enum-media-selection	schema-example-outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	2	2
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
-ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	859	1644
+ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	877	1664
 ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::header_param_stem	9	9
 ferry-mapping-outside-schemas	ref-pointer-undeclared-component-head	src/ir.rs::Builder::discriminated_union[if all_dangling \{]	28	28
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
