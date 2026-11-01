@@ -341,15 +341,34 @@ fn a_missing_measurement_document_fails_without_writing() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-/// The causes whose verdict rests on what goes over the wire.
-const WIRE_CAUSES: [&str; 6] = [
-    "request-content-type-header",
-    "media-type-recognition",
-    "multipart-empty-body",
-    "multipart-scalar-union-part-encoding",
-    "streaming-detection",
-    "geo-json-success-media",
-];
+/// The causes whose verdict rests on what goes over the wire: the measurements
+/// that keep a `runtime.txt`, which the journey requires to be exactly the
+/// causes `bodies_media_wire.py` accepts.
+fn wire_causes() -> Vec<String> {
+    let mut causes: Vec<String> = std::fs::read_dir(repo_root().join(BODIES_MEDIA_DIR))
+        .expect("the measurement directory")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().join("runtime.txt").is_file())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    causes.sort();
+    causes
+}
+
+/// The run `runtime.txt` records for the certified pair's SDK: the lines between
+/// its `## certified pair` heading and that run's `exit` line.
+fn recorded_certified_run(cause: &str) -> String {
+    let recorded = std::fs::read_to_string(case_dir(cause).join("runtime.txt"))
+        .expect("the cause's runtime record");
+    let section = recorded
+        .split("## certified pair (fern-expected/src)\n")
+        .nth(1)
+        .unwrap_or_else(|| panic!("{cause}: runtime.txt records no certified run"));
+    let end = section
+        .find("exit 0\n")
+        .unwrap_or_else(|| panic!("{cause}: the recorded certified run did not exit 0"));
+    section[..end].to_string()
+}
 
 fn wire(python: &Path, cause: &str, src: &Path) -> std::process::Output {
     std::process::Command::new(python)
@@ -373,14 +392,30 @@ fn wire(python: &Path, cause: &str, src: &Path) -> std::process::Output {
 fn sdk_env_bodies_media_wire_journeys_hold_for_crozier_and_fern() {
     let python = runtime_python_env().expect("SDK runtime environment");
     let work = tempfile::tempdir().expect("work dir");
-    let missing = wire(&python, WIRE_CAUSES[0], &work.path().join("absent"));
+    let causes = wire_causes();
+    let help = wire(&python, "--help", work.path());
+    let accepted = String::from_utf8_lossy(&help.stdout);
+    let choices = accepted
+        .split_once('{')
+        .and_then(|(_, rest)| rest.split_once('}'))
+        .map(|(listed, _)| {
+            let mut listed: Vec<String> = listed.split(',').map(str::to_string).collect();
+            listed.sort();
+            listed
+        })
+        .unwrap_or_else(|| panic!("the wire journey lists no causes: {accepted}"));
+    assert_eq!(
+        choices, causes,
+        "the wire journey's causes are the measurements keeping a runtime.txt"
+    );
+    let missing = wire(&python, &causes[0], &work.path().join("absent"));
     assert_eq!(missing.status.code(), Some(2), "{missing:?}");
     assert!(
         String::from_utf8_lossy(&missing.stderr)
             .contains("must contain the generated fern package"),
         "{missing:?}"
     );
-    for cause in WIRE_CAUSES {
+    for cause in causes.iter().map(String::as_str) {
         let out = work.path().join(cause);
         generate(cause, &out);
         let mut lines = Vec::new();
@@ -399,14 +434,11 @@ fn sdk_env_bodies_media_wire_journeys_hold_for_crozier_and_fern() {
             lines[0], lines[1],
             "{cause}: crozier's SDK sends or returns otherwise"
         );
-        let recorded = std::fs::read_to_string(case_dir(cause).join("runtime.txt"))
-            .expect("the cause's runtime record");
-        for line in lines[0].lines() {
-            assert!(
-                recorded.contains(line),
-                "{cause}: runtime.txt does not record {line}"
-            );
-        }
+        assert_eq!(
+            lines[0],
+            recorded_certified_run(cause),
+            "{cause}: the run differs from the one runtime.txt records"
+        );
     }
     let content_types = String::from_utf8(
         wire(
