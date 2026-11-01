@@ -7,7 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import Profile
-    from .errors import NotFoundError
+    from .errors import ConflictError, NotFoundError
     from . import firings, kilns
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "ConflictError": ".errors",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
@@ -55,6 +56,7 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "ConflictError",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",

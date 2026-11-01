@@ -6262,6 +6262,13 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     if let Some(members) =
         schema.and_then(|schema| schema.one_of.as_ref().or(schema.any_of.as_ref()))
     {
+        // Members that are one and the same plain primitive collapse to it: a
+        // `text/plain` error typed `anyOf: [string, string]` carries `str`
+        // (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/response-type-resolution/`).
+        if let Some(primitive) = one_primitive_union(members) {
+            return primitive;
+        }
         return match members.as_slice() {
             [only] if only.reference.is_none() && is_inline_struct(only) => {
                 TypeRef::Named(format!("{class}Body"))
@@ -6306,6 +6313,17 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         Some(schema) => base_type_ref(schema),
         None => TypeRef::Primitive(Prim::Any),
     }
+}
+
+/// The primitive a union's members all are, when every member is the same plain
+/// primitive: Fern's importer collapses `anyOf: [string, string]` to `string`.
+fn one_primitive_union(members: &[Schema]) -> Option<TypeRef> {
+    let (first, rest) = members.split_first()?;
+    (is_plain_scalar(first)
+        && rest
+            .iter()
+            .all(|member| is_plain_scalar(member) && base_type_ref(member) == base_type_ref(first)))
+    .then(|| base_type_ref(first))
 }
 
 /// The schema an error response's body is converted from. Fern imports an
@@ -6370,6 +6388,11 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
                 // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                    // A union of one and the same primitive is that primitive,
+                    // and declares no body model (see `error_body_type`).
+                    if one_primitive_union(members).is_some() {
+                        continue;
+                    }
                     if let [only] = members.as_slice() {
                         if only.reference.is_none() && is_inline_struct(only) {
                             bodies.insert(name, only.clone());
@@ -6587,6 +6610,20 @@ fn unequal_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
 /// two primitives by their converted type. An absent body is the unknown schema.
 fn error_schemas_equal(a: Option<&Schema>, b: Option<&Schema>) -> bool {
     let unknown = |schema: Option<&Schema>| schema.is_none_or(is_unknown);
+    // A union of one and the same primitive is compared as that primitive, the
+    // type the body converts to (see `one_primitive_union`).
+    fn collapsed(schema: Option<&Schema>) -> Option<&Schema> {
+        schema.map(|schema| {
+            schema
+                .one_of
+                .as_deref()
+                .or(schema.any_of.as_deref())
+                .filter(|members| one_primitive_union(members).is_some())
+                .and_then(<[Schema]>::first)
+                .unwrap_or(schema)
+        })
+    }
+    let (a, b) = (collapsed(a), collapsed(b));
     match (a, b) {
         _ if unknown(a) || unknown(b) => unknown(a) && unknown(b),
         (Some(a), Some(b)) => body_shapes_equal(a, b),
@@ -30882,6 +30919,26 @@ mod bodies_media_tests {
         ));
         assert_eq!(submit.reference_body_type, None);
         assert!(declared(&ir, "ScoreSubmission"));
+    }
+
+    /// A `text/plain` error typed by a union of one and the same string is a
+    /// `str` body, and declares no `{Class}Body` model.
+    #[test]
+    fn an_error_union_of_one_primitive_is_that_primitive() {
+        let (_, ir) = measured("response-type-resolution");
+        let conflict = endpoint(&ir, "start_firing")
+            .errors
+            .iter()
+            .find(|error| error.class_name == "ConflictError")
+            .expect("a 409");
+        assert_eq!(conflict.body_type, TypeRef::Primitive(Prim::Str));
+        assert!(!declared(&ir, "ConflictErrorBody"));
+        let class = ir
+            .errors
+            .iter()
+            .find(|error| error.class_name == "ConflictError")
+            .expect("the ConflictError class");
+        assert_eq!(class.body_type, TypeRef::Primitive(Prim::Str));
     }
 
     /// A `$ref` to a `nullable: true` component types the error body optionally.

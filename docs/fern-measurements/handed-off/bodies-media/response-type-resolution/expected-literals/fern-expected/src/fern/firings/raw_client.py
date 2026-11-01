@@ -13,6 +13,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as, parse_sse_obj
 from ..core.request_options import RequestOptions
+from ..errors.conflict_error import ConflictError
 from ..errors.not_found_error import NotFoundError
 from .types.get_firing_response import GetFiringResponse
 from .types.get_schedule_response import GetScheduleResponse
@@ -142,6 +143,17 @@ class RawFiringsClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        str,
+                        parse_obj_as(
+                            type_=str,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         str,
@@ -394,6 +406,17 @@ class AsyncRawFiringsClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        str,
+                        parse_obj_as(
+                            type_=str,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         str,

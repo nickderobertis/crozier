@@ -120,6 +120,14 @@ paths:
             text/plain:
               schema:
                 type: string
+        '409':
+          description: The kiln is already firing.
+          content:
+            text/plain:
+              schema:
+                anyOf:
+                  - type: string
+                  - type: string
   /kilns/{kilnId}/state:
     get:
       operationId: getState

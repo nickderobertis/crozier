@@ -12,7 +12,7 @@ exit 0
 exit 0
 
 ## crozier before the repair (crozier 0.0.150, the base this repair branches from)
-weave_pattern: the call raised ApiError: headers: {'server': 'BaseHTTP/0.6 Python/3.14.7', 'date': 'Sun, 01 Nov 2026 17:04:43 GMT', 'content-type': 'text/event-stream', 'content-length': '78'}, status_code: 200, body: data: {"patternId": "p-1", "rows": 1}
+weave_pattern: the call raised ApiError: headers: {'server': 'BaseHTTP/0.6 Python/3.14.7', 'date': '<date>', 'content-type': 'text/event-stream', 'content-length': '78'}, status_code: 200, body: data: {"patternId": "p-1", "rows": 1}
 
 data: {"patternId": "p-1", "rows": 2}
 
