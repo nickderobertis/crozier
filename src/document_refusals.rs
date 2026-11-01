@@ -311,8 +311,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
 }
 
 /// The first Media Type Object written as `null` (`image/png:` with no value)
-/// in a request body or a response, operation or component: no Media Type
-/// Object at all, so invalid OpenAPI. Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+/// in an operation's request body or response: no Media Type Object at all, so
+/// invalid OpenAPI. Only the operation forms are measured, so a component
+/// entry is left to generation. Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 /// fails to read it (`Cannot read properties of null (reading 'schema')`) and
 /// writes its empty SDK, so crozier refuses it in both modes under the user's
 /// `empty-sdk-refused` ruling (`docs/fern-refusals/null-media-type/`).
@@ -356,14 +357,7 @@ fn null_media_type(root: &serde_json::Value) -> Option<String> {
             }
         }
     }
-    let components = root.get("components")?;
-    in_responses(components.get("responses"), "components/responses").or_else(|| {
-        components
-            .get("requestBodies")
-            .and_then(Value::as_object)?
-            .iter()
-            .find_map(|(name, body)| in_content(body, &format!("components/requestBodies/{name}")))
-    })
+    None
 }
 
 #[derive(Default)]
@@ -2140,7 +2134,15 @@ fn path_header_pointer(reference: &str) -> bool {
         return false;
     };
     let segments: Vec<&str> = pointer.split('/').collect();
-    matches!(segments.as_slice(), [.., "headers", name] if !name.is_empty())
+    matches!(
+        segments.as_slice(),
+        [route, method, "responses", code, "headers", name]
+            if !route.is_empty()
+                && ["get", "put", "post", "delete", "options", "head", "patch", "trace"]
+                    .contains(method)
+                && !code.is_empty()
+                && !name.is_empty()
+    )
 }
 
 fn yaml_pointer<'a>(root: &'a serde_json::Value, pointer: &str) -> Option<&'a serde_json::Value> {
@@ -3037,6 +3039,12 @@ mod tests {
         assert!(!path_header_pointer("#/paths/~1gauges/get/responses/404"));
         assert!(!path_header_pointer("#/paths/~1gauges/get/parameters/0"));
         assert!(!path_header_pointer(
+            "#/paths/x-shared/headers/X-Rate-Remaining"
+        ));
+        assert!(!path_header_pointer(
+            "#/paths/~1gauges/x-meta/responses/200/headers/X-Rate-Remaining"
+        ));
+        assert!(!path_header_pointer(
             "#/paths/~1gauges/get/responses/200/headers/"
         ));
         assert!(!path_header_pointer(
@@ -3044,7 +3052,6 @@ mod tests {
         ));
     }
 
-    /// The structural pass over a document written to a temporary file.
     fn structure_refusal(spec: &str) -> Option<String> {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("openapi.yml");
@@ -3077,7 +3084,7 @@ mod tests {
     }
 
     #[test]
-    fn a_null_media_type_is_found_in_bodies_and_responses_of_operations_and_components() {
+    fn a_null_media_type_is_found_in_operation_bodies_and_responses_only() {
         let find = |spec: &str| null_media_type(&crate::yaml::from_str(spec).unwrap());
         assert_eq!(
             find("paths:\n  /kiln:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            image/png:\n"),
@@ -3087,13 +3094,10 @@ mod tests {
             find("paths:\n  /kiln:\n    put:\n      requestBody:\n        content:\n          text/plain:\n      responses: {'204': {description: OK}}\n"),
             Some("paths//kiln/put/requestBody/content/text/plain".to_owned())
         );
+        // A component entry is unmeasured and left to generation.
         assert_eq!(
             find("paths: {}\ncomponents:\n  responses:\n    Picture:\n      description: OK\n      content:\n        image/png:\n"),
-            Some("components/responses/Picture/content/image/png".to_owned())
-        );
-        assert_eq!(
-            find("paths: {}\ncomponents:\n  requestBodies:\n    Label:\n      content:\n        text/plain:\n"),
-            Some("components/requestBodies/Label/content/text/plain".to_owned())
+            None
         );
         // An empty Media Type Object is valid, and an ignored operation is not read.
         assert_eq!(

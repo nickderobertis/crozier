@@ -4494,7 +4494,7 @@ fn build_endpoint(
     let success_names_unknown = success_response_schema(op)
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema));
+        .is_some_and(|schema| is_unknown(schema) || unresolvable_mapped_union(schema));
     let has_parameters =
         !path_params.is_empty() || !query_params.is_empty() || !header_params.is_empty();
     let body_collapses_to_type_reference = !has_parameters
@@ -6142,8 +6142,8 @@ pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
 fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     let schema = error_body_schema(resp);
     // A body discriminated by a mapping Fern cannot resolve is its unknown
-    // type, inline as when named (see [`bare_name_mapped_union`]).
-    if schema.is_some_and(bare_name_mapped_union) {
+    // type, inline as when named (see [`unresolvable_mapped_union`]).
+    if schema.is_some_and(unresolvable_mapped_union) {
         return TypeRef::Primitive(Prim::Any);
     }
     // A `oneOf`/`anyOf` body is Fern's `{Class}Body` union alias, and a one-member
@@ -6241,7 +6241,7 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 else {
                     continue;
                 };
-                if bare_name_mapped_union(schema) {
+                if unresolvable_mapped_union(schema) {
                     continue;
                 }
                 let name = format!("{class}Body");
@@ -6920,10 +6920,10 @@ fn resolve_request_body(
         // mapping a value to a bare schema name is `typing.Any` and is sent as
         // it is, in either spelling: the hand-written `orchard-crate-labels`
         // document's `Label` and `Crate`.
-        if target.one_of.is_some() || target.any_of.is_some() || bare_name_mapped_union(target) {
+        if target.one_of.is_some() || target.any_of.is_some() || unresolvable_mapped_union(target) {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
-                single.convert = !bare_name_mapped_union(target);
+                single.convert = !unresolvable_mapped_union(target);
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
@@ -12089,7 +12089,7 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
 /// reference, or a local pointer outside `#/components/schemas/`
 /// (outstack/enveloper's `#/Components/schemas/syntax-error`). The union is
 /// then its unknown type and it never reads the discriminant at all.
-pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
+pub(crate) fn unresolvable_mapped_union(schema: &Schema) -> bool {
     (schema.one_of.is_some() || is_inheritance_union_base(schema))
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             discriminator.mapping.values().any(|target| {
@@ -12756,7 +12756,7 @@ impl Builder<'_> {
         // `typing.Any`, its members plain models keeping their `type` enums.
         // The inheritance spelling is the same union: the openapi-generator
         // AllOf sample's `Person` maps `c` to `Child` and is `typing.Any` too.
-        if bare_name_mapped_union(schema) {
+        if unresolvable_mapped_union(schema) {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
@@ -21622,7 +21622,7 @@ mod tests {
     /// spelling, is one Fern cannot resolve; a mapping of references only, an
     /// empty one, or an `anyOf` beside the discriminator is not that union.
     #[test]
-    fn a_bare_name_mapped_union_is_either_spelling_with_one_bare_target() {
+    fn a_unresolvable_mapped_union_is_either_spelling_with_one_bare_target() {
         let union = |extra: serde_json::Value, mapping: serde_json::Value| {
             let mut value = serde_json::json!({
                 "type": "object",
@@ -21638,21 +21638,21 @@ mod tests {
         let pointers = serde_json::json!({ "apple": "#/components/schemas/Apple" });
         let one_of = serde_json::json!({ "oneOf": [{ "$ref": "#/components/schemas/Apple" }] });
         let any_of = serde_json::json!({ "anyOf": [{ "$ref": "#/components/schemas/Apple" }] });
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             mixed.clone()
         )));
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             one_of.clone(),
             mixed.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(any_of, mixed)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(any_of, mixed)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             pointers.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(one_of, pointers)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(one_of, pointers)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             serde_json::json!({})
         )));
@@ -21660,12 +21660,12 @@ mod tests {
         // reach either (outstack/enveloper's `#/Components/schemas/…`); a
         // reference to another document is left to the resolver.
         let elsewhere = serde_json::json!({ "apple": "#/Components/schemas/apple" });
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             elsewhere
         )));
         let external = serde_json::json!({ "apple": "fruit.yml#/Apple" });
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             external
         )));

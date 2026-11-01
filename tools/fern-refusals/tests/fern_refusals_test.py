@@ -2405,22 +2405,38 @@ class ProbeRecording(unittest.TestCase):
     committed logs leaves the probe logs `probe` rewrites byte-identical.
     """
 
-    NAME = "paginated-nullable-response"
-
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_generators_response_object_refusal(self) -> None:
+        self.assert_probe_reproduces("paginated-nullable-response", generate_exit=1, scaffold=(0, 0))
+
+    @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+    def test_probe_records_the_importers_null_node_false_success(self) -> None:
+        # The importer's `Cannot read properties of null (…)` TypeError, under an
+        # exit 0 over a document it never parsed, is `null-media-type`'s phrase;
+        # the stand-in writes the empty SDK's 28 Python and 7 other files.
+        self.assert_probe_reproduces("null-media-type", generate_exit=0, scaffold=(28, 7))
+
+    def assert_probe_reproduces(self, name: str, *, generate_exit: int, scaffold: tuple[int, int]) -> None:
+        """Replay `name`'s committed probe logs through the real `probe`, the
+        generation writing `scaffold` (Python files, other files) under
+        `--output`, and require the committed record back."""
+        python_files, other_files = scaffold
         logs = REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs"
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
             shutil.copytree(REGISTRY, registry)
-            (registry / self.NAME / "fern-refusal.txt").unlink()
+            (registry / name / "fern-refusal.txt").unlink()
             bin_dir = Path(scratch) / "bin"
             bin_dir.mkdir()
             fern = bin_dir / "fern"
-            check_log = logs / f"{self.NAME}.check.log"
-            generate_log = logs / f"{self.NAME}.generate.log"
+            check_log = logs / f"{name}.check.log"
+            generate_log = logs / f"{name}.generate.log"
             fern.write_text(
-                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\ncat "{generate_log}"; exit 1\n',
+                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\n'
+                'out=; prev=; for arg in "$@"; do [ "$prev" = --output ] && out=$arg; prev=$arg; done\n'
+                f'i=0; while [ $i -lt {python_files} ]; do mkdir -p "$out/src"; : > "$out/src/m$i.py"; i=$((i+1)); done\n'
+                f'i=0; while [ $i -lt {other_files} ]; do mkdir -p "$out"; : > "$out/f$i.txt"; i=$((i+1)); done\n'
+                f'cat "{generate_log}"; exit {generate_exit}\n',
                 encoding="utf-8",
             )
             fern.chmod(0o755)
@@ -2429,16 +2445,16 @@ class ProbeRecording(unittest.TestCase):
                 CROZIER_FERN_REFUSALS_REGISTRY=str(registry),
                 PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
             )
-            before = {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")}
+            before = {path.name: path.read_bytes() for path in logs.glob(f"{name}.*.log")}
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "probe", self.NAME], capture_output=True, text=True, env=env, cwd=REPO
+                [sys.executable, str(SCRIPT), "probe", name], capture_output=True, text=True, env=env, cwd=REPO
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(
-                (REGISTRY / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
-                (registry / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
+                (REGISTRY / name / "fern-refusal.txt").read_text(encoding="utf-8"),
+                (registry / name / "fern-refusal.txt").read_text(encoding="utf-8"),
             )
-            self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
+            self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{name}.*.log")})
 
 
 # Seconds the compiler-timeout case allows the whole evaluation: enough for the

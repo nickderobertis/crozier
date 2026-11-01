@@ -178,6 +178,24 @@ fn a_null_media_type_is_refused_in_both_modes() {
         .arg("--fern-strict")
         .assert()
         .success();
+    // An operation the document ignores is never read, so its `null` entry
+    // refuses nothing.
+    let ignored = temp.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        read(&case_dir("refusal-null-media-type").join("openapi.yml")).replace(
+            "      operationId: getSnapshot\n",
+            "      operationId: getSnapshot\n      x-fern-ignore: true\n",
+        ),
+    )
+    .unwrap();
+    assert!(read(&ignored).contains("x-fern-ignore: true"));
+    let ignored_out = temp.path().join("ignored-sdk");
+    probe_command(&ignored, &ignored_out)
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(!read(&ignored_out.join("src/fern/client.py")).contains("get_snapshot"));
 }
 
 /// lolesports' shape is valid OpenAPI the pair empties only because its

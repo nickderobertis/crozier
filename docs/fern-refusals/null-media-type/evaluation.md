@@ -27,9 +27,11 @@ this pair ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)):
   generates it (36 files).
 
 crozier's detector (`null_media_type` in `src/document_refusals.rs`) reads the
-`content` of every request body and response of a non-ignored operation, and of
-each `components.responses` and `components.requestBodies` entry. It refuses
-the first `null` entry, naming its pointer. Before it, crozier read the entry as
+`content` of every request body and response of an operation that is not
+ignored. It refuses the first `null` entry and names its pointer. Those are the
+forms the pair was measured on. A `components.responses` or
+`components.requestBodies` entry was not measured, so the detector leaves it
+to generation. Before this detector, crozier read a `null` entry as
 an empty Media Type Object and generated the whole SDK in both modes.
 
 The population carries the class on no document. Its one real document,

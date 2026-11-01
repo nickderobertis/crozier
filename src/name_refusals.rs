@@ -866,7 +866,7 @@ fn check_schema_names(
     // whose discriminant it never reads: Fern CLI 5.163.1 generates the
     // openapi-generator AllOf sample, whose `Person` maps `c` to `Child` under
     // `$_type`, and the class probe once `TextAsset` is mapped by name.
-    if crate::ir::bare_name_mapped_union(schema) {
+    if crate::ir::unresolvable_mapped_union(schema) {
         return check_children(schema, location, path, schemas);
     }
     let explicit = schema.discriminator.as_ref().filter(|_| {
