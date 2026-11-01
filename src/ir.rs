@@ -12799,9 +12799,8 @@ impl Builder<'_> {
             // `BlockID` is `allOf: [$ref Hash256, {description}]`, and Fern writes
             // `BlockId = str` under that description (the
             // `allof-description-wrapper` measurement's `SlotId`).
-            let docstring = docstring.or_else(|| {
-                operation_doc(described_all_of_ref(schema).and_then(|(_, doc)| doc))
-            });
+            let docstring = docstring
+                .or_else(|| operation_doc(described_all_of_ref(schema).and_then(|(_, doc)| doc)));
             self.push_alias(name, module, scalar, docstring);
             return;
         }
@@ -28066,7 +28065,8 @@ components:
                 && declared > 0
         };
         let tagged = |kind: &str| serde_json::json!({ "type": "object", "properties": { "kind": { "type": "string", "enum": [kind] } } });
-        let typed_struct = serde_json::json!({ "type": "object", "properties": { "id": { "type": "string" } } });
+        let typed_struct =
+            serde_json::json!({ "type": "object", "properties": { "id": { "type": "string" } } });
         for value in [
             serde_json::json!({ "type": "string", "enum": ["alpha", "beta"] }),
             typed_struct,
