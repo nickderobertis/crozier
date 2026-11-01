@@ -2287,7 +2287,7 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "lock-keeper-vault-literals",
-        "docs/openapi-surface/handwritten/lock-keeper-vault/openapi.yml",
+        "docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -2337,12 +2337,12 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
     (
         "ski-lift-gates-literals",
-        "docs/openapi-surface/handwritten/ski-lift-gates/openapi.yml",
+        "docs/fern-measurements/clients-extensions/ski-lift-gates-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
         "tide-gauge-sessions-literals",
-        "docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml",
+        "docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -7095,12 +7095,30 @@ fn sdk_env_empty_root_security_client_calls_unsecured_operations_without_a_key()
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// Where one parameter extension or serialization document lives: under
+/// `docs/openapi-surface/handwritten/`, except the two corpus row 4405 (loonfs)
+/// retired as hand-written proofs, which stay measured as parameter-lowering
+/// cases.
+fn parameter_case_dir(name: &str) -> PathBuf {
+    if matches!(
+        name,
+        "observatory-client-headers" | "warehouse-header-token"
+    ) {
+        repo_root()
+            .join("docs/fern-measurements/parameter-lowering")
+            .join(name)
+    } else {
+        repo_root()
+            .join("docs/openapi-surface/handwritten")
+            .join(name)
+    }
+}
+
 /// Complete certified trees for the parameter extension and serialization
 /// shapes. These inputs contain no enums: both modes must preserve all bytes,
 /// apart from the catalogued generator-configuration provenance.
 #[test]
 fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     let mut failures = Vec::new();
     for case in [
         "declared-rename-control",
@@ -7109,13 +7127,12 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
         "observatory-client-headers",
         "observatory-client-variable",
         "observatory-nullable-query",
-        "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
         "warehouse-header-token",
     ] {
         for mode in ["literals", "python-enums"] {
-            let expected = root.join(case).join("fern-expected");
+            let expected = parameter_case_dir(case).join("fern-expected");
             let literal_tree = tempfile::tempdir().unwrap();
             let comparison_root = if mode == "literals" {
                 for rel in walk_files(&expected) {
@@ -7149,7 +7166,7 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
                 expected.as_path()
             };
             let out = tempfile::tempdir().unwrap();
-            probe_command(&root.join(case).join("openapi.yml"), out.path())
+            probe_command(&parameter_case_dir(case).join("openapi.yml"), out.path())
                 .args(["--enum-type", mode])
                 .assert()
                 .success();
@@ -7239,14 +7256,13 @@ fn parameter_extension_aliases_match_and_win() {
             _ => {}
         }
     }
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     for name in [
         "observatory-query-extensions",
         "observatory-client-headers",
         "observatory-client-variable",
         "warehouse-header-token",
     ] {
-        let case = root.join(name);
+        let case = parameter_case_dir(name);
         let original: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(case.join("openapi.yml")).unwrap())
                 .unwrap();
@@ -7270,7 +7286,7 @@ fn parameter_extension_aliases_match_and_win() {
 
 #[test]
 fn global_header_wire_names_match_certified_pass_through_for_both_aliases() {
-    let root = repo_root().join("docs/openapi-surface/handwritten/warehouse-header-token");
+    let root = parameter_case_dir("warehouse-header-token");
     let original: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
     for mode in ["fern", "crozier", "canonical-wins"] {
@@ -7884,14 +7900,12 @@ def start_wire_server(answer):
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
-    let root = repo_root().join("docs/openapi-surface/handwritten");
     for case in [
         "observatory-query-extensions",
         "observatory-client-date",
         "observatory-client-headers",
         "observatory-client-variable",
         "observatory-nullable-query",
-        "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
     ] {
@@ -7899,7 +7913,7 @@ fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
         let sdk = dir.path().join("sdk");
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(root.join(case).join("openapi.yml"))
+            .arg(parameter_case_dir(case).join("openapi.yml"))
             .arg("--output")
             .arg(&sdk)
             .args([
@@ -7953,9 +7967,6 @@ elif case.endswith('nullable-query'):
 elif case.endswith('base-path'):
     assert 'cycle' not in signature.parameters
     assert inspect.signature(FernApi).parameters['cycle'].default == 'night'
-elif case.endswith('route-order'):
-    assert list(signature.parameters)[:2] == ['station', 'sensor'], signature
-    args = ('north', 'camera')
 assert method(*args, **kwargs) == ['signal']
 request = sent[-1]
 if case.endswith('query-extensions'):
@@ -7992,8 +8003,6 @@ elif case.endswith('base-path'):
     overridden = FernApi(**ctor, cycle='dawn')
     assert overridden.list_signals() == ['signal']
     assert sent[-1].url.path == '/dawn/signals'
-elif case.endswith('route-order'):
-    assert request.url.path == '/stations/north/sensors/camera', request.url
 else:
     assert list(signature.parameters) == ['request_options'], signature
     assert not request.url.params
@@ -10515,6 +10524,12 @@ const CORPORA: &[&Corpus] = &[
     &EGO_MICROSERVICES,
     &OFFCHAIN_METADATA_TOOLS,
     &SUBSLOTH,
+    &NOTION_MCP_SERVER,
+    &LAPOSTA,
+    &MCP_HANDLE,
+    &MICROSOFT_ADME_CRS_CONVERTER,
+    &WIIM_HTTPAPI,
+    &LOONFS,
 ];
 
 #[test]
@@ -15096,6 +15111,123 @@ fn subsloth_matches_fern_output() {
     assert_committed_corpus_matches(&SUBSLOTH);
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Rows 4400-4405 replay registered corpus documents, and a registered row's replay must sit on this crozier-e2e edge, where `every_registered_corpus_is_wired_into_the_gate` and `tests/corpus_match/match.sh` require it, beside every other corpus replay; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// Notion's API description as its MCP server publishes it — corpus row 4400.
+/// Its `Notion-Version` header defaults to one string on most but not all
+/// operations, and its move-page body is an inline union whose members tag
+/// `type` with a bare `const`.
+const NOTION_MCP_SERVER: Corpus = Corpus {
+    api: "notion-mcp-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn notion_mcp_server_matches_fern_output() {
+    assert_committed_corpus_matches(&NOTION_MCP_SERVER);
+}
+
+/// Laposta's API description — corpus row 4401. Its basic scheme names the
+/// username `api_key` and the password `leave_empty` by `x-fern-basic`, and its
+/// form fields and history limit write string examples on boolean and integer
+/// schemas.
+const LAPOSTA: Corpus = Corpus {
+    api: "laposta",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn laposta_matches_fern_output() {
+    assert_committed_corpus_matches(&LAPOSTA);
+}
+
+/// MCP Handle's API reference — corpus row 4402. Its bearer scheme names the
+/// credential `api_key` by `x-fern-bearer`, and its `servers` query parameter is
+/// a nullable array whose element is an inline union.
+const MCP_HANDLE: Corpus = Corpus {
+    api: "mcp-handle",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn mcp_handle_matches_fern_output() {
+    assert_committed_corpus_matches(&MCP_HANDLE);
+}
+
+/// Microsoft's ADME CRS converter description — corpus row 4403. Its http
+/// scheme spells `scheme: Bearer` with a capital.
+const MICROSOFT_ADME_CRS_CONVERTER: Corpus = Corpus {
+    api: "microsoft-adme-crs-converter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn microsoft_adme_crs_converter_matches_fern_output() {
+    assert_committed_corpus_matches(&MICROSOFT_ADME_CRS_CONVERTER);
+}
+
+/// The Linkplay/WiiM device HTTP API as its author describes it — corpus row
+/// 4404. Its command routes put an integer parameter after literal text in one
+/// segment.
+const WIIM_HTTPAPI: Corpus = Corpus {
+    api: "wiim-httpapi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn wiim_httpapi_matches_fern_output() {
+    assert_committed_corpus_matches(&WIIM_HTTPAPI);
+}
+
+/// LoonFS's HTTP API description — corpus row 4405. Its global headers are
+/// marked `optional: true`, and seven operations disable retries by
+/// `x-fern-retries`.
+const LOONFS: Corpus = Corpus {
+    api: "loonfs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn loonfs_matches_fern_output() {
+    assert_committed_corpus_matches(&LOONFS);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 #[test]
 fn letta_matches_fern_output() {
     assert_committed_corpus_matches(&LETTA);
@@ -18711,6 +18843,35 @@ fn path_parameters_follow_url_template_order() {
         "path arguments should follow URL-template order: {client}"
     );
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] The rule's relevance clause is not met here: this journey runs in about 0.25 s (measured alone) and reaches no network, container, browser or database; it drives only the local crozier binary and ruff, exactly as its sibling generate_ok journeys in this binary do (manager ruling on the fixture-only operations/extensions node).
+#[test]
+fn string_examples_on_boolean_and_numeric_schemas_leave_the_worked_call() {
+    // Measured at the certified pair (Fern CLI 5.163.1, fern-python-sdk 5.41.3)
+    // on this document by the fixture-only witness search: Fern drops a string
+    // example on a `boolean`, `number` or `integer` schema under the singular
+    // `example` and the 3.1 `examples` keyword alike, on a body property, an
+    // array's items and a query parameter's referenced schema, and writes each
+    // type's placeholder; a typed example (`page`) stays.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Gauge API, version: 1.0.0 }\npaths:\n  /readings:\n    post:\n      operationId: recordReading\n      tags: [readings]\n      parameters:\n        - { name: window, in: query, required: true, schema: { $ref: '#/components/schemas/Window' } }\n        - { name: page, in: query, required: false, schema: { type: integer, example: 4 } }\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [calibrated, ratio, samples, offsets]\n              properties:\n                calibrated: { type: boolean, example: \"false\" }\n                ratio: { type: number, example: \"1.5\" }\n                samples: { type: integer, examples: [\"3\"] }\n                offsets: { type: array, items: { type: integer, examples: [\"7\"] } }\n      responses:\n        '204': { description: Recorded }\ncomponents:\n  schemas:\n    Window: { type: integer, example: \"100\" }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/readings/client.py"))
+        .expect("the readings client is generated");
+    assert!(
+        client.contains(
+            "client.readings.record_reading(\n            window=1,\n            page=4,\n            calibrated=True,\n            ratio=1.1,\n            samples=1,\n            offsets=[1],\n        )"
+        ),
+        "string examples on typed scalars should give way to the placeholders Fern writes: {client}"
+    );
+    for dropped in ["\"100\"", "\"false\"", "\"1.5\"", "\"3\"", "\"7\""] {
+        assert!(
+            !client.contains(dropped),
+            "the worked call should not pass the string example {dropped}: {client}"
+        );
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn pydantic_model_api_fields_are_aliased() {

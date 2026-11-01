@@ -2997,9 +2997,14 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .find(|ep| ep.emittable && ep.pagination.is_some());
     let pagination = pager_ep.map_or_else(String::new, |ep| {
         let prefix = client_call_prefix(ep);
+        // The plain call carries the endpoint's worked arguments, as the
+        // streaming section's does: loonfs's `files.list` reads
+        // `client.files.list(namespace_id=…, path=…, snapshot_id=…)`, while an
+        // argument-free endpoint keeps its empty parens.
+        let (imports, call) = readme_example_parts(ir, ep, pkg)
+            .unwrap_or_else(|| (format!("from {pkg} import {}", ir.client_name), format!("{prefix}()")));
         format!(
-            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
-            ir.client_name,
+            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\n{imports}\n\nclient = {client_call}\n\n{call}\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
         )
     });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
@@ -10850,8 +10855,14 @@ fn build_example_inner(
     // apideck-file-storage's `filesDownload` takes a required `id` beside an
     // optional `fields` exampled `id,updated_at`, and documents
     // `download(id="id")` (measured at fern-python-sdk 5.41.3, where 5.20.0
-    // documented no argument at all).
-    let declared_examples = !ep.wildcard_binary_response;
+    // documented no argument at all). A download its media type makes, under a
+    // schema that is no `format: binary` string, reads the same way: loonfs's
+    // `files.content` answers `application/octet-stream` with an integer array
+    // and is documented with its required `namespace_id` and `path` alone, where
+    // the JSON `files.retrieve` beside it also shows its exampled `snapshot_id`.
+    // A `format: binary` download under any other media keeps its examples.
+    let declared_examples =
+        !(ep.wildcard_binary_response || (ep.binary_response && !ep.binary_schema_response));
     // A path parameter whose schema declares no type is one Fern's example
     // generator cannot sample, and the endpoint is then exampled by its other
     // writer: the parameter by its own name, and a free-form map body as one
@@ -18147,7 +18158,7 @@ mod parameter_lowering_tests {
             ),
             (
                 include_str!(
-                    "../docs/openapi-surface/handwritten/observatory-client-headers/openapi.yml"
+                    "../docs/fern-measurements/parameter-lowering/observatory-client-headers/openapi.yml"
                 ),
                 "station: str",
             ),
@@ -18877,6 +18888,200 @@ mod parameter_lowering_tests {
                 "{doc}: {text}"
             );
         }
+    }
+
+    /// loonfs's global headers: an `optional: true` entry is an
+    /// `Optional[str] = None` argument sent only when given and left out of the
+    /// README's worked client, while an entry without the key stays required.
+    #[test]
+    fn an_optional_global_header_is_optional_and_left_out_of_worked_clients() {
+        let files = files(json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Store", "version": "1" },
+            "x-fern-global-headers": [
+                { "header": "Store-Actor", "name": "actorId", "optional": true },
+                { "header": "Store-Tenant", "name": "tenant" }
+            ],
+            "paths": { "/items": { "get": {
+                "operationId": "listItems",
+                "responses": { "204": { "description": "Listed" } }
+            } } }
+        }));
+        let wrapper = &files["src/api/core/client_wrapper.py"];
+        assert!(
+            wrapper.contains("actor_id: typing.Optional[str] = None,"),
+            "{wrapper}"
+        );
+        assert!(
+            wrapper.contains("if self._actor_id is not None:"),
+            "{wrapper}"
+        );
+        assert!(wrapper.contains("tenant: str,"), "{wrapper}");
+        let readme = &files["README.md"];
+        assert!(!readme.contains("actor_id="), "{readme}");
+        assert!(readme.contains("tenant=\"<Store-Tenant>\""), "{readme}");
+    }
+
+    /// loonfs's `files.list`: the README's pagination section calls the first
+    /// paginated endpoint with its worked arguments, not with empty parens.
+    #[test]
+    fn the_readme_pagination_call_carries_the_worked_arguments() {
+        let files = files(json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Store", "version": "1" },
+            "paths": { "/entries": { "get": {
+                "operationId": "listEntries",
+                "x-fern-pagination": {
+                    "cursor": "$request.cursor",
+                    "next_cursor": "$response.next_cursor",
+                    "results": "$response.entries"
+                },
+                "parameters": [
+                    { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
+                    { "name": "cursor", "in": "query", "required": false, "schema": { "type": "string" } }
+                ],
+                "responses": { "200": { "description": "A page", "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "entries": { "type": "array", "items": { "type": "string" } },
+                        "next_cursor": { "type": "string" }
+                    }
+                } } } } }
+            } } }
+        }));
+        let readme = &files["README.md"];
+        let pagination = readme
+            .split("## Pagination")
+            .nth(1)
+            .and_then(|section| section.split("\n## ").next())
+            .expect("the README has a pagination section");
+        assert!(
+            pagination.contains("client.list_entries(\n    path=\"path\",\n)\n```"),
+            "{pagination}"
+        );
+        assert!(
+            !pagination.contains("client.list_entries()\n"),
+            "{pagination}"
+        );
+    }
+
+    /// loonfs's `files.content`: a download its media type makes, under an
+    /// integer-array schema, is worked with its required arguments alone, while a
+    /// JSON operation and a `format: binary` download beside it keep an optional
+    /// argument's declared example.
+    #[test]
+    fn a_binary_download_is_worked_without_its_optional_examples() {
+        let files = files(json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Store", "version": "1" },
+            "paths": {
+                "/content": { "get": {
+                    "operationId": "content",
+                    "parameters": [
+                        { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
+                        { "name": "snapshot", "in": "query", "required": false, "schema": { "type": "string", "example": "pin_1" } }
+                    ],
+                    "responses": { "200": { "description": "Bytes", "content": { "application/octet-stream": {
+                        "schema": { "type": "array", "items": { "type": "integer", "format": "int32", "minimum": 0 } }
+                    } } },
+                    "404": { "description": "Missing", "content": { "application/json": {
+                        "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+                    } } } }
+                } },
+                "/bytes": { "get": {
+                    "operationId": "bytes",
+                    "parameters": [
+                        { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
+                        { "name": "snapshot", "in": "query", "required": false, "schema": { "type": "string", "example": "pin_1" } }
+                    ],
+                    "responses": { "200": { "description": "Bytes", "content": { "application/octet-stream": {
+                        "schema": { "type": "string", "format": "binary" }
+                    } } },
+                    "404": { "description": "Missing", "content": { "application/json": {
+                        "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+                    } } } }
+                } },
+                "/entry": { "get": {
+                    "operationId": "entry",
+                    "parameters": [
+                        { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
+                        { "name": "snapshot", "in": "query", "required": false, "schema": { "type": "string", "example": "pin_1" } }
+                    ],
+                    "responses": { "200": { "description": "An entry", "content": { "application/json": {
+                        "schema": { "type": "string" }
+                    } } } }
+                } }
+            }
+        }));
+        let client = &files["src/api/client.py"];
+        assert!(
+            client.contains("client.content(\n            path=\"path\",\n        )"),
+            "{client}"
+        );
+        assert!(
+            client.contains("client.entry(\n            path=\"path\",\n            snapshot=\"pin_1\",\n        )"),
+            "{client}"
+        );
+        assert!(
+            client.contains("client.bytes(\n            path=\"path\",\n            snapshot=\"pin_1\",\n        )"),
+            "{client}"
+        );
+    }
+
+    /// loonfs's `FilesystemOperationAppendFile.path`: a discriminated variant's
+    /// property naming a component, here with a sibling description, is worked
+    /// with that component's example.
+    #[test]
+    fn a_variant_property_naming_a_component_takes_its_example() {
+        let files = files(json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Store", "version": "1" },
+            "paths": { "/commits": { "post": {
+                "operationId": "commit",
+                "requestBody": { "required": true, "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "required": ["operations"],
+                    "properties": { "operations": { "type": "array", "items": { "$ref": "#/components/schemas/Operation" } } }
+                } } } },
+                "responses": { "204": { "description": "Committed" } }
+            } } },
+            "components": { "schemas": {
+                "AbsolutePath": { "type": "string", "example": "/docs/report.txt" },
+                "Operation": {
+                    "oneOf": [
+                        { "$ref": "#/components/schemas/AppendFile" },
+                        { "$ref": "#/components/schemas/DeletePath" }
+                    ],
+                    "discriminator": { "propertyName": "kind", "mapping": {
+                        "append_file": "#/components/schemas/AppendFile",
+                        "delete_path": "#/components/schemas/DeletePath"
+                    } }
+                },
+                "AppendFile": {
+                    "type": "object",
+                    "required": ["path", "kind"],
+                    "properties": {
+                        "kind": { "type": "string", "enum": ["append_file"] },
+                        "path": { "$ref": "#/components/schemas/AbsolutePath", "description": "The file." }
+                    }
+                },
+                "DeletePath": {
+                    "type": "object",
+                    "required": ["path", "kind"],
+                    "properties": {
+                        "kind": { "type": "string", "enum": ["delete_path"] },
+                        "path": { "$ref": "#/components/schemas/AbsolutePath" }
+                    }
+                }
+            } }
+        }));
+        let client = &files["src/api/client.py"];
+        assert!(
+            client
+                .contains("Operation_AppendFile(\n                    path=\"/docs/report.txt\","),
+            "{client}"
+        );
+        assert!(!client.contains("path=\"path\""), "{client}");
     }
 }
 

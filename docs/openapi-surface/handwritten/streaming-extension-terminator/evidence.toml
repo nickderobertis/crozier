@@ -4,13 +4,11 @@ digest = "85d3abbfee64fa0b2d8360adaf242faf1e46c0f302ea3d9e7a6817e13541beb9"
 
 [[covers]]
 key = "fern-streaming-terminator"
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"
 
 [[covers]]
 key = "fern-streaming-extension"
 arm = 'src/emit.rs::sse_end[=\x7cend\x7c format!]'
-search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
+verdict = "exhausted"

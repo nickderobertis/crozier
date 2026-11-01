@@ -4,6 +4,6 @@ digest = "6660455c81e7901cb8e52946b1ccb89ba22c679d634074b7263e43f3d067a948"
 
 [[covers]]
 key = "required-param-and-body-defaults-ignored"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

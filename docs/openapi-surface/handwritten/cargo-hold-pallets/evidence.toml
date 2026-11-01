@@ -4,6 +4,5 @@ digest = "1e598b6feef62e52fd624401364a27edae1dd99a94814ccb0a9a01ede9377220"
 
 [[covers]]
 key = "operation-sdk-group-name-without-method-name"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-name-without-a-method-name"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

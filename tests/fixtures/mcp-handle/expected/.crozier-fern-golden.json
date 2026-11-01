@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "mcp-handle",
+  "corpus_spec_ref": "9c59f16950d25e08c1058d8174e12b22861280d8",
+  "corpus_spec_url": "https://raw.githubusercontent.com/WeatherPal-AI/MCP-handle/9c59f16950d25e08c1058d8174e12b22861280d8/docs/api-reference/openapi.json"
+}

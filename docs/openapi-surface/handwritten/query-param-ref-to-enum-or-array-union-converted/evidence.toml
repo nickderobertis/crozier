@@ -4,6 +4,6 @@ digest = "501c48b778366dea3622914b43e8734da93d0720ff0878ea596b4615d96cb23a"
 
 [[covers]]
 key = "query-param-ref-to-enum-or-array-union-converted"
-search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

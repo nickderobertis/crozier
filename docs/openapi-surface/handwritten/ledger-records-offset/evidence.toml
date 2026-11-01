@@ -4,6 +4,5 @@ digest = "dd904f352840403647315f2338430936ed91a0a08019e897d2f49df1ccdd7251"
 
 [[covers]]
 key = "operation-pagination-offset"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#offset-pagination"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 277 of the 308 registered sources live in `corpus-sources/` (a split
+  and 283 of the 314 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -5099,16 +5099,18 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # edit to any of those functions fails until the port is read again: the
 # unrequired-tag clause of `_candidate_tag_values` reads
 # `inferred_discriminant_property_with`, the untyped-tag rule it and
-# `_inferred_union_discriminant_property` share reads `untyped_enum_tag` and
-# `inferred_union_discriminant_property`, and `Census.same_primitive_unions`
-# reads `same_primitive_union_last` and the scalar arms of `base_type_ref`.
+# `_inferred_union_discriminant_property` share reads `untyped_enum_tag`,
+# `untyped_const_tag` and `inferred_union_discriminant_property`, and
+# `Census.same_primitive_unions` reads `same_primitive_union_last` and the
+# scalar arms of `base_type_ref`.
 # `_last_composed_variant` ports `last_composed_variant` and the
 # `is_composed_member` test it loops on, through `_is_map` and
 # `_simple_nullable_member`, which port `is_map` and `simple_nullable_member`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "df4a2a63110cfa32",
+    "inferred_discriminant_property_with": "aab1e0402f3a42bb",
     "untyped_enum_tag": "f71e35908e2aed73",
-    "inferred_union_discriminant_property": "c7468f6d8fef712d",
+    "untyped_const_tag": "df10174704350956",
+    "inferred_union_discriminant_property": "a1a3229b10970d85",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "8c1ce5136f0b7968",
     "last_composed_variant": "3ac394950dc70c7f",
@@ -5613,7 +5615,7 @@ def _candidate_tag_values(
                 )
             if not supported:
                 return None
-        elif not singleton_enum:
+        elif not singleton_enum or untyped_const_tag(field):
             return None
         value = discriminant_value(field)
         if value is None:
@@ -5640,6 +5642,7 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
     members = union_members(node)
     if members is None:
         return None
+    inline_only = all(not (isinstance(member, dict) and isinstance(member.get("$ref"), str)) for member in members)
     values: list[str] = []
     for member in members:
         variant = _resolved_member(member, schemas)
@@ -5647,7 +5650,7 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
             return None
         properties = variant.get("properties")
         field = properties.get("type") if isinstance(properties, dict) else None
-        if untyped_enum_tag(field):
+        if untyped_enum_tag(field) or (inline_only and untyped_const_tag(field)):
             return None
         value = discriminant_value(field)
         if value is None:
@@ -5660,6 +5663,18 @@ def untyped_enum_tag(field: Any) -> bool:
     """`untyped_enum_tag` of `src/ir.rs`: an `enum` tag declaring no `type: string`,
     which Fern does not discriminate on under `anyOf` and `oneOf` alike."""
     return isinstance(field, dict) and written(field, "enum") and primary_type(field.get("type")) != "string"
+
+
+def untyped_const_tag(field: Any) -> bool:
+    """`untyped_const_tag` of `src/ir.rs`: a `const` tag declaring no `type: string`,
+    which Fern reads as a one-member enum of no declared type, so an inline-only
+    union tagged by it stays ordinary."""
+    return (
+        isinstance(field, dict)
+        and written(field, "const")
+        and not written(field, "enum")
+        and primary_type(field.get("type")) != "string"
+    )
 
 
 def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
@@ -5956,7 +5971,7 @@ UNPROMOTED_HEADERS = frozenset(
 # the port: it decides the element's annotation, not which parameters hoist.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "cd66a155d41f0dfd",
-    "global_headers": "811a7d2a03cc038b",
+    "global_headers": "dfc5358f962e3b3f",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "390fcb123906c067",
     "is_promotion_reserved_header": "b353ea53022d5e0f",

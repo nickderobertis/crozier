@@ -170,6 +170,15 @@ const KINDS: &[Kind] = &[
             "speech-ai-forge",
             "ummaya-agent-delegation",
             "amrc-acs-directory",
+            // The fixture-only operations/extensions search's registered
+            // witnesses (corpus rows 4400 to 4405), whose enums change their
+            // trees under `literals`, so each is proven under both enum modes.
+            "notion-mcp-server",
+            "laposta",
+            "mcp-handle",
+            "microsoft-adme-crs-converter",
+            "wiim-httpapi",
+            "loonfs",
             // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },

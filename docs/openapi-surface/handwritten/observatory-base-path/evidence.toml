@@ -4,6 +4,5 @@ digest = "e67b6d40fc3e7f2539cf3d2747e0eda93882dd7a5b76d793669dee673077d34e"
 
 [[covers]]
 key = "base-path-extension"
-search = "docs/openapi-surface/oas31-extensions.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

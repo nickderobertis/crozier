@@ -4,6 +4,5 @@ digest = "9dab4b9d9c3c10d792df0f8e6acca82190c0c56daad3853290752f1f292f6ba8"
 
 [[covers]]
 key = "operation-sdk-group-name-leading-underscore"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-name-with-a-leading-underscore"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"

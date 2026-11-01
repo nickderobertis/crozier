@@ -16043,6 +16043,61 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("schema.oneOf:discriminated-union", "typed"): 1}, rows(completed))
 
+    def test_an_untyped_const_tag_leaves_an_inline_union_undiscriminated(self) -> None:
+        """Inline members tagging a required `type` with a bare `const` form no
+        discriminated union, under `oneOf` and `anyOf` alike (the Notion API's
+        move-page parent, measured against Fern 5.41.3); the same tags declaring
+        `type: string` form one, and a union naming a component keeps the
+        referenced members' rule, whether every member or only one is a `$ref`."""
+
+        def member(value: str, typed: bool) -> dict:
+            tag: dict = {"const": value, **({"type": "string"} if typed else {})}
+            return {"type": "object", "required": ["type"], "properties": {"type": tag, value: {"type": "string"}}}
+
+        def union(head: str, *members: dict, **components: dict) -> dict:
+            return _root_document({head: list(members)}, **components)
+
+        referenced = {"PageParent": member("page_id", False), "WorkspaceParent": member("workspace", False)}
+        documents = {
+            "untyped-one-of": union("oneOf", member("page_id", False), member("workspace", False)),
+            "untyped-any-of": union("anyOf", member("page_id", False), member("workspace", False)),
+            "typed-one-of": union("oneOf", member("page_id", True), member("workspace", True)),
+            "referenced-one-of": union(
+                "oneOf",
+                {"$ref": "#/components/schemas/PageParent"},
+                {"$ref": "#/components/schemas/WorkspaceParent"},
+                **referenced,
+            ),
+            "mixed-one-of": union(
+                "oneOf",
+                {"$ref": "#/components/schemas/PageParent"},
+                member("workspace", False),
+                PageParent=member("page_id", False),
+            ),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                write_json_fixture(root, name, document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.oneOf:discriminated-union",
+                "--selector",
+                "schema.anyOf:discriminated-union",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {
+                ("schema.oneOf:discriminated-union", "typed-one-of"): 1,
+                ("schema.oneOf:discriminated-union", "referenced-one-of"): 1,
+                ("schema.oneOf:discriminated-union", "mixed-one-of"): 1,
+            },
+            rows(completed),
+        )
+
 
 class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
     """The real CLI must distinguish each example, enum-member and schema-name

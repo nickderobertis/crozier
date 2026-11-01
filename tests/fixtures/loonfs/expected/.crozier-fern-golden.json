@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "loonfs",
+  "corpus_spec_ref": "1e9aebea7e6fca3ea5f32d33b066e39228131208",
+  "corpus_spec_url": "https://raw.githubusercontent.com/loonfs/loonfs/1e9aebea7e6fca3ea5f32d33b066e39228131208/docs/specs/openapi.json"
+}

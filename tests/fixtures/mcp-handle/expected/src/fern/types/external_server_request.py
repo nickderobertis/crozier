@@ -1,0 +1,32 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class ExternalServerRequest(UniversalBaseModel):
+    name: str = pydantic.Field()
+    """
+    The name of the external server
+    """
+
+    url: str = pydantic.Field()
+    """
+    The URL of the external MCP server
+    """
+
+    headers: typing.Optional[typing.Dict[str, typing.Optional[str]]] = pydantic.Field(default=None)
+    """
+    Optional HTTP headers to include when connecting to the external server (e.g., for bearer authentication)
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

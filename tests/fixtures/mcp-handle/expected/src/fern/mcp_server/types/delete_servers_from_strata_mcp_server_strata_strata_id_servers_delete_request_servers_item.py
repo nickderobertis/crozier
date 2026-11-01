@@ -1,0 +1,12 @@
+
+
+import typing
+
+from ...types.mcp_server_name import McpServerName
+from .delete_servers_from_strata_mcp_server_strata_strata_id_servers_delete_request_servers_item_one import (
+    DeleteServersFromStrataMcpServerStrataStrataIdServersDeleteRequestServersItemOne,
+)
+
+DeleteServersFromStrataMcpServerStrataStrataIdServersDeleteRequestServersItem = typing.Union[
+    McpServerName, DeleteServersFromStrataMcpServerStrataStrataIdServersDeleteRequestServersItemOne
+]

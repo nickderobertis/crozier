@@ -4,6 +4,6 @@ digest = "2968e964cfe3add8f84aa8fb6243121fa3576b2afce3cf675548cdb644800db8"
 
 [[covers]]
 key = "security-scheme-header-extension-named"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#header-credential-extension"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"

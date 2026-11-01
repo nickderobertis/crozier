@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 724 features. By category, 535 are `golden`, 56
-`limitations`, 119 `handwritten` and 14 `gap`. Taken back from the region files,
+The walk enumerates 724 features. By category, 542 are `golden`, 56
+`limitations`, 112 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 724
 split five ways:
 
-- **534 carry byte-match evidence against a registered real-world
+- **541 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **120 rest on a hand-written fixture, a weaker proof than a real
+- **113 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -46,8 +46,8 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  12 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 107 read `search-incomplete`. Of those,
+  36 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 76 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -63,6 +63,16 @@ split five ways:
   `netgsm-sms`, which
   [the fixture-only `schemas` search](openapi-surface/witness-search-fixture-only-schemas/README.md#the-real-witnesses)
   found registered.
+  The hand-written rows of `parameters.md`, `security.md` and
+  `oas31-extensions.md` cite the
+  [fixture-only search](openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts),
+  which read the registered corpus, the pinned APIs.guru archive, the
+  documents earlier searches acquired and a guarded GitHub code search for
+  every `x-fern-*` extension they name. It registered real witnesses for eight
+  of them (corpus rows 4400 to 4405, and row 3001 reused), reads `exhausted`
+  where every declarer is decided and none is registrable, and leaves the
+  shapes no code-search phrase selects `search-incomplete`, naming each
+  outstanding declarer.
   The parameter-lowering shapes `query-array-items-union` and
   `base-path-extension` have not been
   searched at any declared source either: their
@@ -79,13 +89,11 @@ split five ways:
   [renewed search](openapi-surface/witness-search-type-and-cycle-shapes/README.md)
   read 703 documents and found each `none-registrable`, while registering the
   real witnesses of their three neighbours (corpus rows 313 to 315).
-  The union shapes `discriminated-extension`,
-  `discriminator-property-name-extension` and
-  `oneof-map-variant-anyof-value` have not been searched at any declared source
-  either; their
+  The union shape `oneof-map-variant-anyof-value` has not been searched at any
+  declared source either; its
   [search](openapi-surface/witness-search-union-scenarios/README.md#witness-search)
   read the APIs.guru archive and the already-acquired code-search pools and
-  found each `none-registrable`.
+  found it `none-registrable`.
   The six examples-and-docs shapes outside `bodies-media` and
   `document-paths`, from `example-nested-array-two-items` to
   `reference-literal-single-quote-escaped`, have not been searched at any
@@ -106,7 +114,7 @@ split five ways:
   `golden` and retired seven of their arm-level covers and one outside them.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  534 and never count as a real-specification match.
+  541 and never count as a real-specification match.
 - **0 are decided output-insensitive.** Deleting the feature leaves both generators'
   complete trees byte-identical, as [the shared
   table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
@@ -118,7 +126,7 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-534 + 70 + 120 + 0 + 0 = 724.
+541 + 70 + 113 + 0 + 0 = 724.
 
 **Feature combinations are counted apart.** 91 combinations are selected
 ([the list](openapi-surface/combinations.md)): 12 are `gap`, 70 are `golden` and 9 are `handwritten`.
@@ -137,16 +145,16 @@ None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 605 `golden` rows declare 1061 handling sites in
+same way. The 612 `golden` rows declare 1069 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **957 are reached by a registered real specification.** Its scoped
+- **968 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
-- **99 are reached only by a hand-written fixture.** Each arm-level
-  cover executes the site and byte-matches the certified tree. Thus each of the 99 is still one of the 104 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 49 read `exhausted`, 50 read `search-incomplete` and 0 read `config-gated`.
+- **96 are reached only by a hand-written fixture.** Each arm-level
+  cover executes the site and byte-matches the certified tree. Thus each of the 96 is still one of the 101 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 54 read `exhausted`, 42 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -155,7 +163,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-957 + 99 + 5 + 0 + 0 = 1061. Fourteen sites left the table with the two functions
+968 + 96 + 5 + 0 + 0 = 1069. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -226,7 +234,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (120 features, 99
+- **Features and arms resting on hand-written fixtures only (113 features, 96
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -2251,9 +2259,9 @@ link and expect the named failure. The counts below are the output of
 
 ```text
 shapes: 160
-by kind: handwritten 117, measurement 5, real 33, refusal 5
+by kind: handwritten 110, measurement 5, real 40, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 57, match 98
+by outcome: default=refuse;strict=refuse 5, departure 60, match 95
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
@@ -2404,8 +2412,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 325 sources. The walk reads the
-  **308** registered sources, of which **308** carry a committed golden; the 17
+  acquires 331 sources. The walk reads the
+  **314** registered sources, of which **314** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2443,16 +2451,16 @@ for either; each bullet below says where its number comes from.
 
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [`parameters`](openapi-surface/parameters.md) | 93 | 54 | 19 | 20 | 0 | 0 | 0 | 0 |
+| [`parameters`](openapi-surface/parameters.md) | 93 | 57 | 19 | 17 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 342 | 276 | 18 | 46 | 2 | 0 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 54 | 5 | 19 | 0 | 0 | 0 | 0 |
-| [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
+| [`security`](openapi-surface/security.md) | 56 | 44 | 9 | 3 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 84 | 72 | 3 | 9 | 0 | 0 | 0 | 0 |
-| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
-| **total** | **724** | **535** | **56** | **119** | **14** | **0** | **0** | **14** |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 39 | 2 | 18 | 12 | 0 | 0 | 12 |
+| **total** | **724** | **542** | **56** | **112** | **14** | **0** | **0** | **14** |
 
 The walk enumerated **724** features and landed each in exactly one category:
-**535** `golden`, **56** `limitations`, **119** `handwritten`, **14** `gap`. The `gap` column splits by
+**542** `golden`, **56** `limitations`, **112** `handwritten`, **14** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2848,7 +2856,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **527** golden rows reach every handling site and tie below every row
+then key. **534** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3072,8 +3080,8 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **527** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **78** carry at least one handling site no golden-only witness executes: 104 unreached arms in all. By the verdict each arm's linked record states, 56 read `exhausted`, 48 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
+The golden rows split in two. **534** reach every handling site their
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **78** carry at least one handling site no golden-only witness executes: 101 unreached arms in all. By the verdict each arm's linked record states, 59 read `exhausted`, 42 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources or, for an arm no arm-search
@@ -3187,68 +3195,65 @@ why. The changes that took the arm off:
 | 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]` | 4 | `search-incomplete` | `request-media-methods` |
 | 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `search-incomplete` | `request-media-methods` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `search-incomplete` | `inline-body-readonly-own-overlap` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]` | 26 | `search-incomplete` | `query-array-items-union` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]` | 2 | `search-incomplete` | `query-array-items-union` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | 2 | `search-incomplete` | `sensor-batch-query` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 4 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
-| 4 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
-| 4 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
-| 6 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `search-incomplete` | `union-sample` |
-| 6 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `search-incomplete` | `harbour-window`, `measurement-phase` |
-| 6 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `search-incomplete` | `kiln-variant-trigger` |
-| 7 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
-| 7 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
-| 8 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
-| 8 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
-| 9 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `search-incomplete` | `streaming-extension-terminator` |
-| 9 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `search-incomplete` | `stream-condition-union-body` |
-| 10 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
-| 10 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 28 | `search-incomplete` | `ferry-mapping-outside-schemas` |
-| 11 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
-| 11 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
-| 12 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
-| 12 | `parameter-in-header` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | 12 | `search-incomplete` | `observatory-client-headers` |
-| 13 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
-| 13 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
-| 14 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `search-incomplete` | `multipart-alias-object` |
-| 14 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `search-incomplete` | `multipart-json-module` |
-| 15 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 15 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 16 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
-| 16 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
-| 17 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 18 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 19 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 20 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-anyof-variants` |
-| 21 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
-| 22 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 23 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 24 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 25 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 26 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
-| 27 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
-| 28 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
-| 29 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
-| 30 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
-| 31 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-oneof-variants` |
-| 32 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | 18 | `search-incomplete` | `shelf-labels-map-variants` |
-| 33 | `annotated-ref-target-anyof` | `src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]` | 15 | `exhausted` | `inline-property-unions` |
-| 34 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
-| 35 | `type-single` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]` | 1 | `search-incomplete` | `verified-seal` |
-| 36 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-anyof-variants` |
-| 37 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-oneof-variants` |
-| 38 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` | `nested-array-elements` |
-| 39 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 40 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 41 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `search-incomplete` | `observatory-query-extensions` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
+| 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
+| 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
+| 4 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
+| 4 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
+| 4 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
+| 5 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `search-incomplete` | `union-sample` |
+| 5 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `search-incomplete` | `harbour-window`, `measurement-phase` |
+| 5 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `search-incomplete` | `kiln-variant-trigger` |
+| 6 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
+| 6 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
+| 7 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
+| 7 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
+| 8 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `exhausted` | `streaming-extension-terminator` |
+| 8 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `exhausted` | `stream-condition-union-body` |
+| 9 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
+| 9 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 28 | `search-incomplete` | `ferry-mapping-outside-schemas` |
+| 10 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
+| 10 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
+| 11 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |
+| 11 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | 2 | `search-incomplete` | `sensor-batch-query` |
+| 12 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
+| 12 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
+| 13 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `search-incomplete` | `multipart-alias-object` |
+| 13 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `search-incomplete` | `multipart-json-module` |
+| 14 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 14 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 15 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
+| 15 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
+| 16 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 17 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 18 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 19 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-anyof-variants` |
+| 20 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
+| 21 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 22 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 23 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 24 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 25 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
+| 26 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
+| 27 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
+| 28 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
+| 29 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
+| 30 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-oneof-variants` |
+| 31 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | 18 | `search-incomplete` | `shelf-labels-map-variants` |
+| 32 | `annotated-ref-target-anyof` | `src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]` | 15 | `exhausted` | `inline-property-unions` |
+| 33 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
+| 34 | `type-single` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]` | 1 | `search-incomplete` | `verified-seal` |
+| 35 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-anyof-variants` |
+| 36 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 12 | `exhausted` | `inline-oneof-variants` |
+| 37 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` | `nested-array-elements` |
+| 38 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 39 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 40 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
+| 41 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `exhausted` | `observatory-query-extensions` |
 | 42 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 43 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 44 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
@@ -3443,7 +3448,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**84** golden rows rest on one document: a single golden-only witness declares
+**88** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3478,6 +3483,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
+| `security-scheme-bearer-extension-named` | `security` | `mcp-handle` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
 | `cycle-into-cycle` | `schemas` | `ingef-conquery` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
@@ -3486,6 +3492,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `oneof-array-variant-empty-object-item` | `schemas` | `milvus-vector-operations` |
 | `allof-single-ref-empty-properties-alias` | `schemas` | `azure-databox-management` |
 | `camel-case-tag-group-and-prefix` | `document-paths` | `kompaz-web-frontend` |
+| `global-headers-extension` | `parameters` | `loonfs` |
 | `oneof-array-variant-oneof-nullable-item` | `schemas` | `discord-com` |
 | `oneof-empty-object-variant` | `schemas` | `milvus-vector-operations` |
 | `operation-id-hyphenated-tag-method` | `document-paths` | `parcelis-api` |
@@ -3508,17 +3515,18 @@ ledger, so a registration that adds a second witness removes the row here.
 | `header-allow-empty-value` | `parameters` | `ndw-accessibility-map` |
 | `header-content` | `parameters` | `vtex-pricing` |
 | `header-examples` | `parameters` | `microcks.local` |
-| `header-subset-string-default` | `parameters` | `vtex-marketplace-protocol` |
 | `ignore-extension-on-property-kept` | `schemas` | `nvke-controller` |
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
+| `literal-prefixed-integer-path-segment` | `parameters` | `wiim-httpapi` |
 | `media-type-event-stream-event-dispatch` | `bodies-media` | `synthwerk-llm` |
 | `nullable-single-allof-ref-component-not-optional` | `schemas` | `openapi-generator-allof-extension-parent` |
 | `oneof-array-variant-inline-enum-item` | `schemas` | `sourcefuse-bpmn-service` |
 | `oneof-duplicate-members-collapsed` | `schemas` | `readme-api-application-json` |
-| `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |
 | `operation-id-digit-leading-method` | `document-paths` | `onmyshelf-api` |
+| `operation-retries-disabled` | `oas31-extensions` | `loonfs` |
 | `patch-inline-nullable-unrequired-props-omit` | `bodies-media` | `blufiles-api` |
+| `path-parameters-template-order-31` | `parameters` | `formbricks` |
 | `property-sole-oneof-closed-object-member` | `schemas` | `mistle-control-plane` |
 | `range-3XX` | `bodies-media` | `osparc-simcore-webserver` |
 | `ref-pointer-unnamed-segment` | `schemas` | `auto-agent-protocol` |
@@ -3529,6 +3537,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `response-without-description-blank-line` | `bodies-media` | `amrc-acs-directory` |
 | `schema-name-builtin-complex` | `schemas` | `openapi-generator-model-deprecated` |
 | `schema-x-tags` | `schemas` | `konfig-lucca-organization` |
+| `security-scheme-basic-extension-named` | `security` | `laposta` |
 | `type-misspelled-scalar` | `schemas` | `panoptes` |
 | `unevaluated-properties` | `schemas` | `tamoss` |
 | `unread-date-time-example` | `schemas` | `netgsm-sms` |

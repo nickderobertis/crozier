@@ -80,7 +80,6 @@ nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
 observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	1	1
-observatory-client-headers	parameter-in-header	src/ir.rs::global_headers[for header in doc\.global_header_extensions]	9	12
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
 odometer-reading	format-int64	src/ir.rs::bounded_example_literal[=^ {16}exact$]	1	1
@@ -89,8 +88,6 @@ orchard-dispatch-schemas	combo-anyof-beside-properties	src/ir.rs::Builder::discr
 orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::add_named_shape[for \(prop, prop_schema\) in &schema\.properties \{]	6	6
 orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]	10	10
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
-query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2
-query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	22	26
 quiz-nullable-response-union	oneof	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
 ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
 ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11

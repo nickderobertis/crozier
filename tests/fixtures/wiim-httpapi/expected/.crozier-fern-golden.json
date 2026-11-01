@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "wiim-httpapi",
+  "corpus_spec_ref": "3dce4a722aa2b30fdb06d720b58714e224d26eb6",
+  "corpus_spec_url": "https://raw.githubusercontent.com/cvdlinden/wiim-httpapi/3dce4a722aa2b30fdb06d720b58714e224d26eb6/openapi.json"
+}

@@ -4,12 +4,5 @@ digest = "df82a886ad90f2d175d0edf242d36bd0646ded888aa388e17a361fd0a273fb4d"
 
 [[covers]]
 key = "operation-idempotent-with-root-headers"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#idempotent-operation"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
-
-[[covers]]
-key = "operation-retries-disabled"
-search = "docs/openapi-surface/witness-search-clients-extensions/README.md#retries-disabled"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+verdict = "exhausted"
