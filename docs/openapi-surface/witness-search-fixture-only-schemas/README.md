@@ -15,6 +15,7 @@ The rows of [`../schemas.md`](../schemas.md) whose only proof, at this node's ba
 |---|---|---:|---:|---:|
 | APIs.guru | `APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`, the revision the corpus's APIs.guru rows pin, read from an earlier search's extraction of that revision's archive | 4138 | 1970 | 0 |
 | registered | every JSON and YAML file under `tests/fixtures/` at `1748b7946` | 986 | 289 | 0 |
+| registered since (post-merge audit) | the 38 corpus rows registered after `1748b7946`, read at `c8e529582` (after the merge of `c0d439ecd`), each at the pinned revision its `CORPUS.md` row names | 38 | 38 | 0 |
 | github-code-search | the documents earlier searches acquired, the union of both retained `candidate-documents.json` manifests (each file content-addressed by its SHA-256) | 5109 | 4824 | 53 |
 | sourcegraph | the same, for Sourcegraph's acquisitions | 4077 | 2862 | 18 |
 | github-code-search (this search) | 101 GitHub code-search requests made here ([`code-search.tsv`](code-search.tsv)), each result fetched at the commit GitHub reported | 3208 newly acquired | — | — |
@@ -254,6 +255,25 @@ A cover whose cited search already read `exhausted` keeps citing it. The confirm
 | `ref-pointer-nested-properties` | `exhausted` | `src/ir.rs::ref_to_class["properties" if index]` (`ref-pointer-walk`) |
 | `ref-pointer-nested-properties` | `exhausted` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` (`ref-pointer-walk`) |
 | `annotated-ref-target-inheritance-union` | `exhausted` | feature row (`glaze-ledger-coats`); 0 declarers in every population read |
+
+
+## Post-merge audit
+
+Merging main at `c0d439ecd` brought corpus rows registered after this search's registered population (`1748b7946`). Every one was read: rows 3479 (`vtex-marketplace-protocol`), 4200 to 4212, 4301 (`nixtla-timegpt`) and 4400 to 4405 (main's `notion-mcp-server`, `laposta`, `mcp-handle`, `microsoft-adme-crs-converter`, `wiim-httpapi` and `loonfs`), and this search's own rows 4000 to 4016. Row 3001 (`formbricks`), which main reused, was already in the registered population.
+
+| row | name | revision | sha256 |
+|---:|---|---|---|
+| 4400 | `notion-mcp-server` | `730ae781ba28beeaf0865025a3f2ed4c25ea2387` | `d33548174dfc6ebad012fc73b1483532c7887d8c97fd6deb62d56c742e96baba` |
+| 4401 | `laposta` | `a97773a9023708ab722e30f0e157a2b69fefc882` | `6a22f318010bf4b075560aa42a8966259b880c053877cfc41495ac173d525d29` |
+| 4402 | `mcp-handle` | `9c59f16950d25e08c1058d8174e12b22861280d8` | `58fc8af3b5781cd22acc483f1c4b0a0332dc5b10e485764f86e0788dccf83d4b` |
+| 4403 | `microsoft-adme-crs-converter` | `df39d22ed32acfe80fcdbc5b554871b2c752a39a` | `437387d5373eece14c699e56966415ff74cdcde63c38730cb405bcc175c176d7` |
+| 4404 | `wiim-httpapi` | `3dce4a722aa2b30fdb06d720b58714e224d26eb6` | `7c154d51a73147b3715c867af819307e130af4467c0d0f20d34815821431e872` |
+| 4405 | `loonfs` | `1e9aebea7e6fca3ea5f32d33b066e39228131208` | `0b09c85255f8addc76074a64d6e0839a646ed2c1e936d7b4380d6eab0a9a9214` |
+
+- **Feature and combination detectors.** The same detectors as [Detectors](#detectors) (each feature row's complete trigger or census selector, each combination's conjunction) ran over all 38 documents. Komga's two `allof-overlapping-ref-parents-flattened` sites served as a positive control and were counted as before. None of the 21 documents registered by other searches declares any target. Among this search's own rows, each declares the target it was registered for. One also declares an open target: `ably-sdk-test-proxy` (row 4006) declares `combo-oneof-beside-properties` at 1 site, recorded in [`census.tsv`](census.tsv) as a `registered (post-merge audit)` row.
+- **Arm and interaction-branch detectors.** `just golden-reach` re-measured every golden test (314, at `c8e529582`), the instrumented crozier built from the merged `src/`. Both interaction sites of `combo-oneof-beside-properties` stay unexecuted by ably's golden test: 0 of 6 and 0 of 10 regions. No interaction site of any of the three open combination targets is executed by any of the 38 tests. Of the 29 arm rows, two have a site that one of these tests executes, but the test's document does not declare that row's feature, so neither is a declarer. `contribly-com` reaches `scalar_body[=Some\("uuid" \x7c "byte"\)]` through `format: byte` (its registered `format-byte` arm), not `format: uuid`. `sourcefuse-bpmn-service` reaches `field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` but declares no `oneOf>anyOf`. The ledger reports every one of the 29 arms still unreached.
+- **Verdicts.** No target's verdict moves, so no cover's `evidence.toml` changes. The [Outcome](#outcome) counts stand as stated.
+- **Outside this search's region.** The re-measure shows row 4015 (`nvke-controller`) executing `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]`, the arm of the `oas31-extensions` row `x-fern-or-crozier-ignore`. nvke ignores eleven component schemas. That arm's only cover was main's hand-written fixture `x-fern-ignore-schema`, so the fixture is removed, as the hand-written gate requires. Row 4015's grant was read at its own commit `ca3f7c0` (Apache-2.0). The [operations-extensions search](../witness-search-fixture-only-operations-extensions/README.md) refused the same repository at the later `3545d67`, whose LICENSE grants nothing admissible.
 
 ## Rows the frozen redo contract owns
 

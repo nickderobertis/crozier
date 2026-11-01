@@ -623,7 +623,6 @@
     "docs/openapi-surface/handwritten/water-pump-station/fern-expected": {},
     "docs/openapi-surface/handwritten/weather-radar-stream/fern-expected": {},
     "docs/openapi-surface/handwritten/woven-thread/fern-expected": {},
-    "docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-composed": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-oneof": {},

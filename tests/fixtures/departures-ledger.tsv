@@ -2141,11 +2141,6 @@ docs/openapi-surface/handwritten/woven-thread/fern-expected	src/fern/core/client
 docs/openapi-surface/handwritten/woven-thread/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/woven-thread/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/woven-thread/fern-expected	src/fern/types/__init__.py	8	init-type-checking-import-order
-docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/annotated-ref-target-closed-object	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/annotated-ref-target-closed-object	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/annotated-ref-target-closed-object	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

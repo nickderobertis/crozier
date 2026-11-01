@@ -117,4 +117,3 @@ tidepool-survey-log	discriminator-mapping	src/emit.rs::ExampleCtx::named_value_i
 tidepool-survey-log	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if union_target \{]	27	32
 union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
 verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1
-x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

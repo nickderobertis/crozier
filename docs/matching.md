@@ -1339,8 +1339,9 @@ byte-match target like the rest of the corpus.
   `ImportSessionRequest` and every type they reach although the three ignored
   `/api/internal/import/*` operations are their only references. Ignoring a
   schema removes that schema alone: Fern 5.41.3 keeps `LegacyPart` when its one
-  referrer is ignored (the hand-written fixture
-  [`x-fern-ignore-schema`](openapi-surface/handwritten/x-fern-ignore-schema/)), so
+  referrer is ignored (measured on a hand-written document, the fixture
+  `x-fern-ignore-schema` added in `ffe331be4`, retired once corpus row 4015
+  `nvke-controller` reached the arm with its eleven ignored component schemas), so
   the ignore is inert on a spec that carries no markers and never perturbs a full
   generation. An explicit
   `x-crozier-ignore: false` wins over a sibling `x-fern-ignore: true`, which is what
