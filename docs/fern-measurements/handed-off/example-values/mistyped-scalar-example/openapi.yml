@@ -1,0 +1,83 @@
+openapi: 3.1.0
+info:
+  title: Harbour depot
+  version: 1.0.0
+paths:
+  /depots:
+    post:
+      operationId: createDepot
+      tags: [depots]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [postcode, capacity, code, aliases]
+              properties:
+                postcode:
+                  type: string
+                  example: 40213
+                capacity:
+                  type: integer
+                  format: int64
+                  example: "900"
+                code:
+                  type: string
+                  examples:
+                    - 551188
+                aliases:
+                  type: array
+                  items:
+                    type: string
+                    examples:
+                      - 7781
+                      - west quay
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /depots/compare:
+    post:
+      operationId: compareDepots
+      tags: [depots]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepotComparison"
+            examples:
+              ByLevel:
+                value:
+                  left: dpt-1
+                  right: dpt-2
+                  level: "3"
+      responses:
+        "200":
+          description: Compared
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  same:
+                    type: boolean
+components:
+  schemas:
+    DepotComparison:
+      type: object
+      required: [left, right, level]
+      properties:
+        left:
+          type: string
+        right:
+          type: string
+        level:
+          type: number

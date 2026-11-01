@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: Chart plotter
+  version: 1.0.0
+paths:
+  /plots:
+    post:
+      operationId: plotCourse
+      tags: [plots]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlotRequest"
+      responses:
+        "200":
+          description: Plotted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+components:
+  schemas:
+    PlotRequest:
+      type: object
+      required: [waypoints, vessel, legs]
+      properties:
+        waypoints:
+          type: array
+          items:
+            type: string
+          examples:
+            - - "50.1N 5.0W"
+              - 'hold at "Wolf Rock"'
+              - "50.3N 4.8W"
+        vessel:
+          type: string
+          examples:
+            - Morwenna
+        legs:
+          type: integer
+          examples:
+            - 4

@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: Signal log
+  version: 1.0.0
+paths:
+  /signals:
+    get:
+      operationId: listSignals
+      tags: [signals]
+      parameters:
+        - name: observedFrom
+          in: query
+          schema:
+            $ref: "#/components/schemas/Moment"
+        - name: quotedFrom
+          in: query
+          schema:
+            $ref: "#/components/schemas/QuotedMoment"
+        - name: lamp
+          in: query
+          schema:
+            $ref: "#/components/schemas/LampCode"
+        - name: observedTo
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Moment"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 25
+      responses:
+        "200":
+          description: Signals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Moment:
+      type: string
+      format: date-time
+      examples:
+        - 2032-06-01T04:30:00Z
+    QuotedMoment:
+      type: string
+      format: date-time
+      examples:
+        - "2032-06-02T04:30:00Z"
+    LampCode:
+      type: string
+      examples:
+        - lamp-east

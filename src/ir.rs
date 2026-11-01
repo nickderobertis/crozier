@@ -3798,8 +3798,13 @@ fn build_endpoint(
                 // Without an importer example Fern's IR fallback reads no declared
                 // example: Zulip's `PATCH /navigation_views/{fragment}` declares
                 // `narrow/is/alerted`, and the golden passes `fragment="fragment"`.
+                // A *schema-level* example is still read there: a path parameter
+                // declaring `schema: {examples: [lmp_8f2kq]}` on an operation
+                // answering `application/xml` passes `lmp_8f2kq` (measured in
+                // docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/).
                 example: if fern_imports_no_endpoint_example(doc, op) {
-                    ir_fallback_parameter_example(p)
+                    schema_level_parameter_example(p)
+                        .or_else(|| ir_fallback_parameter_example(p))
                 } else {
                     parameter_example(doc, p)
                 },
@@ -3927,7 +3932,26 @@ fn build_endpoint(
             // `10` beside its default `"10"`, is absent from its worked calls.
             let discarded_optional_example =
                 !required && !without_declared_example && parameter_example(doc, p).is_none();
-            let example = if omit_synthesized_example || string_enum || discarded_optional_example {
+            // An optional array parameter whose example is a whole array the
+            // schema declares is left out of the worked call (the minimal-worked-call
+            // ruling, measured in
+            // docs/fern-measurements/handed-off/example-values/R11/): sumup's
+            // `users[]`, `statuses[]` and `roles` carry `example: [...]` and none
+            // of their calls passes them. One exampled only through its item
+            // schema is still shown (svix's `event_types=["user.signup"]`).
+            let optional_array_example = !required && optional_array_declares_example(doc, p);
+            // An optional parameter whose example is an unquoted YAML timestamp
+            // in its referenced schema's `examples` array is no example to the
+            // certified pair, which leaves it out (minimal-worked-call; measured in
+            // docs/fern-measurements/handed-off/example-values/example-optional-members/).
+            let unquoted_timestamp_schema_example =
+                !required && referenced_examples_entry_is_unquoted_timestamp(doc, p);
+            let example = if omit_synthesized_example
+                || string_enum
+                || discarded_optional_example
+                || optional_array_example
+                || unquoted_timestamp_schema_example
+            {
                 None
             } else {
                 query_parameter_example(doc, p)
@@ -5023,11 +5047,10 @@ fn parameter_example_value<'a>(
     doc: &'a OpenApi,
     parameter: &'a crate::openapi::Parameter,
 ) -> Option<&'a serde_json::Value> {
-    let declared_string = parameter
+    let declared = parameter
         .schema
         .as_ref()
-        .and_then(|schema| schema.ty.as_ref()?.primary())
-        == Some("string");
+        .and_then(|schema| schema.ty.as_ref()?.primary());
     parameter
         .example
         .as_ref()
@@ -5037,7 +5060,12 @@ fn parameter_example_value<'a>(
                 .values()
                 .find_map(|example| component_example_value(doc, example))
         })
-        .filter(|_| declared_string)
+        // So does an array parameter, for an array example: a required
+        // `codes` declaring `example: [PLY, FAL]` passes `codes=["PLY", "FAL"]`
+        // (measured in docs/fern-measurements/handed-off/example-values/example-value-source/).
+        .filter(|example| {
+            declared == Some("string") || declared == Some("array") && example.is_array()
+        })
         .or_else(|| parameter.schema.as_ref().and_then(typed_schema_example))
         .or_else(|| {
             parameter
@@ -5046,6 +5074,23 @@ fn parameter_example_value<'a>(
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
                 .and_then(typed_schema_example)
+        })
+        .or_else(|| {
+            // A `oneOf` of a referenced schema and a string `const` is worked from
+            // the referenced member's example, wherever the `const` sits: mautrix's
+            // `loginID` (`oneOf: [$ref UserLoginID, {const: all}]`) passes the
+            // login ID UserLoginID declares (measured in
+            // docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/).
+            let members = parameter.schema.as_ref()?.one_of.as_deref()?;
+            members
+                .iter()
+                .any(|member| member.const_value.is_some())
+                .then(|| {
+                    members.iter().find_map(|member| {
+                        resolve_ref(doc, member.reference.as_deref()?).and_then(typed_schema_example)
+                    })
+                })
+                .flatten()
         })
 }
 
@@ -5066,6 +5111,59 @@ fn array_item_example<'a>(
             })
         })
         .and_then(schema_example)
+}
+
+/// Whether an array parameter's own (or referenced) schema declares a whole
+/// array as its example, which is what the certified pair reads as the example
+/// of an array parameter (an item-level example is promoted separately; see
+/// [`array_item_example`]).
+fn optional_array_declares_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> bool {
+    let Some(schema) = parameter.schema.as_ref() else {
+        return false;
+    };
+    let resolved = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    resolved.ty.as_ref().and_then(TypeField::primary) == Some("array")
+        && (schema_example(resolved).is_some_and(serde_json::Value::is_array)
+            || parameter
+                .example
+                .as_ref()
+                .is_some_and(serde_json::Value::is_array))
+}
+
+/// Whether a parameter's only example is the first entry of its referenced
+/// schema's `examples` array, written as an unquoted YAML timestamp (debezium's
+/// `Instant`, `examples: [2022-03-10T16:15:50Z]`). YAML reads that entry as a
+/// date, which the certified pair's importer does not take as an example.
+fn referenced_examples_entry_is_unquoted_timestamp(
+    doc: &OpenApi,
+    parameter: &crate::openapi::Parameter,
+) -> bool {
+    if parameter.example.is_some() || !parameter.examples.is_empty() {
+        return false;
+    }
+    let Some(target) = parameter
+        .schema
+        .as_ref()
+        .and_then(|schema| schema.reference.as_deref())
+        .and_then(|reference| resolve_ref(doc, reference))
+    else {
+        return false;
+    };
+    target.example.is_none()
+        && target
+            .examples
+            .first()
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|value| {
+                doc.yaml_unquoted_timestamps
+                    .as_ref()
+                    .is_some_and(|unquoted| unquoted.contains(value))
+                    && crate::emit::yaml_resolves_as_timestamp(value)
+            })
 }
 
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
@@ -5374,6 +5472,16 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
 /// declared example (`generatePrimitiveStringExample`): its `default`, else a
 /// sample exactly `minLength` long, else one `maxLength` long when that is under
 /// ten, else nothing and the call passes the parameter's name.
+/// The example a parameter's own inline schema declares (its `example`, else
+/// the first fitting `examples` entry), ignoring any parameter-level
+/// `example`/`examples`. A schema the parameter names by `$ref` gives none:
+/// npq-registration's `id` refers to `IDAttribute`, whose example the certified
+/// pair's fallback passes over for `id="id"`.
+fn schema_level_parameter_example(parameter: &crate::openapi::Parameter) -> Option<String> {
+    let schema = parameter.schema.as_ref().filter(|schema| schema.reference.is_none())?;
+    bounded_example_literal(typed_schema_example(schema)?, declares_int64(schema))
+}
+
 fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
     parameter_example(doc, parameter).or_else(|| ir_fallback_parameter_example(parameter))
 }
@@ -5456,14 +5564,25 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
 /// `type: boolean, examples: ["false"]` and its history `limit` writes
 /// `type: integer, examples: ["100"]`; a from-scratch probe measured the same
 /// for the singular `example` keyword.
+///
+/// The reverse holds as well: a number or boolean declared on a `type: string`
+/// schema is no example, and of a 3.1 `examples` array the first entry of the
+/// schema's own JSON type is taken (measured in
+/// docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/):
+/// dataportal's `code` (`examples: [119373006]`) is worked as `"code"`, and its
+/// `searchterms` items (`[763436008, 763434006, something invalid]`) as
+/// `["something invalid"]`.
 fn typed_schema_example(schema: &Schema) -> Option<&serde_json::Value> {
-    schema_example(schema).filter(|value| {
-        !value.is_string()
-            || !matches!(
-                schema.ty.as_ref().and_then(TypeField::primary),
-                Some("boolean" | "integer" | "number")
-            )
-    })
+    let primary = schema.ty.as_ref().and_then(TypeField::primary);
+    let fits = |value: &&serde_json::Value| match primary {
+        Some("boolean" | "integer" | "number") => !value.is_string(),
+        Some("string") => !(value.is_number() || value.is_boolean()),
+        _ => true,
+    };
+    match schema.example.as_ref() {
+        Some(example) => Some(example).filter(fits),
+        None => schema.examples.iter().find(fits),
+    }
 }
 
 /// Render a schema example for a generated call. Arrays commonly put the example
@@ -7262,8 +7381,12 @@ fn resolve_request_body(
     if is_map(schema) {
         let type_ref = base_type_ref(schema);
         let convert = type_needs_convert(&type_ref, types);
+        // So does a free-form map's (`additionalProperties: true` or `{}`):
+        // notehub's legacy webhook event posts one with a media `example`, and
+        // the certified pair's call passes its entries (measured in
+        // docs/fern-measurements/handed-off/example-values/map-body-media-example/).
         let string_map = matches!(&type_ref, TypeRef::Dict(_, value)
-            if **value == TypeRef::Primitive(Prim::Str));
+            if **value == TypeRef::Primitive(Prim::Str) || **value == TypeRef::Primitive(Prim::Any));
         let mut body = single_with_override(
             type_ref,
             required,
@@ -7275,7 +7398,8 @@ fn resolve_request_body(
         // example in both its method docstrings and its reference usage snippet.
         if string_map {
             if let RequestBody::Single(single) = &mut body {
-                single.example = (media_example(doc, media).map(serde_json::Value::to_string))
+                single.example = media_example(doc, media)
+                    .map(|example| index_keyed_map_example(example).to_string())
                     .map(BodyExample::Literal);
             }
         }
@@ -7314,10 +7438,19 @@ fn resolve_request_body(
             inline_container_carries_content_type(schema),
         );
         // So is an array body's: Primula Tracker's bulk lead-stage update
-        // declares one item, and the golden constructs it.
+        // declares one item, and the golden constructs it. Without one, the
+        // array schema's own `example` is the request (measured in
+        // docs/fern-measurements/handed-off/example-values/example-value-source/).
         if let RequestBody::Single(single) = &mut body {
-            single.example = (media_example(doc, media).map(serde_json::Value::to_string))
-                .map(BodyExample::Literal);
+            single.example = media_example(doc, media)
+                .map(|example| BodyExample::Literal(example.to_string()))
+                .or_else(|| {
+                    schema
+                        .example
+                        .as_ref()
+                        .filter(|example| example.is_array())
+                        .map(|example| BodyExample::Schema(example.to_string()))
+                });
         }
         return Some(body);
     }
@@ -7423,6 +7556,23 @@ fn resolve_request_body(
         }
         body
     })
+}
+
+/// A map body's example as the certified pair reads it: an array example (which
+/// the map schema does not fit) becomes the object keyed by each item's index,
+/// `["focus", "tilt"]` passing `{"0": "focus", "1": "tilt"}` (measured in
+/// docs/fern-measurements/handed-off/example-values/example-placeholder-shape/).
+pub(crate) fn index_keyed_map_example(example: &serde_json::Value) -> serde_json::Value {
+    match example {
+        serde_json::Value::Array(items) => serde_json::Value::Object(
+            items
+                .iter()
+                .enumerate()
+                .map(|(index, item)| (index.to_string(), item.clone()))
+                .collect(),
+        ),
+        other => other.clone(),
+    }
 }
 
 fn apply_body_example(
@@ -10280,10 +10430,13 @@ fn number_prim(schema: &Schema) -> Prim {
     }
 }
 
-/// The integer primitive for a schema: `Long` for `format: int64`, else `Int`.
-/// Both render as Python `int`; the split only distinguishes the example value.
+/// The integer primitive for a schema: `Long` for `format: int64` or `uint64`,
+/// else `Int`. Both render as Python `int`; the split only distinguishes the
+/// example value, where the certified pair writes `1000000` for an unsigned
+/// 64-bit integer as for a signed one (walletd's `height`; measured in
+/// docs/fern-measurements/handed-off/example-values/example-value-source/).
 fn int_prim(schema: &Schema) -> Prim {
-    if schema.format.as_deref() == Some("int64") {
+    if matches!(schema.format.as_deref(), Some("int64" | "uint64")) {
         Prim::Long
     } else {
         Prim::Int
@@ -19629,6 +19782,7 @@ mod tests {
             ..Schema::default()
         };
         assert_eq!(int_prim(&schema("int64")), Prim::Long);
+        assert_eq!(int_prim(&schema("uint64")), Prim::Long);
         assert_eq!(int_prim(&schema("uint32")), Prim::Int);
         assert_eq!(int_prim(&schema("int32")), Prim::Int);
     }

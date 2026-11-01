@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Buoy registry
+  version: 1.0.0
+paths:
+  /buoys:
+    post:
+      operationId: registerBuoy
+      tags: [buoys]
+      parameters:
+        - name: X-Survey-Ref
+          in: header
+          required: true
+          schema:
+            type: string
+          example: ""
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [label, depth_metres, harbour]
+              properties:
+                label:
+                  type: string
+                  example: ""
+                depth_metres:
+                  type: integer
+                  example: 0
+                harbour:
+                  type: string
+                  example: north-basin
+      responses:
+        "200":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /buoys/{buoyId}/readings:
+    post:
+      operationId: recordReading
+      tags: [buoys]
+      parameters:
+        - name: buoyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: berth
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [note, swell]
+              properties:
+                note:
+                  type: string
+                  example: ""
+                swell:
+                  type: integer
+                  example: 0
+      responses:
+        "200":
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string

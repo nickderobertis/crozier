@@ -1,0 +1,70 @@
+openapi: 3.1.0
+info:
+  title: Lens settings
+  version: 1.0.0
+paths:
+  /lenses/settings:
+    post:
+      operationId: updateLensSettings
+      tags: [lenses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+            examples:
+              pair:
+                summary: Two adjustments
+                value:
+                  - focus
+                  - tilt
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+  /lenses/{lensId}/logs:
+    post:
+      operationId: appendLensLogs
+      tags: [lenses]
+      parameters:
+        - name: lensId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        description: One log entry or several
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              propertyNames:
+                type: string
+            examples:
+              several:
+                value:
+                  - note: wiped
+                    keeper: Tamsin
+                  - note: realigned
+                    keeper: Jory
+      responses:
+        "200":
+          description: Appended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer

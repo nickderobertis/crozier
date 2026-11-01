@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: Logbook seals
+  version: 1.0.0
+paths:
+  /seals/verify:
+    post:
+      operationId: verifySeal
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seal]
+              properties:
+                seal:
+                  oneOf:
+                    - $ref: "#/components/schemas/WaxSeal"
+                    - $ref: "#/components/schemas/StampSeal"
+            example:
+              seal:
+                format: stamp
+                stamp_id: st-0091
+                inked: true
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+components:
+  schemas:
+    WaxSeal:
+      type: object
+      required: [format, colour]
+      properties:
+        format:
+          type: string
+          enum: [wax]
+        colour:
+          type: string
+    StampSeal:
+      type: object
+      required: [format, stamp_id]
+      properties:
+        format:
+          type: string
+          enum: [stamp]
+        stamp_id:
+          type: string
+        inked:
+          type: boolean

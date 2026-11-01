@@ -224,3 +224,16 @@ superseded-fixtures/patch-inline-nullable-unrequired-props-omit	docs/fern-measur
 superseded-fixtures/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-alias	docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-example-nulls	docs/fern-measurements/superseded-fixtures/request-example-nulls/openapi.yml	python-enums	packaged	-
+handed-off/example-values/falsy-property-example	docs/fern-measurements/handed-off/example-values/falsy-property-example/openapi.yml	python-enums	packaged	-
+handed-off/example-values/yaml-timestamp-parameter-example	docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/openapi.yml	python-enums	packaged	-
+handed-off/example-values/schema-examples-array-parameter-value	docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-optional-members	docs/fern-measurements/handed-off/example-values/example-optional-members/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-float-repr	docs/fern-measurements/handed-off/example-values/example-float-repr/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-placeholder-shape	docs/fern-measurements/handed-off/example-values/example-placeholder-shape/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-enum-member	docs/fern-measurements/handed-off/example-values/example-enum-member/openapi.yml	python-enums	packaged	-
+handed-off/example-values/mistyped-scalar-example	docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/openapi.yml	python-enums	packaged	-
+handed-off/example-values/property-schema-examples-array	docs/fern-measurements/handed-off/example-values/property-schema-examples-array/openapi.yml	python-enums	packaged	-
+handed-off/example-values/param-oneof-ref-and-const-example	docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/openapi.yml	python-enums	packaged	-
+handed-off/example-values/map-body-media-example	docs/fern-measurements/handed-off/example-values/map-body-media-example/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-matching-union-variant	docs/fern-measurements/handed-off/example-values/example-matching-union-variant/openapi.yml	python-enums	packaged	-
+handed-off/example-values/example-value-source	docs/fern-measurements/handed-off/example-values/example-value-source/openapi.yml	python-enums	packaged	-
