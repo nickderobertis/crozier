@@ -11524,25 +11524,17 @@ fn last_composed_variant(mut schema: &Schema) -> &Schema {
     schema
 }
 
-/// Infer the selector used by generation and by name-refusal validation.
+/// Infer the selector used by generation and by name-refusal validation. The
+/// same selector decides which referenced models lose their tag (see
+/// [`inferred_strip_discriminant_property`]): the `union-modelling/
+/// singleton-enum-tags` measurement's `CrewMember` and `Contractor` drop the
+/// `kind` the `Author` union reads off them. A member also referenced from a
+/// non-variant position keeps it, which is why braintrust's
+/// `TopicAutomationConfig` still declares `event_type` beside the
+/// `CreateProjectAutomation.config` union it is a member of.
 pub(crate) fn inferred_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
-) -> Option<String> {
-    inferred_discriminant_property_with(schema, schemas, true)
-}
-
-/// [`inferred_discriminant_property`], with `enum_tag` saying whether a member
-/// tagging itself with a required one-member `enum` counts even when the union
-/// also references components. Building the union reads that spelling (see the
-/// comment below); *stripping* the tag from the referenced model does not, because
-/// Fern keeps it — braintrust's `TopicAutomationConfig` is a member of the
-/// `event_type` union its `CreateProjectAutomation.config` forms, and its
-/// standalone model still declares `event_type`.
-fn inferred_discriminant_property_with(
-    schema: &Schema,
-    schemas: &IndexMap<String, Schema>,
-    enum_tag: bool,
 ) -> Option<String> {
     if schema.discriminated() == Some(false) {
         return None;
@@ -11574,20 +11566,24 @@ fn inferred_discriminant_property_with(
                 // whose members write a bare `enum: [dialect]`, an ordinary union.
                 let singleton_enum = !untyped_enum_tag(field)
                     && string_enum_values(field).is_some_and(|values| values.len() == 1);
-                // A member that spells its tag as a required one-member `enum`
+                // A member that spells its tag as a one-member `enum`
                 // discriminates whether or not the union also references
                 // components: braintrust's `CreateProjectAutomation.config` mixes
                 // four inline objects with a `$ref` whose target tags itself the
                 // same way on `event_type`, and Fern reads the discriminator off
                 // all five. A `const` tag is deliberately not enough here — the
                 // `$ref`-only shapes below are what that spelling reaches.
-                let tagged_by_enum = variant.required.contains(property)
-                    && singleton_enum
+                // Required or not: the `union-modelling/singleton-enum-tags`
+                // measurement's `Author` mixes two `$ref`s requiring their
+                // one-member `kind` enum with two inline members that leave it
+                // unrequired, and Fern's `Author` is the `kind`-discriminated
+                // union of all four.
+                let tagged_by_enum = singleton_enum
                     && field
                         .enum_values
                         .as_ref()
                         .is_some_and(|values| values.len() == 1);
-                if references_components && !(enum_tag && tagged_by_enum) {
+                if references_components && !tagged_by_enum {
                     // Members that are all `$ref`s, each tagging the property with
                     // one string (a one-member `enum` or a `const`) that `required`
                     // leaves out, discriminate whatever the property's name: that
@@ -11661,7 +11657,7 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
 /// Notion API's `movePageParentRequest` members tag `type` with a bare
 /// `const: page_id`, `database_id` and `workspace`, and Fern's tree is the plain
 /// `typing.Union` of three models. It is read only where no member is a `$ref`;
-/// the `$ref`-only spellings in [`inferred_discriminant_property_with`] keep
+/// the `$ref`-only spellings in [`inferred_discriminant_property`] keep
 /// their own rules.
 fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
@@ -11691,7 +11687,7 @@ fn inferred_union_discriminant_property(
                     .any(|required| required == "type")
                     .then(|| variant.properties.get("type"))
                     .flatten()
-                    // The `anyOf` rule of `inferred_discriminant_property_with`:
+                    // The `anyOf` rule of `inferred_discriminant_property`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
                     .filter(|tag| {
                         !(untyped_enum_tag(tag) || (inline_only && untyped_const_tag(tag)))
@@ -11712,7 +11708,7 @@ fn inferred_strip_discriminant_property(
     if schema.discriminated() == Some(false) {
         return None;
     }
-    inferred_discriminant_property_with(schema, schemas, false).or_else(|| {
+    inferred_discriminant_property(schema, schemas).or_else(|| {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         let targets: Option<Vec<(&str, &Schema)>> = variants
             .iter()

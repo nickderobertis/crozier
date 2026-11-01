@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Logbook
+  version: "1.0"
+paths:
+  /entries/{entryId}:
+    get:
+      operationId: getEntry
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The log entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+components:
+  schemas:
+    CrewMember:
+      type: object
+      required:
+        - kind
+        - name
+      properties:
+        kind:
+          type: string
+          enum:
+            - crew
+        name:
+          type: string
+        rank:
+          type: string
+    Contractor:
+      type: object
+      required:
+        - kind
+        - company
+      properties:
+        kind:
+          type: string
+          enum:
+            - contractor
+        company:
+          type: string
+    Author:
+      type: object
+      oneOf:
+        - $ref: "#/components/schemas/CrewMember"
+        - $ref: "#/components/schemas/Contractor"
+        - type: object
+          properties:
+            kind:
+              type: string
+              enum:
+                - autopilot
+            unit:
+              type: string
+        - type: object
+          properties:
+            kind:
+              type: string
+              enum:
+                - harbour
+            office:
+              type: string
+    Entry:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+        author:
+          $ref: "#/components/schemas/Author"

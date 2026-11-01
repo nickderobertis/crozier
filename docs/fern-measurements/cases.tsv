@@ -244,3 +244,5 @@ handed-off/union-modelling/query-anyof-date-time-or-array-named	docs/fern-measur
 handed-off/union-modelling/query-anyof-date-time-or-array-named/literals	docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/openapi.yml	literals	packaged	-
 handed-off/union-modelling/allof-oneof-inline-member-consts	docs/fern-measurements/handed-off/union-modelling/allof-oneof-inline-member-consts/openapi.yml	python-enums	packaged	-
 handed-off/union-modelling/allof-oneof-inline-member-consts/literals	docs/fern-measurements/handed-off/union-modelling/allof-oneof-inline-member-consts/openapi.yml	literals	packaged	-
+handed-off/union-modelling/union-modelling/singleton-enum-tags	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/openapi.yml	python-enums	packaged	-
+handed-off/union-modelling/union-modelling/singleton-enum-tags/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/openapi.yml	literals	packaged	-
