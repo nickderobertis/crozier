@@ -173,7 +173,10 @@ fn a_reference_beside_a_union_and_a_pattern_only_member_read_as_fern_reads_them(
     let temp = matched(case);
     let out = sdk(&temp);
     let labels = read(&out, "src/fern/types/label_translations.py");
-    assert!(labels.contains("LabelTranslations = typing.Any"), "{labels}");
+    assert!(
+        labels.contains("LabelTranslations = typing.Any"),
+        "{labels}"
+    );
     assert!(!labels.contains("Translations keyed"), "{labels}");
     assert!(read(&out, "src/fern/types/collector_note.py").contains("CollectorNote = CollectorRef"));
     mutation_is_named(
@@ -197,7 +200,9 @@ fn map_values_take_the_certified_pairs_types_rather_than_hoisted_value_models() 
         .contains("DepthsByStation = typing.Dict[str, Depth]"));
     assert!(read(&out, "src/fern/types/buoys_by_station.py")
         .contains("typing.Dict[str, typing.Optional[Buoy]]"));
-    assert!(!out.join("src/fern/types/depths_by_station_value.py").exists());
+    assert!(!out
+        .join("src/fern/types/depths_by_station_value.py")
+        .exists());
     assert!(read(&out, "src/fern/types/tide_grid.py")
         .contains("typing.List[typing.List[typing.Dict[str, TideGridItemItemValue]]]"));
     mutation_is_named(
@@ -217,8 +222,9 @@ fn bare_const_tags_leave_a_reference_union_undiscriminated() {
     let case = "const-tag-variants-undiscriminated";
     let temp = matched(case);
     let out = sdk(&temp);
-    assert!(read(&out, "src/fern/types/vessel.py")
-        .contains("Vessel = typing.Union[Sailboat, Barge]"));
+    assert!(
+        read(&out, "src/fern/types/vessel.py").contains("Vessel = typing.Union[Sailboat, Barge]")
+    );
     assert!(read(&out, "src/fern/types/sailboat.py")
         .contains("hull: typing.Optional[SailboatHull] = None"));
     mutation_is_named(
@@ -245,9 +251,17 @@ fn an_open_base_s_union_lends_its_first_branch_s_properties() {
         "handover_any_of_enum",
     ] {
         let model = read(&out, &format!("src/fern/types/{module}.py"));
-        assert!(model.contains("Collection region, chosen at pickup."), "{module}: {model}");
-        assert!(model.contains("courier: typing.Optional[str] = None"), "{module}: {model}");
-        assert!(read(&out, &format!("src/fern/types/{module}_mode.py")).contains("PICKUP = \"pickup\""));
+        assert!(
+            model.contains("Collection region, chosen at pickup."),
+            "{module}: {model}"
+        );
+        assert!(
+            model.contains("courier: typing.Optional[str] = None"),
+            "{module}: {model}"
+        );
+        assert!(
+            read(&out, &format!("src/fern/types/{module}_mode.py")).contains("PICKUP = \"pickup\"")
+        );
     }
     mutation_is_named(
         case,
@@ -309,14 +323,20 @@ fn inline_unions_are_written_as_the_certified_pair_writes_them() {
     let temp = matched(case);
     let out = sdk(&temp);
     let toolbox = read(&out, "src/fern/types/toolbox.py");
-    assert!(toolbox.contains("tools: typing.List[ChiselTool]"), "{toolbox}");
+    assert!(
+        toolbox.contains("tools: typing.List[ChiselTool]"),
+        "{toolbox}"
+    );
     assert!(
         toolbox.contains("labels: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None"),
         "{toolbox}"
     );
     assert!(read(&out, "src/fern/types/chisel_tool.py").contains("kind: ChiselToolKind"));
     for hoisted in ["toolbox_tools_item.py", "toolbox_labels.py"] {
-        assert!(!out.join("src/fern/types").join(hoisted).exists(), "{hoisted}");
+        assert!(
+            !out.join("src/fern/types").join(hoisted).exists(),
+            "{hoisted}"
+        );
     }
     mutation_is_named(
         case,
@@ -389,8 +409,9 @@ fn a_nullable_query_array_of_an_inline_enum_names_its_item() {
     let case = "R13";
     let temp = matched(case);
     let out = sdk(&temp);
-    assert!(read(&out, "src/fern/client.py")
-        .contains("channels: typing.Optional[typing.Sequence[ToggleAssistantRequestChannelsItem]] = None"));
+    assert!(read(&out, "src/fern/client.py").contains(
+        "channels: typing.Optional[typing.Sequence[ToggleAssistantRequestChannelsItem]] = None"
+    ));
     mutation_is_named(
         case,
         &temp,
