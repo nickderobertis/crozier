@@ -19074,7 +19074,6 @@ fn is_int_enum(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("integer") && schema.enum_values.is_some()
 }
 
-/// Is this schema declared as `type: object`?
 /// A schema declaring `properties` (or an empty `properties` map) but no
 /// `type` and no `allOf`: Fern reads it as its unknown type when it is a map's
 /// value.
@@ -19087,6 +19086,7 @@ fn untyped_properties_only(schema: &Schema) -> bool {
         && schema.properties.declared()
 }
 
+/// Is this schema declared as `type: object`?
 fn is_object_type(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("object")
         || (schema.ty.is_none()
@@ -19115,7 +19115,6 @@ fn trim_doc_end(text: &str) -> &str {
     }
 }
 
-/// Normalize a description into a docstring, dropping empty ones.
 /// The docstring of an enum hoisted from a property or array element: as
 /// [`clean_doc`], except that a declared but blank description is an empty
 /// docstring rather than none. Measured at fern-python-sdk 5.41.3 (the
@@ -19129,6 +19128,7 @@ fn inline_enum_doc(desc: Option<&str>) -> Option<String> {
     }
 }
 
+/// Normalize a description into a docstring, dropping empty ones.
 fn clean_doc(desc: Option<&str>) -> Option<String> {
     let text = trim_doc_end(desc?);
     if text.trim_start().is_empty() {
