@@ -3807,15 +3807,7 @@ fn build_endpoint(
                         hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                     })
             };
-            // A union one of whose members is a primitive outside the four httpx
-            // sends as data is converted before it is interpolated, scalar or not:
-            // fern-python-sdk 5.41.3 converts it first (measured in
-            // `docs/fern-measurements/handed-off/bodies-media/path-param-serialization/`).
-            let converts_union = hoister.needs_convert(&type_ref)
-                && p.schema.as_ref().is_some_and(|schema| {
-                    union_has_non_data_primitive(schema, &doc.components.schemas)
-                });
-            let mut param = PathParam {
+            PathParam {
                 constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
@@ -3844,11 +3836,24 @@ fn build_endpoint(
                         .and_then(|reference| resolve_ref(doc, reference))
                         .is_some_and(|target| target.pattern.is_some())
                 }),
-            };
-            param.convert |= converts_union;
-            param
+            }
         })
         .collect();
+    // A union one of whose members is a primitive outside the four httpx sends as
+    // data is converted before it is interpolated, scalar or not: fern-python-sdk
+    // 5.41.3 converts it first (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/path-param-serialization/`).
+    for param in &mut path_params {
+        let union = op
+            .parameters
+            .iter()
+            .filter(|p| p.location == Some(ParameterLocation::Path) && p.name == param.wire_name)
+            .find_map(|p| p.schema.as_ref())
+            .is_some_and(|schema| union_has_non_data_primitive(schema, &doc.components.schemas));
+        if union && hoister.needs_convert(&param.type_ref) {
+            param.convert = true;
+        }
+    }
     // A path template expression the operation never declares as a Parameter
     // Object is still an argument: Fern synthesizes a required `str` for it, with
     // no docstring and no example. Svix declares `app_id` on the `PUT` of
