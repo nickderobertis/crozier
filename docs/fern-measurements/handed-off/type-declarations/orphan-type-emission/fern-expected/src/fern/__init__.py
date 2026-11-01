@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import CreateKeyRequest, KeyMode
+    from .errors import NotFoundError
     from . import archive, keys, sensors
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -18,6 +19,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "KeyMode": ".types",
+    "NotFoundError": ".errors",
     "__version__": ".version",
     "archive": ".archive",
     "keys": ".keys",
@@ -53,6 +55,7 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "FernApi",
     "KeyMode",
+    "NotFoundError",
     "__version__",
     "archive",
     "keys",

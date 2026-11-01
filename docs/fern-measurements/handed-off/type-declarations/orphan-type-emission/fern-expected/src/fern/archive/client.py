@@ -37,6 +37,17 @@ class ArchiveClient:
         -------
         typing.Iterator[bytes]
             File download or directory listing
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.archive.get_archive_path(
+            path="path",
+        )
         """
         with self._raw_client.get_archive_path(path, request_options=request_options) as r:
             yield from r.data
@@ -72,6 +83,25 @@ class AsyncArchiveClient:
         -------
         typing.AsyncIterator[bytes]
             File download or directory listing
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.archive.get_archive_path(
+                path="path",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._raw_client.get_archive_path(path, request_options=request_options) as r:
             async for _chunk in r.data:

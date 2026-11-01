@@ -45,6 +45,8 @@ paths:
               schema:
                 type: string
                 format: binary
+        '404':
+          description: No such file
   /sensors:
     post:
       operationId: registerSensor

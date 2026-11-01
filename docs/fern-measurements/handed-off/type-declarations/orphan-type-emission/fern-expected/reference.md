@@ -13,7 +13,16 @@
 <dd>
 
 ```python
-client.archive.get_archive_path(...)
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.archive.get_archive_path(
+    path="path",
+)
+
 ```
 </dd>
 </dl>

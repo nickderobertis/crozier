@@ -1318,6 +1318,53 @@ fn collect_named(t: &TypeRef, set: &mut std::collections::HashSet<String>) {
     }
 }
 
+/// Drop the types hoisted at or after `from` that no kept body field reaches,
+/// directly or through another of those types.
+fn prune_unreached_hoisted(out: &mut Vec<TypeDecl>, from: usize, fields: &[BodyField]) {
+    let mut reached = std::collections::HashSet::new();
+    for field in fields {
+        collect_named(&field.type_ref, &mut reached);
+    }
+    loop {
+        let before = reached.len();
+        for decl in &out[from..] {
+            if reached.contains(decl.name()) {
+                let mut inner = std::collections::HashSet::new();
+                collect_decl_names(decl, &mut inner);
+                reached.extend(inner);
+            }
+        }
+        if reached.len() == before {
+            break;
+        }
+    }
+    let mut index = 0;
+    out.retain(|decl| {
+        index += 1;
+        index <= from || reached.contains(decl.name())
+    });
+}
+
+/// The class names one declaration references: its fields', bases', alias
+/// target's and union members' types.
+fn collect_decl_names(decl: &TypeDecl, set: &mut std::collections::HashSet<String>) {
+    match decl {
+        TypeDecl::Object(o) => {
+            set.extend(o.bases.iter().cloned());
+            o.fields
+                .iter()
+                .for_each(|f| collect_named(&f.type_ref, set));
+        }
+        TypeDecl::Alias(a) => collect_named(&a.target, set),
+        TypeDecl::Enum(_) => {}
+        TypeDecl::DiscriminatedUnion(u) => u
+            .members
+            .iter()
+            .flat_map(|m| &m.fields)
+            .for_each(|f| collect_named(&f.type_ref, set)),
+    }
+}
+
 /// Class names referenced by anything other than an inlined request body: type
 /// fields/bases/alias targets/union members, and endpoint responses, parameters,
 /// error bodies, single (non-inlined) bodies, and inlined-body field types.
@@ -1401,15 +1448,17 @@ fn inline_body_source_names(
         .map(|endpoint| (endpoint.path.as_str(), endpoint.http_method))
         .collect();
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut replaced: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for (path, item) in &doc.paths {
         for (method, op) in item.operations() {
             // A GET or HEAD body is ignored, so it inlines nothing and its schema
             // keeps its model whatever it is named: Letta's `Body_export_agent`
             // (a GET) is kept, while a FastAPI `Body_*` posted once is dropped
             // like any other single-use body.
-            if !surviving.contains(&(path.as_str(), method)) || matches!(method, "GET" | "HEAD") {
+            if matches!(method, "GET" | "HEAD") {
                 continue;
             }
+            let survived = surviving.contains(&(path.as_str(), method));
             // Nor does a `stream-condition` operation's body count as a use: Fern
             // copies it into each half's own request, so a schema a buffered
             // operation also posts is that operation's single use, and dropped
@@ -1422,6 +1471,14 @@ fn inline_body_source_names(
                 continue;
             }
             let Some(rb) = &op.request_body else { continue };
+            // A body offered as `application/octet-stream` is bytes whatever else
+            // it offers, so it inlines nothing and the schema keeps its model:
+            // Confluent's `createDek` posts `CreateDekRequest` as JSON, vendor
+            // JSON and octet-stream, takes bytes, and Fern still declares the
+            // model (the `orphan-type-emission` measurement's `createKey`).
+            if rb.content.contains_key("application/octet-stream") {
+                continue;
+            }
             // The JSON representation is found the way the body itself selects
             // it, parameters and all: Prisma Cloud posts its single-use
             // `FilterSuggestionModel` under `application/json; charset=UTF-8`
@@ -1456,13 +1513,26 @@ fn inline_body_source_names(
                 && (!is_map(target) || target.all_of.is_some())
                 && (target.properties.declared() || target.all_of.is_some())
             {
-                *counts.entry(ref_to_class(reference)).or_default() += 1;
+                let tally = if survived { &mut counts } else { &mut replaced };
+                *tally.entry(ref_to_class(reference)).or_default() += 1;
             }
         }
     }
+    // A body posted once, by an operation a later one of the same method name
+    // replaced, was inlined into a method that no longer exists, so Fern
+    // declares no model for it either: the `orphan-type-emission`
+    // measurement's two `Sensors_addNote` operations post `SensorsAddNoteRequest`
+    // and `SensorsAddNoteRequest1`, and neither is written (as Ironclad's
+    // `WorkflowsCreateCommentRequest`).
+    let replaced_only = replaced
+        .into_iter()
+        .filter(|(name, uses)| *uses == 1 && !counts.contains_key(name))
+        .map(|(name, _)| name)
+        .collect::<Vec<_>>();
     counts
         .into_iter()
         .filter_map(|(name, uses)| (uses == 1).then_some(name))
+        .chain(replaced_only)
         .collect()
 }
 
@@ -4150,7 +4220,17 @@ fn build_endpoint(
     let streaming = is_streaming(doc, op);
     let stream_view = streaming.then(|| stream_chunk_view(op));
     let response_op = stream_view.as_ref().unwrap_or(op);
-    let response = match success_response_schema(response_op) {
+    // A download returns bytes whatever JSON alternative it also offers, and Fern
+    // declares nothing from that alternative: whatwatt's `getSdPath` offers a
+    // listing object beside `text/csv` and `application/octet-stream`, and no
+    // `GetSdPathResponse` model exists (the `orphan-type-emission` measurement's
+    // `getArchivePath`).
+    let response_schema = if !streaming && is_binary_response(doc, op) {
+        None
+    } else {
+        success_response_schema(response_op)
+    };
+    let response = match response_schema {
         Some(schema) if simple_nullable_member(schema).is_some() => {
             let member = simple_nullable_member(schema).expect("guard checked nullable member");
             let base = member.reference.as_deref().map_or_else(
@@ -7254,6 +7334,7 @@ fn resolve_request_body(
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
+        let hoisted_before = hoister.out.len();
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
             let parents: Vec<Vec<BodyField>> = schema
                 .all_of
@@ -7276,6 +7357,12 @@ fn resolve_request_body(
                         .flatten()
                         .any(|inherited| inherited.wire_name == field.wire_name)
             });
+            // …and so does every type hoisted only for a property it drops: the
+            // `orphan-type-emission` measurement's `registerSensor` body declares
+            // a `readOnly` inline `calibration` object, and Fern writes no
+            // `RegisterSensorRequestCalibration` (as whatwatt's read-only
+            // `status` writes none).
+            prune_unreached_hoisted(&mut hoister.out, hoisted_before, &fields);
             // Own fields precede inherited fields; reuse the parent's resolved types.
             let own_count = fields.len();
             for reference in schema
@@ -15017,9 +15104,20 @@ impl Builder<'_> {
                     // (dnd5eapi's `Monster.senses`); any other composition keeps
                     // it (Zulip's `GetMessageResponse.message`, `allOf: [$ref
                     // MessagesBase, {properties}]`).
+                    // A declared but empty description is an empty docstring,
+                    // as the inline hoister writes it: Ironclad's
+                    // `WorkflowAsyncLaunchSuccessResponse.workflowUrls` declares
+                    // `description: ""`, and Fern's model opens `""" """` (the
+                    // `description-source` measurement's `PieceLinks`).
                     sole_inline_all_of_element(prop_schema)
                         .is_none()
-                        .then(|| clean_doc(prop_schema.description.as_deref()))
+                        .then(|| {
+                            if prop_schema.description.as_deref() == Some("") {
+                                Some(String::new())
+                            } else {
+                                clean_doc(prop_schema.description.as_deref())
+                            }
+                        })
                         .flatten(),
                 );
                 return TypeRef::Named(name);
