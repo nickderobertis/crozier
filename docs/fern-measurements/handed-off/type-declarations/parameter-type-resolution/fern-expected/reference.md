@@ -52,6 +52,14 @@ client.list_broadcasts(
 <dl>
 <dd>
 
+**before:** `typing.Optional[ListBroadcastsRequestBefore]` — Only list broadcasts before this local time, if one is given.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **window:** `typing.Optional[ListBroadcastsRequestWindow]` 
     
 </dd>

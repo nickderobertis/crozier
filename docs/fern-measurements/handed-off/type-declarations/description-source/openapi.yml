@@ -97,6 +97,11 @@ components:
                 - $ref: '#/components/schemas/GlazeKind'
               description: The glaze the piece was dipped in.
             - type: 'null'
+        firedBy:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/Glassblower'
+              description: Who fired the piece, once it has been fired.
         links:
           title: ''
           description: ''

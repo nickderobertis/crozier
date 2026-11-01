@@ -27,6 +27,19 @@ paths:
                       $ref: '#/components/schemas/LocalTime'
                 title: BroadcastAfter
               - type: 'null'
+        - name: before
+          in: query
+          required: false
+          description: Only list broadcasts before this local time, if one is given.
+          schema:
+            oneOf:
+              - anyOf:
+                  - $ref: '#/components/schemas/BroadcastBefore'
+                  - type: string
+                    contentMediaType: application/json
+                    contentSchema:
+                      $ref: '#/components/schemas/BroadcastBefore'
+              - type: 'null'
         - name: window
           in: query
           required: false
@@ -83,6 +96,10 @@ components:
     LocalTime:
       type: string
       format: date-time
+    BroadcastBefore:
+      anyOf:
+        - $ref: '#/components/schemas/LocalTime'
+        - type: 'null'
     Window:
       type: object
       properties:

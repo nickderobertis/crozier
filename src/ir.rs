@@ -9206,7 +9206,22 @@ impl InlineHoister<'_> {
                     continue;
                 }
             }
-            variants.push(base_type_ref(member));
+            // A member naming a component that admits `null` is that component
+            // made optional inside the union: Radio Aktywne's `after` query
+            // parameter is `anyOf: [$ref ListRequestAfter, string with a
+            // contentSchema]` over `ListRequestAfter: anyOf: [$ref NaiveDatetime,
+            // null]`, and Fern's alias is `Union[Optional[ListRequestAfter], str]`
+            // (the `parameter-type-resolution` measurement's `before`).
+            let variant = base_type_ref(member);
+            variants.push(match self.schemas {
+                Some(schemas)
+                    if member.reference.is_some()
+                        && referenced_schema_accepts_none(member, schemas) =>
+                {
+                    optional_type_ref(variant)
+                }
+                _ => variant,
+            });
         }
         let mut variants = dedupe_union_members(variants);
         // A composition whose members all lower to the same type is no
@@ -18552,14 +18567,16 @@ fn annotated_target<'a>(
         .and_then(|(reference, _)| resolve_ref_from_schemas(schemas?, reference))
 }
 
-/// A `oneOf`/`anyOf` of one `$ref`, the description beside it being the
-/// wrapper's: Fern drops that description, so it documents nothing. OpenResponses'
-/// `ReasoningParam.effort` is `anyOf: [{oneOf: [$ref ReasoningEffortEnum],
-/// description}, null]`, and Fern's field carries no docstring (the
-/// `description-source` measurement's `Kiln.glaze`).
+/// A `$ref`, or a `oneOf`/`anyOf` of one `$ref`, whose description sits beside
+/// the reference: Fern drops that description, so as the alternative to `null`
+/// it documents nothing. OpenResponses' `ReasoningParam.effort` is `anyOf:
+/// [{oneOf: [$ref ReasoningEffortEnum], description}, null]` and SeekStorm's
+/// `CreateIndexRequest.query_completion` is `oneOf: [null, {$ref
+/// QueryCompletion, description}]`, and neither is documented (the
+/// `description-source` measurement's `Piece.glaze` and `Piece.firedBy`).
 fn wraps_sole_reference(schema: &Schema) -> bool {
-    schema.reference.is_none()
-        && matches!(
+    schema.reference.is_some()
+        || matches!(
             schema.one_of.as_deref().or(schema.any_of.as_deref()),
             Some([only]) if only.reference.is_some()
         )
@@ -31123,6 +31140,25 @@ mod handed_off_type_declarations_tests {
     }
 
     #[test]
+    fn a_union_member_naming_a_nullable_component_is_optional() {
+        let ir = measured("parameter-type-resolution");
+        match declared(&ir, "ListBroadcastsRequestBefore") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.target,
+                TypeRef::Union(vec![optional(named("BroadcastBefore")), prim(Prim::Str)])
+            ),
+            other => panic!("ListBroadcastsRequestBefore is no alias: {other:?}"),
+        }
+        match declared(&ir, "ListBroadcastsRequestAfter") {
+            Some(TypeDecl::Alias(alias)) => assert_eq!(
+                alias.target,
+                TypeRef::Union(vec![named("LocalTime"), prim(Prim::Str)])
+            ),
+            other => panic!("ListBroadcastsRequestAfter is no alias: {other:?}"),
+        }
+    }
+
+    #[test]
     fn a_tuple_body_is_a_list_of_bare_unknowns() {
         let ir = measured("parameter-type-resolution");
         match &endpoint(&ir, "tag_broadcast").request_body {
@@ -31216,6 +31252,7 @@ mod handed_off_type_declarations_tests {
         );
         assert_eq!(object(&ir, "PieceLinks").docstring.as_deref(), Some(""));
         assert_eq!(field(object(&ir, "Piece"), "glaze").docstring, None);
+        assert_eq!(field(object(&ir, "Piece"), "firedBy").docstring, None);
     }
 
     #[test]
