@@ -25,5 +25,10 @@ byte-matches the tree and in literals mode, with the catalogued departures appli
 `crates/crozier-e2e/tests/e2e/client_structure.rs`, which also writes back the
 pre-change form of the deciding line and requires the comparison to name the
 file.
+`crozier_compare_byte_matches_the_init_import_order_measurement` also runs the
+real `crozier compare` command on `openapi.yml` against this tree in both
+modes: it reports `matched` (exit 0) with `init-type-checking-import-order`
+applied to `src/fern/__init__.py`, and `mismatched` once the reference's root
+block names another module.
 
 **Verdict.** `user-ruling` (departure `init-type-checking-import-order`).

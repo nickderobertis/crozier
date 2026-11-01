@@ -294,6 +294,94 @@ fn the_init_import_order_departure_absorbs_the_root_package_order() {
     }
 }
 
+/// Run the real `crozier compare` on one measurement in `mode`, against a copy
+/// of `reference` that its configured reference command writes, and return the
+/// JSON report and the process's exit code.
+#[cfg(unix)]
+fn compare_cli(case: &str, mode: &str, reference: &Path) -> (serde_json::Value, i32) {
+    let temp = tempfile::tempdir().expect("config tempdir");
+    let config = temp.path().join("crozier.yml");
+    let quote = |path: &Path| format!("'{}'", path.display().to_string().replace('\'', "'\\''"));
+    std::fs::write(
+        &config,
+        format!(
+            "reference:\n  command: {}\ngenerators:\n  python:\n    spec: {}\n    output: ./sdk\n    enum-type: {mode}\n    package-name: fern\n    project-name: default_package_name\n",
+            serde_json::to_string(&format!(
+                "cp -R {}/. \"$CROZIER_REFERENCE_OUTPUT\"",
+                quote(reference)
+            ))
+            .unwrap(),
+            serde_json::to_string(&spec(case).display().to_string()).unwrap(),
+        ),
+    )
+    .unwrap();
+    let output = super::crozier_clean_env()
+        .current_dir(temp.path())
+        .args(["compare", "--json", "-"])
+        .arg(&config)
+        .output()
+        .expect("crozier compare runs");
+    let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|e| {
+        panic!(
+            "{case} ({mode}): no JSON report ({e}): {}",
+            String::from_utf8_lossy(&output.stderr)
+        )
+    });
+    (report, output.status.code().unwrap_or(-1))
+}
+
+/// `init-import-order` (ruling 7) through the real `crozier compare` command:
+/// with every catalogued departure applied, crozier's SDK byte-matches the
+/// committed certified tree in both enum modes, and the departure that makes it
+/// so is `init-type-checking-import-order` on the root `__init__.py`. A
+/// certified tree whose root block names another module is a mismatch.
+#[cfg(unix)]
+#[test]
+fn crozier_compare_byte_matches_the_init_import_order_measurement() {
+    let case = "init-import-order";
+    for mode in ["python-enums", "literals"] {
+        let reference = repo_root().join(golden(case, mode));
+        let (report, code) = compare_cli(case, mode, &reference);
+        let result = &report["results"][0];
+        assert_eq!(result["status"], "matched", "{mode}: {report:#}");
+        assert_eq!(code, 0, "{mode}: {report:#}");
+        assert_eq!(
+            report["counts"],
+            serde_json::json!({"matched": 1, "mismatched": 0, "could_not_check": 0})
+        );
+        let departures = result["comparison"]["departures"]
+            .as_array()
+            .expect("the departures list");
+        assert!(
+            departures.iter().any(|departure| {
+                departure["id"] == "init-type-checking-import-order"
+                    && departure["file"] == "src/fern/__init__.py"
+            }),
+            "{mode}: the departure must be what absorbs the order: {report:#}"
+        );
+
+        let altered = tempfile::tempdir().expect("altered reference tempdir");
+        super::copy_dir(&reference, altered.path());
+        let init = altered.path().join("src/fern/__init__.py");
+        let text = std::fs::read_to_string(&init).unwrap();
+        assert!(text.contains("from .yew_walk import"), "{mode}: {text}");
+        std::fs::write(
+            &init,
+            text.replacen("from .yew_walk import", "from .yew_walks import", 1),
+        )
+        .unwrap();
+        let (report, code) = compare_cli(case, mode, altered.path());
+        let result = &report["results"][0];
+        assert_eq!(result["status"], "mismatched", "{mode}: {report:#}");
+        assert_ne!(code, 0, "{mode}: a mismatch must fail the command");
+        assert_eq!(
+            result["comparison"]["differing"],
+            serde_json::json!(["src/fern/__init__.py"]),
+            "{mode}: {report:#}"
+        );
+    }
+}
+
 /// `reference-section-title`: a declared multi-word tag a snake_case prefix
 /// spells titles its section verbatim.
 #[test]
