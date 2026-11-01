@@ -17,8 +17,7 @@ under the shared Fern lock into the shared certified-tree cache,
 and every generation exited 0 with a complete tree. `crozier compare`, with
 every catalogued departure applied, then compared crozier's SDK (`package-name:
 fern`, `project-name: default_package_name`) with that tree, using crozier built
-from this branch's generator source as of `8f30a1072` (later commits change no
-generator code).
+at `fd957cb9d`.
 
 `record` names the source record (`witness-search-fixture-only-<record>`);
 `causes` gives this area's causes first and, after "also", the other causes the

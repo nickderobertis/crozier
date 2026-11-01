@@ -1,5 +1,5 @@
 Recorded 2026-11-01 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7, driving each SDK through httpx.MockTransport (the script below).
-crozier built from this branch's generator source as of 8f30a1072 (no later commit of the branch changes generator code), generated from openapi.yml with --package-name fern --project-name default_package_name.
+crozier built at fd957cb9d, generated from openapi.yml with --package-name fern --project-name default_package_name.
 
 ## certified (fern-expected/)
 GET https://desk.example.com/tickets {"authorization": "Bearer k-123", "x-desk-agent": "agent-7"}
