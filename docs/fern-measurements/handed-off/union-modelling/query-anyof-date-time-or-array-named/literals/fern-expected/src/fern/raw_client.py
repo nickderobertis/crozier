@@ -1,16 +1,17 @@
 
 
-import datetime as dt
 import typing
 from json.decoder import JSONDecodeError
 
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
-from .core.datetime_utils import serialize_datetime
 from .core.http_response import AsyncHttpResponse, HttpResponse
 from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
+from .core.serialization import convert_and_respect_annotation_metadata
+from .types.list_parcels_request_shipped_at import ListParcelsRequestShippedAt
+from .types.list_parcels_request_weight import ListParcelsRequestWeight
 from pydantic import ValidationError
 
 
@@ -21,17 +22,17 @@ class RawFernApi:
     def list_parcels(
         self,
         *,
-        shipped_at: typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]] = None,
-        weight: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        shipped_at: typing.Optional[ListParcelsRequestShippedAt] = None,
+        weight: typing.Optional[ListParcelsRequestWeight] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[typing.List[str]]:
         """
         Parameters
         ----------
-        shipped_at : typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]]
+        shipped_at : typing.Optional[ListParcelsRequestShippedAt]
             When the parcel shipped, or any of several moments.
 
-        weight : typing.Optional[typing.Union[int, typing.Sequence[int]]]
+        weight : typing.Optional[ListParcelsRequestWeight]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -45,8 +46,12 @@ class RawFernApi:
             "parcels",
             method="GET",
             params={
-                "shipped_at": serialize_datetime(shipped_at) if shipped_at is not None else None,
-                "weight": weight,
+                "shipped_at": convert_and_respect_annotation_metadata(
+                    object_=shipped_at, annotation=ListParcelsRequestShippedAt, direction="write"
+                ),
+                "weight": convert_and_respect_annotation_metadata(
+                    object_=weight, annotation=ListParcelsRequestWeight, direction="write"
+                ),
             },
             request_options=request_options,
         )
@@ -77,17 +82,17 @@ class AsyncRawFernApi:
     async def list_parcels(
         self,
         *,
-        shipped_at: typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]] = None,
-        weight: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        shipped_at: typing.Optional[ListParcelsRequestShippedAt] = None,
+        weight: typing.Optional[ListParcelsRequestWeight] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[typing.List[str]]:
         """
         Parameters
         ----------
-        shipped_at : typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]]
+        shipped_at : typing.Optional[ListParcelsRequestShippedAt]
             When the parcel shipped, or any of several moments.
 
-        weight : typing.Optional[typing.Union[int, typing.Sequence[int]]]
+        weight : typing.Optional[ListParcelsRequestWeight]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -101,8 +106,12 @@ class AsyncRawFernApi:
             "parcels",
             method="GET",
             params={
-                "shipped_at": serialize_datetime(shipped_at) if shipped_at is not None else None,
-                "weight": weight,
+                "shipped_at": convert_and_respect_annotation_metadata(
+                    object_=shipped_at, annotation=ListParcelsRequestShippedAt, direction="write"
+                ),
+                "weight": convert_and_respect_annotation_metadata(
+                    object_=weight, annotation=ListParcelsRequestWeight, direction="write"
+                ),
             },
             request_options=request_options,
         )

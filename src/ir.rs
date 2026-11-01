@@ -8907,6 +8907,16 @@ impl InlineHoister<'_> {
             {
                 return wrap(self.hoist_param_enum(request_ctx, param, non_null[0]));
             }
+            // …and so does a sole array member whose element is an inline string
+            // enum: the `R13` measurement's `channels` is `anyOf: [array of
+            // enum [portal, chat], null]`, and Fern declares
+            // `ToggleAssistantRequestChannelsItem`.
+            if let Some(array) = self.hoist_array_item_enum(
+                &request_parameter_type_name(request_ctx, param),
+                non_null[0],
+            ) {
+                return wrap(array);
+            }
             return wrap(self.schemas.map_or_else(
                 || base_type_ref(non_null[0]),
                 |schemas| full_type_ref_resolved(non_null[0], schemas),
@@ -8995,6 +9005,14 @@ impl InlineHoister<'_> {
                     .schemas
                     .is_some_and(|schemas| referenced_schema_accepts_none(member, schemas))
             {
+                variants.push(optional_type_ref(base_type_ref(member)));
+                continue;
+            }
+            // A scalar member's own `nullable: true` stays on it, as in an inline
+            // union (`hoist_union_variant`): the
+            // `query-anyof-date-time-or-array-named` measurement's `shipped_at`
+            // alias opens `Union[Optional[datetime], …]`.
+            if is_plain_scalar(member) && member.nullable == Some(true) {
                 variants.push(optional_type_ref(base_type_ref(member)));
                 continue;
             }
@@ -10272,6 +10290,25 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
     let [first, second] = non_null.as_slice() else {
         return None;
     };
+    // Two arrays of one element type are that array, read the same way: the
+    // `query-oneof-of-arrays` measurement's `corners` is `oneOf` a two- and a
+    // three-object array, and Fern types the argument
+    // `Optional[Union[Dict[str, Any], Sequence[Dict[str, Any]]]]`.
+    if kind(first) == Some("array") && kind(second) == Some("array") {
+        let (Some(left), Some(right)) = (first.items.as_deref(), second.items.as_deref()) else {
+            return None;
+        };
+        let plain = |item: &Schema| {
+            item.reference.is_none()
+                && string_enum_values(item).is_none()
+                && item.one_of.is_none()
+                && item.any_of.is_none()
+                && item.all_of.is_none()
+                && item.properties.is_empty()
+        };
+        return (plain(left) && plain(right) && base_type_ref(left) == base_type_ref(right))
+            .then_some(*second);
+    }
     let (array, scalar) = match (kind(first), kind(second)) {
         (Some("array"), Some(other)) if other != "array" => (first, second),
         (Some(other), Some("array")) if other != "array" => (second, first),
@@ -10283,6 +10320,14 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
     // (`…StreamModesZero` beside `…StreamModesOneItem`) rather than the
     // one-or-many shorthand.
     if string_enum_values(scalar).is_some() || string_enum_values(item).is_some() {
+        return None;
+    }
+    // …and neither is a member written `nullable: true`: the
+    // `query-anyof-date-time-or-array-named` measurement's `shipped_at` is
+    // `anyOf: [nullable date-time, array of nullable date-time]`, and Fern names
+    // it `ListParcelsRequestShippedAt = Union[Optional[datetime],
+    // List[Optional[datetime]]]`.
+    if scalar.nullable == Some(true) || item.nullable == Some(true) {
         return None;
     }
     (base_type_ref(item) == base_type_ref(scalar)).then_some(*array)
@@ -13291,8 +13336,26 @@ impl Builder<'_> {
                 // own: Milvus's `vector` is an array of `anyOf: [integer,
                 // string]`, and Fern declares `VectorItem = Union[int, str]` and
                 // `Vector = List[VectorItem]`.
+                // Members that declare properties but no `type` are objects all
+                // the same, even when they would render alike: the `R8`
+                // measurement's `LinkPatch` element is `{type: object, oneOf:
+                // [{properties: …}, {properties: …}]}`, and Fern declares
+                // `LinkPatchItem = Union[LinkPatchItemZero, LinkPatchItemOne]`.
+                let untyped_object_members = items
+                    .one_of
+                    .as_ref()
+                    .or(items.any_of.as_ref())
+                    .is_some_and(|members| {
+                        members.len() > 1
+                            && members.iter().all(|member| {
+                                member.reference.is_none()
+                                    && member.ty.is_none()
+                                    && !member.properties.is_empty()
+                            })
+                    });
                 if items.reference.is_none()
-                    && union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                    && (union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                        || untyped_object_members)
                 {
                     self.add_named(&item_name, items);
                     self.push_alias(
@@ -13526,9 +13589,24 @@ impl Builder<'_> {
                 .keys()
                 .any(|field| !parent_properties.insert(field))
         });
-        let cyclic_parent = raw_bases
-            .iter()
-            .any(|base| schema_reaches_type(base, name, schemas));
+        // A model hoisted out of its own base, where that base recurses
+        // through it, is flattened too: the `R8` measurement's
+        // `Section.subsections` element is `allOf: [{id, …}, $ref Section]`, and
+        // Fern's `SectionSubsectionsItem` restates `Section`'s fields rather
+        // than extending it.
+        let self_recursive_item =
+            base_refs
+                .iter()
+                .zip(&raw_bases)
+                .any(|((base_class, _), base)| {
+                    name.starts_with(base_class.as_str())
+                        && name != base_class
+                        && schema_reaches_type(base, base_class, schemas)
+                });
+        let cyclic_parent = self_recursive_item
+            || raw_bases
+                .iter()
+                .any(|base| schema_reaches_type(base, name, schemas));
         let flatten_all = nullable_annotation || overlapping_parents || cyclic_parent;
         let collides = flatten_all
             || base_refs.iter().any(|(_, base)| {
@@ -13554,6 +13632,18 @@ impl Builder<'_> {
                 continue;
             }
             if member.reference.is_none() {
+                // Beside an open, property-less object the union lends its
+                // branches' properties whether or not they are tagged, each
+                // property as the FIRST branch declaring it writes it: the
+                // `allof-oneof-inline-member-consts` measurement's four
+                // `Handover…` components are each `allOf: [{properties: {},
+                // additionalProperties: {}}, oneOf|anyOf: [pickup, delivery]]`,
+                // and every one is Fern's model of optional fields with
+                // pickup's `mode` enum and `region` description.
+                if let Some(merged) = open_base_branch_properties(schema, index) {
+                    self.collect_fields(name, &merged, &[], &mut fields);
+                    continue;
+                }
                 // An inline `allOf` member that is itself a union lends its
                 // branches' properties, or none when it is discriminated.
                 match branch_union_properties(member, schemas) {
@@ -13820,7 +13910,10 @@ impl Builder<'_> {
             reach_refs: base_refs
                 .iter()
                 .zip(&raw_bases)
-                .filter(|(_, base)| schema_reaches_type(base, name, schemas))
+                .filter(|((base_name, _), base)| {
+                    schema_reaches_type(base, name, schemas)
+                        || self_recursive_item && name.starts_with(base_name.as_str())
+                })
                 .map(|((base_name, _), _)| base_name.clone())
                 .collect(),
             name: name.to_string(),
@@ -15337,6 +15430,32 @@ impl Builder<'_> {
                         self.types.push(TypeDecl::DiscriminatedUnion(decl));
                         return TypeRef::Named(name);
                     }
+                }
+                // A written `discriminator` over `$ref`s it cannot tell apart
+                // leaves an ordinary union, named for the property rather than
+                // spelled inline: the `R9` measurement's `Shift.assignment`
+                // names four components under `discriminator: {propertyName:
+                // role}`, each allowing two roles, and Fern declares
+                // `ShiftAssignment = Union[…]`.
+                if prop_schema.discriminator.is_some()
+                    && prop_schema.one_of.is_some()
+                    && members.len() > 1
+                    && members.iter().all(|member| member.reference.is_some())
+                    && !untagged_inline_discriminator(prop_schema)
+                {
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let variants = members
+                        .iter()
+                        .enumerate()
+                        .map(|(index, member)| self.variant_ref(&name, index, member, members))
+                        .collect();
+                    self.push_alias(
+                        &name,
+                        naming::module_name(&name),
+                        TypeRef::Union(dedupe_union_members(variants)),
+                        clean_doc(prop_schema.description.as_deref()),
+                    );
+                    return TypeRef::Named(name);
                 }
                 if prop_schema.discriminator.is_none()
                     || prop_schema.one_of.is_none()
@@ -16988,6 +17107,45 @@ fn branch_union_properties(
         }
     }
     (!merged.properties.is_empty()).then(|| BranchUnion::Merged(Box::new(merged)))
+}
+
+/// The union member at `index` of an `allOf` whose only other member is an
+/// open object declaring no properties, as one object of its branches'
+/// properties, each written as the first branch declaring it writes it.
+fn open_base_branch_properties(schema: &Schema, index: usize) -> Option<Schema> {
+    let [first, second] = schema.all_of.as_deref()? else {
+        return None;
+    };
+    let (base, union) = match index {
+        1 => (first, second),
+        _ => return None,
+    };
+    let open_base = base.reference.is_none()
+        && base.one_of.is_none()
+        && base.any_of.is_none()
+        && base.all_of.is_none()
+        && base.properties.is_empty()
+        && is_object_type(base)
+        && matches!(
+            base.additional_properties,
+            Some(AdditionalProperties::Schema(_) | AdditionalProperties::Bool(true))
+        );
+    if !open_base || union.reference.is_some() || !schema.properties.is_empty() {
+        return None;
+    }
+    let branches = union.one_of.as_ref().or(union.any_of.as_ref())?;
+    let mut merged = Schema::default();
+    for branch in branches {
+        if branch.reference.is_some() {
+            return None;
+        }
+        for (prop, prop_schema) in &branch.properties {
+            if !prop_schema.negative_only() && !merged.properties.contains_key(prop) {
+                merged.properties.insert(prop.clone(), prop_schema.clone());
+            }
+        }
+    }
+    (!merged.properties.is_empty()).then_some(merged)
 }
 
 /// `schema` with the properties and `required` of its whole `allOf` chain merged

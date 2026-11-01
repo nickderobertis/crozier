@@ -1,6 +1,5 @@
 
 
-import datetime as dt
 import typing
 
 import httpx
@@ -8,6 +7,8 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.list_parcels_request_shipped_at import ListParcelsRequestShippedAt
+from .types.list_parcels_request_weight import ListParcelsRequestWeight
 
 
 class FernApi:
@@ -97,17 +98,17 @@ class FernApi:
     def list_parcels(
         self,
         *,
-        shipped_at: typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]] = None,
-        weight: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        shipped_at: typing.Optional[ListParcelsRequestShippedAt] = None,
+        weight: typing.Optional[ListParcelsRequestWeight] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[str]:
         """
         Parameters
         ----------
-        shipped_at : typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]]
+        shipped_at : typing.Optional[ListParcelsRequestShippedAt]
             When the parcel shipped, or any of several moments.
 
-        weight : typing.Optional[typing.Union[int, typing.Sequence[int]]]
+        weight : typing.Optional[ListParcelsRequestWeight]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -233,17 +234,17 @@ class AsyncFernApi:
     async def list_parcels(
         self,
         *,
-        shipped_at: typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]] = None,
-        weight: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        shipped_at: typing.Optional[ListParcelsRequestShippedAt] = None,
+        weight: typing.Optional[ListParcelsRequestWeight] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[str]:
         """
         Parameters
         ----------
-        shipped_at : typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]]
+        shipped_at : typing.Optional[ListParcelsRequestShippedAt]
             When the parcel shipped, or any of several moments.
 
-        weight : typing.Optional[typing.Union[int, typing.Sequence[int]]]
+        weight : typing.Optional[ListParcelsRequestWeight]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

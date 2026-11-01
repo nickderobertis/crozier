@@ -15,19 +15,23 @@ paths:
             anyOf:
               - type: string
                 format: date-time
+                nullable: true
               - type: array
                 items:
                   type: string
                   format: date-time
+                  nullable: true
         - name: weight
           in: query
           required: false
           schema:
             anyOf:
               - type: integer
+                nullable: true
               - type: array
                 items:
                   type: integer
+                  nullable: true
       responses:
         "200":
           description: The parcels.

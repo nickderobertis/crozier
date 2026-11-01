@@ -34,7 +34,7 @@ client.list_parcels()
 <dl>
 <dd>
 
-**shipped_at:** `typing.Optional[typing.Union[datetime.datetime, typing.Sequence[datetime.datetime]]]` — When the parcel shipped, or any of several moments.
+**shipped_at:** `typing.Optional[ListParcelsRequestShippedAt]` — When the parcel shipped, or any of several moments.
     
 </dd>
 </dl>
@@ -42,7 +42,7 @@ client.list_parcels()
 <dl>
 <dd>
 
-**weight:** `typing.Optional[typing.Union[int, typing.Sequence[int]]]` 
+**weight:** `typing.Optional[ListParcelsRequestWeight]` 
     
 </dd>
 </dl>
