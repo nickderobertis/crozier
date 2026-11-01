@@ -11540,6 +11540,12 @@ pub(crate) fn inferred_discriminant_property(
         return None;
     }
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+    // A tag needs a sibling to tell apart: the `inline-union-hoisting`
+    // measurement's lone `oneOf: [$ref ChiselTool]` element leaves `ChiselTool`
+    // its `kind` field.
+    if variants.len() < 2 {
+        return None;
+    }
     let references_components = variants.iter().any(|variant| variant.reference.is_some());
     let only_references = variants.iter().all(|variant| variant.reference.is_some());
     let resolved: Vec<&Schema> = variants
@@ -11705,7 +11711,15 @@ fn inferred_strip_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
-    if schema.discriminated() == Some(false) {
+    // A lone member is no union to strip a tag for, as
+    // [`inferred_discriminant_property`] reads it.
+    if schema.discriminated() == Some(false)
+        || schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|variants| variants.len() < 2)
+    {
         return None;
     }
     inferred_discriminant_property(schema, schemas).or_else(|| {
@@ -14183,6 +14197,14 @@ impl Builder<'_> {
         if variants.len() == 1 && is_inline_object(&variants[0]) {
             return None;
         }
+        // …nor is a lone `$ref` the document writes no discriminator for: the
+        // `inline-union-hoisting` measurement's `Toolbox.tools` items are
+        // `oneOf: [$ref ChiselTool]`, `ChiselTool` tagging itself `kind: [chisel]`,
+        // and Fern's field is `List[ChiselTool]`.
+        if variants.len() == 1 && variants[0].reference.is_some() && schema.discriminator.is_none()
+        {
+            return None;
+        }
         let property_name = schema
             .discriminator
             .as_ref()
@@ -15466,6 +15488,21 @@ impl Builder<'_> {
                     if non_null.len() == 1 && non_null.len() != members.len() {
                         let name = format!("{owner}{}", naming::class_name(prop));
                         let module = naming::module_name(&name);
+                        // An annotated `$ref` to a map beside `null` is that map,
+                        // as the bare annotated `$ref` is, with no model hoisted
+                        // under the property's name: the `inline-union-hoisting`
+                        // measurement's `Toolbox.labels` is `anyOf: [allOf: [$ref
+                        // LabelMap, {description}], null]`, and Fern's field is
+                        // `Optional[Dict[str, Optional[str]]]`, the `null` reaching
+                        // the values as it does on any nullable map.
+                        if let Some(target) = described_all_of_ref(non_null[0])
+                            .and_then(|(reference, _)| {
+                                resolve_ref_from_schemas(self.schemas, reference)
+                            })
+                            .filter(|target| is_map(target))
+                        {
+                            return nullable_map_value_type_ref(target);
+                        }
                         if let Some(mut decl) =
                             self.discriminated_union(&name, &module, non_null[0], None)
                         {

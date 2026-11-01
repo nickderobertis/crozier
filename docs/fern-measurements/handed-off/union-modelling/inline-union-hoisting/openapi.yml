@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: Workshop
+  version: "1.0"
+paths:
+  /toolboxes/{toolboxId}:
+    get:
+      operationId: getToolbox
+      parameters:
+        - name: toolboxId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The toolbox.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Toolbox"
+components:
+  schemas:
+    ChiselTool:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - chisel
+        widthMm:
+          type: integer
+    LabelMap:
+      type: object
+      additionalProperties:
+        type: string
+        maxLength: 40
+    Toolbox:
+      type: object
+      required:
+        - tools
+      properties:
+        tools:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/ChiselTool"
+        labels:
+          anyOf:
+            - allOf:
+                - $ref: "#/components/schemas/LabelMap"
+                - title: Bench labels
+            - type: "null"
