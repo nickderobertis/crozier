@@ -11548,8 +11548,15 @@ fn inferred_discriminant_property_with(
                     // leaves out, discriminate whatever the property's name: that
                     // is FastAPI's `Literal["x"] = "x"`, and the Qontract API's
                     // task-result actions tag `action_type` so (corpus row 311).
-                    let unrequired_tag =
-                        only_references && singleton_enum && !variant.required.contains(property);
+                    // A bare `const` (no `type: string`) is no such tag: the
+                    // `const-tag-variants-undiscriminated` measurement's
+                    // `Vessel` references `Sailboat` and `Barge`, each fixing
+                    // an unrequired `hull` with a bare `const`, and Fern's
+                    // `Vessel` is the plain `Union[Sailboat, Barge]`.
+                    let unrequired_tag = only_references
+                        && singleton_enum
+                        && !untyped_const_tag(field)
+                        && !variant.required.contains(property);
                     let supported = unrequired_tag
                         || match property.as_str() {
                             "type" => {
@@ -12770,6 +12777,41 @@ impl Builder<'_> {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
+        // A 3.1 `$ref` written beside a `oneOf`/`anyOf` is that reference: Fern
+        // reads no sibling composition, and the
+        // `pattern-properties-only-oneof-member` measurement's `CollectorNote`
+        // and `CollectorAny` are both `= CollectorRef`.
+        if let Some(reference) = schema
+            .reference
+            .as_deref()
+            .filter(|_| schema.one_of.is_some() || schema.any_of.is_some())
+        {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Named(ref_to_class(reference)),
+                docstring,
+            );
+            return;
+        }
+        // A one-member union whose member declares no type and no properties
+        // but only `patternProperties` beside `additionalProperties: false` is
+        // Fern's unknown type, documented by nothing: the same measurement's
+        // `LabelTranslations` is `typing.Any` without its description.
+        if let Some([only]) = schema.one_of.as_deref().or(schema.any_of.as_deref()) {
+            if only.reference.is_none()
+                && only.ty.is_none()
+                && only.properties.is_empty()
+                && only.pattern_properties.is_some()
+                && matches!(
+                    only.additional_properties,
+                    Some(AdditionalProperties::Bool(false))
+                )
+            {
+                self.push_alias(name, module, TypeRef::Primitive(Prim::Any), None);
+                return;
+            }
+        }
         // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
         // set of per-variant wrapper models plus a union alias.
         if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
@@ -12955,6 +12997,28 @@ impl Builder<'_> {
         // with the open `extra="allow"` config rather than `Entry = DocumentMeta`.
         if is_map(schema) && schema.all_of.is_none() {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                // A value that is an `allOf` of one `$ref` and nothing else is that
+                // reference, made optional where its target admits null, with no
+                // value model of its own: the `map-value-union-hoisting`
+                // measurement's `DepthsByStation` is `Dict[str, Depth]` and
+                // `BuoysByStation` `Dict[str, Optional[Buoy]]`.
+                if let Some(member) = sole_reference_all_of(value) {
+                    let named = TypeRef::Named(ref_to_class(
+                        member.reference.as_deref().expect("a reference member"),
+                    ));
+                    let element = if referenced_schema_accepts_none(member, self.schemas) {
+                        optional_type_ref(named)
+                    } else {
+                        named
+                    };
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(element)),
+                        docstring,
+                    );
+                    return;
+                }
                 if is_inline_struct(value) {
                     let value_name = format!("{name}Value");
                     self.add_object(
@@ -13346,6 +13410,30 @@ impl Builder<'_> {
                 clean_doc(items.description.as_deref()),
             );
             return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        // A map leaf whose values are inline objects names that value model
+        // `{ctx}ItemValue`: the `map-value-union-hoisting` measurement's
+        // `TideGrid` is a list of lists of such maps, and Fern declares
+        // `TideGridItemItemValue` (and the `…ValueTrend` beneath it).
+        if is_map(items) {
+            if let Some(AdditionalProperties::Schema(value)) = &items.additional_properties {
+                if value.reference.is_none() && is_inline_struct(value) {
+                    let value_name = format!("{name}Value");
+                    self.add_object(
+                        &value_name,
+                        naming::module_name(&value_name),
+                        value,
+                        clean_doc(value.description.as_deref()),
+                    );
+                    return Some(sequence_of(
+                        array,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        ),
+                    ));
+                }
+            }
         }
         None
     }
@@ -18414,6 +18502,21 @@ fn nullable_member(member: &Schema, ty: TypeRef) -> TypeRef {
     } else {
         ty
     }
+}
+
+/// The one `$ref` member of an `allOf` that writes nothing else, neither
+/// beside the composition nor in another member.
+fn sole_reference_all_of(schema: &Schema) -> Option<&Schema> {
+    let [member] = schema.all_of.as_deref()? else {
+        return None;
+    };
+    let bare = Schema {
+        all_of: None,
+        description: None,
+        title: None,
+        ..schema.clone()
+    };
+    (member.reference.is_some() && bare == Schema::default()).then_some(member)
 }
 
 /// Whether a lowered field type is Fern's unknown, bare or optional.
