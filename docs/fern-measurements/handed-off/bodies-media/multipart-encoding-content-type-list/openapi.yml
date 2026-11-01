@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Botanical Illustration Uploads
+  version: 1.0.0
+  description: Accepts illustrations of plants for a field guide.
+servers:
+  - url: https://illustrations.example.com
+paths:
+  /plates/{plateId}/artwork:
+    post:
+      operationId: uploadArtwork
+      tags: [plates]
+      summary: Upload a plate's artwork.
+      parameters:
+        - name: plateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [artwork]
+              properties:
+                artwork:
+                  type: string
+                  format: binary
+            encoding:
+              artwork:
+                contentType: image/png, image/jpeg, image/tiff
+      responses:
+        '204':
+          description: Uploaded.

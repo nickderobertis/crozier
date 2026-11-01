@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Orchard Harvest Ledger
+  version: 1.0.0
+  description: Records the day's harvest from each orchard row in one batch.
+servers:
+  - url: https://orchard.example.com
+paths:
+  /harvests/batch:
+    post:
+      operationId: recordHarvests
+      tags: [harvests]
+      summary: Record several rows' harvests at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rows]
+              properties:
+                rows:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RowHarvest'
+      responses:
+        '207':
+          description: One outcome per row.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchOutcome'
+components:
+  schemas:
+    RowHarvest:
+      type: object
+      required: [row, crates]
+      properties:
+        row:
+          type: string
+        crates:
+          type: integer
+    BatchOutcome:
+      type: object
+      required: [accepted, rejected]
+      properties:
+        accepted:
+          type: array
+          items:
+            type: string
+        rejected:
+          type: array
+          items:
+            type: string

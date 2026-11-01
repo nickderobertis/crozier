@@ -1,0 +1,17 @@
+Recorded run of crates/crozier-e2e/tests/e2e/bodies_media_wire.py multipart-scalar-union-part-encoding (local HTTP server on 127.0.0.1; Python 3.14.7, httpx 0.28.1, pydantic 2.14.2).
+Each line is one step: what the SDK sent the server (method, path, content-type, body or multipart parts) or the value it returned.
+
+## certified pair (fern-expected/src)
+{"sent": {"body": {"drawer": "A-12", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan label"}
+{"sent": {"body": {"drawer": "12", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan number"}
+exit 0
+
+## crozier, repaired (this measurement's crozier-e2e journey)
+{"sent": {"body": {"drawer": "A-12", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan label"}
+{"sent": {"body": {"drawer": "12", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan number"}
+exit 0
+
+## crozier before the repair (crozier 0.0.150, the base this repair branches from)
+{"sent": {"body": {"drawer": "\"A-12\"", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan label"}
+{"sent": {"body": {"drawer": "12", "scan": {"content-type": "image/tiff", "filename": "map.tiff"}}, "content-type": "multipart/form-data", "method": "POST", "path": "/scans"}, "step": "file_scan number"}
+exit 0

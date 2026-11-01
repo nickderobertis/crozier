@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse Lamp Log
+  version: 1.0.0
+  description: Logs the lamp checks a lighthouse keeper makes each night.
+servers:
+  - url: https://lamps.example.com
+paths:
+  /lamps/check:
+    post:
+      operationId: logCheck
+      tags: [lamps]
+      summary: Log that the lamp was checked; the body carries nothing yet.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        '204':
+          description: Logged.
+  /lamps/trim:
+    post:
+      operationId: logTrim
+      tags: [lamps]
+      summary: Log that the wick was trimmed, with an optional note.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+      responses:
+        '204':
+          description: Logged.

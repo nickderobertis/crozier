@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Darkroom Print Queue
+  version: 1.0.0
+  description: Queues prints for a shared darkroom enlarger.
+servers:
+  - url: https://darkroom.example.com
+paths:
+  /queue/advance:
+    post:
+      operationId: advanceQueue
+      tags: [queue]
+      summary: Move the next print onto the enlarger; the form carries nothing.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvanceForm'
+      responses:
+        '204':
+          description: Advanced.
+components:
+  schemas:
+    AdvanceForm:
+      type: object

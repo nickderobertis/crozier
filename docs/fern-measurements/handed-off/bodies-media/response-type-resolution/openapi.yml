@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: Kiln Firing Desk
+  version: 1.0.0
+  description: Schedules firings for a shared pottery kiln and reports on them.
+servers:
+  - url: https://kilns.example.com
+paths:
+  /kilns/{kilnId}/reading:
+    get:
+      operationId: getReading
+      tags: [kilns]
+      summary: Read the kiln's last thermocouple reading in any encoding.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The reading, in whichever encoding was asked for.
+          content:
+            application/octet-stream: {}
+            text/plain: {}
+            application/json: {}
+  /kilns/{kilnId}:
+    head:
+      operationId: probeKiln
+      tags: [kilns]
+      summary: Check that the kiln exists without reading it.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The kiln exists.
+        '206':
+          description: Only part of the kiln record is available.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /kilns/{kilnId}/firing:
+    get:
+      operationId: getFiring
+      tags: [firings]
+      summary: The firing in progress, if any.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The current firing, or null when the kiln is cold.
+          content:
+            application/json:
+              schema:
+                type: object
+                nullable: true
+                required: [cone, startedAt]
+                properties:
+                  cone:
+                    type: string
+                  startedAt:
+                    type: string
+  /kilns/{kilnId}/schedule:
+    get:
+      operationId: getSchedule
+      tags: [firings]
+      summary: The next scheduled firing, if one is booked.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The next booking, or null.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required: [cone]
+                    properties:
+                      cone:
+                        type: string
+                      potter:
+                        type: string
+                  - type: 'null'
+  /kilns/{kilnId}/fire:
+    post:
+      operationId: startFiring
+      tags: [firings]
+      summary: Start a firing now.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Acknowledged.
+          content:
+            application/json:
+              schema:
+                type: string
+                enum: [lit]
+        '404':
+          description: No such kiln.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /kilns/{kilnId}/state:
+    get:
+      operationId: getState
+      tags: [firings]
+      summary: Whether the kiln is heating, holding or cooling.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The kiln's state.
+          content:
+            application/json:
+              schema:
+                type: string
+                enum: [heating, holding, cooling]
+  /kilns/{kilnId}/log:
+    get:
+      operationId: streamLog
+      tags: [firings]
+      summary: Follow the firing log as it is written.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One log line per event.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /kilns/{kilnId}/profile:
+    get:
+      operationId: getProfile
+      tags: [kilns]
+      summary: The kiln's firing profile.
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The profile under any media type, or untyped JSON.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Profile'
+            application/json: {}
+components:
+  schemas:
+    Profile:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        peakCelsius:
+          type: integer
