@@ -4159,6 +4159,14 @@ fn build_endpoint(
             );
             Some(optional_type_ref(base))
         }
+        // A nullable one-member `oneOf`/`anyOf` around a component returns that
+        // component, optional: keyserv's `KeysApi_Current` answers
+        // `{nullable: true, oneOf: [$ref CurrentKey]}` and returns
+        // `typing.Optional[CurrentKey]` (the `R3` measurement).
+        Some(schema) if nullable_sole_member_ref(schema).is_some() => {
+            nullable_sole_member_ref(schema)
+                .map(|reference| optional_type_ref(TypeRef::Named(ref_to_class(reference))))
+        }
         // A composition of exactly one `$ref` is that reference: the
         // offchain-metadata-tools corpus answers its specific-property query with
         // `oneOf: [$ref Property]`, and Fern returns `Property`, declaring no alias.
@@ -6897,6 +6905,19 @@ fn resolve_request_body(
             ))
         && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
+    // A nullable one-member composition around a component keeps the component,
+    // optional, rather than flattening it: keyserv's `ProductsApi_PatchProduct`
+    // body is `{nullable: true, oneOf: [$ref ProductCreateModify]}`, and Fern
+    // takes `request: Optional[ProductCreateModify] = None` (the `R3`
+    // measurement).
+    if let Some(reference) = nullable_sole_member_ref(schema) {
+        return Some(single(
+            TypeRef::Named(ref_to_class(reference)),
+            false,
+            true,
+            false,
+        ));
+    }
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let target = if target.reference.is_some() {
@@ -6946,7 +6967,21 @@ fn resolve_request_body(
         // mapping a value to a bare schema name is `typing.Any` and is sent as
         // it is, in either spelling: the hand-written `orchard-crate-labels`
         // document's `Label` and `Crate`.
-        if target.one_of.is_some() || target.any_of.is_some() || bare_name_mapped_union(target) {
+        // A component that only re-names a union through its own `$ref` is that
+        // union as a body too: agentstack's `ContextHistoryItemCreateRequest` is
+        // `{$ref: ContextHistoryItemData-Input, title}` over an `anyOf`, and Fern
+        // takes `request: ContextHistoryItemCreateRequest`, where crozier used to
+        // drop the operation and with it every method of its group.
+        let renamed_union = target
+            .reference
+            .as_deref()
+            .and_then(|inner| resolve_ref(doc, inner))
+            .is_some_and(|inner| inner.one_of.is_some() || inner.any_of.is_some());
+        if target.one_of.is_some()
+            || target.any_of.is_some()
+            || renamed_union
+            || bare_name_mapped_union(target)
+        {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
                 single.convert = !bare_name_mapped_union(target);
@@ -8642,15 +8677,20 @@ impl InlineHoister<'_> {
                             .or_else(|| member.description.clone());
                         return self.prop_type_ref(parent, prop, &union);
                     }
+                    // The hoisted object is documented by its own description
+                    // first: LandingAI's `result` is `anyOf: [{title, description,
+                    // properties}, null]` beside a description of the property,
+                    // and Fern's `V2ExtractGetJobResponseResult` carries the
+                    // inner object's (the `description-source` measurement).
                     if is_inline_struct(member) {
                         self.hoist_object_with_doc(
                             &name,
                             member,
                             clean_doc(
-                                prop_schema
+                                member
                                     .description
                                     .as_deref()
-                                    .or(member.description.as_deref()),
+                                    .or(prop_schema.description.as_deref()),
                             ),
                         );
                         return TypeRef::Named(name);
@@ -10351,7 +10391,7 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
 /// only a non-integer format (or none) stays a float.
 fn number_prim(schema: &Schema) -> Prim {
     match schema.format.as_deref() {
-        Some("int32" | "int64" | "uint64") => int_prim(schema),
+        Some("int32" | "int64" | "uint32" | "uint64") => int_prim(schema),
         _ => Prim::Float,
     }
 }
@@ -11038,7 +11078,11 @@ pub(crate) fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &s
         // method, but their hoisted request/response classes spell out the digit.
         naming::class_name(id)
     } else {
-        naming::sanitize_identifier(&naming::to_pascal_case(id))
+        // Re-cased once more, the way Fern's casing re-reads its own PascalCase:
+        // a run of one-letter words becomes one word, so OpenAQ's
+        // `…_generalized__z___x___y__pbf_get` names `…GeneralizedZxyPbfGet…`,
+        // not `…ZXYPbfGet…` (the `R7` measurement).
+        naming::sanitize_identifier(&naming::to_pascal_case(&naming::to_pascal_case(id)))
     }
 }
 
@@ -18328,6 +18372,26 @@ fn short_circuit_description(
         .find_map(|member| member.description.as_deref())
         .or(object_description)
         .and_then(|description| clean_doc(Some(description)))
+}
+
+/// The component a `nullable: true` schema names through a one-member
+/// `oneOf`/`anyOf` and nothing else: keyserv's `{nullable: true, oneOf: [$ref
+/// CurrentKey]}`. Fern keeps that component and makes it optional (the `R3`
+/// measurement).
+fn nullable_sole_member_ref(schema: &Schema) -> Option<&str> {
+    let members = schema.one_of.as_deref().or(schema.any_of.as_deref())?;
+    let [member] = members else {
+        return None;
+    };
+    (schema.reference.is_none()
+        && schema.nullable == Some(true)
+        && schema.ty.is_none()
+        && !schema.properties.declared()
+        && schema.additional_properties.is_none()
+        && schema.all_of.is_none()
+        && (schema.one_of.is_none() || schema.any_of.is_none()))
+    .then_some(member.reference.as_deref())
+    .flatten()
 }
 
 /// Whether `schema` declares nothing at all (`{}`).

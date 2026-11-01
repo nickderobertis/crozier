@@ -3149,8 +3149,15 @@ pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
         // Importers sometimes retain leading blank lines around a one-line
         // description. Fern still renders those through the ordinary em-dash
         // form; only multiple substantive lines become a separate paragraph.
-        Some(d) if d.trim().contains('\n') => {
-            format!(" \n\n{}", d.trim_matches(['\r', '\n']))
+        // That paragraph keeps a leading line break, so the description opens
+        // with a blank line, and loses only its trailing ones: measured at
+        // fern-python-sdk 5.41.3 (`docs/fern-measurements/handed-off/
+        // type-declarations/R6`), agentstack's `metadata` and OpenAQ's
+        // `country_id`.
+        // The test is the same text: leading whitespace aside, does a line
+        // break remain once trailing line breaks (not trailing spaces) go?
+        Some(d) if d.trim_end_matches(['\r', '\n']).trim_start().contains('\n') => {
+            format!(" \n\n{}", d.trim_end_matches(['\r', '\n']))
         }
         Some(d) => format!(" — {d}"),
         None => " ".to_string(),
