@@ -74,6 +74,9 @@ components:
         "moisture (%)":
           type: number
           description: Moisture content, with no sibling sharing its stem.
+        "seed % weight":
+          type: number
+          description: A punctuation-only word between two words.
         lotCode:
           type: string
         lotCode_:

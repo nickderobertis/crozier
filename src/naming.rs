@@ -1193,8 +1193,12 @@ mod tests {
         assert_eq!(field_name("PF 17% ALC"), "pf_17_alc");
         assert_eq!(field_name("PF 17,5%"), "pf_175");
         assert_eq!(field_name("PF 17,5% ALC"), "pf_175_alc");
-        // A chunk of pure punctuation contributes no segment at all.
-        assert_eq!(field_name("PF 17 % ALC"), "pf_17_alc");
+        // A chunk of pure punctuation contributes no word, but keeps its
+        // separator (the `reserved-name-suffix` measurement's `viability (%)`
+        // and `seed % weight`).
+        assert_eq!(field_name("PF 17 % ALC"), "pf_17__alc");
+        assert_eq!(field_name("certainty (%)"), "certainty_");
+        assert_eq!(field_name("(%) share"), "share");
         assert_eq!(field_name("   "), "");
         // Non-ASCII letters remain separators on this path — Fern does not fold
         // them here, unlike the enum path.
