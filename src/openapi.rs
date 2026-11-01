@@ -643,7 +643,7 @@ pub struct PathItem {
     pub parameters: Vec<Parameter>,
     /// Servers declared once on the path item. Fern reads them as each of its
     /// operations' own unless the operation declares servers itself, so
-    /// `normalize_parameters` copies them into every such operation and
+    /// `inherit_path_item_servers` copies them into every such operation and
     /// empties this list; nothing downstream reads it.
     #[serde(default)]
     servers: Vec<Server>,
@@ -2964,6 +2964,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_array_properties(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
+    inherit_path_item_servers(&mut doc);
     reject_unemittable_parameters(&doc, path)?;
     reject_unemittable_operation_ids(&doc, path)?;
     normalize_responses(&mut doc);
@@ -4887,6 +4888,21 @@ fn resolve_parameter(param: &Parameter, defs: &IndexMap<String, Parameter>) -> P
 /// same name and location (per the spec). Inert on specs that already inline every
 /// parameter per operation (every synthetic fixture), so it changes no existing
 /// output.
+/// Copy each path item's servers into every operation under it that declares
+/// none of its own, then empty the path item's list: Fern reads path-item
+/// servers as the operations' (Deepgram's `/v1/agent/...` path names the
+/// `Agent` server), and nothing downstream reads them on the path item.
+fn inherit_path_item_servers(doc: &mut OpenApi) {
+    for item in doc.paths.values_mut() {
+        let servers = std::mem::take(&mut item.servers);
+        for op in item.operation_slots().into_iter().flatten() {
+            if op.servers.is_empty() {
+                op.servers.clone_from(&servers);
+            }
+        }
+    }
+}
+
 fn normalize_parameters(doc: &mut OpenApi) {
     let defs = doc.components.parameters.clone();
     for item in doc.paths.values_mut() {
@@ -4895,12 +4911,8 @@ fn normalize_parameters(doc: &mut OpenApi) {
             .iter()
             .map(|p| resolve_parameter(p, &defs))
             .collect();
-        let servers = std::mem::take(&mut item.servers);
         for slot in item.operation_slots() {
             let Some(op) = slot else { continue };
-            if op.servers.is_empty() {
-                op.servers.clone_from(&servers);
-            }
             op.path_level_parameters = !shared.is_empty();
             let mut merged = shared.clone();
             for own in &op.parameters {
@@ -5806,7 +5818,7 @@ mod tests {
         let mut doc = parse(
             "openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths:\n  /a:\n    servers:\n      - {url: 'https://a.example', x-fern-server-name: A}\n    get: {responses: {'200': {description: ok}}}\n    post:\n      servers: [{url: 'https://own.example'}]\n      responses: {'200': {description: ok}}\n",
         );
-        normalize_parameters(&mut doc);
+        inherit_path_item_servers(&mut doc);
         let item = &doc.paths["/a"];
         let url = |op: &Option<Operation>| op.as_ref().unwrap().servers[0].url.clone();
         assert_eq!(url(&item.get), "https://a.example");

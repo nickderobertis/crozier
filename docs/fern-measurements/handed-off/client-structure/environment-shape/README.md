@@ -18,7 +18,7 @@ shared Fern generation lock. It writes a `FernApiEnvironment` class with fields 
 `crozier compare` against the tree then reported these files differing:
 ['src/fern/alerts/raw_client.py', 'src/fern/client.py', 'src/fern/core/client_wrapper.py', 'src/fern/environment.py', 'src/fern/nights/raw_client.py', 'src/fern/plates/raw_client.py'].
 
-**Change.** `src/openapi.rs` gains one private `PathItem.servers` field, consumed by `normalize_parameters` (copied into every operation declaring none, then emptied); `src/ir.rs::environment_field` reads `base` for any top-level server; `src/emit.rs::environment_file` no longer blank-separates member assignments. The private field was approved by the manager on the terms that no public type or IR shape changes.
+**Change.** `src/openapi.rs` gains one private `PathItem.servers` field, consumed at load by `inherit_path_item_servers` (copied into every operation declaring none, then emptied); `src/ir.rs::environment_field` reads `base` for any top-level server; `src/emit.rs::environment_file` no longer blank-separates member assignments. The private field was approved by the manager on the terms that no public type or IR shape changes.
 
 **Comparison on the finished tree.** crozier's output for `openapi.yml`
 byte-matches the tree, held by
