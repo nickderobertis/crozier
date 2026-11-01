@@ -374,12 +374,14 @@ fn operation_server_urls(doc: &OpenApi) -> Vec<(String, String)> {
 }
 
 /// The environment field an operation's requests read in a multi-URL
-/// environment: its first named server's, unless that server is the
+/// environment: its first named server's, unless that server is one of the
 /// document's own, which is `base` — as is every operation declaring none.
+/// Deepgram's `/v1/agent/...` path names the top-level `Agent` server and its
+/// requests still read `base`.
 fn environment_field(doc: &OpenApi, op: &Operation) -> EnvironmentField {
     op.servers
         .first()
-        .filter(|server| doc.servers.first().is_none_or(|own| own.url != server.url))
+        .filter(|server| doc.servers.iter().all(|own| own.url != server.url))
         .and_then(|server| server.server_name())
         .map_or(EnvironmentField::Base, |name| {
             EnvironmentField::Named(python_parameter_name(name))
@@ -965,8 +967,16 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // here even if an unsupported cookie scheme was declared before it. Fern
     // selects the first supported scheme (Tlon Notes declares cookie, then header)
     // and does not expose the selected key a second time as a global header.
-    let skip_first_api_key = matches!(auth_model(doc), Auth::ApiKey { .. });
+    let primary = auth_model(doc);
+    let skip_first_api_key = matches!(primary, Auth::ApiKey { .. });
     let mut skipped_primary = !skip_first_api_key;
+    // Two schemes naming one header are one credential: Fern takes the first,
+    // so zalando's `PrincipalHeader` and `preAuth`, both `X-Remote-User`, give
+    // the client one `remote_user` argument, assignment and header line.
+    let mut sent: std::collections::HashSet<String> = match primary {
+        Auth::ApiKey { header, .. } => std::iter::once(header).collect(),
+        _ => std::collections::HashSet::new(),
+    };
     doc.components
         .security_schemes
         .values()
@@ -981,7 +991,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 return None;
             }
             let wire_name = scheme.name.as_ref()?;
-            if is_transport_managed_header(wire_name) {
+            if is_transport_managed_header(wire_name) || !sent.insert(wire_name.clone()) {
                 return None;
             }
             // A scheme's `x-fern-header` (or `x-crozier-header`, which wins on
@@ -1179,7 +1189,13 @@ fn auth_model(doc: &OpenApi) -> Auth {
                     || all_operations_authenticated(doc)
                     || doc.security.is_none(),
                 credential: Credential::named("api_key", &naming),
-                prefix: naming.prefix,
+                // A declared `x-bearer-format` sends the key as a bearer token
+                // whatever prefix `x-fern-header` names, as Fern's importer does.
+                prefix: if s.bearer_format.is_some() {
+                    Some("Bearer".to_string())
+                } else {
+                    naming.prefix
+                },
             }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
@@ -3784,6 +3800,14 @@ fn build_endpoint(
                     .map_or(TypeRef::Primitive(Prim::Any), |schema| {
                         hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                     })
+            };
+            // A path parameter that does not declare `required: true` is
+            // optional to Fern's importer: AMRC's shared `cluster` parameter is
+            // `typing.Optional[str]`, still positional and still interpolated.
+            let type_ref = if p.required == Some(true) || matches!(type_ref, TypeRef::Optional(_)) {
+                type_ref
+            } else {
+                TypeRef::Optional(Box::new(type_ref))
             };
             PathParam {
                 constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),

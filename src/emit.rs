@@ -154,9 +154,12 @@ fn module_stem(module: &str) -> &str {
 /// exposing their children.
 ///
 /// A package's children are ordered the way Fern writes them: those that own
-/// endpoints first, in the order the document declares them, then the pure parents
-/// sorted by name. `catalogs`, `internal` and `settings` land after `agents` …
-/// `skills` in TrueForge's root client for exactly that reason.
+/// endpoints first, each at the first operation the document declares directly in
+/// it (an operation of a grandchild places nothing), then the pure parents sorted
+/// by name. `catalogs`, `internal` and `settings` land after `agents` … `skills`
+/// in TrueForge's root client for exactly that reason, and Deepgram's `keys`
+/// precedes `members` under `projects` though a `members/invites` operation
+/// comes before both.
 fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>> {
     let owns_endpoints: BTreeSet<&str> = endpoint_modules.iter().map(String::as_str).collect();
     let mut owning: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -170,9 +173,11 @@ fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>>
             }
             path.push_str(segment);
             if owns_endpoints.contains(path.as_str()) {
-                let siblings = owning.entry(parent).or_default();
-                if !siblings.contains(&path) {
-                    siblings.push(path.clone());
+                if path == *module {
+                    let siblings = owning.entry(parent).or_default();
+                    if !siblings.contains(&path) {
+                        siblings.push(path.clone());
+                    }
                 }
             } else {
                 parents.entry(parent).or_default().insert(path.clone());
@@ -2090,6 +2095,9 @@ fn environment_file(
         for field in &fields {
             body.push_str(&format!("        self.{field} = {field}\n"));
         }
+        // Two blank lines open the assignments and none part them, as Fern
+        // writes Deepgram's `PRODUCTION` and `AGENT`.
+        body.push_str("\n\n");
         for (member, url) in environment.members() {
             let arguments: Vec<String> =
                 std::iter::once(format!("base=\"{}\"", escape_py_str(url)))
@@ -2101,7 +2109,7 @@ fn environment_file(
                     )
                     .collect();
             body.push_str(&format!(
-                "\n\n{name}.{member} = {name}({})\n",
+                "{name}.{member} = {name}({})\n",
                 arguments.join(", ")
             ));
         }
@@ -3242,17 +3250,31 @@ fn reference_entry(
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
-    for (name, ty, desc) in &mp.path {
+    // Fern lists the required parameters before the optional ones, a path
+    // parameter included: AMRC's optional `cluster` follows the required `key`
+    // and the body.
+    let (required_path, optional_path): (Vec<_>, Vec<_>) = mp
+        .path
+        .iter()
+        .partition(|(_, ty, _)| !ty.starts_with("typing.Optional["));
+    let path_row = |(name, ty, desc): &(String, String, Option<String>)| {
         // A *declared* description — even the empty string — gets the ` — {desc}`
         // separator (Fern emits the em-dash whenever the parameter carries a
         // `description` key); only an omitted (`None`) one gets the bare space.
-        let suffix = reference_param_suffix(desc.as_deref());
-        params.push(ParamRow {
+        ParamRow {
             name: name.trim_end_matches('_').to_string(),
             annot: reference_param_annotation(&ty.replace("typing.Sequence[", "typing.List[")),
-            suffix,
-        });
-    }
+            suffix: reference_param_suffix(desc.as_deref()),
+        }
+    };
+    params.extend(required_path.iter().copied().map(path_row));
+    let mut optional_path_rows = Some(
+        optional_path
+            .iter()
+            .copied()
+            .map(path_row)
+            .collect::<Vec<_>>(),
+    );
     let reference_body = if !ep.body_schema_dropped {
         ep.request_body
             .as_ref()
@@ -3318,6 +3340,9 @@ fn reference_entry(
     // `constant-header-docs-arguments` departure).
     let reference_header = mp.header;
     for dp in ordered_keyword_params(&mp.query, &reference_header, &reference_body) {
+        if dp.default.is_some() {
+            params.extend(optional_path_rows.take().unwrap_or_default());
+        }
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let query_is_list = ep
             .query_params
@@ -3413,6 +3438,7 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
+    params.extend(optional_path_rows.take().unwrap_or_default());
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
@@ -10903,7 +10929,22 @@ fn build_example_inner(
             wire.to_string()
         }
     };
-    for pp in &ep.path_params {
+    // A docstring's worked call names the required path arguments before the
+    // optional ones, as Fern's docstring writer orders them: AMRC's
+    // `delete_a_secret_value_from_an_edge_cluster` passes `key` before the
+    // optional `cluster`, `namespace` and `name` it declares first. The
+    // reference writer keeps their declared order.
+    let optional_path = |pp: &&crate::ir::PathParam| matches!(pp.type_ref, TypeRef::Optional(_));
+    let ordered_path_params = ep
+        .path_params
+        .iter()
+        .filter(|pp| reference || !optional_path(pp))
+        .chain(
+            ep.path_params
+                .iter()
+                .filter(|pp| !reference && optional_path(pp)),
+        );
+    for pp in ordered_path_params {
         if (reference || documentation) && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
         {
             continue;

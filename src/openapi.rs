@@ -455,6 +455,11 @@ pub struct SecurityScheme {
     pub(crate) token_variable_name_crozier: Option<serde_json::Value>,
     #[serde(rename = "x-fern-token-variable-name", default)]
     pub(crate) token_variable_name_fern: Option<serde_json::Value>,
+    /// `x-bearer-format`: on a header `apiKey` scheme, any value makes Fern send
+    /// the key behind `Bearer ` (Ironclad's `Authorization` key). Read by the
+    /// IR's auth model only.
+    #[serde(rename = "x-bearer-format", default)]
+    pub(crate) bearer_format: Option<serde_json::Value>,
 }
 
 /// How a security scheme's credential is named in the generated client: the
@@ -636,6 +641,12 @@ pub struct PathItem {
     /// operation at load time by `normalize_parameters`; empty after that pass.
     #[serde(default)]
     pub parameters: Vec<Parameter>,
+    /// Servers declared once on the path item. Fern reads them as each of its
+    /// operations' own unless the operation declares servers itself, so
+    /// `normalize_parameters` copies them into every such operation and
+    /// empties this list; nothing downstream reads it.
+    #[serde(default)]
+    servers: Vec<Server>,
 }
 
 impl PathItem {
@@ -4884,8 +4895,12 @@ fn normalize_parameters(doc: &mut OpenApi) {
             .iter()
             .map(|p| resolve_parameter(p, &defs))
             .collect();
+        let servers = std::mem::take(&mut item.servers);
         for slot in item.operation_slots() {
             let Some(op) = slot else { continue };
+            if op.servers.is_empty() {
+                op.servers.clone_from(&servers);
+            }
             op.path_level_parameters = !shared.is_empty();
             let mut merged = shared.clone();
             for own in &op.parameters {
