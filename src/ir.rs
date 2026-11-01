@@ -7691,6 +7691,15 @@ fn hoist_inline_object(
                     .or_else(|| {
                         sole_non_null_member(prop_schema)
                             .and_then(|member| member.description.as_deref())
+                    })
+                    // …and so does that alternative's annotation of a `$ref`:
+                    // OpenResponses' `tool_choice` is `anyOf: [allOf: [$ref,
+                    // {description}], null]`, documented in `reference.md` (the
+                    // `nullable-anyof-allof-described-member` measurement).
+                    .or_else(|| {
+                        sole_non_null_member(prop_schema)
+                            .and_then(described_all_of_ref)
+                            .and_then(|(_, doc)| doc)
                     }),
             ),
             is_file: false,
@@ -8604,6 +8613,15 @@ impl InlineHoister<'_> {
                     }
                     if is_unknown(member) {
                         return TypeRef::Primitive(Prim::Any);
+                    }
+                    // An annotated `$ref` beside `null` is copied where it is used,
+                    // as the bare annotation is: OpenResponses' `tool_choice` is
+                    // `anyOf: [allOf: [$ref ToolChoiceParam, {description}], null]`,
+                    // and Fern's copy of an enum target is an enum documented by
+                    // the annotation, never a model subclassing the enum (the
+                    // `nullable-anyof-allof-described-member` measurement).
+                    if described_all_of_ref(member).is_some() {
+                        return self.prop_type_ref(parent, prop, member);
                     }
                     if is_map(member) {
                         return nullable_map_value_type_ref(member);
@@ -12936,6 +12954,18 @@ impl Builder<'_> {
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
                 let mut members = dedupe_union_members(members);
+                // One described scalar beside `null` documents the alias when the
+                // schema does not: EWMS's `QueryNextAfter` is `anyOf: [{type:
+                // string, description}, {type: null}]`, and Fern's optional alias
+                // carries that description (the
+                // `nullable-anyof-member-description-alias-docstring`
+                // measurement's `NextCursor`).
+                let docstring = docstring.or_else(|| match (dropped_null, members.len()) {
+                    (true, 1) => sole_non_null_member(schema)
+                        .filter(|member| is_plain_scalar(member))
+                        .and_then(|member| clean_doc(member.description.as_deref())),
+                    _ => None,
+                });
                 let target = match (dropped_null, members.len()) {
                     (true, 1) => optional_type_ref(members.remove(0)),
                     (true, _) => TypeRef::Union(members),
@@ -15308,11 +15338,17 @@ impl Builder<'_> {
                             return TypeRef::Named(name);
                         }
                         if let Some(values) = string_enum_values(non_null[0]) {
+                            // The lone enum alternative documents its hoisted
+                            // class: EWMS's `WorkflowObject.deactivated` is
+                            // `anyOf: [{enum, description}, null]`, and Fern's
+                            // `WorkflowObjectDeactivated` carries that description
+                            // (the `nullable-anyof-member-description-alias-docstring`
+                            // measurement's `JobStopped`).
                             self.types.push(TypeDecl::Enum(build_enum(
                                 non_null[0],
                                 &name,
                                 values,
-                                None,
+                                clean_doc(non_null[0].description.as_deref()),
                             )));
                             return TypeRef::Named(name);
                         }
@@ -15415,6 +15451,15 @@ impl Builder<'_> {
                     if let Some(member) = simple_nullable_member(prop_schema) {
                         if let Some(reference) = member.reference.as_deref() {
                             return TypeRef::Named(ref_to_class(reference));
+                        }
+                        // An annotated `$ref` beside `null` is copied where it is
+                        // used, as the bare annotation is: an enum target is an
+                        // enum documented by the annotation, never a model
+                        // subclassing the enum (the
+                        // `nullable-anyof-allof-described-member` measurement's
+                        // `CreatePlanBodyCourse`).
+                        if described_all_of_ref(member).is_some() {
+                            return self.field_type_ref(owner, prop, member);
                         }
                         // An inline object beside `null` is a model named for the
                         // property: Fergus's `Company.contact` is `anyOf:
@@ -17872,6 +17917,14 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
         .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+        // …or that alternative's annotation of a `$ref`: OpenResponses'
+        // `tool_choice` is `anyOf: [allOf: [$ref, {description}], null]` (the
+        // `nullable-anyof-allof-described-member` measurement).
+        .or_else(|| {
+            sole_non_null_member(schema)
+                .and_then(described_all_of_ref)
+                .and_then(|(_, description)| description)
+        })
         // …and so does a composition's only member (NPQ's one-member `anyOf`
         // `attributes`).
         .or_else(

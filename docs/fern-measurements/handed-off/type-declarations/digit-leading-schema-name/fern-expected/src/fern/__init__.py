@@ -9,6 +9,7 @@ if typing.TYPE_CHECKING:
     from .types import (
         FourHundredFourNotFound,
         FourHundredOneResponse,
+        NineThousandNineHundredNinetyNineStock,
         OneHundredTenCrew,
         OneThousandCone,
         OneThousandTwoHundredThirtyFourPlan,
@@ -17,8 +18,10 @@ if typing.TYPE_CHECKING:
         TwelveHourCycle,
         TwentyOneClub,
         TwoFaStatus,
+        UndefinedBricks,
         UndefinedPixels,
         UndefinedSeats,
+        UndefinedSteps,
         UndefinedViewers,
     )
     from .errors import NotFoundError, UnauthorizedError
@@ -32,6 +35,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "FourHundredFourNotFound": ".types",
     "FourHundredOneResponse": ".types",
+    "NineThousandNineHundredNinetyNineStock": ".types",
     "NotFoundError": ".errors",
     "OneHundredTenCrew": ".types",
     "OneThousandCone": ".types",
@@ -42,8 +46,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TwentyOneClub": ".types",
     "TwoFaStatus": ".types",
     "UnauthorizedError": ".errors",
+    "UndefinedBricks": ".types",
     "UndefinedPixels": ".types",
     "UndefinedSeats": ".types",
+    "UndefinedSteps": ".types",
     "UndefinedViewers": ".types",
     "__version__": ".version",
 }
@@ -77,6 +83,7 @@ __all__ = [
     "FernApi",
     "FourHundredFourNotFound",
     "FourHundredOneResponse",
+    "NineThousandNineHundredNinetyNineStock",
     "NotFoundError",
     "OneHundredTenCrew",
     "OneThousandCone",
@@ -87,8 +94,10 @@ __all__ = [
     "TwentyOneClub",
     "TwoFaStatus",
     "UnauthorizedError",
+    "UndefinedBricks",
     "UndefinedPixels",
     "UndefinedSeats",
+    "UndefinedSteps",
     "UndefinedViewers",
     "__version__",
 ]
