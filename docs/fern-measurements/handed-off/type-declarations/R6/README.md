@@ -2,7 +2,7 @@
 
 The root cause `R6` from [`docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md`](../../../../../docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md), measured at the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) and settled by this node; its row is in [`../../type-declarations.tsv`](../../type-declarations.tsv).
 
-`openapi.yml` was authored from scratch for this rule. `fern-expected/` is the certified pair's complete, comment-stripped python-enums output for it; the document declares no enum, so the enum mode does not change the tree. Both were generated with `tools/fern-goldens/fern-references.py`'s own `generated_tree` pipeline under the shared Fern lock: a cause named `R*` is no lower-case `cases.tsv` case path, so this directory has no `cases.tsv` row.
+`openapi.yml` was authored from scratch for this rule. `fern-expected/` is the certified pair's complete, comment-stripped python-enums output for it; the document declares no enum, so the enum mode does not change the tree. It was generated with the `generated_tree` pipeline `just fern-references` runs for every measurement, called directly under the shared Fern lock: a cause named `R*` is no lower-case `cases.tsv` case path, so `just fern-references measurements` cannot name this directory and it has no `cases.tsv` row.
 
 ## Comparison
 
