@@ -1318,30 +1318,39 @@ fn collect_named(t: &TypeRef, set: &mut std::collections::HashSet<String>) {
     }
 }
 
-/// Drop the types hoisted at or after `from` that no kept body field reaches,
-/// directly or through another of those types.
-fn prune_unreached_hoisted(out: &mut Vec<TypeDecl>, from: usize, fields: &[BodyField]) {
-    let mut reached = std::collections::HashSet::new();
-    for field in fields {
-        collect_named(&field.type_ref, &mut reached);
-    }
-    loop {
-        let before = reached.len();
-        for decl in &out[from..] {
-            if reached.contains(decl.name()) {
-                let mut inner = std::collections::HashSet::new();
-                collect_decl_names(decl, &mut inner);
-                reached.extend(inner);
+/// Drop the types hoisted at or after `from` that a dropped body field reaches
+/// and no kept one does, directly or through another of those types.
+fn prune_dropped_hoisted(
+    out: &mut Vec<TypeDecl>,
+    from: usize,
+    dropped: &[BodyField],
+    kept: &[BodyField],
+) {
+    let reach = |fields: &[BodyField]| {
+        let mut reached = std::collections::HashSet::new();
+        for field in fields {
+            collect_named(&field.type_ref, &mut reached);
+        }
+        loop {
+            let before = reached.len();
+            for decl in &out[from..] {
+                if reached.contains(decl.name()) {
+                    let mut inner = std::collections::HashSet::new();
+                    collect_decl_names(decl, &mut inner);
+                    reached.extend(inner);
+                }
+            }
+            if reached.len() == before {
+                return reached;
             }
         }
-        if reached.len() == before {
-            break;
-        }
-    }
+    };
+    let only_dropped: std::collections::HashSet<String> =
+        reach(dropped).difference(&reach(kept)).cloned().collect();
     let mut index = 0;
     out.retain(|decl| {
         index += 1;
-        index <= from || reached.contains(decl.name())
+        index <= from || !only_dropped.contains(decl.name())
     });
 }
 
@@ -7347,22 +7356,24 @@ fn resolve_request_body(
             // it: Webflow's redirect `create` takes no `id` and its webhook
             // `create` no `workspaceId` or `createdOn`. One an `allOf` parent
             // also declares keeps its slot, below.
-            fields.retain(|field| {
-                schema
-                    .properties
-                    .get(&field.wire_name)
-                    .is_none_or(|property| property.read_only != Some(true))
-                    || parents
-                        .iter()
-                        .flatten()
-                        .any(|inherited| inherited.wire_name == field.wire_name)
-            });
+            let (kept, dropped): (Vec<BodyField>, Vec<BodyField>) =
+                fields.into_iter().partition(|field| {
+                    schema
+                        .properties
+                        .get(&field.wire_name)
+                        .is_none_or(|property| property.read_only != Some(true))
+                        || parents
+                            .iter()
+                            .flatten()
+                            .any(|inherited| inherited.wire_name == field.wire_name)
+                });
+            fields = kept;
             // …and so does every type hoisted only for a property it drops: the
             // `orphan-type-emission` measurement's `registerSensor` body declares
             // a `readOnly` inline `calibration` object, and Fern writes no
             // `RegisterSensorRequestCalibration` (as whatwatt's read-only
             // `status` writes none).
-            prune_unreached_hoisted(&mut hoister.out, hoisted_before, &fields);
+            prune_dropped_hoisted(&mut hoister.out, hoisted_before, &dropped, &fields);
             // Own fields precede inherited fields; reuse the parent's resolved types.
             let own_count = fields.len();
             for reference in schema
@@ -7812,6 +7823,7 @@ fn hoist_inline_object(
                     // description: Physical location}, {type: 'null'}]`.
                     .or_else(|| {
                         sole_non_null_member(prop_schema)
+                            .filter(|member| !wraps_sole_reference(member))
                             .and_then(|member| member.description.as_deref())
                     })
                     // …and so does that alternative's annotation of a `$ref`:
@@ -8742,7 +8754,13 @@ impl InlineHoister<'_> {
                     // and Fern's copy of an enum target is an enum documented by
                     // the annotation, never a model subclassing the enum (the
                     // `nullable-anyof-allof-described-member` measurement).
-                    if described_all_of_ref(member).is_some() {
+                    if let Some(target) = annotated_target(member, self.schemas) {
+                        // A map target is the nullable map: OpenResponses'
+                        // `metadata` annotates `MetadataParam` and is
+                        // `Dict[str, Optional[str]]`.
+                        if is_map(target) {
+                            return nullable_map_value_type_ref(target);
+                        }
                         return self.prop_type_ref(parent, prop, member);
                     }
                     if is_map(member) {
@@ -15600,7 +15618,13 @@ impl Builder<'_> {
                         // subclassing the enum (the
                         // `nullable-anyof-allof-described-member` measurement's
                         // `CreatePlanBodyCourse`).
-                        if described_all_of_ref(member).is_some() {
+                        if let Some(target) = annotated_target(member, Some(self.schemas)) {
+                            // A map target is the nullable map: OpenResponses'
+                            // `metadata` annotates `MetadataParam` and is
+                            // `Dict[str, Optional[str]]`.
+                            if is_map(target) {
+                                return nullable_map_value_type_ref(target);
+                            }
                             return self.field_type_ref(owner, prop, member);
                         }
                         // An inline object beside `null` is a model named for the
@@ -18058,7 +18082,11 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         // The lone alternative to `null` documents the property when the
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
-        .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+        .or_else(|| {
+            sole_non_null_member(schema)
+                .filter(|member| !wraps_sole_reference(member))
+                .and_then(|member| member.description.as_deref())
+        })
         // …or that alternative's annotation of a `$ref`: OpenResponses'
         // `tool_choice` is `anyOf: [allOf: [$ref, {description}], null]` (the
         // `nullable-anyof-allof-described-member` measurement).
@@ -18490,6 +18518,28 @@ fn nullable_sole_member_ref(schema: &Schema) -> Option<&str> {
         && (schema.one_of.is_none() || schema.any_of.is_none()))
     .then_some(member.reference.as_deref())
     .flatten()
+}
+
+/// The resolved target of a schema that only annotates one `$ref`.
+fn annotated_target<'a>(
+    member: &Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+) -> Option<&'a Schema> {
+    described_all_of_ref(member)
+        .and_then(|(reference, _)| resolve_ref_from_schemas(schemas?, reference))
+}
+
+/// A `oneOf`/`anyOf` of one `$ref`, the description beside it being the
+/// wrapper's: Fern drops that description, so it documents nothing. OpenResponses'
+/// `ReasoningParam.effort` is `anyOf: [{oneOf: [$ref ReasoningEffortEnum],
+/// description}, null]`, and Fern's field carries no docstring (the
+/// `description-source` measurement's `Kiln.glaze`).
+fn wraps_sole_reference(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && matches!(
+            schema.one_of.as_deref().or(schema.any_of.as_deref()),
+            Some([only]) if only.reference.is_some()
+        )
 }
 
 /// Whether `schema` declares nothing at all (`{}`).

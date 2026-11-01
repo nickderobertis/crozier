@@ -6,6 +6,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .glaze_kind import GlazeKind
 from .maker import Maker
 from .piece_id import PieceId
 from .piece_links import PieceLinks
@@ -18,6 +19,7 @@ class Piece(UniversalBaseModel):
         typing.Optional[PieceId], FieldMetadata(alias="pieceId"), pydantic.Field(alias="pieceId")
     ] = None
     maker: typing.Optional[Maker] = None
+    glaze: typing.Optional[GlazeKind] = None
     links: typing.Optional[PieceLinks] = pydantic.Field(default=None)
     """
     

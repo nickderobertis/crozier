@@ -11,6 +11,7 @@ if typing.TYPE_CHECKING:
     from .get_firing_response import GetFiringResponse
     from .get_firing_response_outcome import GetFiringResponseOutcome
     from .glassblower import Glassblower
+    from .glaze_kind import GlazeKind
     from .maker import Maker
     from .piece import Piece
     from .piece_id import PieceId
@@ -21,6 +22,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetFiringResponse": ".get_firing_response",
     "GetFiringResponseOutcome": ".get_firing_response_outcome",
     "Glassblower": ".glassblower",
+    "GlazeKind": ".glaze_kind",
     "Maker": ".maker",
     "Piece": ".piece",
     "PieceId": ".piece_id",
@@ -55,6 +57,7 @@ __all__ = [
     "GetFiringResponse",
     "GetFiringResponseOutcome",
     "Glassblower",
+    "GlazeKind",
     "Maker",
     "Piece",
     "PieceId",

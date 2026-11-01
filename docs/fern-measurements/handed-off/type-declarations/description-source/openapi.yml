@@ -63,6 +63,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/Digest'
         - description: Identifier of a finished piece.
+    GlazeKind:
+      type: string
+      enum:
+        - clear
+        - cobalt
     Glassblower:
       type: object
       properties:
@@ -86,6 +91,12 @@ components:
           $ref: '#/components/schemas/PieceId'
         maker:
           $ref: '#/components/schemas/Maker'
+        glaze:
+          anyOf:
+            - oneOf:
+                - $ref: '#/components/schemas/GlazeKind'
+              description: The glaze the piece was dipped in.
+            - type: 'null'
         links:
           title: ''
           description: ''

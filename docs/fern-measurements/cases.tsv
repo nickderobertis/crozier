@@ -238,3 +238,4 @@ handed-off/type-declarations/type-placement	docs/fern-measurements/handed-off/ty
 handed-off/type-declarations/inline-type-naming	docs/fern-measurements/handed-off/type-declarations/inline-type-naming/openapi.yml	python-enums	packaged	-
 handed-off/type-declarations/orphan-type-emission	docs/fern-measurements/handed-off/type-declarations/orphan-type-emission/openapi.yml	python-enums	packaged	-
 handed-off/type-declarations/description-source	docs/fern-measurements/handed-off/type-declarations/description-source/openapi.yml	python-enums	packaged	-
+handed-off/type-declarations/reference-description-leading-newline	docs/fern-measurements/handed-off/type-declarations/reference-description-leading-newline/openapi.yml	python-enums	packaged	-
