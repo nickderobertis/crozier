@@ -104,6 +104,32 @@
     "docs/fern-measurements/handed-off/bodies-media/streaming-detection/fern-expected": {},
     "docs/fern-measurements/handed-off/bodies-media/success-media-binary-before-json/fern-expected": {},
     "docs/fern-measurements/handed-off/bodies-media/vendor-json-media-first-content-type/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/R14/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-invalid-duplicate-parameter/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-invalid-duplicate-parameter/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-component-link-ref/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-nullable-error-extension/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unknown-type-value/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/fern-expected": {},
+    "docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R8/fern-expected": {},

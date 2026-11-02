@@ -250,6 +250,16 @@ handed-off/union-modelling/union-modelling/singleton-enum-members/literals	docs/
 handed-off/union-modelling/union-modelling/singleton-enum-tags/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/openapi.yml	literals	packaged	-
 handed-off/union-modelling/union-modelling/sole-reference-all-of-member	docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/openapi.yml	python-enums	packaged	-
 handed-off/union-modelling/union-modelling/nullable-array-member	docs/fern-measurements/handed-off/union-modelling/union-modelling/nullable-array-member/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/bare-string-parameter-example	docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-invalid-duplicate-parameter	docs/fern-measurements/handed-off/document-acceptance/crozier-invalid-duplicate-parameter/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-boolean-schema	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-component-link-ref	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-component-link-ref/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-nullable-error-extension	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-nullable-error-extension/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-path-without-slash	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-type-name-collision	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-unknown-type-value	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unknown-type-value/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/never-compared-request-property-name-collision	docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/never-compared-type-name-collision	docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/openapi.yml	python-enums	packaged	-
 handed-off/bodies-media/body-property-set	docs/fern-measurements/handed-off/bodies-media/body-property-set/openapi.yml	python-enums	packaged	-
 handed-off/bodies-media/geo-json-success-media	docs/fern-measurements/handed-off/bodies-media/geo-json-success-media/openapi.yml	python-enums	packaged	-
 handed-off/bodies-media/media-type-recognition	docs/fern-measurements/handed-off/bodies-media/media-type-recognition/openapi.yml	python-enums	packaged	-

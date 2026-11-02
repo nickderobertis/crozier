@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: Courier legs
+  version: 1.0.0
+paths:
+  /legs/{legId}:
+    get:
+      operationId: getLeg
+      parameters:
+        - name: legId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The leg
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Leg'
+components:
+  schemas:
+    Leg:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          $ref: '#/components/schemas/Mode'
+    Mode:
+      type: string
+      enum:
+        - WALK
+        - CYCLE
+    mode:
+      type: string
+      enum:
+        - CYCLE

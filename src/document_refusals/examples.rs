@@ -632,13 +632,40 @@ impl<'a> Doc<'a> {
         visit: &mut dyn FnMut(&'a Value) -> Option<String>,
     ) -> Option<String> {
         let mut seen = HashSet::new();
-        self.reach_from(schema, required_only, visit, &mut seen, 0)
+        self.reach_from(
+            schema,
+            required_only,
+            Descent::Everywhere,
+            visit,
+            &mut seen,
+            0,
+        )
+    }
+
+    /// [`Self::reach`], but never past the members of an object that declares
+    /// `additionalProperties: true`: that object is still visited, while its
+    /// properties, items and map values are not.
+    fn reach_closed(
+        &self,
+        schema: &'a Value,
+        visit: &mut dyn FnMut(&'a Value) -> Option<String>,
+    ) -> Option<String> {
+        let mut seen = HashSet::new();
+        self.reach_from(
+            schema,
+            false,
+            Descent::ClosedObjectsOnly,
+            visit,
+            &mut seen,
+            0,
+        )
     }
 
     fn reach_from(
         &self,
         schema: &'a Value,
         required_only: bool,
+        descent: Descent,
         visit: &mut dyn FnMut(&'a Value) -> Option<String>,
         seen: &mut HashSet<*const Value>,
         depth: usize,
@@ -660,11 +687,17 @@ impl<'a> Doc<'a> {
                 .into_iter()
                 .flatten()
             {
-                if let Some(found) = self.reach_from(member, required_only, visit, seen, depth + 1)
+                if let Some(found) =
+                    self.reach_from(member, required_only, descent, visit, seen, depth + 1)
                 {
                     return Some(found);
                 }
             }
+        }
+        if descent == Descent::ClosedObjectsOnly
+            && schema.get("additionalProperties") == Some(&Value::Bool(true))
+        {
+            return None;
         }
         let required = required_names(schema);
         for (name, property) in schema
@@ -676,13 +709,17 @@ impl<'a> Doc<'a> {
             if required_only && !required.contains(&name.as_str()) {
                 continue;
             }
-            if let Some(found) = self.reach_from(property, required_only, visit, seen, depth + 1) {
+            if let Some(found) =
+                self.reach_from(property, required_only, descent, visit, seen, depth + 1)
+            {
                 return Some(found);
             }
         }
         for key in ["items", "additionalProperties"] {
             if let Some(child) = schema.get(key).filter(|child| child.is_object()) {
-                if let Some(found) = self.reach_from(child, required_only, visit, seen, depth + 1) {
+                if let Some(found) =
+                    self.reach_from(child, required_only, descent, visit, seen, depth + 1)
+                {
                     return Some(found);
                 }
             }
@@ -756,10 +793,13 @@ impl<'a> Doc<'a> {
     /// parent's required properties, so the check reports them missing whatever
     /// example the document writes, nullable child or not. A non-nullable
     /// parent, a parent without `required` and an `allOf` that adds no
-    /// properties are each measured accepted.
+    /// properties are each measured accepted. So is one reached only through
+    /// an object declaring `additionalProperties: true`, whose members Fern's
+    /// example does not fill in (plaid's `Warning.cause`; the variants are
+    /// `docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-nullable-error-extension/`).
     fn nullable_parent_example(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let schema = self.response_media(operation)?.get("schema")?;
-        self.reach(schema, false, &mut |node| {
+        self.reach_closed(schema, &mut |node| {
             let members = node.get("allOf").and_then(Value::as_array)?;
             let adds = non_empty_mapping(node.get("properties"))
                 || members.iter().any(|member| {
@@ -1665,12 +1705,35 @@ fn string_led_union(schema: &Value) -> bool {
         })
 }
 
-/// Fern's example of the object `loser`, validated against the closed object
-/// `winner` that took its name: a required property of the winner the loser
+/// Which members a reach walk enters after visiting an object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Descent {
+    /// Every property, item and map value.
+    Everywhere,
+    /// None of an object declaring `additionalProperties: true`.
+    ClosedObjectsOnly,
+}
+
+/// Fern's example of `loser` (an object, or an enum, below), validated against the
+/// closed object `winner` that took its name: a required property of the winner the loser
 /// lacks is missing (reported first, as Fern reports it); otherwise a plain
 /// string property the winner lacks is unexpected (Fern's response example
 /// fills a string with its name; other property kinds are not measured).
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
+    // Two enums: Fern's example of the earlier one is its first value, which
+    // the later declaration must list (`Mode: [WALK, CYCLE]` beside
+    // `mode: [CYCLE]` is refused, measured for the document-acceptance area's
+    // crozier-refuses-type-name-collision; one keeping every earlier value is
+    // never-compared-type-name-collision's measured generation).
+    if let (Some(own), Some(theirs)) = (
+        loser.get("enum").and_then(Value::as_array),
+        winner.get("enum").and_then(Value::as_array),
+    ) {
+        return own
+            .first()
+            .is_some_and(|first| !theirs.contains(first))
+            .then_some(Class::ExampleNotEnumValue);
+    }
     let own = loser.get("properties").and_then(Value::as_object)?;
     let theirs = winner.get("properties").and_then(Value::as_object)?;
     if winner
@@ -1736,6 +1799,27 @@ mod tests {
         ] {
             assert_eq!(verdict(control), None, "{control}");
         }
+    }
+
+    #[test]
+    fn an_earlier_enum_whose_first_value_the_later_drops_collides() {
+        let verdict = |earlier: &str, later: &str| {
+            collision_class(&yaml(earlier), &yaml(later)).map(Class::id)
+        };
+        assert_eq!(
+            verdict(
+                "{type: string, enum: [WALK, CYCLE]}",
+                "{type: string, enum: [CYCLE]}"
+            ),
+            Some("example-not-enum-value")
+        );
+        assert_eq!(
+            verdict(
+                "{type: string, enum: [HAND, DROP]}",
+                "{type: string, enum: [HAND, DROP, LOCKER]}"
+            ),
+            None
+        );
     }
 
     #[test]
