@@ -373,10 +373,13 @@ phases.
    `metadata.json` to the candidate pair and regenerates each item through
    `fern-references.py generate <family> <item>`, timing it. Its artifact,
    `fern-goldens-shard-<n>`, carries every file each item wrote, each item's log
-   and the shard's `result.json` (per item: its seconds, outcome and files).
+   and the shard's `result.json` (per item: its seconds, outcome and files). An
+   item whose generation fails is one such outcome, not the shard's failure.
 4. **Assemble** (`assemble` job). One job combines every shard into one tree,
    the `fern-goldens-bundle` artifact, with the measured seconds written back
-   into `generation-seconds.tsv` and the candidate pair into `metadata.json`.
+   into `generation-seconds.tsv` and the candidate pair into `metadata.json`. A
+   planned shard that uploaded no result has each of its items carried as
+   `not-generated`, naming the shard.
 5. **Decide** (`decide` job). The bundle is laid over a checkout and every
    statement of the pair restated (`certified_pair.py restate`), so the tree is
    the one the pull request would carry; crozier is built from it, so its own
@@ -397,11 +400,14 @@ phases.
      whose name or regenerated files its report names, with the report's lines
      for it (or the report's tail, when it names none).
 
-   A comparison that cannot run is a failure, never a pass. The
+   An item that failed or was not generated goes through no gate; every other
+   item is decided. A comparison that cannot run is a failure, never a pass. The
    `fern-goldens-decision` artifact holds the decision and every gate's report.
 6. **Publish** (`publish` job, a run over the whole inventory only), under
    `RELEASE_PLZ_TOKEN` — the PAT `release-plz.yml` uses, since a pull request
    the default `GITHUB_TOKEN` opens triggers none of crozier's required checks.
+7. **Conclude** (`conclude` job, after any decision). Red when an item failed
+   or was not generated, naming each; green otherwise.
 
 ### The pull request it opens
 
@@ -411,8 +417,8 @@ regenerate at Fern CLI <cli> / fern-python-sdk <generator>` — a Conventional
 Commit, as the required `commitlint` check asks. A later run updates it rather
 than opening another, and pushes the branch only with a lease on what it read.
 
-- **Diff** — crozier's comparison fails for at least one item, or a reference
-  could not be regenerated. The pull request carries every regenerated
+- **Diff** — crozier's comparison fails for at least one item, a reference
+  could not be regenerated, or an item was not checked (below). The pull request carries every regenerated
   reference, the new pair in `metadata.json` and the measured seconds; its body
   lists the failing items per family, each with the comparison's own report. It
   is not auto-merged: crozier's checks on it show what crozier must change, and
@@ -438,12 +444,26 @@ is decided from the pull request.
 
 ### How a failure shows
 
-Any failure before publication ends the run red with its step summary naming
-each failure, and touches no branch, pull request or record: a shard that fails
-or uploads nothing, an item whose generation fails (other than a registered known
-upstream failure or a changed refusal, above), an assembly that cannot account for every planned item
-or finds two shards writing one file, a comparison that cannot run, or a
-missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any Fern runs).
+**One item never hides the rest.** An item whose generation fails — a broken
+crozier input (a missing document, an evidence note with no restatable pair,
+which `fern-references.py check` catches on the pull request that breaks it)
+or any other error of that item — and every item of a planned shard that
+uploaded no result are carried through the assembly and named, by family,
+item, one-line reason and log path (inside `fern-goldens-bundle`), in the
+assembly, decision and conclusion summaries and in the pull request's **Items
+not checked** section. Every other item is still decided. A complete run still
+publishes: it pushes `fern-goldens/update` and opens or updates the one
+`fern-goldens` pull request with auto-merge off, never records a
+`fern-pair-checks.tsv` row, and then concludes **red** (the `conclude` job).
+With every item checked, a run concludes green on a match and on a diff alike.
+
+Any other failure before publication ends the run red with its step summary
+naming each failure, and touches no branch, pull request or record: a bundle
+whose integrity fails (a shard whose items or files disagree with its plan or
+with each other, a shard at another pair or base, a symbolic link an item left,
+a malformed record, or two shards writing one file), a comparison that cannot
+run, or a missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any
+Fern runs).
 
 A failure during publication — pushing the branch, labelling, opening or
 updating the pull request, or enabling auto-merge — also ends the run red; its

@@ -15,20 +15,28 @@ job of its own, so every decision lives here where the tests drive it:
             predicted from `generation-seconds.tsv`
   shard     one shard's items, each through `fern-references.py generate`, with
             `metadata.json` at the candidate pair; per item its seconds, its log,
-            its outcome and the files it wrote
-  assemble  every shard's result combined into one bundle, or red when a shard is
-            missing, an item is unaccounted for, failed, or two shards wrote one
-            file
+            its outcome and the files it wrote; an item that failed is one such
+            outcome, never the shard's failure
+  assemble  every shard's result combined into one bundle, each planned item of
+            a shard that uploaded nothing carried as not generated; red only when
+            the bundle itself is unsound: a shard's items unaccounted for, its
+            files disagreeing with them, another pair or base, or two shards
+            writing one file
   apply     the bundle laid over a checkout of the planned commit, with every
             statement of the pair restated, so the tree is the one a pull request
             would carry
   decide    crozier's own comparison over that tree, through the gates
-            `decision-gates.tsv` names, and nothing else: match, diff, or red when
-            a comparison cannot run
+            `decision-gates.tsv` names, of every item that generated: match,
+            diff (which an item that failed or was not generated always is), or
+            red when a comparison cannot run
   publish   the one pull request on `fern-goldens/update`, reconciled with what
             the remote already holds: a diff stays open for a person; a match
             records the pair in `tests/fixtures/fern-pair-checks.tsv` and is
             auto-merged
+  conclude  the run's own status once the decision (and, in a complete run, its
+            publication) is done: red when an item failed or was not generated,
+            naming each, so a broken input is published for a person and still
+            never passes as a green week
 
 Each phase prints one line and appends its Markdown to `--summary` (the step
 summary). Every artifact one phase hands the next is a typed record, validated
@@ -87,7 +95,7 @@ NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
 BASE = "main"
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
 # in `.github/budgets.yaml`, whose test holds the two equal.
@@ -136,7 +144,16 @@ class Status(StrEnum):
     # generates, refuses otherwise, or runs past the probe's bound (unsettled).
     # The record is kept and the change reported, never a generation failure.
     REFUSAL_CHANGED = "refusal-changed"
+    # Its generation failed: a broken crozier input (a missing document, an
+    # evidence note with no pair to restate) or any other error of the item.
     FAILED = "failed"
+    # Its planned shard uploaded no result, so nothing generated it.
+    NOT_GENERATED = "not-generated"
+
+
+# The outcomes that leave an item unchecked: carried to the decision and the
+# pull request by name, compared by nothing, and the run's conclusion red.
+UNCHECKED = (Status.FAILED, Status.NOT_GENERATED)
 
 
 class Verdict(StrEnum):
@@ -458,7 +475,9 @@ class ItemResult:
 
 @dataclass(frozen=True)
 class ShardResult:
-    """One shard's artifact record: what each item did, and the files it carries."""
+    """One shard's artifact record: what each item did, the files it carries,
+    and any fault that makes the shard's own files untrustworthy (a symbolic
+    link an item left), which the assembly refuses the bundle for."""
 
     index: int
     pair: Pair
@@ -466,6 +485,7 @@ class ShardResult:
     items: tuple[ItemResult, ...]
     written: tuple[str, ...]
     deleted: tuple[str, ...]
+    faults: tuple[str, ...] = ()
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -476,6 +496,8 @@ class ShardResult:
             "items": [item.to_json() for item in self.items],
             "written": list(self.written),
             "deleted": list(self.deleted),
+            # Optional, and omitted when empty: a sound shard records none.
+            **({"faults": list(self.faults)} if self.faults else {}),
         }
 
     @classmethod
@@ -489,7 +511,17 @@ class ShardResult:
             items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
             written=tuple(safe_path(path, where) for path in field_of(record, "written", list, where)),
             deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
+            faults=tuple(
+                strings_of(record, "faults", where) if isinstance(record, dict) and "faults" in record else ()
+            ),
         )
+
+
+def strings_of(record: object, key: str, where: str) -> list[str]:
+    values = field_of(record, key, list, where)
+    if not all(isinstance(value, str) for value in values):
+        raise WeeklyError(f"{where}: `{key}` must be a list of strings; re-run the job that wrote it")
+    return values
 
 
 def failures_of(record: object, where: str) -> list[str]:
@@ -571,6 +603,26 @@ class Unfetchable:
 
 
 @dataclass(frozen=True)
+class Unchecked:
+    """An item no comparison could check: its generation failed, or its shard
+    uploaded nothing. Its reason and log are what a person acts on."""
+
+    family: str
+    item: str
+    status: str
+    detail: str
+    log: str
+
+    def line(self) -> str:
+        where = f"log `{self.log}`" if self.log else "no log"
+        return f"{self.family} `{self.item}`: {self.status}: {self.detail} ({where})"
+
+    @classmethod
+    def of(cls, entry: ItemResult) -> Unchecked:
+        return cls(entry.family, entry.item, entry.status.value, entry.detail, entry.log)
+
+
+@dataclass(frozen=True)
 class GateRun:
     """One comparison the decision ran, and the file its report is saved in."""
 
@@ -591,6 +643,7 @@ class Decision:
     unfetchable: list[Unfetchable] = field(default_factory=list)
     known_changed: list[KnownFailureChange] = field(default_factory=list)
     refusals_changed: list[RefusalChange] = field(default_factory=list)
+    unchecked: list[Unchecked] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
 
@@ -599,7 +652,8 @@ class Decision:
         if self.cannot_run:
             return Outcome.FAILURE
         changed = self.known_changed or self.refusals_changed
-        return Outcome.DIFF if self.failing or self.unfetchable or changed else Outcome.MATCH
+        # An item nothing checked is never a match: the pair is not recorded.
+        return Outcome.DIFF if self.failing or self.unfetchable or changed or self.unchecked else Outcome.MATCH
 
     def title(self) -> str:
         return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
@@ -619,6 +673,8 @@ class Decision:
             # Optional, and omitted when empty: most runs change no registration.
             **({"known_changed": [vars(entry) for entry in self.known_changed]} if self.known_changed else {}),
             **({"refusals_changed": [vars(entry) for entry in self.refusals_changed]} if self.refusals_changed else {}),
+            # Optional too: a run with every item checked carries none.
+            **({"unchecked": [vars(entry) for entry in self.unchecked]} if self.unchecked else {}),
         }
 
 
@@ -633,6 +689,7 @@ class RecordedDecision:
     title: str
     known_changed: tuple[KnownFailureChange, ...] = ()
     refusals_changed: tuple[RefusalChange, ...] = ()
+    unchecked: tuple[Unchecked, ...] = ()
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -662,8 +719,25 @@ class RecordedDecision:
         refusals_changed = tuple(
             RefusalChange(name_of(entry, "item", where), field_of(entry, "detail", str, where)) for entry in refusals
         )
-        if (known_changed or refusals_changed) and outcome == Outcome.MATCH:
-            raise WeeklyError(f"{where}: a match changes no known failure or refusal; re-run the decision job")
+        unchecked = tuple(
+            Unchecked(
+                name_of(entry, "family", where),
+                name_of(entry, "item", where),
+                field_of(entry, "status", str, where),
+                field_of(entry, "detail", str, where),
+                field_of(entry, "log", str, where),
+            )
+            for entry in (
+                field_of(record, "unchecked", list, where) if isinstance(record, dict) and "unchecked" in record else []
+            )
+        )
+        if any(entry.status not in UNCHECKED for entry in unchecked):
+            raise WeeklyError(f"{where}: an unchecked item is one of {', '.join(UNCHECKED)}; re-run the decision job")
+        if (known_changed or refusals_changed or unchecked) and outcome == Outcome.MATCH:
+            raise WeeklyError(
+                f"{where}: a match changes no known failure or refusal and leaves no item unchecked; "
+                "re-run the decision job"
+            )
         return cls(
             Outcome(outcome),
             field_of(record, "complete", bool, where),
@@ -672,6 +746,7 @@ class RecordedDecision:
             field_of(record, "title", str, where),
             known_changed,
             refusals_changed,
+            unchecked,
         )
 
 
@@ -1456,15 +1531,17 @@ def shard(args: argparse.Namespace) -> int:
     (output / "files").mkdir(parents=True)
     set_pair(base, pair)
     results = [generate_item(base, entry, output / "logs") for entry in made.shards[args.index].items]
-    written, deleted = [], []
+    written, deleted, faults = [], [], []
     for path in sorted({path for result in results for path in result.changed}):
         if (base / path).is_symlink():
-            # copy2 would carry the link's target, from anywhere, as a regular file.
+            # copy2 would carry the link's target, from anywhere, as a regular
+            # file; the result records the fault so the assembly refuses it.
             owners = ", ".join(f"{r.family} {r.item}" for r in results if path in r.changed)
-            raise WeeklyError(
+            faults.append(
                 f"shard {args.index}: {owners} generated {path} as a symbolic link, which no reference is; "
                 "read that item's log and fix its generation"
             )
+            continue
         source = inside(base, path, f"shard {args.index}")
         if source.is_file():
             target = output / "files" / path
@@ -1473,8 +1550,15 @@ def shard(args: argparse.Namespace) -> int:
             written.append(path)
         else:
             deleted.append(path)
-    record = ShardResult(args.index, pair, made.base, tuple(results), tuple(written), tuple(deleted))
+    if faults:
+        # Nothing of a faulted shard is carried: its record names the fault alone.
+        shutil.rmtree(output / "files")
+        (output / "files").mkdir()
+        written, deleted = [], []
+    record = ShardResult(args.index, pair, made.base, tuple(results), tuple(written), tuple(deleted), tuple(faults))
     write_json(output / "result.json", record.to_json())
+    if faults:
+        raise WeeklyError("; ".join(faults))
     failed = [result for result in results if result.status == Status.FAILED]
     counts = {status: sum(result.status == status for result in results) for status in Status}
     summarize(
@@ -1483,18 +1567,20 @@ def shard(args: argparse.Namespace) -> int:
             f"## Fern goldens: shard {args.index}",
             "",
             f"{len(results)} item(s) at {pair.label()}: "
-            + ", ".join(f"{count} {status.value}" for status, count in counts.items()),
+            + ", ".join(f"{count} {status.value}" for status, count in counts.items() if count),
             *(
-                f"- {result.family} `{result.item}`: {result.status.value}: {result.detail}"
+                f"- {result.family} `{result.item}`: {result.status.value}: {result.detail} (log `{result.log}`)"
                 for result in results
                 if result.status != Status.OK
             ),
         ],
     )
     print(f"fern-goldens-weekly: shard {args.index}: {len(results)} item(s), {len(failed)} failed")
+    # A failed item is this shard's result, carried to the decision by name; the
+    # run's conclusion, not this job, is what turns red for it.
     for result in failed:
         print(f"{result.family} {result.item}: {result.detail} (log {result.log})", file=sys.stderr)
-    return 1 if failed else 0
+    return 0
 
 
 def uploaded_results(shards_dir: Path, failures: list[str]) -> dict[int, tuple[Path, ShardResult]]:
@@ -1535,13 +1621,21 @@ def assemble(args: argparse.Namespace) -> int:
     for planned in made.shards:
         index = planned.index
         if index not in uploaded:
-            failures.append(f"shard {index} uploaded no result; its job failed or was cancelled before uploading")
+            # Its items are named, not hidden behind it: nothing generated them.
+            reason = f"shard {index} uploaded no result; its job failed or was cancelled before uploading"
+            results += [
+                ItemResult(entry.family, entry.item, Status.NOT_GENERATED, reason, 0.0, (), "", index)
+                for entry in planned.items
+            ]
             continue
         shard_dir, record = uploaded[index]
         expected = [entry.key() for entry in planned.items]
         reported = [(entry.family, entry.item) for entry in record.items]
         if record.pair != pair or record.base != made.base:
             failures.append(f"shard {index} generated at another pair or base than the plan")
+            continue
+        if record.faults:
+            failures += record.faults
             continue
         if reported != expected:
             missing = [f"{family} {item}" for family, item in expected if (family, item) not in reported]
@@ -1578,10 +1672,7 @@ def assemble(args: argparse.Namespace) -> int:
             target = inside(output / "logs", source.relative_to(shard_dir / "logs").as_posix(), f"shard {index} logs")
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
-        for entry in record.items:
-            results.append(replace(entry, shard=index))
-            if entry.status == Status.FAILED:
-                failures.append(f"{entry.family} {entry.item}: generation failed: {entry.detail} (log {entry.log})")
+        results += [replace(entry, shard=index) for entry in record.items]
     write_timings(base, made, results, output / "files" / TIMINGS)
     metadata = output / "files" / METADATA
     metadata.parent.mkdir(parents=True, exist_ok=True)
@@ -1589,6 +1680,7 @@ def assemble(args: argparse.Namespace) -> int:
     set_pair(output / "files", pair)
     unfetchable = [entry for entry in results if entry.status == Status.UNFETCHABLE]
     refusals = [entry for entry in results if entry.status == Status.REFUSAL_CHANGED]
+    unchecked = [Unchecked.of(entry) for entry in results if entry.status in UNCHECKED]
     bundle = Bundle(pair, made.base, made.complete, tuple(results), tuple(sorted(set(deleted))), tuple(failures))
     write_json(output / "bundle.json", bundle.to_json())
     summarize(
@@ -1597,8 +1689,10 @@ def assemble(args: argparse.Namespace) -> int:
             "## Fern goldens: assembly",
             "",
             f"{len(results)} item(s) from {len(made.shards)} shard(s) at {pair.label()}; "
-            f"{len(unfetchable)} with an unfetchable upstream specification; {len(failures)} failure(s).",
+            f"{len(unfetchable)} with an unfetchable upstream specification; {len(unchecked)} not checked; "
+            f"{len(failures)} failure(s).",
             *(f"- **failure**: {failure}" for failure in failures),
+            *(f"- **not checked**: {entry.line()}" for entry in unchecked),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in unfetchable),
             *(f"- refusal changed: `{entry.item}`: {entry.detail}" for entry in refusals),
         ],
@@ -1608,7 +1702,12 @@ def assemble(args: argparse.Namespace) -> int:
         for failure in failures:
             print(f"  {failure}", file=sys.stderr)
         return 1
-    print(f"fern-goldens-weekly: assembled {len(results)} item(s) from {len(made.shards)} shard(s)")
+    print(
+        f"fern-goldens-weekly: assembled {len(results)} item(s) from {len(made.shards)} shard(s), "
+        f"{len(unchecked)} not checked"
+    )
+    for entry in unchecked:
+        print(f"  not checked: {entry.line()}", file=sys.stderr)
     return 0
 
 
@@ -1867,7 +1966,10 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
     decision = Decision(bundle.pair, bundle.complete, digest)
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
-        if entry.status == Status.UNFETCHABLE:
+        if entry.status in UNCHECKED:
+            # Nothing generated it at the candidate, so no comparison is its.
+            decision.unchecked.append(Unchecked.of(entry))
+        elif entry.status == Status.UNFETCHABLE:
             decision.unfetchable.append(Unfetchable(entry.item, entry.detail))
         else:
             items.setdefault(entry.family, []).append(entry)
@@ -1951,12 +2053,29 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.refusals_changed
             else ""
         )
+        unchecked = (
+            f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran), "
+            "so the run that opened this concluded failure"
+            if decision.unchecked
+            else ""
+        )
         lines.append(
-            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}. This carries the "
-            "regenerated references and the new pair; crozier's checks on it show what crozier must change. "
-            "It is not auto-merged."
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}{unchecked}. "
+            "This carries the regenerated references and the new pair; crozier's checks on it show what crozier "
+            "must change. It is not auto-merged."
         )
     lines += ["", "## Why", "", "Fern released a new version; crozier promises to match the Fern its users run.", ""]
+    if decision.unchecked:
+        lines += ["## Items not checked", ""]
+        lines += [
+            "Nothing compared these at the new pair: each item's generation failed, which a broken crozier input "
+            "(a missing document, an evidence note with no pair to restate) causes, or its shard uploaded no "
+            "result. Each log path is inside the run's `fern-goldens-bundle` artifact. Repair the input on `main`; "
+            "the next run checks the item again.",
+            "",
+        ]
+        lines += [f"- {entry.line()}" for entry in decision.unchecked]
+        lines += [""]
     if decision.failing:
         lines += ["## Failing items", ""]
         budget = BODY_LIMIT // max(1, sum(len(entries) for entries in decision.failing.values()))
@@ -2021,13 +2140,17 @@ def decide(args: argparse.Namespace) -> int:
             f"**{decision.outcome.value}** at {decision.pair.label()}"
             + ("" if decision.complete else " (a diagnostic subset: nothing is published)"),
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
+            *(f"- **not checked**: {entry.line()}" for entry in decision.unchecked),
             *(f"- differs: {line}" for line in failing),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
             *(f"- refusal changed: `{change.item}`: {change.detail}" for change in decision.refusals_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],
     )
-    print(f"fern-goldens-weekly: decision {decision.outcome.value}: {len(failing)} failing item(s)")
+    print(
+        f"fern-goldens-weekly: decision {decision.outcome.value}: {len(failing)} failing item(s), "
+        f"{len(decision.unchecked)} not checked"
+    )
     if decision.cannot_run:
         for line in decision.cannot_run:
             print(f"  cannot run: {line}", file=sys.stderr)
@@ -2133,9 +2256,7 @@ def publish(args: argparse.Namespace) -> int:
     base = root()
     steps: list[Step] = []
     try:
-        decision = RecordedDecision.from_json(
-            read_json(Path(args.decision) / "decision.json", "decision"), str(Path(args.decision) / "decision.json")
-        )
+        decision = read_decision(Path(args.decision))
         bundle = read_bundle(Path(args.bundle))
         if decision.outcome not in (Outcome.MATCH, Outcome.DIFF):
             raise WeeklyError(f"the decision is {decision.outcome.value!r}; only a match or a diff is published")
@@ -2186,6 +2307,37 @@ def publish(args: argparse.Namespace) -> int:
     return 0
 
 
+def read_decision(path: Path) -> RecordedDecision:
+    return RecordedDecision.from_json(read_json(path / "decision.json", "decision"), str(path / "decision.json"))
+
+
+def conclude(args: argparse.Namespace) -> int:
+    """The run's status once its decision, and any publication, is done: red
+    when an item went unchecked, so a week with a broken input is never green."""
+    decision = read_decision(Path(args.decision))
+    if decision.unchecked:
+        summarize(
+            args.summary,
+            [
+                "## Fern goldens: conclusion",
+                "",
+                f"**failure**: {len(decision.unchecked)} item(s) were not checked at {decision.pair.label()}; "
+                "every other item was decided"
+                + (" and published." if decision.complete else " (a diagnostic subset: nothing is published)."),
+                *(f"- {entry.line()}" for entry in decision.unchecked),
+            ],
+        )
+        print(f"fern-goldens-weekly: {len(decision.unchecked)} item(s) not checked:", file=sys.stderr)
+        for entry in decision.unchecked:
+            print(f"  {entry.line()}", file=sys.stderr)
+        return 1
+    summarize(
+        args.summary, ["## Fern goldens: conclusion", "", f"**{decision.outcome.value}**: every item was checked."]
+    )
+    print(f"fern-goldens-weekly: every item was checked; decision {decision.outcome.value}")
+    return 0
+
+
 PHASES: dict[str, Callable[[argparse.Namespace], int]] = {
     "resolve": resolve,
     "plan": plan,
@@ -2194,6 +2346,7 @@ PHASES: dict[str, Callable[[argparse.Namespace], int]] = {
     "apply": apply,
     "decide": decide,
     "publish": publish,
+    "conclude": conclude,
 }
 
 
@@ -2231,6 +2384,8 @@ def main(argv: list[str] | None = None) -> int:
     phase.add_argument("--decision", required=True)
     phase.add_argument("--repo", required=True)
     phase.add_argument("--checked-on", default="")
+    phase = commands.add_parser("conclude", help="the run's status: red when an item went unchecked")
+    phase.add_argument("--decision", required=True)
     for sub in commands.choices.values():
         sub.add_argument("--summary", help="append this phase's Markdown here (the step summary)")
         sub.add_argument("--github-output", help="append this phase's outputs here")

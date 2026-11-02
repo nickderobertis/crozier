@@ -487,7 +487,7 @@ class AssemblyTests(unittest.TestCase):
             (directory / "files" / path).parent.mkdir(parents=True, exist_ok=True)
             (directory / "files" / path).write_text(f"{item}\n", encoding="utf-8")
         record = {
-            "schema_version": 3,
+            "schema_version": weekly.SCHEMA_VERSION,
             "index": index,
             "pair": self.pair.to_json(),
             "base": "a" * 40,
@@ -661,7 +661,7 @@ class ArtifactTests(unittest.TestCase):
             "log": "x",
         }
         shard = {
-            "schema_version": 3,
+            "schema_version": weekly.SCHEMA_VERSION,
             "index": 0,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
@@ -682,7 +682,7 @@ class ArtifactTests(unittest.TestCase):
             weekly.ShardResult.from_json({**shard, "items": [{**item, "status": "skipped"}]}, "result.json")
         self.assertIn("status 'skipped' is none of", str(raised.exception))
         bundle = {
-            "schema_version": 3,
+            "schema_version": weekly.SCHEMA_VERSION,
             "pair": shard["pair"],
             "base": None,
             "complete": True,
@@ -784,13 +784,14 @@ class TimingTableTests(unittest.TestCase):
 # change to what they emit must move this golden (and, when an old reader would
 # misread it, the version) in the same change. Regenerate with
 # CROZIER_UPDATE_WEEKLY_GOLDEN=1 after a deliberate contract change.
-CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v3"
+CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v4"
 
 
 def contract_artifacts() -> dict[str, dict[str, object]]:
     """One of each artifact, as the phases build them: a plan, a shard result
-    and a bundle carrying an `ok` and a `refusal-changed` item, and a diff
-    decision with a populated `refusals_changed`."""
+    carrying an `ok`, a `refusal-changed` and a `failed` item, a bundle carrying
+    those and a `not-generated` item of a shard that uploaded nothing, and a
+    diff decision with a populated `refusals_changed` and `unchecked`."""
     pair = weekly.Pair("2.0.0", "3.0.0")
     # Literal budget and estimate, so a retuned budget or overhead moves the
     # planner's tests, not this contract.
@@ -816,11 +817,33 @@ def contract_artifacts() -> dict[str, dict[str, object]]:
             ("docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log",),
             "refusals/heap-exhausted.log",
         ),
+        weekly.ItemResult(
+            "measurements",
+            "parameter-literals/gone",
+            weekly.Status.FAILED,
+            "fern-references: measurements parameter-literals/gone: its document "
+            "docs/openapi-surface/handwritten/gone/openapi.yml does not exist",
+            0.2,
+            (),
+            "logs/measurements/parameter-literals__gone.log",
+        ),
+    )
+    not_generated = weekly.ItemResult(
+        "corpus",
+        "b",
+        weekly.Status.NOT_GENERATED,
+        "shard 1 uploaded no result; its job failed or was cancelled before uploading",
+        0.0,
+        (),
+        "",
+        1,
     )
     shard = weekly.ShardResult(0, pair, plan.base, items, tuple(path for i in items for path in i.changed), ())
-    bundle = weekly.Bundle(pair, plan.base, True, tuple(weekly.replace(item, shard=0) for item in items), (), ())
+    carried = (*(weekly.replace(item, shard=0) for item in items), not_generated)
+    bundle = weekly.Bundle(pair, plan.base, True, carried, (), ())
     decision = weekly.Decision(pair, True, "b" * 64)
     decision.refusals_changed.append(weekly.RefusalChange("heap-exhausted", unsettled))
+    decision.unchecked += [weekly.Unchecked.of(carried[2]), weekly.Unchecked.of(not_generated)]
     decision.gates.append(
         weekly.GateRun("crozier compare", "refusals", "heap-exhausted", weekly.Verdict.PASS, 1, "reports/r.txt")
     )
@@ -833,7 +856,7 @@ def contract_artifacts() -> dict[str, dict[str, object]]:
 
 
 class ContractGoldenTests(unittest.TestCase):
-    """What the phases write is the committed version-3 contract, and the
+    """What the phases write is the committed version-4 contract, and the
     phases that read it accept the golden as written."""
 
     def test_each_artifact_serializes_to_the_committed_golden(self) -> None:
@@ -869,10 +892,40 @@ class ContractGoldenTests(unittest.TestCase):
         read = weekly.RecordedDecision.from_json(golden("decision.json"), "decision")
         self.assertEqual(weekly.Outcome.DIFF, read.outcome)
         self.assertEqual((weekly.RefusalChange("heap-exhausted", bundle.items[1].detail),), read.refusals_changed)
+        self.assertEqual(
+            [("measurements", "failed"), ("corpus", "not-generated")],
+            [(entry.family, entry.status) for entry in read.unchecked],
+        )
 
 
 class DecisionRecordTests(unittest.TestCase):
     """The decision the publication job reads back is the one written."""
+
+    def test_unchecked_is_omitted_when_empty_and_never_a_match_when_populated(self) -> None:
+        pair = weekly.Pair("5.170.0", "5.42.0")
+        empty = weekly.Decision(pair, True, "digest")
+        self.assertNotIn("unchecked", empty.to_json())
+        self.assertEqual((), weekly.RecordedDecision.from_json(empty.to_json(), "decision").unchecked)
+
+        populated = weekly.Decision(pair, True, "digest")
+        entry = weekly.Unchecked("corpus", "a", "failed", "its document is missing", "logs/corpus/a.log")
+        populated.unchecked.append(entry)
+        self.assertEqual(weekly.Outcome.DIFF, populated.outcome, "an unchecked item is never a match")
+        record = json.loads(json.dumps(populated.to_json()))
+        self.assertEqual((entry,), weekly.RecordedDecision.from_json(record, "decision").unchecked)
+        self.assertEqual("corpus `a`: failed: its document is missing (log `logs/corpus/a.log`)", entry.line())
+
+        for message, mutate in (
+            ("`unchecked` must be list", lambda r: r.update(unchecked={})),
+            ("an unchecked item is one of failed, not-generated", lambda r: r["unchecked"][0].update(status="ok")),
+            ("is no family or item name", lambda r: r["unchecked"][0].update(family="../x")),
+            ("leaves no item unchecked", lambda r: r.update(outcome="match")),
+        ):
+            broken = json.loads(json.dumps(record))
+            mutate(broken)
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.RecordedDecision.from_json(broken, "decision")
+            self.assertIn(message, str(raised.exception))
 
     def test_known_changed_is_omitted_when_empty_and_round_trips_when_populated(self) -> None:
         pair = weekly.Pair("5.170.0", "5.42.0")
@@ -1044,7 +1097,7 @@ class PublicationGuardTests(unittest.TestCase):
         (self.bundle / "files").mkdir(parents=True)
         (self.bundle / "files/x.txt").write_text("x\n", encoding="utf-8")
         record = {
-            "schema_version": 3,
+            "schema_version": weekly.SCHEMA_VERSION,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
             "complete": True,
@@ -1060,7 +1113,7 @@ class PublicationGuardTests(unittest.TestCase):
         self, outcome: str = "match", *, digest: str | None = None, checked_on: str = "2026-10-19"
     ) -> subprocess.CompletedProcess[str]:
         record = {
-            "schema_version": 3,
+            "schema_version": weekly.SCHEMA_VERSION,
             "outcome": outcome,
             "complete": True,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},

@@ -381,6 +381,9 @@ class Journey:
     decide: Completed | None = None
     decision: dict[str, object] | None = None
     publish: Completed | None = None
+    conclude: Completed | None = None
+    # A shard whose job died before uploading anything.
+    lost: int | None = None
 
     def ran(self, phase: str) -> Completed:
         result = getattr(self, phase)
@@ -410,6 +413,30 @@ class Journey:
         runs = self.recorded()["gates"]
         assert isinstance(runs, list)
         return [entry["command"] for entry in runs]
+
+    def gated(self) -> set[tuple[str, str]]:
+        """Every (family, item) a per-item comparison ran for in the decision."""
+        runs = self.recorded()["gates"]
+        assert isinstance(runs, list)
+        return {(entry["family"], entry["item"]) for entry in runs if entry["item"] is not None}
+
+    def gated_families(self) -> set[str]:
+        """Every family a once-per-family comparison ran over."""
+        runs = self.recorded()["gates"]
+        assert isinstance(runs, list)
+        return {family for entry in runs if entry["item"] is None for family in entry["family"].split(",")}
+
+    def unchecked(self) -> list[dict[str, str]]:
+        entries = self.recorded().get("unchecked", [])
+        assert isinstance(entries, list)
+        return entries
+
+    def status(self) -> str:
+        """How the workflow concludes: a failed job (a phase exiting non-zero,
+        or a shard whose job died) fails the run."""
+        ran = [self.resolve, self.plan, *self.shards, self.assemble, self.decide, self.publish, self.conclude]
+        failed = self.lost is not None or any(phase is not None and phase.returncode != 0 for phase in ran)
+        return "failure" if failed else "success"
 
 
 def write_executable(path: Path, source: str) -> None:
@@ -693,10 +720,13 @@ class WeeklyRunTests(unittest.TestCase):
         path = self.scratch / "summary.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
-    def run_workflow(self, items: str = "", *, stop_after: str = "", **env: str) -> Journey:
+    def run_workflow(self, items: str = "", *, stop_after: str = "", lose: str = "", **env: str) -> Journey:
         """The workflow's jobs in order, each in its own checkout, stopping
-        where a job's failure stops the workflow: a red phase skips every phase
-        after it, as `needs` does."""
+        where a job's failure stops the workflow as its `needs` and `if` do: a
+        red assembly or decision skips every phase after it, and the conclusion
+        runs after any decision. `lose` names an item, `family:item`, whose
+        shard's job dies before uploading anything, so its artifact never
+        reaches the assembly."""
         artifacts = self.scratch / f"artifacts-{self.clones}"
         outputs = artifacts / "outputs"
         artifacts.mkdir()
@@ -760,6 +790,9 @@ class WeeklyRunTests(unittest.TestCase):
                 **env,
             )
             state.shards.append(result)
+            if lose in {f"{entry['family']}:{entry['item']}" for entry in shard["items"]}:
+                state.lost = shard["index"]
+                shutil.rmtree(artifacts / f"fern-goldens-shard-{shard['index']}")
         if stop_after == "shards":
             return state
         bundle = artifacts / "bundle"
@@ -780,9 +813,11 @@ class WeeklyRunTests(unittest.TestCase):
             if (decision / "decision.json").exists()
             else None
         )
-        if decided.returncode != 0 or values.get("complete") != "true" or stop_after == "decide":
+        if decided.returncode != 0 or stop_after == "decide":
             return state
-        state.publish = self.publish(bundle, decision, **env)
+        if values.get("complete") == "true":
+            state.publish = self.publish(bundle, decision, **env)
+        state.conclude = self.phase(self.clone(), "conclude", "--decision", str(decision), **env)
         return state
 
     def publish(self, bundle: Path, decision: Path, **env: str) -> subprocess.CompletedProcess[str]:
@@ -1037,6 +1072,65 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assert_refusal_reported(state, item, "unsettled", now)
 
+    def test_heap_exhausted_running_past_its_bound_in_both_stages_is_a_refusal_change_not_a_failed_item(
+        self,
+    ) -> None:
+        """Run 40274666613 (Fern CLI 5.172.0 / fern-python-sdk 5.41.8): both of
+        Fern's stages over the committed `heap-exhausted` probe ran past their
+        bound, printing nothing. That outcome is a refusal change in the diff,
+        naming the class and what Fern did, never a failed item."""
+        registry = self.seed / "docs/fern-refusals"
+        real = REPO / "docs/fern-refusals"
+        header, *rows = (real / "classes.tsv").read_text(encoding="utf-8").splitlines()
+        heap = next(row for row in rows if row.startswith("heap-exhausted\t"))
+        (registry / "classes.tsv").write_text(f"{header}\n{heap}\n", encoding="utf-8")
+        shutil.rmtree(registry / REFUSAL_CLASS)
+        (registry / "heap-exhausted").mkdir()
+        shutil.copy2(real / "heap-exhausted/probe.yml", registry / "heap-exhausted/probe.yml")
+        # The record at the older pair: Fern's check exhausting its heap, as committed.
+        message = (
+            "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"
+        )
+        self.stand_in({"rules": {"probe": {"check": [1, message], "generate": [1, ""]}}})
+        recorded = subprocess.run(
+            [sys.executable, str(self.seed / "tools/fern-goldens/fern-references.py"), "generate", "refusals"],
+            cwd=self.seed,
+            env=self.environment(self.seed),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, recorded.returncode, recorded.stderr)
+        shutil.rmtree(self.seed / ".local", ignore_errors=True)
+        self.publish_seed()
+        self.stand_in({"rules": {"probe": {"hang": True}}})
+        state = self.run_workflow(CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
+        items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
+        (item,) = [entry for entry in items if (entry["family"], entry["item"]) == ("refusals", "heap-exhausted")]
+        now = (
+            "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
+            "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
+            "about whether Fern refuses given more time or memory"
+        )
+        detail = (
+            f"unsettled: recorded: the check stage exits 1 and the generation 1, with `{message}`, at Fern CLI "
+            f"{OLD.cli} / fern-python-sdk {OLD.generator}; now: {now}"
+        )
+        self.assertEqual(("refusal-changed", detail), (item["status"], item["detail"]))
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        self.assertEqual("diff", state.outcome(), state.ran("decide").stderr + self.summary())
+        self.assertEqual([], state.unchecked(), "a refusal change is never a failed item")
+        self.assertEqual([{"item": "heap-exhausted", "detail": detail}], state.recorded()["refusals_changed"])
+        self.assertIn(("refusals", "heap-exhausted"), state.gated())
+        self.assertIn(f"- refusal changed: `heap-exhausted`: {detail}", self.summary())
+        (pull,) = self.pulls()
+        section = pull["body"].split("## Refusal classes whose Fern outcome changed", 1)[1].split("## Inventory")[0]
+        self.assertIn(f"- refusals `heap-exhausted`: {detail}", section)
+        self.assertNotIn("## Items not checked", pull["body"])
+        self.assertEqual(0, state.ran("conclude").returncode, state.ran("conclude").stderr)
+        self.assertEqual("success", state.status(), "a diff with every item checked concludes green")
+
     def test_a_refusal_whose_phrase_fern_prints_with_other_exits_is_a_reported_change(self) -> None:
         said = "Default value '-createdAt' is not a valid enum value"
         state, item = self.refusal_journey({"check": [2, said], "generate": [2, ""]})
@@ -1075,23 +1169,67 @@ class WeeklyRunTests(unittest.TestCase):
         state, item = self.refusal_journey(self.refusal_rule)
         self.assertEqual("failed", item["status"])
         self.assertIn("a change is one of generates, refuses-otherwise, unsettled", item["detail"])
-        self.assertEqual([1], [shard.returncode for shard in state.shards])
-        self.assertEqual(1, state.ran("assemble").returncode)
-        self.assertIn(f"refusals {REFUSAL_CLASS}: generation failed", state.ran("assemble").stderr)
-        self.assertIsNone(state.decide)
-        self.assert_untouched()
+        self.assert_failed_item_reported(state, "refusals", REFUSAL_CLASS)
 
-    def test_a_refusal_probe_that_could_not_run_fails_its_item_and_the_assembly(self) -> None:
+    def test_a_refusal_probe_that_could_not_run_fails_its_item_and_is_named_while_the_rest_publish(self) -> None:
         (self.seed / "docs/fern-refusals" / REFUSAL_CLASS / "probe.yml").unlink()
         state, item = self.refusal_journey(self.refusal_rule)
         self.assertEqual("failed", item["status"])
-        self.assertEqual([1], [shard.returncode for shard in state.shards])
-        self.assertEqual(1, state.ran("assemble").returncode)
-        self.assertIn(f"refusals {REFUSAL_CLASS}: generation failed", state.ran("assemble").stderr)
         log = next(state.artifacts.glob(f"fern-goldens-shard-*/logs/refusals/{REFUSAL_CLASS}.log"))
-        self.assertIn(f"no probe document docs/fern-refusals/{REFUSAL_CLASS}/probe.yml", log.read_text("utf-8"))
-        self.assertIsNone(state.decide)
-        self.assert_untouched()
+        self.assertIn(f"docs/fern-refusals/{REFUSAL_CLASS}/probe.yml", log.read_text("utf-8"))
+        self.assert_failed_item_reported(state, "refusals", REFUSAL_CLASS)
+
+    def assert_failed_item_reported(
+        self, state: Journey, family: str, item: str, *, reason: str = "", lost: int | None = None
+    ) -> dict[str, str]:
+        """A complete run past one unchecked item: every shard and the assembly
+        green, the item named by family, item, reason and log in the decision,
+        the summary and the pull request; every other planned item compared;
+        the pull request open for a person with no pair recorded; and the
+        workflow red only after its publication finished."""
+        status = "not-generated" if lost is not None else "failed"
+        self.assertEqual([0] * len(state.shards), [shard.returncode for shard in state.shards], state.shards)
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr + self.summary())
+        self.assertEqual(0, state.ran("decide").returncode, state.ran("decide").stderr + self.summary())
+        self.assertEqual("diff", state.outcome(), "an unchecked item is never a match")
+        named = [entry for entry in state.unchecked() if (entry["family"], entry["item"]) == (family, item)]
+        self.assertEqual(1, len(named), state.unchecked())
+        entry = named[0]
+        self.assertEqual(status, entry["status"])
+        self.assertIn(reason, entry["detail"])
+        if lost is None:
+            self.assertEqual(f"logs/{family}/{item.replace('/', '__')}.log", entry["log"])
+            self.assertTrue((state.artifacts / "bundle" / entry["log"]).is_file(), "the log is in the bundle")
+            where = f"log `{entry['log']}`"
+        else:
+            self.assertIn(f"shard {lost} uploaded no result", entry["detail"])
+            where = "no log"
+        line = f"{family} `{item}`: {status}: {entry['detail']} ({where})"
+        self.assertIn(f"- **not checked**: {line}", self.summary())
+        plan = json.loads((state.artifacts / "plan.json").read_text(encoding="utf-8"))
+        planned = {(planned["family"], planned["item"]) for shard in plan["shards"] for planned in shard["items"]}
+        unchecked = {(entry["family"], entry["item"]) for entry in state.unchecked()}
+        families = state.gated_families()
+        decided = state.gated() | {key for key in planned if key[0] in families}
+        self.assertEqual(planned - unchecked, decided - unchecked, "every other item went through the decision")
+        self.assertEqual(set(), state.gated() & unchecked, "no comparison ran for an unchecked item")
+        published = state.ran("publish")
+        self.assertEqual(0, published.returncode, published.stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertEqual([{"name": "fern-goldens"}], pull["labels"])
+        self.assertIsNone(pull["autoMergeRequest"], "a run with an unchecked item is never auto-merged")
+        section = pull["body"].split("## Items not checked", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn(f"- {line}", section)
+        self.assertEqual(
+            "fern_cli_version\tfern_python_sdk_version\tchecked_on\toutcome",
+            self.remote_file("fern-goldens/update", "tests/fixtures/fern-pair-checks.tsv"),
+            "a run with an unchecked item records no pair",
+        )
+        concluded = state.ran("conclude")
+        self.assertEqual(1, concluded.returncode, concluded.stdout)
+        self.assertIn(line, concluded.stderr)
+        self.assertEqual("failure", state.status())
+        return entry
 
     def test_measurements_over_a_hand_written_tree_regenerate_after_it_in_its_shard(self) -> None:
         """A parameter-literals case and an overlay case both read the
@@ -1241,20 +1379,76 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(state.plan)
         self.assert_untouched()
 
-    def test_a_failed_item_generation_is_red_before_anything_is_published(self) -> None:
+    def test_a_failed_item_generation_is_named_while_every_other_item_is_decided_and_published(self) -> None:
         self.publish_seed()
         self.stand_in(
             {"rules": {"probe": self.refusal_rule, "Harbour Lanterns": {"generate": [2, "container exited 137"]}}}
         )
         state = self.run_workflow()
-        self.assertEqual([1], [shard.returncode for shard in state.shards])
-        self.assertEqual(1, state.ran("assemble").returncode)
-        self.assertIn("handwritten lantern: generation failed", state.ran("assemble").stderr)
-        self.assertIn("**failure**: handwritten lantern: generation failed", self.summary())
-        self.assertIsNone(state.decide)
-        self.assert_untouched()
+        self.assert_failed_item_reported(state, "handwritten", "lantern", reason="container exited 137")
 
-    def test_a_missing_or_incomplete_shard_is_red_before_anything_is_published(self) -> None:
+    def test_a_missing_measurement_input_is_named_while_every_other_item_is_decided_and_published(self) -> None:
+        """A parameter-literals claim naming a hand-written document that is
+        gone — the broken input that hid every result of the 2026-11-02 run —
+        fails that item alone: the rest generate, are compared and published,
+        and the run concludes red naming it."""
+        literals = self.seed / "docs/fern-measurements/parameter-literals"
+        literals.mkdir(parents=True)
+        (literals / "certified-trees.json").write_text(json.dumps({"gone": "0" * 64}) + "\n", encoding="utf-8")
+        self.publish_seed()
+        state = self.run_workflow(GITHUB_RUN_ID="78", GITHUB_REPOSITORY="owner/crozier")
+        entry = self.assert_failed_item_reported(
+            state,
+            "measurements",
+            "parameter-literals/gone",
+            reason="docs/openapi-surface/handwritten/gone/openapi.yml",
+        )
+        log = (state.artifacts / "bundle" / entry["log"]).read_text(encoding="utf-8")
+        self.assertIn("fern-references.py generate measurements parameter-literals/gone", log)
+        (pull,) = self.pulls()
+        self.assertIn("Run: https://github.com/owner/crozier/actions/runs/78", pull["body"])
+        metadata = json.loads(self.remote_file("fern-goldens/update", "assets/scaffolding/metadata.json"))
+        self.assertEqual(CANDIDATE, (metadata["cliVersion"], metadata["generatorVersion"]))
+
+    def test_a_shard_that_uploaded_nothing_names_its_items_while_the_other_shards_publish(self) -> None:
+        """A shard whose job died uploads no result: its planned items are named
+        as not generated, never hiding the other shard's, which are compared
+        and reported in the pull request."""
+        (self.seed / "tools/fern-goldens/generation-seconds.tsv").write_text(
+            "family\titem\tseconds\ncorpus\talpha\t4000.0\ncorpus\tbeta\t10.0\nhandwritten\tlantern\t4000.0\n"
+            f"refusals\t{REFUSAL_CLASS}\t10.0\n"
+            + "".join(f"{family}\t{item}\t10.0\n" for family, item in sorted(OTHER_FAMILIES)),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        self.stand_in(
+            {
+                "rules": {"probe": self.refusal_rule},
+                "tweaks": {"Alpha Lanterns": [["types/lantern.py", "lit:", "lit_x:"]]},
+            }
+        )
+        state = self.run_workflow(lose="handwritten:lantern")
+        self.assertEqual(2, len(state.shards), "two 4,000-second items cannot share one shard")
+        self.assertIsNotNone(state.lost)
+        plan = json.loads((state.artifacts / "plan.json").read_text(encoding="utf-8"))
+        lost = [(entry["family"], entry["item"]) for entry in plan["shards"][state.lost]["items"]]
+        self.assertNotIn(("corpus", "alpha"), lost, "the other shard holds alpha")
+        for family, item in lost:
+            self.assert_failed_item_reported(state, family, item, lost=state.lost)
+        self.assertEqual(sorted(lost), sorted((entry["family"], entry["item"]) for entry in state.unchecked()))
+        # The other shard's items were decided, and the pull request reports them.
+        self.assertEqual({"corpus": ["alpha"]}, state.failing())
+        (pull,) = self.pulls()
+        self.assertIn("### corpus (1)", pull["body"])
+        self.assertIn("- `alpha`", pull["body"].split("## Failing items", 1)[1])
+        self.assertIn(f"{len(lost)} item(s) were not checked", pull["body"])
+        tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
+        alpha = next(p for p in tree if p.startswith("tests/fixtures/alpha/expected/") and p.endswith("lantern.py"))
+        self.assertIn("lit_x:", self.remote_file("fern-goldens/update", alpha))
+        timings = self.remote_file("fern-goldens/update", TIMINGS)
+        self.assertIn("handwritten\tlantern\t4000.0", timings, "an item nothing generated keeps its timing")
+
+    def test_an_incomplete_shard_is_red_before_anything_is_published(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="shards")
         artifacts = state.artifacts
@@ -1268,15 +1462,9 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(1, incomplete.returncode)
         self.assertIn("shard 0 does not account for its planned items: missing corpus alpha", incomplete.stderr)
-        shutil.rmtree(artifacts / "fern-goldens-shard-0")
-        missing = self.phase(
-            self.clone(), "assemble", "--plan", str(plan), "--shards", str(artifacts), "--output", str(artifacts / "b2")
-        )
-        self.assertEqual(1, missing.returncode)
-        self.assertIn("shard 0 uploaded no result", missing.stderr)
-        self.assertIn("shard 0 uploaded no result", self.summary())
+        self.assertIn("**failure**: shard 0 does not account for its planned items", self.summary())
         # A failed assembly can neither be decided nor published.
-        refused = self.phase(self.clone(), "apply", "--bundle", str(artifacts / "b2"))
+        refused = self.phase(self.clone(), "apply", "--bundle", str(artifacts / "b1"))
         self.assertEqual(1, refused.returncode)
         self.assertIn("is a failed assembly", refused.stderr)
         self.assert_untouched()
@@ -1291,6 +1479,10 @@ class WeeklyRunTests(unittest.TestCase):
         (shard,) = state.shards
         self.assertEqual(1, shard.returncode)
         self.assertIn(f"corpus alpha generated {link} as a symbolic link", shard.stderr)
+        # The shard's result names the fault, so the assembly refuses the bundle
+        # rather than taking the shard for one that uploaded nothing.
+        self.assertEqual(1, state.ran("assemble").returncode)
+        self.assertIn(f"corpus alpha generated {link} as a symbolic link", state.ran("assemble").stderr)
         self.assertIsNone(state.decision)
         carried = [path for path in state.artifacts.rglob("*") if path.is_file() and not path.is_symlink()]
         self.assertFalse(any("not a reference" in path.read_text("utf-8", "replace") for path in carried), carried)
@@ -1807,21 +1999,23 @@ class WeeklyRunTests(unittest.TestCase):
 
     def test_an_infrastructure_failure_at_a_candidate_is_red_and_keeps_the_registration(self) -> None:
         """A failure of the machine Fern runs on, not of Fern (here, no Docker
-        daemon), rewrites nothing: the shard is red, nothing is published, and
-        a run once Docker is back carries the registration."""
+        daemon), rewrites nothing: the item is named as failed while the rest
+        are decided and published, the registration is carried unchanged, the
+        run concludes red, and a run once Docker is back carries the
+        registration at the candidate."""
         manifest = self.register_known_failure(OLD.generator)
         daemon = "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?"
         self.stand_in({"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [1, daemon]}}})
         broken = self.run_workflow()
-        self.assertEqual([1], [shard.returncode for shard in broken.shards])
         self.assertIn("corpus `gamma`: failed", self.summary())
         shard = broken.artifacts / "fern-goldens-shard-0"
         log = (shard / "logs/corpus/gamma.log").read_text(encoding="utf-8")
         self.assertIn("without a failure a known-failure registration can record", log)
         result = json.loads((shard / "result.json").read_text(encoding="utf-8"))
-        self.assertNotIn("tests/fixtures/gamma/known-fern-failure.json", result["written"] + result["deleted"])
-        self.assertIsNone(broken.decision)
-        self.assert_untouched()
+        registration = "tests/fixtures/gamma/known-fern-failure.json"
+        self.assertNotIn(registration, result["written"] + result["deleted"])
+        self.assert_failed_item_reported(broken, "corpus", "gamma")
+        self.assertEqual(self.remote_file("main", registration), self.remote_file("fern-goldens/update", registration))
         self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
         recovered = self.run_workflow()
         self.assertEqual("match", recovered.outcome(), self.summary())

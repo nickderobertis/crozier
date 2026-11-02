@@ -1,11 +1,11 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
+  "index": 0,
   "pair": {
     "cli": "2.0.0",
     "generator": "3.0.0"
   },
   "base": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "complete": true,
   "items": [
     {
       "family": "corpus",
@@ -16,8 +16,7 @@
       "changed": [
         "tests/fixtures/a/expected/x.py"
       ],
-      "log": "corpus/a.log",
-      "shard": 0
+      "log": "corpus/a.log"
     },
     {
       "family": "refusals",
@@ -28,10 +27,21 @@
       "changed": [
         "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log"
       ],
-      "log": "refusals/heap-exhausted.log",
-      "shard": 0
+      "log": "refusals/heap-exhausted.log"
+    },
+    {
+      "family": "measurements",
+      "item": "parameter-literals/gone",
+      "status": "failed",
+      "detail": "fern-references: measurements parameter-literals/gone: its document docs/openapi-surface/handwritten/gone/openapi.yml does not exist",
+      "seconds": 0.2,
+      "changed": [],
+      "log": "logs/measurements/parameter-literals__gone.log"
     }
   ],
-  "deleted": [],
-  "failures": []
+  "written": [
+    "tests/fixtures/a/expected/x.py",
+    "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log"
+  ],
+  "deleted": []
 }
