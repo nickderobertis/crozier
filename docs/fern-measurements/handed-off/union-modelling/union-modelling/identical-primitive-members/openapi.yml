@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: Survey grid
+  version: "1.0"
+paths:
+  /surveys/{surveyId}:
+    get:
+      operationId: getSurvey
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The survey.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+  /surveys:
+    post:
+      operationId: createSurvey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label
+              properties:
+                label:
+                  anyOf:
+                    - type: string
+                      maxLength: 64
+                    - anyOf:
+                        - type: string
+                          format: ipv4
+                        - type: string
+                          format: ipv6
+      responses:
+        "200":
+          description: The new survey.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+components:
+  schemas:
+    Survey:
+      type: object
+      properties:
+        corners:
+          description: Pairs of grid references, each written either way.
+          type: array
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              oneOf:
+                - type: string
+                - type: string
+        notes:
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: string
+        markers:
+          type: array
+          items:
+            anyOf:
+              - type: integer
+              - type: integer
+        label:
+          oneOf:
+            - type: string
+              maxLength: 8
+            - type: string
+              minLength: 9

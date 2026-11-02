@@ -1,0 +1,69 @@
+openapi: 3.1.0
+info:
+  title: Kiln monitor
+  version: "1.0"
+paths:
+  /firings:
+    post:
+      operationId: startFiring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - kiln
+              properties:
+                kiln:
+                  type: string
+      responses:
+        "200":
+          description: The firing, or its progress as server-sent events.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Firing"
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/FiringStartedEvent"
+                  - $ref: "#/components/schemas/FiringCooledEvent"
+components:
+  schemas:
+    Firing:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        peakCelsius:
+          type: number
+    FiringStartedEvent:
+      type: object
+      required:
+        - type
+        - firing
+      properties:
+        type:
+          type: string
+          enum:
+            - firing.started
+          description: Always `firing.started`.
+        firing:
+          $ref: "#/components/schemas/Firing"
+    FiringCooledEvent:
+      type: object
+      required:
+        - type
+        - cooledAt
+      properties:
+        type:
+          type: string
+          enum:
+            - firing.cooled
+          description: Always `firing.cooled`.
+        cooledAt:
+          type: string
+          format: date-time

@@ -2177,6 +2177,8 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
         Case("7", block="nested_array_element", selector="schema.items>schema.oneOf"),
         Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),
+        Case("8a", hole="H-sibling-identity"),
+        Case("10", hole="H-undeclared-conjunction"),
         Case(
             "9",
             block="nested_array_element",
@@ -2332,6 +2334,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("13b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.anyOf"),
         Case("13c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.oneOf"),
         Case("13d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.anyOf"),
+        Case("13e", hole="H-sibling-identity"),
         Case("8a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.properties:non-empty"),
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
@@ -2530,6 +2533,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
         Case("13a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:discriminated-union"),
         Case("13b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:discriminated-union"),
+        Case("13c", hole="H-sibling-identity"),
         Case(
             "14a",
             block="prop_type_ref/oneOf",
@@ -2614,9 +2618,9 @@ CASES: dict[str, tuple[Case, ...]] = {
 # what clears it. The coverage document states the limit.
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
-    "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "14f75555ff7ff98a",
-    "prop_type_ref": "03e47a0aef8703fb",
+    "nested_array_element": "b1ae386423853dff",
+    "hoist_union_variant": "9aa75d1d1442af43",
+    "prop_type_ref": "ccf2c0f9d23e519e",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -5097,7 +5101,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # has to carry a value for one shared property, and those values have to be
 # distinct. That is the family `operation.operationId:duplicate` is in, and the
 # helpers below are the port of the Rust that decides it — `discriminant_value`,
-# `string_enum_values`, `schema_example`, `inferred_discriminant_property_with`,
+# `string_enum_values`, `schema_example`, `inferred_discriminant_property`,
 # `inferred_union_discriminant_property`, `discriminated_union` and
 # `inheritance_discriminated_union`, case for case. A reading rather than a
 # resemblance is the whole point: a `discriminator` written beside a `oneOf` is
@@ -5108,7 +5112,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
 # edit to any of those functions fails until the port is read again: the
 # unrequired-tag clause of `_candidate_tag_values` reads
-# `inferred_discriminant_property_with`, the untyped-tag rule it and
+# `inferred_discriminant_property`, the untyped-tag rule it and
 # `_inferred_union_discriminant_property` share reads `untyped_enum_tag`,
 # `untyped_const_tag` and `inferred_union_discriminant_property`, and
 # `Census.same_primitive_unions` reads `same_primitive_union_last` and the
@@ -5117,7 +5121,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # `is_composed_member` test it loops on, through `_is_map` and
 # `_simple_nullable_member`, which port `is_map` and `simple_nullable_member`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "aab1e0402f3a42bb",
+    "inferred_discriminant_property": "91706bec95881063",
     "untyped_enum_tag": "f71e35908e2aed73",
     "untyped_const_tag": "df10174704350956",
     "inferred_union_discriminant_property": "a1a3229b10970d85",
@@ -5450,7 +5454,7 @@ def union_members(node: dict[Any, Any]) -> list[Any] | None:
     return None
 
 
-# The values `inferred_discriminant_property_with` refuses to read as a
+# The values `inferred_discriminant_property` refuses to read as a
 # `message_type` tag, which is `preserve_const_discriminant` of `src/ir.rs` and is
 # its list rather than one invented here. The four property names that same
 # function supports for a union referencing components are spelled in the `match`
@@ -5473,7 +5477,7 @@ def _resolved_member(member: Any, schemas: dict[Any, Any]) -> Any:
     """One union member as the *resolving* readers of it see it.
 
     `resolve_ref_from_schemas` is the last-segment lookup the `~>` operator
-    already mirrors. `inferred_discriminant_property_with` falls back to the
+    already mirrors. `inferred_discriminant_property` falls back to the
     member itself where the lookup finds nothing (`unwrap_or(variant)`); the
     member loop of `discriminated_union` does not, and calls
     `_resolved_member_strict` instead.
@@ -5542,22 +5546,24 @@ def _last_composed_variant(node: Any) -> Any:
     return node
 
 
-def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any], enum_tag: bool = True) -> str | None:
-    """`inferred_discriminant_property_with` of `src/ir.rs`, condition for condition.
+def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any]) -> str | None:
+    """`inferred_discriminant_property` of `src/ir.rs`, condition for condition.
 
-    The first resolved member's property *names* are the candidates, in the order
-    it declares them, and a candidate wins when every resolved member carries a
-    readable tag for it and the tags are all distinct. What "readable" means
-    depends on whether the union references components at all: where it does, a
-    member either tags itself with a required one-member `enum` or the property is
-    one of the four `src/ir.rs` supports by name, or every member is a `$ref`
-    whose tag `required` leaves out; where it does not, a one-member `enum` is
-    required of every member.
+    A union of fewer than two members has no tag to read. The first resolved
+    member's property *names* are the candidates, in the order it declares them,
+    and a candidate wins when every resolved member carries a readable tag for it
+    and the tags are all distinct; a tag written as a `$ref` is read as its
+    target. What "readable" means depends on whether the union references
+    components at all: where it does, a member either tags itself with a
+    one-member `enum` (required, or written on an inline member) or the property
+    is one of the four `src/ir.rs` supports by name, or every member is a `$ref`
+    whose typed tag `required` leaves out; where it does not, a one-member `enum`
+    is required of every member.
     """
     if _undiscriminated(node):
         return None
     members = union_members(node)
-    if members is None:
+    if members is None or len(members) < 2:
         return None
     references_components = any(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
     only_references = all(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
@@ -5573,8 +5579,9 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
         values = _candidate_tag_values(
             candidate,
             resolved,
+            members,
+            schemas,
             references_components,
-            enum_tag,
             only_references,
         )
         if values is not None and len(set(values)) == len(values):
@@ -5585,36 +5592,45 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
 def _candidate_tag_values(
     candidate: str,
     resolved: list[Any],
+    members: list[Any],
+    schemas: dict[Any, Any],
     references_components: bool,
-    enum_tag: bool,
     only_references: bool = False,
 ) -> list[str] | None:
     """The tag every resolved member writes for one candidate property, or `None`.
 
     One iteration of the `find_map` closure above: the `collect::<Option<Vec<_>>>`
     fails as soon as one member declares no readable tag, which is what a `None`
-    here says.
+    here says. `members` are the members as written, zipped with `resolved`.
     """
     values: list[str] = []
-    for variant in resolved:
+    for variant, member in zip(resolved, members, strict=True):
         if not isinstance(variant, dict):
             return None
         properties = variant.get("properties")
         field = properties.get(candidate) if isinstance(properties, dict) else None
+        field = _resolved_member(field, schemas)
         if not isinstance(field, dict):
             return None
         enum_written = field["enum"] if written(field, "enum") else None
         singleton_enum = not untyped_enum_tag(field) and len(string_enum_values(field) or []) == 1
+        inline_member = not (isinstance(member, dict) and isinstance(member.get("$ref"), str))
         tagged_by_enum = (
-            candidate in required_names(variant)
+            (candidate in required_names(variant) or inline_member)
             and singleton_enum
             and isinstance(enum_written, list)
             and len(enum_written) == 1
         )
-        if references_components and not (enum_tag and tagged_by_enum):
-            # Members that are all `$ref`s tagging the property with one string
-            # `required` leaves out: the `unrequired_tag` clause, whatever the name.
-            if only_references and singleton_enum and candidate not in required_names(variant):
+        if references_components and not tagged_by_enum:
+            # Members that are all `$ref`s tagging the property with one typed
+            # string `required` leaves out: the `unrequired_tag` clause, whatever
+            # the name. A bare `const` is no such tag.
+            if (
+                only_references
+                and singleton_enum
+                and not untyped_const_tag(field)
+                and candidate not in required_names(variant)
+            ):
                 supported = True
             elif candidate == "type":
                 supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
@@ -5653,7 +5669,7 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
     """
     if _undiscriminated(node):
         return None
-    found = _inferred_discriminant_property(node, schemas, True)
+    found = _inferred_discriminant_property(node, schemas)
     if found is not None:
         return found
     members = union_members(node)
@@ -5820,7 +5836,9 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
             variant = _last_composed_variant(target)
             properties = variant.get("properties") if isinstance(variant, dict) else None
             field = properties.get(property_name) if isinstance(properties, dict) else None
-            if discriminant_value(field) is None:
+            # A `$ref`'d one-member enum tag is read through its reference, as
+            # `inferred_discriminant_property` reads it.
+            if discriminant_value(_resolved_member(field, schemas)) is None:
                 return None
     return "oneOf" if written(node, "oneOf") else "anyOf"
 

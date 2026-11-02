@@ -10,7 +10,7 @@ verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-annotated-ref-item"
-arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]'
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-annotated-ref-item.md#witness-search-exhaustive"
 verdict = "exhausted"
 

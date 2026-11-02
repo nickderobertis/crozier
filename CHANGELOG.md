@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.152](https://github.com/nickderobertis/crozier/compare/v0.0.151...v0.0.152) - 2026-11-02
+
+### Fixed
+
+- *(parity)* generate the handed-off documents crozier refuses but the certified pair generates ([#728](https://github.com/nickderobertis/crozier/pull/728))
+
 ## [0.0.151](https://github.com/nickderobertis/crozier/compare/v0.0.150...v0.0.151) - 2026-11-02
 
 ### Fixed

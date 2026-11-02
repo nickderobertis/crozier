@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: Paint shop
+  version: "1.0"
+paths:
+  /finishes/{finishId}:
+    get:
+      operationId: getFinish
+      parameters:
+        - name: finishId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The finish.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Finish"
+components:
+  schemas:
+    Swatch:
+      type: object
+      properties:
+        hex:
+          type: string
+    Glaze:
+      type: object
+      nullable: true
+      properties:
+        gloss:
+          type: number
+    SwatchOrName:
+      description: A named colour or a swatch, written nullable beside the union.
+      nullable: true
+      anyOf:
+        - type: string
+        - $ref: "#/components/schemas/Swatch"
+    SwatchOrCount:
+      nullable: true
+      oneOf:
+        - $ref: "#/components/schemas/Swatch"
+        - type: integer
+    GlazeOrSwatch:
+      description: A union whose first member names a nullable component.
+      anyOf:
+        - $ref: "#/components/schemas/Glaze"
+        - $ref: "#/components/schemas/Swatch"
+    Finish:
+      type: object
+      properties:
+        primary:
+          $ref: "#/components/schemas/SwatchOrName"
+        accent:
+          $ref: "#/components/schemas/SwatchOrCount"
+        coat:
+          $ref: "#/components/schemas/GlazeOrSwatch"
