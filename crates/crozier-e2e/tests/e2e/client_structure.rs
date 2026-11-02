@@ -526,7 +526,7 @@ fn a_core_group_shares_the_runtime_package() {
     );
 }
 
-/// `R18`, already matching at this node's base (corpus row 3479's repair):
+/// `R18`, matching since corpus row 3479's repair:
 /// required `content-length` and `x-forwarded-for` headers are no arguments.
 #[test]
 fn required_framing_headers_are_no_arguments() {

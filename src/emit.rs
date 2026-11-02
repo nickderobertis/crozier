@@ -164,7 +164,7 @@ fn module_stem(module: &str) -> &str {
 /// by name. `catalogs`, `internal` and `settings` land after `agents` … `skills`
 /// in TrueForge's root client for exactly that reason, and Deepgram's `keys`
 /// precedes `members` under `projects` though a `members/invites` operation
-/// comes before both.
+/// comes before both, as the `subpackage-order` measurement holds whole.
 fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>> {
     let owns_endpoints: BTreeSet<&str> = endpoint_modules.iter().map(String::as_str).collect();
     let mut owning: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -553,7 +553,7 @@ impl Imports {
     fn core_prefix(&self) -> String {
         // A group named `core` writes its clients into the runtime package
         // itself, and Fern's import the runtime as their siblings
-        // (`from .client_wrapper import …`): nextcloud's `core` tag.
+        // (`from .client_wrapper import …`): nextcloud's `core` tag (`R16`).
         if matches!(&self.loc, RefLoc::Client(module) if module == RUNTIME_PACKAGE) {
             return String::new();
         }
@@ -2107,7 +2107,7 @@ fn environment_file(
             body.push_str(&format!("        self.{field} = {field}\n"));
         }
         // Two blank lines open the assignments and none part them, as Fern
-        // writes Deepgram's `PRODUCTION` and `AGENT`.
+        // writes Deepgram's `PRODUCTION` and `AGENT` (`environment-shape`).
         body.push_str("\n\n");
         for (member, url) in environment.members() {
             let arguments: Vec<String> =
@@ -2266,7 +2266,7 @@ fn render_lazy_loader(
 /// module exports in one `from .mod import a, b` statement, at the place of the
 /// module's first name. Fern imports a discriminated union and its variant
 /// wrappers in one statement, so darwin's `ActPayRequestSource`, sorted ahead of
-/// `ActPayRequestSourceOneTime`, carries `ActPayRequestSource_OneTime` with it.
+/// `ActPayRequestSourceOneTime`, carries `ActPayRequestSource_OneTime` (`R10`).
 fn module_grouped_imports(named: &[(String, String)]) -> String {
     let mut groups: indexmap::IndexMap<&str, Vec<&str>> = indexmap::IndexMap::new();
     for (name, module) in named {
@@ -12522,7 +12522,7 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
         // `client_wrapper.py`, which crozier generates from the auth/global-header
         // model and so must be wrapped like every other generated file.
-        // A `core` group's own clients are generated there too.
+        // A `core` group's own clients are generated there too (`R16`).
         let is_vendored = file.path.starts_with(&core_root)
             && !matches!(
                 file.path.file_name().and_then(|n| n.to_str()),
