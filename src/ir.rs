@@ -5539,6 +5539,29 @@ fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter)
 /// `maxLength` long when that is under ten, else nothing and the call passes the
 /// parameter's name.
 fn ir_fallback_parameter_example(parameter: &crate::openapi::Parameter) -> Option<String> {
+    // An integer takes its `maximum`, else its `minimum`: teldrive's subtitle
+    // `track` (`minimum: 0, maximum: 1024`, on an operation answering text) is
+    // passed as `track=1024` (measured in
+    // docs/fern-measurements/handed-off/example-values/example-value-source/).
+    if let Some(bound) = parameter
+        .schema
+        .as_ref()
+        .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("integer"))
+        .and_then(|schema| {
+            schema
+                .unmodeled_keywords
+                .get("maximum")
+                .or(schema.minimum.as_ref())
+                .and_then(serde_json::Value::as_f64)
+        })
+        .filter(|bound| bound.fract() == 0.0 && bound.abs() < 9.0e15)
+    {
+        #[allow(
+            clippy::cast_possible_truncation,
+            reason = "the bound is integral and within f64's exact integer range"
+        )]
+        return Some((bound as i64).to_string());
+    }
     let schema = parameter
         .schema
         .as_ref()

@@ -6,9 +6,13 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .issue_form_pass_request_grant import IssueFormPassRequestGrant
+    from .issue_form_pass_response import IssueFormPassResponse
     from .issue_pass_request_grant import IssuePassRequestGrant
     from .issue_pass_response import IssuePassResponse
 _dynamic_imports: typing.Dict[str, str] = {
+    "IssueFormPassRequestGrant": ".issue_form_pass_request_grant",
+    "IssueFormPassResponse": ".issue_form_pass_response",
     "IssuePassRequestGrant": ".issue_pass_request_grant",
     "IssuePassResponse": ".issue_pass_response",
 }
@@ -35,4 +39,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["IssuePassRequestGrant", "IssuePassResponse"]
+__all__ = ["IssueFormPassRequestGrant", "IssueFormPassResponse", "IssuePassRequestGrant", "IssuePassResponse"]

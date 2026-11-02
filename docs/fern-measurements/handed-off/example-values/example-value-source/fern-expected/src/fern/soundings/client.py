@@ -62,6 +62,46 @@ class SoundingsClient:
         )
         return _response.data
 
+    def get_sounding_log(
+        self, *, depth: int, fathoms: int, cables: int, request_options: typing.Optional[RequestOptions] = None
+    ) -> str:
+        """
+        Bounded integers on an operation answering text.
+
+        Parameters
+        ----------
+        depth : int
+
+        fathoms : int
+
+        cables : int
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The log
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.soundings.get_sounding_log(
+            depth=1024,
+            fathoms=40,
+            cables=5,
+        )
+        """
+        _response = self._raw_client.get_sounding_log(
+            depth=depth, fathoms=fathoms, cables=cables, request_options=request_options
+        )
+        return _response.data
+
 
 class AsyncSoundingsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -122,6 +162,54 @@ class AsyncSoundingsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_soundings(
+            depth=depth, fathoms=fathoms, cables=cables, request_options=request_options
+        )
+        return _response.data
+
+    async def get_sounding_log(
+        self, *, depth: int, fathoms: int, cables: int, request_options: typing.Optional[RequestOptions] = None
+    ) -> str:
+        """
+        Bounded integers on an operation answering text.
+
+        Parameters
+        ----------
+        depth : int
+
+        fathoms : int
+
+        cables : int
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The log
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.soundings.get_sounding_log(
+                depth=1024,
+                fathoms=40,
+                cables=5,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_sounding_log(
             depth=depth, fathoms=fathoms, cables=cables, request_options=request_options
         )
         return _response.data

@@ -926,6 +926,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
+        (handed_off_example_values::AREA_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -956,6 +957,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
                 );
             }
         }
+    }
+    for golden in handed_off_example_values::compared_overlays() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded: vec![handed_off_example_values::MANIFEST.to_string()],
+                carve_outs: Default::default(),
+            },
+        );
     }
     if let Ok(entries) = std::fs::read_dir(root.join(literals_mode::LITERALS_MODE_DIR)) {
         for entry in entries.filter_map(Result::ok) {

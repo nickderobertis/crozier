@@ -86,6 +86,41 @@
     "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
     "docs/fern-measurements/examples-docs/unread-date-time-examples/fern-expected": {},
     "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/R11/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/R4/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-enum-member/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-float-repr/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-matching-union-variant/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/example-values/example-matching-union-variant/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-optional-members/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-placeholder-shape/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/example-value-source/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/map-body-media-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1437,7 +1472,6 @@
           "reference.md",
           "src/fern/analyze/reports/client.py",
           "src/fern/collections/__init__.py",
-          "src/fern/collections/client.py",
           "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",
@@ -1493,7 +1527,6 @@
           "reference.md",
           "src/fern/analyze/reports/client.py",
           "src/fern/collections/__init__.py",
-          "src/fern/collections/client.py",
           "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",

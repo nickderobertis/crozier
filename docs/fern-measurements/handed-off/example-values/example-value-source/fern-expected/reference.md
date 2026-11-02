@@ -783,6 +783,87 @@ client.passes.issue_pass(
 </dl>
 </details>
 
+<details><summary><code>client.passes.<a href="src/fern/passes/client.py">issue_form_pass</a>(...) -> IssueFormPassResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A form body's named example for an enum field.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.passes import IssueFormPassRequestGrant
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.passes.issue_form_pass(
+    grant=IssueFormPassRequestGrant.OVERNIGHT_STAY,
+    holder="Kerensa",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**grant:** `IssueFormPassRequestGrant` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**holder:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Ledger
 <details><summary><code>client.ledger.<a href="src/fern/ledger/client.py">get_block</a>(...) -> GetBlockResponse</code></summary>
 <dl>
@@ -893,6 +974,95 @@ client.soundings.list_soundings(
     depth=1,
     fathoms=1,
     cables=1,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**depth:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fathoms:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cables:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py">get_sounding_log</a>(...) -> str</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Bounded integers on an operation answering text.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.soundings.get_sounding_log(
+    depth=1024,
+    fathoms=40,
+    cables=5,
 )
 
 ```

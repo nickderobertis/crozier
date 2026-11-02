@@ -420,6 +420,72 @@ paths:
                 properties:
                   title:
                     type: string
+  /soundings/log:
+    get:
+      operationId: getSoundingLog
+      tags: [soundings]
+      description: Bounded integers on an operation answering text.
+      parameters:
+        - name: depth
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1024
+        - name: fathoms
+          in: query
+          required: true
+          schema:
+            type: integer
+            maximum: 40
+        - name: cables
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 5
+      responses:
+        "200":
+          description: The log
+          content:
+            text/plain:
+              schema:
+                type: string
+  /passes/form:
+    post:
+      operationId: issueFormPass
+      tags: [passes]
+      description: A form body's named example for an enum field.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant, holder]
+              properties:
+                grant:
+                  type: string
+                  enum: [day-visit, overnight-stay]
+                holder:
+                  type: string
+            examples:
+              overnight:
+                value:
+                  grant: overnight-stay
+                  holder: Kerensa
+      responses:
+        "200":
+          description: Issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
 components:
   parameters:
     LanternCode:

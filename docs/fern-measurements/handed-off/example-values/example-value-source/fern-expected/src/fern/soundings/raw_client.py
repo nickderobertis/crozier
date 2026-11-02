@@ -67,6 +67,50 @@ class RawSoundingsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def get_sounding_log(
+        self, *, depth: int, fathoms: int, cables: int, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[str]:
+        """
+        Bounded integers on an operation answering text.
+
+        Parameters
+        ----------
+        depth : int
+
+        fathoms : int
+
+        cables : int
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[str]
+            The log
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "soundings/log",
+            method="GET",
+            params={
+                "depth": depth,
+                "fathoms": fathoms,
+                "cables": cables,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=_response.text)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawSoundingsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -114,6 +158,50 @@ class AsyncRawSoundingsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_sounding_log(
+        self, *, depth: int, fathoms: int, cables: int, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[str]:
+        """
+        Bounded integers on an operation answering text.
+
+        Parameters
+        ----------
+        depth : int
+
+        fathoms : int
+
+        cables : int
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[str]
+            The log
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "soundings/log",
+            method="GET",
+            params={
+                "depth": depth,
+                "fathoms": fathoms,
+                "cables": cables,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=_response.text)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

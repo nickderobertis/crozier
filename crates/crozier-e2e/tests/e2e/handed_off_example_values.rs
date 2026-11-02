@@ -11,11 +11,11 @@ use std::path::{Path, PathBuf};
 
 use super::{
     copy_dir, departure_ledger, golden_path, golden_tree_failures, probe_command, repo_root,
-    walk_files,
+    walk_files, GoldenLedger,
 };
 
 /// Where the measurements live.
-const AREA_DIR: &str = "docs/fern-measurements/handed-off/example-values";
+pub(super) const AREA_DIR: &str = "docs/fern-measurements/handed-off/example-values";
 
 /// Every cause the triage record names, each a directory under [`AREA_DIR`].
 const CAUSES: &[&str] = &[
@@ -46,7 +46,16 @@ const LITERALS: &[&str] = &[
 ];
 
 /// The overlay manifest `tools/fern-goldens/golden_overlay.py` writes.
-const MANIFEST: &str = ".crozier-overlay.json";
+pub(super) const MANIFEST: &str = ".crozier-overlay.json";
+
+/// The literals overlay goldens this module compares, for the inventory of
+/// compared goldens (each cause's own `fern-expected/` is found by directory).
+pub(super) fn compared_overlays() -> Vec<String> {
+    LITERALS
+        .iter()
+        .map(|cause| format!("{AREA_DIR}/{cause}/expected-literals/fern-expected"))
+        .collect()
+}
 
 fn cause_dir(cause: &str) -> PathBuf {
     repo_root().join(AREA_DIR).join(cause)
@@ -79,11 +88,28 @@ fn tree_failures(
     golden: &str,
     expected: &Path,
 ) -> Vec<String> {
+    ledger_tree_failures(
+        key,
+        spec,
+        flags,
+        departure_ledger().golden(golden, &[]),
+        expected,
+    )
+}
+
+/// [`tree_failures`] against the ledger rows `ledger` gives.
+fn ledger_tree_failures(
+    key: &str,
+    spec: &Path,
+    flags: &[&str],
+    ledger: Result<GoldenLedger, Vec<String>>,
+    expected: &Path,
+) -> Vec<String> {
     let out = match generate(spec, flags) {
         Ok(out) => out,
         Err(failure) => return vec![format!("{key}: {failure}")],
     };
-    match departure_ledger().golden(golden, &[]) {
+    match ledger {
         Ok(ledger) => golden_tree_failures(
             key,
             &spec.display().to_string(),
@@ -93,6 +119,32 @@ fn tree_failures(
         ),
         Err(failures) => failures,
     }
+}
+
+/// A literals overlay's ledger rows: its own for the files it carries, its
+/// cause's `fern-expected/` rows for every file it inherits.
+fn literals_ledger(cause: &str) -> Result<GoldenLedger, Vec<String>> {
+    let overlay = cause_dir(cause)
+        .join("expected-literals")
+        .join("fern-expected");
+    let own = departure_ledger().golden(&golden_path(&overlay), &[])?;
+    let inherited =
+        departure_ledger().golden(&golden_path(&cause_dir(cause).join("fern-expected")), &[])?;
+    let manifest: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(overlay.join(MANIFEST)).expect("the overlay manifest"),
+    )
+    .expect("the manifest is JSON");
+    let removed: Vec<String> = manifest["removed"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|path| path.as_str().map(str::to_string))
+        .collect();
+    let files = walk_files(&overlay)
+        .into_iter()
+        .filter(|rel| rel != MANIFEST)
+        .collect();
+    Ok(own.inherit(inherited, files, &removed))
 }
 
 /// A cause's literals tree: its own `fern-expected/` minus the files the
@@ -175,16 +227,11 @@ fn handed_off_example_value_literals_overlays_match_fern() {
     let mut failures = Vec::new();
     for cause in LITERALS {
         let tree = literals_tree(cause);
-        let golden = golden_path(
-            &cause_dir(cause)
-                .join("expected-literals")
-                .join("fern-expected"),
-        );
-        failures.extend(tree_failures(
+        failures.extend(ledger_tree_failures(
             &format!("{cause} (literals)"),
             &cause_dir(cause).join("openapi.yml"),
             &["--enum-type", "literals"],
-            &golden,
+            literals_ledger(cause),
             tree.path(),
         ));
     }

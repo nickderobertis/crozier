@@ -11708,6 +11708,12 @@ fn build_example_inner(
                                 // A model takes its object example: Zulip's
                                 // `draft` is exampled from its annotation.
                                 || ctx.example_is_object(&f.type_ref)
+                                // An urlencoded field naming an enum takes the
+                                // member its example names: the agentic
+                                // identity broker's token request passes
+                                // `grant_type=…CLIENT_CREDENTIALS` (measured in
+                                // docs/fern-measurements/handed-off/example-values/example-value-source/).
+                                || !form.multipart && ctx.enumerated_value(&f.type_ref).is_some()
                         })
                         .and_then(|example| ctx.value_from_example(&f.type_ref, example))
                         .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)))
@@ -19720,6 +19726,9 @@ mod handed_off_example_value_tests {
                 "        \"PLY\",",
                 "    height=1000000,",
                 "    watch_token=\"watchToken\",",
+                "    grant=IssueFormPassRequestGrant.OVERNIGHT_STAY,",
+                "    depth=1024,",
+                "    fathoms=40,",
                 "        \"night\": True,",
             ],
             &["xWatchToken", "height=1,", "\"codes\""],
