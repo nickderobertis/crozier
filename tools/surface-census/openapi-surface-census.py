@@ -5819,7 +5819,9 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
             variant = _last_composed_variant(target)
             properties = variant.get("properties") if isinstance(variant, dict) else None
             field = properties.get(property_name) if isinstance(properties, dict) else None
-            if discriminant_value(field) is None:
+            # A `$ref`'d one-member enum tag is read through its reference, as
+            # `inferred_discriminant_property` reads it.
+            if discriminant_value(_resolved_member(field, schemas)) is None:
                 return None
     return "oneOf" if written(node, "oneOf") else "anyOf"
 
