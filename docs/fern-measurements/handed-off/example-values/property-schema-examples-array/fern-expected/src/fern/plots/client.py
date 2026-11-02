@@ -59,7 +59,12 @@ class PlotsClient:
             base_url="https://yourhost.com/path/to/api",
         )
         client.plots.plot_course(
-            waypoints=["50.1N 5.0W", 'hold at "Wolf Rock"', "50.3N 4.8W"],
+            waypoints=[
+                "50.1N 5.0W",
+                'hold at "Wolf Rock"',
+                'log\tthen "sound" at C:\\charts',
+                "50.3N 4.8W",
+            ],
             vessel="Morwenna",
             legs=4,
         )
@@ -123,7 +128,12 @@ class AsyncPlotsClient:
 
         async def main() -> None:
             await client.plots.plot_course(
-                waypoints=["50.1N 5.0W", 'hold at "Wolf Rock"', "50.3N 4.8W"],
+                waypoints=[
+                    "50.1N 5.0W",
+                    'hold at "Wolf Rock"',
+                    'log\tthen "sound" at C:\\charts',
+                    "50.3N 4.8W",
+                ],
                 vessel="Morwenna",
                 legs=4,
             )

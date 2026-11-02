@@ -19672,6 +19672,10 @@ mod handed_off_example_value_tests {
             super::parse_example_value(r#"["a", 'say "hi"', True]"#),
             Some(serde_json::json!(["a", "say \"hi\"", true]))
         );
+        assert_eq!(
+            super::parse_example_value(r#"['log\tthen "sound" at C:\\charts\n']"#),
+            Some(serde_json::json!(["log\tthen \"sound\" at C:\\charts\n"]))
+        );
         assert_eq!(super::parse_example_value("['never closed"), None);
     }
 

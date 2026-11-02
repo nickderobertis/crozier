@@ -44,6 +44,7 @@ client.plots.plot_course(
     waypoints=[
         "50.1N 5.0W",
         "hold at \"Wolf Rock\"",
+        "log\tthen \"sound\" at C:\\charts",
         "50.3N 4.8W"
     ],
     vessel="Morwenna",
@@ -70,6 +71,7 @@ async def main() -> None:
         waypoints=[
             "50.1N 5.0W",
             "hold at \"Wolf Rock\"",
+            "log\tthen \"sound\" at C:\\charts",
             "50.3N 4.8W"
         ],
         vessel="Morwenna",

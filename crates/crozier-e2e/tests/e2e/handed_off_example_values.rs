@@ -186,6 +186,7 @@ fn literals_tree(cause: &str) -> tempfile::TempDir {
     tree
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving these measurement journeys their own Nx edge is a graph change for that whole family (the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads"), not for these cases.
 #[test]
 fn every_handed_off_example_value_measurement_is_complete() {
     let mut directories: Vec<String> = std::fs::read_dir(repo_root().join(AREA_DIR))
@@ -458,3 +459,4 @@ fn declared_value_departures_hold_only_their_lines() {
         .stderr(predicates::str::contains("could not read spec"));
     assert!(!out.exists(), "a missing document must write no SDK");
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

@@ -36,6 +36,7 @@ components:
           examples:
             - - "50.1N 5.0W"
               - 'hold at "Wolf Rock"'
+              - "log\tthen \"sound\" at C:\\charts"
               - "50.3N 4.8W"
         vessel:
           type: string
