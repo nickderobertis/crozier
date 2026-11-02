@@ -7842,8 +7842,9 @@ mod document_acceptance_tests {
         crate::yaml::from_str(spec).expect("valid spec")
     }
 
-    /// A boolean `allOf` member is dropped, a list of only booleans is no
-    /// `allOf`, and a boolean `anyOf`/`oneOf` member is an unconstrained one.
+    /// A boolean `allOf` member is dropped, a list of only booleans is an
+    /// `allOf` of one empty object, and a boolean `anyOf`/`oneOf` member is an
+    /// unconstrained one.
     #[test]
     fn boolean_composition_members_read_as_the_certified_pair_reads_them() {
         let doc = parse(

@@ -632,7 +632,14 @@ impl<'a> Doc<'a> {
         visit: &mut dyn FnMut(&'a Value) -> Option<String>,
     ) -> Option<String> {
         let mut seen = HashSet::new();
-        self.reach_from(schema, required_only, false, visit, &mut seen, 0)
+        self.reach_from(
+            schema,
+            required_only,
+            Descent::Everywhere,
+            visit,
+            &mut seen,
+            0,
+        )
     }
 
     /// [`Self::reach`], but never past the members of an object that declares
@@ -644,14 +651,21 @@ impl<'a> Doc<'a> {
         visit: &mut dyn FnMut(&'a Value) -> Option<String>,
     ) -> Option<String> {
         let mut seen = HashSet::new();
-        self.reach_from(schema, false, true, visit, &mut seen, 0)
+        self.reach_from(
+            schema,
+            false,
+            Descent::ClosedObjectsOnly,
+            visit,
+            &mut seen,
+            0,
+        )
     }
 
     fn reach_from(
         &self,
         schema: &'a Value,
         required_only: bool,
-        stop_at_open: bool,
+        descent: Descent,
         visit: &mut dyn FnMut(&'a Value) -> Option<String>,
         seen: &mut HashSet<*const Value>,
         depth: usize,
@@ -674,13 +688,15 @@ impl<'a> Doc<'a> {
                 .flatten()
             {
                 if let Some(found) =
-                    self.reach_from(member, required_only, stop_at_open, visit, seen, depth + 1)
+                    self.reach_from(member, required_only, descent, visit, seen, depth + 1)
                 {
                     return Some(found);
                 }
             }
         }
-        if stop_at_open && schema.get("additionalProperties") == Some(&Value::Bool(true)) {
+        if descent == Descent::ClosedObjectsOnly
+            && schema.get("additionalProperties") == Some(&Value::Bool(true))
+        {
             return None;
         }
         let required = required_names(schema);
@@ -693,21 +709,16 @@ impl<'a> Doc<'a> {
             if required_only && !required.contains(&name.as_str()) {
                 continue;
             }
-            if let Some(found) = self.reach_from(
-                property,
-                required_only,
-                stop_at_open,
-                visit,
-                seen,
-                depth + 1,
-            ) {
+            if let Some(found) =
+                self.reach_from(property, required_only, descent, visit, seen, depth + 1)
+            {
                 return Some(found);
             }
         }
         for key in ["items", "additionalProperties"] {
             if let Some(child) = schema.get(key).filter(|child| child.is_object()) {
                 if let Some(found) =
-                    self.reach_from(child, required_only, stop_at_open, visit, seen, depth + 1)
+                    self.reach_from(child, required_only, descent, visit, seen, depth + 1)
                 {
                     return Some(found);
                 }
@@ -1699,6 +1710,15 @@ fn string_led_union(schema: &Value) -> bool {
 /// lacks is missing (reported first, as Fern reports it); otherwise a plain
 /// string property the winner lacks is unexpected (Fern's response example
 /// fills a string with its name; other property kinds are not measured).
+/// Which members a reach walk enters after visiting an object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Descent {
+    /// Every property, item and map value.
+    Everywhere,
+    /// None of an object declaring `additionalProperties: true`.
+    ClosedObjectsOnly,
+}
+
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
     // Two enums: Fern's example of the earlier one is its first value, which
     // the later declaration must list (`Mode: [WALK, CYCLE]` beside
