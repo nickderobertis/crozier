@@ -5138,9 +5138,9 @@ SCALAR_PORT_DIGESTS = {
 SCHEMA_RESPONSE_PORT_DIGESTS = {
     "is_closed_empty_object": "eb83d5799078bfd2",
     "is_object_type": "94e34f083d5e67d8",
-    "success_response_entry": "668fb1266cbe71a1",
-    "success_response_key": "f373029108feb261",
-    "success_response_with_content": "10b3b17e00498b25",
+    "success_response_entry": "4e8ef88915e3ca45",
+    "success_response_key": "3d340d826e0150bc",
+    "success_response_with_content": "f60c706986edea69",
     "has_dispatchable_media": "1778b0cd46695752",
 }
 
@@ -7005,31 +7005,14 @@ class Census:
         def content(value):
             return isinstance(value, dict) and bool(value.get("content"))
 
-        key = (
-            "200"
-            if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"])
-            else next(
-                (
-                    code
-                    for code, value in resolved.items()
-                    if code.isdigit() and 200 <= int(code) < 300 and content(value) and dispatchable(value)
-                ),
-                None,
-            )
-        )
+        # Fern reads 200, 201, 202 and 204 only, in that order, and falls back to
+        # `default` only when none of them is declared (`FERN_SUCCESS_STATUSES`).
+        read = [code for code in ("200", "201", "202", "204") if code in resolved]
+        key = next((code for code in read if content(resolved[code]) and dispatchable(resolved[code])), None)
         if key is None:
-            key = (
-                "200"
-                if "200" in resolved and dispatchable(resolved["200"])
-                else next(
-                    (
-                        code
-                        for code, value in resolved.items()
-                        if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)
-                    ),
-                    "default" if "default" in resolved else None,
-                )
-            )
+            key = next((code for code in read if dispatchable(resolved[code])), None)
+        if key is None and not read and "default" in resolved:
+            key = "default"
         if key is None:
             return None, None
         written = next(value for code, value in responses.items() if str(code) == key)
