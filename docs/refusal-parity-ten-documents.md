@@ -18,7 +18,7 @@ an excepted document's shape is unchanged.
 | `ToolJet/ToolJet` `marketplace/plugins/microsoft_graph/openapi-specs/teams.yaml` at `63c2b08614b7` (`09ac0c7b…`) | B | repaired by `refusal-parity-discriminant-names`; byte-matches |
 | `RS-PYTHON/rs-server` `services/frontend/resources/openapi.json` at `83ebcafb173c` (`a8771072…`) | C | refusal repaired by `refusal-parity-example-collision`; emission residual owned by `rs-server-emission-parity` |
 | `ingef/conquery` `openapi.yaml` at `0379408a4b68` (`c3a52b3c…`) | D | refusal repaired by `refusal-parity-lenient-yaml`; emission repaired by `conquery-emission-parity`; registered as corpus row 3478 |
-| `outstack/enveloper` `docs/api/openapi.yaml` at `cd8150d6d78c` (`95595ff6…`) | E | excepted: a departure candidate for the user |
+| `outstack/enveloper` `docs/api/openapi.yaml` at `cd8150d6d78c` (`95595ff6…`) | E | repaired by `empty-sdk-documents`; matches the certified pair (see E) |
 | OpenAPI Generator `modules/openapi-generator/src/test/resources/3_1/cpp-boost-beast-client/composed-schema-lowering.yaml` at `10e6c21c97ab` (`981444e6…`) | F | repaired; registered as corpus row 3476 |
 
 The draft's full digests, and the Fern log of each run, are those of the
@@ -57,9 +57,17 @@ method. `__init__.py` exports those two, the default HTTP clients and
 `reference.md` is the bare `# Reference` heading. The SDK therefore omits every operation
 the documents declare.
 
-By the planner's ruling, A is a Fern refusal, not output to match. The user's
-confirmation of that ruling is pending. A scenario Fern refuses is
-refused in both modes, so crozier's refusal stays as it is. No crozier code
+By the planner's ruling, A is a Fern refusal, not output to match. The user
+confirmed it on 2026-11-01 as the design-review ruling `empty-sdk-refused`:
+crozier refuses, in both modes, every document the certified pair turns into an
+empty SDK, because an empty SDK is useless
+([intended departures](fern-refusals/README.md#intended-departures)). A
+re-measurement of the three documents under that ruling
+([`handed-off/empty-sdk-documents`](fern-measurements/handed-off/empty-sdk-documents/README.md))
+found the same 35-file empty SDK. Its first unresolved pointer is a response's
+or a parameter's in each. A header pointer alone, as in DigitalOcean's
+`ratelimit-limit`, the pair resolves; crozier now resolves it too, and still
+refuses all three documents at their response or parameter pointer. No crozier code
 changed for A. Run on each exact document, crozier built at this work's base
 (`2a298364e`) and on the finished tree prints the same `unresolved-reference`
 refusal and exits 1. That holds by default, with `--enum-type literals` and with
@@ -87,10 +95,21 @@ Its error classes, `BadRequestError`, `NotFoundError`, `NotAcceptableError` and
 `components.schemas` entries that are references to missing files
 (`syntax-error`, `failed-json-schema-validation`) declare nothing. Fern's SDK
 therefore drops every type the document means to declare, and gives no
-diagnostic. crozier's refusal names the file. By the manager's ruling this goes
-to the user as a departure candidate, and crozier's refusal is unchanged until
-they rule. On the exact document, crozier at the base (`2a298364e`) and on
-the finished tree prints the same refusal in both enum modes.
+diagnostic.
+
+*Settled on 2026-11-01.* This is no empty SDK, so ruling `empty-sdk-refused`
+does not cover it, and no other ruling names it. The no-ruling default
+therefore applies, and crozier matches the certified pair (`default-matched`,
+[`handed-off/empty-sdk-documents/missing-relative-file`](fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/README.md)).
+A schema `$ref` to a relative file that does not exist is `typing.Any`, and
+crozier prints one `warning:` line per such reference, naming the file and the
+`$ref`'s location. The two `components.schemas` entries sit under a top-level
+`Components` key (capital C), which neither tool reads. A 400 body's
+`discriminator.mapping` names `#/Components/schemas/…` pointers, which resolve
+to nothing, and the pair types that body `typing.Any` as well; crozier now does
+the same. Re-measured on the exact document, the pair writes 44 files, and
+crozier's output (`python_enums`) byte-matches them apart from catalogued
+departures, in default and `fern-strict` modes.
 
 ## F: unions of only `null`, and of one string enum
 

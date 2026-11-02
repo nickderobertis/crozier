@@ -86,6 +86,8 @@
     "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
     "docs/fern-measurements/examples-docs/unread-date-time-examples/fern-expected": {},
     "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected": {},
+    "docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected": {},
+    "docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

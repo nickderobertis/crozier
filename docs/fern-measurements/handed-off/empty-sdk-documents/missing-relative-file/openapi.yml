@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Postroom
+  version: 1.0.0
+paths:
+  /parcels:
+    post:
+      operationId: sendParcel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './generated/parcel.schema.yaml'
+      responses:
+        '400':
+          description: The parcel was refused.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                discriminator:
+                  propertyName: title
+                  mapping:
+                    'Unreadable label': '#/Components/schemas/unreadable-label'
+                    'Overweight': '#/Components/schemas/overweight'
+                properties:
+                  title:
+                    description: A short name for the refusal.
+                    type: string
+                required:
+                  - title
+        '202':
+          description: Accepted for sending.
+          content:
+            application/json:
+              schema:
+                $ref: './generated/receipt.schema.yaml'
+    get:
+      operationId: listParcels
+      responses:
+        '200':
+          description: The parcels sent.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+Components:
+  schemas:
+    unreadable-label: { $ref: './generated/unreadable-label.schema.yaml' }
+    overweight: { $ref: './generated/overweight.schema.yaml' }

@@ -129,6 +129,16 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates or refuses one small document through the binary, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The documents the certified pair turns into an empty SDK, refused in both
+/// modes under the user's `empty-sdk-refused` ruling, lolesports' valid shape
+/// kept generating, and the shapes beside them the pair generates in full,
+/// each in a document written for it under
+/// `docs/fern-measurements/handed-off/empty-sdk-documents/`.
+#[path = "e2e/empty_sdk_documents.rs"]
+mod empty_sdk_documents;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/(^|::)sdk_env_/)` selector reads a test's full name and so selects a module's journey as well as one at the crate root (`every_sdk_env_journey_is_selected_by_the_sdk_env_tier` holds that); crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 /// The observatory measurement's dangling `METEOR` wrapper round-trips through
 /// crozier's client and fails through the certified tree's
@@ -901,6 +911,17 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         departures_ledger::ComparedGolden::default(),
     );
     // llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
+    // Only the measurements crozier generates are compared; the others' trees
+    // are the pair's empty scaffold, kept as the evidence of its refusal.
+    for case in empty_sdk_documents::GENERATED_CASES {
+        add(
+            format!(
+                "{}/{case}/fern-expected",
+                empty_sdk_documents::EMPTY_SDK_DIR
+            ),
+            departures_ledger::ComparedGolden::default(),
+        );
+    }
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
@@ -21383,8 +21404,10 @@ fn relative_schema_refs_report_missing_files_pointers_and_wrong_shapes() {
             "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                $ref: './schemas.yaml#/Bad'\n",
         )
         .unwrap();
-        if let Some(document) = document {
-            std::fs::write(dir.path().join("schemas.yaml"), document).unwrap();
+        // A file that is present but cannot be read keeps its error.
+        match document {
+            Some(document) => std::fs::write(dir.path().join("schemas.yaml"), document).unwrap(),
+            None => std::fs::create_dir(dir.path().join("schemas.yaml")).unwrap(),
         }
         crozier()
             .args(["generate", "--spec"])
@@ -21396,6 +21419,26 @@ fn relative_schema_refs_report_missing_files_pointers_and_wrong_shapes() {
             .stderr(predicate::str::contains(message));
         assert!(!dir.path().join("sdk").exists());
     }
+    // A file that does not exist is the certified pair's unknown type, reported
+    // as a warning naming the file and the `$ref`'s location
+    // (`docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`).
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                $ref: './schemas.yaml#/Bad'\n",
+    )
+    .unwrap();
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .assert()
+        .success()
+        .stderr(predicate::str::contains(
+            "openapi.yml#/paths/~1ping/get/responses/200/content/application~1json/schema: $ref `./schemas.yaml#/Bad` names",
+        ));
 }
 
 #[test]

@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Reading Room
+  version: 1.0.0
+paths:
+  /shelves:
+    get:
+      operationId: listShelves
+      summary: Every shelf in the reading room.
+      responses:
+        '200':
+          description: The shelves.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shelf'
+  /shelves/{shelfId}:
+    get:
+      operationId: getShelf
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: One shelf.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shelf'
+        '404':
+          description: No shelf has that id.
+components:
+  schemas:
+    Shelf:
+      type: object
+      required:
+        - id
+        - label
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        parentShelf:
+          description: The shelf this one hangs beneath, or null at the top.
+          allOf:
+            - $ref: '#/components/schemas/Shelf'
+            - type: object
+              nullable: true

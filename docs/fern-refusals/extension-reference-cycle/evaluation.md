@@ -6,6 +6,39 @@ Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measure
 
 What moved: The shapes the older naming filed as controls but Fern refuses are probes; none changed verdict. An extension reaching its reference through an array (`x-link: {oneOf: [...]}`, Stripe's `x-expansionResources`) generates on a field or a schema root (`field-oneof-link`, `root-oneof-link` and `expandable-field` controls); through an object member it is still refused, on a union field too (`union-field-link` probe). crozier now follows an extension's references through object members only, so the twelve Stripe documents it refused with this class are refused with `example-type-mismatch`, the class Fern reports for them ([`dispositions.tsv`](../dispositions.tsv)).
 
+**Ruling `empty-sdk-refused` (the user's design review, 2026-11-01).** crozier
+refuses, in default and `fern-strict` modes, every document the certified pair
+turns into an empty SDK, because an empty SDK is useless and crozier refuses
+rather than writes one. This is an intended departure from the pair's exit 0,
+recorded under [Intended departures](../README.md#intended-departures). Both
+of this class's documents are Stripe's SDK descriptions, and crozier refuses
+both in both modes, as the bodies-and-paths record's
+[false successes](../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md#the-certified-pairs-false-successes)
+list. A from-scratch probe of their shape and both documents' finished-tree
+outcomes are in
+[`extension-reference-cycle`](../../fern-measurements/handed-off/empty-sdk-documents/extension-reference-cycle/README.md).
+
+**The valid-OpenAPI exception: lolesports.** The pair prints this class's
+phrase, `Maximum call stack size exceeded`, over a document that has no
+extension cycle: `vickz84259/lolesports-api-docs`'s `openapi.yaml` at
+`74027a7950c7e4629d3cab01ddd3990457a9956d` (SHA-256
+`5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c`). Its stack
+is the pair's example builder (`buildExampleHelper`) recursing through
+`navItem.parentNavItem`. That property is required, and it is an `allOf` of
+`navItem` itself and a nullable object. The document is valid OpenAPI, so the
+empty SDK is only a Fern limitation. crozier's SDK for it passes evaluation:
+`fern-refusals.py evaluate-sdk` ran validation, default and strict generation,
+a wheel build, a fresh installation and an import of every generated module
+([receipt](../../fern-measurements/handed-off/empty-sdk-documents/R1/lolesports-sdk-evaluation.json)).
+By the refusal rule's exception and the ruling, lolesports keeps generating in
+both modes.
+
+crozier's `extension-reference-cycle` detector does not fire on it: no
+extension is involved. The from-scratch probe of the shape and its measurements
+are [`R1`](../../fern-measurements/handed-off/empty-sdk-documents/R1/README.md).
+The pair writes the empty SDK for the probe and generates its control, where
+the property is optional.
+
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.

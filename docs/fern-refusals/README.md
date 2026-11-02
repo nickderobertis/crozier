@@ -350,6 +350,52 @@ refuses. Both keep Fern's logs under
   client field, with `header-array-*-probe.yml` documents of its own (issue
   #353).
 
+## Intended departures
+
+**`empty-sdk-refused`**: the user's design-review ruling, decided 2026-11-01.
+The certified pair can exit 0 over a document it never parsed: its log reads
+`Failed to parse openapi document` and it writes the 35-file empty SDK, with no
+endpoint and no type. crozier refuses every such document in default and
+`fern-strict` modes, by the class the pair's own error names. The reason: an
+empty SDK is useless, so crozier refuses rather than writes one, and the
+refusal tells the team at generation time that the document needs fixing. This
+departs on purpose from the pair's exit 0.
+
+The refusal rule's exception still holds. A valid OpenAPI document whose empty
+SDK is only a Fern limitation, and whose crozier SDK passes evaluation, keeps
+generating, with that evaluation in its class's note.
+
+The classes the ruling settles, each with the ruling in its `evaluation.md`:
+
+- [`unresolved-reference`](unresolved-reference/evaluation.md): a response or
+  parameter `$ref` into another path's definition, or an undeclared
+  `components/responses` entry.
+- [`extension-reference-cycle`](extension-reference-cycle/evaluation.md): its
+  Stripe documents. lolesports, which prints this class's phrase from the pair's
+  example builder over valid OpenAPI, is the exception and keeps generating.
+- [`null-media-type`](null-media-type/evaluation.md): a Media Type Object
+  written as `null`. That is invalid OpenAPI, so the shape is refused.
+
+Each affected document in `documents.tsv` already records crozier's strict
+refusal there: DigitalOcean, Codat's sync-for-expenses, both Setu documents,
+both Stripe documents, `beeequeue/arm-server` and both PagerDuty documents.
+Each is listed, with its finished-tree outcome, in the
+[area inventory](../fern-measurements/handed-off/empty-sdk-documents/README.md). `documents.tsv` is left as `build` wrote it. These affected documents are
+**outside the refusal population**: no record `select` reads names them, so no
+`documents.tsv` row carries them. Each one's certified-pair run on its exact
+bytes is in its measurement directory:
+
+| document | revision | SHA-256 | crozier | measurement |
+|---|---|---|---|---|
+| `ogcincubator/developer-website-v3` `api/dggs/openapi.yaml` | `d123c2c2df80940a8af30f9dd2a45c382a7ecff7` | `9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382` | refused, `unresolved-reference` | [`crozier-refuses-path-pointer-ref`](../fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/README.md) |
+| `dltkddnr04/propresenter-remote` `openapi/propresenter.openapi.json` | `b273aeec98db96f4766d0b4e0d2a8305627396a4` | `44695afa34c9d6e1fce938a62844cf07b30ed296a5e3d2be1779827947394219` | refused, `unresolved-reference` | [`unresolved-reference`](../fern-measurements/handed-off/empty-sdk-documents/unresolved-reference/README.md) |
+| `jeffmikels/ProPresenter-API` `pro7.9.openapi-spec.json` | `6e7490671c94a7c9e588274bdf5df6ece1934248` | `694f7ec93b5aafa776ab61f7e049432f2ac01f8db5ffce4aedbde9f1a38616cc` | refused, `unresolved-reference` | [`unresolved-reference`](../fern-measurements/handed-off/empty-sdk-documents/unresolved-reference/README.md) |
+| `linux-automation/tacd` `openapi.yaml` | `df3958c92643f7e0b06ef1830b9bc2a5e55ab24a` | `b5dacb83849e3ef5b20249f712ed19ac60838e5052ce0a4de3b6c69aed29bd8c` | refused, `null-media-type` | [`refusal-null-media-type`](../fern-measurements/handed-off/empty-sdk-documents/refusal-null-media-type/README.md) |
+| `vickz84259/lolesports-api-docs` `openapi.yaml` | `74027a7950c7e4629d3cab01ddd3990457a9956d` | `5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c` | generates (the valid-OpenAPI exception) | [`R1`](../fern-measurements/handed-off/empty-sdk-documents/R1/README.md) |
+
+The triage of every document and cause is
+[`empty-sdk-documents.tsv`](../fern-measurements/handed-off/empty-sdk-documents.tsv).
+
 ## Producing an SDK evaluation
 
 `evaluate-sdk` needs a built crozier, `uv`, and package-index access. It never

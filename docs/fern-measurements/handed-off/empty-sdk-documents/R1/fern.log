@@ -1,0 +1,52 @@
+Fern CLI 5.163.1, python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Reading Room
+::error title=[api]%3A::Failed to parse openapi document Reading Room
+[api]: Maximum call stack size exceeded 
+       RangeError: Maximum call stack size exceeded
+           at Array Iterator.next (<anonymous>)
+           at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:18981)
+           at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:19184)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14242)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+::error title=[api]%3A::Maximum call stack size exceeded %0ARangeError: Maximum call stack size exceeded%0A    at Array Iterator.next (<anonymous>)%0A    at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:18981)%0A    at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:19184)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14242)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+All checks passed
+
+generate exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Reading Room
+::error title=[api]%3A python-sdk::Failed to parse openapi document Reading Room
+[api]: python-sdk Maximum call stack size exceeded 
+                  RangeError: Maximum call stack size exceeded
+                      at Array Iterator.next (<anonymous>)
+                      at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:18981)
+                      at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:19184)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14242)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+                      at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+::error title=[api]%3A python-sdk::Maximum call stack size exceeded %0ARangeError: Maximum call stack size exceeded%0A    at Array Iterator.next (<anonymous>)%0A    at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:18981)%0A    at e.getAllProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:19184)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14242)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:207:14707)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <workspace>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

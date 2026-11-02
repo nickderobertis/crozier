@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Kiln Monitor
+[api]: Cannot read properties of null (reading 'schema') 
+       TypeError: Cannot read properties of null (reading 'schema')
+All checks passed

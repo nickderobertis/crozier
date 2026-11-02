@@ -6141,6 +6141,11 @@ pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
 /// `Sequence`); an error with no body takes Fern's `typing.Any`.
 fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     let schema = error_body_schema(resp);
+    // A body discriminated by a mapping Fern cannot resolve is its unknown
+    // type (see [`unresolvable_mapped_error_body`]).
+    if schema.is_some_and(unresolvable_mapped_error_body) {
+        return TypeRef::Primitive(Prim::Any);
+    }
     // A `oneOf`/`anyOf` body is Fern's `{Class}Body` union alias, and a one-member
     // one is that member: Zulip's single `502` answers two bouncer errors and its
     // class is typed `BadGatewayErrorBody`, while its `429` answers
@@ -6236,6 +6241,9 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 else {
                     continue;
                 };
+                if unresolvable_mapped_error_body(schema) {
+                    continue;
+                }
                 let name = format!("{class}Body");
                 // Fern converts every declaration of a status under the one name
                 // `{Class}Body`, so the last one wins, and the variant models an
@@ -12088,6 +12096,22 @@ pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
                 .values()
                 .any(|target| !target.contains('/'))
         })
+}
+
+/// Whether an error body is a union whose mapping Fern cannot resolve: a bare
+/// name ([`bare_name_mapped_union`]), or a local pointer outside
+/// `#/components/schemas/`, which outstack/enveloper's inline `400` maps
+/// (`#/Components/schemas/syntax-error`). Fern types that body as unknown
+/// (`docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`);
+/// only the error-body form is measured, so only the error path reads it.
+fn unresolvable_mapped_error_body(schema: &Schema) -> bool {
+    bare_name_mapped_union(schema)
+        || (is_inheritance_union_base(schema) || schema.one_of.is_some())
+            && schema.discriminator.as_ref().is_some_and(|discriminator| {
+                discriminator.mapping.values().any(|target| {
+                    target.starts_with('#') && !target.starts_with("#/components/schemas/")
+                })
+            })
 }
 
 /// Collect a discriminated-union member's fields (the referenced model's
@@ -21647,6 +21671,81 @@ mod tests {
             serde_json::json!({}),
             serde_json::json!({})
         )));
+        // A local pointer outside `#/components/schemas/` is no schema Fern can
+        // reach either (outstack/enveloper's `#/Components/schemas/…`). Only an
+        // error body reads that, the one form measured; a reference to another
+        // document is left to the resolver.
+        let elsewhere = serde_json::json!({ "apple": "#/Components/schemas/apple" });
+        let elsewhere = union(serde_json::json!({}), elsewhere);
+        assert!(!super::bare_name_mapped_union(&elsewhere));
+        assert!(super::unresolvable_mapped_error_body(&elsewhere));
+        let bare = union(serde_json::json!({}), serde_json::json!({ "pear": "Pear" }));
+        assert!(super::unresolvable_mapped_error_body(&bare));
+        let external = serde_json::json!({ "apple": "fruit.yml#/Apple" });
+        assert!(!super::unresolvable_mapped_error_body(&union(
+            serde_json::json!({}),
+            external
+        )));
+        assert!(!super::unresolvable_mapped_error_body(&union(
+            serde_json::json!({}),
+            serde_json::json!({ "apple": "#/components/schemas/Apple" })
+        )));
+    }
+
+    /// An inline error body discriminated by a mapping Fern cannot resolve is
+    /// typed unknown and hoists no `{Class}Body` model.
+    #[test]
+    fn an_inline_error_body_mapped_to_no_schema_is_unknown_and_not_hoisted() {
+        let refused = serde_json::json!({
+            "description": "Refused",
+            "content": { "application/problem+json": { "schema": {
+                "type": "object",
+                "discriminator": {
+                    "propertyName": "title",
+                    "mapping": { "Overweight": "#/Components/schemas/overweight" }
+                },
+                "properties": { "title": { "type": "string" } }
+            } } }
+        });
+        let response: crate::openapi::Response =
+            serde_json::from_value(refused.clone()).expect("response deserializes");
+        assert_eq!(
+            super::error_body_type(&response, "BadRequestError"),
+            TypeRef::Primitive(Prim::Any)
+        );
+        let directory = tempfile::tempdir().expect("temporary spec");
+        let spec = directory.path().join("openapi.json");
+        std::fs::write(
+            &spec,
+            serde_json::json!({
+                "openapi": "3.0.3",
+                "info": { "title": "Postroom", "version": "1" },
+                "paths": { "/parcels": { "post": {
+                    "operationId": "sendParcel",
+                    "responses": { "400": refused, "202": { "description": "Accepted" } }
+                } } }
+            })
+            .to_string(),
+        )
+        .expect("spec");
+        let doc = crate::openapi::load(&spec).expect("document loads");
+        let config = crate::config::GenerateConfig::new(
+            spec.clone(),
+            directory.path().join("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Postroom",
+        )
+        .expect("config");
+        let ir = super::build(&doc, &config);
+        assert!(
+            !ir.types
+                .iter()
+                .any(|decl| decl.name() == "BadRequestErrorBody"),
+            "no body model is hoisted"
+        );
     }
 
     #[test]

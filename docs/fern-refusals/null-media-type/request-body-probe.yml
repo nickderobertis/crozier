@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Kiln Monitor
+  version: 1.0.0
+paths:
+  /kiln/temperature:
+    get:
+      operationId: getTemperature
+      responses:
+        '200':
+          description: The kiln's temperature in degrees Celsius.
+          content:
+            application/json:
+              schema:
+                type: number
+  /kiln/label:
+    put:
+      operationId: putLabel
+      summary: Replace the label painted on the kiln door.
+      requestBody:
+        content:
+          text/plain:
+      responses:
+        '204':
+          description: Replaced.
