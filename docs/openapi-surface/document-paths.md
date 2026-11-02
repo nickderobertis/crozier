@@ -268,7 +268,7 @@ re-deriving which keys that ledger owns — holds each `golden` row to a reach c
 and each `gap` row to a site count, and fails if one spec location is classified
 in two region files.
 
-**Snapshot digest:** `104e47ceec06125e02e5713e4ebf26e429a8ecbaf6af7e8583c11d4de507289c`, over **314** registered golden sources (31 original fixtures, 283 corpus sources), reproduced from native census JSON. The check reconciles
+**Snapshot digest:** `c725b191b7e79c856e67a5049a70b640d9c2508745e538a87d77b08d79cc3f21`, over **314** registered golden sources (31 original fixtures, 283 corpus sources), reproduced from native census JSON. The check reconciles
 `document-paths evidence: ok (72 census rows, 7 ledger keys, 0 gap rows)`.
 
 A registration, a withdrawal or a grammar change that moves the census fails the
