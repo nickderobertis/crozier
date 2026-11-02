@@ -808,7 +808,9 @@ def measure_step(
 
         failures = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-            for test, hit, error in pool.map(one, sorted(run_tests)):
+            for done, (test, hit, error) in enumerate(pool.map(one, sorted(run_tests)), start=1):
+                if done % 25 == 0 and done < len(run_tests):
+                    print(f"golden-reach: ran {done} of {len(run_tests)} golden test(s)", file=sys.stderr, flush=True)
                 if error is not None or hit is None:
                     failures.append((test, error))
                     continue

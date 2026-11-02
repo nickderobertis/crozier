@@ -768,7 +768,7 @@ class ReportTests(unittest.TestCase):
                 run = self.run_arms()
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn("carries no single", run.stderr)
-                self.assertIn("restore the markers, then re-run", run.stderr)
+                self.assertIn("restore the markers, then run `just census-repin`", run.stderr)
                 self.assertEqual(text, index.read_text(encoding="utf-8"), "a refused run rewrote the index")
 
     def test_arms_refuses_a_malformed_cover_declaration(self) -> None:
