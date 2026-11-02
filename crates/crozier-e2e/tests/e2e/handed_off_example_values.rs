@@ -460,8 +460,7 @@ fn perturbed(cause: &str, rel: &str, from: &str, to: &str) -> tempfile::TempDir 
 }
 
 /// Each declared-value departure explains only its own line: a different
-/// placeholder on the certified side, or a changed line beside it, fails. A
-/// missing document writes no SDK.
+/// placeholder on the certified side, or a changed line beside it, fails.
 // `crozier compare` runs a reference command only on Unix (docs/compare.md).
 #[cfg(unix)]
 #[test]
@@ -543,7 +542,9 @@ fn declared_value_departures_hold_only_their_lines() {
     }
 }
 
-/// A document that is not there writes no SDK.
+/// The recovery path of the measurement journey: a measurement directory whose
+/// document went missing fails with the read error and leaves no partial SDK
+/// behind for a later comparison to mistake for crozier's output.
 #[test]
 fn a_missing_measurement_document_writes_no_sdk() {
     let missing = tempfile::tempdir().expect("missing source tempdir");
