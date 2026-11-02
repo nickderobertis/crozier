@@ -18,7 +18,10 @@ than writing the SDK crozier used to write from the document's components.
 crozier refuses at the document boundary, before any other check, with
 `missing-info-object: info` in default mode and `missing-info-object: info
 (fern-strict refusal)` under `--fern-strict`, writing nothing. An `info`
-object, however sparse (`info: {}`), is no refusal.
+object, however sparse (`info: {}`), is no refusal. A file declaring no
+`openapi` key at all is no OpenAPI document: the loader rejects it with
+"missing `openapi` version field", the more actionable message, rather than
+this class.
 
 The class was measured from scratch for the document-acceptance handed-off
 area:
