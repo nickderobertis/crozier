@@ -6,8 +6,10 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import RetouchPhotoRequestOptions, RetouchPhotoRequestOptionsFinish
+    from .types import ProofResponse, ProofStatus, RetouchPhotoRequestOptions, RetouchPhotoRequestOptionsFinish
 _dynamic_imports: typing.Dict[str, str] = {
+    "ProofResponse": ".types",
+    "ProofStatus": ".types",
     "RetouchPhotoRequestOptions": ".types",
     "RetouchPhotoRequestOptionsFinish": ".types",
 }
@@ -34,4 +36,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["RetouchPhotoRequestOptions", "RetouchPhotoRequestOptionsFinish"]
+__all__ = ["ProofResponse", "ProofStatus", "RetouchPhotoRequestOptions", "RetouchPhotoRequestOptionsFinish"]

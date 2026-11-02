@@ -6,6 +6,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from ..types.photo import Photo
 from .raw_client import AsyncRawPhotosClient, RawPhotosClient
+from .types.proof_response import ProofResponse
 from .types.retouch_photo_request_options import RetouchPhotoRequestOptions
 
 
@@ -62,6 +63,34 @@ class PhotosClient:
         )
         """
         _response = self._raw_client.retouch_photo(brief=brief, options=options, request_options=request_options)
+        return _response.data
+
+    def get_proof(self, photo_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ProofResponse:
+        """
+        Parameters
+        ----------
+        photo_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ProofResponse
+            The proof of the photo
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.photos.get_proof(
+            photo_id="photoId",
+        )
+        """
+        _response = self._raw_client.get_proof(photo_id, request_options=request_options)
         return _response.data
 
 
@@ -123,4 +152,42 @@ class AsyncPhotosClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.retouch_photo(brief=brief, options=options, request_options=request_options)
+        return _response.data
+
+    async def get_proof(
+        self, photo_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> ProofResponse:
+        """
+        Parameters
+        ----------
+        photo_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ProofResponse
+            The proof of the photo
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.photos.get_proof(
+                photo_id="photoId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_proof(photo_id, request_options=request_options)
         return _response.data

@@ -129,6 +129,12 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// The document-acceptance handed-off area: documents the certified pair reads
+/// where crozier refused, failed to parse or wrote invalid Python, each
+/// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
+#[path = "e2e/document_acceptance.rs"]
+mod document_acceptance;
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/(^|::)sdk_env_/)` selector reads a test's full name and so selects a module's journey as well as one at the crate root (`every_sdk_env_journey_is_selected_by_the_sdk_env_tier` holds that); crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 /// The observatory measurement's dangling `METEOR` wrapper round-trips through
 /// crozier's client and fails through the certified tree's
@@ -881,6 +887,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         );
     }
     for (golden, excluded) in unions::compared() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded,
+                carve_outs: Default::default(),
+            },
+        );
+    }
+    for (golden, excluded) in document_acceptance::compared() {
         add(
             golden,
             departures_ledger::ComparedGolden {

@@ -693,9 +693,14 @@ impl<'a> Doc<'a> {
             if required_only && !required.contains(&name.as_str()) {
                 continue;
             }
-            if let Some(found) =
-                self.reach_from(property, required_only, stop_at_open, visit, seen, depth + 1)
-            {
+            if let Some(found) = self.reach_from(
+                property,
+                required_only,
+                stop_at_open,
+                visit,
+                seen,
+                depth + 1,
+            ) {
                 return Some(found);
             }
         }

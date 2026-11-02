@@ -2380,18 +2380,21 @@ where
     }
     match Option::<Composition>::deserialize(deserializer)? {
         None => Ok(None),
-        Some(Composition::Sequence(members)) => Ok(Some(
-            members.into_iter().map(composition_member).collect(),
-        )),
+        Some(Composition::Sequence(members)) => {
+            Ok(Some(members.into_iter().map(composition_member).collect()))
+        }
         Some(Composition::Indexed(members)) => {
             let mut indexed = members
                 .into_iter()
                 .map(|(index, schema)| {
-                    index.parse::<usize>().map(|i| (i, composition_member(schema))).map_err(|_| {
-                        D::Error::custom(format!(
-                            "composition map key {index:?} is not a non-negative integer"
-                        ))
-                    })
+                    index
+                        .parse::<usize>()
+                        .map(|i| (i, composition_member(schema)))
+                        .map_err(|_| {
+                            D::Error::custom(format!(
+                                "composition map key {index:?} is not a non-negative integer"
+                            ))
+                        })
                 })
                 .collect::<std::result::Result<Vec<_>, D::Error>>()?;
             indexed.sort_by_key(|(index, _)| *index);
@@ -7837,13 +7840,20 @@ mod document_acceptance_tests {
         for name in ["Humidity", "DewPoint"] {
             let members = schemas[name].all_of.as_deref().unwrap();
             assert_eq!(members.len(), 1, "{name}");
-            assert_eq!(members[0].ty, Some(TypeField::Single("number".into())), "{name}");
+            assert_eq!(
+                members[0].ty,
+                Some(TypeField::Single("number".into())),
+                "{name}"
+            );
         }
         assert!(schemas["Only"].all_of.is_none());
         let label = schemas["Label"].any_of.as_deref().unwrap();
         assert_eq!(label[0], Schema::default());
         assert_eq!(label[1].ty, Some(TypeField::Single("string".into())));
-        assert_eq!(schemas["Unit"].one_of.as_deref().unwrap()[1], Schema::default());
+        assert_eq!(
+            schemas["Unit"].one_of.as_deref().unwrap()[1],
+            Schema::default()
+        );
     }
 
     /// A non-string `type` list entry is kept as its JSON spelling, a type
@@ -7858,7 +7868,10 @@ mod document_acceptance_tests {
             schemas["Relay"].ty,
             Some(TypeField::Multiple(vec!["string".into(), "false".into()]))
         );
-        assert_eq!(schemas["Relay"].ty.as_ref().unwrap().primary(), Some("string"));
+        assert_eq!(
+            schemas["Relay"].ty.as_ref().unwrap().primary(),
+            Some("string")
+        );
         assert_eq!(
             schemas["Plain"].ty,
             Some(TypeField::Multiple(vec!["integer".into(), "null".into()]))
@@ -7877,7 +7890,10 @@ mod document_acceptance_tests {
         assert!(operation.parameters[0].examples.is_empty());
         let sector = &operation.parameters[1].examples;
         assert_eq!(sector.keys().collect::<Vec<_>>(), ["north", "lab"]);
-        assert_eq!(sector["north"].value, Some(serde_json::json!("north-sector")));
+        assert_eq!(
+            sector["north"].value,
+            Some(serde_json::json!("north-sector"))
+        );
         assert_eq!(sector["lab"].value, Some(serde_json::json!("lab-1")));
         let body = operation.request_body.as_ref().unwrap();
         assert!(body.content["text/plain"].examples.is_empty());

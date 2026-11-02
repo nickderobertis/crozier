@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
     from . import photos
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-    from .photos import RetouchPhotoRequestOptions, RetouchPhotoRequestOptionsFinish
+    from .photos import ProofResponse, ProofStatus, RetouchPhotoRequestOptions, RetouchPhotoRequestOptionsFinish
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
@@ -18,6 +18,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "Photo": ".types",
+    "ProofResponse": ".photos",
+    "ProofStatus": ".photos",
     "RetouchPhotoRequestOptions": ".photos",
     "RetouchPhotoRequestOptionsFinish": ".photos",
     "__version__": ".version",
@@ -52,6 +54,8 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "FernApi",
     "Photo",
+    "ProofResponse",
+    "ProofStatus",
     "RetouchPhotoRequestOptions",
     "RetouchPhotoRequestOptionsFinish",
     "__version__",

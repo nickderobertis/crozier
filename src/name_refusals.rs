@@ -1171,12 +1171,25 @@ pub(crate) fn validate_ir(
             })
         })
         .collect();
+    // A component declaring an SDK group (or `x-tags`) is written into that
+    // group's package rather than the root's: there it is its own declaration,
+    // not a second one beside it, and the certified pair generates it
+    // (docs/fern-measurements/handed-off/document-acceptance/
+    // crozier-refuses-type-name-collision/, AssemblyAI's `RedactedAudioStatus`).
+    let placed: std::collections::HashSet<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, schema)| schema.sdk_group_name().is_some() || schema.placement_tag().is_some())
+        .map(|(name, _)| crate::naming::class_name(name))
+        .collect();
     for tag in &ir.tag_types {
         if matches!(tag.decl, crate::ir::TypeDecl::Enum(_))
             && !tag.module.is_empty()
             && !tag.module.contains('/')
             && roots.contains(tag.decl.name())
             && !header_enums.contains(tag.decl.name())
+            && !placed.contains(tag.decl.name())
         {
             return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("enum {} in namespace {} collides with a schema declaration; give the types distinct declared names", tag.decl.name(), tag.module)), strict));
         }
@@ -2015,5 +2028,52 @@ mod tests {
             .filter(|decl| decl.name() == "TransferMode")
             .collect();
         assert_eq!(modes.len(), 1);
+    }
+
+    /// A component its SDK group places in a tag's package is its own
+    /// declaration there, not an enum colliding with a root schema; the same
+    /// enum declared by a query parameter beside a root schema of its name
+    /// still refuses (the class's `namespaced-query-enum-diff` evidence).
+    #[test]
+    fn a_group_placed_component_enum_is_no_collision() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        assert!(ir
+            .tag_types
+            .iter()
+            .any(|tag| tag.module == "photos" && tag.decl.name() == "ProofStatus"));
+        for strict in [false, true] {
+            validate_ir(&ir, &doc, &path, strict).unwrap();
+        }
+        let control = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/type-name-collision/evidence/namespaced-query-enum-diff.yml");
+        let doc = crate::openapi::load(&control).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            control.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let error = validate_ir(&crate::ir::build(&doc, &config), &doc, &control, false)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("type-name-collision"), "{error}");
     }
 }

@@ -7,11 +7,12 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param, jsonable_encoder
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.photo import Photo
+from .types.proof_response import ProofResponse
 from .types.retouch_photo_request_options import RetouchPhotoRequestOptions
 from pydantic import ValidationError
 
@@ -77,6 +78,46 @@ class RawPhotosClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def get_proof(
+        self, photo_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[ProofResponse]:
+        """
+        Parameters
+        ----------
+        photo_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ProofResponse]
+            The proof of the photo
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"photos/{encode_path_param(photo_id)}/proof",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ProofResponse,
+                    parse_obj_as(
+                        type_=ProofResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPhotosClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -123,6 +164,46 @@ class AsyncRawPhotosClient:
                     Photo,
                     parse_obj_as(
                         type_=Photo,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_proof(
+        self, photo_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[ProofResponse]:
+        """
+        Parameters
+        ----------
+        photo_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ProofResponse]
+            The proof of the photo
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"photos/{encode_path_param(photo_id)}/proof",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ProofResponse,
+                    parse_obj_as(
+                        type_=ProofResponse,
                         object_=_response.json(),
                     ),
                 )

@@ -9460,30 +9460,27 @@ fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
             && !member.properties.is_empty()
     };
     fn branches(member: &Schema) -> Option<&[Schema]> {
-        member
-            .any_of
-            .as_deref()
-            .filter(|branches| {
-                member.reference.is_none()
-                    && member.properties.is_empty()
-                    && member.all_of.is_none()
-                    && member.one_of.is_none()
-                    && branches.iter().any(|branch| !branch.properties.is_empty())
-                    && branches.iter().all(|branch| {
-                        branch.reference.is_none()
-                            && branch.all_of.is_none()
-                            && branch.one_of.is_none()
-                            && branch.any_of.is_none()
-                    })
-            })
+        member.any_of.as_deref().filter(|branches| {
+            member.reference.is_none()
+                && member.properties.is_empty()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && branches.iter().any(|branch| !branch.properties.is_empty())
+                && branches.iter().all(|branch| {
+                    branch.reference.is_none()
+                        && branch.all_of.is_none()
+                        && branch.one_of.is_none()
+                        && branch.any_of.is_none()
+                })
+        })
     }
     if !members.iter().any(|member| member.reference.is_some())
         || !members
             .iter()
             .any(|member| plain(member) || branches(member).is_some())
-        || !members.iter().all(|member| {
-            member.reference.is_some() || plain(member) || branches(member).is_some()
-        })
+        || !members
+            .iter()
+            .all(|member| member.reference.is_some() || plain(member) || branches(member).is_some())
     {
         return None;
     }
@@ -13472,10 +13469,14 @@ impl Builder<'_> {
             .iter()
             .flatten()
             .filter(|member| member.reference.is_none())
-            .filter_map(|member| match branch_union_properties(member, self.schemas) {
-                Some(BranchUnion::Merged(merged)) => Some(merged.properties.keys().cloned().collect::<Vec<_>>()),
-                _ => None,
-            })
+            .filter_map(
+                |member| match branch_union_properties(member, self.schemas) {
+                    Some(BranchUnion::Merged(merged)) => {
+                        Some(merged.properties.keys().cloned().collect::<Vec<_>>())
+                    }
+                    _ => None,
+                },
+            )
             .flatten()
             .collect();
         let declared_fields: std::collections::HashSet<&str> = schema
@@ -30721,9 +30722,10 @@ mod document_acceptance_tests {
 
     fn body_wire_names(endpoint: &Endpoint) -> Vec<&str> {
         match &endpoint.request_body {
-            Some(RequestBody::Inline(fields)) => {
-                fields.iter().map(|field| field.wire_name.as_str()).collect()
-            }
+            Some(RequestBody::Inline(fields)) => fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect(),
             other => panic!("{} sends no inline body: {other:?}", endpoint.method_name),
         }
     }
@@ -30761,7 +30763,9 @@ mod document_acceptance_tests {
         let ir = lowered("crozier-refuses-type-name-collision");
         let root: Vec<&str> = ir.types.iter().map(|decl| decl.name()).collect();
         assert!(
-            !root.iter().any(|name| name.starts_with("RetouchPhotoRequest")),
+            !root
+                .iter()
+                .any(|name| name.starts_with("RetouchPhotoRequest")),
             "{root:?}"
         );
         let photos: Vec<&str> = ir
@@ -30771,7 +30775,10 @@ mod document_acceptance_tests {
             .map(|tag| tag.decl.name())
             .collect();
         assert!(photos.contains(&"RetouchPhotoRequestOptions"), "{photos:?}");
-        assert!(photos.contains(&"RetouchPhotoRequestOptionsFinish"), "{photos:?}");
+        assert!(
+            photos.contains(&"RetouchPhotoRequestOptionsFinish"),
+            "{photos:?}"
+        );
     }
 
     #[test]

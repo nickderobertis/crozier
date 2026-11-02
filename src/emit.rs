@@ -19449,6 +19449,8 @@ mod document_acceptance_tests {
             .and_then(|method| method.split("httpx_client.request(").nth(1))
             .unwrap();
         assert!(call.trim_start().starts_with("method=\"GET\","), "{call}");
-        assert!(raw.contents.contains("f\"firings/{encode_path_param(firing_id)}\","));
+        assert!(raw
+            .contents
+            .contains("f\"firings/{encode_path_param(firing_id)}\","));
     }
 }

@@ -2373,6 +2373,29 @@ class DiagnosticExtraction(unittest.TestCase):
         )
         self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
 
+    def test_a_missing_info_type_error_is_more_specific_than_the_parse_failure(self) -> None:
+        # The certified pair's own log over the missing-info-object probe:
+        # `info` absent or null fails its read of `info.version`.
+        for value in ("null", "undefined"):
+            log = "\n".join(
+                [
+                    "[api]: python-sdk Failed to parse openapi document undefined",
+                    f"[api]: python-sdk Cannot read properties of {value} (reading 'version') ",
+                    f"                  TypeError: Cannot read properties of {value} (reading 'version')",
+                    "[api]: python-sdk ✓ All checks passed",
+                ]
+            )
+            self.assertEqual([f"Cannot read properties of {value} (reading 'version')"], self.module.diagnostics(log))
+        # Another property read off null is not that class's phrase, and the
+        # bare parse failure stays the only message, as before.
+        other = "\n".join(
+            [
+                "[api]: python-sdk Failed to parse openapi document Doors",
+                "[api]: python-sdk Cannot read properties of null (reading 'schema') ",
+            ]
+        )
+        self.assertEqual(["Failed to parse openapi document Doors"], self.module.diagnostics(other))
+
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
             [

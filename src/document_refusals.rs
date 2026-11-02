@@ -4114,7 +4114,9 @@ components:
         );
         assert!(response_object_element("paths//a/get/responses/200"));
         assert!(response_object_element("components/responses/Rejected"));
-        assert!(!response_object_element("paths//a/get/responses/200/headers"));
+        assert!(!response_object_element(
+            "paths//a/get/responses/200/headers"
+        ));
         assert!(!response_object_element("paths//a/get/parameters/0"));
     }
 
@@ -4136,7 +4138,10 @@ components:
         }
         std::fs::write(&file, document("status")).unwrap();
         let error = check_structure_file(&file, false).unwrap_err().to_string();
-        assert!(error.contains("path-without-leading-slash: paths/status"), "{error}");
+        assert!(
+            error.contains("path-without-leading-slash: paths/status"),
+            "{error}"
+        );
     }
 
     /// A document whose `info` is absent or null is refused in both modes, as
@@ -4149,7 +4154,10 @@ components:
         for info in ["", "info:\n", "info: null\n"] {
             std::fs::write(&file, format!("openapi: 3.0.0\n{info}paths: {{}}\n")).unwrap();
             let default = check_structure_file(&file, false).unwrap_err().to_string();
-            assert!(default.ends_with("missing-info-object: info"), "{info:?}: {default}");
+            assert!(
+                default.ends_with("missing-info-object: info"),
+                "{info:?}: {default}"
+            );
             let strict = check_structure_file(&file, true).unwrap_err().to_string();
             assert!(
                 strict.ends_with("missing-info-object: info (fern-strict refusal)"),
