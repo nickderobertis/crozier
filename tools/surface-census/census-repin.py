@@ -507,21 +507,29 @@ def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> 
         stdout.write_text(run.stdout, encoding="utf-8")
 
 
-def regenerate(root: Path, store: dict[str, Any], out: Path, partial: bool = False) -> None:
-    """Every derived file, each from its own generator, in dependency order."""
+def regenerate(root: Path, store: dict[str, Any], out: Path, scoped: bool = False) -> list[str]:
+    """Every derived file, each from its own generator, in dependency order; return what was skipped.
+
+    A scoped measurement (`--tests`/`--fixtures`) holds a subset of the witnesses,
+    so the sections restating the whole population — the arm sections and the
+    coverage headline — are left for an unscoped run.
+    """
     python = census_python(root)
     tools = root / "tools" / "surface-census"
     census = out / "census.json"
     out.mkdir(parents=True, exist_ok=True)
     _run(root, [python, str(tools / "openapi-surface-census.py"), "--json"], "the census", census)
     handwritten = _load("census_repin_handwritten", "handwritten-fixtures.py")
-    handwritten.report(root, store, partial=partial)
+    handwritten.report(root, store, partial=scoped)
     common = [python, str(tools / "golden-reach.py"), "--repo-root", str(root), "--out", str(out)]
-    _run(root, [*common, "report", "--write", "--census", str(census)], "the ledger and reach cells")
-    _run(root, [*common, "arms"], "the arm sections")
+    report = [*common, "report", "--write", "--census", str(census)]
+    _run(root, [*report, "--skip-arms"] if scoped else report, "the ledger and reach cells")
+    if not scoped:
+        _run(root, [*common, "arms"], "the arm sections")
     restate = [python, str(tools / "restate-coverage.py"), "--repo-root", str(root)]
     _run(root, [*restate, "--snapshot-json", str(census), "--write"], "the census tallies")
-    _run(root, [*restate, "--write"], "the coverage headline")
+    if not scoped:
+        _run(root, [*restate, "--write"], "the coverage headline")
     _run(
         root,
         [python, str(tools / "scenario-proof-index.py"), "--repo-root", str(root), "write"],
@@ -543,6 +551,7 @@ def regenerate(root: Path, store: dict[str, Any], out: Path, partial: bool = Fal
         ],
         "the witness-search registries index",
     )
+    return ["the arm sections", "the coverage headline"] if scoped else []
 
 
 # --- The verb ---------------------------------------------------------------
@@ -564,6 +573,10 @@ def tracked_changes(root: Path) -> set[str]:
 def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
     root: Path = args.repo_root.resolve()
     out = root / ".local" / "golden-reach"
+    if args.base_only:
+        choice = BASES.find(root)
+        print(f"census-repin: base {choice.commit or 'none'} ({choice.source}): {choice.reason}")
+        return 0
     merged = resolve_merge(root)
     if merged:
         say(f"census-repin: resolved {merged} derived conflict hunk(s) and committed the merge")
@@ -573,9 +586,9 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
             f"{len(dirty)} measured input(s) differ from HEAD ({', '.join(dirty[:5])}); commit them first, "
             "so the measurement names the commit it measured"
         )
-    before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
     choice = BASES.find(root)
     say(f"census-repin: base: {choice.reason}")
+    before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
     moves = reanchor_all(root, choice.commit)
     rewritten = {p.relative_to(root).as_posix() for p in rewrite_specs(root, moves)} if moves else set()
     for old, new in moves.items():
@@ -595,7 +608,9 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
         say(f"census-repin: re-ran {subject}: {reason}")
     REACH.write_views(step, out, root)
     BASES.publish(step.store)
-    regenerate(root, step.store, out, partial=bool(args.fixtures))
+    skipped = regenerate(root, step.store, out, scoped=bool(args.tests or args.fixtures))
+    if skipped:
+        say(f"census-repin: a scoped measurement leaves {' and '.join(skipped)} to an unscoped run")
     after = tracked_changes(root)
     for path in after:
         current = (root / path).read_bytes() if (root / path).is_file() else None
@@ -617,6 +632,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--jobs", type=REACH.positive_int, default=REACH.default_jobs())
     parser.add_argument("--tests", help="measure only the golden tests this regex matches (a scoped measurement)")
     parser.add_argument("--fixtures", help="measure only the hand-written fixtures this regex matches")
+    parser.add_argument(
+        "--base-only", action="store_true", help="print the base a repin would step from, and why; measure nothing"
+    )
     args = parser.parse_args(argv)
     for pattern in (args.tests, args.fixtures):
         if pattern:

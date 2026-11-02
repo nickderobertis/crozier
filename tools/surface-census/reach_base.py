@@ -241,12 +241,12 @@ def find(root: Path, *, include_head: bool = True) -> Choice:
                 f"{prefix}the cached base at {commits[index][:12]}, with no nearer ancestor CI could have published",
             )
         return Choice(None, None, "none", f"{prefix}no base: no cached base and no ancestor on origin/main")
-    token, via = _token()
-    if token is None:
-        return fallback(f"cannot ask GitHub for a nearer base: {via}")
     slug = repository(root)
     if slug is None:
         return fallback("cannot ask GitHub for a nearer base: the `origin` remote names no GitHub repository")
+    token, via = _token()
+    if token is None:
+        return fallback(f"cannot ask GitHub for a nearer base: {via}")
     guard_module = _guard_module()
     try:
         api = guard_module.github_api_url()

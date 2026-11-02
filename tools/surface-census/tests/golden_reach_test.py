@@ -815,7 +815,7 @@ class ReportTests(unittest.TestCase):
                 run = self.run_arms()
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn(message, run.stderr)
-                self.assertIn("re-run `just handwritten-reach`", run.stderr)
+                self.assertIn("run `just census-repin`", run.stderr)
 
     def test_a_config_gated_arm_the_gate_measures_reads_the_gate_tables_verdict(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)
@@ -1059,7 +1059,7 @@ class ReportTests(unittest.TestCase):
         (self.measurement / "universe.json").unlink()
         run = self.run_report()
         self.assertNotEqual(0, run.returncode)
-        self.assertIn("just golden-reach", run.stderr)
+        self.assertIn("just census-repin", run.stderr)
 
     @unittest.skipIf(
         os.name == "nt",
@@ -1310,7 +1310,7 @@ class MeasurementInputTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             with self.assertRaises(SystemExit) as refused:
                 golden_reach.measured_commit(Path(scratch))
-            self.assertIn("just golden-reach", str(refused.exception))
+            self.assertIn("just census-repin", str(refused.exception))
             (Path(scratch) / "provenance.json").write_text('{"commit": "main"}', encoding="utf-8", newline="\n")
             with self.assertRaises(SystemExit) as refused:
                 golden_reach.measured_commit(Path(scratch))
@@ -1439,7 +1439,7 @@ class MeasurementInputTests(unittest.TestCase):
                 with self.assertRaises(SystemExit) as refused:
                     golden_reach.read_ledger(ledger)
                 self.assertIn(f"{ledger}:3", str(refused.exception))
-                self.assertIn("just golden-reach-report", str(refused.exception))
+                self.assertIn("just census-repin", str(refused.exception))
 
     def test_an_enumeration_of_another_shape_is_refused_by_every_reader(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
@@ -1538,7 +1538,7 @@ class MeasurementInputTests(unittest.TestCase):
                     with self.assertRaises(SystemExit) as refused:
                         load(path)
                     self.assertIn(str(path), str(refused.exception))
-                    self.assertIn("re-run `just golden-reach`", str(refused.exception))
+                    self.assertIn("run `just census-repin`", str(refused.exception))
             regions.write_text('{"src/ir.rs": [[1, 2, 3, 4]]}', encoding="utf-8", newline="\n")
             self.assertEqual({"src/ir.rs": {(1, 2, 3, 4)}}, golden_reach.load_regions(regions))
             accepted = {

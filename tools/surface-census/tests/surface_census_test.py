@@ -1441,6 +1441,36 @@ class HandwrittenReachRow(NamedTuple):
     regions: int
 
 
+# The one fix a census-tier check over a measured table names: every such failure
+# says to run it (docs/openapi-surface-coverage.md, "Golden reach, row by row").
+REPIN = "run `just census-repin`, which re-anchors moved sites and regenerates the measured tables"
+# A section no generator writes is restated by hand from the ledger the verb writes.
+REPIN_THEN_RESTATE = (
+    "run `just census-repin`, then restate this section from the golden-reach.tsv it writes "
+    "(no generator owns it)"
+)
+
+
+def names_the_repin(hint: str = REPIN) -> Callable[[Callable[..., None]], Callable[..., None]]:
+    """Append `hint` to a census check's assertion failure, so the failure names its fix.
+
+    A failure a `subTest` records never reaches the method, so a check that uses
+    one names the verb in its own messages instead.
+    """
+
+    def wrap(test: Callable[..., None]) -> Callable[..., None]:
+        @functools.wraps(test)
+        def run(*args: Any, **kwargs: Any) -> None:
+            try:
+                test(*args, **kwargs)
+            except AssertionError as error:
+                raise AssertionError(f"{error}\n— {hint}") from error
+
+        return run
+
+    return wrap
+
+
 def handwritten_reach_rows(root: Path) -> tuple[list[HandwrittenReachRow], list[str]]:
     """`handwritten-reach.tsv`'s rows, and every way its header, rows or order break,
     read by `handwritten-fixtures.py`'s own reader."""
@@ -2853,7 +2883,7 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
         reach.write_text(reach.read_text(encoding="utf-8").replace("regions_executed", "executed"), encoding="utf-8")
         run = self.arms(root)
         self.assertNotEqual(0, run.returncode)
-        self.assertIn("re-run `just handwritten-reach`", run.stderr)
+        self.assertIn("run `just census-repin`", run.stderr)
 
     def test_a_cover_whose_audiences_are_not_names_is_refused(self) -> None:
         root = self.tree(executed=20)
@@ -9978,6 +10008,7 @@ class RankedBacklogTests(unittest.TestCase):
             "the settlement classes do not partition the gap rows",
         )
 
+    @names_the_repin(REPIN)
     def test_the_headline_totals_are_the_region_files_own(self) -> None:
         """The opening answer's three numbers, each taken back from the tree.
 
@@ -10175,6 +10206,7 @@ class RankedBacklogTests(unittest.TestCase):
             "a class has neither a decided detector nor an evaluated document population",
         )
 
+    @names_the_repin(REPIN_THEN_RESTATE)
     def test_the_prose_counts_are_the_ledgers_counts(self) -> None:
         """Each count the prose states about the current tree, derived again from its ledger.
 
@@ -10281,6 +10313,7 @@ class RankedBacklogTests(unittest.TestCase):
             "the authored-probe list does not link exactly the committed probes",
         )
 
+    @names_the_repin(REPIN_THEN_RESTATE)
     def test_every_golden_row_resting_only_on_residual_goldens_is_attributed(self) -> None:
         """A residual golden proves a row only where its byte-matched files carry the row.
 
@@ -10317,6 +10350,7 @@ class RankedBacklogTests(unittest.TestCase):
                 expected = "split" if files and gaps else "byte-matched" if files else "open gap"
                 self.assertEqual(expected, verdict)
 
+    @names_the_repin(REPIN_THEN_RESTATE)
     def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:
         """Each `src/` file's row states how many of the ledger's unreached arms it holds."""
         unreached = [
@@ -11555,11 +11589,12 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(region=region, key=key):
                 self.assertTrue(
                     cells[5].startswith(module.CELL_PREFIX),
-                    f"`{key}` is golden and carries no reach cell in its `crozier sites` "
-                    "column; run `just golden-reach` (or `just golden-reach-report`)",
+                    f"`{key}` is golden and carries no reach cell in its `crozier sites` column; {REPIN}",
                 )
-                self.assertEqual(rendered.get(key), cells[5], f"`{key}`'s reach cell is not its ledger row's")
+                self.assertEqual(rendered.get(key), cells[5], f"`{key}`'s reach cell is not its ledger row's; {REPIN}")
+        self.assertEqual([], module.stale_cells(self.REGIONS))
 
+    @names_the_repin(REPIN)
     def test_the_reach_ledger_is_every_golden_row_in_ranking_order(self) -> None:
         """One ledger row per golden row, owned by the right region, in rubric order."""
         module = self.golden_reach()
@@ -11579,7 +11614,11 @@ class RankedBacklogTests(unittest.TestCase):
         table = module.read_sites_table()
         for _rank, reach in self.reach_ledger(combinations=True):
             with self.subTest(key=reach.key):
-                self.assertEqual(table[reach.key].sites, tuple(spec for spec, _h, _t in reach.sites))
+                self.assertEqual(
+                    table[reach.key].sites,
+                    tuple(spec for spec, _h, _t in reach.sites),
+                    f"the ledger row of `{reach.key}` measures other sites than the site table declares; {REPIN}",
+                )
         for spec in sorted({spec for row in table.values() for spec in row.sites}):
             with self.subTest(site=spec):
                 module.resolve_site(spec)
@@ -11835,6 +11874,7 @@ class RankedBacklogTests(unittest.TestCase):
                 counted[source] = len(names)
         self.assertTrue(counted, "no source files a census refusal")
 
+    @names_the_repin(REPIN_THEN_RESTATE)
     def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
         """The thin end, as a list: every single-witness and no-witness golden row."""
         ledger = self.reach_ledger()
@@ -11856,6 +11896,7 @@ class RankedBacklogTests(unittest.TestCase):
         flat = " ".join(self.doc.split())
         self.assertIn(f"**{len(one)}** golden rows rest on one document", flat)
 
+    @names_the_repin(REPIN_THEN_RESTATE)
     def test_the_reach_ranking_is_every_row_with_an_unreached_site_and_its_boundary(self) -> None:
         """The committed ranking, off the ledger, and each row's owner stated."""
         ledger = self.reach_ledger()
@@ -11888,6 +11929,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     REACH_ARMS = "#### Every unreached arm, and its search verdict"
 
+    @names_the_repin(REPIN)
     def test_every_unreached_arm_is_named_with_its_search_verdict(self) -> None:
         """The arm counts and arm table are `just golden-reach-arms`'s output over the committed tree.
 
@@ -11913,7 +11955,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             self.doc,
             module.render_arm_sections(self.doc, ledger, self.REGIONS, self.DOC),
-            "the generated arm sections are stale; run `just golden-reach-arms`",
+            f"the generated arm sections are stale; {REPIN}",
         )
         flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
         partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
@@ -21322,6 +21364,7 @@ class CombinationListTests(unittest.TestCase):
         self.edit(COMBINATIONS_LIST, "\n## Rejected\n", "\n## Weighed\n")
         self.assertIn("combinations.md has no '## Rejected' section", self.failures())
 
+    @names_the_repin(REPIN)
     def test_the_coverage_headline_counts_the_combinations_apart(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         self.assertEqual([], restater.combination_headline_failures(REPO))

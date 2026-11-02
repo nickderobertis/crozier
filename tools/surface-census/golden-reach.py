@@ -1215,6 +1215,25 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     return out
 
 
+def stale_cells(regions_dir: Path = REGIONS_DIR) -> list[str]:
+    """Every `golden` row whose reach cell is not the one its ledger row renders, named with the fix."""
+    ledger = {reach.key: (rank, reach) for rank, reach in read_ledger(regions_dir / "golden-reach.tsv")}
+    failures = []
+    for path in sorted(regions_dir.glob("*.md")):
+        for cells in region_rows(path.read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            if cells[3].strip("`") != "golden":
+                continue
+            if key not in ledger:
+                failures.append(f"`{key}` ({path.name}) has no golden-reach.tsv row; run `{REPIN}`")
+            elif cells[5] != reach_cell(ledger[key][1], ledger[key][0], regions_dir):
+                failures.append(
+                    f"`{key}` ({path.name}): its reach cell is not the one its golden-reach.tsv row renders; "
+                    f"run `{REPIN}`"
+                )
+    return failures
+
+
 def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR, ranks: dict[str, int] | None = None) -> int:
     """Put each golden row's reach cell in its `crozier sites` column; return rows changed."""
     by_key = {r.key: ((ranks or {}).get(r.key, rank), r) for rank, r in enumerate(reaches, start=1)}
@@ -1947,7 +1966,7 @@ def report(args: argparse.Namespace) -> int:
         changed = rewrite_cells(reaches, repo_root / "docs" / "openapi-surface")
         index = repo_root / "docs" / "openapi-surface-coverage.md"
         # A tree with no coverage index (a scratch region set) has no arm sections to restate.
-        restated = index.is_file() and rewrite_arm_sections(
+        restated = not getattr(args, "skip_arms", False) and index.is_file() and rewrite_arm_sections(
             read_ledger(repo_root / "docs" / "openapi-surface" / "golden-reach.tsv"),
             repo_root / "docs" / "openapi-surface",
             index,
@@ -2093,6 +2112,11 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")
     r.add_argument("--write", action="store_true", help="write the ledger and reach cells")
+    r.add_argument(
+        "--skip-arms",
+        action="store_true",
+        help="leave the arm sections alone (a scoped measurement holds too few witnesses to restate them)",
+    )
     r.add_argument(
         "--keys", nargs="+", help="update only these golden keys, retaining other measurements and recomputing ranks"
     )

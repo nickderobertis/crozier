@@ -644,15 +644,21 @@ def read_tree(root: Path, sources: Mapping[str, bytes] | None = None) -> Tree:
         if path in test_only:
             continue
         files[path] = file
-        excluded = [False] * len(file.tokens)
+        # rustfmt adds and drops a trailing comma as it reflows a list, so the
+        # normalized stream leaves out a comma directly before a closing bracket.
+        excluded = [
+            token.text == "," and index + 1 < len(file.tokens) and file.tokens[index + 1].text in (")", "]", "}")
+            for index, token in enumerate(file.tokens)
+        ]
+        inside = [False] * len(file.tokens)
+        tested = [False] * len(file.tokens)
         for lo, hi in file.test_spans:
             for k in range(lo, hi + 1):
-                excluded[k] = True
-        inside = [False] * len(file.tokens)
+                tested[k] = True
         for unit in file.units:
-            if excluded[unit.item]:
+            if tested[unit.item]:
                 continue
-            indices = list(range(unit.first, unit.last + 1))
+            indices = [k for k in range(unit.first, unit.last + 1) if not excluded[k]]
             key = f"{path}::{unit.key}"
             functions[key] = Function(
                 key,
@@ -666,7 +672,7 @@ def read_tree(root: Path, sources: Mapping[str, bytes] | None = None) -> Tree:
             )
             for k in range(unit.item, unit.last + 1):
                 inside[k] = True
-        rest = [k for k in range(len(file.tokens)) if not inside[k] and not excluded[k]]
+        rest = [k for k in range(len(file.tokens)) if not inside[k] and not excluded[k] and not tested[k]]
         last_line = file.position(max(len(file.source) - 1, 0))[0]
         functions[f"{path}::{ITEMS}"] = Function(
             f"{path}::{ITEMS}",
