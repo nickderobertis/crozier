@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Ledger Block Explorer
+  version: 1.0.0
+  description: Reads blocks from a ledger by hash or by height.
+servers:
+  - url: https://ledger.example.com
+paths:
+  /blocks/{id}:
+    get:
+      operationId: getBlock
+      tags: [blocks]
+      summary: One block, named by its hex hash or by its height.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Block hash (hex) or height.
+          schema:
+            oneOf:
+              - type: string
+                pattern: '^[0-9a-f]{64}$'
+              - type: integer
+                format: uint64
+      responses:
+        '200':
+          description: The block.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+components:
+  schemas:
+    Block:
+      type: object
+      required: [height, hash]
+      properties:
+        height:
+          type: integer
+        hash:
+          type: string

@@ -129,6 +129,15 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The handed-off body and media-type root causes, each measured on a
+/// from-scratch document under `docs/fern-measurements/handed-off/bodies-media/`
+/// and held whole against the certified pair's tree, with the wire journeys of
+/// the causes whose verdict rests on what an SDK sends or returns.
+#[path = "e2e/bodies_media.rs"]
+mod bodies_media;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates or refuses one small document through the binary, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The documents the certified pair turns into an empty SDK, refused in both
 /// modes under the user's `empty-sdk-refused` ruling, lolesports' valid shape
@@ -910,6 +919,10 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         "docs/fern-measurements/examples/nested-discriminator-wire/fern-expected".to_owned(),
         departures_ledger::ComparedGolden::default(),
     );
+    add(
+        bodies_media::RESPONSE_LITERALS_GOLDEN.to_owned(),
+        departures_ledger::ComparedGolden::default(),
+    );
     // llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     // Only the measurements crozier generates are compared; the others' trees
     // are the pair's empty scaffold, kept as the evidence of its refusal.
@@ -939,6 +952,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
+        (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,

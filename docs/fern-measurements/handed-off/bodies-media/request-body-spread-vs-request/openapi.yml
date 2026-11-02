@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Apiary Hive Register
+  version: 1.0.0
+  description: Registers beehives and the frames lifted from them.
+servers:
+  - url: https://apiary.example.com
+paths:
+  /hives:
+    post:
+      operationId: registerHive
+      tags: [hives]
+      summary: Register a hive, accepted under any media type.
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/HiveRegistration'
+      responses:
+        '204':
+          description: Registered.
+  /hives/{hiveId}/frames:
+    post:
+      operationId: uploadFrame
+      tags: [hives]
+      summary: Upload a photo of one frame.
+      parameters:
+        - name: hiveId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FrameUpload'
+      responses:
+        '204':
+          description: Uploaded.
+components:
+  schemas:
+    HiveRegistration:
+      type: object
+      required: [apiary, queenMarked]
+      properties:
+        apiary:
+          type: string
+          description: The apiary the hive stands in.
+        queenMarked:
+          type: boolean
+          description: Whether the queen carries a paint mark.
+    FrameUpload:
+      type: object
+      required: [photo, position]
+      properties:
+        photo:
+          type: string
+          format: binary
+          description: The frame photo.
+        position:
+          type: integer
+          description: The frame's slot, counted from the entrance.
