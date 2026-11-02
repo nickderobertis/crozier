@@ -4303,27 +4303,48 @@ def _camel_join(words: list[str]) -> str:
     return "".join(word if index == 0 else word[:1].upper() + word[1:] for index, word in enumerate(words))
 
 
-def _tag_location(tag: str, text: str) -> tuple[str, str] | str:
-    """`tag_location`: `"root"`, `"whole"`, or the `(group, method)` a stripped tag leaves."""
+@dataclass(frozen=True)
+class _RootLocation:
+    """`TagLocation::Root`: the id's words are the tag's, a root-client method."""
+
+
+@dataclass(frozen=True)
+class _WholeLocation:
+    """`TagLocation::Whole`: under the tag, the whole id the method."""
+
+
+@dataclass(frozen=True)
+class _StrippedLocation:
+    """`TagLocation::Stripped`: the tag's words lead the id's."""
+
+    group: str
+    method: str
+
+
+_TagLocation = _RootLocation | _WholeLocation | _StrippedLocation
+
+
+def _tag_location(tag: str, text: str) -> _TagLocation:
+    """`tag_location`: where Fern places an operation from its tag and id words."""
     tag_words, id_words = _fern_location_tokens(tag), _fern_location_tokens(text)
     if not tag_words or not id_words:
-        return "whole"
+        return _WholeLocation()
     if tag_words == id_words:
-        return "root"
+        return _RootLocation()
     if len(id_words) > len(tag_words) and _starts_with(id_words, tag_words):
-        return _camel_join(tag_words), _camel_join(id_words[len(tag_words) :])
-    return "whole"
+        return _StrippedLocation(_camel_join(tag_words), _camel_join(id_words[len(tag_words) :]))
+    return _WholeLocation()
 
 
 def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     """`method_from_groupless_id`: the words after the tag's, the tag's own, or the whole id."""
-    location = _tag_location(tag, text) if tag is not None else "whole"
-    if isinstance(location, tuple):
-        method = to_snake_case(location[1])
-    elif location == "root" and tag is not None:
-        method = to_snake_case(tag)
-    else:
-        method = to_snake_case(text)
+    match (tag, _tag_location(tag, text) if tag is not None else _WholeLocation()):
+        case (_, _StrippedLocation(method=stripped)):
+            method = to_snake_case(stripped)
+        case (str(spelled), _RootLocation()):
+            method = to_snake_case(spelled)
+        case _:
+            method = to_snake_case(text)
     ident, prefixed = _sanitized(method)
     return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
@@ -4707,7 +4728,7 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
                 return _sanitized(to_snake_case(inner))
     if not text:
         return None  # the summary or route fallback names this method, not the id
-    if tag is not None and _tag_location(tag, text) == "root":
+    if tag is not None and _tag_location(tag, text) == _RootLocation():
         return _groupless_method(text, tag)
     dotted = _dotted_tag_group_method(text, tag)
     if dotted is not None:
