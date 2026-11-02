@@ -1103,6 +1103,36 @@ class GitHubListingTests(unittest.TestCase):
             self.assertIn(message, str(raised.exception))
 
 
+class ConclusionTests(unittest.TestCase):
+    """`conclude` turns the run red for an unchecked item or a failed decision,
+    and green only when every item was checked."""
+
+    def conclude(self, decision: weekly.Decision) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as scratch:
+            weekly.write_json(Path(scratch) / "decision.json", decision.to_json())
+            return subprocess.run(
+                [sys.executable, str(SCRIPT), "conclude", "--decision", scratch],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+
+    def test_each_decision_concludes_as_its_items_and_outcome_say(self) -> None:
+        pair = weekly.Pair("2.0.0", "3.0.0")
+        checked = weekly.Decision(pair, True, "digest")
+        self.assertEqual(0, self.conclude(checked).returncode)
+        unchecked = weekly.Decision(pair, True, "digest")
+        unchecked.unchecked.append(weekly.Unchecked("corpus", "a", weekly.Status.FAILED, "gone", "logs/corpus/a.log"))
+        red = self.conclude(unchecked)
+        self.assertEqual(1, red.returncode)
+        self.assertIn("corpus `a`: failed: gone (log `logs/corpus/a.log`)", red.stderr)
+        failed = weekly.Decision(pair, True, "digest", cannot_run=["`crozier compare` could not run"])
+        refused = self.conclude(failed)
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("a comparison could not run", refused.stderr)
+
+
 class PublicationGuardTests(unittest.TestCase):
     """`publish` refuses, before any remote step, what it must never publish."""
 

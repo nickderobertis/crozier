@@ -2331,8 +2331,12 @@ def read_decision(path: Path) -> RecordedDecision:
 
 def conclude(args: argparse.Namespace) -> int:
     """The run's status once its decision, and any publication, is done: red
-    when an item went unchecked, so a week with a broken input is never green."""
+    when an item went unchecked, so a week with a broken input is never green,
+    and red for a decision that is itself a failure."""
     decision = read_decision(Path(args.decision))
+    if decision.outcome == Outcome.FAILURE:
+        # A decision whose comparison could not run decides nothing.
+        raise WeeklyError("the decision is 'failure': a comparison could not run; read the decision job's summary")
     if decision.unchecked:
         summarize(
             args.summary,
