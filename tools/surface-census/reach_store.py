@@ -400,7 +400,8 @@ def _scan_items(
             end = match.get(j, j) if j < hi else hi - 1
             if end + 1 < hi and tokens[end + 1].text == ";":
                 end += 1
-            items.append(Item("::".join([*path, f"{keyword}!"]), "macro", first, end, tuple(attributes)))
+            label = f"macro_rules! {tokens[i + 2].text}" if keyword == "macro_rules" and i + 2 < hi else f"{keyword}!"
+            items.append(Item("::".join([*path, label]), "macro", first, end, tuple(attributes)))
             if test:
                 test_spans.append((first, end))
             i = end + 1
@@ -966,50 +967,228 @@ def _row_keys(root: Path, base: str, path: str) -> set[str] | None:
     return keys
 
 
-def e2e_attribution(
-    root: Path, base: str, path: str, tests: Iterable[str], constants: Mapping[str, str]
-) -> tuple[set[str], str | None]:
-    """The golden tests one changed e2e-suite file re-runs, or the reason it re-runs every test.
+E2E_ROOT = "crates/crozier-e2e/tests"
+# Identifiers so common that following them would make every item reachable.
+_PATH_WORDS = frozenset({"crate", "super", "self", "Self", "std", "core", "alloc"})
 
-    A golden test's own `fn` and the `Corpus` literal it drives re-run that test; a
-    `#[test]` function, or an item added or removed outside a trait or trait impl,
-    re-runs nothing (no unchanged caller reaches it); any other change (a shared
-    helper, a `use`, a macro) re-runs every test.
+
+def _item_name(item: Item) -> str:
+    """The identifier code refers to an item by: its own name, an impl's type, a macro's name."""
+    last = item.key.rsplit("::", 1)[-1]
+    if item.kind in ("impl", "trait"):
+        owner = last.split(" ", 1)[1] if " " in last else last
+        return owner.removeprefix("<").split(" as ", 1)[0].rstrip(">")
+    if item.kind == "macro":
+        return last.removeprefix("macro_rules! ").rstrip("!")
+    return last.split(" ", 1)[-1]
+
+
+class _Suite(NamedTuple):
+    """Every item of the e2e suite at one tree, and which of them its golden tests can reach."""
+
+    items: dict[str, dict[str, tuple[Item, str]]]  # path -> item key -> (item, digest)
+    reachable: frozenset[tuple[str, str]]  # (path, item key)
+    strings: frozenset[str]  # string literals the reachable items carry
+
+
+_CLOSURE_OPENERS = frozenset({"(", ",", "=", "move", "{", ";", ">", "return", "["})
+
+
+def _references(tokens: list[Token], lo: int, hi: int) -> set[str]:
+    """The identifiers of `tokens[lo:hi + 1]` that can name an item rather than a local.
+
+    A local shadows an item of the same name within its scope: a `let` binding
+    from the end of its statement to the end of its enclosing block, a `for`
+    binding and a closure's parameters within their bodies, and a function's
+    parameters within its body. A use inside such a scope names the local; every
+    other identifier is a reference. Pattern bindings in `match` and `if let` are
+    not followed, which only over-approximates what the suite reaches.
     """
-    old, new = show(root, base, path), (root / path).read_bytes() if (root / path).is_file() else None
-    if old is None or new is None:
-        # A new module file adds items no unchanged caller reaches; a removed one
-        # took its callers' `mod` line with it, which is the change attributed.
-        return set(), None
-    before = {item.key: item for item in parse(path, old).items}
-    after = {item.key: item for item in parse(path, new).items}
-    old_tokens, new_tokens = tokenize(old), tokenize(new)
+    span = tokens[lo : hi + 1]
+    match = _matches(span)
+    enclosing: list[int] = [len(span) - 1] * len(span)
+    stack: list[int] = []
+    for k, token in enumerate(span):
+        if token.text == "{":
+            stack.append(match.get(k, len(span) - 1))
+        elif token.text == "}" and stack:
+            stack.pop()
+        if stack:
+            enclosing[k] = stack[-1]
+    scopes: dict[str, list[tuple[int, int]]] = {}
+    binders: set[int] = set()
 
-    def digest(item: Item, tokens: list[Token]) -> str:
-        return _digest(t.text for t in tokens[item.first : item.last + 1])
+    def bind(position: int, start: int, stop: int) -> None:
+        name = span[position].text
+        if _IDENT.fullmatch(name) and name not in ("mut", "ref", "_") and not name[0].isupper():
+            scopes.setdefault(name, []).append((start, stop))
+            binders.add(position)
 
-    tests = set(tests)
+    def statement_end(k: int, closer: str) -> int:
+        depth = 0
+        for j in range(k + 1, len(span)):
+            text = span[j].text
+            if depth == 0 and text == closer:
+                return j
+            if text in "([{":
+                depth += 1
+            elif text in ")]}":
+                depth -= 1
+                if depth < 0:
+                    return j
+        return len(span) - 1
+
+    for k, token in enumerate(span):
+        text = token.text
+        if text == "let":
+            end = statement_end(k, ";")
+            stop = next((j for j in range(k + 1, end) if span[j].text in ("=", ":")), end)
+            for j in range(k + 1, stop):
+                bind(j, end, enclosing[k])
+        elif text == "for":
+            body = statement_end(k, "{")
+            stop = next((j for j in range(k + 1, body) if span[j].text == "in"), body)
+            for j in range(k + 1, stop):
+                bind(j, body, match.get(body, len(span) - 1))
+        elif text == "fn" and k + 1 < len(span) and _IDENT.fullmatch(span[k + 1].text):
+            opening = next((j for j in range(k + 2, len(span)) if span[j].text in ("(", "{", ";")), None)
+            if opening is None or span[opening].text != "(" or opening not in match:
+                continue
+            body = next((j for j in range(match[opening], len(span)) if span[j].text in ("{", ";")), None)
+            if body is None or span[body].text != "{":
+                continue
+            for j in range(opening + 1, match[opening]):
+                if span[j + 1].text == ":" and span[j + 2].text != ":":
+                    bind(j, body, match.get(body, len(span) - 1))
+        elif text == "|" and k and span[k - 1].text in _CLOSURE_OPENERS:
+            closing = next((j for j in range(k + 1, len(span)) if span[j].text == "|"), None)
+            if closing is None:
+                continue
+            body = closing + 1
+            if body < len(span) and span[body].text == "-":
+                body = next((j for j in range(body, len(span)) if span[j].text == "{"), body)
+            stop = match.get(body, statement_end(closing, ","))
+            colon = False
+            for j in range(k + 1, closing):
+                if span[j].text == ":":
+                    colon = True
+                elif span[j].text == ",":
+                    colon = False
+                elif not colon:
+                    bind(j, closing, stop)
+    found = set()
+    for k, token in enumerate(span):
+        if k in binders or not _IDENT.fullmatch(token.text):
+            continue
+        if any(start <= k <= stop for start, stop in scopes.get(token.text, ())):
+            continue
+        found.add(token.text)
+    return found
+
+
+def _suite(sources: Mapping[str, bytes], roots: frozenset[str]) -> _Suite:
+    """Parse the suite and follow identifiers from its golden tests (see `e2e_attribution`)."""
+    parsed: dict[str, tuple[list[Item], list[Token]]] = {}
+    for path, data in sources.items():
+        file = parse(path, data)
+        parsed[path] = (file.items, file.tokens)
+    by_name: dict[str, list[tuple[str, Item]]] = {}
+    items: dict[str, dict[str, tuple[Item, str]]] = {}
+    queue: list[tuple[str, Item]] = []
+    for path, (found, tokens) in parsed.items():
+        items[path] = {}
+        for item in found:
+            texts = [t.text for t in tokens[item.first : item.last + 1]]
+            items[path][item.key] = (item, _digest(texts))
+            name = _item_name(item)
+            by_name.setdefault(name, []).append((path, item))
+            if name in roots or (item.kind == "macro" and roots & set(texts)):
+                queue.append((path, item))
+    seen: set[tuple[str, str]] = set()
+    names: set[str] = set()
+    strings: set[str] = set()
+    # What each file's reachable items refer to: a `use` resolves names for its own module only.
+    used: dict[str, set[str]] = {}
+    while queue:
+        path, item = queue.pop()
+        if (path, item.key) in seen or item.kind == "use":
+            continue
+        seen.add((path, item.key))
+        tokens = parsed[path][1]
+        strings.update(
+            t.text for t in tokens[item.first : item.last + 1] if t.text.startswith(('"', 'r"', 'r#"', 'b"'))
+        )
+        references = _references(tokens, item.first, item.last) - _PATH_WORDS
+        used.setdefault(path, set()).update(references)
+        for text in references - names:
+            names.add(text)
+            queue.extend(by_name.get(text, ()))
+    for path, (found, tokens) in parsed.items():
+        for item in found:
+            if item.kind != "use" or path not in used:
+                continue
+            texts = [t.text for t in tokens[item.first : item.last + 1]]
+            leaves = {text for k, text in enumerate(texts) if k + 1 == len(texts) or texts[k + 1] != ":"}
+            if "*" in texts or leaves & used[path]:
+                seen.add((path, item.key))
+    return _Suite(items, frozenset(seen), frozenset(strings))
+
+
+def e2e_attribution(
+    root: Path, base: str, paths: Iterable[str], tests: Iterable[str], constants: Mapping[str, str]
+) -> tuple[set[str], str | None]:
+    """The golden tests a change to the e2e suite re-runs, or the reason it re-runs every test.
+
+    A golden test's own `fn`, or the `Corpus` literal it drives, re-runs that test.
+    Any other changed item re-runs every test only when the golden tests can reach
+    it: following identifiers from their functions (and from the macro invocation
+    naming them), through every item those identifiers name and every impl block of
+    a type they name. A `#[test]` function, or an item no golden test reaches (a
+    corpus list another test iterates, a helper of an unrelated journey), re-runs
+    nothing. A changed non-Rust file under the suite re-runs every test when a
+    string a reachable item carries names it.
+    """
+    tests = frozenset(tests)
+    roots = tests | frozenset(constants)
+    files = sorted(p.relative_to(root).as_posix() for p in (root / E2E_ROOT).rglob("*.rs") if p.is_file())
+    changed = sorted(set(paths))
+    new_sources = {path: (root / path).read_bytes() for path in files}
+    old_sources = dict(new_sources)
+    for path in changed:
+        if not path.endswith(".rs"):
+            continue
+        old = show(root, base, path)
+        if old is None:
+            old_sources.pop(path, None)
+        else:
+            old_sources[path] = old
+    after, before = _suite(new_sources, roots), _suite(old_sources, roots)
     rerun: set[str] = set()
-    for key in sorted(before.keys() | after.keys()):
-        was, now = before.get(key), after.get(key)
-        if was is not None and now is not None and digest(was, old_tokens) == digest(now, new_tokens):
+    for path in changed:
+        if not path.endswith(".rs"):
+            leaf = path.rsplit("/", 1)[-1]
+            if any(leaf in text for text in after.strings | before.strings):
+                return set(), f"{path} changed, and code the golden tests reach names it"
             continue
-        item = now or was
-        assert item is not None
-        name = key.rsplit("::", 1)[-1].removeprefix("fn ").removeprefix("const ")
-        if item.kind == "fn" and name in tests:
-            rerun.add(name)
-            continue
-        if item.kind == "const" and name in constants:
-            rerun.add(constants[name])
-            continue
-        if item.kind == "fn" and any(a == "test" or a.startswith("test") for a in item.attributes):
-            continue
-        if (was is None or now is None) and item.kind in ("fn", "const", "static", "struct", "enum", "type"):
-            if "<" in key or " as " in key:
-                return set(), f"{path}: `{key}` was added to or removed from a trait impl"
-            continue
-        return set(), f"{path}: `{key}` changed, and it is shared e2e-suite code"
+        old_items, new_items = before.items.get(path, {}), after.items.get(path, {})
+        for key in sorted(old_items.keys() | new_items.keys()):
+            was, now = old_items.get(key), new_items.get(key)
+            if was is not None and now is not None and was[1] == now[1]:
+                continue
+            entry = now if now is not None else was
+            assert entry is not None
+            item = entry[0]
+            name = _item_name(item)
+            if item.kind == "fn" and name in tests:
+                rerun.add(name)
+                continue
+            if item.kind == "const" and name in constants:
+                rerun.add(constants[name])
+                continue
+            if item.kind == "fn" and any(a == "test" or a.startswith("test") for a in item.attributes):
+                continue
+            if (path, key) in after.reachable or (path, key) in before.reachable:
+                return set(), f"{path}: `{key}` changed, and the golden tests reach it"
     return rerun, None
 
 
@@ -1068,13 +1247,9 @@ def plan(
         for pattern in NON_ATTRIBUTABLE:
             if pattern.fullmatch(path):
                 return full(f"{path} changed, and no function digest can attribute it")
-        if path.startswith(E2E) and path.endswith(".rs"):
-            attributed, reason = e2e_attribution(root, base["commit"], path, tests, golden_constants)
-            if reason:
-                return full(reason)
-            for test in attributed:
-                rerun.setdefault(test, f"its e2e test changed ({path})")
-        elif path.startswith(CORPUS_SOURCES):
+        if path.startswith(E2E):
+            continue
+        if path.startswith(CORPUS_SOURCES):
             name = path[len(CORPUS_SOURCES) :].split("/", 1)[0]
             for test in by_name.get(name, []) + by_api.get(name, []):
                 rerun.setdefault(test, f"its source document changed ({path})")
@@ -1093,6 +1268,13 @@ def plan(
             name, _, leaf = path[len(HANDWRITTEN) :].partition("/")
             if name in fixtures and leaf in FIXTURE_INPUTS:
                 rerun_fixtures.setdefault(name, f"its fixture changed ({path})")
+    suite = [path for path in paths if path.startswith(E2E)]
+    if suite:
+        attributed, reason = e2e_attribution(root, base["commit"], suite, tests, golden_constants)
+        if reason:
+            return full(reason)
+        for test in attributed:
+            rerun.setdefault(test, "its own e2e test or Corpus literal changed")
     functions = base["functions"]
     changed = stale_functions(tree, functions)
     for key in changed:
