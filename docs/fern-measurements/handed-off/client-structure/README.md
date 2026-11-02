@@ -29,6 +29,12 @@ of `/v1/listen`'s body, which is split into one method per media type by
 `x-fern-sdk-method-name` and which the certified pair inlines rather than
 modelling (`orphan-type-emission`).
 
+Every document was compared again with crozier built at `57b0daa5f`, after the
+base's handed-off document-acceptance repairs (#728) were merged in, against
+the same cached certified-pair trees. Every result in the table held: the same
+seven documents byte-match, and each other document differs in exactly the
+files [`remaining-differences.tsv`](remaining-differences.tsv) attributes to it.
+
 `record` names the source record (`witness-search-fixture-only-<record>`);
 `causes` gives this area's causes first and, after "also", the other causes the
 record lists for the document. Every file a document still differs in is listed
