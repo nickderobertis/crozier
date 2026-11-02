@@ -129,6 +129,11 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// The document-acceptance handed-off area: documents the certified pair reads
+/// where crozier refused, failed to parse or wrote invalid Python, each
+/// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
+#[path = "e2e/document_acceptance.rs"]
+mod document_acceptance;
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The handed-off body and media-type root causes, each measured on a
 /// from-scratch document under `docs/fern-measurements/handed-off/bodies-media/`
@@ -900,6 +905,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         );
     }
     for (golden, excluded) in unions::compared() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded,
+                carve_outs: Default::default(),
+            },
+        );
+    }
+    for (golden, excluded) in document_acceptance::compared() {
         add(
             golden,
             departures_ledger::ComparedGolden {
@@ -29175,7 +29189,10 @@ fn named_components_and_virtual_requests_refuse_their_measured_collisions() {
         "components":{"schemas":{"Thing":{"type":"object","properties":{"id":{"type":"string"}}},
         "thing":{"type":"object","properties":{"name":{"type":"string"}}}}}
     });
-    assert_measured_name_refusal(&document, "type-name-collision", "component schemas");
+    // `Thing` beside `thing` alone is no refusal: the certified pair keeps the
+    // later declaration and generates, which
+    // `document_acceptance::first_letter_case_twins_merge_unless_an_example_of_the_earlier_fails`
+    // holds in both modes.
     document["components"]["schemas"]
         .as_object_mut()
         .unwrap()

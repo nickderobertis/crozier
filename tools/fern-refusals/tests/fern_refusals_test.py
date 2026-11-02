@@ -2384,6 +2384,20 @@ class DiagnosticExtraction(unittest.TestCase):
         )
         self.assertEqual(["Cannot read properties of null (reading 'schema')"], self.module.diagnostics(log))
 
+    def test_a_missing_info_type_error_is_more_specific_than_the_parse_failure(self) -> None:
+        # The certified pair's own log over the missing-info-object probe:
+        # `info` absent or null fails its read of `info.version`.
+        for value in ("null", "undefined"):
+            log = "\n".join(
+                [
+                    "[api]: python-sdk Failed to parse openapi document undefined",
+                    f"[api]: python-sdk Cannot read properties of {value} (reading 'version') ",
+                    f"                  TypeError: Cannot read properties of {value} (reading 'version')",
+                    "[api]: python-sdk ✓ All checks passed",
+                ]
+            )
+            self.assertEqual([f"Cannot read properties of {value} (reading 'version')"], self.module.diagnostics(log))
+
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
             [
@@ -2407,20 +2421,21 @@ class ProbeRecording(unittest.TestCase):
 
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_generators_response_object_refusal(self) -> None:
-        self.assert_probe_reproduces("paginated-nullable-response", generate_exit=1, scaffold=(0, 0))
+        self.assert_probe_recorded("paginated-nullable-response", generate_exit=1)
 
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_importers_null_node_false_success(self) -> None:
         # The importer's `Cannot read properties of null (…)` TypeError, under an
-        # exit 0 over a document it never parsed, is `null-media-type`'s phrase;
-        # the stand-in writes the empty SDK's 28 Python and 7 other files.
-        self.assert_probe_reproduces("null-media-type", generate_exit=0, scaffold=(28, 7))
+        # exit 0 over a document it never parsed, is `null-media-type`'s phrase.
+        self.assert_probe_recorded("null-media-type", generate_exit=0)
 
-    def assert_probe_reproduces(self, name: str, *, generate_exit: int, scaffold: tuple[int, int]) -> None:
-        """Replay `name`'s committed probe logs through the real `probe`, the
-        generation writing `scaffold` (Python files, other files) under
-        `--output`, and require the committed record back."""
-        python_files, other_files = scaffold
+    @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+    def test_probe_records_the_missing_info_false_success(self) -> None:
+        # Both stages exit 0 over a document Fern never parsed; the TypeError
+        # reading `info.version` is the class's diagnostic.
+        self.assert_probe_recorded("missing-info-object", generate_exit=0)
+
+    def assert_probe_recorded(self, name: str, *, generate_exit: int) -> None:
         logs = REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs"
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
@@ -2431,12 +2446,17 @@ class ProbeRecording(unittest.TestCase):
             fern = bin_dir / "fern"
             check_log = logs / f"{name}.check.log"
             generate_log = logs / f"{name}.generate.log"
+            # A false success writes the empty scaffold, 35 files of which 28 are
+            # Python, under `--output`, as the measured run did.
+            scaffold = (
+                'while [ "$#" -gt 0 ]; do [ "$1" = --output ] && out="$2"; shift; done\n'
+                'tree="$out/fern-python-sdk"; mkdir -p "$tree"\n'
+                'i=0; while [ $i -lt 35 ]; do if [ $i -lt 28 ]; then touch "$tree/m$i.py"; else touch "$tree/f$i.txt"; fi; i=$((i+1)); done\n'
+                if generate_exit == 0
+                else ""
+            )
             fern.write_text(
-                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\n'
-                'out=; prev=; for arg in "$@"; do [ "$prev" = --output ] && out=$arg; prev=$arg; done\n'
-                f'i=0; while [ $i -lt {python_files} ]; do mkdir -p "$out/src"; : > "$out/src/m$i.py"; i=$((i+1)); done\n'
-                f'i=0; while [ $i -lt {other_files} ]; do mkdir -p "$out"; : > "$out/f$i.txt"; i=$((i+1)); done\n'
-                f'cat "{generate_log}"; exit {generate_exit}\n',
+                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\ncat "{generate_log}"\n{scaffold}exit {generate_exit}\n',
                 encoding="utf-8",
             )
             fern.chmod(0o755)

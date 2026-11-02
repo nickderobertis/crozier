@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Print archive
+  version: 1.0.0
+paths:
+  /prints/{printId}:
+    get:
+      operationId: getPrint
+      parameters:
+        - name: printId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The print
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Print'
+components:
+  schemas:
+    Print:
+      type: object
+      properties:
+        id:
+          type: string
+    print:
+      type: object
+      properties:
+        caption:
+          type: string

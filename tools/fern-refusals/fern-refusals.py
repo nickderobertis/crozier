@@ -1074,7 +1074,8 @@ def diagnostics(log: str) -> list[str]:
     snippet did not parse, and count only when nothing fatal follows them. The
     bare `Failed to parse openapi document <title>` that heads such a failure
     counts only when nothing more specific follows it, and a schema Fern merely
-    coerces to `unknown` is a warning, not a refusal.
+    coerces to `unknown` is a warning, not a refusal. The `TypeError` reading
+    `version` off an absent or null `info` is that more specific message.
     """
     found: list[str] = []
     formatting: list[str] = []

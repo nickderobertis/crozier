@@ -1,0 +1,50 @@
+# Recorded 2026-11-02T03:05Z on Linux with Python 3.14.7, httpx 0.28.1, pydantic 2.14.0, ruff 0.11.5.
+# crozier at this node's base (6b4509ab9c) and on the finished branch, each run as
+#   crozier generate python --spec openapi.yml --output <dir> --package-name fern --project-name default_package_name
+
+$ crozier@base generate ... (default mode)
+crozier: formatting src/fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:26:207: Duplicate parameter "headline"
+exit: 1
+
+$ crozier@branch generate ... 
+generated 40 files into <tmp>/new
+exit: 0
+
+$ crozier@branch generate ... --fern-strict
+generated 40 files into <tmp>/new--fern-strict
+exit: 0
+
+$ python drive.py <crozier SDK src> alert   # the call through httpx.MockTransport
+request: POST https://kiln.example/api/devices/front-door/alerts
+body: {"headline":"Someone is at the door","muted":"true","chime":"soft"}
+parsed: QueuedAlert(alert_id='a-1')
+exit: 0
+
+# drive.py, as run above:
+#   """Import a generated SDK from SDK_SRC and drive one call through httpx.MockTransport."""
+#   import json, sys, importlib
+#   import httpx
+#   sys.path.insert(0, sys.argv[1])
+#   scenario = sys.argv[2]
+#   seen = []
+#   def handler(request: httpx.Request) -> httpx.Response:
+#       seen.append(request)
+#       body = {"alertId": "a-1"} if scenario == "alert" else {"id": 7, "name": "Ada"} if scenario == "member" else {"ready": True}
+#       return httpx.Response(200, json=body)
+#   fern = importlib.import_module("fern")
+#   client = fern.FernApi(base_url="https://kiln.example/api", httpx_client=httpx.Client(transport=httpx.MockTransport(handler)))
+#   if scenario == "alert":
+#       result = client.send_alert("front-door", headline="Someone is at the door", muted="true", chime="soft")
+#   elif scenario == "member":
+#       result = client.update_member(7, password="s3cret", id=3, name="Ada")
+#   elif scenario == "status":
+#       result = client.get_status()
+#   elif scenario == "empty":
+#       public = sorted(n for n in dir(client) if not n.startswith("_"))
+#       print("FernApi public attributes:", public)
+#       print("package exports:", sorted(getattr(fern, "__all__", [])))
+#       sys.exit(0)
+#   request = seen[0]
+#   print("request:", request.method, request.url)
+#   print("body:", request.content.decode() or "(none)")
+#   print("parsed:", repr(result))

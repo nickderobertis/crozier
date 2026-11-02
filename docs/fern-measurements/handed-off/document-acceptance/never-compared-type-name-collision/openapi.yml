@@ -1,0 +1,75 @@
+openapi: 3.0.1
+info:
+  title: Courier dispatch
+  version: 1.0.0
+paths:
+  /dispatches:
+    post:
+      operationId: createDispatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispatchRequest'
+      responses:
+        '200':
+          description: The dispatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+  /dispatches/{dispatchId}/history:
+    get:
+      operationId: getDispatchHistory
+      parameters:
+        - name: dispatchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The dispatch's history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DispatchHistory'
+components:
+  schemas:
+    TransferMode:
+      description: How the parcel changes hands.
+      type: string
+      enum:
+        - HAND
+        - DROP
+    DispatchRequest:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          $ref: '#/components/schemas/TransferMode'
+        note:
+          type: string
+    Dispatch:
+      type: object
+      properties:
+        id:
+          type: string
+        mode:
+          $ref: '#/components/schemas/TransferMode'
+    transferMode:
+      type: string
+      enum:
+        - HAND
+        - DROP
+        - LOCKER
+        - RETURN
+    DispatchHistory:
+      type: object
+      properties:
+        modes:
+          type: array
+          items:
+            $ref: '#/components/schemas/transferMode'
