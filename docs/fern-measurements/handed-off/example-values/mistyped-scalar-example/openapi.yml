@@ -69,6 +69,25 @@ paths:
                 properties:
                   same:
                     type: boolean
+  /depots/purge:
+    delete:
+      operationId: purgeDepots
+      tags: [depots]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+            examples:
+              Several:
+                value:
+                  - 0b7f3a52-1c2e-4c8b-9a61-2f0d6c1e9b40
+                  - 6e2d9c11-8b4a-4f3e-a7d2-5c9b0e1f3a27
+      responses:
+        "204":
+          description: Purged
 components:
   schemas:
     DepotComparison:

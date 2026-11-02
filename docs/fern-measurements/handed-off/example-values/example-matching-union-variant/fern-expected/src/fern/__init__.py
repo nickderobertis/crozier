@@ -6,18 +6,32 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import StampSeal, WaxSeal
+    from .types import EntryV1, EntryV2, PageV1, PageV2, PageV2Edition, StampSeal, WaxSeal
     from . import seals
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-    from .seals import VerifySealRequestSeal, VerifySealRequestSeal_Stamp, VerifySealRequestSeal_Wax, VerifySealResponse
+    from .seals import (
+        VerifyLogbookRequestEntry,
+        VerifyLogbookResponse,
+        VerifySealRequestSeal,
+        VerifySealRequestSeal_Stamp,
+        VerifySealRequestSeal_Wax,
+        VerifySealResponse,
+    )
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
+    "EntryV1": ".types",
+    "EntryV2": ".types",
     "FernApi": ".client",
+    "PageV1": ".types",
+    "PageV2": ".types",
+    "PageV2Edition": ".types",
     "StampSeal": ".types",
+    "VerifyLogbookRequestEntry": ".seals",
+    "VerifyLogbookResponse": ".seals",
     "VerifySealRequestSeal": ".seals",
     "VerifySealRequestSeal_Stamp": ".seals",
     "VerifySealRequestSeal_Wax": ".seals",
@@ -53,8 +67,15 @@ __all__ = [
     "AsyncFernApi",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
+    "EntryV1",
+    "EntryV2",
     "FernApi",
+    "PageV1",
+    "PageV2",
+    "PageV2Edition",
     "StampSeal",
+    "VerifyLogbookRequestEntry",
+    "VerifyLogbookResponse",
     "VerifySealRequestSeal",
     "VerifySealRequestSeal_Stamp",
     "VerifySealRequestSeal_Wax",

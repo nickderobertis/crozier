@@ -9,6 +9,7 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 
 if typing.TYPE_CHECKING:
+    from .beacons.client import AsyncBeaconsClient, BeaconsClient
     from .charts.client import AsyncChartsClient, ChartsClient
     from .drills.client import AsyncDrillsClient, DrillsClient
     from .harbours.client import AsyncHarboursClient, HarboursClient
@@ -104,6 +105,7 @@ class FernApi:
         self._ledger: typing.Optional[LedgerClient] = None
         self._soundings: typing.Optional[SoundingsClient] = None
         self._rosters: typing.Optional[RostersClient] = None
+        self._beacons: typing.Optional[BeaconsClient] = None
 
     @property
     def charts(self):
@@ -192,6 +194,14 @@ class FernApi:
 
             self._rosters = RostersClient(client_wrapper=self._client_wrapper)
         return self._rosters
+
+    @property
+    def beacons(self):
+        if self._beacons is None:
+            from .beacons.client import BeaconsClient
+
+            self._beacons = BeaconsClient(client_wrapper=self._client_wrapper)
+        return self._beacons
 
 
 def _make_default_async_client(
@@ -292,6 +302,7 @@ class AsyncFernApi:
         self._ledger: typing.Optional[AsyncLedgerClient] = None
         self._soundings: typing.Optional[AsyncSoundingsClient] = None
         self._rosters: typing.Optional[AsyncRostersClient] = None
+        self._beacons: typing.Optional[AsyncBeaconsClient] = None
 
     @property
     def charts(self):
@@ -380,3 +391,11 @@ class AsyncFernApi:
 
             self._rosters = AsyncRostersClient(client_wrapper=self._client_wrapper)
         return self._rosters
+
+    @property
+    def beacons(self):
+        if self._beacons is None:
+            from .beacons.client import AsyncBeaconsClient
+
+            self._beacons = AsyncBeaconsClient(client_wrapper=self._client_wrapper)
+        return self._beacons

@@ -366,7 +366,69 @@ paths:
       responses:
         "201":
           description: Added
+  /beacons/{beaconCode}/script:
+    post:
+      operationId: setBeaconScript
+      tags: [beacons]
+      description: An inline path parameter's own example beside a text body.
+      parameters:
+        - name: beaconCode
+          in: path
+          required: true
+          schema:
+            type: string
+          example: bcn:west-4
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Set
+  /lanterns/{lanternCode}/script:
+    post:
+      operationId: setLanternScript
+      tags: [beacons]
+      description: A referenced path parameter's own example beside a text body.
+      parameters:
+        - $ref: "#/components/parameters/LanternCode"
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Set
+  /lanterns/{lanternCode}/manual:
+    get:
+      operationId: getLanternManual
+      tags: [beacons]
+      description: A referenced path parameter's own example beside an XML answer.
+      parameters:
+        - $ref: "#/components/parameters/LanternCode"
+      responses:
+        "200":
+          description: The manual
+          content:
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
 components:
+  parameters:
+    LanternCode:
+      name: lanternCode
+      in: path
+      required: true
+      schema:
+        type: string
+      example: ltn:east-2
   schemas:
     BuoyMarker:
       type: object

@@ -3802,8 +3802,16 @@ fn build_endpoint(
                 // declaring `schema: {examples: [lmp_8f2kq]}` on an operation
                 // answering `application/xml` passes `lmp_8f2kq` (measured in
                 // docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/).
+                // So is the parameter's own `example` (or `examples` map), unless
+                // it holds a `/`: notehub's `projectOrProductUID`
+                // (`app:2606f411-…`, beside a `text/plain` body) and guardian's
+                // `topicId` (`0.0.00000001`, beside a binary body) are passed,
+                // where Zulip's `fragment` (`narrow/is/alerted`) takes its name
+                // (measured in docs/fern-measurements/handed-off/example-values/example-value-source/).
                 example: if fern_imports_no_endpoint_example(doc, op) {
-                    schema_level_parameter_example(p).or_else(|| ir_fallback_parameter_example(p))
+                    own_path_parameter_example(doc, p)
+                        .or_else(|| schema_level_parameter_example(p))
+                        .or_else(|| ir_fallback_parameter_example(p))
                 } else {
                     parameter_example(doc, p)
                 },
@@ -5472,6 +5480,36 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
 /// declared example (`generatePrimitiveStringExample`): its `default`, else a
 /// sample exactly `minLength` long, else one `maxLength` long when that is under
 /// ten, else nothing and the call passes the parameter's name.
+/// A `type: string` parameter's own `example`, else the first value of its
+/// `examples` map, where it holds no `/`.
+fn own_path_parameter_example(
+    doc: &OpenApi,
+    parameter: &crate::openapi::Parameter,
+) -> Option<String> {
+    let declared_string = parameter
+        .schema
+        .as_ref()
+        .map(|schema| {
+            schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .unwrap_or(schema)
+        })
+        .and_then(|schema| schema.ty.as_ref()?.primary())
+        == Some("string");
+    let value = parameter.example.as_ref().or_else(|| {
+        parameter
+            .examples
+            .values()
+            .find_map(|example| component_example_value(doc, example))
+    })?;
+    value
+        .as_str()
+        .filter(|text| declared_string && !text.contains('/'))
+        .and_then(|_| example_literal(value))
+}
+
 /// The example a parameter's own inline schema declares (its `example`, else
 /// the first fitting `examples` entry), ignoring any parameter-level
 /// `example`/`examples`. A schema the parameter names by `$ref` gives none:
@@ -5576,15 +5614,21 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
 /// `searchterms` items (`[763436008, 763434006, something invalid]`) as
 /// `["something invalid"]`.
 fn typed_schema_example(schema: &Schema) -> Option<&serde_json::Value> {
-    let primary = schema.ty.as_ref().and_then(TypeField::primary);
-    let fits = |value: &&serde_json::Value| match primary {
-        Some("boolean" | "integer" | "number") => !value.is_string(),
-        Some("string") => !(value.is_number() || value.is_boolean()),
-        _ => true,
-    };
+    let fits = |value: &&serde_json::Value| scalar_example_fits(schema, value);
     match schema.example.as_ref() {
         Some(example) => Some(example).filter(fits),
         None => schema.examples.iter().find(fits),
+    }
+}
+
+/// Whether `value` is of the JSON type a scalar schema declares: no string for a
+/// boolean, integer or number, no number or boolean for a string. Any other
+/// schema takes any value.
+fn scalar_example_fits(schema: &Schema, value: &serde_json::Value) -> bool {
+    match schema.ty.as_ref().and_then(TypeField::primary) {
+        Some("boolean" | "integer" | "number") => !value.is_string(),
+        Some("string") => !(value.is_number() || value.is_boolean()),
+        _ => true,
     }
 }
 
@@ -7551,9 +7595,19 @@ fn resolve_request_body(
         // The media type's example, else the schema's own: NextGen posts a bare
         // `{type: string, example: "<string>"}` and Fern's worked call passes
         // `request="<string>"`.
+        // An example the scalar cannot hold is none: Cyoda's `deleteMessages`
+        // body is `{type: string, format: uuid}` exampled with a list of IDs,
+        // and the certified pair passes `request="string"` (measured in
+        // docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/).
         if let RequestBody::Single(single) = &mut body {
+            let holds = |value: &&serde_json::Value| {
+                scalar_example_fits(schema, value)
+                    && !(schema.ty.as_ref().and_then(TypeField::primary) == Some("string")
+                        && (value.is_array() || value.is_object()))
+            };
             single.example = (media_example(doc, media)
-                .or_else(|| schema_example(schema))
+                .filter(holds)
+                .or_else(|| schema_example(schema).filter(holds))
                 .and_then(example_literal))
             .map(BodyExample::Literal);
         }

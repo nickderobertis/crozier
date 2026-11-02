@@ -3,7 +3,7 @@
 //! one `kind: usefulness` entry the 2026-11-01 design review grants:
 //!
 //! - `declared-example-over-placeholder` (ruling 2, `falsy-property-example`,
-//!   and its principle): a multipart form part's or a header parameter's
+//!   and its principle): a parameter's falsy example, a multipart form part's or a header parameter's
 //!   declared example, a binary download's query parameter example, a path
 //!   parameter's example on an operation whose other path parameter declares an
 //!   empty schema, and an enum's declared example member.
@@ -94,12 +94,17 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
             let Some(value) = parameter.example.as_ref() else {
                 continue;
             };
-            let kept = match parameter.location {
-                Some(ParameterLocation::Header) => true,
-                Some(ParameterLocation::Query) => binary,
-                Some(ParameterLocation::Path) => empty_path_schema,
-                _ => false,
-            };
+            // Ruling 2 itself names a falsy example (`""`, `0`) on any argument.
+            let falsy = value.as_str() == Some("")
+                || value.as_i64() == Some(0)
+                || value.as_f64() == Some(0.0);
+            let kept = falsy
+                || match parameter.location {
+                    Some(ParameterLocation::Header) => true,
+                    Some(ParameterLocation::Query) => binary,
+                    Some(ParameterLocation::Path) => empty_path_schema,
+                    _ => false,
+                };
             if kept {
                 out.push(Declared {
                     wire: &parameter.name,
@@ -425,9 +430,11 @@ mod tests {
     #[test]
     fn a_multipart_part_and_header_example_is_kept_only_for_its_own_argument() {
         let context = context(
-            serde_json::json!({"openapi": "3.0.3", "paths": {"/buoys": {"post": {
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/buoys/{item_id}": {"post": {
                 "parameters": [{"name": "X-Survey-Ref", "in": "header", "required": true,
-                    "schema": {"type": "string"}, "example": ""}],
+                    "schema": {"type": "string"}, "example": ""},
+                    {"name": "item_id", "in": "path", "required": true,
+                        "schema": {"type": "string"}, "example": ""}],
                 "requestBody": {"content": {"multipart/form-data": {"schema": {"type": "object",
                     "properties": {"label": {"type": "string", "example": ""},
                         "depth_metres": {"type": "integer", "example": 0}}}}}},
@@ -437,6 +444,10 @@ mod tests {
         let rule = declared_example_over_placeholder;
         for rel in ["README.md", "reference.md", "src/fern/buoys/client.py"] {
             let pair = pair(rel, &[], &context);
+            assert!(
+                rule(&pair, "    item_id=\"item_id\",", "    item_id=\"\","),
+                "{rel}"
+            );
             assert!(
                 rule(&pair, "    label=\"label\",", "    label=\"\","),
                 "{rel}"

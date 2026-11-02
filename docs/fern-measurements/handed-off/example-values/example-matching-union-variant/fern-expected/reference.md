@@ -60,3 +60,65 @@ client.seals.verify_seal(
 </dl>
 </details>
 
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py">verify_logbook</a>(...) -> VerifyLogbookResponse</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, EntryV2, PageV2, PageV2Edition
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.seals.verify_logbook(
+    entry=EntryV2(
+        page=PageV2(
+            edition=PageV2Edition.TWO0,
+            keeper="Morwenna",
+        ),
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**entry:** `VerifyLogbookRequestEntry` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

@@ -9665,15 +9665,30 @@ impl<'a> ExampleCtx<'a> {
                 // example sends `data` as a list, and Fern still renders the
                 // union's empty-object member, `PostV1VectorUpsertRequestDataZero()`.
                 Some(TypeDecl::Object(object)) if self.object_fields(object).is_empty() => true,
+                // Each value the example gives a field must fit that field too:
+                // dcp-ai's `signed_bundle` example carries a version-2 `bundle`,
+                // which `SignedBundleV1`'s `bundle: CitizenshipBundleV1` does not
+                // accept, so the certified pair renders `SignedBundleV2` (measured
+                // in docs/fern-measurements/handed-off/example-values/example-matching-union-variant/).
                 Some(TypeDecl::Object(object)) => value.as_object().is_some_and(|values| {
                     let fields = self.object_fields(object);
                     fields
                         .iter()
                         .filter(|field| field.requirement == Requirement::Required)
                         .all(|field| values.contains_key(&field.wire_name))
-                        && values
-                            .keys()
-                            .all(|key| fields.iter().any(|field| field.wire_name == *key))
+                        && values.iter().all(|(key, field_value)| {
+                            fields
+                                .iter()
+                                .find(|field| field.wire_name == *key)
+                                .is_some_and(|field| {
+                                    field_value.is_null()
+                                        || self.example_matches_type_through(
+                                            &field.type_ref,
+                                            field_value,
+                                            &mut Vec::new(),
+                                        )
+                                })
+                        })
                 }),
                 Some(TypeDecl::Alias(_)) if aliases.contains(name) => false,
                 Some(TypeDecl::Alias(alias)) => {
@@ -11249,6 +11264,14 @@ fn build_example_inner(
         Some(RequestBody::Single(s)) => {
             let free_form_map =
                 matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value));
+            // An example a scalar body cannot hold is none (see
+            // `ir::scalar_body`): a list given a `str` body, a string given a
+            // number.
+            let body_example = body_example.filter(|example| {
+                !(ctx.resolves_to_string(&s.type_ref)
+                    && (example.is_array() || example.is_object())
+                    || ctx.resolves_to_number_or_bool(&s.type_ref) && example.is_string())
+            });
             let mut v = if let Some(example) = body_example {
                 let example = if matches!(&s.type_ref, TypeRef::Dict(..)) {
                     crate::ir::index_keyed_map_example(example)
@@ -19609,8 +19632,21 @@ mod handed_off_example_value_tests {
                 "    code=\"code\",",
                 "        \"west quay\"",
                 "    level=1.1,",
+                "    request=\"string\",",
             ],
-            &["40213", "551188", "7781", "level=\"3\""],
+            &["40213", "551188", "7781", "level=\"3\"", "0b7f3a52"],
+        );
+    }
+
+    #[test]
+    fn a_declined_operation_passes_a_path_parameters_own_example() {
+        assert_lines(
+            "example-value-source",
+            &[
+                "    beacon_code=\"bcn:west-4\",",
+                "    lantern_code=\"ltn:east-2\",",
+            ],
+            &["\"beaconCode\"", "\"lanternCode\""],
         );
     }
 
@@ -19667,8 +19703,10 @@ mod handed_off_example_value_tests {
             &[
                 "    seal=VerifySealRequestSeal_Stamp(",
                 "        stamp_id=\"stamp_id\",",
+                "    entry=EntryV2(",
+                "            keeper=\"Morwenna\",",
             ],
-            &["_Wax"],
+            &["_Wax", "EntryV1("],
         );
     }
 

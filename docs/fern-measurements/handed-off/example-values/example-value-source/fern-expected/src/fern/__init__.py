@@ -8,7 +8,20 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import BuoyMarker, LightMarker, RosterEntry
     from .errors import NotFoundError
-    from . import charts, drills, harbours, ledger, markers, mirrors, passes, rosters, routes, soundings, stations
+    from . import (
+        beacons,
+        charts,
+        drills,
+        harbours,
+        ledger,
+        markers,
+        mirrors,
+        passes,
+        rosters,
+        routes,
+        soundings,
+        stations,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .charts import UploadChartResponse
     from .client import AsyncFernApi, FernApi
@@ -41,6 +54,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "StartDrillResponse": ".drills",
     "UploadChartResponse": ".charts",
     "__version__": ".version",
+    "beacons": ".beacons",
     "charts": ".charts",
     "drills": ".drills",
     "harbours": ".harbours",
@@ -97,6 +111,7 @@ __all__ = [
     "StartDrillResponse",
     "UploadChartResponse",
     "__version__",
+    "beacons",
     "charts",
     "drills",
     "harbours",

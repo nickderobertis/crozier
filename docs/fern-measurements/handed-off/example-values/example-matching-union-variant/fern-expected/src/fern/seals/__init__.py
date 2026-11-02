@@ -6,8 +6,17 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import VerifySealRequestSeal, VerifySealRequestSeal_Stamp, VerifySealRequestSeal_Wax, VerifySealResponse
+    from .types import (
+        VerifyLogbookRequestEntry,
+        VerifyLogbookResponse,
+        VerifySealRequestSeal,
+        VerifySealRequestSeal_Stamp,
+        VerifySealRequestSeal_Wax,
+        VerifySealResponse,
+    )
 _dynamic_imports: typing.Dict[str, str] = {
+    "VerifyLogbookRequestEntry": ".types",
+    "VerifyLogbookResponse": ".types",
     "VerifySealRequestSeal": ".types",
     "VerifySealRequestSeal_Stamp": ".types",
     "VerifySealRequestSeal_Wax": ".types",
@@ -36,4 +45,11 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["VerifySealRequestSeal", "VerifySealRequestSeal_Stamp", "VerifySealRequestSeal_Wax", "VerifySealResponse"]
+__all__ = [
+    "VerifyLogbookRequestEntry",
+    "VerifyLogbookResponse",
+    "VerifySealRequestSeal",
+    "VerifySealRequestSeal_Stamp",
+    "VerifySealRequestSeal_Wax",
+    "VerifySealResponse",
+]

@@ -112,6 +112,33 @@ class DepotsClient:
         )
         return _response.data
 
+    def purge_depots(self, *, request: str, request_options: typing.Optional[RequestOptions] = None) -> None:
+        """
+        Parameters
+        ----------
+        request : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.depots.purge_depots(
+            request="string",
+        )
+        """
+        _response = self._raw_client.purge_depots(request=request, request_options=request_options)
+        return _response.data
+
 
 class AsyncDepotsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -227,4 +254,39 @@ class AsyncDepotsClient:
         _response = await self._raw_client.compare_depots(
             left=left, right=right, level=level, request_options=request_options
         )
+        return _response.data
+
+    async def purge_depots(self, *, request: str, request_options: typing.Optional[RequestOptions] = None) -> None:
+        """
+        Parameters
+        ----------
+        request : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.depots.purge_depots(
+                request="string",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.purge_depots(request=request, request_options=request_options)
         return _response.data

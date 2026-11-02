@@ -10,6 +10,8 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from .types.verify_logbook_request_entry import VerifyLogbookRequestEntry
+from .types.verify_logbook_response import VerifyLogbookResponse
 from .types.verify_seal_request_seal import VerifySealRequestSeal
 from .types.verify_seal_response import VerifySealResponse
 from pydantic import ValidationError
@@ -71,6 +73,55 @@ class RawSealsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def verify_logbook(
+        self, *, entry: VerifyLogbookRequestEntry, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[VerifyLogbookResponse]:
+        """
+        Parameters
+        ----------
+        entry : VerifyLogbookRequestEntry
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[VerifyLogbookResponse]
+            Verified
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "logbooks/verify",
+            method="POST",
+            json={
+                "entry": convert_and_respect_annotation_metadata(
+                    object_=entry, annotation=VerifyLogbookRequestEntry, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    VerifyLogbookResponse,
+                    parse_obj_as(
+                        type_=VerifyLogbookResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawSealsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -112,6 +163,55 @@ class AsyncRawSealsClient:
                     VerifySealResponse,
                     parse_obj_as(
                         type_=VerifySealResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def verify_logbook(
+        self, *, entry: VerifyLogbookRequestEntry, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[VerifyLogbookResponse]:
+        """
+        Parameters
+        ----------
+        entry : VerifyLogbookRequestEntry
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[VerifyLogbookResponse]
+            Verified
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "logbooks/verify",
+            method="POST",
+            json={
+                "entry": convert_and_respect_annotation_metadata(
+                    object_=entry, annotation=VerifyLogbookRequestEntry, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    VerifyLogbookResponse,
+                    parse_obj_as(
+                        type_=VerifyLogbookResponse,
                         object_=_response.json(),
                     ),
                 )

@@ -5,6 +5,8 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawSealsClient, RawSealsClient
+from .types.verify_logbook_request_entry import VerifyLogbookRequestEntry
+from .types.verify_logbook_response import VerifyLogbookResponse
 from .types.verify_seal_request_seal import VerifySealRequestSeal
 from .types.verify_seal_response import VerifySealResponse
 
@@ -59,6 +61,41 @@ class SealsClient:
         )
         """
         _response = self._raw_client.verify_seal(seal=seal, request_options=request_options)
+        return _response.data
+
+    def verify_logbook(
+        self, *, entry: VerifyLogbookRequestEntry, request_options: typing.Optional[RequestOptions] = None
+    ) -> VerifyLogbookResponse:
+        """
+        Parameters
+        ----------
+        entry : VerifyLogbookRequestEntry
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        VerifyLogbookResponse
+            Verified
+
+        Examples
+        --------
+        from fern import EntryV2, FernApi, PageV2, PageV2Edition
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.seals.verify_logbook(
+            entry=EntryV2(
+                page=PageV2(
+                    edition=PageV2Edition.TWO0,
+                    keeper="Morwenna",
+                ),
+            ),
+        )
+        """
+        _response = self._raw_client.verify_logbook(entry=entry, request_options=request_options)
         return _response.data
 
 
@@ -117,4 +154,47 @@ class AsyncSealsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.verify_seal(seal=seal, request_options=request_options)
+        return _response.data
+
+    async def verify_logbook(
+        self, *, entry: VerifyLogbookRequestEntry, request_options: typing.Optional[RequestOptions] = None
+    ) -> VerifyLogbookResponse:
+        """
+        Parameters
+        ----------
+        entry : VerifyLogbookRequestEntry
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        VerifyLogbookResponse
+            Verified
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi, EntryV2, PageV2, PageV2Edition
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.seals.verify_logbook(
+                entry=EntryV2(
+                    page=PageV2(
+                        edition=PageV2Edition.TWO0,
+                        keeper="Morwenna",
+                    ),
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.verify_logbook(entry=entry, request_options=request_options)
         return _response.data
