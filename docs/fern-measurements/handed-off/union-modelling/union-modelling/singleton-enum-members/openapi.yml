@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Print shop
+  version: "1.0"
+paths:
+  /prints:
+    post:
+      operationId: orderPrint
+      parameters:
+        - name: finish
+          in: query
+          required: false
+          description: The paper finish; which ones apply depends on the stock.
+          schema:
+            default: matte
+            oneOf:
+              - title: plain
+                description: Uncoated stock.
+                type: string
+                enum:
+                  - none
+                nullable: true
+              - title: art
+                description: Art stock, matte by default.
+                type: string
+                enum:
+                  - matte
+                nullable: true
+              - title: photo
+                description: Photo stock, matte by default.
+                type: string
+                enum:
+                  - matte
+                nullable: true
+              - title: poster
+                description: Poster stock.
+                type: string
+                enum:
+                  - gloss
+                nullable: true
+        - name: dpi
+          in: query
+          required: false
+          schema:
+            default: 300
+            oneOf:
+              - title: proof
+                type: number
+                nullable: true
+                enum:
+                  - 150
+                  - 300
+              - title: fine
+                type: number
+                nullable: true
+                minimum: 300
+                maximum: 1200
+      responses:
+        "200":
+          description: The order.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string

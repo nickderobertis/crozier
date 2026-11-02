@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: Orchard ledger
+  version: "1.0"
+paths:
+  /harvests:
+    get:
+      operationId: listHarvests
+      responses:
+        "200":
+          description: Every recorded harvest, or why none can be read yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HarvestBoard"
+components:
+  schemas:
+    Harvest:
+      type: object
+      properties:
+        crop:
+          type: string
+        tonnes:
+          type: number
+    HarvestBoard:
+      type: object
+      required:
+        - harvests
+        - pending
+        - pendingReason
+        - ledgerVersion
+        - talliedAt
+      properties:
+        harvests:
+          type: array
+          items:
+            $ref: "#/components/schemas/Harvest"
+        pending:
+          type: boolean
+        pendingReason:
+          type: string
+          pattern: "^(?:|ledger-closed)$"
+        ledgerVersion:
+          type: string
+          pattern: "^(?:|2\\.1)$"
+        talliedAt:
+          type: string
+      oneOf:
+        - properties:
+            pending:
+              const: false
+            pendingReason:
+              const: ""
+            ledgerVersion:
+              const: "2.1"
+        - properties:
+            pending:
+              const: true
+            pendingReason:
+              const: ledger-closed
+            ledgerVersion:
+              const: ""
+            talliedAt:
+              const: ""
+            harvests:
+              maxItems: 0

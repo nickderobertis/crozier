@@ -1,0 +1,32 @@
+openapi: 3.1.0
+info:
+  title: Help desk
+  version: "1.0"
+paths:
+  /assistant/toggle:
+    post:
+      operationId: toggleAssistant
+      parameters:
+        - name: channels
+          in: query
+          required: false
+          description: Where the assistant answers.
+          schema:
+            anyOf:
+              - type: array
+                items:
+                  type: string
+                  enum:
+                    - portal
+                    - chat
+              - type: "null"
+      responses:
+        "200":
+          description: Toggled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
