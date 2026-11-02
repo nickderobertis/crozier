@@ -23,7 +23,7 @@ Two component schemas whose names differ only in their first letter's case (konf
 
 ## The verdict
 
-The certified pair writes one `TransferMode` enum with the later declaration's values; crozier's `deduplicate_type_names` already keeps the later declaration, so `src/name_refusals.rs` drops the first-letter-case refusal. The konfig-dev copy of the same API stays refused by both, for its `PaymentResponse` collision.
+The certified pair writes one `TransferMode` enum with the later declaration's values; crozier's `deduplicate_type_names` already keeps the later declaration, so `src/name_refusals.rs` no longer refuses two string enums whose earlier declaration's values are all among the later's. Every other first-letter-case pair stays refused: measured at the pair (cache entries for a scratch `Thing`/`thing` document), two objects an operation answers fail its example check against the merged type (`Unexpected property "id"`, which crozier refuses as `example-unexpected-property` first), and an enum value the later declaration drops would fail it too. The same two objects with no operation at all generate in the certified pair and stay refused in crozier, a residual drafted as a follow-up. The konfig-dev copy of the same API stays refused by both, for its `PaymentResponse` collision.
 
 ## What holds it
 

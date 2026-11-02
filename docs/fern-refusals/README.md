@@ -329,7 +329,7 @@ refuses. Both keep Fern's logs under
   `path-without-leading-slash` (the empty path key),
   `example-missing-required-property` (an extension behind an open object),
   `type-name-collision` (a multipart component's nested types, a group-placed
-  component, first-letter-case component names) and
+  component, two first-letter-case enum components the later one extends) and
   `request-property-name-collision` (a direct `allOf` parent's property);
   `request-property-camelcase-collision` now also catches a bracketed query
   name beside its bare name, where crozier wrote invalid Python. One class is

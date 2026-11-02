@@ -1018,10 +1018,40 @@ pub(crate) fn validate_ir(
         }
     }
     // Two component schemas whose names differ only in their first letter's case
-    // (`PaymentType`, `paymentType`) are one type to the certified pair, which
-    // keeps the later declaration and generates, as `deduplicate_type_names`
-    // does (docs/fern-measurements/handed-off/document-acceptance/
-    // never-compared-type-name-collision/), so they are no refusal.
+    // are one type to the certified pair, which keeps the later declaration.
+    // Two string enums, the earlier's values among the later's (`PaymentType`,
+    // `paymentType`), generate, as `deduplicate_type_names` keeps the later one
+    // (docs/fern-measurements/handed-off/document-acceptance/
+    // never-compared-type-name-collision/). Two objects are refused: an
+    // operation answering the earlier one fails the certified pair's example
+    // check against the merged type (`Unexpected property`).
+    let mut component_names = std::collections::HashMap::new();
+    for (name, schema) in &doc.components.schemas {
+        if schema
+            .ty
+            .as_ref()
+            .and_then(|ty| ty.primary())
+            .is_some_and(|ty| ty != "object")
+            && schema.enum_values.is_none()
+        {
+            continue;
+        }
+        let normalized = crate::naming::class_name(name);
+        if let Some(previous) = component_names.insert(normalized.clone(), name) {
+            if previous.get(1..) != name.get(1..) {
+                continue;
+            }
+            let merged_enum = doc.components.schemas[previous]
+                .enum_values
+                .as_ref()
+                .zip(schema.enum_values.as_ref())
+                .is_some_and(|(earlier, later)| earlier.iter().all(|value| later.contains(value)));
+            if merged_enum {
+                continue;
+            }
+            return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {normalized}; give them distinct names")), strict));
+        }
+    }
     let roots: std::collections::HashSet<_> = doc
         .components
         .schemas
@@ -2028,6 +2058,37 @@ mod tests {
             .filter(|decl| decl.name() == "TransferMode")
             .collect();
         assert_eq!(modes.len(), 1);
+        // Two objects, or an earlier enum value the later one drops, still
+        // collide: the certified pair's example of the earlier declaration
+        // fails against the merged type.
+        for components in [
+            "{Thing: {type: object, properties: {id: {type: string}}}, thing: {type: object, properties: {name: {type: string}}}}",
+            "{Mode: {type: string, enum: [A, B]}, mode: {type: string, enum: [A]}}",
+        ] {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("openapi.yml");
+            std::fs::write(
+                &path,
+                format!("openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\ncomponents:\n  schemas: {components}\n"),
+            )
+            .unwrap();
+            let doc = crate::openapi::load(&path).unwrap();
+            let config = crate::config::GenerateConfig::new(
+                path.clone(),
+                "out".into(),
+                Some("fern".into()),
+                None,
+                None,
+                crate::settings::ExtraFields::default(),
+                "Api",
+            )
+            .unwrap();
+            let error = validate_ir(&crate::ir::build(&doc, &config), &doc, &path, false)
+                .err()
+                .map(|error| error.to_string())
+                .unwrap_or_default();
+            assert!(error.contains("type-name-collision: component schemas"), "{components}: {error}");
+        }
     }
 
     /// A component its SDK group places in a tag's package is its own
