@@ -68,6 +68,14 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The worked-example value causes the fixture-only witness searches handed
+/// off, measured under `docs/fern-measurements/handed-off/example-values/` and
+/// held whole in both enum modes, with the values a design-review ruling keeps.
+#[path = "e2e/handed_off_example_values.rs"]
+mod handed_off_example_values;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// A boolean the document writes as `1` or `0`, in both formats and modes.
 #[path = "e2e/document_booleans.rs"]
@@ -918,6 +926,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
+        (handed_off_example_values::AREA_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -948,6 +957,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
                 );
             }
         }
+    }
+    for golden in handed_off_example_values::compared_overlays() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded: vec![handed_off_example_values::MANIFEST.to_string()],
+                carve_outs: Default::default(),
+            },
+        );
     }
     if let Ok(entries) = std::fs::read_dir(root.join(literals_mode::LITERALS_MODE_DIR)) {
         for entry in entries.filter_map(Result::ok) {
@@ -12426,7 +12444,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "reference.md",
         "src/fern/analyze/reports/client.py",
         "src/fern/collections/__init__.py",
-        "src/fern/collections/client.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/products/client.py",

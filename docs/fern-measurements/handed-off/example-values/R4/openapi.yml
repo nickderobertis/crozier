@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Keeper roster
+  version: 1.0.0
+paths:
+  /keepers/{keeperId}/shifts:
+    get:
+      operationId: listKeeperShifts
+      tags: [keepers]
+      parameters:
+        - name: keeperId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: KPR-from-schema
+          examples:
+            first:
+              summary: From the map
+              value: KPR-from-map
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            winter:
+              value: winter
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          examples:
+            one:
+              value: 2
+      responses:
+        "200":
+          description: Shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

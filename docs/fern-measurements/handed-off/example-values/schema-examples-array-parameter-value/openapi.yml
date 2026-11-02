@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: Lamp inventory
+  version: 1.0.0
+paths:
+  /lamps/{lampId}:
+    get:
+      operationId: getLamp
+      tags: [lamps]
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+            examples:
+              - lmp_8f2kq
+        - name: wattage
+          in: query
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 60
+        - $ref: "#/components/parameters/ShadeParam"
+      responses:
+        "200":
+          description: The lamp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /lamps/{lampId}/manual:
+    get:
+      operationId: getLampManual
+      tags: [lamps]
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+            examples:
+              - lmp_8f2kq
+        - name: edition
+          in: query
+          required: true
+          schema:
+            type: string
+            examples:
+              - second
+        - $ref: "#/components/parameters/ShadeParam"
+      responses:
+        "200":
+          description: The manual
+          content:
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+  /lamps/{lampId}/settings:
+    patch:
+      operationId: updateLampSettings
+      tags: [lamps]
+      parameters:
+        - name: lampId
+          in: path
+          required: true
+          schema:
+            type: string
+            examples:
+              - lmp_8f2kq
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                additionalProperties: false
+                brightness:
+                  type:
+                    - integer
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                  examples:
+                    - porch
+              type: object
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+components:
+  parameters:
+    ShadeParam:
+      name: shade
+      in: query
+      required: true
+      schema:
+        type: string
+        examples:
+          - amber-glass

@@ -1,0 +1,64 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Beam calibration",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/calibrations": {
+      "post": {
+        "operationId": "recordCalibration",
+        "tags": [
+          "calibrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "gain",
+                  "offsets"
+                ],
+                "properties": {
+                  "gain": {
+                    "type": "number",
+                    "example": 0.9345407030264767
+                  },
+                  "offsets": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "example": [
+                      0.1234567890123456,
+                      2.718281828459045
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

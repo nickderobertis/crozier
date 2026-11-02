@@ -1,0 +1,581 @@
+openapi: 3.0.3
+info:
+  title: Chart room
+  version: 1.0.0
+paths:
+  /charts/upload:
+    post:
+      operationId: uploadChart
+      tags: [charts]
+      description: A multipart text part's own example.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [sheet, title]
+              properties:
+                sheet:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                  example: Lizard Point
+                revision:
+                  type: string
+                  example: r7
+      responses:
+        "200":
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /charts/{chartId}/print:
+    get:
+      operationId: printChart
+      tags: [charts]
+      description: A binary download's query parameter example.
+      parameters:
+        - name: chartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: scale
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "1:25000"
+      responses:
+        "200":
+          description: The sheet
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: No such chart
+  /charts/bundle:
+    post:
+      operationId: bundleCharts
+      tags: [charts]
+      description: A top-level array body's media-type example on a binary download.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example: [chart-11, chart-12]
+      responses:
+        "200":
+          description: The bundle
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /mirrors:
+    post:
+      operationId: addMirror
+      tags: [mirrors]
+      description: A format uri and a pattern-only string.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source, region]
+              properties:
+                source:
+                  type: string
+                  format: uri
+                region:
+                  type: string
+                  pattern: "^[A-Z]{3}$"
+      responses:
+        "200":
+          description: Added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /harbours/{harbourSlug}/berths/{berthRef}:
+    get:
+      operationId: getBerth
+      tags: [harbours]
+      description: "Path parameters beside one declaring an empty schema."
+      parameters:
+        - name: harbourSlug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: cornwall/porthleven
+        - name: berthRef
+          in: path
+          required: true
+          schema: {}
+      responses:
+        "200":
+          description: The berth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /markers:
+    post:
+      operationId: placeMarker
+      tags: [markers]
+      description: A union-typed property's declared example.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [marker]
+              properties:
+                marker:
+                  oneOf:
+                    - $ref: "#/components/schemas/BuoyMarker"
+                    - $ref: "#/components/schemas/LightMarker"
+                  example:
+                    colour: green
+                    shape: cone
+      responses:
+        "200":
+          description: Placed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /routes:
+    post:
+      operationId: planRoutes
+      tags: [routes]
+      description: An array body's schema-level example.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+              example: [Mount's Bay, Carrick Roads]
+      responses:
+        "200":
+          description: Planned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /drills:
+    post:
+      operationId: startDrill
+      tags: [drills]
+      description: A map property's schema-level example.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [crew, settings]
+              properties:
+                crew:
+                  type: string
+                settings:
+                  type: object
+                  additionalProperties:
+                    anyOf:
+                      - type: integer
+                      - type: string
+                      - type: boolean
+                  example:
+                    night: true
+                    station: Penlee
+      responses:
+        "200":
+          description: Started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /stations:
+    get:
+      operationId: listStations
+      tags: [stations]
+      description: A required array query parameter's example.
+      parameters:
+        - name: codes
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+          example: [PLY, FAL]
+      responses:
+        "200":
+          description: Stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /passes:
+    post:
+      operationId: issuePass
+      tags: [passes]
+      description: A media type's named example for an enum field.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grant, holder]
+              properties:
+                grant:
+                  type: string
+                  enum: [day-visit, overnight-stay]
+                holder:
+                  type: string
+            examples:
+              overnight:
+                value:
+                  grant: overnight-stay
+                  holder: Kerensa
+      responses:
+        "200":
+          description: Issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /blocks/{height}:
+    get:
+      operationId: getBlock
+      tags: [ledger]
+      description: An unsigned 64-bit integer's placeholder.
+      parameters:
+        - name: height
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: uint64
+      responses:
+        "200":
+          description: The block
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /soundings:
+    get:
+      operationId: listSoundings
+      tags: [soundings]
+      description: An integer bounded by a minimum and a maximum.
+      parameters:
+        - name: depth
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1024
+        - name: fathoms
+          in: query
+          required: true
+          schema:
+            type: integer
+            maximum: 40
+        - name: cables
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 5
+      responses:
+        "200":
+          description: Soundings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+  /rosters/{id}/entries:
+    post:
+      operationId: addRosterEntry
+      tags: [rosters]
+      description: A required header on an operation whose body has no worked example.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Watch-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RosterEntry"
+      responses:
+        "201":
+          description: Added
+  /beacons/{beaconCode}/script:
+    post:
+      operationId: setBeaconScript
+      tags: [beacons]
+      description: An inline path parameter's own example beside a text body.
+      parameters:
+        - name: beaconCode
+          in: path
+          required: true
+          schema:
+            type: string
+          example: bcn:west-4
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Set
+  /lanterns/{lanternCode}/script:
+    post:
+      operationId: setLanternScript
+      tags: [beacons]
+      description: A referenced path parameter's own example beside a text body.
+      parameters:
+        - $ref: "#/components/parameters/LanternCode"
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Set
+  /lanterns/{lanternCode}/manual:
+    get:
+      operationId: getLanternManual
+      tags: [beacons]
+      description: A referenced path parameter's own example beside an XML answer.
+      parameters:
+        - $ref: "#/components/parameters/LanternCode"
+      responses:
+        "200":
+          description: The manual
+          content:
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+  /soundings/log:
+    get:
+      operationId: getSoundingLog
+      tags: [soundings]
+      description: Bounded integers on an operation answering text.
+      parameters:
+        - name: depth
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1024
+        - name: fathoms
+          in: query
+          required: true
+          schema:
+            type: integer
+            maximum: 40
+        - name: cables
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 5
+      responses:
+        "200":
+          description: The log
+          content:
+            text/plain:
+              schema:
+                type: string
+  /passes/form:
+    post:
+      operationId: issueFormPass
+      tags: [passes]
+      description: A form body's named example for an enum field.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant, holder, tier]
+              properties:
+                grant:
+                  type: string
+                  enum: [day-visit, overnight-stay]
+                holder:
+                  type: string
+                tier:
+                  type: string
+                  enum: [standard, priority]
+                  example: priority
+            examples:
+              overnight:
+                value:
+                  grant: overnight-stay
+                  holder: Kerensa
+      responses:
+        "200":
+          description: Issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /charts/{chartId}/layers:
+    put:
+      operationId: setChartLayers
+      tags: [charts]
+      description: A scalar-or-list union property's declared example inside an array item.
+      parameters:
+        - name: chartId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [layers]
+              properties:
+                layers:
+                  type: array
+                  items:
+                    type: object
+                    required: [label, match]
+                    properties:
+                      label:
+                        type: string
+                        example: soundings
+                      match:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: string
+                        example:
+                          - depth
+      responses:
+        "200":
+          description: Set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+components:
+  parameters:
+    LanternCode:
+      name: lanternCode
+      in: path
+      required: true
+      schema:
+        type: string
+      example: ltn:east-2
+  schemas:
+    BuoyMarker:
+      type: object
+      required: [colour, shape]
+      properties:
+        colour:
+          type: string
+        shape:
+          type: string
+    LightMarker:
+      type: object
+      required: [period]
+      properties:
+        period:
+          type: number
+    RosterEntry:
+      type: object
+      additionalProperties: false
+      oneOf:
+        - required: [keeperId]
+          not:
+            required: [deputyId]
+        - required: [deputyId, hours]
+          not:
+            required: [keeperId]
+      properties:
+        keeperId:
+          type: string
+          format: uuid
+        deputyId:
+          type: string
+          format: uuid
+        hours:
+          type: integer

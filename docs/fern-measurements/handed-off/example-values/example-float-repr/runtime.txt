@@ -1,0 +1,11 @@
+# crozier over this directory's two spellings of one document, run 2026-11-01.
+# "d9c34ef08" is crozier built at the parent of e4eec3d65 (the commit that
+# enabled serde_json's float_roundtrip); "base" is crozier at this node's base
+# 6b4509ab9 (and unchanged since for this rule). Each line is the worked call's
+# `gain=` and `offsets=` in the generated reference.md.
+$ crozier generate python --spec <doc> --output <out> --package-name fern --project-name default_package_name
+d9c34ef08 openapi.yml:  gain=0.9345407030264767, offsets=[0.1234567890123456, 2.718281828459045]
+d9c34ef08 openapi.json: gain=0.9345407030264768, offsets=[0.1234567890123456, 2.718281828459045]
+base      openapi.yml:  gain=0.9345407030264767, offsets=[0.1234567890123456, 2.718281828459045]
+base      openapi.json: gain=0.9345407030264767, offsets=[0.1234567890123456, 2.718281828459045]
+certified pair (fern-expected/reference.md): gain=0.9345407030264767,

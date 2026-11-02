@@ -1,0 +1,116 @@
+openapi: 3.1.0
+info:
+  title: Logbook seals
+  version: 1.0.0
+paths:
+  /seals/verify:
+    post:
+      operationId: verifySeal
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seal]
+              properties:
+                seal:
+                  oneOf:
+                    - $ref: "#/components/schemas/WaxSeal"
+                    - $ref: "#/components/schemas/StampSeal"
+            example:
+              seal:
+                format: stamp
+                stamp_id: st-0091
+                inked: true
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+  /logbooks/verify:
+    post:
+      operationId: verifyLogbook
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entry]
+              properties:
+                entry:
+                  oneOf:
+                    - $ref: "#/components/schemas/EntryV1"
+                    - $ref: "#/components/schemas/EntryV2"
+            example:
+              entry:
+                page:
+                  edition: "2.0"
+                  keeper: Morwenna
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+components:
+  schemas:
+    WaxSeal:
+      type: object
+      required: [format, colour]
+      properties:
+        format:
+          type: string
+          enum: [wax]
+        colour:
+          type: string
+    StampSeal:
+      type: object
+      required: [format, stamp_id]
+      properties:
+        format:
+          type: string
+          enum: [stamp]
+        stamp_id:
+          type: string
+        inked:
+          type: boolean
+    EntryV1:
+      type: object
+      required: [page]
+      properties:
+        page:
+          $ref: "#/components/schemas/PageV1"
+    EntryV2:
+      type: object
+      required: [page]
+      properties:
+        page:
+          $ref: "#/components/schemas/PageV2"
+    PageV1:
+      type: object
+      required: [scribe]
+      properties:
+        scribe:
+          type: string
+    PageV2:
+      type: object
+      required: [edition, keeper]
+      properties:
+        edition:
+          type: string
+          enum: ["2.0"]
+        keeper:
+          type: string
