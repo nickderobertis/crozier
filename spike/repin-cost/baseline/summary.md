@@ -1,15 +1,15 @@
 # Repin cost — `runs:Close-crozier-s-remaining-Fern-parity-gaps,Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations` until 2026-11-02T12:30:01+00:00
 
-- Changes: 27 (26 with a PR, 20 merged); CI runs 68, failed 28.
-- Census-tier CI failures: 15 (0.56 per change, 9 changes hit); runner 3453.6 min, elapsed 1403.4 min, wait to next run 2595.2 min (cycle 3998.6 min, median 230.9 per failure).
-- Publication attempts 47 (census-failed 6); re-dispatches 82 (after a census failure 9, after a derived conflict 9).
-- Derived-table conflicts: 10 (7 changes), wait to next attempt 3839.9 min (median 371.5 per conflict), 4 of them also conflicting in code; code-only conflicts 1.
+- Changes: 26 (26 with a PR, 20 merged); CI runs 67, failed 28.
+- Census-tier CI failures: 15 (0.58 per change, 9 changes hit); runner 3453.6 min, elapsed 1403.4 min, wait to next run 2595.2 min (cycle 3998.6 min, median 230.9 per failure).
+- Publication attempts 47 (census-failed 6); re-dispatches 78 (after a census failure 9, after a derived conflict 8).
+- Derived-table conflicts: 9 (6 changes), wait to next attempt 3839.9 min (median 423.8 per conflict), 4 of them also conflicting in code; code-only conflicts 1.
 
 Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):
 
 | kind | events | changes | runner min | elapsed min | wait min | cycle min | publication attempts | re-dispatches |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `derived-conflict` | 10 | 7 | 0.0 | 0.0 | 3839.9 | 3839.9 | 0 | 9 |
+| `derived-conflict` | 9 | 6 | 0.0 | 0.0 | 3839.9 | 3839.9 | 0 | 8 |
 | `measured-count` | 4 | 3 | 776.2 | 294.8 | 322.5 | 617.3 | 2 | 3 |
 | `other-artifact:docs/fern-refusals/classes.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 | 1 | 1 |
 | `other-artifact:docs/fern-refusals/documents.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 | 1 | 1 |
@@ -29,4 +29,6 @@ Per kind (a failure naming several kinds counts once under each; its minutes are
 | `docs/fern-measurements/cases.tsv` | 0 | 2 | 2 | 35.9 | 0.0 |
 | `docs/openapi-surface/scenario-proof-index.tsv` | 0 | 1 | 1 | 35.9 | 0.0 |
 
-GitHub: 0 uncached calls, 175 cache hits.
+Examined and excluded from every total: 1 (1 without a pull request); see excluded.tsv.
+
+GitHub: 0 uncached calls, 173 cache hits.

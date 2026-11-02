@@ -1,12 +1,12 @@
 {
-  "changes": 27,
+  "changes": 26,
   "changes_with_pr": 26,
   "merged": 20,
-  "ci_runs": 68,
+  "ci_runs": 67,
   "ci_failed": 28,
   "other_failures": 13,
   "attempts": 47,
-  "redispatches": 82,
+  "redispatches": 78,
   "census": {
     "failures": 15,
     "changes_hit": 9,
@@ -18,22 +18,22 @@
     "median_cycle_min": 230.9
   },
   "conflicts": {
-    "derived": 10,
-    "changes_hit": 7,
+    "derived": 9,
+    "changes_hit": 6,
     "code": 1,
     "mixed": 4,
     "wait_min": 3839.9,
-    "redispatches": 9,
-    "median_wait_min": 371.5
+    "redispatches": 8,
+    "median_wait_min": 423.8
   },
   "by_kind": {
     "derived-conflict": {
-      "events": 10,
+      "events": 9,
       "runner_min": 0.0,
       "elapsed_min": 0.0,
       "wait_min": 3839.9,
-      "changes": 7,
-      "redispatches": 9,
+      "changes": 6,
+      "redispatches": 8,
       "attempts": 0,
       "cycle_min": 3839.9
     },
@@ -404,6 +404,19 @@
   },
   "github": {
     "uncached_calls": 0,
-    "cache_hits": 175
-  }
+    "cache_hits": 173
+  },
+  "excluded": [
+    {
+      "pr": "",
+      "branch": "nick/Close-crozier-s-remaining-Fern-parity-gaps/conquery-emission-parity",
+      "base": "",
+      "head": "",
+      "nodes": "conquery-emission-parity=?;conquery-emission-parity-r2=?;conquery-emission-parity-r3=?;conquery-emission-parity-r4=no-changes",
+      "attempts": 0,
+      "redispatches": 4,
+      "conflicts": 1,
+      "reason": "no pull request: not a change"
+    }
+  ]
 }

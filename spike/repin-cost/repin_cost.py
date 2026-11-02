@@ -5,8 +5,11 @@
     python3 spike/repin-cost/repin_cost.py --window base-carries:<sha>[,<sha>...] [--until <ISO>] --out <dir>
 
 `runs:` takes the crozier changes the named runs produced; `base-carries:` scans every
-run under the runs root that worked crozier and keeps the changes whose final head has
-every named commit as an ancestor. Three sources are joined per change (pull request,
+run under the runs root that worked crozier and keeps the changes whose *base* -- the
+merge base of the PR's head with crozier's main, so never a commit the branch itself
+introduces -- has every named commit as an ancestor. A change is a pull request: a node
+branch that never opened one is examined but kept out of every total, and listed in
+<out>/excluded.tsv with the reason, as is every change a base-carries window leaves out. Three sources are joined per change (pull request,
 branch, run nodes):
 
 1. this host's run journals under $ONEPIPELINE_RUNS_DIR (node outcomes through
@@ -213,7 +216,7 @@ def crozier_runs(root: Path) -> list[str]:
 def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
     """Per branch: nodes, PR, gate attempts, dispatches, conflicts, settles."""
     branches: dict[str, dict] = collections.defaultdict(
-        lambda: {"nodes": set(), "runs": set(), "pr": None, "merged": None, "gates": {}, "dispatches": [], "conflicts": {}, "settles": []}
+        lambda: {"nodes": set(), "runs": set(), "pr": None, "merged": None, "gates": {}, "dispatches": [], "conflicts": {}, "settles": [], "pushes": []}
     )
     session_branch: dict[str, str] = {}
     node_branch: dict[str, str] = {}
@@ -271,6 +274,8 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
         elif kind == "sync-conflict":
             key = (labels.get("session"), event["ts"])
             b["conflicts"][key] = {"at": ts(event["ts"]), "paths": payload.get("paths", []), "node": node}
+        elif kind == "push" and payload.get("accepted") and payload.get("head"):
+            b["pushes"].append((ts(event["ts"]), payload["head"]))
         elif kind == "node-settled":
             b["settles"].append({"at": ts(event["ts"]), "node": node, "status": payload.get("status"), "outcome": payload.get("outcome")})
     return branches
@@ -339,6 +344,14 @@ def fetch_pr(pr: int) -> str | None:
     if done.returncode != 0:
         return None
     return git("rev-parse", ref).strip()
+
+
+def is_ancestor(ancestor: str, descendant: str) -> bool:
+    if not descendant:
+        return False
+    return subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "merge-base", "--is-ancestor", ancestor, descendant], capture_output=True
+    ).returncode == 0
 
 
 def has_commit(sha: str) -> bool:
@@ -420,18 +433,38 @@ def main() -> int:
                 prev["dispatches"] += data["dispatches"]
                 prev["conflicts"].update(data["conflicts"])
                 prev["settles"] += data["settles"]
+                prev["pushes"] += data["pushes"]
             else:
                 branches[name] = data
 
     git("fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/repin-cost/main", check=False)
-    changes, events = [], []
+    changes, events, excluded = [], [], []
     for name, b in sorted(branches.items(), key=lambda kv: (kv[1]["pr"] or 10**9, kv[0])):
-        head = fetch_pr(b["pr"]) if b["pr"] else None
+        examined = {
+            "pr": b["pr"] or "", "branch": name, "base": "", "head": "",
+            "nodes": ";".join(f"{n}={outcomes.get(n, '?')}" for n in sorted(b["nodes"])),
+            "attempts": len(b["gates"]), "redispatches": len(b["dispatches"]), "conflicts": len(b["conflicts"]),
+        }
+        if not b["pr"]:
+            excluded.append({**examined, "reason": "no pull request: not a change"})
+            continue
+        head = fetch_pr(b["pr"])
         if carries:
-            if not head or not all(
-                subprocess.run(["git", "-C", str(REPO_ROOT), "merge-base", "--is-ancestor", c, head], capture_output=True).returncode == 0
-                for c in carries
-            ):
+            # The head as of --until: the last push the journals recorded before it, when git holds it.
+            pushed = [h for _, h in sorted(b["pushes"]) if has_commit(h)]
+            head = pushed[-1] if pushed else head
+            if not head:
+                excluded.append({**examined, "reason": f"refs/pull/{b['pr']}/head not fetchable"})
+                continue
+            base = git("merge-base", "refs/repin-cost/main", head, check=False).strip()
+            examined.update(base=base[:12], head=head[:12])
+            missing = [c for c in carries if not is_ancestor(c, base)]
+            if missing:
+                own = [c for c in missing if is_ancestor(c, head)]
+                why = f"base {base[:12]} lacks {','.join(m[:12] for m in missing)}"
+                if own:
+                    why += f" (the branch's own commits carry {','.join(o[:12] for o in own)})"
+                excluded.append({**examined, "reason": why})
                 continue
         runs_ci = [analyse_run(hub, r) for r in ci_runs(hub, name, until)]
         gates = sorted(b["gates"].values(), key=lambda g: g["start"])
@@ -547,9 +580,15 @@ def main() -> int:
     totals = summarise(changes, events)
     totals["window"] = {"spec": args.window, "until": until.isoformat(), "runs": runs, "base_carries": carries}
     totals["github"] = {"uncached_calls": hub.calls, "cache_hits": hub.hits}
+    totals["excluded"] = excluded
     write_outputs(out, changes, events, totals)
+    xcols = ["pr", "branch", "reason", "base", "head", "attempts", "redispatches", "conflicts", "nodes"]
+    with (out / "excluded.tsv").open("w", encoding="utf-8") as handle:
+        handle.write("\t".join(xcols) + "\n")
+        for x in excluded:
+            handle.write("\t".join(str(x[k]) for k in xcols) + "\n")
     print(
-        f"repin-cost: {len(changes)} changes, {totals['census']['failures']} census-tier CI failures, "
+        f"repin-cost: {len(changes)} changes ({len(excluded)} examined and excluded), {totals['census']['failures']} census-tier CI failures, "
         f"{totals['conflicts']['derived']} derived-table conflicts; {hub.calls} uncached GitHub calls -> {out}/summary.md"
     )
     return 0
@@ -690,6 +729,11 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
     lines += ["", "| artifact outside the census | CI failures | conflicts | changes | cycle min | runner min |", "| --- | --- | --- | --- | --- | --- |"]
     for r in totals["artifacts_outside_census"]:
         lines.append(f"| `{r['artifact']}` | {r['ci_failures']} | {r['conflicts']} | {r['changes']} | {r['cycle_min']} | {r['runner_min']} |")
+    def category(reason: str) -> str:
+        return "without a pull request" if reason.startswith("no pull") else "whose base lacks a required commit" if reason.startswith("base") else "with an unfetchable head"
+
+    reasons = collections.Counter(category(x["reason"]) for x in totals["excluded"])
+    lines += ["", f"Examined and excluded from every total: {len(totals['excluded'])} ({'; '.join(f'{v} {k}' for k, v in reasons.items()) or 'none'}); see excluded.tsv."]
     lines += ["", f"GitHub: {totals['github']['uncached_calls']} uncached calls, {totals['github']['cache_hits']} cache hits.", ""]
     (out / "summary.md").write_text("\n".join(lines), encoding="utf-8")
 
