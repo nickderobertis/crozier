@@ -1,0 +1,11 @@
+# `reference-body-param-doc`
+
+The handed-off root cause `reference-body-param-doc` from the bodies-and-paths record ([`witness-search-fixture-only-bodies-paths`](../../../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md)), which names it as blocking opctl, confluentinc, runzero (input-entry); the documents, revisions and SHA-256s are listed in [`../README.md`](../README.md).
+
+**The rule:** a body offering any binary media type is bytes, documents the bytes union and keeps its JSON alternative's model; the alias-of-object half is the catalogued request-alias-reference-parameters departure, unchanged.
+
+`openapi.yml` ("Sheet Music Archive") was authored from scratch for this measurement. It holds a body that `$ref`s an alias of an object (`add_publisher`) and a body offering a `$ref` under both `application/json` and `application/octet-stream` (`submit_score`). `fern-expected/` is the complete, comment-stripped tree the certified pair (Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3) freshly generated from it under `python_enums`, through `just fern-references measurements handed-off/bodies-media/reference-body-param-doc` (its `docs/fern-measurements/cases.tsv` row), under the shared Fern lock. No enum-mode overlay is kept: the rule does not turn on the enum mode.
+
+**The comparison.** Before the repair crozier counted the bytes body's JSON alternative as an inlined use, so it dropped `ScoreSubmission`'s model and documented `**request:** `ScoreSubmission`` where the certified pair documents the bytes union. The alias half (`**request:** `AddPublisherRequest``, which the method cannot take) is the catalogued `request-alias-reference-parameters` departure, applied by the comparison once nothing else in `reference.md` differed. With the repair, `crozier compare` (every catalogued departure applied) reports crozier's tree for this document byte-identical to `fern-expected/`, and `bodies_media.rs` in `crates/crozier-e2e` holds it there, showing that the decisive line written as crozier wrote it before fails the comparison.
+
+**Verdict:** `parity-gap-repaired`. The departure kept unchanged is `request-alias-reference-parameters`. Recorded in [`../../bodies-media.tsv`](../../bodies-media.tsv).

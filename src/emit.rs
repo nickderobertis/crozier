@@ -5896,8 +5896,13 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
+    // fern-python-sdk 5.41.3 guards an empty body for every JSON response whose
+    // type resolves optional or unknown, whether or not the document says it
+    // may be empty: a schema-less `application/json` success typed
+    // `typing.Any` returns `None` for an empty body (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/response-type-resolution/`).
     if matches!(ep.response, Some(TypeRef::Optional(_)))
-        || ep.response_may_be_empty
+        || !ep.text_response
             && (matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
                 || ep.response_names_unknown)
     {
@@ -6228,7 +6233,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 // A form field whose type is a named model serializes through the
                 // annotation converter, exactly as the same field would in a JSON
                 // body (`mosip-esignet`'s urlencoded `claims`, a `$ref` to `Claim`).
-                let entry = if f.convert && !f.is_file && !f.form_json && !repeated {
+                // A multipart value part that is not JSON-encoded is a form
+                // primitive, a union of them included, and is sent as is: the
+                // `drawer` of
+                // `docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/`.
+                let entry = if f.convert
+                    && !f.is_file
+                    && !f.form_json
+                    && !repeated
+                    && !form.multipart
+                {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation_type = if f.nullable {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
@@ -6266,9 +6280,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     data.push_str(&entry);
                 }
             }
+            // A multipart body always sends both maps, an empty `data={}` too when
+            // the form has no value field: the property-less form of
+            // `docs/fern-measurements/handed-off/bodies-media/multipart-empty-body/`
+            // sends `data={}, files={}`.
             if !data.is_empty() {
                 lines.push(format!("            data={{\n{data}            }},"));
-            } else if !files.is_empty() {
+            } else if !files.is_empty() || form.multipart {
                 lines.push("            data={},".to_string());
             }
             if !files.is_empty() {
@@ -6316,11 +6334,63 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             (!form.multipart).then_some("application/x-www-form-urlencoded".to_string())
         }
+        // A JSON body Fern selected under a key holding a `*` (`*/*`,
+        // `application/*+json` declared first) carries no content type, whatever
+        // its shape; one selected under any other key but `application/json`
+        // (`text/json`, a vendor `+json`) always sends that key verbatim, since
+        // Fern's importer collapses a request to its bare type, dropping the
+        // header, only under the default media type. Measured in
+        // `docs/fern-measurements/handed-off/bodies-media/request-content-type-header/`,
+        // `.../vendor-json-media-first-content-type/` and
+        // `.../media-type-recognition/`.
         Some(RequestBody::Single(body))
-            if body.content_type_override.is_some()
-                && body.content_type_override.as_deref() != Some("*/*") =>
+            if body
+                .content_type_override
+                .as_deref()
+                .is_some_and(|media_type| !media_type.contains('*')) =>
         {
             body.content_type_override.clone()
+        }
+        Some(RequestBody::Single(_) | RequestBody::Inline(_))
+            if ep
+                .body_json_media_type
+                .as_deref()
+                .is_some_and(|media_type| media_type.contains('*')) =>
+        {
+            None
+        }
+        Some(RequestBody::Single(_) | RequestBody::Inline(_))
+            if ep.body_json_media_type.is_some() =>
+        {
+            ep.body_json_media_type.clone()
+        }
+        // An object body written inline, not through a `$ref`, is always inlined
+        // into the request by Fern's importer, so it keeps the header however it
+        // is documented, whichever members it requires and whatever
+        // `x-codegen-request-body-name` names it: a described inline body offered
+        // as JSON and YAML with only optional members (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/request-content-type-header/`).
+        // The shape reads the first media type's schema, so the selected JSON
+        // media must name no component either: a body offering an inline
+        // `application/xml` object before `application/json: $ref` is a `$ref` body.
+        Some(RequestBody::Inline(_))
+            if ep.body_schema_shape == BodySchemaShape::Other
+                && ep.reference_body_type.is_none()
+                && !ep.body_collapses_to_type_reference =>
+        {
+            Some("application/json".to_string())
+        }
+        // A `$ref` whose target declares a `title` is written as a typed object
+        // rather than a bare type name, so Fern's importer never collapses the
+        // request and the header stays, however the schema is documented,
+        // exemplified or shared: the titled `Bell` of
+        // `docs/fern-measurements/handed-off/bodies-media/request-content-type-header/`.
+        Some(RequestBody::Inline(_))
+            if ep.body_schema_shape == BodySchemaShape::Ref
+                && ep.body_schema_titled
+                && !ep.body_codegen_named =>
+        {
+            Some("application/json".to_string())
         }
         // A JSON body carries the `content-type` header when it accompanies a
         // path/header param, is *undocumented*, or is *always sent whole* (every field
@@ -14979,6 +15049,12 @@ mod tests {
                 admits_only_empty_object: false,
             },
         ]));
+        // The wrapped example is a property of the *referenced* request schema
+        // (Square's legacy `{request_body: ...}` wrapper), a single-use one the
+        // type layer drops, so the body is a dropped `$ref`: an object body
+        // written inline always keeps the header.
+        ep.body_schema_shape = BodySchemaShape::Ref;
+        ep.body_schema_dropped = true;
         ep.body_schema_has_example = true;
         ep.body_schema_example_wrapped = true;
         ep.body_schema_example_covers_all_fields = true;
@@ -19398,5 +19474,181 @@ mod emission_parity_tests {
             init.contains("    from .amend_site_request_body import AmendSiteRequestBody\n"),
             "{init}"
         );
+    }
+}
+
+/// The handed-off body and media-type repairs, each generated from the
+/// from-scratch measurement document that isolates it
+/// (`docs/fern-measurements/handed-off/bodies-media/<cause>/`), asserting the
+/// lines the repair decides.
+#[cfg(test)]
+mod bodies_media_emit_tests {
+    use super::generate;
+
+    fn files(cause: &str) -> Vec<(String, String)> {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/bodies-media")
+            .join(cause)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    fn file(files: &[(String, String)], suffix: &str) -> String {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.clone())
+            .unwrap_or_else(|| panic!("no {suffix}"))
+    }
+
+    /// The sync method `name`'s body in a raw client, up to the next method.
+    fn method(raw_client: &str, name: &str) -> String {
+        let start = raw_client
+            .find(&format!("    def {name}("))
+            .unwrap_or_else(|| panic!("no {name}"));
+        let rest = &raw_client[start + 1..];
+        let end = rest.find("\n    def ").map_or(rest.len(), |end| end + 1);
+        rest[..end].to_string()
+    }
+
+    fn content_type(raw_client: &str, name: &str) -> Option<String> {
+        let body = method(raw_client, name);
+        let marker = "\"content-type\": \"";
+        let at = body.find(marker)? + marker.len();
+        Some(body[at..at + body[at..].find('"')?].to_string())
+    }
+
+    /// The content type each body of the measurement sends: none for a `*/*`
+    /// body or a bare union type, the vendor key verbatim, and the JSON header
+    /// for a titled object body and for a described inline one.
+    #[test]
+    fn json_bodies_send_the_content_type_fern_decides() {
+        let generated = files("request-content-type-header");
+        let bells = file(&generated, "fern/bells/raw_client.py");
+        assert_eq!(content_type(&bells, "tune_bell"), None);
+        assert_eq!(
+            content_type(&bells, "inscribe_bell").as_deref(),
+            Some("application/vnd.foundry.inscription+json")
+        );
+        assert_eq!(
+            content_type(&bells, "create_bell").as_deref(),
+            Some("application/json")
+        );
+        assert_eq!(
+            content_type(&bells, "replace_bell").as_deref(),
+            Some("application/json")
+        );
+        let casts = file(&generated, "fern/casts/raw_client.py");
+        assert_eq!(content_type(&casts, "order_cast"), None);
+        assert_eq!(
+            content_type(&casts, "order_recast").as_deref(),
+            Some("application/json")
+        );
+        let notes = file(&generated, "fern/notes/raw_client.py");
+        assert_eq!(
+            content_type(&notes, "add_note").as_deref(),
+            Some("application/json")
+        );
+        let generated = files("vendor-json-media-first-content-type");
+        let bays = file(&generated, "fern/bays/raw_client.py");
+        assert_eq!(content_type(&bays, "set_targets"), None);
+        assert_eq!(content_type(&bays, "submit_readings"), None);
+        let generated = files("media-type-recognition");
+        let deposits = file(&generated, "fern/deposits/raw_client.py");
+        assert_eq!(
+            content_type(&deposits, "record_deposit").as_deref(),
+            Some("text/json")
+        );
+        assert_eq!(
+            content_type(&deposits, "record_germination").as_deref(),
+            Some("Application/json")
+        );
+    }
+
+    /// A multipart form with no field still sends both maps, and a union of
+    /// form primitives is sent as the value itself.
+    #[test]
+    fn multipart_forms_send_fern_maps_and_values() {
+        let generated = files("multipart-empty-body");
+        let advance = method(
+            &file(&generated, "fern/queue/raw_client.py"),
+            "advance_queue",
+        );
+        assert!(
+            advance.contains("            data={},\n            files={},\n"),
+            "{advance}"
+        );
+        let generated = files("multipart-scalar-union-part-encoding");
+        let scan = method(&file(&generated, "fern/scans/raw_client.py"), "file_scan");
+        assert!(
+            scan.contains("                \"drawer\": drawer,\n"),
+            "{scan}"
+        );
+        assert!(
+            !scan.contains("convert_and_respect_annotation_metadata"),
+            "{scan}"
+        );
+        let generated = files("multipart-encoding-content-type-list");
+        let upload = method(
+            &file(&generated, "fern/plates/raw_client.py"),
+            "upload_artwork",
+        );
+        assert!(
+            upload.contains("default_content_type=\"image/png\")"),
+            "{upload}"
+        );
+    }
+
+    /// A schema-less JSON success typed `typing.Any` guards an empty body, and a
+    /// GeoJSON success is parsed as its model rather than read as text.
+    #[test]
+    fn json_successes_parse_as_fern_reads_them() {
+        let generated = files("response-type-resolution");
+        let reading = method(&file(&generated, "fern/kilns/raw_client.py"), "get_reading");
+        assert!(
+            reading.contains("            if _response is None or not _response.text.strip():\n"),
+            "{reading}"
+        );
+        let generated = files("geo-json-success-media");
+        let trailhead = method(
+            &file(&generated, "fern/trailheads/raw_client.py"),
+            "get_trailhead",
+        );
+        assert!(trailhead.contains("type_=TrailheadFeature,"), "{trailhead}");
+        assert!(!trailhead.contains("data=_response.text"), "{trailhead}");
+    }
+
+    /// A `207`-only operation documents no return type, and its method returns
+    /// `None`.
+    #[test]
+    fn a_multi_status_only_operation_returns_nothing() {
+        let generated = files("multi-status-success-return-type");
+        let reference = file(&generated, "reference.md");
+        assert!(
+            reference.contains(">record_harvests</a>(...)</code></summary>"),
+            "{reference}"
+        );
+        let client = file(&generated, "fern/harvests/client.py");
+        assert!(client.contains("    ) -> None:\n"), "{client}");
     }
 }

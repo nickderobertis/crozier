@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Climate Control
+  version: 1.0.0
+  description: Sets climate targets for greenhouse bays.
+servers:
+  - url: https://greenhouse.example.com
+paths:
+  /bays/{bayId}/targets:
+    put:
+      operationId: setTargets
+      tags: [bays]
+      summary: Set a bay's climate targets.
+      parameters:
+        - name: bayId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ClimateTargets'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClimateTargets'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ClimateTargets'
+      responses:
+        '204':
+          description: Set.
+  /bays/readings:
+    post:
+      operationId: submitReadings
+      tags: [bays]
+      summary: Submit a batch of sensor readings.
+      requestBody:
+        required: true
+        content:
+          application/*+json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Reading'
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Reading'
+      responses:
+        '204':
+          description: Submitted.
+components:
+  schemas:
+    ClimateTargets:
+      type: object
+      required: [celsius]
+      properties:
+        celsius:
+          type: number
+        humidity:
+          type: number
+    Reading:
+      type: object
+      required: [sensor, value]
+      properties:
+        sensor:
+          type: string
+        value:
+          type: number

@@ -1422,13 +1422,29 @@ fn inline_body_source_names(
                 continue;
             }
             let Some(rb) = &op.request_body else { continue };
+            // A body offering any binary media type is sent as bytes, so a JSON
+            // alternative beside it inlines nothing and its schema keeps its
+            // model (measured in
+            // `docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/`).
+            if rb
+                .content
+                .keys()
+                .any(|media_type| is_binary_media_type(media_type))
+            {
+                continue;
+            }
             // The JSON representation is found the way the body itself selects
             // it, parameters and all: Prisma Cloud posts its single-use
             // `FilterSuggestionModel` under `application/json; charset=UTF-8`
             // alone, and Fern drops it from the type layer like any inlined body.
-            let Some(schema) = selected_json_request_media(rb)
-                .filter(|(media_type, _)| *media_type != "*/*")
-                .map(|(_, media)| media)
+            // A `*/*` body is a JSON body to Fern like any other, and inlines its
+            // schema the same way (measured in
+            // `docs/fern-measurements/handed-off/bodies-media/request-body-spread-vs-request/`).
+            let json = selected_json_request_media(rb).map(|(_, media)| media);
+            let multipart = json.is_none()
+                && (rb.content.contains_key("multipart/form-data")
+                    || rb.content.contains_key("multipart/related"));
+            let Some(schema) = json
                 .or_else(|| rb.content.get("multipart/form-data"))
                 .or_else(|| rb.content.get("multipart/related"))
                 .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
@@ -1449,12 +1465,18 @@ fn inline_body_source_names(
             // is `allOf: [$ref LessonVisibility]`, and `lesson_visibility_update.py`
             // declares `LessonVisibilityUpdate = LessonVisibility`.
             let is_alias = !target.properties.declared() && sole_all_of_ref(target).is_some();
+            // A multipart body's form is inlined whatever properties it declares,
+            // none included: the property-less `AdvanceForm` of
+            // `docs/fern-measurements/handed-off/bodies-media/multipart-empty-body/`
+            // gets no model.
+            let multipart_form = multipart && is_object_type(target) && !is_map(target);
             if !is_enum
                 && !is_union
                 && !is_alias
                 && !is_optional(target)
-                && (!is_map(target) || target.all_of.is_some())
-                && (target.properties.declared() || target.all_of.is_some())
+                && (multipart_form
+                    || (!is_map(target) || target.all_of.is_some())
+                        && (target.properties.declared() || target.all_of.is_some()))
             {
                 *counts.entry(ref_to_class(reference)).or_default() += 1;
             }
@@ -3817,6 +3839,21 @@ fn build_endpoint(
             }
         })
         .collect();
+    // A union one of whose members is a primitive outside the four httpx sends as
+    // data is converted before it is interpolated, scalar or not: fern-python-sdk
+    // 5.41.3 converts it first (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/path-param-serialization/`).
+    for param in &mut path_params {
+        let union = op
+            .parameters
+            .iter()
+            .filter(|p| p.location == Some(ParameterLocation::Path) && p.name == param.wire_name)
+            .find_map(|p| p.schema.as_ref())
+            .is_some_and(|schema| union_has_non_data_primitive(schema, &doc.components.schemas));
+        if union && hoister.needs_convert(&param.type_ref) {
+            param.convert = true;
+        }
+    }
     // A path template expression the operation never declares as a Parameter
     // Object is still an argument: Fern synthesizes a required `str` for it, with
     // no docstring and no example. Svix declares `app_id` on the `PUT` of
@@ -4132,14 +4169,60 @@ fn build_endpoint(
     let streaming = is_streaming(doc, op);
     let stream_view = streaming.then(|| stream_chunk_view(op));
     let response_op = stream_view.as_ref().unwrap_or(op);
-    let response = match success_response_schema(response_op) {
+    // A success response any of whose media types carries a binary string
+    // schema is a download to Fern, whatever else it offers, so a JSON
+    // alternative declared beside it hoists no response model (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/success-media-binary-before-json/`).
+    let downloads = success_response_entry(response_op).is_some_and(|response| {
+        response.content.values().any(|media| {
+            media
+                .schema
+                .as_ref()
+                .is_some_and(|schema| is_binary_string(doc, schema))
+        })
+    });
+    let response = match success_response_schema(response_op).filter(|_| !downloads) {
         Some(schema) if simple_nullable_member(schema).is_some() => {
             let member = simple_nullable_member(schema).expect("guard checked nullable member");
-            let base = member.reference.as_deref().map_or_else(
-                || base_type_ref(member),
-                |reference| TypeRef::Named(ref_to_class(reference)),
-            );
+            // An inline object beside the `null` member is hoisted exactly as
+            // the bare object would be, and returned optionally: an `anyOf` of
+            // an object and `type: 'null'` returns `Optional[{Ctx}Response]`
+            // (measured in
+            // `docs/fern-measurements/handed-off/bodies-media/response-type-resolution/`).
+            let base = if member.reference.is_none() && is_inline_struct(member) {
+                let name = format!("{pascal_ctx}Response");
+                hoister.hoist_object(&name, member);
+                TypeRef::Named(name)
+            } else {
+                member.reference.as_deref().map_or_else(
+                    || base_type_ref(member),
+                    |reference| TypeRef::Named(ref_to_class(reference)),
+                )
+            };
             Some(optional_type_ref(base))
+        }
+        // An inline string enum, or a string `const`, is hoisted into a named
+        // `{Ctx}Response` enum rather than typed as a literal union.
+        Some(schema)
+            if schema.reference.is_none()
+                && schema.one_of.is_none()
+                && schema.any_of.is_none()
+                && string_enum_values(schema).is_some() =>
+        {
+            let name = hoister.declared_or(format!("{pascal_ctx}Response"), schema);
+            let values = string_enum_values(schema).expect("guard checked enum values");
+            hoister.out.push(TypeDecl::Enum(build_enum(
+                schema,
+                &name,
+                values,
+                clean_doc(schema.description.as_deref()),
+            )));
+            let named = TypeRef::Named(name);
+            Some(if is_optional(schema) {
+                optional_type_ref(named)
+            } else {
+                named
+            })
         }
         // A composition of exactly one `$ref` is that reference: the
         // offchain-metadata-tools corpus answers its specific-property query with
@@ -4233,10 +4316,17 @@ fn build_endpoint(
                 }
             })
         }
+        // A nullable inline object (an OpenAPI 3.0 `nullable: true` on it)
+        // returns its hoisted model optionally.
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
             hoister.hoist_object(&name, schema);
-            Some(TypeRef::Named(name))
+            let named = TypeRef::Named(name);
+            Some(if is_optional(schema) {
+                optional_type_ref(named)
+            } else {
+                named
+            })
         }
         Some(schema) if schema.reference.is_none() && is_map(schema) => {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
@@ -4601,9 +4691,19 @@ fn build_endpoint(
             .request_body
             .as_ref()
             .is_some_and(|body| body.content.contains_key("multipart/related")),
+        // A body offering any binary media type is sent as bytes, and its
+        // reference documents the bytes it takes rather than a JSON
+        // alternative's model (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/`).
         reference_body_type: op
             .request_body
             .as_ref()
+            .filter(|body| {
+                !body
+                    .content
+                    .keys()
+                    .any(|media_type| is_binary_media_type(media_type))
+            })
             .and_then(|body| {
                 // A urlencoded body keeps its model
                 // ([`urlencoded_body_source_names`]), and the reference documents
@@ -4671,12 +4771,15 @@ fn build_endpoint(
                         && media_type.contains(';'))
                 .then(|| media_type.to_string())
             }),
+        // Any selected key but the default, wildcards included: a key holding a
+        // `*` (`*/*`, `application/*+json`) names no content type at all, and
+        // the emitter sends none for it.
         body_json_media_type: op
             .request_body
             .as_ref()
             .and_then(selected_json_request_media)
             .map(|(media_type, _)| media_type)
-            .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
+            .filter(|media_type| *media_type != "application/json")
             .map(str::to_string),
         body_schema_shape: BodySchemaShape::of(
             op.request_body.as_ref().and_then(|body| {
@@ -5121,8 +5224,16 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     });
     // An event stream is supported unless it streams a binary string, which Fern
     // downloads as bytes like any other declined download (see `is_streaming`).
+    // So is one any of whose media types carries a binary string schema: Fern
+    // reads it as a download whatever JSON alternative it offers, and imports no
+    // example from that alternative
+    // (`docs/fern-measurements/handed-off/bodies-media/success-media-binary-before-json/`).
     let unsupported_response = success_response_entry(op).is_some_and(|response| {
-        !response.content.is_empty()
+        response.content.values().any(|body| {
+            body.schema
+                .as_ref()
+                .is_some_and(|schema| is_binary_string(doc, schema))
+        }) || !response.content.is_empty()
             && !response.content.iter().any(|(media, body)| {
                 media == "*/*"
                     || media == "text/event-stream"
@@ -5639,18 +5750,30 @@ fn is_streaming(doc: &OpenApi, op: &Operation) -> bool {
     {
         return success_response_entry(op).is_some();
     }
-    success_response_entry(op).is_some_and(|response| {
-        !response.content.contains_key("application/json")
+    // Without the extension, Fern streams an operation as Server-Sent Events when
+    // any `2xx` response offers `text/event-stream` and nothing else, and then
+    // streams the whole method, typing its events from the response it reads
+    // first: a `200` JSON body beside a `207` event stream streams that JSON
+    // schema (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/streaming-detection/`).
+    let offers_only_events = op.responses.iter().any(|(code, response)| {
+        code.parse::<u16>()
+            .is_ok_and(|status| (200..300).contains(&status))
+            && response.content.len() == 1
             && response
                 .content
-                .get("text/event-stream")
-                .is_some_and(|media| {
-                    !media
-                        .schema
-                        .as_ref()
-                        .is_some_and(|schema| is_binary_string(doc, schema))
-                })
-    })
+                .keys()
+                .all(|media_type| media_type.contains("text/event-stream"))
+    });
+    offers_only_events
+        && success_response_entry(op).is_some_and(|response| {
+            !response.content.values().any(|media| {
+                media
+                    .schema
+                    .as_ref()
+                    .is_some_and(|schema| is_binary_string(doc, schema))
+            })
+        })
 }
 
 /// Whether `schema`, through a component reference, is `{type: string, format: binary}`.
@@ -6148,6 +6271,13 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     if let Some(members) =
         schema.and_then(|schema| schema.one_of.as_ref().or(schema.any_of.as_ref()))
     {
+        // Members that are one and the same plain primitive collapse to it: a
+        // `text/plain` error typed `anyOf: [string, string]` carries `str`
+        // (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/response-type-resolution/`).
+        if let Some(primitive) = one_primitive_union(members) {
+            return primitive;
+        }
         return match members.as_slice() {
             [only] if only.reference.is_none() && is_inline_struct(only) => {
                 TypeRef::Named(format!("{class}Body"))
@@ -6180,11 +6310,29 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         // of two `$ref`s sharing a `type` discriminant, and Fern's exception
         // carries the discriminated union `UnauthorizedErrorBody`.
         Some(schema) if is_inline_union(schema) => TypeRef::Named(format!("{class}Body")),
+        // A `$ref` to a component that is itself nullable is an optional body,
+        // as the same reference is an optional success response: a `404` naming a
+        // `nullable: true` object types its class `Optional[...]` (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/R5/`).
+        Some(schema) if schema.reference.is_some() && schema.reference_nullable => {
+            optional_type_ref(base_type_ref(schema))
+        }
         // A named `$ref`, scalar, or container keeps its resolved type; an
         // otherwise-untyped body is bare `Any`, the same as a body-less error.
         Some(schema) => base_type_ref(schema),
         None => TypeRef::Primitive(Prim::Any),
     }
+}
+
+/// The primitive a union's members all are, when every member is the same plain
+/// primitive: Fern's importer collapses `anyOf: [string, string]` to `string`.
+fn one_primitive_union(members: &[Schema]) -> Option<TypeRef> {
+    let (first, rest) = members.split_first()?;
+    (is_plain_scalar(first)
+        && rest
+            .iter()
+            .all(|member| is_plain_scalar(member) && base_type_ref(member) == base_type_ref(first)))
+    .then(|| base_type_ref(first))
 }
 
 /// The schema an error response's body is converted from. Fern imports an
@@ -6249,6 +6397,11 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
                 // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                    // A union of one and the same primitive is that primitive,
+                    // and declares no body model (see `error_body_type`).
+                    if one_primitive_union(members).is_some() {
+                        continue;
+                    }
                     if let [only] = members.as_slice() {
                         if only.reference.is_none() && is_inline_struct(only) {
                             bodies.insert(name, only.clone());
@@ -6466,6 +6619,20 @@ fn unequal_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
 /// two primitives by their converted type. An absent body is the unknown schema.
 fn error_schemas_equal(a: Option<&Schema>, b: Option<&Schema>) -> bool {
     let unknown = |schema: Option<&Schema>| schema.is_none_or(is_unknown);
+    // A union of one and the same primitive is compared as that primitive, the
+    // type the body converts to (see `one_primitive_union`).
+    fn collapsed(schema: Option<&Schema>) -> Option<&Schema> {
+        schema.map(|schema| {
+            schema
+                .one_of
+                .as_deref()
+                .or(schema.any_of.as_deref())
+                .filter(|members| one_primitive_union(members).is_some())
+                .and_then(<[Schema]>::first)
+                .unwrap_or(schema)
+        })
+    }
+    let (a, b) = (collapsed(a), collapsed(b));
     match (a, b) {
         _ if unknown(a) || unknown(b) => unknown(a) && unknown(b),
         (Some(a), Some(b)) => body_shapes_equal(a, b),
@@ -6852,9 +7019,14 @@ fn resolve_request_body(
                 || (target.properties.is_empty()
                     && (target.one_of.is_some() || target.any_of.is_some()))
         });
+    // The same closed empty object written inline is passed whole too: a
+    // `required: false` body of `{type: object, additionalProperties: false}`
+    // takes a required `request: Dict[str, Any]` (measured in
+    // `docs/fern-measurements/handed-off/bodies-media/request-body-optionality/`).
     let required = (media_type == "*/*"
         || rb.required != Some(false)
         || passed_whole
+        || is_closed_empty_object(schema)
         || is_map(schema)
             && schema.all_of.is_none()
             && matches!(
@@ -7547,19 +7719,32 @@ pub(crate) fn is_json_like_media_type(media_type: &str) -> bool {
             .is_some_and(|subtype| subtype.contains("json"))
 }
 
+/// Whether Fern's importer reads a content-map key as JSON: any key that
+/// mentions `json`, matched case-sensitively anywhere in it, or exactly `*/*`.
+/// So `text/json`, `Application/json` and `application/*+json` are JSON, and
+/// `application/JSON` is not. Measured in
+/// `docs/fern-measurements/handed-off/bodies-media/media-type-recognition/`.
+pub(crate) fn is_fern_json_media_key(media_type: &str) -> bool {
+    media_type.contains("json") || media_type == "*/*"
+}
+
+/// The entry Fern reads a JSON body from: the first key, in the order the
+/// document declares them, that [`is_fern_json_media_key`] admits. A vendor
+/// range written before `application/json` (`application/*+json`) is the one
+/// selected, as is a `*/*` written before a schema-less `application/json`.
+pub(crate) fn fern_json_media(
+    content: &IndexMap<String, crate::openapi::MediaType>,
+) -> Option<(&str, &crate::openapi::MediaType)> {
+    content
+        .iter()
+        .find(|(media_type, _)| is_fern_json_media_key(media_type))
+        .map(|(media_type, media)| (media_type.as_str(), media))
+}
+
 fn selected_json_request_media(
     body: &crate::openapi::RequestBody,
 ) -> Option<(&str, &crate::openapi::MediaType)> {
-    body.content
-        .get("application/json")
-        .map(|media| ("application/json", media))
-        .or_else(|| body.content.get("*/*").map(|media| ("*/*", media)))
-        .or_else(|| {
-            body.content
-                .iter()
-                .find(|(media_type, _)| is_json_like_media_type(media_type))
-                .map(|(media_type, media)| (media_type.as_str(), media))
-        })
+    fern_json_media(&body.content)
 }
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
@@ -7569,9 +7754,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     // content-type header.
     let schemaless_json = !rb.content.is_empty()
         && rb.content.iter().all(|(media_type, media)| {
-            media.schema.is_none()
-                && media.example.is_none()
-                && (media_type == "application/json" || is_json_like_media_type(media_type))
+            media.schema.is_none() && media.example.is_none() && is_fern_json_media_key(media_type)
         });
     schemaless_json
         || !rb.content.contains_key("application/json")
@@ -7579,10 +7762,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
             && !rb.content.contains_key("multipart/form-data")
             && !rb.content.contains_key("multipart/related")
             && !rb.content.contains_key("application/x-www-form-urlencoded")
-            && !rb
-                .content
-                .keys()
-                .any(|media| is_json_like_media_type(media))
+            && !rb.content.keys().any(|media| is_fern_json_media_key(media))
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
@@ -9476,6 +9656,61 @@ fn non_request_referenced_schemas(doc: &OpenApi) -> std::collections::BTreeSet<S
     out
 }
 
+/// Whether `schema` is a union (`oneOf`/`anyOf`, through a `$ref`) one of whose
+/// members is a primitive fern-python-sdk 5.41.3 does not send as plain data:
+/// its `HTTPX_PRIMITIVE_DATA_TYPES` admit Fern's `STRING`, `INTEGER`, `DOUBLE`
+/// and `BOOLEAN` only, so an `integer` of `format: int64`, `uint32` or `uint64`,
+/// a `number` of `format: float`, and a dated, `uuid` or `byte` string are not
+/// among them. An enum member is.
+fn union_has_non_data_primitive(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    fn resolve<'a>(
+        schema: &'a Schema,
+        schemas: &'a IndexMap<String, Schema>,
+    ) -> Option<&'a Schema> {
+        match schema.reference.as_deref() {
+            Some(reference) => resolve_ref_from_schemas(schemas, reference),
+            None => Some(schema),
+        }
+    }
+    let Some(schema) = resolve(schema, schemas) else {
+        return false;
+    };
+    let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
+        return false;
+    };
+    members
+        .iter()
+        .filter_map(|member| resolve(member, schemas))
+        .any(|member| {
+            if member.enum_values.is_some() {
+                return false;
+            }
+            let format = member.format.as_deref();
+            match member.ty.as_ref().and_then(TypeField::primary) {
+                Some("integer") => !matches!(format, None | Some("int32")),
+                Some("number") => !matches!(format, None | Some("double")),
+                Some("string") => matches!(format, Some("date" | "date-time" | "uuid" | "byte")),
+                _ => false,
+            }
+        })
+}
+
+/// The content type a multipart part is sent with, from its `encoding`
+/// entry's `contentType`: a file part's default is the first media type of a
+/// comma-separated list, cut at the comma and not trimmed, and any other part
+/// keeps the value whole.
+fn file_part_content_type(content_type: &str, is_file: bool) -> String {
+    if is_file {
+        content_type
+            .split(',')
+            .next()
+            .unwrap_or(content_type)
+            .to_string()
+    } else {
+        content_type.to_string()
+    }
+}
+
 /// Whether a multipart part is a list (or set) whose items httpx can send as
 /// plain form values, after unwrapping a nullable wrapper and `$ref` aliases.
 /// Mirrors fern-python-sdk 5.41.3's `is_type_list_of_primitives_for_multipart`.
@@ -9669,8 +9904,12 @@ fn hoist_form_object(
                         resolved.ty.as_ref().and_then(|ty| ty.primary()),
                         Some("array" | "object")
                     )
-                    || resolved.one_of.is_some()
-                    || resolved.any_of.is_some()
+                    // A union every member of which is a form primitive is sent
+                    // as the value itself, as fern-python-sdk 5.41.3's
+                    // `is_type_primitive_for_multipart` admits it: measured in
+                    // `docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/`.
+                    || (resolved.one_of.is_some() || resolved.any_of.is_some())
+                        && !is_multipart_primitive(resolved, hoister.schemas, 0)
                     || resolved.all_of.is_some());
             let type_ref = if is_unknown(prop_schema) && !prop_schema.malformed {
                 TypeRef::Primitive(Prim::Any)
@@ -9727,10 +9966,16 @@ fn hoist_form_object(
                 // A part's `encoding.contentType` is a multipart notion: Zulip's
                 // urlencoded `/register` declares `application/json` for nine of
                 // its fields, and Fern still sends every one of them in `data=`.
+                // A file part's `contentType` may list several media types; Fern
+                // sends the first as the file's default, cut at the first comma
+                // and not trimmed (`image/png, image/jpeg` is `image/png`),
+                // while any other part keeps the whole value: measured in
+                // `docs/fern-measurements/handed-off/bodies-media/multipart-encoding-content-type-list/`.
                 form_content_type: encoding
                     .get(prop)
                     .filter(|_| multipart)
-                    .and_then(|part| part.content_type.clone()),
+                    .and_then(|part| part.content_type.as_deref())
+                    .map(|content_type| file_part_content_type(content_type, is_file)),
                 collision_prefix: None,
                 inline_object: false,
                 // A field's worked value is its own example, else an annotated
@@ -10320,6 +10565,19 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 base_type_ref(schema)
             }
         })
+        // A JSON body declaring no schema is unknown JSON, under a
+        // structured-suffix media type as under `application/json`:
+        // LiveBuildings answers `application/ld+json` with examples alone, and
+        // Fern's method returns `typing.Any`. So does a schemaless `*/*`, which
+        // Fern parses as JSON too. Fern reads JSON before any text media type
+        // the same response offers: a `text/plain: {}` declared before a
+        // schema-less `application/json` still returns `typing.Any` (measured in
+        // `docs/fern-measurements/handed-off/bodies-media/response-type-resolution/`).
+        .or_else(|| {
+            let response = success_response_entry(op)?;
+            fern_json_media(&response.content).filter(|(_, media)| media.schema.is_none())?;
+            Some(TypeRef::Primitive(Prim::Any))
+        })
         .or_else(|| {
             let response = success_response_entry(op)?;
             response
@@ -10327,27 +10585,6 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .iter()
                 .find(|(media_type, _)| is_text_response_media(media_type))
                 .map(|_| TypeRef::Primitive(Prim::Str))
-        })
-        // A JSON body declaring no schema is unknown JSON, under a
-        // structured-suffix media type as under `application/json`:
-        // LiveBuildings answers `application/ld+json` with examples alone, and
-        // Fern's method returns `typing.Any`. So does a schemaless `*/*`, which
-        // Fern parses as JSON too.
-        .or_else(|| {
-            let response = success_response_entry(op)?;
-            response
-                .content
-                .get("application/json")
-                .or_else(|| {
-                    response
-                        .content
-                        .iter()
-                        .find(|(media_type, _)| is_json_like_media_type(media_type))
-                        .map(|(_, media)| media)
-                })
-                .or_else(|| response.content.get("*/*"))
-                .filter(|media| media.schema.is_none())?;
-            Some(TypeRef::Primitive(Prim::Any))
         })
 }
 
@@ -10370,8 +10607,7 @@ fn is_text_response_media(media_type: &str) -> bool {
 
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
-        !response.content.contains_key("application/json")
-            && !response.content.contains_key("*/*")
+        fern_json_media(&response.content).is_none()
             && response
                 .content
                 .keys()
@@ -10417,21 +10653,13 @@ fn has_bodyless_success(op: &Operation) -> bool {
 /// envelopes. A structured-suffix media type is JSON too — NDW returns its
 /// GeoJSON under `application/geo+json` and nothing else, and Fern types the
 /// method by that body rather than as an empty success.
+///
+/// Which entry is read is Fern's rule for any JSON body ([`fern_json_media`]):
+/// the first JSON-like or `*/*` key in declaration order, so a `*/*` declared
+/// before a schema-less `application/json` types the method by its schema.
 fn success_response_schema(op: &Operation) -> Option<&Schema> {
     let response = success_response_entry(op)?;
-    response
-        .content
-        .get("application/json")
-        .or_else(|| response.content.get("*/*"))
-        .or_else(|| {
-            response
-                .content
-                .iter()
-                .find(|(media_type, _)| is_json_like_media_type(media_type))
-                .map(|(_, media)| media)
-        })?
-        .schema
-        .as_ref()
+    fern_json_media(&response.content)?.1.schema.as_ref()
 }
 
 /// Whether a response declares at least one media type that names both a type and
@@ -10452,48 +10680,42 @@ fn has_dispatchable_media(response: &Response) -> bool {
         })
 }
 
+/// The success statuses Fern's importer reads a method's response from, in the
+/// order it tries them. No other `2xx` is read at all: an operation answering
+/// only `207` returns nothing, and a `206` beside a contentless `200` is not
+/// the method's response (measured in
+/// `docs/fern-measurements/handed-off/bodies-media/multi-status-success-return-type/`
+/// and `.../response-type-resolution/`).
+const FERN_SUCCESS_STATUSES: [&str; 4] = ["200", "201", "202", "204"];
+
+/// The read success statuses `op` declares, in Fern's order.
+fn fern_success_responses(op: &Operation) -> impl Iterator<Item = (&String, &Response)> {
+    FERN_SUCCESS_STATUSES
+        .iter()
+        .filter_map(|status| op.responses.get_key_value(*status))
+}
+
 /// Prefer a declared success body to a contentless success. Fern selects the
 /// 201's body beside a contentless 200; a 200 with content still wins.
 /// Corpus row 4211, `osparc-director-v2`, holds it through the binary,
 /// byte-compared by `osparc_director_v2_matches_fern_output`.
 fn success_response_with_content(op: &Operation) -> Option<(&String, &Response)> {
-    op.responses
-        .get_key_value("200")
-        .filter(|(_, response)| !response.content.is_empty() && has_dispatchable_media(response))
-        .or_else(|| {
-            op.responses.iter().find(|(code, response)| {
-                code.parse::<u16>()
-                    .is_ok_and(|status| (200..300).contains(&status))
-                    && !response.content.is_empty()
-                    && has_dispatchable_media(response)
-            })
-        })
+    fern_success_responses(op)
+        .find(|(_, response)| !response.content.is_empty() && has_dispatchable_media(response))
+}
+
+/// The `default` response Fern falls back to, only when the operation declares
+/// none of [`FERN_SUCCESS_STATUSES`].
+fn fern_default_response(op: &Operation) -> Option<(&String, &Response)> {
+    fern_success_responses(op)
+        .next()
+        .is_none()
+        .then(|| op.responses.get_key_value("default"))
+        .flatten()
 }
 
 fn success_response_entry(op: &Operation) -> Option<&Response> {
-    success_response_with_content(op)
-        .map(|(_, response)| response)
-        .or_else(|| {
-            op.responses
-                .get("200")
-                .filter(|response| has_dispatchable_media(response))
-                .or_else(|| {
-                    op.responses
-                        .iter()
-                        .find(|(code, response)| {
-                            code.parse::<u16>()
-                                .is_ok_and(|status| (200..300).contains(&status))
-                                && has_dispatchable_media(response)
-                        })
-                        .map(|(_, response)| response)
-                })
-                .or_else(|| {
-                    op.responses
-                        .iter()
-                        .find(|(code, _)| code.as_str() == "default")
-                        .map(|(_, response)| response)
-                })
-        })
+    success_response_key(op).and_then(|key| op.responses.get(&key))
 }
 
 /// The same success entry as [`success_response_entry`], for mutation: the
@@ -10505,25 +10727,11 @@ fn success_response_entry_mut(op: &mut Operation) -> Option<&mut Response> {
 
 /// The response key [`success_response_entry`] selects.
 fn success_response_key(op: &Operation) -> Option<String> {
-    if let Some((code, _)) = success_response_with_content(op) {
-        return Some(code.clone());
-    }
-
-    if op.responses.get("200").is_some_and(has_dispatchable_media) {
-        return Some("200".to_string());
-    }
-    op.responses
-        .iter()
-        .find(|(code, response)| {
-            code.parse::<u16>()
-                .is_ok_and(|status| (200..300).contains(&status))
-                && has_dispatchable_media(response)
-        })
+    success_response_with_content(op)
         .or_else(|| {
-            op.responses
-                .iter()
-                .find(|(code, _)| code.as_str() == "default")
+            fern_success_responses(op).find(|(_, response)| has_dispatchable_media(response))
         })
+        .or_else(|| fern_default_response(op))
         .map(|(code, _)| code.clone())
 }
 
@@ -30545,5 +30753,342 @@ mod emission_parity_tests {
             }
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
+    }
+}
+
+/// The handed-off body and media-type repairs, each driven on the from-scratch
+/// measurement document that isolates it
+/// (`docs/fern-measurements/handed-off/bodies-media/<cause>/`).
+#[cfg(test)]
+mod bodies_media_tests {
+    use super::{build, Endpoint, OpenApi, Prim, RequestBody, TypeDecl, TypeRef};
+
+    fn measured(cause: &str) -> (OpenApi, super::Ir) {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/bodies-media")
+            .join(cause)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        let ir = build(&doc, &config);
+        (doc, ir)
+    }
+
+    fn endpoint<'a>(ir: &'a super::Ir, method: &str) -> &'a Endpoint {
+        ir.endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == method)
+            .unwrap_or_else(|| panic!("{method} is an endpoint"))
+    }
+
+    fn declared(ir: &super::Ir, name: &str) -> bool {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .any(|decl| decl.name() == name)
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn optional(inner: TypeRef) -> TypeRef {
+        TypeRef::Optional(Box::new(inner))
+    }
+
+    fn form_field<'a>(endpoint: &'a Endpoint, wire: &str) -> &'a super::BodyField {
+        match &endpoint.request_body {
+            Some(RequestBody::Form(form)) => form
+                .fields
+                .iter()
+                .find(|field| field.wire_name == wire)
+                .unwrap_or_else(|| panic!("{wire} is a form field")),
+            other => panic!("{} takes no form: {other:?}", endpoint.method_name),
+        }
+    }
+
+    /// A content-map key is JSON when it mentions `json` anywhere, case
+    /// sensitively, or is exactly `*/*`, and the first such key in declaration
+    /// order is the one read.
+    #[test]
+    fn json_media_is_any_key_mentioning_json_first_declared_wins() {
+        for key in ["text/json", "Application/json", "application/*+json", "*/*"] {
+            assert!(super::is_fern_json_media_key(key), "{key}");
+        }
+        for key in ["application/JSON", "text/plain", "application/yaml"] {
+            assert!(!super::is_fern_json_media_key(key), "{key}");
+        }
+        let (_, ir) = measured("media-type-recognition");
+        let deposit = endpoint(&ir, "record_deposit");
+        assert!(matches!(deposit.request_body, Some(RequestBody::Inline(_))));
+        assert_eq!(deposit.body_json_media_type.as_deref(), Some("text/json"));
+        let germination = endpoint(&ir, "record_germination");
+        assert_eq!(
+            germination.body_json_media_type.as_deref(),
+            Some("Application/json")
+        );
+        assert_eq!(endpoint(&ir, "get_vault").response, Some(named("Vault")));
+        let (_, ir) = measured("vendor-json-media-first-content-type");
+        assert_eq!(
+            endpoint(&ir, "set_targets").body_json_media_type.as_deref(),
+            Some("application/*+json")
+        );
+    }
+
+    /// Only `200`, `201`, `202` and `204` are read: a `207`-only operation and a
+    /// `HEAD` answering an empty `200` beside a typed `206` return nothing typed.
+    #[test]
+    fn only_the_four_read_success_statuses_type_a_method() {
+        let (doc, ir) = measured("multi-status-success-return-type");
+        assert_eq!(endpoint(&ir, "record_harvests").response, None);
+        let op = doc.paths["/harvests/batch"].post.as_ref().expect("a post");
+        assert_eq!(super::success_response_key(op), None);
+        let (doc, _) = measured("response-type-resolution");
+        let head = doc.paths["/kilns/{kilnId}"].head.as_ref().expect("a head");
+        assert_eq!(super::success_response_key(head).as_deref(), Some("200"));
+    }
+
+    /// The response sub-rules of `response-type-resolution`: a schema-less JSON
+    /// entry beside text is `Any`, a nullable inline object (3.0 `nullable` or
+    /// `anyOf` with `null`) returns its hoisted model optionally, an inline enum
+    /// or `const` is a named enum, and a `*/*` declared first types the method.
+    #[test]
+    fn response_types_follow_the_entry_fern_reads() {
+        let (_, ir) = measured("response-type-resolution");
+        assert_eq!(
+            endpoint(&ir, "get_reading").response,
+            Some(TypeRef::Primitive(Prim::Any))
+        );
+        assert!(!endpoint(&ir, "get_reading").text_response);
+        assert_eq!(
+            endpoint(&ir, "get_firing").response,
+            Some(optional(named("GetFiringResponse")))
+        );
+        assert_eq!(
+            endpoint(&ir, "get_schedule").response,
+            Some(optional(named("GetScheduleResponse")))
+        );
+        assert!(declared(&ir, "GetScheduleResponse"));
+        for (method, name) in [
+            ("start_firing", "StartFiringResponse"),
+            ("get_state", "GetStateResponse"),
+        ] {
+            assert_eq!(endpoint(&ir, method).response, Some(named(name)));
+            assert!(ir
+                .tag_types
+                .iter()
+                .map(|tag| &tag.decl)
+                .chain(&ir.types)
+                .any(|decl| matches!(decl, TypeDecl::Enum(e) if e.name == name)));
+        }
+        assert_eq!(
+            endpoint(&ir, "get_profile").response,
+            Some(named("Profile"))
+        );
+    }
+
+    /// A `200` JSON body beside a `207` that offers only `text/event-stream`
+    /// streams the method, typed by the `200` schema.
+    #[test]
+    fn an_events_only_success_streams_the_method() {
+        let (doc, ir) = measured("streaming-detection");
+        let weave = endpoint(&ir, "weave_pattern");
+        assert!(weave.streaming);
+        assert_eq!(weave.stream_chunk, Some(named("WovenPattern")));
+        assert!(!endpoint(&ir, "get_pattern").streaming);
+        let op = doc.paths["/patterns/{patternId}"]
+            .get
+            .as_ref()
+            .expect("a get");
+        assert!(!super::is_streaming(&doc, op));
+    }
+
+    /// A binary-schema media type makes the success a download, so the JSON
+    /// alternative beside it hoists no model; and a body offering a binary
+    /// media type keeps its JSON alternative's model and documents bytes.
+    #[test]
+    fn a_binary_alternative_hoists_and_inlines_nothing() {
+        let (_, ir) = measured("success-media-binary-before-json");
+        assert!(endpoint(&ir, "render_scan").binary_response);
+        assert!(!declared(&ir, "RenderScanResponse"));
+        let (_, ir) = measured("reference-body-param-doc");
+        let submit = endpoint(&ir, "submit_score");
+        assert!(matches!(
+            submit.request_body,
+            Some(RequestBody::Bytes { .. })
+        ));
+        assert_eq!(submit.reference_body_type, None);
+        assert!(declared(&ir, "ScoreSubmission"));
+    }
+
+    /// A path union with a member outside the four primitives httpx sends as
+    /// data (`uint64` here) converts before it is encoded; the same union over a
+    /// format-less `integer`, a `double` or an enum does not.
+    #[test]
+    fn a_path_union_with_a_non_data_primitive_converts() {
+        let (doc, ir) = measured("path-param-serialization");
+        let block = endpoint(&ir, "get_block");
+        assert!(block.path_params.iter().all(|param| param.convert));
+        let union = |members: serde_json::Value| -> super::Schema {
+            serde_json::from_value(serde_json::json!({ "oneOf": members })).expect("a schema")
+        };
+        let schemas = &doc.components.schemas;
+        for (members, converts) in [
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer", "format": "uint64"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer", "format": "int64"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string", "format": "date-time"}, {"type": "integer"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "number", "format": "float"}, {"type": "string"}]),
+                true,
+            ),
+            (
+                serde_json::json!([{"type": "string"}, {"type": "integer"}]),
+                false,
+            ),
+            (
+                serde_json::json!([{"type": "number", "format": "double"}, {"type": "boolean"}]),
+                false,
+            ),
+            (
+                serde_json::json!([{"type": "string", "enum": ["a"]}, {"type": "integer", "format": "int32"}]),
+                false,
+            ),
+        ] {
+            assert_eq!(
+                super::union_has_non_data_primitive(&union(members.clone()), schemas),
+                converts,
+                "{members}"
+            );
+        }
+    }
+
+    /// An `allOf` member carrying its own `anyOf` of required-only branches adds
+    /// neither properties nor `required` to the body the composition builds.
+    #[test]
+    fn an_any_of_all_of_member_adds_nothing_to_the_body() {
+        let (doc, ir) = measured("body-property-set");
+        let fields: Vec<&str> = match &endpoint(&ir, "create_dispatch").request_body {
+            Some(RequestBody::Inline(fields)) => fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect(),
+            other => panic!("create_dispatch spreads its body: {other:?}"),
+        };
+        assert_eq!(fields, ["parcel", "fragile"]);
+        let members = doc.components.schemas["DispatchRequest"]
+            .all_of
+            .as_deref()
+            .expect("the composition stays");
+        assert_eq!(members.len(), 2);
+        assert!(members[1].properties.is_empty() && members[1].any_of.is_none());
+    }
+
+    /// A `text/plain` error typed by a union of one and the same string is a
+    /// `str` body, and declares no `{Class}Body` model.
+    #[test]
+    fn an_error_union_of_one_primitive_is_that_primitive() {
+        let (_, ir) = measured("response-type-resolution");
+        let conflict = endpoint(&ir, "start_firing")
+            .errors
+            .iter()
+            .find(|error| error.class_name == "ConflictError")
+            .expect("a 409");
+        assert_eq!(conflict.body_type, TypeRef::Primitive(Prim::Str));
+        assert!(!declared(&ir, "ConflictErrorBody"));
+        let class = ir
+            .errors
+            .iter()
+            .find(|error| error.class_name == "ConflictError")
+            .expect("the ConflictError class");
+        assert_eq!(class.body_type, TypeRef::Primitive(Prim::Str));
+    }
+
+    /// A `$ref` to a `nullable: true` component types the error body optionally.
+    #[test]
+    fn a_nullable_error_component_is_an_optional_body() {
+        let (_, ir) = measured("R5");
+        let not_found = endpoint(&ir, "get_passage")
+            .errors
+            .iter()
+            .find(|error| error.class_name == "NotFoundError")
+            .expect("a 404");
+        assert_eq!(not_found.body_type, optional(named("LockFault")));
+    }
+
+    /// A file part's default content type is the first of a comma list, and a
+    /// union of form primitives is a plain form value, not JSON-encoded.
+    #[test]
+    fn multipart_parts_take_fern_encodings() {
+        assert_eq!(
+            super::file_part_content_type("image/png, image/jpeg, image/tiff", true),
+            "image/png"
+        );
+        assert_eq!(
+            super::file_part_content_type("image/png, image/jpeg", false),
+            "image/png, image/jpeg"
+        );
+        let (_, ir) = measured("multipart-encoding-content-type-list");
+        let artwork = form_field(endpoint(&ir, "upload_artwork"), "artwork");
+        assert_eq!(artwork.form_content_type.as_deref(), Some("image/png"));
+        let (_, ir) = measured("multipart-scalar-union-part-encoding");
+        let drawer = form_field(endpoint(&ir, "file_scan"), "drawer");
+        assert!(!drawer.form_json && !drawer.is_file);
+    }
+
+    /// A component used once as a `*/*` or multipart body is inlined and gets no
+    /// model, a property-less multipart form included.
+    #[test]
+    fn single_use_wildcard_and_multipart_bodies_are_inlined() {
+        let (_, ir) = measured("request-body-spread-vs-request");
+        assert!(!declared(&ir, "HiveRegistration"));
+        assert!(!declared(&ir, "FrameUpload"));
+        assert!(matches!(
+            endpoint(&ir, "register_hive").request_body,
+            Some(RequestBody::Inline(_))
+        ));
+        let (_, ir) = measured("multipart-empty-body");
+        assert!(!declared(&ir, "AdvanceForm"));
+    }
+
+    /// A `required: false` inline closed empty object is still a required
+    /// `request` dictionary; a body with properties stays optional field by field.
+    #[test]
+    fn an_optional_closed_empty_body_is_passed_whole() {
+        let (_, ir) = measured("request-body-optionality");
+        match &endpoint(&ir, "log_check").request_body {
+            Some(RequestBody::Single(single)) => assert!(single.required),
+            other => panic!("log_check takes one request: {other:?}"),
+        }
+        assert!(matches!(
+            endpoint(&ir, "log_trim").request_body,
+            Some(RequestBody::Inline(_))
+        ));
+    }
+
+    /// An untitled union body with no parameters collapses to its bare type; a
+    /// titled one does not.
+    #[test]
+    fn only_an_untitled_union_body_collapses_to_its_type() {
+        let (_, ir) = measured("request-content-type-header");
+        assert!(endpoint(&ir, "order_cast").body_collapses_to_type_reference);
+        assert!(!endpoint(&ir, "order_recast").body_collapses_to_type_reference);
     }
 }
