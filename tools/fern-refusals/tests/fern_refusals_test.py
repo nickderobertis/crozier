@@ -2373,6 +2373,29 @@ class DiagnosticExtraction(unittest.TestCase):
         )
         self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
 
+    def test_a_missing_info_type_error_is_more_specific_than_the_parse_failure(self) -> None:
+        # The certified pair's own log over the missing-info-object probe:
+        # `info` absent or null fails its read of `info.version`.
+        for value in ("null", "undefined"):
+            log = "\n".join(
+                [
+                    "[api]: python-sdk Failed to parse openapi document undefined",
+                    f"[api]: python-sdk Cannot read properties of {value} (reading 'version') ",
+                    f"                  TypeError: Cannot read properties of {value} (reading 'version')",
+                    "[api]: python-sdk ✓ All checks passed",
+                ]
+            )
+            self.assertEqual([f"Cannot read properties of {value} (reading 'version')"], self.module.diagnostics(log))
+        # Another property read off null is not that class's phrase, and the
+        # bare parse failure stays the only message, as before.
+        other = "\n".join(
+            [
+                "[api]: python-sdk Failed to parse openapi document Doors",
+                "[api]: python-sdk Cannot read properties of null (reading 'schema') ",
+            ]
+        )
+        self.assertEqual(["Failed to parse openapi document Doors"], self.module.diagnostics(other))
+
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
             [
@@ -2398,18 +2421,36 @@ class ProbeRecording(unittest.TestCase):
 
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_generators_response_object_refusal(self) -> None:
+        self.assert_probe_recorded(self.NAME, generate_exit=1)
+
+    @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+    def test_probe_records_the_missing_info_false_success(self) -> None:
+        # Both stages exit 0 over a document Fern never parsed; the TypeError
+        # reading `info.version` is the class's diagnostic.
+        self.assert_probe_recorded("missing-info-object", generate_exit=0)
+
+    def assert_probe_recorded(self, name: str, *, generate_exit: int) -> None:
         logs = REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs"
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
             shutil.copytree(REGISTRY, registry)
-            (registry / self.NAME / "fern-refusal.txt").unlink()
+            (registry / name / "fern-refusal.txt").unlink()
             bin_dir = Path(scratch) / "bin"
             bin_dir.mkdir()
             fern = bin_dir / "fern"
-            check_log = logs / f"{self.NAME}.check.log"
-            generate_log = logs / f"{self.NAME}.generate.log"
+            check_log = logs / f"{name}.check.log"
+            generate_log = logs / f"{name}.generate.log"
+            # A false success writes the empty scaffold, 35 files of which 28 are
+            # Python, under `--output`, as the measured run did.
+            scaffold = (
+                'while [ "$#" -gt 0 ]; do [ "$1" = --output ] && out="$2"; shift; done\n'
+                'tree="$out/fern-python-sdk"; mkdir -p "$tree"\n'
+                'i=0; while [ $i -lt 35 ]; do if [ $i -lt 28 ]; then touch "$tree/m$i.py"; else touch "$tree/f$i.txt"; fi; i=$((i+1)); done\n'
+                if generate_exit == 0
+                else ""
+            )
             fern.write_text(
-                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\ncat "{generate_log}"; exit 1\n',
+                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\ncat "{generate_log}"\n{scaffold}exit {generate_exit}\n',
                 encoding="utf-8",
             )
             fern.chmod(0o755)
@@ -2418,16 +2459,16 @@ class ProbeRecording(unittest.TestCase):
                 CROZIER_FERN_REFUSALS_REGISTRY=str(registry),
                 PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
             )
-            before = {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")}
+            before = {path.name: path.read_bytes() for path in logs.glob(f"{name}.*.log")}
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "probe", self.NAME], capture_output=True, text=True, env=env, cwd=REPO
+                [sys.executable, str(SCRIPT), "probe", name], capture_output=True, text=True, env=env, cwd=REPO
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(
-                (REGISTRY / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
-                (registry / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
+                (REGISTRY / name / "fern-refusal.txt").read_text(encoding="utf-8"),
+                (registry / name / "fern-refusal.txt").read_text(encoding="utf-8"),
             )
-            self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
+            self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{name}.*.log")})
 
 
 # Seconds the compiler-timeout case allows the whole evaluation: enough for the

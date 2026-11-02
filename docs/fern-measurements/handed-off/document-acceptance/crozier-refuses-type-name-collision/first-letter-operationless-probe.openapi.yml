@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Print archive
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    Print:
+      type: object
+      properties:
+        id:
+          type: string
+    print:
+      type: object
+      properties:
+        caption:
+          type: string

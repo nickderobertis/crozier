@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document undefined
+[api]: Cannot read properties of null (reading 'version') 
+       TypeError: Cannot read properties of null (reading 'version')
+All checks passed

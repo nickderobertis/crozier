@@ -1,0 +1,22 @@
+Recorded run of crates/crozier-e2e/tests/e2e/bodies_media_wire.py media-type-recognition (local HTTP server on 127.0.0.1; Python 3.14.7, httpx 0.28.1, pydantic 2.14.2).
+Each line is one step: what the SDK sent the server (method, path, content-type, body or multipart parts) or the value it returned.
+
+## certified pair (fern-expected/src)
+{"sent": {"body": "{\"species\":\"Malus sieversii\",\"grams\":12.5}", "content-type": "text/json", "method": "POST", "path": "/deposits"}, "step": "record_deposit"}
+{"returned": {"class": "Deposit", "grams": 12.5, "species": "Malus sieversii"}, "step": "record_deposit"}
+{"sent": {"body": "{\"sown\":40,\"sprouted\":31}", "content-type": "Application/json", "method": "PUT", "path": "/deposits/lot-7/germination"}, "step": "record_germination"}
+{"sent": {"body": null, "content-type": null, "method": "GET", "path": "/vaults/north"}, "step": "get_vault"}
+{"returned": {"class": "Vault", "deposits": 3, "vaultId": "north"}, "step": "get_vault"}
+exit 0
+
+## crozier, repaired (this measurement's crozier-e2e journey)
+{"sent": {"body": "{\"species\":\"Malus sieversii\",\"grams\":12.5}", "content-type": "text/json", "method": "POST", "path": "/deposits"}, "step": "record_deposit"}
+{"returned": {"class": "Deposit", "grams": 12.5, "species": "Malus sieversii"}, "step": "record_deposit"}
+{"sent": {"body": "{\"sown\":40,\"sprouted\":31}", "content-type": "Application/json", "method": "PUT", "path": "/deposits/lot-7/germination"}, "step": "record_germination"}
+{"sent": {"body": null, "content-type": null, "method": "GET", "path": "/vaults/north"}, "step": "get_vault"}
+{"returned": {"class": "Vault", "deposits": 3, "vaultId": "north"}, "step": "get_vault"}
+exit 0
+
+## crozier before the repair (crozier 0.0.150, the base this repair branches from)
+record_deposit: the call raised TypeError: DepositsClient.record_deposit() got an unexpected keyword argument 'species'
+exit 1

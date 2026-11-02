@@ -1,0 +1,15 @@
+# Recorded 2026-11-02T03:06Z on Linux with Python 3.14.7, httpx 0.28.1, pydantic 2.14.0, ruff 0.11.5.
+# crozier at this node's base (6b4509ab9c) and on the finished branch, each run as
+#   crozier generate python --spec openapi.yml --output <dir> --package-name fern --project-name default_package_name
+
+$ crozier@base generate ... (default mode)
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unreferenced-path-parameter/openapi.yml: path-parameter-unreferenced: GET /trees/{treeId} parameter growerId
+exit: 1
+
+$ crozier@branch generate ... 
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unreferenced-path-parameter/openapi.yml: path-parameter-unreferenced: GET /trees/{treeId} parameter growerId
+exit: 1
+
+$ crozier@branch generate ... --fern-strict
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unreferenced-path-parameter/openapi.yml: path-parameter-unreferenced: GET /trees/{treeId} parameter growerId (fern-strict refusal)
+exit: 1

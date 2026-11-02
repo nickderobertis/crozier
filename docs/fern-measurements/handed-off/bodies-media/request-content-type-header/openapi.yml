@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: Bell Foundry Orders
+  version: 1.0.0
+  description: Takes orders for cast bells and records their tuning.
+servers:
+  - url: https://foundry.example.com
+paths:
+  /bells/{bellId}/tuning:
+    put:
+      operationId: tuneBell
+      tags: [bells]
+      summary: Record a bell's tuning, accepted under any media type.
+      parameters:
+        - name: bellId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Tuning'
+      responses:
+        '204':
+          description: Recorded.
+  /casts:
+    post:
+      operationId: orderCast
+      tags: [casts]
+      summary: Order a casting, a bell or a set of handbells.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CastOrder'
+      responses:
+        '204':
+          description: Ordered.
+  /bells/{bellId}/inscriptions:
+    post:
+      operationId: inscribeBell
+      tags: [bells]
+      summary: Add an inscription, sent under the foundry's own JSON media type.
+      parameters:
+        - name: bellId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.foundry.inscription+json:
+            schema:
+              $ref: '#/components/schemas/Inscription'
+      responses:
+        '204':
+          description: Inscribed.
+  /bells:
+    post:
+      operationId: createBell
+      tags: [bells]
+      summary: Record a newly cast bell.
+      requestBody:
+        description: The bell to record.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bell'
+            examples:
+              tenor:
+                value:
+                  name: Great Tom
+                  note: E flat
+      responses:
+        '201':
+          description: The bell as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bell'
+  /bells/{bellId}:
+    get:
+      operationId: getBell
+      tags: [bells]
+      summary: Read one bell.
+      parameters:
+        - name: bellId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The bell.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bell'
+    put:
+      operationId: replaceBell
+      tags: [bells]
+      summary: Replace one bell's record.
+      parameters:
+        - name: bellId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bell'
+      responses:
+        '200':
+          description: The bell as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bell'
+  /notes:
+    post:
+      operationId: addNote
+      tags: [notes]
+      summary: Add a founder's note to the foundry log.
+      x-codegen-request-body-name: note
+      requestBody:
+        description: The note, as JSON or YAML.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A note in the foundry log.
+              properties:
+                text:
+                  type: string
+                author:
+                  type: string
+          application/yaml:
+            schema:
+              type: object
+              description: A note in the foundry log.
+              properties:
+                text:
+                  type: string
+                author:
+                  type: string
+      responses:
+        '204':
+          description: Added.
+  /recasts:
+    post:
+      operationId: orderRecast
+      tags: [casts]
+      summary: Order a cracked bell recast, as a bell or a set of handbells.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecastOrder'
+      responses:
+        '204':
+          description: Ordered.
+components:
+  schemas:
+    Tuning:
+      type: object
+      required: [strikeNote]
+      properties:
+        strikeNote:
+          type: string
+        hum:
+          type: string
+    CastOrder:
+      oneOf:
+        - $ref: '#/components/schemas/BellCast'
+        - $ref: '#/components/schemas/HandbellCast'
+      discriminator:
+        propertyName: kind
+        mapping:
+          bell: '#/components/schemas/BellCast'
+          handbell: '#/components/schemas/HandbellCast'
+    RecastOrder:
+      title: RecastOrder
+      oneOf:
+        - $ref: '#/components/schemas/BellCast'
+        - $ref: '#/components/schemas/HandbellCast'
+      discriminator:
+        propertyName: kind
+        mapping:
+          bell: '#/components/schemas/BellCast'
+          handbell: '#/components/schemas/HandbellCast'
+    BellCast:
+      type: object
+      required: [kind, weightKg]
+      properties:
+        kind:
+          type: string
+        weightKg:
+          type: number
+    HandbellCast:
+      type: object
+      required: [kind, octaves]
+      properties:
+        kind:
+          type: string
+        octaves:
+          type: integer
+    Inscription:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+        face:
+          type: string
+    Bell:
+      title: Bell
+      description: A cast bell and the note it strikes.
+      type: object
+      examples:
+        - name: Great Tom
+          note: E flat
+      properties:
+        name:
+          type: string
+        note:
+          type: string

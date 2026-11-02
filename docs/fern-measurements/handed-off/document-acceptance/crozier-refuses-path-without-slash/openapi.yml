@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: Kiln controller
+  version: 1.0.0
+paths:
+  /firings/{firingId}:
+    get:
+      operationId: getFiring
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The firing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firing'
+  '':
+    get:
+      operationId: getStatus
+      summary: Controller status
+      responses:
+        '200':
+          description: The controller status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: boolean
+components:
+  schemas:
+    Firing:
+      type: object
+      properties:
+        id:
+          type: string
+        peakCelsius:
+          type: integer

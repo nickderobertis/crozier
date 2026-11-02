@@ -1,5 +1,9 @@
 # request-property-camelcase-collision
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+A bracketed query name (`shelf[]`) beside its bare name (`shelf`) is the certified pair's refusal too, and crozier now refuses it in both modes where it wrote a call passing `shelf` twice ([`never-compared-request-property-camelcase-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-request-property-camelcase-collision/README.md); api-platform's schema-generator). Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 1 probe and 1 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 30 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 30 of the 30 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

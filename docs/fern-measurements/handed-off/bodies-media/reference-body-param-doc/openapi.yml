@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Sheet Music Archive
+  version: 1.0.0
+  description: Stores scores and the credentials that publish them.
+servers:
+  - url: https://scores.example.com
+paths:
+  /publishers:
+    post:
+      operationId: addPublisher
+      tags: [publishers]
+      summary: Register a publisher's credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPublisherRequest'
+      responses:
+        '204':
+          description: Registered.
+  /publishers/{publisherId}:
+    get:
+      operationId: getPublisher
+      tags: [publishers]
+      summary: Read a publisher's record.
+      parameters:
+        - name: publisherId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The publisher.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherRecord'
+  /scores:
+    post:
+      operationId: submitScore
+      tags: [scores]
+      summary: Submit a score, as JSON or as raw bytes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreSubmission'
+          application/octet-stream:
+            schema:
+              $ref: '#/components/schemas/ScoreSubmission'
+      responses:
+        '204':
+          description: Submitted.
+components:
+  schemas:
+    Credentials:
+      type: object
+      properties:
+        username:
+          type: string
+        secret:
+          type: string
+    AddPublisherRequest:
+      $ref: '#/components/schemas/Credentials'
+    PublisherRecord:
+      type: object
+      properties:
+        publisherId:
+          type: string
+        credentials:
+          $ref: '#/components/schemas/Credentials'
+    ScoreSubmission:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        composer:
+          type: string

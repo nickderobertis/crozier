@@ -15578,6 +15578,18 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's schema or response port of src/ir.rs's {name}",
                 )
 
+    def test_the_success_status_port_matches_the_rust_constant(self) -> None:
+        """The census reads the same success statuses, in the same order, as `src/ir.rs`."""
+        source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
+        declared = re.search(r"const FERN_SUCCESS_STATUSES: \[&str; \d+\] = \[([^\]]*)\];", source)
+        self.assertIsNotNone(declared, "src/ir.rs declares no FERN_SUCCESS_STATUSES")
+        assert declared is not None
+        self.assertEqual(
+            tuple(re.findall(r'"([^"]*)"', declared.group(1))),
+            census.FERN_SUCCESS_STATUSES,
+            "re-read the census's success statuses from src/ir.rs's FERN_SUCCESS_STATUSES",
+        )
+
     def test_the_parameter_ports_track_their_rust_functions(self) -> None:
         """The parameter predicates' ports of the items-union hoist and promotion.
 
@@ -17674,6 +17686,31 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             },
         }
         self.assertEqual({(selector, "positive"): 4}, self.census(selector, documents))
+
+    def test_success_selection_reads_only_fern_statuses_in_order(self) -> None:
+        """200, 201, 202 and 204 are tried in that order whatever the declaration order;
+        no other 2xx is read, and `default` is read only when none of the four is declared."""
+        selector = "operation.responses:schemaless-text-success"
+        text = {"description": "text", "content": {"text/plain": {}}}
+        json_response = {"description": "json", "content": {"application/json": {"schema": {"type": "string"}}}}
+        unusable = {"description": "unusable", "content": {"/*": {}}}
+        documents = {
+            "positive": {
+                "paths": {
+                    "/ordered": {"get": self.operation(responses={"204": json_response, "201": text})},
+                    "/other-ignored": {"get": self.operation(responses={"206": json_response, "202": text})},
+                    "/default-fallback": {"get": self.operation(responses={"207": json_response, "default": text})},
+                }
+            },
+            "decoys": {
+                "paths": {
+                    "/declared-first": {"get": self.operation(responses={"204": text, "201": json_response})},
+                    "/unread-status": {"get": self.operation(responses={"203": text})},
+                    "/default-suppressed": {"get": self.operation(responses={"200": unusable, "default": text})},
+                }
+            },
+        }
+        self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
 
     def test_success_selection_dispatches_a_slashless_json_media_key(self) -> None:
         """A slashless key `has_dispatchable_media` reads as JSON-like keeps its 200 selected."""
