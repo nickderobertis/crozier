@@ -1351,7 +1351,10 @@ class InventoryCheckTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.scratch = tempfile.TemporaryDirectory(prefix="fern-references-inventory-")
-        cls.root = Path(cls.scratch.name) / "repo"
+        # Resolved, as the tool resolves its root: macOS's temporary directory
+        # is a symbolic link (/var -> /private/var), so an unresolved root never
+        # contains the paths the tool reports.
+        cls.root = Path(cls.scratch.name).resolve() / "repo"
         copy_inventory(cls.root)
         cls.guard = Path(cls.scratch.name) / "guard"
         (cls.guard / "site").mkdir(parents=True)
