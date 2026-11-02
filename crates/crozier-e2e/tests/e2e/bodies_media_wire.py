@@ -20,6 +20,7 @@ import dataclasses
 import enum
 import http.server
 import importlib
+import io
 import json
 import sys
 import threading
@@ -226,6 +227,10 @@ def main() -> int:
     parser.add_argument("cause", type=Cause, choices=list(Cause))
     parser.add_argument("sdk_src", type=Path)
     args = parser.parse_args()
+    # The lines are compared byte for byte with the LF runtime.txt records, so
+    # they end in LF on every platform, not in Windows' translated CRLF.
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(newline="\n")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error(f"{args.sdk_src} must contain the generated fern package")
     # The SDK may be a committed golden tree; importing it must not write
