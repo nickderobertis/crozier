@@ -3926,6 +3926,7 @@ fn following() { let other = 42; }
             123: "one-hundred-and-twenty-three",
             121: "one-hundred-and-twenty-one",
             125: "one-hundred-and-twenty-five",
+            129: "one-hundred-and-twenty-nine",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]

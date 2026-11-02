@@ -1437,7 +1437,7 @@ can express. Three conventions that derivation applies, stated once:
   `examples`, or an object whose values are themselves schema declarations, and
   `hoist_union_variant` sent all three to `base_type_ref` while it still hoisted
   a bare object with a concrete example. One-hundred-and-twenty-one of the
-  one-hundred-and-twenty-five cases below survive this test; the other four name the
+  one-hundred-and-twenty-nine cases below survive this test; the other eight name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts
@@ -3239,8 +3239,8 @@ why. The changes that took the arm off:
 | 24 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
 | 25 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
 | 26 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
-| 27 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
-| 28 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
+| 27 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]` | 16 | `exhausted` | `inline-oneof-variants` |
+| 28 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]` | 16 | `exhausted` | `inline-anyof-variants` |
 | 29 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
 | 30 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-oneof-variants` |
 | 31 | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | 18 | `search-incomplete` | `shelf-labels-map-variants` |
@@ -3265,7 +3265,7 @@ why. The changes that took the arm off:
 | 50 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 51 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
 | 52 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `search-incomplete` | `slashless-json-response` |
-| 53 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
+| 53 | `nullable` | `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
 | 54 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 55 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
 | 56 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
@@ -4391,10 +4391,13 @@ selector the census declares — a conjunction, or, where the arm reads one Path
 Object key or one `$ref` value and opens no schema, a predicate — and only where
 that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-is recorded as an enumeration hole of three remaining kinds, naming the property no
+is recorded as an enumeration hole of four remaining kinds, naming the property no
 selector kind can express and what closing it would take — the way
 `normalization-collision` was recorded before
-`components.schemas:normalized-collision` existed. No case is in neither, and none
+`components.schemas:normalized-collision` existed. The fourth kind,
+**H-undeclared-conjunction**, is the one exception: it names an arm the grammar
+*can* spell, recorded as a hole until its conjunction is declared with the
+classified region row every declared conjunction carries. No case is in neither, and none
 is in both.
 
 | hole | property the current grammar cannot express | extension that would close it |
@@ -4402,6 +4405,7 @@ is in both.
 | **H-boolean-value** | The sole-reference property arm accepts absent or false `nullable`, and rejects true | The existing grammar records nullable presence, not its boolean truth; only `additionalProperties` has boolean-valued selectors |
 | **H-ordered-members** | Exactly two ordered `allOf` members: first a reference resolving to a string enum, then a string scalar carrying a pattern and no enum, reference, properties or nested composition | Ordered member selection with target resolution and sibling conjunctions |
 | **H-sibling-identity** | A union member whose shape a later sibling of the same union repeats — the same `$ref` class, or the same inline shape, at the same `nullable` | A member-to-sibling comparison: the grammar's selectors read one node and its children, never one sibling against another |
+| **H-undeclared-conjunction** | Nothing the grammar lacks: an arm whose conjunction is spellable, but which no declared conjunction names yet, because declaring one obliges a classified region row with census evidence. `nested_array_element`'s case 10 is the one such arm, and the selectors it would take are the four `is_inline_struct` disjuncts of the value beneath `schema.items>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref`, as `prop_type_ref`'s cases 19a to 19d spell them at a property | Declare those conjunctions in `CONJUNCTIONS`, each with its classified row in [`schemas`](openapi-surface/schemas.md) and its golden-reach sites |
 
 **This table is machine-readable, and this is the restatement of it.** The
 derivation is declared once, as `CASES` in `tools/surface-census/openapi-surface-census.py` —
@@ -4838,6 +4842,8 @@ guard is what leaves two of the four a hole.
 | 6b | the same arm on an `items` writing an explicitly empty `properties: {}` beside no `additionalProperties` — `is_inline_struct`'s third disjunct, which the account this table replaces did not derive. With the map empty and no `additionalProperties`, `is_object_type` reduces to its first disjunct, which is what the last member spells | `schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` reaches it. **What the account this row replaces got wrong is which arm an empty one then takes:** case 2 runs first and claims it, because `inferred_union_discriminant_property` finds `type` inferable vacuously over no members at all and `discriminated_union` returns `Some` with none — the generator coins a `Union({Ctx}ItemItem)` for `items: {oneOf: []}` and no alias, which `tests/resolving-arm-inputs.json`'s `du-nested-empty-oneof` drives and `src/ir.rs`'s own observation of the arm confirms. This row's selector still counts the node, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two listed cases | `schema.items>schema.oneOf` |
 | 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically, and an empty `anyOf: []` is claimed by case 2b for the reason case 7 states | `schema.items>schema.anyOf` |
+| 8a | inside cases 7 and 8, `collapsed_union(members, …)` returning a type that is no model — alternatives that all convert to one type are that type, the element a list of it with nothing hoisted (the `union-modelling/identical-primitive-members` measurement's `corners` element, `oneOf: [string, string]`, is `List[List[str]]`); it reads each member against its siblings, which no selector compares | **H-sibling-identity** |
+| 10 | `is_map(items)` with an unreferenced `additionalProperties` value that `is_inline_struct` takes → the value model `{Ctx}ItemValue` and the element `Dict[str, {Ctx}ItemValue]` (the `union-modelling/map-value-union-hoisting` measurement's `TideGrid`). Spellable, as `prop_type_ref`'s cases 19b and following spell the same map at a property, but no declared conjunction names it yet; its conjunctions are not negatable, so case 9's composed residual is unchanged and counts these nodes too | **H-undeclared-conjunction** |
 | 9 | the closing `None` — the residual arm, selected by the absence of every case above it. Its selector is **composed from the case table** and written nowhere: one negated member per case above whose own selector is this block's gate and one member. Cases 5 and 6b state a property of the `items` node that takes two members apiece and case 2's three readings are negated separately, so the composed spelling is the nine below | `schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array` |
 
 #### `hoist_union_variant`
@@ -4862,7 +4868,7 @@ composition, so the gate below fires — which is the chain overlap
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
 | 0 | `if let Some(later) = later_same_variant(index, siblings, …)` — a member whose shape a later sibling repeats (the same `$ref` class, or the same inline shape, at the same `nullable`) is typed as that later sibling, the way Fern keeps the last of alike alternatives; it reads the variant against its siblings, which no selector compares | **H-sibling-identity** |
-| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm after case 0's sibling check | `schema.oneOf>schema.$ref` |
+| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, made `Optional[…]` where it is `nullable` or its target admits a `type: null` member, `oneOf` head; the first arm after case 0's sibling check | `schema.oneOf>schema.$ref` |
 | 2 | the same arm, `anyOf` head | `schema.anyOf>schema.$ref` |
 | 2a | `if let Some(values) = string_enum_values(variant)` — a member declaring a string enum, hoisted as an enum named for the variant; `oneOf` head | `schema.oneOf>schema.enum:string-valued` |
 | 2b | the same arm, `anyOf` head | `schema.anyOf>schema.enum:string-valued` |
@@ -4898,6 +4904,7 @@ composition, so the gate below fires — which is the chain overlap
 | 13b | the variant's `anyOf` spelling, `oneOf` head; the `or` reads `oneOf` first, so a variant declaring both is counted by 13a and 13b alike and takes 13a | `schema.oneOf>schema.anyOf` |
 | 13c | the variant's `oneOf` spelling, `anyOf` head | `schema.anyOf>schema.oneOf` |
 | 13d | the variant's `anyOf` spelling, `anyOf` head | `schema.anyOf>schema.anyOf` |
+| 13e | inside cases 13a to 13d, `collapsed_union(members, …)` over two or more plain scalar members, no 3.1 type array among them, returning a type that is no model — the composition is that primitive, with nothing hoisted (the `union-modelling/identical-primitive-members` measurement's `label`, a string or an `anyOf` of two string formats, is `str`); it reads each member against its siblings, which no selector compares | **H-sibling-identity** |
 | 8a | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty; `oneOf` head. The helper carries no scalar-type guard, so the disjunct is the whole of its own condition | `schema.oneOf>schema.properties:non-empty` |
 | 8b | the same, `anyOf` head | `schema.anyOf>schema.properties:non-empty` |
 | 9 | the same arm on a variant declaring `allOf` — `is_inline_object` is a disjunction and carries no scalar-type guard, so `all_of.is_some()` is the whole of it; `oneOf` head | `schema.oneOf>schema.allOf` |
@@ -4991,6 +4998,7 @@ both count it and the earlier arm runs — the chain overlap
 | 12h | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 13a | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)`; the property's `oneOf` spelling. The composition gate above it is what puts the arm inside, so this counts no node cases 9 and 10 do not | `schema.properties>schema.oneOf:discriminated-union` |
 | 13b | the same arm, the property's `anyOf` spelling, which only the inferred reading reaches for the reason case 2b states | `schema.properties>schema.anyOf:discriminated-union` |
+| 13c | inside the composition gate, after the all-boolean collapse, `collapsed_union(&members, &variants)` over two or more members none of which declares `items`, returning a type that is no model — alternatives that all convert to one primitive are that primitive, with nothing hoisted; it reads each member against its siblings, which no selector compares, and the nodes it claims are counted by cases 14a and 14b | **H-sibling-identity** |
 | 14a | inside it, the closing alias over the members left after `is_null_variant` filtering — unless every one of them is a `boolean` with no composition of its own, which is one `bool` (StandRig's motion `loop`, `anyOf` of `const: false` and `const: true`, corpus row 231) rather than an alias; the residual of the **composition block alone**, so the gate is its one positive member and the complement is of cases 11 and 13 within that gate rather than of everything above it; `oneOf` spelling. Case 12's four rows each state a property of the sole member and take two members apiece, so they are not negatable and the nodes they claim are counted here | `schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf` |
 | 14b | the same, `anyOf` spelling | `schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf` |
 | 19a | `prop_schema.reference.is_none() && is_map(prop_schema)` with a structured, untitled, unreferenced `additionalProperties` value → the component builder's `field_type_ref`, so an operation-scoped map declares its value type the way a component's does; the value's `string_enum_values` disjunct, read off its `enum` | `schema.properties>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.enum:string-valued` |
