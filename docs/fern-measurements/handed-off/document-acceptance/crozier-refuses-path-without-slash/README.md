@@ -12,7 +12,7 @@ A path key without a leading slash: the empty key `''` (Azure-Samples' piping-di
 
 `fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `026c50def2db403450da0d00c1ec3b82bc2590c82db5d59eadca00198d5ddce9`. `fern.log` and `exit-code` (`0`) are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/crozier-refuses-path-without-slash` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/crozier-refuses-path-without-slash` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

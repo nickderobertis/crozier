@@ -14,7 +14,7 @@ An `allOf` body of a `$ref` parent, an inline object and an inline `anyOf` whose
 
 `expected-literals/` is the same pair's tree with `enum_type` unset (Fern's `Literal` default, crozier's `enum-type: literals`), reduced by `tools/fern-goldens/golden_overlay.py` to the files that differ from `fern-expected/`; its manifest records the complete tree's digest `f7a6f49d540ed2c8192c2f62dd2ac8a3cab366f629c367a62dea7f5fbbd2837e` and the files it removes. `fern.literals.log` and `exit-code.literals` are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/crozier-invalid-duplicate-parameter` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/crozier-invalid-duplicate-parameter` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

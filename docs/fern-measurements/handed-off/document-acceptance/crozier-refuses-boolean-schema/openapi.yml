@@ -71,6 +71,8 @@ components:
         tags:
           type: array
           items: true
+        extra:
+          $ref: '#/components/schemas/Anything'
     Humidity:
       allOf:
         - type: number
@@ -86,6 +88,9 @@ components:
     Unit:
       oneOf:
         - type: string
+        - true
+    Anything:
+      allOf:
         - true
     Calibration:
       allOf:

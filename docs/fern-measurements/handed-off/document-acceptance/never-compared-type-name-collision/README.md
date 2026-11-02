@@ -14,7 +14,7 @@ Two component schemas whose names differ only in their first letter's case (konf
 
 `expected-literals/` is the same pair's tree with `enum_type` unset (Fern's `Literal` default, crozier's `enum-type: literals`), reduced by `tools/fern-goldens/golden_overlay.py` to the files that differ from `fern-expected/`; its manifest records the complete tree's digest `d86dc20c2ef2715ecd82cddb03801df6cfafe80fccf4f72c6f0d3423f6305847` and the files it removes. `fern.literals.log` and `exit-code.literals` are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/never-compared-type-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/never-compared-type-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

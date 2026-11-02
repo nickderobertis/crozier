@@ -12,7 +12,7 @@ A path parameter named like a property of the body's direct `allOf` parent (FOSS
 
 `fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `c82328379cbf23c7895f99de84da6f86b28b1fb081e53bdcedac09333c31be8c`. `fern.log` and `exit-code` (`0`) are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/never-compared-request-property-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/never-compared-request-property-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

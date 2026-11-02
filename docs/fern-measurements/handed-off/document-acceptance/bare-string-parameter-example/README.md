@@ -12,7 +12,7 @@ A parameter's or media type's `examples` map holding a bare value (`north: north
 
 `fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `5c83e8fcd80e14ead8bafaa462536de7f546c78c0ec444a428ca24e6b8be0616`. `fern.log` and `exit-code` (`0`) are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/bare-string-parameter-example` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/bare-string-parameter-example` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

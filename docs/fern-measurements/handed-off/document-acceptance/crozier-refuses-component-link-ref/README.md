@@ -12,7 +12,7 @@ A response `links` entry that is a `$ref` to a declared `components/links` entry
 
 `fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `b614ae8b9a1c37c820329dfbb9ec5d4cd3263b852d9d9d9a01ec1b421556c677`. `fern.log` and `exit-code` (`0`) are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/crozier-refuses-component-link-ref` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/crozier-refuses-component-link-ref` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

@@ -2264,7 +2264,8 @@ fn composition_member(member: MaybeSchema) -> Schema {
 /// `allOf: [{$ref: Reading}, true]` as an alias of `Reading`, the same for
 /// `false`, where a `oneOf`/`anyOf` keeps it as a `typing.Any` member
 /// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/`).
-/// A list of booleans only reads as no `allOf` at all.
+/// A list of booleans only reads as an `allOf` of one empty object, the empty
+/// model the certified pair writes for `allOf: [true]`.
 fn de_all_of<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -2296,7 +2297,18 @@ where
     };
     let written = members.len();
     let kept: Vec<Schema> = members.into_iter().filter_map(|member| member.0).collect();
-    Ok((kept.len() == written || !kept.is_empty()).then_some(kept))
+    if written > 0 && kept.is_empty() {
+        // Every member a boolean schema: the certified pair writes an empty model.
+        return Ok(Some(vec![Schema {
+            ty: Some(TypeField::Single("object".to_string())),
+            properties: SchemaProperties {
+                values: IndexMap::new(),
+                declared: true,
+            },
+            ..Schema::default()
+        }]));
+    }
+    Ok(Some(kept))
 }
 
 /// One `allOf` member: a schema read through [`MaybeSchema`], or `None` for a
@@ -2362,9 +2374,10 @@ impl<'de> Deserialize<'de> for AllOfMember {
     }
 }
 
-/// Deserialize an `allOf`/`oneOf`/`anyOf` member list. Each member passes the
-/// tolerant [`MaybeSchema`] boundary, so an OpenAPI 3.1 boolean schema
-/// (`allOf: [{type: string}, false]`) reads as its stand-in node rather than
+/// Deserialize a `oneOf`/`anyOf` member list (an `allOf` takes [`de_all_of`]).
+/// Each member passes the tolerant [`MaybeSchema`] boundary, and an OpenAPI 3.1
+/// boolean schema member (`anyOf: [false, {type: string}]`) reads as the
+/// unconstrained schema [`composition_member`] makes of it, rather than
 /// failing the document, as the certified pair reads it
 /// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/`).
 fn de_composition<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
@@ -7846,7 +7859,10 @@ mod document_acceptance_tests {
                 "{name}"
             );
         }
-        assert!(schemas["Only"].all_of.is_none());
+        let only = schemas["Only"].all_of.as_deref().unwrap();
+        assert_eq!(only.len(), 1);
+        assert_eq!(only[0].ty, Some(TypeField::Single("object".into())));
+        assert!(only[0].properties.declared() && only[0].properties.is_empty());
         let label = schemas["Label"].any_of.as_deref().unwrap();
         assert_eq!(label[0], Schema::default());
         assert_eq!(label[1].ty, Some(TypeField::Single("string".into())));

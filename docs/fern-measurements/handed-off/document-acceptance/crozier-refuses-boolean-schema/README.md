@@ -8,11 +8,11 @@ An OpenAPI 3.1 boolean schema (`true` or `false`) as an `allOf`, `oneOf` or `any
 
 ## The measurement
 
-`openapi.yml` declares `Humidity: allOf [number, true]`, `DewPoint: allOf [number, false]`, `Label: anyOf [false, string]`, `Unit: oneOf [string, true]`, `Calibration: allOf [$ref Reading, true]` and a `Seal` object with a `false` property, each its own component so a boolean property (which makes its whole object `typing.Any` to both) does not hide the members. It was authored from scratch for this measurement (SHA-256 `6936268a3bcfc97153f4f17400a92c169ab72a1f6ffb058b961895adf0bae82e`).
+`openapi.yml` declares `Humidity: allOf [number, true]`, `DewPoint: allOf [number, false]`, `Label: anyOf [false, string]`, `Unit: oneOf [string, true]`, `Anything: allOf [true]`, `Calibration: allOf [$ref Reading, true]` and a `Seal` object with a `false` property, each its own component so a boolean property (which makes its whole object `typing.Any` to both) does not hide the members. It was authored from scratch for this measurement (SHA-256 `3d17596789ae4547e51a4bf6abd92b91c8e1a60a1acb0142f533fe92c3e2c1ca`).
 
-`fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `02e6f1da18231a2813e58df95cbeeb83cb497ce78504bb7f659284c46372d95f`. `fern.log` and `exit-code` (`0`) are that run's.
+`fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `83fbfec705712ad13232965e86ffe4c9e99b53a8ed96fb5ea3dacad60638707c`. `fern.log` and `exit-code` (`0`) are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/crozier-refuses-boolean-schema` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/crozier-refuses-boolean-schema` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 
@@ -21,7 +21,7 @@ An OpenAPI 3.1 boolean schema (`true` or `false`) as an `allOf`, `oneOf` or `any
 
 ## The verdict
 
-`src/openapi.rs` reads composition members through the tolerant `MaybeSchema` boundary: `de_all_of` drops a boolean `allOf` member, `composition_member` reads a boolean `oneOf`/`anyOf` member as the unconstrained schema (`typing.Any`), and `normalize_single_scalar_all_of` reads an `allOf` left with one inline scalar as that scalar (`Humidity = float`). The certified pair's `Calibration = Reading` alias follows.
+`src/openapi.rs` reads composition members through the tolerant `MaybeSchema` boundary: `de_all_of` drops a boolean `allOf` member, `composition_member` reads a boolean `oneOf`/`anyOf` member as the unconstrained schema (`typing.Any`), `normalize_single_scalar_all_of` reads an `allOf` left with one inline scalar as that scalar (`Humidity = float`), and an `allOf` of booleans alone reads as one empty object, the empty `Anything` model the certified pair writes. The certified pair's `Calibration = Reading` alias follows.
 
 ## What holds it
 

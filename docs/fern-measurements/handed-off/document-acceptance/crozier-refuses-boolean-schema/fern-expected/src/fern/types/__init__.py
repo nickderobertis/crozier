@@ -6,6 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .anything import Anything
     from .calibration import Calibration
     from .dew_point import DewPoint
     from .humidity import Humidity
@@ -14,6 +15,7 @@ if typing.TYPE_CHECKING:
     from .seal import Seal
     from .unit import Unit
 _dynamic_imports: typing.Dict[str, str] = {
+    "Anything": ".anything",
     "Calibration": ".calibration",
     "DewPoint": ".dew_point",
     "Humidity": ".humidity",
@@ -45,4 +47,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Calibration", "DewPoint", "Humidity", "Label", "Reading", "Seal", "Unit"]
+__all__ = ["Anything", "Calibration", "DewPoint", "Humidity", "Label", "Reading", "Seal", "Unit"]

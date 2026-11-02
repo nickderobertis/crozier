@@ -14,7 +14,7 @@ One type declared in two namespaces by crozier where the certified pair declares
 
 `expected-literals/` is the same pair's tree with `enum_type` unset (Fern's `Literal` default, crozier's `enum-type: literals`), reduced by `tools/fern-goldens/golden_overlay.py` to the files that differ from `fern-expected/`; its manifest records the complete tree's digest `326abefbb5b1fa7cc9a0d3c1d35a449a949c4c2070aa5ffea28c4956c3074d74` and the files it removes. `fern.literals.log` and `exit-code.literals` are that run's.
 
-`tools/fern-goldens/fern-references.py generate measurements handed-off/document-acceptance/crozier-refuses-type-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
+`just fern-references measurements handed-off/document-acceptance/crozier-refuses-type-name-collision` regenerates `fern-expected/` (a `docs/fern-measurements/cases.tsv` row).
 
 ## The comparison
 

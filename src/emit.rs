@@ -6677,7 +6677,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
     ));
-    if !requests_base_url(ep) {
+    if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
     call.extend(environment_base_url(ep));
@@ -6926,7 +6926,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
     ));
-    if !requests_base_url(ep) {
+    if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
     call.extend(environment_base_url(ep));

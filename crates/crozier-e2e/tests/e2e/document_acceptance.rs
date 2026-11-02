@@ -20,38 +20,17 @@ use super::{
     repo_root, walk_files,
 };
 
-/// Where the measurements live.
 pub(crate) const DOCUMENT_ACCEPTANCE_DIR: &str =
     "docs/fern-measurements/handed-off/document-acceptance";
+/// The area's triage record: one row per root cause, its verdict among them.
+const TRIAGE: &str = "docs/fern-measurements/handed-off/document-acceptance.tsv";
 /// A measurement's literals overlay over its `fern-expected/`.
 const OVERLAY_DIR: &str = "expected-literals";
 const MANIFEST: &str = ".crozier-overlay.json";
 
-/// The causes whose measurement crozier now byte-matches.
-const REPAIRED: [&str; 11] = [
-    "R14",
-    "bare-string-parameter-example",
-    "crozier-invalid-duplicate-parameter",
-    "crozier-refuses-boolean-schema",
-    "crozier-refuses-component-link-ref",
-    "crozier-refuses-nullable-error-extension",
-    "crozier-refuses-path-without-slash",
-    "crozier-refuses-type-name-collision",
-    "crozier-refuses-unknown-type-value",
-    "never-compared-request-property-name-collision",
-    "never-compared-type-name-collision",
-];
-
-/// The repaired causes whose document declares an enum, so the literals mode
-/// changes the certified pair's tree and an overlay holds it.
-const WITH_LITERALS: [&str; 3] = [
-    "crozier-invalid-duplicate-parameter",
-    "crozier-refuses-type-name-collision",
-    "never-compared-type-name-collision",
-];
-
-/// The causes the certified pair refuses, and the class crozier refuses each
-/// with in both modes.
+/// The refusal line crozier prints for each cause the triage records
+/// `refusal-kept`; `the_refusals_are_the_triage_s_refusal_kept_rows` holds the
+/// two lists to one set.
 const REFUSED: [(&str, &str); 4] = [
     (
         "crozier-refuses-dangling-component-ref",
@@ -68,10 +47,37 @@ const REFUSED: [(&str, &str); 4] = [
     ("null-info-paths-components", "missing-info-object: info"),
 ];
 
+/// The triage's root causes recorded with `verdict`, in row order.
+fn causes(verdict: &str) -> Vec<String> {
+    let text = std::fs::read_to_string(repo_root().join(TRIAGE))
+        .unwrap_or_else(|error| panic!("{TRIAGE}: {error}"));
+    text.lines()
+        .skip(1)
+        .filter_map(|row| {
+            let cells: Vec<&str> = row.split('\t').collect();
+            (cells.get(2) == Some(&verdict)).then(|| cells[1].to_string())
+        })
+        .collect()
+}
+
+/// The causes whose measurement crozier byte-matches.
+fn repaired() -> Vec<String> {
+    causes("parity-gap-repaired")
+}
+
+/// The repaired causes whose document declares an enum, so the literals mode
+/// changes the certified pair's tree and an overlay holds it.
+fn with_literals() -> Vec<String> {
+    repaired()
+        .into_iter()
+        .filter(|case| case_dir(case).join(OVERLAY_DIR).is_dir())
+        .collect()
+}
+
 /// Every tree this module compares: each repaired cause's `fern-expected/`
 /// and each literals overlay, the overlay's manifest excluded.
 pub(super) fn compared() -> Vec<(String, Vec<String>)> {
-    REPAIRED
+    repaired()
         .iter()
         .map(|case| {
             (
@@ -79,7 +85,7 @@ pub(super) fn compared() -> Vec<(String, Vec<String>)> {
                 Vec::new(),
             )
         })
-        .chain(WITH_LITERALS.iter().map(|case| {
+        .chain(with_literals().iter().map(|case| {
             (
                 format!("{DOCUMENT_ACCEPTANCE_DIR}/{case}/{OVERLAY_DIR}"),
                 vec![MANIFEST.to_string()],
@@ -213,7 +219,9 @@ fn literals_tree(case: &str) -> Result<(tempfile::TempDir, GoldenLedger), String
 #[test]
 fn each_repaired_cause_generates_its_certified_pair_tree() {
     let mut failures = Vec::new();
-    for case in REPAIRED {
+    let repaired = repaired();
+    assert!(!repaired.is_empty(), "{TRIAGE} records no repaired cause");
+    for case in &repaired {
         let golden = format!("{DOCUMENT_ACCEPTANCE_DIR}/{case}/fern-expected");
         let ledger = departure_ledger()
             .golden(&golden, &[])
@@ -237,7 +245,7 @@ fn each_repaired_cause_generates_its_certified_pair_tree() {
 #[test]
 fn enum_bearing_repairs_generate_the_literals_tree_too() {
     let mut failures = Vec::new();
-    for case in WITH_LITERALS {
+    for case in &with_literals() {
         let (tree, ledger) = literals_tree(case).unwrap_or_else(|error| panic!("{error}"));
         for strict in [false, true] {
             failures.extend(tree_failures(
@@ -303,7 +311,6 @@ fn each_refused_cause_is_refused_in_both_modes() {
     }
 }
 
-/// Write `text` as an OpenAPI document under `dir` and run crozier on it.
 fn run(dir: &Path, name: &str, text: &str, strict: bool) -> std::process::Output {
     let spec = dir.join(name);
     std::fs::write(&spec, text).unwrap();
@@ -323,6 +330,67 @@ fn edited(case: &str, edits: &[(&str, &str)]) -> String {
         text = text.replace(from, to);
     }
     text
+}
+
+/// The refusal lines this module holds are exactly the triage's
+/// `refusal-kept` rows, and every row carries a verdict this module holds, so
+/// a newly triaged cause cannot go unchecked.
+#[test]
+fn the_refusals_are_the_triage_s_refusal_kept_rows() {
+    let mut held: Vec<&str> = REFUSED.iter().map(|(case, _)| *case).collect();
+    held.sort_unstable();
+    let mut kept = causes("refusal-kept");
+    kept.sort();
+    assert_eq!(
+        held, kept,
+        "{TRIAGE}'s refusal-kept rows and REFUSED differ"
+    );
+    let text = std::fs::read_to_string(repo_root().join(TRIAGE)).unwrap();
+    for row in text.lines().skip(1) {
+        let cells: Vec<&str> = row.split('\t').collect();
+        assert_eq!(cells.len(), 6, "{TRIAGE}: {row}");
+        assert!(
+            ["parity-gap-repaired", "refusal-kept"].contains(&cells[2]),
+            "{TRIAGE}: {} is recorded `{}`, a verdict no test here holds",
+            cells[1],
+            cells[2]
+        );
+        assert!(case_dir(cells[1]).join("openapi.yml").is_file(), "{row}");
+    }
+}
+
+/// An `info` that is absent, as well as one written null, is refused in both
+/// modes; giving the same document an Info Object recovers it.
+#[test]
+fn a_missing_info_refuses_and_an_info_object_recovers() {
+    let temp = tempfile::tempdir().unwrap();
+    for (name, info, refused) in [
+        ("absent.yml", "", true),
+        (
+            "object.yml",
+            "info:\n  title: Moorings\n  version: 1.0.0\n",
+            false,
+        ),
+        ("sparse.yml", "info: {}\n", false),
+    ] {
+        let text = edited("null-info-paths-components", &[("info:\n", info)]);
+        for strict in [false, true] {
+            let result = run(temp.path(), name, &text, strict);
+            let stderr = String::from_utf8_lossy(&result.stderr);
+            if refused {
+                assert_eq!(result.status.code(), Some(1), "{name}: {stderr}");
+                assert!(
+                    stderr.contains("missing-info-object: info"),
+                    "{name}: {stderr}"
+                );
+            } else {
+                assert!(
+                    result.status.success(),
+                    "{name} (strict {strict}): {stderr}"
+                );
+            }
+        }
+    }
 }
 
 /// The narrowed refusals still fire on the shapes the certified pair refuses:
