@@ -6,10 +6,16 @@ The bodies-and-paths record's `union-modelling` cause names several distinct rul
 
 | sub-case | rule |
 |---|---|
-| [`singleton-enum-tags/`](singleton-enum-tags/) | a typed one-member `enum` tag discriminates whether or not an inline member requires it; the `$ref`ed models lose the tag |
+| [`singleton-enum-tags/`](singleton-enum-tags/) | a typed one-member `enum` tag, written inline or as a `$ref` to an enum component, discriminates whether or not an inline member requires it, at a property, a component and a map's value; the `$ref`ed models lose the tag |
 | [`identical-primitive-members/`](identical-primitive-members/) | an element union of alike primitive members is that primitive, nothing hoisted |
 | [`nullable-reference-member/`](nullable-reference-member/) | a member naming a null-admitting component is `Optional` in its slot |
 | [`multi-type-open-object/`](multi-type-open-object/) | `type: [object, array, null]` beside `additionalProperties` is a hoisted `Union[Dict[str, Any], List[Any]]` |
+| [`event-stream-beside-json/`](event-stream-beside-json/) | an event-stream union beside a JSON body strips no member tag |
+| [`annotated-reference-beside-null/`](annotated-reference-beside-null/) | an annotated `$ref` beside `null` is the use-site copy, not a subclass |
+| [`singleton-enum-members/`](singleton-enum-members/) | a query `oneOf` of typed one-value enums is one deduplicated enum; members alike but for their own `nullable` collapse |
+| [`sole-reference-all-of-member/`](sole-reference-all-of-member/) | a member `allOf: [$ref X]` is `X` |
+
+The last four were met while settling the cause's handed-off documents (OpenResponses, Deepgram, Hookdeck): each is a rule of how a union becomes a Python type that those documents carry beyond what their records named, measured and repaired here under the manager's direction to repair every union rule measurable within this node.
 
 The record's other half, "not from a `const`-only property", is the same discriminant-inference rule seen from the `const` side and is settled with it: [`../const-tag-variants-undiscriminated/`](../const-tag-variants-undiscriminated/) holds that a bare `const` tag does not discriminate, and `singleton-enum-tags/` that a typed one-member `enum` does; one function, `inferred_discriminant_property`, now decides both, and the tags it strips. The codosseum document, whose only listed cause is this one, already byte-matched at this node's base: `c0d439ecd5b971e8c1ed81ef107798f1a8659d53` (#672) stopped a bare inline `const` tag from discriminating (bisected on 2026-11-01: codosseum mismatches at `66081272f`, byte-matches at `c0d439ecd`).
 

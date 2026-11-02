@@ -6,10 +6,10 @@ A sub-case of the [`union-modelling`](../README.md) cause; **verdict: parity-gap
 
 ## The rule
 
-An element union whose members convert to one primitive (`oneOf: [string, string]` two arrays deep) is that primitive, with no `…ItemItem` alias; members collapsing to one *model* keep its named element.
+An element union whose members convert to one primitive (`oneOf: [string, string]` two arrays deep) is that primitive, with no `…ItemItem` alias; members collapsing to one *model* keep its named element. The same holds for an inline body property offering a string or an `anyOf` of string formats (`label`, tianji's `domain`) and for a map value `anyOf: [string]` (`notes`, runZero's `customAttributes`).
 
 ## The comparison
 
-The certified pair types `corners` `typing.Optional[typing.List[typing.List[str]]]`; crozier hoisted `SurveyCornersItemItem = typing.Union[str, str]` (crystalshards' `ValidationErrorErrorsItemItem`). Repaired in `Builder::field_type_ref` and `Builder::nested_array_element`. crozier now byte-matches `fern-expected/`.
+The certified pair types `corners` `typing.Optional[typing.List[typing.List[str]]]`; crozier hoisted `SurveyCornersItemItem = typing.Union[str, str]` (crystalshards' `ValidationErrorErrorsItemItem`). The certified pair also types `label` `str` and `notes` `typing.Optional[typing.Dict[str, str]]`, where crozier hoisted `CreateSurveyRequestLabel`/`…LabelOne` and `SurveyNotesValue`. Repaired in `Builder::field_type_ref`, `Builder::nested_array_element`, `InlineHoister::hoist_union_variant` and `InlineHoister::prop_type_ref`. crozier now byte-matches `fern-expected/`.
 
 Held by `union_modelling_sub_rules_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`, which byte-compares crozier's SDK for this document with `fern-expected/` (apart from the catalogued departures the ledger records) and requires the pre-repair spelling to fail that comparison, and by the unit test `alike_primitive_element_members_are_that_primitive` in `src/ir.rs`'s `union_modelling_tests`.

@@ -35,6 +35,7 @@ const CASES: &[(&str, bool)] = &[
     ("union-modelling/nullable-reference-member", false),
     ("union-modelling/singleton-enum-members", true),
     ("union-modelling/singleton-enum-tags", true),
+    ("union-modelling/sole-reference-all-of-member", false),
 ];
 
 /// Every committed tree under [`UNION_MODELLING_DIR`], for the compared-goldens
@@ -525,6 +526,18 @@ fn union_modelling_document_sub_rules_match_the_certified_pair() {
         "src/fern/types/batch_totals.py",
         "class BatchTotals(UniversalBaseModel):",
         "class BatchTotals(Totals):",
+    );
+
+    let case = "union-modelling/sole-reference-all-of-member";
+    let temp = matched(case);
+    assert!(read(&sdk(&temp), "src/fern/types/probe.py")
+        .contains("Probe = typing.Union[Thermometer, Hygrometer, Anemometer]"));
+    mutation_is_named(
+        case,
+        &temp,
+        "src/fern/types/probe.py",
+        "typing.Union[Thermometer, Hygrometer, Anemometer]",
+        "typing.Union[ProbeZero, ProbeOne, Anemometer]",
     );
 
     let case = "union-modelling/singleton-enum-members";

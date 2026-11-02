@@ -116,6 +116,7 @@
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-members/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/literals/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

@@ -1,0 +1,58 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse sensors
+  version: "1.0"
+paths:
+  /probes/{probeId}:
+    get:
+      operationId: getProbe
+      parameters:
+        - name: probeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The probe.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+components:
+  schemas:
+    Thermometer:
+      type: object
+      properties:
+        celsius:
+          type: number
+    Hygrometer:
+      type: object
+      properties:
+        humidity:
+          type: number
+    Anemometer:
+      type: object
+      properties:
+        knots:
+          type: number
+    Probe:
+      description: The probe fitted to a station.
+      type: object
+      properties: {}
+      additionalProperties: false
+      oneOf:
+        - x-required: true
+          allOf:
+            - $ref: "#/components/schemas/Thermometer"
+        - x-required: true
+          allOf:
+            - $ref: "#/components/schemas/Hygrometer"
+        - $ref: "#/components/schemas/Anemometer"
+    Station:
+      type: object
+      properties:
+        name:
+          type: string
+        probe:
+          $ref: "#/components/schemas/Probe"

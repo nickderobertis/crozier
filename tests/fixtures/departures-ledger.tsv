@@ -748,6 +748,11 @@ docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum
 docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/literals/fern-expected	src/fern/types/__init__.py	8	init-type-checking-import-order
+docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/union-modelling/sole-reference-all-of-member/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/literals-mode/avionics-booking/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/buoy-depth-response/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/discriminated-variant-date-value-snippet/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config

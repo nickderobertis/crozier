@@ -16118,6 +16118,14 @@ impl Builder<'_> {
             self.types.truncate(hoisted);
             return type_ref;
         }
+        // A member that is an `allOf` of one `$ref` and declares nothing else is
+        // that reference: the `union-modelling/sole-reference-all-of-member`
+        // measurement's `Probe` offers `allOf: [$ref Thermometer]` beside a bare
+        // `$ref`, and Fern's alias names `Thermometer` (Hookdeck's
+        // `SourceTypeConfig` and `VerificationConfig`).
+        if let Some(reference) = sole_reference_all_of_member(variant) {
+            return TypeRef::Named(ref_to_class(reference));
+        }
         if let Some(reference) = &variant.reference {
             let named = TypeRef::Named(ref_to_class(reference));
             // A member naming a component that admits null is that component
@@ -18957,6 +18965,25 @@ fn sole_reference_all_of(schema: &Schema) -> Option<&Schema> {
         ..schema.clone()
     };
     (member.reference.is_some() && bare == Schema::default()).then_some(member)
+}
+
+/// The `$ref` of a union member written as an `allOf` of that one reference
+/// and no shape of its own (annotations and extensions aside).
+fn sole_reference_all_of_member(member: &Schema) -> Option<&str> {
+    let [only] = member.all_of.as_deref()? else {
+        return None;
+    };
+    let shapeless = member.reference.is_none()
+        && member.ty.is_none()
+        && member.properties.is_empty()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.items.is_none()
+        && member.additional_properties.is_none()
+        && member.enum_values.is_none()
+        && member.const_value.is_none()
+        && member.nullable.is_none();
+    only.reference.as_deref().filter(|_| shapeless)
 }
 
 /// Whether a lowered field type is Fern's unknown, bare or optional.
@@ -31574,5 +31601,20 @@ mod union_modelling_tests {
         );
         assert!(decl(&ir, "CreateSurveyRequestLabel").is_none());
         assert!(decl(&ir, "SurveyNotesValue").is_none());
+    }
+
+    /// `sole_reference_all_of_member` in `Builder::variant_ref`.
+    #[test]
+    fn a_sole_reference_all_of_member_is_the_reference() {
+        let ir = measured("union-modelling/sole-reference-all-of-member");
+        assert_eq!(
+            alias(&ir, "Probe"),
+            &TypeRef::Union(vec![
+                named("Thermometer"),
+                named("Hygrometer"),
+                named("Anemometer")
+            ])
+        );
+        assert!(decl(&ir, "ProbeZero").is_none());
     }
 }
