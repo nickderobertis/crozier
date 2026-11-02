@@ -113,6 +113,22 @@ components:
               $ref: "#/components/schemas/ModeSea"
             hull:
               type: string
+    Barge:
+      type: object
+      required:
+        - mode
+        - draft
+      properties:
+        mode:
+          $ref: "#/components/schemas/ModeSea"
+        draft:
+          type: number
+    ShipmentsByPort:
+      type: object
+      additionalProperties:
+        oneOf:
+          - $ref: "#/components/schemas/Lorry"
+          - $ref: "#/components/schemas/Barge"
     Entry:
       type: object
       required:
@@ -124,3 +140,5 @@ components:
           $ref: "#/components/schemas/Author"
         shipment:
           $ref: "#/components/schemas/Shipment"
+        byPort:
+          $ref: "#/components/schemas/ShipmentsByPort"

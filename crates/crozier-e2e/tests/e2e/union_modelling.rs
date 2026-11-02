@@ -481,6 +481,11 @@ fn union_modelling_sub_rules_match_the_certified_pair() {
     let author = read(&sdk(&temp), "src/fern/types/author.py");
     assert!(author.contains("class Author_Harbour("), "{author}");
     assert!(read(&sdk(&temp), "src/fern/types/shipment.py").contains("class Shipment_Rail("));
+    assert!(
+        read(&sdk(&temp), "src/fern/types/shipments_by_port_value.py")
+            .contains("class ShipmentsByPortValue_Sea(")
+    );
+    assert!(!read(&sdk(&temp), "src/fern/types/barge.py").contains("mode:"));
     assert!(!read(&sdk(&temp), "src/fern/types/crew_member.py").contains("kind:"));
     mutation_is_named(
         case,

@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
         Author_Contractor,
         Author_Crew,
         Author_Harbour,
+        Barge,
         Contractor,
         CrewMember,
         Entry,
@@ -27,6 +28,10 @@ if typing.TYPE_CHECKING:
         Shipment_Rail,
         Shipment_Road,
         Shipment_Sea,
+        ShipmentsByPort,
+        ShipmentsByPortValue,
+        ShipmentsByPortValue_Road,
+        ShipmentsByPortValue_Sea,
     )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -40,6 +45,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Author_Contractor": ".types",
     "Author_Crew": ".types",
     "Author_Harbour": ".types",
+    "Barge": ".types",
     "Contractor": ".types",
     "CrewMember": ".types",
     "DefaultAioHttpClient": "._default_clients",
@@ -56,6 +62,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Shipment_Rail": ".types",
     "Shipment_Road": ".types",
     "Shipment_Sea": ".types",
+    "ShipmentsByPort": ".types",
+    "ShipmentsByPortValue": ".types",
+    "ShipmentsByPortValue_Road": ".types",
+    "ShipmentsByPortValue_Sea": ".types",
     "__version__": ".version",
 }
 
@@ -90,6 +100,7 @@ __all__ = [
     "Author_Contractor",
     "Author_Crew",
     "Author_Harbour",
+    "Barge",
     "Contractor",
     "CrewMember",
     "DefaultAioHttpClient",
@@ -106,5 +117,9 @@ __all__ = [
     "Shipment_Rail",
     "Shipment_Road",
     "Shipment_Sea",
+    "ShipmentsByPort",
+    "ShipmentsByPortValue",
+    "ShipmentsByPortValue_Road",
+    "ShipmentsByPortValue_Sea",
     "__version__",
 ]

@@ -12213,6 +12213,13 @@ fn collect_discriminant_strips(
         }
     }
 
+    // A map's value union consumes its members' tags as any other does: the
+    // `union-modelling/singleton-enum-tags` measurement's `Barge`, a member
+    // only of `ShipmentsByPort`'s value union, has no `mode` in Fern's tree.
+    let map_value = match &schema.additional_properties {
+        Some(AdditionalProperties::Schema(value)) => Some(value.as_ref()),
+        _ => None,
+    };
     for child in schema
         .properties
         .values()
@@ -12220,6 +12227,7 @@ fn collect_discriminant_strips(
         .chain(schema.one_of.iter().flatten())
         .chain(schema.any_of.iter().flatten())
         .chain(schema.all_of.iter().flatten())
+        .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
     }
@@ -13224,6 +13232,31 @@ impl Builder<'_> {
                 }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");
+                    // Members that each tag themselves are a discriminated union at
+                    // a component map's value as at a property's: the
+                    // `union-modelling/singleton-enum-tags` measurement's
+                    // `ShipmentsByPort` values are `oneOf` the `$ref`ed shipments,
+                    // and Fern declares `ShipmentsByPortValue_Road`… (Nussknacker's
+                    // `Map_TypingResultInJson`).
+                    let value_module = naming::module_name(&value_name);
+                    if let Some(decl) = self.discriminated_union(
+                        &value_name,
+                        &value_module,
+                        value,
+                        clean_doc(value.description.as_deref()),
+                    ) {
+                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                        self.push_alias(
+                            name,
+                            module,
+                            TypeRef::Dict(
+                                Box::new(TypeRef::Primitive(Prim::Str)),
+                                Box::new(TypeRef::Named(value_name)),
+                            ),
+                            docstring,
+                        );
+                        return;
+                    }
                     let members: Vec<TypeRef> = variants
                         .iter()
                         .enumerate()
@@ -31517,6 +31550,14 @@ mod union_modelling_tests {
             .map(|member| member.discriminant.as_str())
             .collect();
         assert_eq!(tags, ["road", "rail", "sea"]);
+        assert!(matches!(
+            decl(&ir, "ShipmentsByPortValue"),
+            Some(TypeDecl::DiscriminatedUnion(_))
+        ));
+        let Some(TypeDecl::Object(barge)) = decl(&ir, "Barge") else {
+            panic!("Barge is a model");
+        };
+        assert!(barge.fields.iter().all(|field| field.wire_name != "mode"));
     }
 
     /// The inline hoister's collapse of alike primitive alternatives and the

@@ -9,6 +9,7 @@ if typing.TYPE_CHECKING:
     from .author import Author, Author_Autopilot, Author_Contractor, Author_Crew, Author_Harbour
     from .author_autopilot import AuthorAutopilot
     from .author_harbour import AuthorHarbour
+    from .barge import Barge
     from .contractor import Contractor
     from .crew_member import CrewMember
     from .entry import Entry
@@ -19,6 +20,8 @@ if typing.TYPE_CHECKING:
     from .shipment import Shipment, Shipment_Rail, Shipment_Road, Shipment_Sea
     from .shipment_rail import ShipmentRail
     from .shipment_sea import ShipmentSea
+    from .shipments_by_port import ShipmentsByPort
+    from .shipments_by_port_value import ShipmentsByPortValue, ShipmentsByPortValue_Road, ShipmentsByPortValue_Sea
 _dynamic_imports: typing.Dict[str, str] = {
     "Author": ".author",
     "AuthorAutopilot": ".author_autopilot",
@@ -27,6 +30,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Author_Contractor": ".author",
     "Author_Crew": ".author",
     "Author_Harbour": ".author",
+    "Barge": ".barge",
     "Contractor": ".contractor",
     "CrewMember": ".crew_member",
     "Entry": ".entry",
@@ -40,6 +44,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Shipment_Rail": ".shipment",
     "Shipment_Road": ".shipment",
     "Shipment_Sea": ".shipment",
+    "ShipmentsByPort": ".shipments_by_port",
+    "ShipmentsByPortValue": ".shipments_by_port_value",
+    "ShipmentsByPortValue_Road": ".shipments_by_port_value",
+    "ShipmentsByPortValue_Sea": ".shipments_by_port_value",
 }
 
 
@@ -72,6 +80,7 @@ __all__ = [
     "Author_Contractor",
     "Author_Crew",
     "Author_Harbour",
+    "Barge",
     "Contractor",
     "CrewMember",
     "Entry",
@@ -85,4 +94,8 @@ __all__ = [
     "Shipment_Rail",
     "Shipment_Road",
     "Shipment_Sea",
+    "ShipmentsByPort",
+    "ShipmentsByPortValue",
+    "ShipmentsByPortValue_Road",
+    "ShipmentsByPortValue_Sea",
 ]
