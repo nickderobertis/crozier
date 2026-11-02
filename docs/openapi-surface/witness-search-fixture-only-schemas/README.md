@@ -225,7 +225,7 @@ A cover whose cited search already read `exhausted` keeps citing it. The confirm
 | `array-item-pointer-walk-anyof` | `exhausted` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` (`ref-pointer-walk`) |
 | `array-item-pointer-walk-items` | `exhausted` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` (`ref-pointer-walk`) |
 | `array-item-pointer-walk-properties` | `exhausted` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` (`ref-pointer-walk`) |
-| `discriminator-mapping` | `exhausted` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` (`tidepool-survey-log`) |
+| `discriminator-mapping` | `exhausted` | `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` (`tidepool-survey-log`) |
 | `discriminator-mapping` | `exhausted` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` (`tidepool-survey-log`) |
 | `format-email` | `exhausted` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` (`format-scalar-bodies`) |
 | `format-hostname` | `exhausted` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` (`format-scalar-bodies`) |

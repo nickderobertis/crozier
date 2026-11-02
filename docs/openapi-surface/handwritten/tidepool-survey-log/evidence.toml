@@ -10,6 +10,6 @@ verdict = "exhausted"
 
 [[covers]]
 key = "discriminator-mapping"
-arm = 'src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]'
+arm = 'src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]'
 search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
 verdict = "exhausted"

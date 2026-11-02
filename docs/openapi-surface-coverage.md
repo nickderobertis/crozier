@@ -3201,7 +3201,7 @@ why. The changes that took the arm off:
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
 | 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
-| 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
+| 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
 | 4 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 68 | `exhausted` | `inline-oneof-variants` |
 | 4 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
 | 4 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |

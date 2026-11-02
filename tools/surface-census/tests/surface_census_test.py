@@ -13491,7 +13491,7 @@ class FinishedStateGateTests(unittest.TestCase):
     NAMED_ARM = "src/ir.rs::Builder::discriminated_union[if union_target \\{]"
     NAMED_ARMS = (
         NAMED_ARM,
-        "src/emit.rs::ExampleCtx::named_value_inner[Some\\(m\\) if m\\.layout\\.is_wrapped\\(\\) => \\{]",
+        "src/emit.rs::ExampleCtx::discriminated_union_value[Some\\(m\\) if m\\.layout\\.is_wrapped\\(\\) => \\{]",
     )
     COVERING_FIXTURE = "docs/openapi-surface/handwritten/tidepool-survey-log/evidence.toml"
     BOUNDED_RECORD = "docs/openapi-surface/witness-search-unproven-features/README.md"
