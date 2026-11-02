@@ -417,7 +417,13 @@ fn bracket_depth(line: &str) -> i32 {
     depth
 }
 
-/// The string literals (unescaped) and the number literals of Python text.
+/// The string and number literals of the Python a worked-example `request=`
+/// region writes: each quoted string with its escapes decoded (`\n`, `\t`,
+/// `\r`, `\xHH`, `\uHHHH`, and a backslash before any other character
+/// kept, as Python keeps it), and each decimal number with its unary `-` sign
+/// and exponent. Names, keywords and operators are skipped; it reads only what
+/// [`declared_body_over_fallback`] compares against a body's declared values,
+/// never Python beyond the literals crozier and Fern write there.
 fn literal_tokens(text: &str) -> (Vec<String>, Vec<f64>) {
     let mut strings = Vec::new();
     let mut numbers = Vec::new();
@@ -426,22 +432,34 @@ fn literal_tokens(text: &str) -> (Vec<String>, Vec<f64>) {
     while index < chars.len() {
         let character = chars[index];
         if character == '"' || character == '\'' {
-            let mut value = String::new();
-            index += 1;
-            while index < chars.len() && chars[index] != character {
-                if chars[index] == '\\' && index + 1 < chars.len() {
-                    index += 1;
-                }
-                value.push(chars[index]);
-                index += 1;
-            }
+            let (value, next) = string_literal(&chars, index + 1, character);
             strings.push(value);
-        } else if character.is_ascii_digit()
-            && (index == 0 || !(chars[index - 1].is_alphanumeric() || chars[index - 1] == '_'))
-        {
+            index = next;
+            continue;
+        }
+        let operand_before = index > 0
+            && (chars[index - 1].is_alphanumeric()
+                || matches!(chars[index - 1], '_' | ')' | ']' | '.'));
+        let signed = character == '-'
+            && chars.get(index + 1).is_some_and(char::is_ascii_digit)
+            && !operand_before;
+        if (character.is_ascii_digit() && !operand_before) || signed {
             let start = index;
+            index += 1;
             while index < chars.len() && (chars[index].is_ascii_digit() || chars[index] == '.') {
                 index += 1;
+            }
+            if matches!(chars.get(index), Some('e' | 'E')) {
+                let digits = match chars.get(index + 1) {
+                    Some('+' | '-') => index + 2,
+                    _ => index + 1,
+                };
+                if chars.get(digits).is_some_and(char::is_ascii_digit) {
+                    index = digits;
+                    while index < chars.len() && chars[index].is_ascii_digit() {
+                        index += 1;
+                    }
+                }
             }
             let literal: String = chars[start..index].iter().collect();
             numbers.extend(literal.parse::<f64>().ok());
@@ -450,6 +468,48 @@ fn literal_tokens(text: &str) -> (Vec<String>, Vec<f64>) {
         index += 1;
     }
     (strings, numbers)
+}
+
+/// The decoded body of a string literal opened just before `index` by
+/// `delimiter`, and the index after its closing delimiter.
+fn string_literal(chars: &[char], mut index: usize, delimiter: char) -> (String, usize) {
+    let hex = |digits: &[char]| -> Option<char> {
+        let text: String = digits.iter().collect();
+        u32::from_str_radix(&text, 16).ok().and_then(char::from_u32)
+    };
+    let mut value = String::new();
+    while index < chars.len() && chars[index] != delimiter {
+        if chars[index] != '\\' || index + 1 >= chars.len() {
+            value.push(chars[index]);
+            index += 1;
+            continue;
+        }
+        let escape = chars[index + 1];
+        index += 2;
+        let width = match escape {
+            'x' => 2,
+            'u' => 4,
+            _ => 0,
+        };
+        if width > 0 {
+            if let Some(decoded) = chars.get(index..index + width).and_then(hex) {
+                value.push(decoded);
+                index += width;
+                continue;
+            }
+        }
+        match escape {
+            'n' => value.push('\n'),
+            't' => value.push('\t'),
+            'r' => value.push('\r'),
+            '\\' | '\'' | '"' => value.push(escape),
+            other => {
+                value.push('\\');
+                value.push(other);
+            }
+        }
+    }
+    (value, index + 1)
 }
 
 /// `declared-example-over-placeholder`: a worked-example argument line where
@@ -985,6 +1045,22 @@ mod tests {
     }
 
     #[test]
+    fn literal_tokens_reads_signed_and_exponent_numbers_and_decodes_string_escapes() {
+        let (strings, numbers) = literal_tokens(
+            r#"Store(depth=-4, scale=1e3, tiny=-2.5E-2, ratio=0.75, name="a\"b\\c\n\u00e9\x41\q", tag='it\'s', item_2=7)"#,
+        );
+        assert_eq!(numbers, vec![-4.0, 1000.0, -0.025, 0.75, 7.0]);
+        assert_eq!(
+            strings,
+            vec!["a\"b\\c\n\u{e9}A\\q".to_owned(), "it's".to_owned()]
+        );
+        // A minus after an operand (`x`, `]`) is subtraction, not a sign, and
+        // digits inside a name (`v2`) are no literal of their own.
+        let (_, numbers) = literal_tokens("call(x-4, items[0]-1, v2)");
+        assert_eq!(numbers, vec![4.0, 0.0, 1.0]);
+    }
+
+    #[test]
     fn an_importer_declined_body_example_is_kept_only_over_fallback_placeholders() {
         let context = context(
             serde_json::json!({"openapi": "3.0.3", "paths": {"/stores": {"delete": {
@@ -1048,6 +1124,11 @@ mod tests {
             ")",
         ];
         assert_eq!(region(&fern_declared, &kept), None);
+        // A sign the document never declares is a different value: `-4` is not
+        // the declared `4`.
+        let negated = kept.map(|line| line.replace("crates=4", "crates=-4"));
+        let negated: Vec<&str> = negated.iter().map(String::as_str).collect();
+        assert_eq!(region(&fern, &negated), None);
     }
 
     #[test]
