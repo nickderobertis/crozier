@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .buoy_marker import BuoyMarker
+    from .customs_stamp import CustomsStamp
     from .light_marker import LightMarker
     from .roster_entry import RosterEntry
     from .store_line import StoreLine
@@ -14,6 +15,7 @@ if typing.TYPE_CHECKING:
     from .watch_rota_cadence import WatchRotaCadence
 _dynamic_imports: typing.Dict[str, str] = {
     "BuoyMarker": ".buoy_marker",
+    "CustomsStamp": ".customs_stamp",
     "LightMarker": ".light_marker",
     "RosterEntry": ".roster_entry",
     "StoreLine": ".store_line",
@@ -43,4 +45,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["BuoyMarker", "LightMarker", "RosterEntry", "StoreLine", "WatchRota", "WatchRotaCadence"]
+__all__ = ["BuoyMarker", "CustomsStamp", "LightMarker", "RosterEntry", "StoreLine", "WatchRota", "WatchRotaCadence"]

@@ -2031,3 +2031,90 @@ client.voyages.plan_voyage_rota(
 </dl>
 </details>
 
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">file_customs_stamps</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An array body of a referenced schema whose schema-level example writes unquoted YAML timestamps, on an int64 field and on a date-time field.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, CustomsStamp
+import datetime
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.voyages.file_customs_stamps(
+    voyage_id="voyageId",
+    request=[
+        CustomsStamp(
+            port="Falmouth",
+            punched_millis=1000000,
+            inked_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**voyage_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.List[CustomsStamp]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

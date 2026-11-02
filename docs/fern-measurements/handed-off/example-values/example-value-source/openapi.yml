@@ -728,6 +728,29 @@ paths:
                 properties:
                   id:
                     type: string
+  /voyages/{voyageId}/stamps:
+    post:
+      operationId: fileCustomsStamps
+      tags: [voyages]
+      description: >-
+        An array body of a referenced schema whose schema-level example writes
+        unquoted YAML timestamps, on an int64 field and on a date-time field.
+      parameters:
+        - name: voyageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CustomsStamp"
+      responses:
+        "204":
+          description: Filed
 components:
   examples:
     DailyRota:
@@ -744,6 +767,21 @@ components:
         type: string
       example: ltn:east-2
   schemas:
+    CustomsStamp:
+      type: object
+      example:
+        port: Falmouth
+        punchedMillis: 2000-01-23T04:56:07.000+00:00
+        inkedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        port:
+          type: string
+        punchedMillis:
+          type: integer
+          format: int64
+        inkedAt:
+          type: string
+          format: date-time
     StoreLine:
       type: object
       properties:

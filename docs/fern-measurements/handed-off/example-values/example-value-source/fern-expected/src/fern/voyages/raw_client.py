@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..types.customs_stamp import CustomsStamp
 from ..types.watch_rota import WatchRota
 from .types.plan_voyage_rota_response import PlanVoyageRotaResponse
 from .types.set_voyage_watch_response import SetVoyageWatchResponse
@@ -129,6 +130,53 @@ class RawVoyagesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def file_customs_stamps(
+        self,
+        voyage_id: str,
+        *,
+        request: typing.Sequence[CustomsStamp],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        An array body of a referenced schema whose schema-level example writes unquoted YAML timestamps, on an int64 field and on a date-time field.
+
+        Parameters
+        ----------
+        voyage_id : str
+
+        request : typing.Sequence[CustomsStamp]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"voyages/{encode_path_param(voyage_id)}/stamps",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=typing.Sequence[CustomsStamp], direction="write"
+            ),
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawVoyagesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -230,6 +278,53 @@ class AsyncRawVoyagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def file_customs_stamps(
+        self,
+        voyage_id: str,
+        *,
+        request: typing.Sequence[CustomsStamp],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        An array body of a referenced schema whose schema-level example writes unquoted YAML timestamps, on an int64 field and on a date-time field.
+
+        Parameters
+        ----------
+        voyage_id : str
+
+        request : typing.Sequence[CustomsStamp]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"voyages/{encode_path_param(voyage_id)}/stamps",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=typing.Sequence[CustomsStamp], direction="write"
+            ),
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

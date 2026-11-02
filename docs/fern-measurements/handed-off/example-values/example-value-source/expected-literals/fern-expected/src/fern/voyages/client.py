@@ -4,6 +4,7 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
+from ..types.customs_stamp import CustomsStamp
 from ..types.watch_rota import WatchRota
 from .raw_client import AsyncRawVoyagesClient, RawVoyagesClient
 from .types.plan_voyage_rota_response import PlanVoyageRotaResponse
@@ -105,6 +106,54 @@ class VoyagesClient:
         )
         """
         _response = self._raw_client.plan_voyage_rota(voyage_id, crew=crew, rota=rota, request_options=request_options)
+        return _response.data
+
+    def file_customs_stamps(
+        self,
+        voyage_id: str,
+        *,
+        request: typing.Sequence[CustomsStamp],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        An array body of a referenced schema whose schema-level example writes unquoted YAML timestamps, on an int64 field and on a date-time field.
+
+        Parameters
+        ----------
+        voyage_id : str
+
+        request : typing.Sequence[CustomsStamp]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import datetime
+
+        from fern import CustomsStamp, FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.voyages.file_customs_stamps(
+            voyage_id="voyageId",
+            request=[
+                CustomsStamp(
+                    port="Falmouth",
+                    punched_millis=1000000,
+                    inked_at=datetime.datetime.fromisoformat(
+                        "2024-01-15 09:30:00+00:00",
+                    ),
+                )
+            ],
+        )
+        """
+        _response = self._raw_client.file_customs_stamps(voyage_id, request=request, request_options=request_options)
         return _response.data
 
 
@@ -217,5 +266,62 @@ class AsyncVoyagesClient:
         """
         _response = await self._raw_client.plan_voyage_rota(
             voyage_id, crew=crew, rota=rota, request_options=request_options
+        )
+        return _response.data
+
+    async def file_customs_stamps(
+        self,
+        voyage_id: str,
+        *,
+        request: typing.Sequence[CustomsStamp],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        An array body of a referenced schema whose schema-level example writes unquoted YAML timestamps, on an int64 field and on a date-time field.
+
+        Parameters
+        ----------
+        voyage_id : str
+
+        request : typing.Sequence[CustomsStamp]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+        import datetime
+
+        from fern import AsyncFernApi, CustomsStamp
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.voyages.file_customs_stamps(
+                voyage_id="voyageId",
+                request=[
+                    CustomsStamp(
+                        port="Falmouth",
+                        punched_millis=1000000,
+                        inked_at=datetime.datetime.fromisoformat(
+                            "2024-01-15 09:30:00+00:00",
+                        ),
+                    )
+                ],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.file_customs_stamps(
+            voyage_id, request=request, request_options=request_options
         )
         return _response.data

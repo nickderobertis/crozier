@@ -6,7 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import BuoyMarker, LightMarker, RosterEntry, StoreLine, WatchRota, WatchRotaCadence
+    from .types import BuoyMarker, CustomsStamp, LightMarker, RosterEntry, StoreLine, WatchRota, WatchRotaCadence
     from .errors import NotFoundError
     from . import (
         beacons,
@@ -53,6 +53,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AddMirrorResponse": ".mirrors",
     "AsyncFernApi": ".client",
     "BuoyMarker": ".types",
+    "CustomsStamp": ".types",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
@@ -126,6 +127,7 @@ __all__ = [
     "AddMirrorResponse",
     "AsyncFernApi",
     "BuoyMarker",
+    "CustomsStamp",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",

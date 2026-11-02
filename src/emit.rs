@@ -8976,6 +8976,27 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether a string an object's example gives the field typed `t` is no
+    /// example to Fern, which then writes the field's placeholder: the
+    /// `2000-01-23T04:56:07` sentinel on a date or date-time field, and a YAML
+    /// timestamp (see [`yaml_resolves_as_timestamp`]) on a field that is not
+    /// temporal. Both hold whether the model is the body itself or the items of
+    /// an array body: confluent's schema registry writes
+    /// `createTime: 2000-01-23T04:56:07.000+00:00` unquoted in `TagDef`'s
+    /// example (`int64`) and `AtlasBusinessMetadataDef`'s (`date-time`), both
+    /// posted as arrays, and the certified pair passes `1000000` and its
+    /// date-time placeholder (measured in
+    /// docs/fern-measurements/handed-off/example-values/example-value-source/).
+    fn object_example_string_dropped(&self, t: &TypeRef, value: &str) -> bool {
+        if self.example_is_temporal(t) {
+            value.starts_with("2000-01-23T04:56:07")
+        } else {
+            self.yaml_unquoted_timestamps
+                .is_some_and(|unquoted| unquoted.contains(value))
+                && yaml_resolves_as_timestamp(value)
+        }
+    }
+
     fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
         if let TypeRef::Optional(inner) = t {
             return self.value_from_example(inner, example);
@@ -9425,20 +9446,7 @@ impl<'a> ExampleCtx<'a> {
                             self.value(&type_ref, Slot::Named(&wire_name))
                         }
                         Some(serde_json::Value::String(value))
-                            if self.example_is_temporal(&type_ref)
-                                && value.starts_with("2000-01-23T04:56:07") =>
-                        {
-                            self.value(&type_ref, Slot::Named(&wire_name))
-                        }
-                        // A YAML timestamp is a date to Fern's parser, so it
-                        // is no example for a field that is not temporal; see
-                        // [`yaml_resolves_as_timestamp`].
-                        Some(serde_json::Value::String(value))
-                            if self
-                                .yaml_unquoted_timestamps
-                                .is_some_and(|unquoted| unquoted.contains(value))
-                                && !self.example_is_temporal(&type_ref)
-                                && yaml_resolves_as_timestamp(value) =>
+                            if self.object_example_string_dropped(&type_ref, value) =>
                         {
                             self.value(&type_ref, Slot::Named(&wire_name))
                         }
@@ -10460,13 +10468,25 @@ impl<'a> ExampleCtx<'a> {
                         if is_any_type(&field.type_ref) {
                             self.untyped_arguments.insert(field.py_name.clone());
                         }
+                        // A value the schema-level example gives the field is
+                        // read as `example_call_args` reads an object example's.
+                        let example = field.example.as_deref().filter(|example| {
+                            !(field.parent_example
+                                && serde_json::from_str::<serde_json::Value>(example)
+                                    .ok()
+                                    .as_ref()
+                                    .and_then(serde_json::Value::as_str)
+                                    .is_some_and(|value| {
+                                        self.object_example_string_dropped(&field.type_ref, value)
+                                    }))
+                        });
                         let value = if nullable_shown(&field) && field.example.is_none() {
                             Example::Atom("None".to_string())
                         } else {
                             self.field_example(
                                 &field.type_ref,
                                 &field.wire_name,
-                                field.example.as_deref(),
+                                example,
                                 field.lengths,
                             )
                         };
@@ -19876,6 +19896,25 @@ mod handed_off_example_value_tests {
             "schema-examples-array-parameter-value",
             &["    edition=\"second\","],
             &[],
+        );
+    }
+
+    /// An array body's items take their schema-level example as a single body
+    /// does: an unquoted YAML timestamp is no `int64` example, and the
+    /// `2000-01-23T04:56:07` sentinel is no date-time one.
+    #[test]
+    fn an_array_bodys_schema_example_drops_its_yaml_timestamps() {
+        assert_lines(
+            "example-value-source",
+            &[
+                "            port=\"Falmouth\",",
+                "            punched_millis=1000000,",
+                "            inked_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            ],
+            &[
+                "punched_millis=\"2000-01-23",
+                "inked_at=datetime.datetime.fromisoformat(\"2000-01-23",
+            ],
         );
     }
 }
