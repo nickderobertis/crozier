@@ -77,7 +77,13 @@ class Recorder(http.server.BaseHTTPRequestHandler):
     answers: ClassVar[dict[str, Answer]] = {}
 
     def _handle(self) -> None:
-        length = int(self.headers.get("content-length") or 0)
+        declared = self.headers.get("content-length") or "0"
+        # A length that is no non-negative integer is refused rather than read,
+        # which could wait for an end of stream the client never sends.
+        if not declared.isdigit():
+            self.send_error(400, f"invalid Content-Length {declared!r}")
+            return
+        length = int(declared)
         body = self.rfile.read(length) if length else b""
         self.seen.append(Recorded(self.command, self.path, self.headers.get("content-type"), body))
         answer = self.answers.get(self.path, NO_CONTENT)
