@@ -12,8 +12,13 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..types.tide_reading import TideReading
 from .types.get_gauge_response import GetGaugeResponse
 from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
 
 
 class RawTidesClient:
@@ -131,6 +136,112 @@ class RawTidesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def log_reading(
+        self,
+        gauge_id: str,
+        *,
+        level: float,
+        high_water_at: dt.datetime,
+        low_water_at: typing.Optional[dt.datetime] = OMIT,
+        calibrated_at: typing.Optional[dt.datetime] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        A body whose schema-level example gives date-time properties unquoted YAML timestamps, beside the sentinel instant the pair also drops.
+
+        Parameters
+        ----------
+        gauge_id : str
+
+        level : float
+
+        high_water_at : dt.datetime
+
+        low_water_at : typing.Optional[dt.datetime]
+
+        calibrated_at : typing.Optional[dt.datetime]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"tides/{encode_path_param(gauge_id)}/readings",
+            method="POST",
+            json={
+                "level": level,
+                "highWaterAt": high_water_at,
+                "lowWaterAt": low_water_at,
+                "calibratedAt": calibrated_at,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def log_readings(
+        self,
+        gauge_id: str,
+        *,
+        request: typing.Sequence[TideReading],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        The same schema posted as an array body.
+
+        Parameters
+        ----------
+        gauge_id : str
+
+        request : typing.Sequence[TideReading]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"tides/{encode_path_param(gauge_id)}/readings/batch",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=typing.Sequence[TideReading], direction="write"
+            ),
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawTidesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -238,6 +349,112 @@ class AsyncRawTidesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def log_reading(
+        self,
+        gauge_id: str,
+        *,
+        level: float,
+        high_water_at: dt.datetime,
+        low_water_at: typing.Optional[dt.datetime] = OMIT,
+        calibrated_at: typing.Optional[dt.datetime] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        A body whose schema-level example gives date-time properties unquoted YAML timestamps, beside the sentinel instant the pair also drops.
+
+        Parameters
+        ----------
+        gauge_id : str
+
+        level : float
+
+        high_water_at : dt.datetime
+
+        low_water_at : typing.Optional[dt.datetime]
+
+        calibrated_at : typing.Optional[dt.datetime]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"tides/{encode_path_param(gauge_id)}/readings",
+            method="POST",
+            json={
+                "level": level,
+                "highWaterAt": high_water_at,
+                "lowWaterAt": low_water_at,
+                "calibratedAt": calibrated_at,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def log_readings(
+        self,
+        gauge_id: str,
+        *,
+        request: typing.Sequence[TideReading],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        The same schema posted as an array body.
+
+        Parameters
+        ----------
+        gauge_id : str
+
+        request : typing.Sequence[TideReading]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"tides/{encode_path_param(gauge_id)}/readings/batch",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=typing.Sequence[TideReading], direction="write"
+            ),
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

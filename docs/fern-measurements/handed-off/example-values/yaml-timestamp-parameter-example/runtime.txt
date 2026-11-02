@@ -13,3 +13,15 @@ asOf         example -> datetime: datetime.datetime(2031, 5, 1, 0, 0, tzinfo=dat
 Moment       examples[0] -> datetime: datetime.datetime(2032, 6, 1, 4, 30, tzinfo=datetime.timezone.utc)
 QuotedMoment examples[0] -> str: '2032-06-02T04:30:00Z'
 LampCode     examples[0] -> str: 'lamp-east'
+
+## Sub-case: a schema-level object example's date-time property (declared-timestamp-property-example)
+
+# Running the worked log_reading/log_readings calls of each side (python 3.14.7, pydantic 2.14.0) against an httpx MockTransport, 2026-11-02.
+# Certified pair's SDK (fern-expected/src) with its own placeholder values:
+pair worked calls run; request bodies sent:
+   {"level":3.4,"highWaterAt":"2024-01-15T09:30:00Z","lowWaterAt":"2024-01-15T09:30:00Z","calibratedAt":"2024-01-15T09:30:00Z"}
+   [{"level":3.4,"highWaterAt":"2024-01-15T09:30:00Z","lowWaterAt":"2024-01-15T09:30:00Z","calibratedAt":"2024-01-15T09:30:00Z"}]
+# crozier's SDK (generated from openapi.yml at this commit) with its declared values:
+crozier worked calls run; request bodies sent:
+   {"level":3.4,"highWaterAt":"2031-04-02T08:15:00Z","lowWaterAt":"2031-04-02T14:27:00Z","calibratedAt":"2024-01-15T09:30:00Z"}
+   [{"level":3.4,"highWaterAt":"2031-04-02T08:15:00Z","lowWaterAt":"2031-04-02T14:27:00Z","calibratedAt":"2024-01-15T09:30:00Z"}]

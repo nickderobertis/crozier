@@ -1757,7 +1757,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 39] = [
+pub const RULE_IDS: [&str; 40] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1768,6 +1768,7 @@ pub const RULE_IDS: [&str; 39] = [
     "date-header-constructor-example",
     "declared-example-over-placeholder",
     "declared-examples-array-parameter-value",
+    "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
@@ -1851,6 +1852,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "declared-examples-array-parameter-value" => Rule {
             line: Some(declared_values::declared_examples_array_parameter_value),
+            ..none
+        },
+        "declared-timestamp-property-example" => Rule {
+            line: Some(declared_values::declared_timestamp_property_example),
             ..none
         },
         "unquoted-timestamp-parameter-example" => Rule {

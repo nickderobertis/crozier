@@ -6,6 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .types import TideReading
     from . import tides
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -17,6 +18,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "GetGaugeResponse": ".tides",
+    "TideReading": ".types",
     "__version__": ".version",
     "tides": ".tides",
 }
@@ -49,6 +51,7 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "FernApi",
     "GetGaugeResponse",
+    "TideReading",
     "__version__",
     "tides",
 ]

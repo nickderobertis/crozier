@@ -211,6 +211,28 @@
     parameter's examples map rather than the certified pair's placeholder.
   evidence: docs/departures/evidence/declared-examples-array-parameter-value.md
 
+- id: declared-timestamp-property-example
+  kind: usefulness
+  trigger: >-
+    A worked example constructing a body field or model field whose schema is a
+    date-time string and whose enclosing schema-level object example gives it
+    an ISO date-time the YAML document writes unquoted, which YAML reads as a
+    timestamp (the 2000-01-23T04:56:07 sentinel excepted).
+  fern: >-
+    Its date-time placeholder
+    (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")).
+  crozier: >-
+    The declared timestamp
+    (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")),
+    and in a wrapped docstring call its string line. Every other argument and
+    line is retained.
+  reason: >-
+    Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01)
+    keeps the unquoted ISO timestamp the API's author declared rather than the
+    certified pair's placeholder; its principle extends from a parameter's
+    example to a date-time property's value in a schema-level object example.
+  evidence: docs/departures/evidence/declared-timestamp-property-example.md
+
 - id: digit-leading-method-reference-identifiers
   kind: fern-defect
   trigger: >-

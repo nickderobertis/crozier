@@ -10,6 +10,8 @@
 //! - `unquoted-timestamp-parameter-example` (ruling 3,
 //!   `yaml-timestamp-parameter-example`): a parameter example YAML reads as a
 //!   timestamp.
+//! - `declared-timestamp-property-example` (ruling 3's principle): a date-time
+//!   property's unquoted timestamp in a schema-level object example.
 //! - `declared-examples-array-parameter-value` (ruling 5,
 //!   `declared-examples-array`): a parameter's value from its schema's
 //!   `examples` array or its own `examples` map.
@@ -843,6 +845,69 @@ pub(super) fn declared_examples_array_parameter_value(
         })
 }
 
+/// Every date-time property a schema-level object example gives an unquoted
+/// timestamp, other than the `2000-01-23T04:56:07` sentinel the certified pair
+/// and crozier both drop: its wire name and the declared value.
+fn timestamp_properties(source: &OpenApi) -> Vec<(String, String)> {
+    let Some(unquoted) = source.yaml_unquoted_timestamps.as_ref() else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    visit_source_schemas(Some(source), &mut |schema| {
+        let Some(example) = schema.example.as_ref().and_then(Value::as_object) else {
+            return;
+        };
+        for (wire, property) in &schema.properties {
+            let Some(value) = example.get(wire).and_then(Value::as_str) else {
+                continue;
+            };
+            if resolve(source, property).format.as_deref() == Some("date-time")
+                && unquoted.contains(value)
+                && crate::emit::yaml_resolves_as_timestamp(value)
+                && !value.starts_with("2000-01-23T04:56:07")
+            {
+                out.push((wire.clone(), value.to_string()));
+            }
+        }
+    });
+    out
+}
+
+/// `declared-timestamp-property-example`: Fern's date-time placeholder beside
+/// crozier's line passing the timestamp a schema-level object example declares
+/// for that same date-time property, as a keyword argument or as the string
+/// line of a wrapped `fromisoformat` call.
+pub(super) fn declared_timestamp_property_example(
+    pair: &Pair<'_>,
+    fern: &str,
+    crozier: &str,
+) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let properties = timestamp_properties(source);
+    if fern.trim_start() == FERN_DATETIME_WRAPPED {
+        let indent = &fern[..fern.len() - fern.trim_start().len()];
+        return properties
+            .iter()
+            .any(|(_, value)| crozier == format!("{indent}{}", timestamp_spellings(value)[2]));
+    }
+    let (Some((fern_indent, fern_name, fern_value)), Some((indent, name, value))) =
+        (keyword_argument_line(fern), keyword_argument_line(crozier))
+    else {
+        return false;
+    };
+    fern_indent == indent
+        && fern_name == name
+        && fern_value == FERN_DATETIME
+        && properties.iter().any(|(wire, declared)| {
+            argument_names(wire, name) && timestamp_spellings(declared)[1] == value
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1197,5 +1262,71 @@ mod tests {
             "    keeper_id=\"x\",",
             "    keeper_id=\"KPR-from-map\","
         ));
+    }
+
+    #[test]
+    fn a_declared_timestamp_property_is_admitted_only_with_its_declaration() {
+        let document = |quoted: bool| {
+            let mut source: OpenApi = serde_json::from_value(serde_json::json!({"openapi": "3.0.3",
+                "paths": {}, "components": {"schemas": {"TideReading": {"type": "object",
+                    "example": {"highWaterAt": "2031-04-02T08:15:00Z", "level": "2031-04-02T08:15:00Z",
+                        "calibratedAt": "2000-01-23T04:56:07.000+00:00"},
+                    "properties": {
+                        "highWaterAt": {"type": "string", "format": "date-time"},
+                        "level": {"type": "string"},
+                        "calibratedAt": {"type": "string", "format": "date-time"}}}}}}))
+            .expect("a document");
+            source.yaml_unquoted_timestamps = (!quoted).then(|| {
+                ["2031-04-02T08:15:00Z", "2000-01-23T04:56:07.000+00:00"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect()
+            });
+            with_source(source)
+        };
+        let fern =
+            "    high_water_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),";
+        let kept =
+            "    high_water_at=datetime.datetime.fromisoformat(\"2031-04-02T08:15:00+00:00\"),";
+        let rule = declared_timestamp_property_example;
+        let context = document(false);
+        for rel in ["README.md", "reference.md", "src/fern/tides/client.py"] {
+            assert!(rule(&pair(rel, &[], &context), fern, kept), "{rel}");
+        }
+        let at = pair("src/fern/tides/client.py", &[], &context);
+        assert!(rule(
+            &at,
+            "                \"2024-01-15 09:30:00+00:00\",",
+            "                \"2031-04-02 08:15:00+00:00\","
+        ));
+        // Another instant, another keyword, a property that is not date-time,
+        // the sentinel, a file that is no example and a quoted value all fail.
+        assert!(!rule(
+            &at,
+            fern,
+            "    high_water_at=datetime.datetime.fromisoformat(\"2031-04-03T08:15:00+00:00\"),"
+        ));
+        assert!(!rule(
+            &at,
+            "    low_water_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    low_water_at=datetime.datetime.fromisoformat(\"2031-04-02T08:15:00+00:00\"),"
+        ));
+        assert!(!rule(
+            &at,
+            "    level=\"level\",",
+            "    level=\"2031-04-02T08:15:00Z\","
+        ));
+        assert!(!rule(
+            &at,
+            "    calibrated_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    calibrated_at=datetime.datetime.fromisoformat(\"2000-01-23T04:56:07+00:00\"),"
+        ));
+        assert!(!rule(
+            &pair("src/fern/core/http_client.py", &[], &context),
+            fern,
+            kept
+        ));
+        let quoted = document(true);
+        assert!(!rule(&pair("reference.md", &[], &quoted), fern, kept));
     }
 }

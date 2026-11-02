@@ -157,3 +157,175 @@ client.tides.get_gauge(
 </dl>
 </details>
 
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py">log_reading</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A body whose schema-level example gives date-time properties unquoted YAML timestamps, beside the sentinel instant the pair also drops.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+import datetime
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.tides.log_reading(
+    gauge_id="gaugeId",
+    level=3.4,
+    high_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    low_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    calibrated_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**gauge_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `TideReading` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py">log_readings</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The same schema posted as an array body.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, TideReading
+import datetime
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.tides.log_readings(
+    gauge_id="gaugeId",
+    request=[
+        TideReading(
+            level=3.4,
+            high_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+            low_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+            calibrated_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**gauge_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.List[TideReading]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

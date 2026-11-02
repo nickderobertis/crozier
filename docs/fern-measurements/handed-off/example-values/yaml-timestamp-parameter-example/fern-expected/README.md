@@ -41,10 +41,12 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.tides.list_tides(
-    since=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
-    recorded_on="recordedOn",
-    station="pier-7",
+client.tides.log_reading(
+    gauge_id="gaugeId",
+    level=3.4,
+    high_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    low_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    calibrated_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 ```
 
@@ -64,10 +66,12 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.tides.list_tides(
-        since=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
-        recorded_on="recordedOn",
-        station="pier-7",
+    await client.tides.log_reading(
+        gauge_id="gaugeId",
+        level=3.4,
+        high_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+        low_water_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+        calibrated_at=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
     )
 
 
@@ -83,7 +87,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.tides.list_tides(...)
+    client.tides.log_reading(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -100,7 +104,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.tides.with_raw_response.list_tides(...)
+response = client.tides.with_raw_response.log_reading(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -131,7 +135,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.tides.list_tides(..., request_options={
+client.tides.log_reading(..., request_options={
     "max_retries": 1
 })
 ```
@@ -146,7 +150,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.tides.list_tides(..., request_options={
+client.tides.log_reading(..., request_options={
     "timeout": 1
 })
 ```

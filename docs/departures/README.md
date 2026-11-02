@@ -202,7 +202,7 @@ when the two differ.
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
 | `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
-| `usefulness` | 4 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
+| `usefulness` | 5 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
 
 ### `anyof-path-param-schema-example`
 
@@ -293,6 +293,15 @@ when the two differ.
 - **crozier writes:** The examples array's first entry or the examples map's first value (lamp_id="lmp_8f2kq", keeper_id="KPR-from-map"). Every other argument and line is retained.
 - **Why:** Design-review ruling 5 (declared-examples-array, 2026-11-01) keeps crozier working a parameter's value from the schema's examples array or the parameter's examples map rather than the certified pair's placeholder.
 - **Evidence:** [`docs/departures/evidence/declared-examples-array-parameter-value.md`](../../docs/departures/evidence/declared-examples-array-parameter-value.md)
+
+### `declared-timestamp-property-example`
+
+- **Kind:** `usefulness`
+- **Trigger:** A worked example constructing a body field or model field whose schema is a date-time string and whose enclosing schema-level object example gives it an ISO date-time the YAML document writes unquoted, which YAML reads as a timestamp (the 2000-01-23T04:56:07 sentinel excepted).
+- **Fern writes:** Its date-time placeholder (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")).
+- **crozier writes:** The declared timestamp (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")), and in a wrapped docstring call its string line. Every other argument and line is retained.
+- **Why:** Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01) keeps the unquoted ISO timestamp the API's author declared rather than the certified pair's placeholder; its principle extends from a parameter's example to a date-time property's value in a schema-level object example.
+- **Evidence:** [`docs/departures/evidence/declared-timestamp-property-example.md`](../../docs/departures/evidence/declared-timestamp-property-example.md)
 
 ### `digit-leading-method-reference-identifiers`
 

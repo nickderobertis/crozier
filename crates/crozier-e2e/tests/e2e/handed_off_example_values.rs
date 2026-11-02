@@ -297,6 +297,20 @@ fn ruled_example_values_are_what_crozier_writes() {
             "    recorded_on=\"recordedOn\",",
             "    recorded_on=\"2031-04-01T06:00:00Z\",",
         ),
+        // Its principle (declared-timestamp-property-example): a schema-level
+        // object example's unquoted instant on a date-time property, on the
+        // single body and the array body's item (the sentinel matches the pair,
+        // which the whole-tree comparison holds).
+        (
+            "yaml-timestamp-parameter-example",
+            "    high_water_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    high_water_at=datetime.datetime.fromisoformat(\"2031-04-02T08:15:00+00:00\"),",
+        ),
+        (
+            "yaml-timestamp-parameter-example",
+            "            low_water_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "            low_water_at=datetime.datetime.fromisoformat(\"2031-04-02T14:27:00+00:00\"),",
+        ),
         // Ruling 5 (declared-examples-array): the examples array and map.
         (
             "schema-examples-array-parameter-value",
@@ -478,6 +492,13 @@ fn declared_value_departures_hold_only_their_lines() {
             "reference.md",
             "    recorded_on=\"recordedOn\",",
             "    recorded_on=\"recorded\",",
+        ),
+        // declared-timestamp-property-example
+        (
+            "yaml-timestamp-parameter-example",
+            "reference.md",
+            "    high_water_at=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    high_water_at=datetime.datetime.fromisoformat(\"2024-01-16T09:30:00+00:00\"),",
         ),
         // declared-examples-array-parameter-value
         (
