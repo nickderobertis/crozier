@@ -1,0 +1,56 @@
+openapi: 3.1.0
+info:
+  title: Bottling line
+  version: "1.0"
+paths:
+  /batches/{batchId}:
+    get:
+      operationId: getBatch
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The batch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Batch"
+components:
+  schemas:
+    BatchStatus:
+      type: string
+      enum:
+        - filling
+        - corked
+    Totals:
+      type: object
+      required:
+        - bottles
+      properties:
+        bottles:
+          type: integer
+        rejected:
+          type: integer
+    Batch:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        status:
+          anyOf:
+            - allOf:
+                - $ref: "#/components/schemas/BatchStatus"
+                - title: Line status
+            - type: "null"
+        totals:
+          anyOf:
+            - allOf:
+                - $ref: "#/components/schemas/Totals"
+                - title: Batch totals
+            - type: "null"

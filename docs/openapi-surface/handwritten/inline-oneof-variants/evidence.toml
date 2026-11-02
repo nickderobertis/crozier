@@ -42,7 +42,7 @@ verdict = "exhausted"
 
 [[covers]]
 key = "annotated-ref-shape"
-arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]'
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md#witness-search-exhaustive"
 verdict = "exhausted"
 

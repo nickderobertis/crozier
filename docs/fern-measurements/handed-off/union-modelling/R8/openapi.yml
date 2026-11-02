@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: Shelf catalogue
+  version: "1.0"
+paths:
+  /shelves/{shelfId}/links:
+    patch:
+      operationId: patchShelfLinks
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkPatch"
+      responses:
+        "204":
+          description: Patched.
+components:
+  schemas:
+    LinkPatch:
+      type: array
+      items:
+        type: object
+        oneOf:
+          - properties:
+              op:
+                type: string
+                description: What to do with the whole list.
+                enum:
+                  - add
+                  - replace
+              path:
+                type: string
+                description: Which list of links.
+                enum:
+                  - /related
+                  - /sequels
+              value:
+                type: array
+                items:
+                  type: string
+          - properties:
+              op:
+                type: string
+                description: What to do with one link.
+                enum:
+                  - add
+                  - remove
+              path:
+                type: string
+                description: One position in a list of links.
+              value:
+                type: string

@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: Recording archive
+  version: "1.0"
+paths:
+  /recordings:
+    get:
+      operationId: listRecordings
+      parameters:
+        - name: since
+          in: query
+          required: false
+          description: Only recordings after this moment.
+          schema:
+            oneOf:
+              - anyOf:
+                  - $ref: "#/components/schemas/Moment"
+                  - type: string
+                    contentMediaType: application/json
+                    contentSchema:
+                      $ref: "#/components/schemas/Moment"
+                title: Moment
+              - type: "null"
+      responses:
+        "200":
+          description: The recordings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recording"
+components:
+  schemas:
+    Timestamp:
+      type: string
+      format: date-time
+    Moment:
+      anyOf:
+        - $ref: "#/components/schemas/Timestamp"
+        - type: "null"
+    Recording:
+      type: object
+      properties:
+        title:
+          type: string
+        startedAt:
+          anyOf:
+            - $ref: "#/components/schemas/Moment"
+            - type: integer

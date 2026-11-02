@@ -1,6 +1,6 @@
 # Arm search: `anyof-array-variant-annotated-ref-item`
 
-The unreached handling site(s) searched for: `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]`.
+The unreached handling site(s) searched for: `src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]`.
 Read with: `schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component`.
 
 A walked or fetched document declaring the row is a `document` row of the

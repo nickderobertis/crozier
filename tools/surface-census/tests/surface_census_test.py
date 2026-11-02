@@ -3926,6 +3926,7 @@ fn following() { let other = 42; }
             123: "one-hundred-and-twenty-three",
             121: "one-hundred-and-twenty-one",
             125: "one-hundred-and-twenty-five",
+            129: "one-hundred-and-twenty-nine",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -17491,7 +17492,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         self.assertEqual({(selector, "positive"): 3}, rows(completed))
 
     def test_an_unrequired_tag_discriminates_only_reference_members(self) -> None:
-        """`inferred_discriminant_property_with`'s `unrequired_tag` clause.
+        """`inferred_discriminant_property`'s `unrequired_tag` clause.
 
         `$ref` members each tagging `kind` with a one-value string that `required`
         leaves out are a discriminated union whatever the property is named; an
@@ -17536,6 +17537,84 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_the_union_port_reads_the_repaired_discriminant_rules(self) -> None:
+        """The four rules `inferred_discriminant_property` gained, each beside its control.
+
+        A union of one member names no discriminant; a tag written as a `$ref` to a
+        one-member enum is that enum, and a dangling one is no tag; an inline
+        member's unrequired one-member `enum` tags it beside `$ref`ed members; and
+        an unrequired bare `const` on `$ref`-only members is no tag where a typed
+        one is.
+        """
+
+        def tagged(prop: str, tag: dict, *, required: bool = True) -> dict:
+            return {
+                "type": "object",
+                "required": [prop, "size"] if required else ["size"],
+                "properties": {prop: tag, "size": {"type": "number"}},
+            }
+
+        def enum(value: str) -> dict:
+            return {"type": "string", "enum": [value]}
+
+        def ref(name: str) -> dict:
+            return {"$ref": f"#/components/schemas/{name}"}
+
+        documents = {
+            "lone-member": _root_document({"oneOf": [ref("Circle")]}, Circle=tagged("kind", enum("circle"))),
+            "two-members": _root_document(
+                {"oneOf": [ref("Circle"), ref("Square")]},
+                Circle=tagged("kind", enum("circle")),
+                Square=tagged("kind", enum("square")),
+            ),
+            "referenced-tag": _root_document(
+                {"oneOf": [tagged("mode", ref("ModeRoad")), tagged("mode", ref("ModeRail"))]},
+                ModeRoad=enum("road"),
+                ModeRail=enum("rail"),
+            ),
+            "dangling-tag": _root_document(
+                {"oneOf": [tagged("mode", ref("ModeRoad")), tagged("mode", ref("ModeSea"))]},
+                ModeRoad=enum("road"),
+            ),
+            "inline-unrequired-tag": _root_document(
+                {"anyOf": [ref("Circle"), tagged("kind", enum("dot"), required=False)]},
+                Circle=tagged("kind", enum("circle")),
+            ),
+            "untyped-const-tag": _root_document(
+                {"anyOf": [ref("Sailboat"), ref("Barge")]},
+                Sailboat=tagged("hull", {"const": "sail"}, required=False),
+                Barge=tagged("hull", {"const": "barge"}, required=False),
+            ),
+            "typed-const-tag": _root_document(
+                {"anyOf": [ref("Sailboat"), ref("Barge")]},
+                Sailboat=tagged("hull", {"type": "string", "const": "sail"}, required=False),
+                Barge=tagged("hull", {"type": "string", "const": "barge"}, required=False),
+            ),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                write_json_fixture(root, name, document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.oneOf:discriminated-union",
+                "--selector",
+                "schema.anyOf:discriminated-union",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {
+                ("schema.oneOf:discriminated-union", "two-members"): 1,
+                ("schema.oneOf:discriminated-union", "referenced-tag"): 1,
+                ("schema.anyOf:discriminated-union", "inline-unrequired-tag"): 1,
+                ("schema.anyOf:discriminated-union", "typed-const-tag"): 1,
+            },
+            rows(completed),
+        )
 
     def test_security_scheme_reference_counts_one_per_referencing_entry(self) -> None:
         """A `components.securitySchemes` Reference Object, and nowhere else.
