@@ -848,8 +848,10 @@ def cases() -> dict[str, MeasurementCase]:
 
 PARAMETER_LITERALS = MEASUREMENTS / "parameter-literals"
 # Where a parameter-literals case's document and complete python-enums tree
-# live, first match wins.
-PARAMETER_LITERAL_HOMES = (HANDWRITTEN,)
+# live, first match wins: its hand-written fixture, or the parameter-lowering
+# measurement a hand-written proof was retired into once a real document
+# covered it (crozier-e2e's `parameter_case_dir` reads the same two homes).
+PARAMETER_LITERAL_HOMES = (HANDWRITTEN, MEASUREMENTS / "parameter-lowering")
 
 
 def parameter_literal_fixture(case: str) -> Path:

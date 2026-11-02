@@ -1194,9 +1194,18 @@ def units(base: Path, chosen: dict[str, list[str]]) -> list[list[ItemKey]]:
             raise WeeklyError(str(error)) from error
         literals = [item for item in measurements if item.startswith("parameter-literals/")]
         for item in literals:
-            # One shared certified-trees.json, and each case reads its hand-written tree.
+            # One shared certified-trees.json, and each case reads the python-enums
+            # tree of its home: a hand-written fixture, or a parameter-lowering case.
             grouped.join(("measurements", literals[0]), ("measurements", item))
-            grouped.join(("handwritten", item.removeprefix("parameter-literals/")), ("measurements", item))
+            home = module.parameter_literal_fixture(item.removeprefix("parameter-literals/")).resolve()
+            source: ItemKey = (
+                ("handwritten", home.name)
+                if home.is_relative_to(handwritten)
+                else ("measurements", home.relative_to(measured).as_posix())
+            )
+            grouped.join(source, ("measurements", item))
+            if source[0] == "measurements" and source in grouped.parent:
+                owners.add(source)
         for item in measurements:
             row = rows.get(item)
             overlay = row.overlay.base.resolve() if row is not None and row.overlay and row.overlay.base else None

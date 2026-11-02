@@ -137,6 +137,23 @@ class RealPlanTests(unittest.TestCase):
                 self.assertEqual(1, len({shard[(family, item)] for item in self.inventory[family]}))
         literals = [item for item in self.inventory["measurements"] if item.startswith("parameter-literals/")]
         self.assertEqual(1, len({shard[("measurements", item)] for item in literals}))
+        # Each claim generates after the python-enums tree it reads: a hand-written
+        # fixture's, or a parameter-lowering case's where the proof retired to one.
+        homes = {"handwritten": 0, "measurements": 0}
+        for item in literals:
+            home = module.parameter_literal_fixture(item.removeprefix("parameter-literals/")).resolve()
+            source = (
+                ("handwritten", home.name)
+                if home.is_relative_to(handwritten)
+                else ("measurements", home.relative_to(measured).as_posix())
+            )
+            with self.subTest(claim=item):
+                self.assertEqual(shard[source], shard[("measurements", item)])
+                planned = [entry.key() for entry in self.plan.shards[shard[source]].items]
+                self.assertLess(planned.index(source), planned.index(("measurements", item)), "its tree first")
+            homes[source[0]] += 1
+        self.assertGreater(homes["handwritten"], 0)
+        self.assertGreater(homes["measurements"], 0, "observatory-client-headers reads parameter-lowering's tree")
         # Within a shard a golden generates before the overlay reduced against it.
         for planned in self.plan.shards:
             order = [entry.key() for entry in planned.items]
