@@ -3154,8 +3154,6 @@ pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
         // fern-python-sdk 5.41.3 (`docs/fern-measurements/handed-off/
         // type-declarations/R6`), agentstack's `metadata` and OpenAQ's
         // `country_id`.
-        // The test is the same text: leading whitespace aside, does a line
-        // break remain once trailing line breaks (not trailing spaces) go?
         Some(d) if d.trim_end_matches(['\r', '\n']).trim_start().contains('\n') => {
             format!(" \n\n{}", d.trim_end_matches(['\r', '\n']))
         }
