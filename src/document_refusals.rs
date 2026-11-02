@@ -49,6 +49,7 @@ enum Class {
     PaginatedNullableResponse,
     HeaderDefaultDiffersAcrossOperations,
     VersionHeaderRedeclaredAsParameter,
+    MissingInfoObject,
 }
 
 impl Class {
@@ -89,6 +90,7 @@ impl Class {
                 "header-default-differs-across-operations"
             }
             Self::VersionHeaderRedeclaredAsParameter => "version-header-redeclared-as-parameter",
+            Self::MissingInfoObject => "missing-info-object",
         }
     }
 }
@@ -138,6 +140,12 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     let Ok(root) = crate::yaml::from_str::<serde_json::Value>(&text) else {
         return Ok(());
     };
+    // The certified pair reads `info.version` before anything else, so a
+    // document whose `info` is absent or written as null fails its parse and
+    // yields the empty scaffold under exit 0 (docs/fern-refusals/missing-info-object/).
+    if root.get("info").is_none_or(serde_json::Value::is_null) {
+        return refusal(path, strict, Class::MissingInfoObject, "info");
+    }
     if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
             let route = route.as_str();
@@ -149,7 +157,14 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                 item.get(method)
                     .is_some_and(|operation| !ignored_reference_node(operation))
             });
-            if has_operation && !route.starts_with('/') && !route.starts_with("x-") {
+            // The empty key is no path the certified pair refuses: it generates
+            // the operation with no path at all, a request to the base URL
+            // (docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/).
+            if has_operation
+                && !route.is_empty()
+                && !route.starts_with('/')
+                && !route.starts_with("x-")
+            {
                 return refusal(
                     path,
                     strict,
@@ -2050,6 +2065,7 @@ fn check_reference_objects(
                         | "enum"
                         | "const"
                 ) || key.starts_with("x-")
+                    || (key == "links" && response_object_element(element))
                 {
                     continue;
                 }
@@ -2064,6 +2080,19 @@ fn check_reference_objects(
         _ => {}
     }
     Ok(())
+}
+
+/// Whether `element` names a Response Object: the entry of a `responses` map.
+///
+/// Its `links` are never read: the certified pair ignores response links and
+/// generates over a Link Object `$ref`, to a `components/links` entry or to
+/// none (`docs/fern-measurements/handed-off/document-acceptance/R14/` and
+/// `…/crozier-refuses-component-link-ref/`), and crozier writes nothing from
+/// them either, so no reference under them can refuse the document.
+fn response_object_element(element: &str) -> bool {
+    element
+        .rsplit_once('/')
+        .is_some_and(|(parent, _)| parent == "responses" || parent.ends_with("/responses"))
 }
 
 fn yaml_pointer<'a>(root: &'a serde_json::Value, pointer: &str) -> Option<&'a serde_json::Value> {
@@ -3507,16 +3536,17 @@ components:
     fn reference_objects_exclude_schemas_and_path_items_and_honor_ignores() {
         let dir = tempfile::tempdir().unwrap();
         let file = dir.path().join("api.yml");
+        let info = "info: {title: Probe, version: '1'}\n";
         for content in [
             "paths: {/probe: {$ref: 'absent.yml#/item'}}",
             "components: {schemas: {Thing: {$ref: '#/components/schemas/Absent'}}}",
             "components: {responses: {Error: {content: {application/json: {schema: {$ref: '#/components/schemas/Absent'}}}}}}",
             "components: {securitySchemes: {Bearer: {x-crozier-ignore: true, $ref: 'absent.yml#/Bearer'}}}",
         ] {
-            std::fs::write(&file, content).unwrap();
+            std::fs::write(&file, format!("{info}{content}")).unwrap();
             check_structure_file(&file, true).unwrap();
         }
-        std::fs::write(&file, "components: {securitySchemes: {Bearer: {x-crozier-ignore: false, x-fern-ignore: true, $ref: 'absent.yml#/Bearer'}}}").unwrap();
+        std::fs::write(&file, format!("{info}components: {{securitySchemes: {{Bearer: {{x-crozier-ignore: false, x-fern-ignore: true, $ref: 'absent.yml#/Bearer'}}}}}}")).unwrap();
         let error = check_structure_file(&file, true).unwrap_err().to_string();
         assert!(error.contains("unresolved-reference: components/securitySchemes/Bearer"));
         assert!(error.contains("fern-strict"));
@@ -3526,7 +3556,7 @@ components:
         )
         .unwrap();
         check_structure_file(&file, false).unwrap();
-        std::fs::write(&file, "paths: {/probe: {get: {responses: {401: {$ref: '#/$defs/Denied'}}}}}\n$defs: {Denied: {description: Unauthorized}}\ncomponents: {schemas: {Bound: {maximum: 18446744073709552000}}}").unwrap();
+        std::fs::write(&file, format!("{info}paths: {{/probe: {{get: {{responses: {{401: {{$ref: '#/$defs/Denied'}}}}}}}}}}\n$defs: {{Denied: {{description: Unauthorized}}}}\ncomponents: {{schemas: {{Bound: {{maximum: 18446744073709552000}}}}}}")).unwrap();
         let error = check_structure_file(&file, false).unwrap_err().to_string();
         assert!(error.contains("unresolved-reference: paths//probe/get/responses/401"));
     }
@@ -3538,7 +3568,7 @@ components:
         let probe = |reference: &str| {
             format!(
                 concat!(
-                    "openapi: 3.0.3\npaths: {{/holder: {{post: {{requestBody: {{content: {{application/json: ",
+                    "openapi: 3.0.3\ninfo: {{title: Probe, version: '1'}}\npaths: {{/holder: {{post: {{requestBody: {{content: {{application/json: ",
                     "{{schema: {{type: object, required: [ghost], properties: {{ghost: {{$ref: '{reference}'}}}}}}}}}}}}, ",
                     "responses: {{'204': {{description: No Content}}}}}}}}}}\ncomponents: {{schemas: {{Named: {{type: object, ",
                     "$defs: {{id: {{type: string}}}}, properties: {{label: {{type: string, $defs: {{inner: {{type: string}}}}}}}}}}}}}}\n",
@@ -4030,6 +4060,135 @@ components:
             "paths: {/c: {parameters: [{name: f, in: query, required: true}], get: {x-fern-examples: [{query-parameters: {}}]}}}"
                 .to_owned(),
             "query parameter f",
+        );
+    }
+
+    const MEASURED: &str = "docs/fern-measurements/handed-off/document-acceptance";
+
+    fn measured(case: &str) -> std::path::PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(MEASURED)
+            .join(case)
+            .join("openapi.yml")
+    }
+
+    /// The certified pair ignores response links, so a Link Object `$ref` to a
+    /// declared or an absent `components/links` entry refuses nothing, in
+    /// either mode, while a response written as a `$ref` to a schema still
+    /// refuses as the reference it is.
+    #[test]
+    fn response_links_refuse_nothing_but_a_response_ref_still_does() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        let document = |response: &str, components: &str| {
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Probe, version: '1'}}\npaths:\n  /parcels:\n    post:\n      responses:\n        '200': {response}\ncomponents: {components}\n"
+            )
+        };
+        let linked = "{description: Created, links: {Read: {$ref: '#/components/links/Read'}}}";
+        for components in ["{links: {Read: {operationId: getParcel}}}", "{}"] {
+            std::fs::write(&file, document(linked, components)).unwrap();
+            for strict in [false, true] {
+                check_structure_file(&file, strict).unwrap();
+            }
+        }
+        for case in ["R14", "crozier-refuses-component-link-ref"] {
+            for strict in [false, true] {
+                check_structure_file(&measured(case), strict).unwrap();
+            }
+        }
+        std::fs::write(
+            &file,
+            document(
+                "{$ref: '#/components/schemas/Denied'}",
+                "{schemas: {Denied: {type: object}}}",
+            ),
+        )
+        .unwrap();
+        let error = check_structure_file(&file, false).unwrap_err().to_string();
+        assert!(
+            error.contains(
+                "unresolved-reference: paths//parcels/post/responses/200: #/components/schemas/Denied"
+            ),
+            "{error}"
+        );
+        assert!(response_object_element("paths//a/get/responses/200"));
+        assert!(response_object_element("components/responses/Rejected"));
+        assert!(!response_object_element("paths//a/get/responses/200/headers"));
+        assert!(!response_object_element("paths//a/get/parameters/0"));
+    }
+
+    /// The empty path key generates, as the certified pair generates it; any
+    /// other key without a leading slash is still refused.
+    #[test]
+    fn only_the_empty_path_key_is_exempt_from_the_leading_slash() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        let document = |route: &str| {
+            format!(
+                "openapi: 3.1.0\ninfo: {{title: Probe, version: '1'}}\npaths:\n  '{route}':\n    get: {{responses: {{'200': {{description: OK}}}}}}\n"
+            )
+        };
+        std::fs::write(&file, document("")).unwrap();
+        for strict in [false, true] {
+            check_structure_file(&file, strict).unwrap();
+            check_structure_file(&measured("crozier-refuses-path-without-slash"), strict).unwrap();
+        }
+        std::fs::write(&file, document("status")).unwrap();
+        let error = check_structure_file(&file, false).unwrap_err().to_string();
+        assert!(error.contains("path-without-leading-slash: paths/status"), "{error}");
+    }
+
+    /// A document whose `info` is absent or null is refused in both modes, as
+    /// the certified pair's empty scaffold is a refusal; an `info` object,
+    /// however sparse, is not.
+    #[test]
+    fn a_missing_or_null_info_is_refused_in_both_modes() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        for info in ["", "info:\n", "info: null\n"] {
+            std::fs::write(&file, format!("openapi: 3.0.0\n{info}paths: {{}}\n")).unwrap();
+            let default = check_structure_file(&file, false).unwrap_err().to_string();
+            assert!(default.ends_with("missing-info-object: info"), "{info:?}: {default}");
+            let strict = check_structure_file(&file, true).unwrap_err().to_string();
+            assert!(
+                strict.ends_with("missing-info-object: info (fern-strict refusal)"),
+                "{info:?}: {strict}"
+            );
+        }
+        std::fs::write(&file, "openapi: 3.0.0\ninfo: {}\npaths: {}\n").unwrap();
+        check_structure_file(&file, false).unwrap();
+        let error = check_structure_file(&measured("null-info-paths-components"), false)
+            .unwrap_err()
+            .to_string();
+        assert!(error.ends_with("missing-info-object: info"), "{error}");
+    }
+
+    /// An extension of a nullable parent reached only through an object that
+    /// declares `additionalProperties: true` generates, as the certified pair
+    /// generates it; the same document without those declarations is refused.
+    #[test]
+    fn a_nullable_extension_behind_an_open_object_is_not_refused() {
+        let measured = measured("crozier-refuses-nullable-error-extension");
+        for strict in [false, true] {
+            check_structure_file(&measured, strict).unwrap();
+        }
+        let text = std::fs::read_to_string(&measured).unwrap();
+        let closed: String = text
+            .lines()
+            .filter(|line| line.trim() != "additionalProperties: true")
+            .map(|line| format!("{line}\n"))
+            .collect();
+        assert_ne!(closed, text, "the measurement declares no open object");
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        std::fs::write(&file, closed).unwrap();
+        let error = check_structure_file(&file, false).unwrap_err().to_string();
+        assert!(
+            error.contains(
+                "example-missing-required-property: POST /exports/get response extends nullable #/components/schemas/LedgerError"
+            ),
+            "{error}"
         );
     }
 }

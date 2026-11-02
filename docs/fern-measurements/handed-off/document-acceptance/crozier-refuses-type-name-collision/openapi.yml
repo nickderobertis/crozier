@@ -1,0 +1,48 @@
+openapi: 3.0.0
+info:
+  title: Photo desk
+  version: 1.0.0
+paths:
+  /photos/retouch:
+    post:
+      operationId: retouchPhoto
+      tags:
+      - Photos
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RetouchPhotoRequest'
+      responses:
+        '200':
+          description: The retouched photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+components:
+  schemas:
+    Photo:
+      type: object
+      properties:
+        url:
+          type: string
+    RetouchPhotoRequest:
+      type: object
+      required:
+      - brief
+      properties:
+        brief:
+          type: string
+        options:
+          type: object
+          description: How to retouch the photo.
+          properties:
+            finish:
+              type: string
+              enum:
+              - matte
+              - gloss
+            strength:
+              type: number

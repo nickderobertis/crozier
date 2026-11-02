@@ -1,0 +1,35 @@
+openapi: 3.0.1
+info:
+  title: Orchard inventory
+  version: 1.0.0
+paths:
+  /trees/{treeId}:
+    get:
+      operationId: getTree
+      parameters:
+        - name: treeId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: growerId
+          in: path
+          description: The grower to look the tree up for
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tree'
+components:
+  schemas:
+    Tree:
+      type: object
+      properties:
+        id:
+          type: integer
+        variety:
+          type: string

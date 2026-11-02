@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+paths:
+components:
+  schemas:
+    Mooring:
+      type: object
+      properties:
+        berth:
+          $ref: '#/components/schemas/Berth'
+        buoy:
+          $ref: '#/components/schemas/Buoy'
+      anyOf:
+        - required: [berth]
+        - required: [buoy]
+    Berth:
+      type: string
+    Buoy:
+      type: string
+      format: uuid

@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: Battery monitor
+  version: 1.0.0
+paths:
+  /batteries/{batteryId}:
+    get:
+      operationId: getBattery
+      parameters:
+        - name: batteryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The battery state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Battery'
+components:
+  schemas:
+    Battery:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        relayState:
+          description: The relay state, false when no relay is fitted.
+          type:
+            - string
+            - false
+        cellCount:
+          type: int
+        voltage:
+          type: positive number or null
+        flags:
+          type: list
+          items:
+            type: string

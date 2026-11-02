@@ -304,7 +304,12 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                             .iter()
                             .find(|param| param.wire_name == wire)
                     })
-                    .is_some_and(|param| param.py_name == crate::naming::field_name(wire))
+                    .is_some_and(|param| {
+                        // The trailing `_` crozier's own collision pass adds is no
+                        // rename of Fern's: the parameter keeps its name there.
+                        let name = crate::naming::field_name(wire);
+                        param.py_name == name || param.py_name == format!("{name}_")
+                    })
             };
             let path_names: std::collections::HashSet<String> = (0..op.parameters.len())
                 .filter(|&index| {
@@ -516,8 +521,13 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                 if op.parameters.get(index).is_some_and(promoted) {
                     continue;
                 }
+                // Fern's camelCase normalization drops non-alphanumeric ends, so
+                // a `shelf[]` query parameter beside `shelf` is one name it
+                // refuses (docs/fern-measurements/handed-off/document-acceptance/
+                // never-compared-request-property-camelcase-collision/), where
+                // crozier would otherwise pass `shelf` twice.
                 let identifier = crate::naming::to_snake_case(name)
-                    .trim_matches('_')
+                    .trim_matches(|ch: char| !ch.is_alphanumeric())
                     .to_owned();
                 if let Some(previous) = parameter_names.insert(identifier, name) {
                     if previous != name {
@@ -1007,25 +1017,11 @@ pub(crate) fn validate_ir(
             return Err(refusal_error(refusal(path, Class::GeneratedFileNameTooLong, format!("type {} would write {}.py, exceeding the filename limit; shorten its declared name or nested property names", decl.name(), decl.module())), strict));
         }
     }
-    let mut component_names = std::collections::HashMap::new();
-    for (name, schema) in &doc.components.schemas {
-        if schema
-            .ty
-            .as_ref()
-            .and_then(|ty| ty.primary())
-            .is_some_and(|ty| ty != "object")
-            && schema.enum_values.is_none()
-        {
-            continue;
-        }
-        let normalized = crate::naming::class_name(name);
-        if let Some(previous) = component_names.insert(normalized.clone(), name) {
-            if previous.get(1..) != name.get(1..) {
-                continue;
-            }
-            return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {normalized}; give them distinct names")), strict));
-        }
-    }
+    // Two component schemas whose names differ only in their first letter's case
+    // (`PaymentType`, `paymentType`) are one type to the certified pair, which
+    // keeps the later declaration and generates, as `deduplicate_type_names`
+    // does (docs/fern-measurements/handed-off/document-acceptance/
+    // never-compared-type-name-collision/), so they are no refusal.
     let roots: std::collections::HashSet<_> = doc
         .components
         .schemas
@@ -1968,5 +1964,56 @@ mod tests {
             .unwrap();
             check_schema(&schema, "NonStringEnum", Path::new("api.yml"), &schemas).unwrap();
         }
+    }
+
+    /// A `shelf[]` query parameter beside `shelf` normalizes to one name, as
+    /// the certified pair's camelCase does, and is refused rather than written
+    /// as a call passing `shelf` twice; two distinct names are not.
+    #[test]
+    fn a_bracketed_query_name_collides_with_its_bare_name() {
+        let document = |second: &str| {
+            format!(
+                "openapi: 3.0.0\ninfo: {{title: t, version: '1'}}\npaths:\n  /loans:\n    get:\n      operationId: listLoans\n      parameters:\n        - {{name: shelf, in: query, schema: {{type: string}}}}\n        - {{name: '{second}', in: query, schema: {{type: array, items: {{type: string}}}}}}\n      responses: {{'204': {{description: OK}}}}\n"
+            )
+        };
+        let error = document_refusal(&document("shelf[]")).unwrap_or_default();
+        assert!(
+            error.contains(
+                "request-property-camelcase-collision: GET /loans parameters \"shelf\" and \"shelf[]\" normalize to the same identifier"
+            ),
+            "{error}"
+        );
+        assert_eq!(document_refusal(&document("shelves[]")), None);
+    }
+
+    /// Component schemas whose names differ only in their first letter's case
+    /// are one type to the certified pair, which generates them.
+    #[test]
+    fn components_differing_in_first_letter_case_are_no_refusal() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        for strict in [false, true] {
+            validate(&doc, &path, strict, &ir).unwrap();
+            validate_ir(&ir, &doc, &path, strict).unwrap();
+        }
+        let modes: Vec<_> = ir
+            .types
+            .iter()
+            .filter(|decl| decl.name() == "TransferMode")
+            .collect();
+        assert_eq!(modes.len(), 1);
     }
 }

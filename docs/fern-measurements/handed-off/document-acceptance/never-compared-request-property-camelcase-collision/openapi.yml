@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Shelf catalogue
+  version: 1.0.0
+paths:
+  /loans:
+    get:
+      operationId: listLoans
+      parameters:
+        - name: shelf
+          in: query
+          schema:
+            type: string
+        - name: shelf[]
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: The loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+components:
+  schemas:
+    Loan:
+      type: object
+      properties:
+        id:
+          type: string
+        shelf:
+          type: string
