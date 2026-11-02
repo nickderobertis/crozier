@@ -25,6 +25,9 @@ docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-exp
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	86	uuid_	"uuid"	format=uuid	schema-rejected-name-example	repaired
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	134	uuid_	"uuid"	format=uuid	schema-rejected-name-example	repaired
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	179	uuid_	"uuid"	format=uuid	schema-rejected-name-example	repaired
+docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/fern-expected	reference.md	69	beacon_code	"beaconCode"	pattern=^[a-z]+:[0-9.]+$	schema-rejected-name-example	repaired
+docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/fern-expected	src/fern/client.py	147	beacon_code	"beaconCode"	pattern=^[a-z]+:[0-9.]+$	schema-rejected-name-example	repaired
+docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/fern-expected	src/fern/client.py	317	beacon_code	"beaconCode"	pattern=^[a-z]+:[0-9.]+$	schema-rejected-name-example	repaired
 docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	README.md	45	standing	DossierStanding.DRAFT	pattern=^(?!draft$).*$	pattern-narrowed-enum-example	residual-unconstructible
 docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	README.md	66	standing	DossierStanding.DRAFT	pattern=^(?!draft$).*$	pattern-narrowed-enum-example	residual-unconstructible
 docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	reference.md	23	standing	DossierStanding.DRAFT	pattern=^(?!draft$).*$	pattern-narrowed-enum-example	residual-unconstructible
