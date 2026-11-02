@@ -1705,11 +1705,6 @@ fn string_led_union(schema: &Value) -> bool {
         })
 }
 
-/// Fern's example of the object `loser`, validated against the closed object
-/// `winner` that took its name: a required property of the winner the loser
-/// lacks is missing (reported first, as Fern reports it); otherwise a plain
-/// string property the winner lacks is unexpected (Fern's response example
-/// fills a string with its name; other property kinds are not measured).
 /// Which members a reach walk enters after visiting an object.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Descent {
@@ -1719,6 +1714,11 @@ enum Descent {
     ClosedObjectsOnly,
 }
 
+/// Fern's example of `loser` (an object, or an enum, below), validated against the
+/// closed object `winner` that took its name: a required property of the winner the loser
+/// lacks is missing (reported first, as Fern reports it); otherwise a plain
+/// string property the winner lacks is unexpected (Fern's response example
+/// fills a string with its name; other property kinds are not measured).
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
     // Two enums: Fern's example of the earlier one is its first value, which
     // the later declaration must list (`Mode: [WALK, CYCLE]` beside

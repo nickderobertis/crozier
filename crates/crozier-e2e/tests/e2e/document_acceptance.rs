@@ -269,10 +269,14 @@ fn enum_bearing_repairs_generate_the_literals_tree_too() {
 fn each_refused_cause_is_refused_in_both_modes() {
     for (case, diagnostic) in REFUSED {
         let dir = case_dir(case);
-        let exit = std::fs::read_to_string(dir.join("exit-code")).unwrap();
+        let exit: i32 = std::fs::read_to_string(dir.join("exit-code"))
+            .unwrap()
+            .trim()
+            .parse()
+            .unwrap_or_else(|error| panic!("{case}: exit-code is no exit status: {error}"));
         let log = std::fs::read_to_string(dir.join("fern.log")).unwrap();
         assert!(
-            exit.trim() != "0" || log.contains("Failed to parse openapi document"),
+            exit != 0 || log.contains("Failed to parse openapi document"),
             "{case}: the committed certified-pair run records no refusal"
         );
         let class = diagnostic.split(':').next().unwrap();
