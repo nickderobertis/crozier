@@ -925,7 +925,7 @@ class DecisionRecordTests(unittest.TestCase):
         self.assertEqual((), weekly.RecordedDecision.from_json(empty.to_json(), "decision").unchecked)
 
         populated = weekly.Decision(pair, True, "digest")
-        entry = weekly.Unchecked("corpus", "a", "failed", "its document is missing", "logs/corpus/a.log")
+        entry = weekly.Unchecked("corpus", "a", weekly.Status.FAILED, "its document is missing", "logs/corpus/a.log")
         populated.unchecked.append(entry)
         self.assertEqual(weekly.Outcome.DIFF, populated.outcome, "an unchecked item is never a match")
         record = json.loads(json.dumps(populated.to_json()))

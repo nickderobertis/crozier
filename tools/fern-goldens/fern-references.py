@@ -41,7 +41,7 @@ Usage:
 item of every family (or of the named ones) without starting Fern, Docker or
 any network request: each input its generation reads exists, and each evidence
 file it restates states a restatable pair. It prints one line per broken item,
-`<family> <item>: <reason>`, and exits 1 when any is broken. `generate` runs
+`<family> <item>: <reason>`, to stderr, and exits 1 when any is broken. `generate` runs
 the same per-family validation before it starts Fern, refusing a broken item
 with that reason line. `generate` regenerates the
 named items, or the whole family when none is named, at the certified pair
@@ -132,6 +132,8 @@ def read_once(function: Callable[[], T]) -> Callable[[], T]:
             return function()
         if function not in _CHECKING:
             _CHECKING[function] = function()
+        # Each entry is keyed by the function that computed it, so it holds
+        # exactly that function's return type, T.
         return cast("T", _CHECKING[function])
 
     return wrapper
@@ -538,10 +540,14 @@ def corpus_sources() -> dict[str, list[str]]:
     path = ROOT / CORPUS_SOURCES
     found: dict[str, list[str]] = {}
     lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
-    for line in lines:
+    for number, line in enumerate(lines, start=1):
         if line and not line.startswith("#") and not line.startswith("corpus_name\t"):
-            name, relative = line.split("\t")[:2]
-            found.setdefault(name, []).append(relative)
+            cells = line.split("\t")
+            if len(cells) < 2 or not cells[0] or not cells[1]:
+                raise ReferenceError(
+                    f"{CORPUS_SOURCES}:{number} is no `corpus_name<TAB>path…` record; restore it from git"
+                )
+            found.setdefault(cells[0], []).append(cells[1])
     return found
 
 
@@ -1555,7 +1561,7 @@ def broken(family: str, item: str) -> str | None:
 
 def check(families: list[str]) -> int:
     """Validate every item of `families` (every family when empty), printing one
-    line per broken item. Reads the tree only: no Fern, Docker or network."""
+    line per broken item to stderr. Reads the tree only: no Fern, Docker or network."""
     global _CHECKING
     _CHECKING, lines = {}, []
     for family in families or list(FAMILY):
@@ -1566,7 +1572,7 @@ def check(families: list[str]) -> int:
             lines.append(f"{family} (its listing): {reason}")
             continue
         lines += [line for item in items if (line := broken(family, item)) is not None]
-    sys.stdout.write("".join(f"{line}\n" for line in lines))
+    sys.stderr.write("".join(f"{line}\n" for line in lines))
     if lines:
         print(f"fern-references: check: {len(lines)} broken item(s); repair each input named above", file=sys.stderr)
         return 1

@@ -300,8 +300,8 @@ request: each input its generation reads exists (its document, hand-written
 fixture, overlay base tree, and the files `cases.tsv`, `certified-trees.json`
 and the probe and refusal registries name), and each `evidence.toml` and
 `evidence.md` it restates states a restatable pair, and a well-formed digest
-where it names one. It prints `<family> <item>: <reason>` per broken item and
-exits 1 when any is. `generate` runs the same per-family validation first and
+where it names one. It prints `<family> <item>: <reason>` per broken item to
+stderr and exits 1 when any is. `generate` runs the same per-family validation first and
 refuses a broken item with that line, so the two never disagree. The
 `fern-references-check` project's test runs it over the real tree in crozier's
 pull-request gate, rerun by a change to any path it reads, so a change that

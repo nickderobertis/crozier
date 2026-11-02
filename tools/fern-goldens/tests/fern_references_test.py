@@ -942,6 +942,40 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
 
+    def test_a_parameter_literals_claim_retired_to_parameter_lowering_is_re_measured_from_there(self) -> None:
+        """A claim whose hand-written proof moved into a parameter-lowering case
+        (as observatory-client-headers did) reads that case's document and
+        python-enums tree, and records the literals tree's digest."""
+        case = self.root / "docs/fern-measurements/parameter-lowering/retired"
+        self.write("docs/fern-measurements/parameter-lowering/retired/openapi.yml", "openapi: 3.0.3\nx-retired: 1\n")
+        tree = {"src/fern/client.py": "CLIENT = 1\n", "src/fern/literal.py": "LITERAL = 1\n"}
+        for rel, text in {**tree, "src/fern/core/enum.py": "ENUM = 1\n", ".fern/metadata.json": "{}"}.items():
+            self.write(f"docs/fern-measurements/parameter-lowering/retired/fern-expected/{rel}", text)
+        self.write("docs/fern-measurements/parameter-literals/certified-trees.json", json.dumps({"retired": "0" * 64}))
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.assertFalse((self.root / "docs/openapi-surface/handwritten/retired").exists())
+        clean = self.run_tool("check", "measurements")
+        self.assertEqual(0, clean.returncode, clean.stderr)
+        self.assertNotIn("parameter-literals/retired", clean.stderr)
+
+        result = self.run_tool("generate", "measurements", "parameter-literals/retired")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(1, len(self.calls()), "one Fern generation, over the parameter-lowering document")
+        literals = self.root / "docs/fern-measurements/parameter-literals"
+        digests = json.loads((literals / "certified-trees.json").read_text(encoding="utf-8"))
+        self.assertNotEqual("0" * 64, digests["retired"])
+        metadata = json.loads((literals / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual((metadata["cliVersion"], metadata["generatorVersion"]), (CLI, SDK))
+
+        # With neither home holding its document, check and generate both name
+        # the hand-written path, before Fern starts.
+        (case / "openapi.yml").unlink()
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(1, checked.returncode)
+        self.assertIn("docs/openapi-surface/handwritten/retired/openapi.yml does not exist", checked.stderr)
+        self.assertEqual(1, len(self.calls()), "Fern ran only for the regeneration")
+
     def test_a_parameter_literals_case_with_its_own_metadata_refreshes_that_file_alone(self) -> None:
         self.handwritten("own")
         shutil.rmtree(self.root / "docs/openapi-surface/handwritten/own/fern-expected")
@@ -1372,8 +1406,9 @@ class InventoryCheckTests(unittest.TestCase):
     def assert_names(self, family: str, item: str, reason: str) -> str:
         result = self.run_tool("check")
         self.assertEqual(1, result.returncode, result.stdout + result.stderr)
-        lines = [line for line in result.stdout.splitlines() if line.startswith(f"{family} {item}: ")]
-        self.assertEqual(1, len(lines), result.stdout)
+        self.assertEqual("", result.stdout, "every diagnostic goes to stderr")
+        lines = [line for line in result.stderr.splitlines() if line.startswith(f"{family} {item}: ")]
+        self.assertEqual(1, len(lines), result.stderr)
         self.assertIn(reason, lines[0])
         self.assertIn("broken item(s)", result.stderr)
         return lines[0]
@@ -1392,6 +1427,7 @@ class InventoryCheckTests(unittest.TestCase):
     def test_the_copy_as_committed_has_no_broken_item(self) -> None:
         result = self.run_tool("check")
         self.assertEqual((0, ""), (result.returncode, result.stdout), result.stderr)
+        self.assertNotIn("broken item", result.stderr)
         named = self.run_tool("check", "measurements", "refusals")
         self.assertEqual((0, ""), (named.returncode, named.stdout), named.stderr)
 

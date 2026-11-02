@@ -167,7 +167,7 @@ class CommittedInventoryTests(unittest.TestCase):
 
     def test_every_weekly_item_on_the_committed_tree_names_inputs_that_exist(self) -> None:
         result = self.guard.run(self, [sys.executable, str(TOOL), "check"], REPO)
-        broken = result.stdout.strip() or result.stderr.strip()
+        broken = result.stderr.strip()
         self.assertEqual(
             0,
             result.returncode,

@@ -609,17 +609,33 @@ class Unchecked:
 
     family: str
     item: str
-    status: str
+    status: Status
     detail: str
     log: str
 
     def line(self) -> str:
         where = f"log `{self.log}`" if self.log else "no log"
-        return f"{self.family} `{self.item}`: {self.status}: {self.detail} ({where})"
+        return f"{self.family} `{self.item}`: {self.status.value}: {self.detail} ({where})"
+
+    def to_json(self) -> dict[str, str]:
+        return {**vars(self), "status": self.status.value}
 
     @classmethod
     def of(cls, entry: ItemResult) -> Unchecked:
-        return cls(entry.family, entry.item, entry.status.value, entry.detail, entry.log)
+        return cls(entry.family, entry.item, entry.status, entry.detail, entry.log)
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> Unchecked:
+        status = field_of(record, "status", str, where)
+        if status not in UNCHECKED:
+            raise WeeklyError(f"{where}: an unchecked item is one of {', '.join(UNCHECKED)}; re-run the decision job")
+        return cls(
+            name_of(record, "family", where),
+            name_of(record, "item", where),
+            Status(status),
+            field_of(record, "detail", str, where),
+            field_of(record, "log", str, where),
+        )
 
 
 @dataclass(frozen=True)
@@ -674,7 +690,7 @@ class Decision:
             **({"known_changed": [vars(entry) for entry in self.known_changed]} if self.known_changed else {}),
             **({"refusals_changed": [vars(entry) for entry in self.refusals_changed]} if self.refusals_changed else {}),
             # Optional too: a run with every item checked carries none.
-            **({"unchecked": [vars(entry) for entry in self.unchecked]} if self.unchecked else {}),
+            **({"unchecked": [entry.to_json() for entry in self.unchecked]} if self.unchecked else {}),
         }
 
 
@@ -720,19 +736,11 @@ class RecordedDecision:
             RefusalChange(name_of(entry, "item", where), field_of(entry, "detail", str, where)) for entry in refusals
         )
         unchecked = tuple(
-            Unchecked(
-                name_of(entry, "family", where),
-                name_of(entry, "item", where),
-                field_of(entry, "status", str, where),
-                field_of(entry, "detail", str, where),
-                field_of(entry, "log", str, where),
-            )
+            Unchecked.from_json(entry, where)
             for entry in (
                 field_of(record, "unchecked", list, where) if isinstance(record, dict) and "unchecked" in record else []
             )
         )
-        if any(entry.status not in UNCHECKED for entry in unchecked):
-            raise WeeklyError(f"{where}: an unchecked item is one of {', '.join(UNCHECKED)}; re-run the decision job")
         if (known_changed or refusals_changed or unchecked) and outcome == Outcome.MATCH:
             raise WeeklyError(
                 f"{where}: a match changes no known failure or refusal and leaves no item unchecked; "
@@ -1975,13 +1983,14 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
     decision = Decision(bundle.pair, bundle.complete, digest)
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
-        if entry.status in UNCHECKED:
-            # Nothing generated it at the candidate, so no comparison is its.
-            decision.unchecked.append(Unchecked.of(entry))
-        elif entry.status == Status.UNFETCHABLE:
-            decision.unfetchable.append(Unfetchable(entry.item, entry.detail))
-        else:
-            items.setdefault(entry.family, []).append(entry)
+        match entry.status:
+            case Status.FAILED | Status.NOT_GENERATED:
+                # Nothing generated it at the candidate, so no comparison is its.
+                decision.unchecked.append(Unchecked.of(entry))
+            case Status.UNFETCHABLE:
+                decision.unfetchable.append(Unfetchable(entry.item, entry.detail))
+            case _:
+                items.setdefault(entry.family, []).append(entry)
         if entry.status == Status.KNOWN_CHANGED:
             decision.known_changed.append(
                 KnownFailureChange(entry.item, entry.detail, known_change_report(base, entry))
