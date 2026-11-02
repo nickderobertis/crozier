@@ -102,6 +102,7 @@
     "docs/fern-measurements/handed-off/union-modelling/inline-union-hoisting/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/map-value-union-hoisting/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-optional/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected": {},

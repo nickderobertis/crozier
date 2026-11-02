@@ -6,7 +6,7 @@ This node settled the 13 root causes the three fixture-only witness searches han
 
 Each document's bytes were taken from the shared response cache the searches filled and re-verified against the recorded SHA-256. Its certified-pair tree (Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, `enum_type: python_enums`) is the shared cache entry `${XDG_CACHE_HOME:-~/.cache}/crozier/certified-trees/fern-5.163.1_python-5.41.3/<sha256>/python_enums/`, generated once under the shared Fern lock with `fern check` and `fern generate --preview` and never edited. crozier, built at this branch's head, was compared with it by `crozier compare` (every catalogued departure applied) through a config of `package-name: fern`, `project-name: default_package_name` and a reference command copying the cached tree.
 
-Ten of the twenty-six documents byte-match. Every remaining differing file of every other document is attributed below: to a named root cause of another area (linked to the record that names it), or, on Hookdeck, to one of five union rules this node measured but did not repair, named under [Measured residuals](#measured-residuals). No file is attributed to a cause this node settled.
+Ten of the twenty-six documents the records name byte-match; the twenty-seventh, langfuse, was handed to this area later. Every remaining differing file of every other document is attributed below: to a named root cause of another area (linked to the record that names it), or, on Hookdeck, to one of five union rules this node measured but did not repair, named under [Measured residuals](#measured-residuals). No file is attributed to a cause this node settled.
 
 ## Documents
 
@@ -200,6 +200,13 @@ Ten of the twenty-six documents byte-match. Every remaining differing file of ev
 - differs in differing (3); only in reference (4) (`crozier compare`, finished tree), each file attributed below:
   - `R12` ([operations-extensions](../../../openapi-surface/witness-search-fixture-only-operations-extensions/README.md#root-causes)): 7 files: `reference.md`, `src/fern/__init__.py`, `src/fern/client.py`, `src/fern/code/client.py` (only in the certified pair), `src/fern/code/raw_client.py` (only in the certified pair), `src/fern/document/client.py` (only in the certified pair), `src/fern/document/raw_client.py` (only in the certified pair)
 
+
+### `workera-ai/langfuse_sdk:openapi.yml`
+
+- revision `0a7d8397eee3e0f4945a3960adfe4e58979b6f22`, sha256 `61c2ac58b46017322cd051982e09c101b4402f5bc10d0a2cd4d8793025138060`
+- this node's cause: `nullable-array-member` (named by no record; handed to this area by the manager from the parity-bodies-media node's finding)
+- differs in differing (3) (`crozier compare`, finished tree); `src/fern/types/map_value.py`, the cause's file, now matches. Each remaining file attributed below:
+  - `response-type-resolution` ([bodies-paths](../../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md#root-causes)): `ingestion.batch` answers only a `207`, which the certified pair types `None`: 3 files: `reference.md`, `src/fern/ingestion/client.py`, `src/fern/ingestion/raw_client.py`
 
 ## Measured residuals
 

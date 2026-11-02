@@ -16348,8 +16348,13 @@ impl Builder<'_> {
         // A scalar member's own 3.0 `nullable: true` stays on that member: the
         // hand-written `thermostat-nullable-member` fixture's `Setpoint` is
         // `oneOf: [{type: number, nullable: true}, {type: boolean}]`, and Fern's
-        // alias is `typing.Union[typing.Optional[float], bool]`.
-        if is_plain_scalar(variant) && variant.nullable == Some(true) {
+        // alias is `typing.Union[typing.Optional[float], bool]`. An array member's
+        // does too: the `nullable-array-member` measurement's
+        // `Tag` ends `{type: array, items: {type: string}, nullable: true}`, and
+        // Fern's alias closes `typing.Optional[typing.List[str]]`.
+        let nullable_array = variant.nullable == Some(true)
+            && variant.ty.as_ref().and_then(TypeField::primary) == Some("array");
+        if (is_plain_scalar(variant) || nullable_array) && variant.nullable == Some(true) {
             return optional_type_ref(member);
         }
         member
@@ -31616,5 +31621,19 @@ mod union_modelling_tests {
             ])
         );
         assert!(decl(&ir, "ProbeZero").is_none());
+    }
+
+    /// `Builder::variant_ref`'s nullable array member.
+    #[test]
+    fn a_nullable_array_member_is_optional_in_its_slot() {
+        let ir = measured("nullable-array-member");
+        assert_eq!(
+            alias(&ir, "Tag"),
+            &TypeRef::Union(vec![
+                optional(TypeRef::Primitive(Prim::Str)),
+                optional(TypeRef::Primitive(Prim::Int)),
+                optional(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))),
+            ])
+        );
     }
 }

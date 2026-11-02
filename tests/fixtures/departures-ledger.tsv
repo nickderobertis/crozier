@@ -672,6 +672,11 @@ docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-opti
 docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-optional/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-optional/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-optional/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/nullable-array-member/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
