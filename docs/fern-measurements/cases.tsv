@@ -224,3 +224,13 @@ superseded-fixtures/patch-inline-nullable-unrequired-props-omit	docs/fern-measur
 superseded-fixtures/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-alias	docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-example-nulls	docs/fern-measurements/superseded-fixtures/request-example-nulls/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/bare-string-parameter-example	docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-invalid-duplicate-parameter	docs/fern-measurements/handed-off/document-acceptance/crozier-invalid-duplicate-parameter/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-boolean-schema	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-component-link-ref	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-component-link-ref/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-nullable-error-extension	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-nullable-error-extension/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-path-without-slash	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-type-name-collision	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/crozier-refuses-unknown-type-value	docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unknown-type-value/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/never-compared-request-property-name-collision	docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/openapi.yml	python-enums	packaged	-
+handed-off/document-acceptance/never-compared-type-name-collision	docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/openapi.yml	python-enums	packaged	-

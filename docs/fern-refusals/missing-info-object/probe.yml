@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+paths:
+  /tides:
+    get:
+      operationId: listTides
+      responses:
+        '200':
+          description: The tide table
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tide'
+components:
+  schemas:
+    Tide:
+      type: object
+      properties:
+        height:
+          type: number

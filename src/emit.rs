@@ -5866,6 +5866,14 @@ fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
     }
 }
 
+/// Whether the endpoint's request goes to the base URL itself, so the call
+/// passes no path argument: the root path `/`, and the empty path key the
+/// certified pair generates the same way
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/`).
+fn requests_base_url(ep: &Endpoint) -> bool {
+    ep.path.is_empty() || ep.path == "/"
+}
+
 /// The method body (indent 8): the `httpx_client.request(...)` call and the
 /// response-handling block.
 fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -> String {
@@ -5889,7 +5897,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.push(format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
     ));
-    if ep.path != "/" {
+    if !requests_base_url(ep) {
         lines.push(format!("            {},", url_arg(ep, imports)));
     }
     lines.extend(environment_base_url(ep));
@@ -19398,5 +19406,51 @@ mod emission_parity_tests {
             init.contains("    from .amend_site_request_body import AmendSiteRequestBody\n"),
             "{init}"
         );
+    }
+}
+
+/// The empty path key is a request to the base URL, as the root path is
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/`).
+#[cfg(test)]
+mod document_acceptance_tests {
+    #[test]
+    fn an_empty_path_passes_no_path_argument() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path,
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        let status = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "get_status")
+            .unwrap();
+        assert!(status.path.is_empty());
+        assert!(super::requests_base_url(status));
+        let files = super::generate(&ir).unwrap();
+        let raw = files
+            .iter()
+            .find(|file| file.path.to_string_lossy().replace('\\', "/") == "src/fern/raw_client.py")
+            .unwrap();
+        let call = raw
+            .contents
+            .split("def get_status(")
+            .nth(1)
+            .and_then(|method| method.split("httpx_client.request(").nth(1))
+            .unwrap();
+        assert!(call.trim_start().starts_with("method=\"GET\","), "{call}");
+        assert!(raw
+            .contents
+            .contains("f\"firings/{encode_path_param(firing_id)}\","));
     }
 }

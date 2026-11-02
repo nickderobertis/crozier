@@ -1,5 +1,9 @@
 # path-without-leading-slash: refuse
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+The empty path key is no refusal: the certified pair generates it as a request to the base URL with no path argument, and crozier writes the same call ([`crozier-refuses-path-without-slash`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-path-without-slash/README.md)). Every other key without a leading slash, the probe's `things` among them, stays refused. Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 4 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 4 of the 4 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

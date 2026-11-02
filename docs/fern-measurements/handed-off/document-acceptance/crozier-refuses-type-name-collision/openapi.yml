@@ -1,0 +1,83 @@
+openapi: 3.0.0
+info:
+  title: Photo desk
+  version: 1.0.0
+paths:
+  /photos/retouch:
+    post:
+      operationId: retouchPhoto
+      tags:
+      - Photos
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RetouchPhotoRequest'
+      responses:
+        '200':
+          description: The retouched photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+  /photos/{photoId}/proof:
+    get:
+      operationId: getProof
+      tags:
+      - Photos
+      parameters:
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The proof of the photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProofResponse'
+components:
+  schemas:
+    ProofResponse:
+      type: object
+      x-fern-sdk-group-name: photos
+      required:
+      - status
+      properties:
+        status:
+          $ref: '#/components/schemas/ProofStatus'
+        proofUrl:
+          type: string
+    ProofStatus:
+      type: string
+      description: Where the proof is in its review.
+      x-fern-sdk-group-name: photos
+      enum:
+      - proof_ready
+      - proof_pending
+    Photo:
+      type: object
+      properties:
+        url:
+          type: string
+    RetouchPhotoRequest:
+      type: object
+      required:
+      - brief
+      properties:
+        brief:
+          type: string
+        options:
+          type: object
+          description: How to retouch the photo.
+          properties:
+            finish:
+              type: string
+              enum:
+              - matte
+              - gloss
+            strength:
+              type: number

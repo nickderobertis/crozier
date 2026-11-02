@@ -3337,12 +3337,38 @@ fn move_inline_body_enums_to_tags(
             TypeDecl::Object(object) if object.name == *source => Some(object),
             _ => None,
         }) {
+            // Transitively: an inline `anyOf` property is an alias whose member
+            // enum is orphaned with it, and the form hoister declared both in the
+            // operation's package (docs/fern-measurements/handed-off/
+            // document-acceptance/crozier-refuses-type-name-collision/).
+            let mut pending: Vec<String> = Vec::new();
             for field in &object.fields {
                 let mut names = std::collections::HashSet::new();
                 collect_named(&field.type_ref, &mut names);
-                moved.extend(names.into_iter().filter(|name| {
-                    !component_names.contains(name) && !retained_refs.contains(name)
-                }));
+                pending.extend(names);
+            }
+            while let Some(name) = pending.pop() {
+                if component_names.contains(&name)
+                    || retained_refs.contains(&name)
+                    || !moved.insert(name.clone())
+                {
+                    continue;
+                }
+                let mut dependencies = std::collections::HashSet::new();
+                match types.iter().find(|decl| decl.name() == name) {
+                    Some(TypeDecl::Object(object)) => object
+                        .fields
+                        .iter()
+                        .for_each(|field| collect_named(&field.type_ref, &mut dependencies)),
+                    Some(TypeDecl::Alias(alias)) => collect_named(&alias.target, &mut dependencies),
+                    Some(TypeDecl::DiscriminatedUnion(union)) => union
+                        .members
+                        .iter()
+                        .flat_map(|member| &member.fields)
+                        .for_each(|field| collect_named(&field.type_ref, &mut dependencies)),
+                    Some(TypeDecl::Enum(_)) | None => {}
+                }
+                pending.extend(dependencies);
             }
         }
     }
@@ -7181,6 +7207,21 @@ fn resolve_request_body(
             });
         }
     }
+    // An inline body that is only an `allOf` of `$ref` parents and plain inline
+    // objects declares its fields in those inline members: they are its own
+    // fields, ahead of the parents' (measured at Fern CLI 5.163.1 /
+    // fern-python-sdk 5.41.3: docs/fern-measurements/handed-off/
+    // document-acceptance/never-compared-request-property-name-collision/,
+    // FOSSology's `PUT /users/{id}`). Without this the body lowered to nothing
+    // and the operation was dropped as unemittable.
+    let parents_and_inline;
+    let schema = match parents_with_inline_members(schema) {
+        Some(merged) => {
+            parents_and_inline = merged;
+            &parents_and_inline
+        }
+        None => schema,
+    };
     // An inline object body (properties written directly, not behind a `$ref`) is
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
@@ -9393,6 +9434,84 @@ fn reserved_body_property_names(
     out: &mut std::collections::HashSet<String>,
 ) {
     own_property_names(schema, schemas, out, 0, Parents::Counted);
+}
+
+/// An inline schema with no properties of its own whose `allOf` holds at least
+/// one `$ref` parent beside inline members, each either a plain object
+/// (properties, no composition of its own) or only an `anyOf` of plain objects,
+/// rewritten as those members' properties — first declaration wins — beside an
+/// `allOf` of the parents alone; `None` for any other schema. A plain member's
+/// `required` is merged; an `anyOf` branch's is not, since no one branch is
+/// required. Both are measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3:
+/// `docs/fern-measurements/handed-off/document-acceptance/` cases
+/// `never-compared-request-property-name-collision` (a plain member) and
+/// `crozier-invalid-duplicate-parameter` (an `anyOf` member whose branches
+/// redeclare the parent's properties, which crozier passed twice).
+fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
+    if schema.reference.is_some() || !schema.properties.is_empty() {
+        return None;
+    }
+    let members = schema.all_of.as_deref()?;
+    let plain = |member: &Schema| {
+        member.reference.is_none()
+            && member.all_of.is_none()
+            && member.one_of.is_none()
+            && member.any_of.is_none()
+            && !member.properties.is_empty()
+    };
+    fn branches(member: &Schema) -> Option<&[Schema]> {
+        member.any_of.as_deref().filter(|branches| {
+            member.reference.is_none()
+                && member.properties.is_empty()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && branches.iter().any(|branch| !branch.properties.is_empty())
+                && branches.iter().all(|branch| {
+                    branch.reference.is_none()
+                        && branch.all_of.is_none()
+                        && branch.one_of.is_none()
+                        && branch.any_of.is_none()
+                })
+        })
+    }
+    if !members.iter().any(|member| member.reference.is_some())
+        || !members
+            .iter()
+            .any(|member| plain(member) || branches(member).is_some())
+        || !members
+            .iter()
+            .all(|member| member.reference.is_some() || plain(member) || branches(member).is_some())
+    {
+        return None;
+    }
+    let mut merged = schema.clone();
+    let mut parents = Vec::new();
+    for member in members {
+        if member.reference.is_some() {
+            parents.push(member.clone());
+            continue;
+        }
+        let declaring: Vec<&Schema> = match branches(member) {
+            Some(branches) => branches.iter().collect(),
+            None => vec![member],
+        };
+        for declared in declaring {
+            for (name, property) in &declared.properties {
+                if !merged.properties.contains_key(name) {
+                    merged.properties.insert(name.clone(), property.clone());
+                }
+            }
+        }
+        if plain(member) {
+            for name in &member.required {
+                if !merged.required.contains(name) {
+                    merged.required.push(name.clone());
+                }
+            }
+        }
+    }
+    merged.all_of = Some(parents);
+    Some(merged)
 }
 
 /// Whether a schema's `$ref` `allOf` parents add their own property names.
@@ -13341,6 +13460,25 @@ impl Builder<'_> {
         // the `$ref` parents' own lists included (see [`all_of_required`]).
         let all_required = all_of_required(self.schemas, schema);
         let required: Vec<&str> = all_required.iter().map(String::as_str).collect();
+        // An inline `anyOf` member's branch properties are declared here too, so
+        // a base property a branch redeclares is one field, not two
+        // (docs/fern-measurements/handed-off/document-acceptance/
+        // crozier-invalid-duplicate-parameter/: pushboy's `SendNotificationRequest`).
+        let branch_properties: Vec<String> = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .filter_map(
+                |member| match branch_union_properties(member, self.schemas) {
+                    Some(BranchUnion::Merged(merged)) => {
+                        Some(merged.properties.keys().cloned().collect::<Vec<_>>())
+                    }
+                    _ => None,
+                },
+            )
+            .flatten()
+            .collect();
         let declared_fields: std::collections::HashSet<&str> = schema
             .properties
             .keys()
@@ -13352,6 +13490,7 @@ impl Builder<'_> {
                     .filter(|member| member.reference.is_none())
                     .flat_map(|member| member.properties.keys()),
             )
+            .chain(branch_properties.iter())
             .map(String::as_str)
             .collect();
         // The `$ref` bases this model could extend. One its own
@@ -30545,5 +30684,120 @@ mod emission_parity_tests {
             }
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
+    }
+}
+
+/// The measured documents of `docs/fern-measurements/handed-off/document-acceptance/`
+/// lowered as the certified pair lowers them.
+#[cfg(test)]
+mod document_acceptance_tests {
+    use super::{build, parents_with_inline_members, Endpoint, Ir, RequestBody};
+    use crate::openapi::Schema;
+
+    fn lowered(case: &str) -> Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/document-acceptance")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path,
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .unwrap();
+        build(&doc, &config)
+    }
+
+    fn endpoint<'a>(ir: &'a Ir, method: &str) -> &'a Endpoint {
+        ir.endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == method)
+            .unwrap_or_else(|| panic!("no {method} endpoint"))
+    }
+
+    fn body_wire_names(endpoint: &Endpoint) -> Vec<&str> {
+        match &endpoint.request_body {
+            Some(RequestBody::Inline(fields)) => fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect(),
+            other => panic!("{} sends no inline body: {other:?}", endpoint.method_name),
+        }
+    }
+
+    /// An `allOf` of a `$ref` parent and an inline object is the inline
+    /// member's fields ahead of the parent's, and the path parameter the
+    /// parent's `id` claims takes Fern's `id_path_param`.
+    #[test]
+    fn a_parent_and_inline_member_body_is_their_fields_inline_first() {
+        let ir = lowered("never-compared-request-property-name-collision");
+        let update = endpoint(&ir, "update_member");
+        assert!(update.emittable);
+        assert_eq!(
+            body_wire_names(update),
+            ["password", "homeShelf", "id", "name", "email"]
+        );
+        assert_eq!(update.path_params[0].py_name, "id_path_param");
+    }
+
+    /// An inline `anyOf` member's branch properties are one field each, even
+    /// where the `$ref` parent declares them too.
+    #[test]
+    fn branch_properties_a_parent_redeclares_are_one_field_each() {
+        let ir = lowered("crozier-invalid-duplicate-parameter");
+        assert_eq!(
+            body_wire_names(endpoint(&ir, "send_alert")),
+            ["deliverAt", "headline", "message", "muted", "chime"]
+        );
+    }
+
+    /// A multipart-only component's nested inline types move to the
+    /// operation's package with it: none is left at the root.
+    #[test]
+    fn a_multipart_components_nested_types_leave_the_root() {
+        let ir = lowered("crozier-refuses-type-name-collision");
+        let root: Vec<&str> = ir.types.iter().map(|decl| decl.name()).collect();
+        assert!(
+            !root
+                .iter()
+                .any(|name| name.starts_with("RetouchPhotoRequest")),
+            "{root:?}"
+        );
+        let photos: Vec<&str> = ir
+            .tag_types
+            .iter()
+            .filter(|tag| tag.module == "photos")
+            .map(|tag| tag.decl.name())
+            .collect();
+        assert!(photos.contains(&"RetouchPhotoRequestOptions"), "{photos:?}");
+        assert!(
+            photos.contains(&"RetouchPhotoRequestOptionsFinish"),
+            "{photos:?}"
+        );
+    }
+
+    #[test]
+    fn parents_with_inline_members_rewrites_only_parents_beside_plain_members() {
+        let schema = |text: &str| -> Schema { crate::yaml::from_str(text).unwrap() };
+        let merged = parents_with_inline_members(&schema(
+            "allOf: [{$ref: '#/components/schemas/Base'}, {type: object, required: [a], properties: {a: {type: string}}}, {anyOf: [{required: [b], properties: {b: {type: string}}}, {properties: {a: {type: integer}}}]}]",
+        ))
+        .unwrap();
+        assert_eq!(merged.properties.keys().collect::<Vec<_>>(), ["a", "b"]);
+        assert_eq!(merged.required.iter().collect::<Vec<_>>(), ["a"]);
+        assert_eq!(merged.all_of.as_ref().unwrap().len(), 1);
+        for unchanged in [
+            "allOf: [{type: object, properties: {a: {type: string}}}]",
+            "allOf: [{$ref: '#/components/schemas/Base'}]",
+            "properties: {a: {type: string}}\nallOf: [{$ref: '#/components/schemas/Base'}, {properties: {b: {type: string}}}]",
+            "allOf: [{$ref: '#/components/schemas/Base'}, {properties: {b: {type: string}}, anyOf: [{required: [b]}]}]",
+        ] {
+            assert!(parents_with_inline_members(&schema(unchanged)).is_none(), "{unchanged}");
+        }
     }
 }

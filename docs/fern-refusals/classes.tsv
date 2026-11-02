@@ -22,6 +22,7 @@ header-default-differs-across-operations	documents	check	1	Expected example to b
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	refuse	components/schemas/Tool/properties/composition	2/2
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	14	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	14/14
+missing-info-object	documents	check	0	Cannot read properties of <…> (reading 'version')	0	refuse	missing-info-object: info	0/0
 named-type-default	documents	check	1	Default values are not supported for the named type	10	refuse	ticket/properties/type/default	10/10
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	115	refuse	Tagged/allOf	115/115
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	11	refuse	GET /hostnames response 200 property "errors"	11/11

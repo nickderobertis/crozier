@@ -1311,7 +1311,7 @@ pub struct Parameter {
     #[serde(default)]
     pub example: Option<serde_json::Value>,
     /// Named OpenAPI examples, in declaration order.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_named_examples")]
     pub examples: IndexMap<String, ParameterExample>,
     /// Whether this parameter leaves the generated SDK. (crozier spelling).
     #[serde(rename = "x-crozier-ignore", default, deserialize_with = "de_boolean")]
@@ -1379,6 +1379,49 @@ pub struct ParameterExample {
     /// The example value. External examples have no inline value.
     #[serde(default)]
     pub value: Option<serde_json::Value>,
+}
+
+/// Deserialize a parameter's or media type's named `examples` map, reading
+/// entries as the certified pair reads them
+/// (`docs/fern-measurements/handed-off/document-acceptance/bare-string-parameter-example/`):
+///
+/// - an Example or Reference Object (a map) is read as one;
+/// - any other value (`north: north-sector`) is that example's value;
+/// - a `$ref` entry whose value is not a map — the author wrote the whole map
+///   as one Reference Object, `examples: {$ref: '#/components/examples/Code'}`
+///   — declares no example and is dropped.
+///
+/// Either way a bare value no longer fails the whole document.
+fn de_named_examples<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, ParameterExample>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as _;
+    let Some(entries) = Option::<IndexMap<String, serde_json::Value>>::deserialize(deserializer)?
+    else {
+        return Ok(IndexMap::new());
+    };
+    entries
+        .into_iter()
+        .filter(|(name, entry)| entry.is_object() || name != "$ref")
+        .map(|(name, entry)| {
+            if entry.is_object() {
+                ParameterExample::deserialize(entry)
+                    .map(|example| (name, example))
+                    .map_err(D::Error::custom)
+            } else {
+                Ok((
+                    name,
+                    ParameterExample {
+                        reference: None,
+                        value: Some(entry),
+                    },
+                ))
+            }
+        })
+        .collect()
 }
 
 /// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
@@ -1480,7 +1523,7 @@ struct MediaTypeDecl {
     item_schema: Option<Schema>,
     #[serde(default)]
     example: Option<serde_json::Value>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_named_examples")]
     examples: IndexMap<String, ParameterExample>,
     #[serde(default)]
     encoding: IndexMap<String, Encoding>,
@@ -1656,7 +1699,7 @@ pub struct Schema {
     #[serde(rename = "anyOf", default, deserialize_with = "de_composition")]
     pub any_of: Option<Vec<Schema>>,
     /// `allOf` members.
-    #[serde(rename = "allOf", default, deserialize_with = "de_composition")]
+    #[serde(rename = "allOf", default, deserialize_with = "de_all_of")]
     pub all_of: Option<Vec<Schema>>,
     /// A negative-only union branch does not redeclare a positive property.
     #[serde(rename = "not", default)]
@@ -2204,6 +2247,139 @@ impl<'a> IntoIterator for &'a SchemaProperties {
     }
 }
 
+/// A `oneOf`/`anyOf` member as read: a boolean schema (`true` or `false`) is an
+/// unconstrained member, which the certified pair types `typing.Any` (not the
+/// `Optional[Any]` a malformed stand-in renders as).
+fn composition_member(member: MaybeSchema) -> Schema {
+    if member.0.boolean_stand_in {
+        Schema::default()
+    } else {
+        member.0
+    }
+}
+
+/// Deserialize an `allOf` member list as [`de_composition`] does, except that
+/// an OpenAPI 3.1 boolean schema member (`true` or `false`) is dropped: the
+/// certified pair reads `allOf: [{type: number}, true]` as `float` and
+/// `allOf: [{$ref: Reading}, true]` as an alias of `Reading`, the same for
+/// `false`, where a `oneOf`/`anyOf` keeps it as a `typing.Any` member
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/`).
+/// A list of booleans only reads as an `allOf` of one empty object, the empty
+/// model the certified pair writes for `allOf: [true]`.
+fn de_all_of<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as _;
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Composition {
+        Sequence(Vec<AllOfMember>),
+        Indexed(IndexMap<String, AllOfMember>),
+    }
+    let members: Vec<AllOfMember> = match Option::<Composition>::deserialize(deserializer)? {
+        None => return Ok(None),
+        Some(Composition::Sequence(members)) => members,
+        Some(Composition::Indexed(members)) => {
+            let mut indexed = members
+                .into_iter()
+                .map(|(index, member)| {
+                    index.parse::<usize>().map(|i| (i, member)).map_err(|_| {
+                        D::Error::custom(format!(
+                            "composition map key {index:?} is not a non-negative integer"
+                        ))
+                    })
+                })
+                .collect::<std::result::Result<Vec<_>, D::Error>>()?;
+            indexed.sort_by_key(|(index, _)| *index);
+            indexed.into_iter().map(|(_, member)| member).collect()
+        }
+    };
+    let written = members.len();
+    let kept: Vec<Schema> = members.into_iter().filter_map(|member| member.0).collect();
+    if written > 0 && kept.is_empty() {
+        // Every member a boolean schema: the certified pair writes an empty model.
+        return Ok(Some(vec![Schema {
+            ty: Some(TypeField::Single("object".to_string())),
+            properties: SchemaProperties {
+                values: IndexMap::new(),
+                declared: true,
+            },
+            ..Schema::default()
+        }]));
+    }
+    Ok(Some(kept))
+}
+
+/// One `allOf` member: a schema read through [`MaybeSchema`], or `None` for a
+/// boolean schema, which [`de_all_of`] drops.
+struct AllOfMember(Option<Schema>);
+
+impl<'de> Deserialize<'de> for AllOfMember {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = AllOfMember;
+
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a schema object or a boolean schema")
+            }
+            fn visit_bool<E>(self, _v: bool) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(None))
+            }
+            fn visit_map<A>(self, map: A) -> std::result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                MaybeSchemaVisitor
+                    .visit_map(map)
+                    .map(|schema| AllOfMember(Some(schema.0)))
+            }
+            fn visit_seq<A>(self, seq: A) -> std::result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                MaybeSchemaVisitor
+                    .visit_seq(seq)
+                    .map(|schema| AllOfMember(Some(schema.0)))
+            }
+            fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                MaybeSchemaVisitor
+                    .visit_str(v)
+                    .map(|schema| AllOfMember(Some(schema.0)))
+            }
+            fn visit_i64<E>(self, _v: i64) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(Some(malformed_schema())))
+            }
+            fn visit_u64<E>(self, _v: u64) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(Some(malformed_schema())))
+            }
+            fn visit_f64<E>(self, _v: f64) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(Some(malformed_schema())))
+            }
+            fn visit_none<E>(self) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(Some(malformed_schema())))
+            }
+            fn visit_unit<E>(self) -> std::result::Result<Self::Value, E> {
+                Ok(AllOfMember(Some(malformed_schema())))
+            }
+        }
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
+/// Deserialize a `oneOf`/`anyOf` member list (an `allOf` takes [`de_all_of`]).
+/// Each member passes the tolerant [`MaybeSchema`] boundary, and an OpenAPI 3.1
+/// boolean schema member (`anyOf: [false, {type: string}]`) reads as the
+/// unconstrained schema [`composition_member`] makes of it, rather than
+/// failing the document, as the certified pair reads it
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/`).
 fn de_composition<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -2212,21 +2388,26 @@ where
     #[derive(Deserialize)]
     #[serde(untagged)]
     enum Composition {
-        Sequence(Vec<Schema>),
-        Indexed(IndexMap<String, Schema>),
+        Sequence(Vec<MaybeSchema>),
+        Indexed(IndexMap<String, MaybeSchema>),
     }
     match Option::<Composition>::deserialize(deserializer)? {
         None => Ok(None),
-        Some(Composition::Sequence(members)) => Ok(Some(members)),
+        Some(Composition::Sequence(members)) => {
+            Ok(Some(members.into_iter().map(composition_member).collect()))
+        }
         Some(Composition::Indexed(members)) => {
             let mut indexed = members
                 .into_iter()
                 .map(|(index, schema)| {
-                    index.parse::<usize>().map(|i| (i, schema)).map_err(|_| {
-                        D::Error::custom(format!(
-                            "composition map key {index:?} is not a non-negative integer"
-                        ))
-                    })
+                    index
+                        .parse::<usize>()
+                        .map(|i| (i, composition_member(schema)))
+                        .map_err(|_| {
+                            D::Error::custom(format!(
+                                "composition map key {index:?} is not a non-negative integer"
+                            ))
+                        })
                 })
                 .collect::<std::result::Result<Vec<_>, D::Error>>()?;
             indexed.sort_by_key(|(index, _)| *index);
@@ -2758,13 +2939,45 @@ impl Discriminator {
 }
 
 /// `type` as a single string or (3.1) a list of strings.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(untagged)]
+///
+/// A list entry that is not a string (`type: [string, false]`, which a real
+/// document writes for "false when absent") is kept as its JSON spelling
+/// (`"false"`), a type name crozier does not know, rather than failing the whole
+/// document. The certified pair reads it as one more union member it cannot
+/// type: `Union[str, typing.Any]`
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-unknown-type-value/`).
+#[derive(Debug, Clone, PartialEq)]
 pub enum TypeField {
     /// A single type name.
     Single(String),
     /// A list of type names (3.1); crozier uses the first non-`null` entry.
     Multiple(Vec<String>),
+}
+
+impl<'de> Deserialize<'de> for TypeField {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            Single(String),
+            Multiple(Vec<serde_json::Value>),
+        }
+        Ok(match Raw::deserialize(deserializer)? {
+            Raw::Single(name) => TypeField::Single(name),
+            Raw::Multiple(entries) => TypeField::Multiple(
+                entries
+                    .into_iter()
+                    .map(|entry| match entry {
+                        serde_json::Value::String(name) => name,
+                        other => other.to_string(),
+                    })
+                    .collect(),
+            ),
+        })
+    }
 }
 
 impl TypeField {
@@ -2940,6 +3153,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
+    normalize_single_scalar_all_of(&mut doc);
     normalize_null_only_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
     normalize_boolean_property_objects(&mut doc);
@@ -3807,6 +4021,42 @@ fn normalize_float_type(doc: &mut OpenApi) {
             if renamed {
                 node.format = None;
             }
+        });
+    });
+}
+
+/// Read a schema that is nothing but an `allOf` of one inline scalar member
+/// (`allOf: [{type: number}]`, what `allOf: [{type: number}, true]` leaves once
+/// its boolean member is dropped) as that member, the schema's own description
+/// and title kept over the member's: the certified pair types it `float`, where
+/// the `allOf` would otherwise lower to an empty model
+/// (`docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-boolean-schema/`).
+fn normalize_single_scalar_all_of(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let Some([member]) = node.all_of.as_deref() else {
+                return;
+            };
+            let scalar = member.reference.is_none()
+                && member.properties.is_empty()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+                && matches!(
+                    member.ty.as_ref().and_then(TypeField::primary),
+                    Some("string" | "number" | "integer" | "boolean")
+                );
+            let mut rest = node.clone();
+            rest.all_of = None;
+            rest.description = None;
+            rest.title = None;
+            if !scalar || rest != Schema::default() {
+                return;
+            }
+            let mut collapsed = member.clone();
+            collapsed.description = node.description.take().or(collapsed.description);
+            collapsed.title = node.title.take().or(collapsed.title);
+            *node = collapsed;
         });
     });
 }
@@ -7580,4 +7830,110 @@ fn ignored_parameters_leave_operations_and_path_items() {
     let operation = item.operations()[0].1;
     assert_eq!(operation.parameters.len(), 1);
     assert_eq!(operation.parameters[0].name, "kept");
+}
+
+/// The deserializers that read what the certified pair reads where crozier used
+/// to fail the whole document (`docs/fern-measurements/handed-off/document-acceptance/`).
+#[cfg(test)]
+mod document_acceptance_tests {
+    use super::{load, OpenApi, Schema, TypeField};
+
+    fn parse(spec: &str) -> OpenApi {
+        crate::yaml::from_str(spec).expect("valid spec")
+    }
+
+    /// A boolean `allOf` member is dropped, a list of only booleans is no
+    /// `allOf`, and a boolean `anyOf`/`oneOf` member is an unconstrained one.
+    #[test]
+    fn boolean_composition_members_read_as_the_certified_pair_reads_them() {
+        let doc = parse(
+            "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Humidity: {allOf: [{type: number}, true]}\n    DewPoint: {allOf: [false, {type: number}]}\n    Only: {allOf: [true, false]}\n    Label: {anyOf: [false, {type: string}]}\n    Unit: {oneOf: [{type: string}, true]}\n",
+        );
+        let schemas = &doc.components.schemas;
+        for name in ["Humidity", "DewPoint"] {
+            let members = schemas[name].all_of.as_deref().unwrap();
+            assert_eq!(members.len(), 1, "{name}");
+            assert_eq!(
+                members[0].ty,
+                Some(TypeField::Single("number".into())),
+                "{name}"
+            );
+        }
+        let only = schemas["Only"].all_of.as_deref().unwrap();
+        assert_eq!(only.len(), 1);
+        assert_eq!(only[0].ty, Some(TypeField::Single("object".into())));
+        assert!(only[0].properties.declared() && only[0].properties.is_empty());
+        let label = schemas["Label"].any_of.as_deref().unwrap();
+        assert_eq!(label[0], Schema::default());
+        assert_eq!(label[1].ty, Some(TypeField::Single("string".into())));
+        assert_eq!(
+            schemas["Unit"].one_of.as_deref().unwrap()[1],
+            Schema::default()
+        );
+    }
+
+    /// A non-string `type` list entry is kept as its JSON spelling, a type
+    /// name crozier does not know, so the list stays a two-member union.
+    #[test]
+    fn a_non_string_type_entry_is_kept_as_an_unknown_type_name() {
+        let doc = parse(
+            "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Relay: {type: [string, false]}\n    Plain: {type: [integer, 'null']}\n",
+        );
+        let schemas = &doc.components.schemas;
+        assert_eq!(
+            schemas["Relay"].ty,
+            Some(TypeField::Multiple(vec!["string".into(), "false".into()]))
+        );
+        assert_eq!(
+            schemas["Relay"].ty.as_ref().unwrap().primary(),
+            Some("string")
+        );
+        assert_eq!(
+            schemas["Plain"].ty,
+            Some(TypeField::Multiple(vec!["integer".into(), "null".into()]))
+        );
+    }
+
+    /// A bare named example is that example's value; a `$ref` entry that is
+    /// no map (the whole map written as one reference) is dropped; an Example
+    /// Object reads as before.
+    #[test]
+    fn bare_named_examples_read_as_values_and_a_bare_ref_entry_is_dropped() {
+        let doc = parse(
+            "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths:\n  /beacons/{code}:\n    get:\n      parameters:\n        - {name: code, in: path, required: true, schema: {type: string}, examples: {$ref: '#/components/examples/Code'}}\n        - {name: sector, in: query, schema: {type: string}, examples: {north: north-sector, lab: {value: lab-1}}}\n      requestBody:\n        content:\n          text/plain: {schema: {type: string}, examples: {$ref: '#/components/examples/Code'}}\n      responses: {'204': {description: OK}}\n",
+        );
+        let operation = &doc.paths["/beacons/{code}"].get.as_ref().unwrap();
+        assert!(operation.parameters[0].examples.is_empty());
+        let sector = &operation.parameters[1].examples;
+        assert_eq!(sector.keys().collect::<Vec<_>>(), ["north", "lab"]);
+        assert_eq!(
+            sector["north"].value,
+            Some(serde_json::json!("north-sector"))
+        );
+        assert_eq!(sector["lab"].value, Some(serde_json::json!("lab-1")));
+        let body = operation.request_body.as_ref().unwrap();
+        assert!(body.content["text/plain"].examples.is_empty());
+    }
+
+    /// An `allOf` of one inline scalar reads as that scalar once loaded, the
+    /// outer description kept; one beside other keywords, or of an object, is
+    /// left as written.
+    #[test]
+    fn a_single_scalar_all_of_loads_as_its_member() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("openapi.yml");
+        std::fs::write(
+            &path,
+            "openapi: 3.1.0\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Humidity: {description: Relative humidity, allOf: [{type: number}, true]}\n    Typed: {type: object, allOf: [{type: number}]}\n    Shaped: {allOf: [{type: object, properties: {a: {type: string}}}]}\n",
+        )
+        .unwrap();
+        let doc = load(&path).unwrap();
+        let schemas = &doc.components.schemas;
+        let humidity = &schemas["Humidity"];
+        assert!(humidity.all_of.is_none());
+        assert_eq!(humidity.ty, Some(TypeField::Single("number".into())));
+        assert_eq!(humidity.description.as_deref(), Some("Relative humidity"));
+        assert!(schemas["Typed"].all_of.is_some());
+        assert!(schemas["Shaped"].all_of.is_some());
+    }
 }

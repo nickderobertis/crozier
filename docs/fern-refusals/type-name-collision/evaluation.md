@@ -1,5 +1,9 @@
 # type-name-collision
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+Three shapes the certified pair declares once are no refusal: a multipart-only component's nested inline types, which crozier now moves off the root with the component; a component its SDK group places in a tag's package, which is its own declaration there ([`crozier-refuses-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/README.md)); and two string-enum components whose names differ only in their first letter's case, the earlier's values among the later's, which the certified pair merges into the later declaration (two objects stay refused: an operation answering the earlier one fails the certified pair's example check against the merged type) ([`never-compared-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/README.md)). The class's probe and its other evidence still refuse. Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 199 documents at this pair (104 at Fern CLI 5.67.1). crozier's release build refuses 199 of the 199 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

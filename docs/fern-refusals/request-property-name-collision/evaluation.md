@@ -1,5 +1,9 @@
 # request-property-name-collision
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+A path parameter a direct `allOf` parent's property names is renamed `{name}_path_param` and generates, now that crozier lowers an `allOf` body of `$ref` parents and inline members at all ([`never-compared-request-property-name-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/README.md); FOSSology's `PUT /users/{id}`); the grandparent probe stays refused. Decision otherwise unchanged: **refuse**, in both modes.
+
 ## Re-measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: refuse
 
 Decision: **refuse**, in both modes. The shapes the class names changed; its
