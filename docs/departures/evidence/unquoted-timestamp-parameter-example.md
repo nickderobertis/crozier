@@ -33,8 +33,9 @@ observed_to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),  obser
 The docstrings wrap each call, so the same values appear on the
 `"2031-04-02 08:15:00+00:00",` line of a wrapped `fromisoformat(` call, and
 `until`'s three wrapped lines are crozier's alone. `loggedAfter`, an optional
-parameter that is not temporal, is left out by both. Both sides bind: each
-value is a `datetime.datetime` or `str` the argument accepts.
+parameter that is not temporal, is left out by both. On both sides each
+value has the argument's annotated type (`datetime.datetime` or `str`, read off
+the generated signatures; no call was executed).
 
 ## The rule
 

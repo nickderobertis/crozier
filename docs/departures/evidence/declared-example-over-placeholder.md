@@ -44,8 +44,9 @@ example-value-source     title="title",               title="Lizard Point",     
                          harbour_slug="harbourSlug",  harbour_slug="cornwall/porthleven"
 ```
 
-Both sides bind to the generated methods: every value is a `str`, an `int` or a
-member of the argument's enum. The certified pair's values are synthesized from
+On both sides each value has the argument's annotated type (a `str`, an `int`
+or a member of the argument's enum, read off the generated signatures; no call
+was executed): no binding defect is claimed either way. The certified pair's values are synthesized from
 the argument's name (or its enum's first member); crozier's are the values the
 document declares, which the ruling keeps. Synthesized placeholders never count
 as more useful.

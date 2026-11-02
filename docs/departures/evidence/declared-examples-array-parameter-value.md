@@ -25,7 +25,9 @@ keeper_id="KPR-from-schema", keeper_id="KPR-from-map",   declared examples: {fir
 ```
 
 The certified pair's line is first, crozier's second, in `reference.md`, `README.md` and
-both docstrings. Both bind: each is a `str`.
+both docstrings. Each is a `str`, the
+argument's annotated type (read off the generated signatures; no call was
+executed).
 
 ## The rule
 
