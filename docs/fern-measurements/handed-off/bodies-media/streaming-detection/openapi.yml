@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Loom Pattern Weaver
+  version: 1.0.0
+  description: Weaves a tapestry pattern, either all at once or row by row.
+servers:
+  - url: https://loom.example.com
+paths:
+  /patterns/weave:
+    post:
+      operationId: weavePattern
+      tags: [patterns]
+      summary: Weave a pattern from a draft.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeaveRequest'
+      responses:
+        '200':
+          description: The finished pattern, when weaving all at once.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WovenPattern'
+        '207':
+          description: Row-by-row progress, when weaving incrementally.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/RowProgress'
+  /patterns/{patternId}:
+    get:
+      operationId: getPattern
+      tags: [patterns]
+      summary: Read a woven pattern.
+      parameters:
+        - name: patternId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The pattern.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WovenPattern'
+components:
+  schemas:
+    WeaveRequest:
+      type: object
+      required: [draft]
+      properties:
+        draft:
+          type: string
+          description: The weaving draft, one row per line.
+        incremental:
+          type: boolean
+          description: Report each row as it is woven.
+    WovenPattern:
+      type: object
+      required: [patternId, rows]
+      properties:
+        patternId:
+          type: string
+        rows:
+          type: integer
+    RowProgress:
+      type: object
+      required: [row]
+      properties:
+        row:
+          type: integer
+        done:
+          type: boolean

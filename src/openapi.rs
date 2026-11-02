@@ -2942,6 +2942,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_empty_compositions(&mut doc);
     normalize_null_only_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
+    normalize_any_of_all_of_members(&mut doc);
     normalize_boolean_property_objects(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_unresolved_schema_pointers(&mut doc);
@@ -3341,6 +3342,53 @@ fn normalize_sibling_one_of_constraints(doc: &mut OpenApi) {
                 }
             }
             node.one_of = None;
+        });
+    });
+}
+
+/// Empty each `allOf` member written inline whose own `anyOf` offers anything
+/// but object members, when another member is a `$ref` or an object.
+/// Fern's importer (measured at CLI 5.163.1) reads such a member as a union, so
+/// the object the composition builds takes neither its properties nor its
+/// `required`: a body `allOf: [$ref DispatchBase, {properties: {route,
+/// courierToken, courierId}, required: [route], anyOf: [{required:
+/// [courierToken]}, {required: [courierId]}]}]` takes only `DispatchBase`'s
+/// `parcel` and `fragile` (`docs/fern-measurements/handed-off/bodies-media/body-property-set/`).
+/// A `oneOf` of such constraints is a different shape, which
+/// [`normalize_sibling_one_of_constraints`] reads as the member's own.
+fn normalize_any_of_all_of_members(doc: &mut OpenApi) {
+    fn object_member(member: &Schema) -> bool {
+        member.reference.is_some()
+            || member.ty.as_ref().and_then(TypeField::primary) == Some("object")
+            || !member.properties.is_empty()
+    }
+    fn union_member(member: &Schema) -> bool {
+        member.reference.is_none()
+            && member
+                .any_of
+                .as_deref()
+                .is_some_and(|branches| !branches.iter().all(object_member))
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let Some(members) = node.all_of.as_mut() else {
+                return;
+            };
+            if !members.iter().any(union_member)
+                || !members
+                    .iter()
+                    .any(|member| !union_member(member) && object_member(member))
+            {
+                return;
+            }
+            // The member stays, as a property-less object, so the composition is
+            // still an object rather than an alias of its one `$ref`.
+            for member in members.iter_mut().filter(|member| union_member(member)) {
+                *member = Schema {
+                    ty: Some(TypeField::Single("object".to_string())),
+                    ..Schema::default()
+                };
+            }
         });
     });
 }
