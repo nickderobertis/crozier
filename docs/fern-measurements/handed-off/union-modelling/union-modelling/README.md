@@ -14,6 +14,7 @@ The bodies-and-paths record's `union-modelling` cause names several distinct rul
 | [`annotated-reference-beside-null/`](annotated-reference-beside-null/) | an annotated `$ref` beside `null` is the use-site copy, not a subclass |
 | [`singleton-enum-members/`](singleton-enum-members/) | a query `oneOf` of typed one-value enums is one deduplicated enum; members alike but for their own `nullable` collapse |
 | [`sole-reference-all-of-member/`](sole-reference-all-of-member/) | a member `allOf: [$ref X]` is `X` |
+| [`nullable-array-member/`](nullable-array-member/) | a union member `{type: array, nullable: true}` is `Optional[List[…]]` in its slot (found on langfuse by the parity-bodies-media node and handed here) |
 
 The last four were met while settling the cause's handed-off documents (OpenResponses, Deepgram, Hookdeck): each is a rule of how a union becomes a Python type that those documents carry beyond what their records named, measured and repaired here under the manager's direction to repair every union rule measurable within this node.
 

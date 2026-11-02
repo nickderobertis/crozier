@@ -16349,7 +16349,7 @@ impl Builder<'_> {
         // hand-written `thermostat-nullable-member` fixture's `Setpoint` is
         // `oneOf: [{type: number, nullable: true}, {type: boolean}]`, and Fern's
         // alias is `typing.Union[typing.Optional[float], bool]`. An array member's
-        // does too: the `nullable-array-member` measurement's
+        // does too: the `union-modelling/nullable-array-member` measurement's
         // `Tag` ends `{type: array, items: {type: string}, nullable: true}`, and
         // Fern's alias closes `typing.Optional[typing.List[str]]`.
         let nullable_array = variant.nullable == Some(true)
@@ -31626,7 +31626,7 @@ mod union_modelling_tests {
     /// `Builder::variant_ref`'s nullable array member.
     #[test]
     fn a_nullable_array_member_is_optional_in_its_slot() {
-        let ir = measured("nullable-array-member");
+        let ir = measured("union-modelling/nullable-array-member");
         assert_eq!(
             alias(&ir, "Tag"),
             &TypeRef::Union(vec![

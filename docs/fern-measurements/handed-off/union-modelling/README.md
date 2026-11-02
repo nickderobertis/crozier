@@ -205,7 +205,7 @@ Ten of the twenty-six documents the records name byte-match; the twenty-seventh,
 ### `workera-ai/langfuse_sdk:openapi.yml`
 
 - revision `0a7d8397eee3e0f4945a3960adfe4e58979b6f22`, sha256 `61c2ac58b46017322cd051982e09c101b4402f5bc10d0a2cd4d8793025138060`
-- this node's cause: `nullable-array-member` (named by no record; handed to this area by the manager from the parity-bodies-media node's finding)
+- this node's cause: `union-modelling`, its sub-case `union-modelling/nullable-array-member` (handed to this area by the manager from the parity-bodies-media node's finding; no witness-search record names the document)
 - differs in differing (3) (`crozier compare`, finished tree); `src/fern/types/map_value.py`, the cause's file, now matches. Each remaining file attributed below:
   - `response-type-resolution` ([bodies-paths](../../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md#root-causes)): `ingestion.batch` answers only a `207`, which the certified pair types `None`: 3 files: `reference.md`, `src/fern/ingestion/client.py`, `src/fern/ingestion/raw_client.py`
 

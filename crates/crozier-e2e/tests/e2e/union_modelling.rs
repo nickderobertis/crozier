@@ -32,7 +32,7 @@ const CASES: &[(&str, bool)] = &[
     ("union-modelling/event-stream-beside-json", true),
     ("union-modelling/identical-primitive-members", false),
     ("union-modelling/multi-type-open-object", false),
-    ("nullable-array-member", false),
+    ("union-modelling/nullable-array-member", false),
     ("union-modelling/nullable-reference-member", false),
     ("union-modelling/singleton-enum-members", true),
     ("union-modelling/singleton-enum-tags", true),
@@ -530,7 +530,7 @@ fn union_modelling_document_sub_rules_match_the_certified_pair() {
         "class BatchTotals(Totals):",
     );
 
-    let case = "nullable-array-member";
+    let case = "union-modelling/nullable-array-member";
     let temp = matched(case);
     assert!(read(&sdk(&temp), "src/fern/types/tag.py").contains(
         "Tag = typing.Union[typing.Optional[str], typing.Optional[int], typing.Optional[typing.List[str]]]"
