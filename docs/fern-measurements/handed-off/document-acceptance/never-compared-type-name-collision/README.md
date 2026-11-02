@@ -8,7 +8,7 @@ Two component schemas whose names differ only in their first letter's case (konf
 
 ## The measurement
 
-`openapi.yml` declares `TransferMode` (two values) and later `transferMode` (four), each referenced. It was authored from scratch for this measurement (SHA-256 `d8be91c36b08a921dda939352693bfa1b9862797bd5fdf1f0da86f9f54957f64`).
+`openapi.yml` declares `TransferMode` (two values) and later `transferMode` (four, keeping both), each referenced. It was authored from scratch for this measurement (SHA-256 `d8be91c36b08a921dda939352693bfa1b9862797bd5fdf1f0da86f9f54957f64`).
 
 `fern-expected/` is the certified pair's (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3) complete, freshly generated, comment-stripped tree for it under `enum_type: python_enums`, generated in `tools/fern-goldens/fern-references.py`'s workspace (the one `generate-fern-fixture.sh` scaffolds) and stripped with `crozier internal-strip`; its Contract A digest is `6e7d5a340c6409f2968307b8ff09fdd2131a6a2a587de8f3e17b9362fb2ee9e5`. `fern.log` and `exit-code` (`0`) are that run's.
 
@@ -23,7 +23,7 @@ Two component schemas whose names differ only in their first letter's case (konf
 
 ## The verdict
 
-The certified pair writes one `TransferMode` enum with the later declaration's values; crozier's `deduplicate_type_names` already keeps the later declaration, so `src/name_refusals.rs` no longer refuses two string enums whose earlier declaration's values are all among the later's. Every other first-letter-case pair stays refused: measured at the pair (cache entries for a scratch `Thing`/`thing` document), two objects an operation answers fail its example check against the merged type (`Unexpected property "id"`, which crozier refuses as `example-unexpected-property` first), and an enum value the later declaration drops would fail it too. The same two objects with no operation at all generate in the certified pair and stay refused in crozier, a residual drafted as a follow-up. The konfig-dev copy of the same API stays refused by both, for its `PaymentResponse` collision.
+The certified pair writes one `TransferMode` enum with the later declaration's values; crozier's `deduplicate_type_names` already keeps the later declaration, so `src/name_refusals.rs` drops the first-letter-case refusal (its shapes and controls are measured under [`crozier-refuses-type-name-collision`](../crozier-refuses-type-name-collision/README.md)). The konfig-dev copy of the same API stays refused by both, for its `PaymentResponse` collision.
 
 ## What holds it
 

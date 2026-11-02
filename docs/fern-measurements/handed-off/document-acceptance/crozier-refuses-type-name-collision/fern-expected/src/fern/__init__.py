@@ -6,7 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Photo
+    from .types import Photo, Shelf
     from . import photos
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -22,6 +22,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ProofStatus": ".photos",
     "RetouchPhotoRequestOptions": ".photos",
     "RetouchPhotoRequestOptionsFinish": ".photos",
+    "Shelf": ".types",
     "__version__": ".version",
     "photos": ".photos",
 }
@@ -58,6 +59,7 @@ __all__ = [
     "ProofStatus",
     "RetouchPhotoRequestOptions",
     "RetouchPhotoRequestOptionsFinish",
+    "Shelf",
     "__version__",
     "photos",
 ]

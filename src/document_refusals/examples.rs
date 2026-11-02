@@ -1700,6 +1700,20 @@ fn string_led_union(schema: &Value) -> bool {
 /// string property the winner lacks is unexpected (Fern's response example
 /// fills a string with its name; other property kinds are not measured).
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
+    // Two enums: Fern's example of the earlier one is its first value, which
+    // the later declaration must list (`Mode: [WALK, CYCLE]` beside
+    // `mode: [CYCLE]` is refused, measured for the document-acceptance area's
+    // crozier-refuses-type-name-collision; one keeping every earlier value is
+    // never-compared-type-name-collision's measured generation).
+    if let (Some(own), Some(theirs)) = (
+        loser.get("enum").and_then(Value::as_array),
+        winner.get("enum").and_then(Value::as_array),
+    ) {
+        return own
+            .first()
+            .is_some_and(|first| !theirs.contains(first))
+            .then_some(Class::ExampleNotEnumValue);
+    }
     let own = loser.get("properties").and_then(Value::as_object)?;
     let theirs = winner.get("properties").and_then(Value::as_object)?;
     if winner
@@ -1765,6 +1779,27 @@ mod tests {
         ] {
             assert_eq!(verdict(control), None, "{control}");
         }
+    }
+
+    #[test]
+    fn an_earlier_enum_whose_first_value_the_later_drops_collides() {
+        let verdict = |earlier: &str, later: &str| {
+            collision_class(&yaml(earlier), &yaml(later)).map(Class::id)
+        };
+        assert_eq!(
+            verdict(
+                "{type: string, enum: [WALK, CYCLE]}",
+                "{type: string, enum: [CYCLE]}"
+            ),
+            Some("example-not-enum-value")
+        );
+        assert_eq!(
+            verdict(
+                "{type: string, enum: [HAND, DROP]}",
+                "{type: string, enum: [HAND, DROP, LOCKER]}"
+            ),
+            None
+        );
     }
 
     #[test]

@@ -329,10 +329,12 @@ refuses. Both keep Fern's logs under
   `path-without-leading-slash` (the empty path key),
   `example-missing-required-property` (an extension behind an open object),
   `type-name-collision` (a multipart component's nested types, a group-placed
-  component, two first-letter-case enum components the later one extends) and
+  component, first-letter-case twin components) and
   `request-property-name-collision` (a direct `allOf` parent's property);
   `request-property-camelcase-collision` now also catches a bracketed query
-  name beside its bare name, where crozier wrote invalid Python. One class is
+  name beside its bare name, where crozier wrote invalid Python, and
+  `example-not-enum-value` an operation's example of an earlier enum twin
+  whose first value the later twin drops. One class is
   new: `missing-info-object`, an absent or null `info`, which the certified
   pair fails to parse over the empty scaffold, so crozier refuses it in both
   modes (the refusal rule, and ruling `empty-sdk-refused`). Each class's

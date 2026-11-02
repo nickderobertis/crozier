@@ -95,87 +95,89 @@ rows.
 
 Every document above that generates got past this area's cause and now meets
 others the records never measured on it, because crozier refused or failed to
-read it first. Each differing file is attributed to a named root cause; none to
-a cause of this area. A cause the three records already name is cited from its
-record; one no record names was surfaced by this comparison and is drafted as a
-follow-up under the name given here.
+read it first. [`residuals.tsv`](residuals.tsv) attributes **every** remaining
+differing file of those eleven documents (280 files: 124 differ, 78 only the
+certified pair writes, 78 only crozier writes) to one or more named root
+causes, by document SHA-256 and path; each attribution was checked against that
+file's own diff lines. None is a cause of this area.
 
-- **plaid** (9 files): `reference.md` and `plaid/client.py` work a declared
-  date-time example where the certified pair writes its placeholder — the
-  bodies-and-paths record's `example-value-source`; five `*_account_subtypes.py`
-  docstrings keep a description's trailing space in the certified pair and not
-  in crozier — surfaced `description-trailing-whitespace`;
-  `recurring_transfer_nullable.py` and `simulated_transfer_sweep.py` are an
-  `allOf` of one `$ref` and a nullable-only member, which the certified pair
-  aliases and crozier models — bodies-and-paths `allof-description-wrapper`.
-- **Azure piping diagrams** (2): `README.md` demonstrates a different call —
-  bodies-and-paths `readme-endpoint-choice`; `pid_digitization/raw_client.py`
-  sends a multipart `type: string, format: json-string` part JSON-encoded in
-  the certified pair and as is in crozier — surfaced
-  `multipart-json-string-part-encoding`.
-- **pushboy** (3): `types/live_activity_end_job_request.py`,
-  `types/live_activity_update_job_request.py` and `live_activity/client.py`
-  order the fields of an `allOf` of a `$ref` target, an inline object and a
-  `oneOf` of `$ref` scopes differently (the certified pair puts the scope's
-  fields after the target's) — surfaced `allof-oneof-ref-variant-field-order`.
-- **paios** (14): the snippets in `reference.md`, `completions/client.py`,
-  `embeddings/client.py`, `moderations/client.py` and `images/client.py` work
-  declared or union example values differently — bodies-and-paths
-  `example-value-source` and `example-presence`; `audio/raw_client.py` and
-  `images/raw_client.py` JSON-encode a multipart scalar-union part — schemas
-  `multipart-scalar-union-part-encoding`; `fine_tuning_integration.py`,
-  `fine_tuning_job.py`, `fine_tuning/types/create_fine_tuning_job_request_integrations_item.py`,
-  `fine_tuning_integration_type.py` (only the certified pair),
-  `fine_tuning_job_integrations_item.py` (only crozier), `__init__.py` and
-  `types/__init__.py` model a one-variant integration union differently —
-  bodies-and-paths `union-modelling`.
-- **membrane boolean schemas** (3): `reference.md`, `client.py` and
-  `raw_client.py` type an `items: false` array body `Sequence[Any]` in the
-  certified pair and `Sequence[Optional[Any]]` in crozier — bodies-and-paths
-  `parameter-type-resolution` (its `items: false` arm).
-- **FOSSology** (10): `auth/client.py`, `auth/raw_client.py`, `README.md` and
-  `reference.md` follow `POST /tokens`, a form-urlencoded `allOf` of a `$ref`
-  and an inline object, whose fields crozier drops where the certified pair
-  spreads them (crozier at the base drops them too) — surfaced
-  `urlencoded-allof-body-fields`; `license/client.py`, `license/raw_client.py`,
-  `user/client.py` and `user/raw_client.py` keep a parent's property optional
-  where the body's own `required` names it — surfaced
-  `allof-outer-required-parent-field`; `report/client.py` and
-  `report/raw_client.py` take the multipart file part of a body that is
-  `properties` beside a `oneOf` of `$ref`s, which the certified pair drops —
-  bodies-and-paths `body-property-set`.
-- **konfig-sdks peach-payments** (12): `README.md`, `reference.md` and
-  `checkout_generation/client.py` work a mistyped declared example (`amount`)
-  and a `format: uri` example (`referer`) — schemas `mistyped-scalar-example`
-  and bodies-and-paths `example-value-source`; the webhook models, their
-  `*_currency`/`*_payment_type`/`*_status` enums and the two `__init__.py`
-  name and hoist inherited inline enums differently — bodies-and-paths
-  `type-placement`.
+### Causes another area's record names
 
-### AssemblyAI
+| cause (record) | what it explains here |
+|---|---|
+| `example-value-source` (bodies and paths) | worked-example values in plaid, paios and peach-payments snippets |
+| `example-optional-members` (bodies and paths; ruling `minimal-worked-call`) | the AssemblyAI READMEs, `reference.md` and `transcripts/client.py` working optional parameters into the call |
+| `example-presence` (bodies and paths) | paios' bare `create_image_variation(...)` and image call, AssemblyAI's `files.upload` example, FOSSology's file-upload example in `reference.md` |
+| `allof-description-wrapper` (bodies and paths) | plaid's `recurring_transfer_nullable.py`, `simulated_transfer_sweep.py` (an `allOf` of a `$ref` and a nullable-only member) |
+| `readme-endpoint-choice` (bodies and paths) | the Azure README's demonstrated call |
+| `union-modelling` (bodies and paths) | paios' fine-tuning integration union files |
+| `parameter-type-resolution` (bodies and paths, its `items: false` arm) | membrane's `reference.md`, `client.py`, `raw_client.py` |
+| `request-content-type-header` (bodies and paths) | the AssemblyAI `transcripts/raw_client.py` explicit header |
+| `multipart-scalar-union-part-encoding` (schemas) | paios' `audio/raw_client.py`, `images/raw_client.py` |
+| `mistyped-scalar-example` (schemas) | peach-payments' `amount` example |
 
-The four AssemblyAI documents differ the same ways (53 to 63 files each):
+### Causes newly named here: unrepaired, measured residuals
 
-- every `lemur/types/*` and `transcripts/types/*` model, both packages'
-  `__init__.py`, the root `__init__.py` and `types/__init__.py`, the clients'
-  imports, and each type file written only by one side: a component its
+No source record names these eleven; each is **an unrepaired, measured
+residual**, named here under the planner's ruling, with the follow-up draft
+*Settle the causes the document-acceptance repairs surfaced on newly generated
+real documents* naming every one. Only `allof-required-parent-field` lies in code this node
+changes, and it is not small (below); the rest are output-parity repairs in
+code this node does not touch.
+
+- **`group-placed-nested-type-placement`** — a component its
   `x-fern-sdk-group-name` places in a group's package keeps its nested inline
-  types in that package in the certified pair and at the root in crozier —
-  surfaced `group-placed-nested-type-placement`;
-- `lemur/types/lemur_model.py`: an enum member whose value has digits
-  separated by `-` (`claude-3-5-sonnet`) is `ANTHROPIC_CLAUDE3_5_SONNET` in the
-  certified pair and `ANTHROPIC_CLAUDE35SONNET` in crozier — surfaced
-  `enum-member-digit-separator`;
-- `lemur_action_items_response.py`, `lemur_summary_response.py`,
-  `lemur_task_response.py` and `redacted_audio_notification.py`: an `allOf` of
-  one `$ref` and a description-only member is an alias in the certified pair
-  and a model in crozier — bodies-and-paths `allof-description-wrapper`;
-- `transcript_list_item.py`: a date-time string the certified pair types
-  `dt.datetime` crozier types `str` — surfaced `constrained-date-time-typing`;
-- `README.md`, `reference.md` and `transcripts/client.py`'s snippets work the
-  optional parameters into the README's call where the certified pair's call
-  is minimal — bodies-and-paths `example-optional-members` (ruling
-  `minimal-worked-call`).
+  types in that package in the certified pair and at the root in crozier.
+  Explains 198 files of the four AssemblyAI documents (every
+  `lemur/types/*`/`transcripts/types/*` model and `__init__.py` it touches, the
+  type files only one side writes, the clients' imports).
+- **`enum-member-digit-separator`** — an enum value whose digits are separated
+  by `-` (`claude-3-5-sonnet`) is `ANTHROPIC_CLAUDE3_5_SONNET` in the certified
+  pair and `ANTHROPIC_CLAUDE35SONNET` in crozier. Explains
+  `lemur/types/lemur_model.py` in three AssemblyAI documents.
+- **`typed-single-ref-allof-alias`** — a `type: object` schema whose only other
+  content is `allOf: [$ref …]` is an alias in the certified pair and a subclass
+  in crozier. Explains 13 files of the four AssemblyAI documents
+  (`lemur_action_items_response.py`, `lemur_summary_response.py`,
+  `lemur_task_response.py`, `redacted_audio_notification.py`).
+- **`x-fern-type-extension`** — `type: string` with a `pattern` and
+  `x-fern-type: datetime` is `dt.datetime` in the certified pair, which reads
+  the extension, and `str` in crozier. Explains `transcript_list_item.py` in
+  the four AssemblyAI documents.
+- **`description-trailing-whitespace`** — the certified pair keeps a
+  description's trailing space in a docstring; crozier trims it. Explains
+  plaid's five `*_account_subtypes.py`.
+- **`multipart-json-string-part-encoding`** — a multipart part
+  `type: string, format: json-string` is JSON-encoded by the certified pair and
+  sent as is by crozier. Explains the Azure `pid_digitization/raw_client.py`.
+- **`allof-oneof-ref-variant-field-order`** — an `allOf` of a `$ref` target, an
+  inline object and a `oneOf` of `$ref` scopes orders its fields differently
+  (the certified pair puts the scope's after the target's). Explains pushboy's
+  `types/live_activity_end_job_request.py`,
+  `types/live_activity_update_job_request.py`, `live_activity/client.py`.
+- **`urlencoded-allof-body-fields`** — a form-urlencoded body that is an
+  `allOf` of a `$ref` and an inline object: crozier drops its fields (as at the
+  base), the certified pair spreads them. Explains FOSSology's
+  `auth/client.py`, `auth/raw_client.py`, `README.md`, and part of
+  `reference.md`.
+- **`allof-required-parent-field`** — a `required` list of an `allOf` body (the
+  outer schema's or an inline member's) naming a parent's property makes it
+  required in the certified pair, which also lists it first in `reference.md`
+  and works it into the call; crozier keeps it optional. Explains FOSSology's
+  `license/client.py`, `license/raw_client.py`, `user/client.py`,
+  `user/raw_client.py` and part of `reference.md`. It sits in the `allOf` body
+  lowering this node added; a first repair making the field required was
+  measured (a `required: [name]` variant of
+  `never-compared-request-property-name-collision`) and reverted because the
+  ordering and worked call still differed.
+- **`body-properties-beside-oneof`** — a multipart file property declared beside
+  a `oneOf` of `$ref`s is left out by the certified pair and taken by crozier.
+  Explains FOSSology's `report/client.py`, `report/raw_client.py`.
+- **`inherited-inline-enum-naming`** — an inline enum a subtype inherits is
+  named after the declaring base by the certified pair and after the subtype by
+  crozier, and a redeclared `status: {type: string, default: …}` is the base's
+  enum in the certified pair and `str` in crozier. Explains peach-payments'
+  webhook models, their enum files and the two `__init__.py` (9 files).
 
 ## Reproducing
 

@@ -81,3 +81,14 @@ components:
               - gloss
             strength:
               type: number
+    Shelf:
+      type: object
+      description: A shelf of prints, declared before its lower-case twin.
+      properties:
+        width:
+          type: integer
+    shelf:
+      type: object
+      properties:
+        label:
+          type: string

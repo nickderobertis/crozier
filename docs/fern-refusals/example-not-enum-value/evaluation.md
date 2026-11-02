@@ -1,5 +1,9 @@
 # example-not-enum-value: refuse
 
+## Widened for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+Two components whose names differ only in their first letter's case are one type to the certified pair, the later declaration. Where an operation answers the earlier of two such enums and the later drops the earlier's first value (Fern's example of it), the certified pair refuses `"WALK" is not a valid example for this enum`; crozier now refuses that document with this class in both modes, through the same component-collision check that already refused the object case as `example-unexpected-property` ([`crozier-refuses-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/README.md), `first-letter-referenced-enum-control`). An earlier enum whose first value the later keeps generates ([`never-compared-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/README.md)). Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 4 probe and 6 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 50 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 50 of the 50 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

@@ -16,8 +16,8 @@ use std::path::{Path, PathBuf};
 
 use super::departures_ledger::GoldenLedger;
 use super::{
-    departure_ledger, golden_path, golden_tree_failures, probe_artifact_digest, probe_command,
-    repo_root, walk_files,
+    crozier, departure_ledger, golden_path, golden_tree_failures, probe_artifact_digest,
+    probe_command, repo_root, walk_files,
 };
 
 pub(crate) const DOCUMENT_ACCEPTANCE_DIR: &str =
@@ -389,6 +389,81 @@ fn a_missing_info_refuses_and_an_info_object_recovers() {
                     "{name} (strict {strict}): {stderr}"
                 );
             }
+        }
+    }
+}
+
+/// Two components whose names differ only in their first letter's case are one
+/// type, the later declaration: a document no operation of which answers the
+/// earlier one generates in both modes, writing the certified pair's one
+/// model; where an operation answers it, the certified pair's example check
+/// fails against the merged type and crozier refuses with the same class.
+#[test]
+fn first_letter_case_twins_merge_unless_an_example_of_the_earlier_fails() {
+    let dir = case_dir("crozier-refuses-type-name-collision");
+    let probe = "first-letter-operationless-probe";
+    assert_eq!(
+        std::fs::read_to_string(dir.join(format!("{probe}.exit-code")))
+            .unwrap()
+            .trim(),
+        "0"
+    );
+    let fern_print =
+        std::fs::read_to_string(dir.join(format!("{probe}.fern-print.py.txt"))).unwrap();
+    for strict in [false, true] {
+        let out = tempfile::tempdir().unwrap();
+        let mut command = probe_command(&dir.join(format!("{probe}.openapi.yml")), out.path());
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        let types: Vec<String> = std::fs::read_dir(out.path().join("src/fern/types"))
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|name| name != "__init__.py")
+            .collect();
+        assert_eq!(types, ["print.py"], "strict {strict}");
+        let stripped = crozier()
+            .arg("internal-strip")
+            .arg(out.path().join("src/fern/types/print.py"))
+            .output()
+            .unwrap();
+        assert_eq!(
+            String::from_utf8(stripped.stdout).unwrap(),
+            fern_print,
+            "strict {strict}"
+        );
+    }
+    for (control, diagnostic, fern_says) in [
+        (
+            "first-letter-referenced-object-control",
+            "example-unexpected-property: GET /prints/{printId} components/schemas/Print collides with print",
+            "Unexpected property \"id\"",
+        ),
+        (
+            "first-letter-referenced-enum-control",
+            "example-not-enum-value: GET /legs/{legId} components/schemas/Mode collides with mode",
+            "\"WALK\" is not a valid example for this enum",
+        ),
+    ] {
+        let log = std::fs::read_to_string(dir.join(format!("{control}.fern.log"))).unwrap();
+        assert!(log.contains(fern_says), "{control}: the committed Fern log no longer refuses");
+        assert_eq!(
+            std::fs::read_to_string(dir.join(format!("{control}.exit-code"))).unwrap().trim(),
+            "1"
+        );
+        for strict in [false, true] {
+            let out = tempfile::tempdir().unwrap();
+            let target = out.path().join("sdk");
+            let mut command = probe_command(&dir.join(format!("{control}.openapi.yml")), &target);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8_lossy(&result.stderr);
+            assert_eq!(result.status.code(), Some(1), "{control}: {stderr}");
+            assert!(stderr.contains(diagnostic), "{control} (strict {strict}): {stderr}");
+            assert!(!target.exists());
         }
     }
 }

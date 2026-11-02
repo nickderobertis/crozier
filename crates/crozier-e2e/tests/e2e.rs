@@ -29133,7 +29133,26 @@ fn named_components_and_virtual_requests_refuse_their_measured_collisions() {
         "components":{"schemas":{"Thing":{"type":"object","properties":{"id":{"type":"string"}}},
         "thing":{"type":"object","properties":{"name":{"type":"string"}}}}}
     });
-    assert_measured_name_refusal(&document, "type-name-collision", "component schemas");
+    // The certified pair keeps the later of two components whose names differ
+    // only in their first letter's case, and generates a document no
+    // operation of which answers the earlier one (measured:
+    // docs/fern-measurements/handed-off/document-acceptance/
+    // crozier-refuses-type-name-collision/first-letter-operationless-probe.*).
+    let merged = tempfile::tempdir().unwrap();
+    let merged_spec = merged.path().join("api.json");
+    std::fs::write(&merged_spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&merged_spec)
+            .arg("--output")
+            .arg(merged.path().join(format!("sdk-{strict}")));
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+    }
     document["components"]["schemas"]
         .as_object_mut()
         .unwrap()

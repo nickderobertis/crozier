@@ -7,7 +7,8 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .photo import Photo
-_dynamic_imports: typing.Dict[str, str] = {"Photo": ".photo"}
+    from .shelf import Shelf
+_dynamic_imports: typing.Dict[str, str] = {"Photo": ".photo", "Shelf": ".shelf"}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +32,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Photo"]
+__all__ = ["Photo", "Shelf"]
