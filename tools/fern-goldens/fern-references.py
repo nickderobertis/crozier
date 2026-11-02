@@ -34,23 +34,32 @@ here through the script that owns one item of it:
 
 Usage:
   fern-references.py list FAMILY
+  fern-references.py check [FAMILY...]
   fern-references.py generate FAMILY [--version V] [--cli-version C] [ITEM...]
 
-`list` prints the family's item names, one per line. `generate` regenerates the
+`list` prints the family's item names, one per line. `check` validates every
+item of every family (or of the named ones) without starting Fern, Docker or
+any network request: each input its generation reads exists, and each evidence
+file it restates states a restatable pair. It prints one line per broken item,
+`<family> <item>: <reason>`, and exits 1 when any is broken. `generate` runs
+the same per-family validation before it starts Fern, refusing a broken item
+with that reason line. `generate` regenerates the
 named items, or the whole family when none is named, at the certified pair
 unless `--version`/`--cli-version` name another, writing each item where its
 committed reference lives. Fern runs once at a time, in a scratch workspace
 outside any checkout (so it stamps no `originGitCommit`). Quiet on success
 apart from one summary line; a failed item names its log and the rest still run.
 
-Exit status: 0 when every item listed or regenerated; 1 when an item failed
-(each named on stderr) or an input it reads is malformed; 2 on a usage error.
+Exit status: 0 when every item listed, checked or regenerated; 1 when an item
+failed or is broken (each named) or an input it reads is malformed; 2 on a
+usage error.
 """
 
 from __future__ import annotations
 
 import argparse
 import contextlib
+import functools
 import hashlib
 import http.server
 import importlib.util
@@ -68,7 +77,7 @@ from collections.abc import Callable, Generator
 from dataclasses import asdict, astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar, cast
 
 ROOT = Path(os.environ.get("CROZIER_FERN_REFERENCES_ROOT") or Path(__file__).resolve().parents[2]).resolve()
 METADATA = Path("assets/scaffolding/metadata.json")
@@ -108,6 +117,24 @@ OVERLAY_KINDS = {
     "expected-literals": OverlayKind("--enum-type", value="literals"),
     "expected-default-max-retries": OverlayKind("--default-max-retries", recorded="default_max_retries"),
 }
+
+
+T = TypeVar("T")
+# While `check` runs, each whole-tree table below is read once: `check` reads a
+# fixed tree, where `generate` may change one between items.
+_CHECKING: dict[object, object] | None = None
+
+
+def read_once(function: Callable[[], T]) -> Callable[[], T]:
+    @functools.wraps(function)
+    def wrapper() -> T:
+        if _CHECKING is None:
+            return function()
+        if function not in _CHECKING:
+            _CHECKING[function] = function()
+        return cast("T", _CHECKING[function])
+
+    return wrapper
 
 
 class ReferenceError(RuntimeError):
@@ -472,6 +499,7 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     return [dict(zip(header, line.split("\t"), strict=True)) for line in lines[1:] if line]
 
 
+@read_once
 def corpus_rows() -> dict[str, str]:
     """CORPUS.md's numbered rows, fixture directory to row name."""
     rows: dict[str, str] = {}
@@ -489,6 +517,7 @@ def corpus_rows() -> dict[str, str]:
     return rows
 
 
+@read_once
 def flat_goldens() -> dict[str, str]:
     """`flat-goldens.txt`'s rows: fixture to the fixture whose spec it uses."""
     declared: dict[str, str] = {}
@@ -497,6 +526,76 @@ def flat_goldens() -> dict[str, str]:
             fixture, _, spec = line.partition("|")
             declared[fixture] = spec or fixture
     return declared
+
+
+CORPUS_SOURCES = FIXTURES / "corpus-sources.tsv"
+
+
+@read_once
+def corpus_sources() -> dict[str, list[str]]:
+    """`corpus-sources.tsv`: each registered row name to the committed files of
+    its source document."""
+    path = ROOT / CORPUS_SOURCES
+    found: dict[str, list[str]] = {}
+    lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
+    for line in lines:
+        if line and not line.startswith("#") and not line.startswith("corpus_name\t"):
+            name, relative = line.split("\t")[:2]
+            found.setdefault(name, []).append(relative)
+    return found
+
+
+@read_once
+def committed_rows() -> set[str]:
+    """The `CORPUS.md` row names whose `decision` is `committed`: every file of
+    their source is stored under `corpus-sources/`."""
+    names, column = set(), None
+    for line in (ROOT / FIXTURES / "CORPUS.md").read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if "decision" in cells and "name" in cells:
+            column = cells.index("decision"), cells.index("name")
+        elif column and len(cells) > max(column) and re.fullmatch(r"\d+", cells[0]) and cells[column[0]] == "committed":
+            names.add(cells[column[1]].strip("`"))
+    return names
+
+
+def require(path: Path, what: str) -> None:
+    """Refuse an item whose generation would read `path`, which is not a file."""
+    if not path.is_file():
+        raise ReferenceError(f"{what} {rel(path)} does not exist; restore it, or remove the entry that names it")
+
+
+def require_directory(path: Path, what: str) -> None:
+    if not path.is_dir():
+        raise ReferenceError(f"{what} {rel(path)} does not exist; restore it, or remove the entry that names it")
+
+
+def vendored_spec(fixture: str) -> Path:
+    """The document `generate-fern-fixture.sh` reads for a fixture's golden: its
+    vendored `openapi.yml`, else the committed corpus source of that name."""
+    vendored = ROOT / FIXTURES / fixture / "openapi.yml"
+    committed = (ROOT / FIXTURES / "corpus-sources" / fixture / f"openapi{suffix}" for suffix in DOCUMENT_SUFFIXES)
+    return vendored if vendored.is_file() else next((path for path in committed if path.is_file()), vendored)
+
+
+def validate_corpus(item: str) -> None:
+    """A row's committed source files, or a vendored fixture's document, and the
+    document its flat golden is generated from."""
+    rows, flats = corpus_rows(), flat_goldens()
+    if item in rows:
+        name, sources = rows[item], corpus_sources()
+        for relative in sources.get(name, []):
+            require(ROOT / relative, f"its committed specification ({CORPUS_SOURCES} row {name})")
+        if name in committed_rows() and not sources.get(name):
+            raise ReferenceError(f"CORPUS.md row {name} is `committed`, but {CORPUS_SOURCES} records no file of it")
+        if item in flats and flats[item] != item:
+            require(vendored_spec(flats[item]), "the document its flat golden is generated from,")
+        return
+    require_directory(ROOT / FIXTURES / item, "its fixture directory")
+    if (ROOT / FIXTURES / item / "expected").is_dir():
+        require(ROOT / FIXTURES / item / "openapi.yml", "its document")
+    if item in flats:
+        require(vendored_spec(flats[item]), "the document its flat golden is generated from,")
 
 
 def list_corpus() -> list[str]:
@@ -572,7 +671,9 @@ def list_overlays() -> list[str]:
     )
 
 
-def generate_overlay(item: str, pair: Pair) -> None:
+def overlay_value(item: str) -> str:
+    """The setting an overlay is generated under: its kind's fixed value, or the
+    count its golden's `.crozier-overlay.json` records."""
     fixture, _, kind = item.partition("/")
     golden = ROOT / FIXTURES / fixture / kind
     if kind not in OVERLAY_KINDS or not (golden / OVERLAY_MANIFEST).is_file():
@@ -580,7 +681,12 @@ def generate_overlay(item: str, pair: Pair) -> None:
     overlay = OVERLAY_KINDS[kind]
     value = overlay.value
     if overlay.recorded is not None:
-        manifest = json.loads((golden / OVERLAY_MANIFEST).read_text(encoding="utf-8"))
+        try:
+            manifest = json.loads((golden / OVERLAY_MANIFEST).read_text(encoding="utf-8"))
+        except ValueError as error:
+            raise ReferenceError(
+                f"cannot read {rel(golden / OVERLAY_MANIFEST)} ({error}); restore it from git"
+            ) from None
         count = manifest.get(overlay.recorded) if isinstance(manifest, dict) else None
         if not isinstance(count, int) or isinstance(count, bool) or count < 0:
             raise ReferenceError(
@@ -589,6 +695,23 @@ def generate_overlay(item: str, pair: Pair) -> None:
         value = str(count)
     if value is None:
         raise ReferenceError(f"overlay kind {kind} names no value; fix OVERLAY_KINDS")
+    return value
+
+
+def validate_overlay(item: str) -> None:
+    """Its manifest's setting, the golden it is reduced against, and a document
+    to generate from: the vendored one, a committed source, or a row's fetch."""
+    overlay_value(item)
+    fixture = item.partition("/")[0]
+    require_directory(ROOT / FIXTURES / fixture / "expected", "the golden it is reduced against,")
+    if not vendored_spec(fixture).is_file() and fixture not in corpus_rows():
+        require(vendored_spec(fixture), "its document")
+
+
+def generate_overlay(item: str, pair: Pair) -> None:
+    fixture, _, kind = item.partition("/")
+    overlay = OVERLAY_KINDS[kind]
+    value = overlay_value(item)
     run_script(
         [str(ROOT / "tools/fern-goldens/fern-overlay-goldens.sh"), "--jobs", "1", overlay.flag, value, fixture],
         ROOT / LOGS / "overlays" / f"{fixture}.{kind}.log",
@@ -600,11 +723,13 @@ def list_handwritten() -> list[str]:
     return sorted(path.parent.name for path in (ROOT / HANDWRITTEN).glob("*/evidence.toml"))
 
 
-def generate_handwritten(item: str, pair: Pair) -> None:
+def handwritten_audiences(item: str) -> tuple[str, ...]:
+    """A hand-written fixture's declared audiences, once its document and the
+    evidence it restates are known good."""
     fixture = ROOT / HANDWRITTEN / item
     evidence = fixture / "evidence.toml"
-    if not evidence.is_file() or not (fixture / "openapi.yml").is_file():
-        raise ReferenceError(f"{item} is no hand-written fixture; `list handwritten` names the family")
+    require(evidence, "its evidence")
+    require(fixture / "openapi.yml", "its document")
     try:
         declared = tomllib.loads(evidence.read_text(encoding="utf-8")).get("audiences", [])
     except tomllib.TOMLDecodeError as error:
@@ -616,8 +741,15 @@ def generate_handwritten(item: str, pair: Pair) -> None:
             f"{rel(evidence)}: audiences must be a list of audience labels, none of {sorted(YAML_KEYWORDS)}, "
             f"not {declared!r}"
         )
-    audiences = tuple(declared)
     check_evidence(evidence)
+    recorded_generator_config(fixture / "fern-expected")
+    return tuple(declared)
+
+
+def generate_handwritten(item: str, pair: Pair) -> None:
+    fixture = ROOT / HANDWRITTEN / item
+    evidence = fixture / "evidence.toml"
+    audiences = handwritten_audiences(item)
     # A fixture generated under a non-default setting keeps it: the committed
     # tree's own `.fern/metadata.json` records the generator config it was made with.
     config = recorded_generator_config(fixture / "fern-expected")
@@ -675,29 +807,32 @@ class MeasurementCase:
 
 
 def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
-    """Why one `cases.tsv` row is malformed, or `None`."""
+    """Why one `cases.tsv` row is malformed, or `None`. Whether the document and
+    base tree it names exist is the item's own check (`validate_measurement`),
+    so one missing input never hides the rest of the table."""
     name, document, overlay = row["case"], row["document"], row["overlay"]
     if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*(?:/[a-z0-9][a-z0-9._-]*)*", name) or name in seen:
         return "a case is a unique lower-case path under docs/fern-measurements/"
     if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
         return f"enum_type is one of {', '.join(ENUM_TYPES)} and layout one of {', '.join(LAYOUTS)}"
     target = (ROOT / document).resolve()
-    if not document or not target.is_relative_to(ROOT.resolve()) or not target.is_file():
-        return f"its document {document!r} is no file of this repository"
+    if not document or not target.is_relative_to(ROOT.resolve()):
+        return f"its document {document!r} is no path of this repository"
     label, colon, base = overlay.partition(":")
     base_tree = (ROOT / base).resolve() if base and base != "-" else None
     if overlay != "-" and not (
         colon
         and label in OVERLAY_BASES
-        and (base == "-" or (base_tree is not None and base_tree.is_relative_to(ROOT.resolve()) and base_tree.is_dir()))
+        and (base == "-" or (base_tree is not None and base_tree.is_relative_to(ROOT.resolve())))
     ):
         return f"its overlay {overlay!r} is `-` or `<{'|'.join(OVERLAY_BASES)}>:<base tree or ->`"
     return None
 
 
+@read_once
 def cases() -> dict[str, MeasurementCase]:
-    """`cases.tsv`'s rows, each a unique case naming a committed document, an
-    enum mode, a layout and an overlay this family can build."""
+    """`cases.tsv`'s rows, each a unique case naming a document of this
+    repository, an enum mode, a layout and an overlay this family can build."""
     found: dict[str, MeasurementCase] = {}
     for row in read_tsv(CASES, CASES_HEADER):
         failure = case_row_failure(row, set(found))
@@ -712,6 +847,16 @@ def cases() -> dict[str, MeasurementCase]:
 
 
 PARAMETER_LITERALS = MEASUREMENTS / "parameter-literals"
+# Where a parameter-literals case's document and complete python-enums tree
+# live, first match wins.
+PARAMETER_LITERAL_HOMES = (HANDWRITTEN,)
+
+
+def parameter_literal_fixture(case: str) -> Path:
+    """The directory holding `case`'s `openapi.yml` and `fern-expected/`; the
+    hand-written one, which then names what is missing, when neither has it."""
+    homes = [ROOT / home / case for home in PARAMETER_LITERAL_HOMES]
+    return next((home for home in homes if (home / "openapi.yml").is_file()), homes[0])
 
 
 def parameter_literal_cases() -> list[str]:
@@ -737,16 +882,19 @@ PINNED_RUN = "measurement.json"
 
 
 class RefusalLog(NamedTuple):
-    """A measurement whose committed reference is Fern's log refusing a document."""
+    """A measurement whose committed reference is Fern's log refusing a document
+    (None when no document is beside the log, which its check reports)."""
 
     log: Path
-    document: Path
+    document: Path | None
 
 
+@read_once
 def refusal_logs() -> dict[str, RefusalLog]:
     """`<group>/<case>/<stem>` -> (its `<stem>.fern.log`, the `<stem>.openapi.*`
     document beside it): a measurement whose committed reference is Fern's
-    refusal of that document, as Fern printed it."""
+    refusal of that document, as Fern printed it. A log whose document is gone
+    is still an item, so its check names it rather than the item vanishing."""
     found = {}
     for log in sorted((ROOT / MEASUREMENTS).glob(f"*/*/*{REFUSAL_LOG}")):
         stem = log.name[: -len(REFUSAL_LOG)]
@@ -758,8 +906,7 @@ def refusal_logs() -> dict[str, RefusalLog]:
             ),
             None,
         )
-        if document is not None:
-            found[rel(log.parent / stem)[len(str(MEASUREMENTS)) + 1 :]] = RefusalLog(log, document)
+        found[rel(log.parent / stem)[len(str(MEASUREMENTS)) + 1 :]] = RefusalLog(log, document)
     return found
 
 
@@ -814,6 +961,7 @@ def pinned_run(record_path: Path) -> PinnedRun:
     return PinnedRun(case, PinnedRecord(**{key: value for key, value in record.items() if key in known}), target)
 
 
+@read_once
 def pinned_runs() -> dict[str, Path]:
     """`<case>` -> its `measurement.json`: a measurement recording one pinned run
     over its own probe, with the run's log and Fern's raw client."""
@@ -877,7 +1025,7 @@ def generate_parameter_literal(case: str, pair: Pair) -> None:
     python-enums tree less `core/enum.py`, with only `.fern/metadata.json`
     differing. Records that metadata and the tree's digest, or fails naming the
     first file the claim no longer holds for."""
-    fixture = ROOT / HANDWRITTEN / case
+    fixture = parameter_literal_fixture(case)
     with run_fern(
         fixture / "openapi.yml", pair, enum_type="literals", client_class_name="FernApi", extra_fields="allow"
     ) as run:
@@ -940,12 +1088,51 @@ def refused_measurement(item: str, row: MeasurementCase, record: Path, pair: Pai
         write_refusal_record(record, pair, run.generate_exit, diagnostic)
 
 
+def validate_measurement(item: str) -> None:
+    """Every input a measurement's re-measurement reads: a parameter-literals
+    claim's document and python-enums tree, a refusal log's document, a pinned
+    run's probe, a case's document and overlay base, and the provenance its
+    `evidence.toml` and `evidence.md` restate."""
+    if item.startswith("parameter-literals/"):
+        fixture = parameter_literal_fixture(item.removeprefix("parameter-literals/"))
+        require(
+            fixture / "openapi.yml", f"its document ({rel(ROOT / PARAMETER_LITERALS)}/certified-trees.json names it)"
+        )
+        require_directory(fixture / "fern-expected", "the python-enums tree it is compared with,")
+        return
+    if item in (logs := refusal_logs()):
+        if logs[item].document is None:
+            stem = logs[item].log.name[: -len(REFUSAL_LOG)]
+            raise ReferenceError(
+                f"no document {rel(logs[item].log.parent)}/{stem}.openapi.(yml|yaml|json) is beside its log "
+                f"{rel(logs[item].log)}; restore it, or remove the log"
+            )
+        return
+    if item in (runs := pinned_runs()):
+        pinned_run(runs[item])
+        return
+    row = cases().get(item)
+    if row is None:
+        raise ReferenceError(f"{item} is no {CASES} row; `list measurements` names the family")
+    require(row.document, f"its document ({CASES} names it)")
+    if row.overlay is not None and row.overlay.base is not None:
+        require_directory(row.overlay.base, f"its overlay base tree ({CASES} names it)")
+    case = ROOT / MEASUREMENTS / item
+    if (case / "evidence.toml").is_file() and "digest = " in (case / "evidence.toml").read_text(encoding="utf-8"):
+        check_evidence(case / "evidence.toml")
+    if (case / "evidence.md").is_file():
+        check_evidence_note(case / "evidence.md")
+
+
 def generate_measurement(item: str, pair: Pair) -> None:
     if item.startswith("parameter-literals/"):
         generate_parameter_literal(item.removeprefix("parameter-literals/"), pair)
         return
     if item in (logs := refusal_logs()):
-        remeasure_refusal_log(item, logs[item].log, logs[item].document, pair)
+        document = logs[item].document
+        if document is None:
+            raise ReferenceError(f"{item} has no `<stem>.openapi.*` document beside its log")
+        remeasure_refusal_log(item, logs[item].log, document, pair)
         return
     if item in (runs := pinned_runs()):
         remeasure_pinned_run(runs[item], pair)
@@ -959,11 +1146,8 @@ def generate_measurement(item: str, pair: Pair) -> None:
         refused_measurement(item, row, record, pair)
         return
     evidence = destination.parent / "evidence.toml"
+    # `validate_measurement` held both provenance files before Fern started.
     restates_evidence = evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8")
-    if restates_evidence:
-        check_evidence(evidence)
-    if (destination.parent / "evidence.md").is_file():
-        check_evidence_note(destination.parent / "evidence.md")
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
     if row.overlay is not None:
         provenance: dict[str, object] = {
@@ -1064,10 +1248,12 @@ def write_refusal_record(record: Path, pair: Pair, generate_exit: str, diagnosti
     )
 
 
+def validate_probe(item: str) -> None:
+    require(ROOT / PROBES / f"{item}.yml", f"its probe document ({MANIFEST} names it)")
+
+
 def generate_probe(item: str, pair: Pair) -> None:
     document = ROOT / PROBES / f"{item}.yml"
-    if not document.is_file():
-        raise ReferenceError(f"no probe document {rel(document)}; `list probes` names the family")
     tree = ROOT / PROBE_EXPECTED / item
     record = ROOT / PROBE_EXPECTED / f"{item}{REFUSAL_SUFFIX}"
     with run_fern(document, pair, enum_type="python-enums", layout="packaged") as run:
@@ -1122,13 +1308,19 @@ def fern_log(pair: Pair, run: FernRun) -> str:
 
 
 def list_authored() -> list[str]:
-    return sorted(path.parent.name for path in (ROOT / AUTHORED).glob("*/openapi.yml"))
+    """Every authored probe: a case directory with its document or the log
+    Fern's run over it wrote, so a case whose document is gone is still named."""
+    return sorted(
+        {path.parent.name for name in ("openapi.yml", "fern.log") for path in (ROOT / AUTHORED).glob(f"*/{name}")}
+    )
+
+
+def validate_authored(item: str) -> None:
+    require(ROOT / AUTHORED / item / "openapi.yml", "its document")
 
 
 def generate_authored(item: str, pair: Pair) -> None:
     case = ROOT / AUTHORED / item
-    if not (case / "openapi.yml").is_file():
-        raise ReferenceError(f"{item} is no authored probe; `list authored-probes` names the family")
     with run_fern(case / "openapi.yml", pair, check=True) as run:
         (case / "fern.log").write_text(fern_log(pair, run), encoding="utf-8", newline="\n")
         if run.generate_exit != "0" or run.tree is None:
@@ -1181,6 +1373,33 @@ def list_refusals() -> list[str]:
         if evidence_document(log) is not None
     ]
     return sorted(classes) + findings + evidence
+
+
+def finding_probe(name: str) -> Path:
+    """The probe document `findings.tsv` names for a finding."""
+    path = REGISTRY / "findings.tsv"
+    lines = (ROOT / path).read_text(encoding="utf-8").splitlines()
+    header = lines[0].split("\t") if lines else []
+    if "probe" not in header or "finding" not in header:
+        raise ReferenceError(f"{path} has no `finding` and `probe` columns; restore it from git")
+    for line in lines[1:]:
+        cells = line.split("\t")
+        if len(cells) == len(header) and cells[header.index("finding")] == name:
+            return ROOT / cells[header.index("probe")]
+    raise ReferenceError(f"{path} has no row for finding {name}")
+
+
+def validate_refusal(item: str) -> None:
+    """A finding's probe `findings.tsv` names, an evidence log's document, or a
+    class's `probe.yml`: the document each one's measurement reads."""
+    if item.startswith("findings/"):
+        require(finding_probe(item.removeprefix("findings/")), f"its probe document ({REGISTRY}/findings.tsv names it)")
+    elif "/evidence/" in item:
+        log = ROOT / REGISTRY / f"{item}{PINNED_LOG}"
+        if evidence_document(log) is None:
+            raise ReferenceError(f"{item} has no pinned log beside a probe document; `list refusals` names the family")
+    else:
+        require(ROOT / REGISTRY / item / "probe.yml", f"its probe document ({REGISTRY}/classes.tsv names the class)")
 
 
 def generate_refusal(item: str, pair: Pair) -> None:
@@ -1240,13 +1459,19 @@ def list_departure_evidence() -> list[str]:
     return sorted(path.parent.name for path in (ROOT / DEPARTURE_EVIDENCE).glob("*/fern-reference.json"))
 
 
-def generate_departure_evidence(item: str, pair: Pair) -> None:
-    """A departure's evidence tree: Fern's output for the note's own document,
-    under the settings its `fern-reference.json` records."""
+class DepartureSettings(NamedTuple):
+    enum_type: str
+    layout: str
+    organization: str
+
+
+def departure_settings(item: str) -> DepartureSettings:
+    """The settings a departure's `fern-reference.json` records, once it and the
+    note's own document are known good."""
     case = ROOT / DEPARTURE_EVIDENCE / item
     settings_path = case / "fern-reference.json"
-    if not settings_path.is_file():
-        raise ReferenceError(f"{item} has no fern-reference.json; `list departure-evidence` names the family")
+    require(settings_path, "its settings")
+    require(case / "openapi.yml", "its document")
     try:
         settings = json.loads(settings_path.read_text(encoding="utf-8"))
     except ValueError as error:
@@ -1265,6 +1490,14 @@ def generate_departure_evidence(item: str, pair: Pair) -> None:
             f"{rel(settings_path)}: enum_type is one of {', '.join(ENUM_TYPES)}, layout one of "
             f"{', '.join(LAYOUTS)} and organization letters and digits starting with a letter, not {enum_type!r}, {layout!r}, {organization!r}"
         )
+    return DepartureSettings(enum_type, layout, organization)
+
+
+def generate_departure_evidence(item: str, pair: Pair) -> None:
+    """A departure's evidence tree: Fern's output for the note's own document,
+    under the settings its `fern-reference.json` records."""
+    case = ROOT / DEPARTURE_EVIDENCE / item
+    enum_type, layout, organization = departure_settings(item)
     with run_fern(case / "openapi.yml", pair, enum_type=enum_type, layout=layout, organization=organization) as run:
         if run.generate_exit != "0" or run.tree is None:
             raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
@@ -1276,24 +1509,66 @@ def generate_departure_evidence(item: str, pair: Pair) -> None:
             shutil.rmtree(stage, ignore_errors=True)
 
 
+def validate_handwritten(item: str) -> None:
+    handwritten_audiences(item)
+
+
+def validate_departure_evidence(item: str) -> None:
+    departure_settings(item)
+
+
 @dataclass(frozen=True)
 class Family:
-    """One reference family: what lists its item names, and what regenerates one."""
+    """One reference family: what lists its item names, what validates one's
+    inputs (raising `ReferenceError` with the reason, reading files only), and
+    what regenerates one. `check` and `generate` both call `validate`, so the
+    two never disagree about an input."""
 
     list: Callable[[], list[str]]
     generate: Callable[[str, Pair], None]
+    validate: Callable[[str], None]
 
 
 FAMILY: dict[str, Family] = {
-    "corpus": Family(list_corpus, generate_corpus),
-    "overlays": Family(list_overlays, generate_overlay),
-    "handwritten": Family(list_handwritten, generate_handwritten),
-    "measurements": Family(list_measurements, generate_measurement),
-    "probes": Family(list_probes, generate_probe),
-    "authored-probes": Family(list_authored, generate_authored),
-    "refusals": Family(list_refusals, generate_refusal),
-    "departure-evidence": Family(list_departure_evidence, generate_departure_evidence),
+    "corpus": Family(list_corpus, generate_corpus, validate_corpus),
+    "overlays": Family(list_overlays, generate_overlay, validate_overlay),
+    "handwritten": Family(list_handwritten, generate_handwritten, validate_handwritten),
+    "measurements": Family(list_measurements, generate_measurement, validate_measurement),
+    "probes": Family(list_probes, generate_probe, validate_probe),
+    "authored-probes": Family(list_authored, generate_authored, validate_authored),
+    "refusals": Family(list_refusals, generate_refusal, validate_refusal),
+    "departure-evidence": Family(list_departure_evidence, generate_departure_evidence, validate_departure_evidence),
 }
+
+
+def broken(family: str, item: str) -> str | None:
+    """The line `check` prints, and `generate` refuses with, for an item whose
+    inputs fail its family's validation: `<family> <item>: <reason>`."""
+    try:
+        FAMILY[family].validate(item)
+    except (ReferenceError, OSError, UnicodeDecodeError) as error:
+        return f"{family} {item}: {error}"
+    return None
+
+
+def check(families: list[str]) -> int:
+    """Validate every item of `families` (every family when empty), printing one
+    line per broken item. Reads the tree only: no Fern, Docker or network."""
+    global _CHECKING
+    _CHECKING, lines = {}, []
+    for family in families or list(FAMILY):
+        try:
+            items = FAMILY[family].list()
+        except (ReferenceError, SystemExit, OSError) as error:
+            reason = str(error).removeprefix("fern-references: ")
+            lines.append(f"{family} (its listing): {reason}")
+            continue
+        lines += [line for item in items if (line := broken(family, item)) is not None]
+    sys.stdout.write("".join(f"{line}\n" for line in lines))
+    if lines:
+        print(f"fern-references: check: {len(lines)} broken item(s); repair each input named above", file=sys.stderr)
+        return 1
+    return 0
 
 
 # The version overrides a family's delegate cannot honour, and why: an overlay
@@ -1313,6 +1588,8 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     listing = commands.add_parser("list", help="print the family's item names")
     listing.add_argument("family", choices=tuple(FAMILY))
+    checking = commands.add_parser("check", help="validate every item's inputs without running Fern")
+    checking.add_argument("families", nargs="*", choices=tuple(FAMILY), metavar="FAMILY")
     generate = commands.add_parser("generate", help="regenerate the named items, or the whole family")
     generate.add_argument("family", choices=tuple(FAMILY))
     generate.add_argument(
@@ -1321,9 +1598,15 @@ def main(argv: list[str] | None = None) -> int:
     generate.add_argument("--cli-version", help="Fern CLI version (default: the certified pair's; not for refusals)")
     generate.add_argument("items", nargs="*")
     args = parser.parse_args(argv)
+    if args.command == "check":
+        return check(args.families)
     family = FAMILY[args.family]
     lister, generator = family.list, family.generate
-    known = lister()
+    try:
+        known = lister()
+    except ReferenceError as error:
+        print(f"fern-references: {error}", file=sys.stderr)
+        return 1
     if args.command == "list":
         sys.stdout.write("".join(f"{item}\n" for item in known))
         return 0
@@ -1342,6 +1625,11 @@ def main(argv: list[str] | None = None) -> int:
         )
     failures = []
     for item in args.items or known:
+        # The validation `check` runs, before Fern starts, with its reason line.
+        if (line := broken(args.family, item)) is not None:
+            failures.append(line)
+            print(f"fern-references: {line}", file=sys.stderr, flush=True)
+            continue
         try:
             generator(item, pair)
         except (ReferenceError, OSError) as error:

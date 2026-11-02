@@ -511,6 +511,8 @@ class FernReferencesTests(unittest.TestCase):
 
     def test_each_overlay_kind_runs_the_overlay_script_with_its_setting_and_the_cli(self) -> None:
         self.install_delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        self.write("tests/fixtures/alpha/openapi.yml", "openapi: 3.0.3\n")
+        self.write("tests/fixtures/alpha/expected/src/x.py", "X = 1\n")
         self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
         self.write(
             "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
@@ -544,7 +546,9 @@ class FernReferencesTests(unittest.TestCase):
     def test_a_refusal_class_and_a_finding_run_fern_refusals_one_generation_at_a_time(self) -> None:
         self.install_delegates("tools/fern-refusals/fern-refusals.py")
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
-        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\neta\tgenerates\n")
+        self.write("docs/fern-refusals/zeta/probe.yml", "openapi: 3.0.3\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\tprobe\neta\tgenerates\tdocs/eta.yml\n")
+        self.write("docs/eta.yml", "openapi: 3.0.3\n")
 
         result = self.run_tool("generate", "refusals")
 
@@ -693,6 +697,7 @@ class FernReferencesTests(unittest.TestCase):
         self.write("tests/fixtures/museum/expected/src/x.py", "X = 1\n")
         self.write("tests/fixtures/broken/known-fern-failure.json", "{}\n")
         self.write("tests/fixtures/delta/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/delta/openapi.yml", "openapi: 3.0.3\n")
         self.write("tests/fixtures/delta-flat-spec/expected-flat/__init__.py", "")
         self.write("tests/fixtures/flat-goldens.txt", "delta-flat-spec|delta\n")
 
@@ -760,8 +765,7 @@ class FernReferencesTests(unittest.TestCase):
         for rows, reason in (
             ("a/b\tdocs/x.yml\tliterals\tpackaged\tfern-expected\n", "its overlay 'fern-expected'"),
             ("a/b\tdocs/x.yml\tliterals\tpackaged\texpected:../outside\n", "its overlay 'expected:../outside'"),
-            ("a/b\tdocs/missing.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
-            ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
+            ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no path of this repository"),
             ("a/b\tdocs/x.yml\tliterals\tpackaged\t-\na/b\tdocs/x.yml\tliterals\tflat\t-\n", "unique"),
         ):
             with self.subTest(rows=rows):
