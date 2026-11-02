@@ -45,11 +45,30 @@ socket.create_connection = _refuse
 if os.environ.get("CHECK_TRACE"):
     _root = os.path.realpath(os.environ["CROZIER_FERN_REFERENCES_ROOT"])
     _seen = set()
+    # Interpreter start-up (a venv's pyvenv.cfg, a coverage hook) is no read of
+    # the check's: tracing starts once the interpreter opens the tool's script.
+    _started = []
+
+    def _from_coverage():
+        # coverage.py (the suite's `patch = ["subprocess"]`) measures this run
+        # and reads files of its own, such as a venv's pyvenv.cfg.
+        frame = sys._getframe(2)
+        while frame is not None:
+            if frame.f_globals.get("__name__", "").startswith("coverage"):
+                return True
+            frame = frame.f_back
+        return False
 
     def _note(kind, path):
         try:
             absolute = os.path.abspath(os.fsdecode(path))
         except TypeError:
+            return
+        if _from_coverage():
+            return
+        if not _started:
+            if kind == "open" and absolute.endswith(os.sep + "fern-references.py"):
+                _started.append(absolute)
             return
         if absolute.startswith(_root + os.sep):
             _seen.add((kind, os.path.relpath(absolute, _root)))
@@ -163,6 +182,7 @@ class CommittedInventoryTests(unittest.TestCase):
         self.assertIn(result.returncode, (0, 1), result.stderr)
         reads = json.loads(trace.read_text(encoding="utf-8"))
         self.assertGreater(len(reads), 1000, "the trace saw the check read the inventory")
+        self.assertIn(["open", "docs/fern-measurements/cases.tsv"], reads)
         inputs = json.loads(PROJECT.read_text(encoding="utf-8"))["targets"]["test"]["inputs"]
         globs = [entry.removeprefix("{workspaceRoot}/") for entry in inputs if entry.startswith("{workspaceRoot}/")]
 
