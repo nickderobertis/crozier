@@ -151,10 +151,14 @@ Use the `just` recipes; do not hand-roll equivalents.
   apart from what crozier's own tests reach. Outside `check` (runs the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
-- `just golden-reach` — the same golden-only tier one golden test at a time,
-  joined per `golden` census row into its reach cell and the committed ranking;
-  outside `check` for the same reason. After editing the site table, `just
-  golden-reach-report` re-joins without re-measuring. See
+- `just census-repin` — **the fix every stale census table names** (a site
+  anchor, ledger row, reach cell, arm section, coverage count, `handwritten-reach.tsv`
+  row or the registries index): re-anchors moved sites, re-measures from the
+  nearest saved base only the golden tests and hand-written fixtures whose base
+  run executed changed code, regenerates every derived table, and resolves a merge
+  whose conflicts are all derived. One instrumented measurement per host (a lock).
+  `just golden-reach` is the full measurement; `just golden-reach-report` re-joins
+  after a site-table edit. See
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md#golden-reach-row-by-row).
 - `just surface-census` — which OpenAPI shapes the registered golden **sources**
   declare, measured off each source document's object model (never a generated

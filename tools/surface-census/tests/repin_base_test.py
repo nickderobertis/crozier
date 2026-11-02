@@ -56,7 +56,7 @@ class GitHub(BaseHTTPRequestHandler):
     used: ClassVar[int] = 0
     calls: ClassVar[Counter[str]] = Counter()
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - BaseHTTPRequestHandler's signature
+    def log_message(self, format: str, *args: object) -> None:
         return
 
     def _send(self, status: int, body: bytes, kind: str = "application/json") -> None:
@@ -162,7 +162,9 @@ def history(tmp_path: Path) -> tuple[Path, list[str]]:
 
 
 def lookup(root: Path, cache: Path, api: str, *, token: str | None = "offline-token") -> subprocess.CompletedProcess:
-    env = {key: value for key, value in os.environ.items() if key not in ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_REPOSITORY")}
+    env = {
+        key: value for key, value in os.environ.items() if key not in ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_REPOSITORY")
+    }
     env |= {"CROZIER_GITHUB_API_URL": api, "CROZIER_GOLDEN_REACH_BASE_CACHE": str(cache)}
     if token is not None:
         env["GITHUB_TOKEN"] = token
@@ -215,7 +217,10 @@ def test_a_cached_base_is_used_without_a_request_when_no_nearer_ancestor_was_pub
     git(root, "update-ref", "refs/remotes/origin/main", c2)  # c4 is a local commit no CI run published
     GitHub.artifacts = {c3: artifact(store(c3), tmp_path)}
     run = lookup(root, cache, github)
-    assert f"base {c3} (cache): the cached base at {c3[:12]}, with no nearer ancestor CI could have published" in run.stdout
+    assert (
+        f"base {c3} (cache): the cached base at {c3[:12]}, with no nearer ancestor CI could have published"
+        in run.stdout
+    )
     assert GitHub.calls == Counter(), "a cached base nothing nearer could beat costs no request"
 
 
@@ -231,7 +236,13 @@ def test_a_cached_base_is_used_without_a_request_when_no_nearer_ancestor_was_pub
 )
 @pytest.mark.parametrize("with_cache", [True, False], ids=["cached fallback", "full fallback"])
 def test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement(
-    history: tuple[Path, list[str]], github: str, tmp_path: Path, mode: str, token: str | None, reason: str, with_cache: bool
+    history: tuple[Path, list[str]],
+    github: str,
+    tmp_path: Path,
+    mode: str,
+    token: str | None,
+    reason: str,
+    with_cache: bool,
 ) -> None:
     root, (c1, _c2, c3, _c4) = history
     cache = tmp_path / "cache"

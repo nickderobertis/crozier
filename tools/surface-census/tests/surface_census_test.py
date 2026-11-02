@@ -1446,8 +1446,7 @@ class HandwrittenReachRow(NamedTuple):
 REPIN = "run `just census-repin`, which re-anchors moved sites and regenerates the measured tables"
 # A section no generator writes is restated by hand from the ledger the verb writes.
 REPIN_THEN_RESTATE = (
-    "run `just census-repin`, then restate this section from the golden-reach.tsv it writes "
-    "(no generator owns it)"
+    "run `just census-repin`, then restate this section from the golden-reach.tsv it writes (no generator owns it)"
 )
 
 

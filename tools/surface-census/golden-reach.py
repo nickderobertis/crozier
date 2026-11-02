@@ -1966,10 +1966,14 @@ def report(args: argparse.Namespace) -> int:
         changed = rewrite_cells(reaches, repo_root / "docs" / "openapi-surface")
         index = repo_root / "docs" / "openapi-surface-coverage.md"
         # A tree with no coverage index (a scratch region set) has no arm sections to restate.
-        restated = not getattr(args, "skip_arms", False) and index.is_file() and rewrite_arm_sections(
-            read_ledger(repo_root / "docs" / "openapi-surface" / "golden-reach.tsv"),
-            repo_root / "docs" / "openapi-surface",
-            index,
+        restated = (
+            not getattr(args, "skip_arms", False)
+            and index.is_file()
+            and rewrite_arm_sections(
+                read_ledger(repo_root / "docs" / "openapi-surface" / "golden-reach.tsv"),
+                repo_root / "docs" / "openapi-surface",
+                index,
+            )
         )
         print(
             f"golden-reach: wrote the ledger and {changed} reach cell(s); "

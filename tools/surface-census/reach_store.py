@@ -9,18 +9,11 @@ saved base to the tree at ``HEAD``. The base artifact CI publishes
 
 The document (``schema`` 1)
 ---------------------------
-A JSON object, gzip-compressed on disk, with exactly these top-level keys:
-
-``schema``           the integer 1; any other value is refused.
-``commit``           the 40-hex commit the store was measured at.
-``rustc``            ``rustc -vV``'s ``release`` and ``commit-hash``, space-separated.
-``llvm``             ``rustc -vV``'s ``LLVM version`` (the llvm-tools version).
-``full_at``          the 40-hex commit of the last full measurement in its chain.
-``steps_since_full`` the incremental steps since that full measurement (0 for a full one).
-``measured_at``      when it was written, ISO 8601 UTC.
-``tests``            golden test name -> entry.
-``fixtures``         hand-written fixture name -> entry.
-``functions``        function key -> ``{"file", "start", "end", "digest", "regions"}``.
+The artifact name, its one file, the top-level keys (``TOP_LEVEL``) and the drift
+bound (``MAX_AGE_DAYS``, ``MAX_STEPS``) are the contract stated once in
+``docs/openapi-surface-coverage.md`` ("Repinning: the store, the base and `just
+census-repin`"), which ``reach_store_test.py`` holds these constants to. This
+reader refuses any ``schema`` but 1. What the contract leaves to it is below.
 
 **A function key** is ``<file>::<path>``: the repository-relative source file,
 then the item path inside it, read off the source — modules by name, an
@@ -39,7 +32,9 @@ compile them.
 
 ``start``/``end`` are the item's 1-indexed first and last line, ``digest`` the
 SHA-256 (first 32 hex digits) of its **normalized token stream** — every token
-of the item, attributes included, comments and whitespace dropped — and
+of the item, attributes included, comments and whitespace dropped, and a comma
+directly before a closing bracket dropped too (rustfmt adds and removes those as
+it reflows a list) — and
 ``regions`` the item's counter regions (executed or not: the *universe*), in
 the region encoding below, sorted.
 
@@ -62,19 +57,9 @@ same map for its run without the setting.
 
 The carry rule
 --------------
-``plan`` compares a base with the tree at ``HEAD``. A **changed function** is a
-key whose digest differs, or that was added, removed or renamed. A test re-runs
-when its entry executed a changed function, or when its own inputs changed (its
-golden's fixture tree, its source document, its own test or `Corpus` literal in
-the e2e suite); a fixture re-runs when its directory changed. Every test re-runs
-when the change cannot be attributed to functions: a change outside function
-bodies (a `{items}` digest), a ``const fn``, a function added to or removed from
-a trait or trait impl, an embedded or generation-time file (``templates/``,
-``assets/``), ``Cargo.toml``/``Cargo.lock`` other than a release's own version
-bump, ``rust-toolchain.toml``, ``build.rs``, ``.cargo/config.toml``, the corpus
-staging scripts, a shared helper of the e2e suite, or a toolchain version other
-than the base's. The rest are carried. ``CHANGELOG.md`` and every other path
-re-run nothing.
+``plan`` decides what a step re-runs; the rule it implements is stated for
+readers in the coverage index beside the contract, and ``reach_store_test.py``
+proves each of its cases over a real git history.
 """
 
 from __future__ import annotations

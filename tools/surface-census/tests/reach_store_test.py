@@ -15,10 +15,12 @@ import gzip
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import textwrap
 import time
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -120,7 +122,7 @@ def tree_of(source: str, path: str = "src/lib.rs") -> Any:
 
 
 def test_tokens_keep_strings_chars_and_lifetimes_whole_and_drop_comments() -> None:
-    source = 'let a = "{ } \\" //"; /* x /* y */ z */ let b = r#"q"{"#; f(\'\\\'\', \'{\', &\'a str, b\'}\'); // tail'
+    source = "let a = \"{ } \\\" //\"; /* x /* y */ z */ let b = r#\"q\"{\"#; f('\\'', '{', &'a str, b'}'); // tail"
     texts = [t.text for t in RS.tokenize(source.encode())]
     assert '"{ } \\" //"' in texts
     assert 'r#"q"{"#' in texts
@@ -179,7 +181,7 @@ def _text(source: str, region: tuple[int, int, int, int]) -> str:
 
 
 def test_a_region_maps_exactly_onto_its_code_through_comments_whitespace_and_reflow() -> None:
-    regions = [_span_of(LIB, "{ x * 2 }"), _span_of(LIB, "x > 1"), _span_of(LIB, "shown.join(\",\")")]
+    regions = [_span_of(LIB, "{ x * 2 }"), _span_of(LIB, "x > 1"), _span_of(LIB, 'shown.join(",")')]
     before = tree_of(LIB)
     encoded = [before.encode("src/lib.rs", region) for region in regions]
     moved = LIB.replace(
@@ -354,7 +356,7 @@ def base_of(root: Path, **top: Any) -> dict:
     )
 
 
-def step(root: Path, edits: dict[str, str | None], base: dict | None = None, **plan: Any) -> Any:
+def step(root: Path, edits: Mapping[str, str | None], base: dict | None = None, **plan: Any) -> Any:
     base = base or base_of(root)
     for path, text in edits.items():
         if text is None:
@@ -375,21 +377,79 @@ def edit(root: Path, path: str, old: str, new: str) -> dict[str, str]:
 
 RERUN_CASES = [
     ("a body edit re-runs the tests that executed it", "src/lib.rs", "x * 2", "x * 3", {"beta"}, set()),
-    ("a comment and a reflow re-run nothing", "src/lib.rs", "{ x * 2 }", "{\n        // doubled\n        x * 2\n    }", set(), set()),
-    ("a body edit a fixture executed re-runs the fixture", "src/lib.rs", '"{}", self.name', '"{} ", self.name', set(), {"fx"}),
+    (
+        "a comment and a reflow re-run nothing",
+        "src/lib.rs",
+        "{ x * 2 }",
+        "{\n        // doubled\n        x * 2\n    }",
+        set(),
+        set(),
+    ),
+    (
+        "a body edit a fixture executed re-runs the fixture",
+        "src/lib.rs",
+        '"{}", self.name',
+        '"{} ", self.name',
+        set(),
+        {"fx"},
+    ),
     ("its golden's fixture tree", "tests/fixtures/alpha/expected/client.py", "...", "pass", {"alpha"}, set()),
     ("its source document", "tests/fixtures/corpus-sources/alpha/openapi.yaml", "3.0.0", "3.0.3", {"alpha"}, set()),
-    ("a hand-written fixture's document", "docs/openapi-surface/handwritten/fx/openapi.yml", "3.0.0", "3.1.0", set(), {"fx"}),
-    ("a hand-written fixture's Fern tree is no input of its run", "docs/openapi-surface/handwritten/fx/fern-expected/x.py", "1", "2", set(), set()),
-    ("a golden test's own function", "crates/crozier-e2e/tests/e2e.rs", "assert_corpus_matches(&ALPHA);", "assert_corpus_matches(&ALPHA);\n    let _ = 1;", {"alpha"}, set()),
-    ("a golden test's Corpus literal", "crates/crozier-e2e/tests/e2e.rs", 'api: "beta",', 'api: "beta", ', set(), set()),
-    ("a corpus list no golden test reaches", "crates/crozier-e2e/tests/e2e.rs", "&[&ALPHA, &BETA]", "&[&BETA, &ALPHA]", set(), set()),
-    ("an unrelated test", "crates/crozier-e2e/tests/e2e.rs", "CORPORA.len(), 2", "CORPORA.len(), 2, \"two\"", set(), set()),
+    (
+        "a hand-written fixture's document",
+        "docs/openapi-surface/handwritten/fx/openapi.yml",
+        "3.0.0",
+        "3.1.0",
+        set(),
+        {"fx"},
+    ),
+    (
+        "a hand-written fixture's Fern tree is no input of its run",
+        "docs/openapi-surface/handwritten/fx/fern-expected/x.py",
+        "1",
+        "2",
+        set(),
+        set(),
+    ),
+    (
+        "a golden test's own function",
+        "crates/crozier-e2e/tests/e2e.rs",
+        "assert_corpus_matches(&ALPHA);",
+        "assert_corpus_matches(&ALPHA);\n    let _ = 1;",
+        {"alpha"},
+        set(),
+    ),
+    (
+        "a golden test's Corpus literal",
+        "crates/crozier-e2e/tests/e2e.rs",
+        'api: "beta",',
+        'api: "beta", ',
+        set(),
+        set(),
+    ),
+    (
+        "a corpus list no golden test reaches",
+        "crates/crozier-e2e/tests/e2e.rs",
+        "&[&ALPHA, &BETA]",
+        "&[&BETA, &ALPHA]",
+        set(),
+        set(),
+    ),
+    (
+        "an unrelated test",
+        "crates/crozier-e2e/tests/e2e.rs",
+        "CORPORA.len(), 2",
+        'CORPORA.len(), 2, "two"',
+        set(),
+        set(),
+    ),
     ("CHANGELOG.md alone", "CHANGELOG.md", "# Changelog", "# Changelog\n\n## 0.0.2", set(), set()),
 ]
 
 
-@pytest.mark.parametrize(("case", "path", "old", "new", "tests", "fixtures"), RERUN_CASES, ids=[c[0] for c in RERUN_CASES])
+@pytest.mark.parametrize(
+    ("case", "path", "old", "new", "tests", "fixtures"), RERUN_CASES, ids=[c[0] for c in RERUN_CASES]
+)
 def test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches(
     repo: Path, case: str, path: str, old: str, new: str, tests: set[str], fixtures: set[str]
 ) -> None:
@@ -400,12 +460,33 @@ def test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches(
 
 
 FULL_CASES = [
-    ("a const outside any function", {"src/lib.rs": ("LIMIT: usize = 3", "LIMIT: usize = 4")}, "outside function bodies"),
+    (
+        "a const outside any function",
+        {"src/lib.rs": ("LIMIT: usize = 3", "LIMIT: usize = 4")},
+        "outside function bodies",
+    ),
     ("a template the crate embeds", {"templates/client.py.j2": ("...", "pass")}, "templates/client.py.j2"),
-    ("a dependency in Cargo.lock", {"Cargo.lock": ('version = "1.0.1"', 'version = "1.0.2"')}, "Cargo.lock changed beyond"),
+    (
+        "a dependency in Cargo.lock",
+        {"Cargo.lock": ('version = "1.0.1"', 'version = "1.0.2"')},
+        "Cargo.lock changed beyond",
+    ),
     ("a const fn", {"src/lib.rs": ("    4\n", "    5\n")}, "const fn"),
-    ("an override added to a trait impl", {"src/lib.rs": ("impl Shape for Model {}", "impl Shape for Model {\n    fn area(&self) -> u8 {\n        1\n    }\n}")}, "trait"),
-    ("a helper the golden tests reach", {"crates/crozier-e2e/tests/e2e.rs": ('join(api)', 'join(api).join(".")')}, "the golden tests reach it"),
+    (
+        "an override added to a trait impl",
+        {
+            "src/lib.rs": (
+                "impl Shape for Model {}",
+                "impl Shape for Model {\n    fn area(&self) -> u8 {\n        1\n    }\n}",
+            )
+        },
+        "trait",
+    ),
+    (
+        "a helper the golden tests reach",
+        {"crates/crozier-e2e/tests/e2e.rs": ("join(api)", 'join(api).join(".")')},
+        "the golden tests reach it",
+    ),
     ("the toolchain file", {"rust-toolchain.toml": (None, '[toolchain]\nchannel = "1.97.0"\n')}, "rust-toolchain.toml"),
 ]
 
@@ -489,3 +570,18 @@ def test_the_instrumented_lock_says_it_waits_and_enters_only_once_released(tmp_p
 def test_measured_at_parses_the_stamp_the_store_writes() -> None:
     stamp = RS.measured_at({"measured_at": RS.now_iso()})
     assert abs((datetime.datetime.now(datetime.UTC) - stamp).total_seconds()) < 5
+
+
+def test_the_coverage_index_states_the_contract_this_reader_enforces() -> None:
+    """The base contract is stated once, in the coverage index; the reader's constants are held to it."""
+    doc = (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    section = doc.split("#### Repinning: the store, the base and `just census-repin`", 1)[1].split("\n#", 1)[0]
+    flat = " ".join(section.split())
+    keys = flat.split("**keys**", 1)[1].split("**drift bound**", 1)[0]
+
+    assert tuple(re.findall(r"`(\w+)`", keys)) == RS.TOP_LEVEL
+    assert f"more than **{RS.MAX_AGE_DAYS}** days old" in flat
+    assert f"more than **{RS.MAX_STEPS}** steps past a full measurement" in flat
+    base = _load("reach_base", "reach_base.py")
+    assert f"`{base.ARTIFACT_PREFIX}<40-hex commit>`, one file `{base.ARTIFACT_FILE}`, kept 90 days" in flat
+    assert f"`schema` ({RS.SCHEMA}; any other is refused)" in keys

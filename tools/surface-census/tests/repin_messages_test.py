@@ -81,7 +81,12 @@ def test_a_stale_outstanding_row_names_the_verb(tmp_path: Path) -> None:
             (root / path.name).mkdir()
             for table in path.glob("*.tsv"):
                 shutil.copy2(table, root / path.name / table.name)
-    command = [sys.executable, str(REPO / "tools/witness-search/witness-search-registries-index.py"), "--root", str(root)]
+    command = [
+        sys.executable,
+        str(REPO / "tools/witness-search/witness-search-registries-index.py"),
+        "--root",
+        str(root),
+    ]
     assert subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=120).returncode == 0
     outstanding = root / "witness-search-registries" / "outstanding.tsv"
     lines = outstanding.read_text(encoding="utf-8").splitlines(keepends=True)

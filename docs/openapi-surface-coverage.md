@@ -2853,6 +2853,48 @@ Which sites a row has is a declaration read off `src/`; whether its witnesses
 reach them is the measurement, and nothing in a cell asserts it. The cells in the
 region files are the run named in the ledger's first line.
 
+#### Repinning: the store, the base and `just census-repin`
+
+Each golden test's (and hand-written fixture's) executed regions are kept in a
+store, relative to their enclosing function's normalized tokens, so they survive
+a rebuild and any comment, whitespace or rustfmt reflow; `tools/surface-census/reach_store.py`
+documents its function keys and region encoding. **`just census-repin`** is the
+fix every stale-table failure names. It re-anchors sites whose code only moved,
+steps the store from the nearest saved base, regenerates every derived table, and
+resolves a merge whose conflicts are all derived content.
+
+**The carry rule.** A step re-runs a test whose base entry executed a changed
+function (a different token digest, or one added, removed or renamed) or whose own
+inputs changed: its golden's fixture tree, its source document, or its own test
+or `Corpus` literal. A hand-written fixture re-runs when its `openapi.yml` or
+`evidence.toml` changed. Every test re-runs for a change no function can own:
+`src/` outside function bodies, a `const fn`, an override added to a trait impl, a
+template or embedded asset, `Cargo.toml`/`Cargo.lock` beyond a release's own
+version bump, `rust-toolchain.toml`, `build.rs`, `.cargo/config.toml`, e2e-suite
+code the golden tests reach, or another compiler. Every other entry is carried and
+keeps the commit it last executed at; nothing is carried for a test that executed
+changed code. The ledger's first line names the measured commit, the base, and
+the tests run and carried.
+
+**The golden-reach base** is the one storage contract, stated here once:
+
+- **artifact** `golden-reach-base-<40-hex commit>`, one file `base.json.gz`, kept
+  90 days, published by `ci.yml`'s `golden-reach-base` job on each push to `main`
+  (a newer push cancels a run in progress);
+- **keys** `schema` (1; any other is refused), `commit`, `rustc`, `llvm`,
+  `full_at`, `steps_since_full`, `measured_at` (ISO 8601 UTC), `tests`,
+  `fixtures`, `functions`;
+- **drift bound**: a step measures fully when there is no base, when the base is
+  more than **7** days old, or when it would be more than **20** steps past a full
+  measurement;
+- **lookup**: the nearest first-parent ancestor of HEAD with a base, from the host
+  cache `${XDG_CACHE_HOME:-$HOME/.cache}/crozier/golden-reach-base/<sha>/`, else one
+  artifact-list call and one download through `rate_limit_guard.py` (token:
+  `GITHUB_TOKEN`, `GH_TOKEN`, else `gh auth token`). With none to be had the verb
+  falls back to the nearest cached base or a full measurement and says why.
+
+`census-repin --base-only` prints the base a repin would use, and why.
+
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
@@ -5478,7 +5520,10 @@ recomputes both columns from them. With no export present that one case skips by
 name, the way the corpus byte-diffs skip an unfetched spec; once anyone has run
 the recipe, a stale table fails the gate.
 
-So refreshing is: run the recipe, then bring the table to what it printed.
+So refreshing is: run the recipe, then bring the table to what it printed. The
+per-row reach cells, the arm sections, `handwritten-reach.tsv` and the other
+measured tables are never refreshed by hand: `just census-repin` re-measures what a
+change touched and regenerates them, and every check that finds one stale says so.
 
 **The cells in the join table now come from one run**: `just fixtures-coverage`
 on **2026-10-09**, with production `src/` unchanged from commit `50ac4c47d054`.
