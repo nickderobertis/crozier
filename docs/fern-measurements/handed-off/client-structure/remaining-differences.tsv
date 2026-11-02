@@ -2,37 +2,9 @@ document	file	side	root_cause	source
 boruta	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 boruta	src/fern/assets/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 crystalshards	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 crystalshards	src/fern/shards/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	src/fern/types/validation_error.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	src/fern/types/validation_error_errors_item_item.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-darwin	src/fern/__init__.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/__init__.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_approve_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_end_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_get_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_pay_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_start_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_stop_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_update_action_response.py	differs	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-darwin	src/fern/types/act_action_response_interaction.py	certified pair only	R9	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	reference.md	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/settings/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/settings/client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/settings/raw_client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/settings/types/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-e82	src/fern/settings/types/toggle_ask_ai_request_locations_item.py	certified pair only	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	reference.md	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/settings/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/settings/client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/settings/raw_client.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/settings/types/__init__.py	differs	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-fai-6f9	src/fern/settings/types/toggle_ask_ai_request_locations_item.py	certified pair only	R13	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
-nextcloud	src/fern/types/files_sharing_share_status.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+fai-e82	reference.md	differs	unnamed-repeated-body-keyword	docs/fern-measurements/handed-off/client-structure/README.md
+fai-6f9	reference.md	differs	unnamed-repeated-body-keyword	docs/fern-measurements/handed-off/client-structure/README.md
 resemble	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 resemble	src/fern/custom_pronunciations/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 skyvern-docs	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
@@ -47,66 +19,16 @@ whatwatt-clean	src/fern/maintenance/client.py	differs	example-presence	docs/open
 whatwatt-bundle	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 whatwatt-bundle	src/fern/maintenance/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/external_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/internal_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_integration.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_system.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_three_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/activity_author_model_two_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/external_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/types/internal_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/external_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/internal_user_model.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+ironclad-jentic	src/fern/types/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_integration.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_system.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_three_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/activity_author_model_two_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/external_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/types/internal_user_model_type.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/workflows_create_comment_request.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/recordings/types/recordings_event_list_request_after.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/recordings/types/recordings_event_list_request_before.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/recordings/types/recordings_event_list_request_limit.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/recordings/types/recordings_event_list_request_offset.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/recordings/types/recordings_event_list_request_order.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/sse/types/sse_subscribe_request_types.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/test/types/test_test_request_parameters.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/types/bad_request_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/types/not_found_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/types/bad_request_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-gecko	src/fern/types/not_found_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/prerecordings/types/prerecordings_event_list_request_after.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/prerecordings/types/prerecordings_event_list_request_before.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/prerecordings/types/prerecordings_event_list_request_limit.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/prerecordings/types/prerecordings_event_list_request_offset.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/prerecordings/types/prerecordings_event_list_request_order.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/sse/types/sse_subscribe_request_types.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/test/types/test_test_request_parameters.py	differs	parameter-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/types/bad_request_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/types/not_found_error_body.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/types/bad_request_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-numbat	src/fern/types/not_found_error_body_extra.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	reference.md	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/__init__.py	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -119,11 +41,6 @@ deepgram-bundle	src/fern/read/v1/text/__init__.py	differs	type-placement	docs/op
 deepgram-bundle	src/fern/read/v1/text/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/read/v1/text/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/read/v1/text/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_callback_method.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_custom_intent_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -132,17 +49,15 @@ deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_request_encoding
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_media_response.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/read/v1/text/types/analyze_text_request_custom_intent_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/read/v1/text/types/analyze_text_request_custom_topic_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/types/generate_audio_request_container.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/speak/v1/audio/types/generate_audio_request_encoding.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_detect_language.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_model.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_redact.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_redact_one_item.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_summarize.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_media_request_version.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_file_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -151,42 +66,28 @@ deepgram-bundle	src/fern/listen/v1/media/types/transcribe_url_media_request_enco
 deepgram-bundle	src/fern/listen/v1/media/types/transcribe_url_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/analyze_text_request_custom_intent_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/analyze_text_request_custom_topic_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_container_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_six.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/generate_audio_request_encoding_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_file_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/transcribe_url_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-bundle	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-bundle	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/types/listen_v1request_url.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	reference.md	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -200,11 +101,6 @@ deepgram-source	src/fern/read/v1/text/__init__.py	differs	type-placement	docs/op
 deepgram-source	src/fern/read/v1/text/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/read/v1/text/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/read/v1/text/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/raw_client.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_callback_method.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_custom_intent_mode.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -213,17 +109,15 @@ deepgram-source	src/fern/listen/v1/media/types/transcribe_media_request_encoding
 deepgram-source	src/fern/listen/v1/media/types/transcribe_media_response.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/read/v1/text/types/analyze_text_request_custom_intent_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/read/v1/text/types/analyze_text_request_custom_topic_mode.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/types/generate_audio_request_container.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/speak/v1/audio/types/generate_audio_request_encoding.py	certified pair only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_detect_language.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_model.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_model_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_redact.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_redact_one_item.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_summarize.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_summarize_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_media_request_version.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_media_request_version_zero.py	certified pair only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_request_callback_method.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_request_encoding.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/listen/v1/media/types/transcribe_file_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -232,42 +126,28 @@ deepgram-source	src/fern/listen/v1/media/types/transcribe_url_media_request_enco
 deepgram-source	src/fern/listen/v1/media/types/transcribe_url_media_response.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/analyze_text_request_custom_intent_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/analyze_text_request_custom_topic_mode.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_container_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding.py	crozier only	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_four.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_six.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_two.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/generate_audio_request_encoding_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_model_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_summarize_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_file_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_file_media_request_version_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_custom_intent_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_custom_topic_mode.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_detect_language.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_model.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_model_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_redact.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_redact_one_item.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_summarize.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_summarize_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/transcribe_url_media_request_version.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-deepgram-source	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+deepgram-source	src/fern/types/transcribe_url_media_request_version_zero.py	crozier only	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-source	src/fern/types/listen_v1request_url.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	reference.md	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -275,76 +155,20 @@ tianji	src/fern/monitor/__init__.py	differs	response-type-resolution	docs/openap
 tianji	src/fern/monitor/client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/monitor/raw_client.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/monitor/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/raw_client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/__init__.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response.py	differs	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/monitor/types/server_status_public_info_response_value.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_static.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_status.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_status_monitor_list_item.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_zero.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_zero_static.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_zero_status.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/page/types/page_get_page_info_response_zero_status_monitor_list_item.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/types/website_add_request_domain.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/types/website_add_request_domain_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/types/website_update_info_request_domain.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-tianji	src/fern/website/types/website_update_info_request_domain_one.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	reference.md	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_static.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_status.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_status_monitor_list_item.py	certified pair only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_static.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_status.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+tianji	src/fern/page/types/page_get_page_info_response_zero_status_monitor_list_item.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	reference.md	differs	example-matching-union-variant	docs/openapi-surface/witness-search-fixture-only-schemas/README.md
 nussknacker	src/fern/migrations/raw_client.py	differs	request-content-type-header	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/nodes/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/testing/client.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/__init__.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/expression_suggestion_dto_ref_clazz.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/map_typing_result_in_json_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_validation_result_dto_expression_type.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/parameter_dto_ref_clazz.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/single_typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_class.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_dict.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_null.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_object_typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_object_with_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_tagged_value.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typed_union.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/typing_result.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/ui_parameter_typ.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/ui_value_parameter_dto_typ.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/unknown.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/variable.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/variable_builder.py	differs	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_branch_end_data.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_custom_node.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_enricher.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_filter.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_fragment_input.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_fragment_input_definition.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_fragment_output_definition.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_join.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_processor.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_sink.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_source.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_split.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_switch.py	certified pair only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_branch_parameters.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_branch_parameters_template.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_definition.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_eleven.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_fields.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_five.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_fragment_params.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_output.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_ref.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_seven.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_ten.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_thirteen.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/types/node_data_three.py	crozier only	union-modelling	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
+nussknacker	src/fern/nodes/client.py	differs	example-matching-union-variant	docs/openapi-surface/witness-search-fixture-only-schemas/README.md
 osf	README.md	differs	snippet-rendering	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 osf	reference.md	differs	snippet-rendering	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 osf	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
