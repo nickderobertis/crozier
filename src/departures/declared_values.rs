@@ -99,14 +99,18 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
         });
         let non_json = non_json_success(operation);
         for parameter in &parameters {
+            // Ruling 2 itself names a falsy example (`""`, `0`) on any argument,
+            // its own or the first of its `examples` map (unicourt's `q`).
+            if let Some(value) = first_map_example(parameter).filter(|value| falsy(value)) {
+                out.push(Declared {
+                    wire: &parameter.name,
+                    value,
+                });
+            }
             let Some(value) = parameter.example.as_ref() else {
                 continue;
             };
-            // Ruling 2 itself names a falsy example (`""`, `0`) on any argument.
-            let falsy = value.as_str() == Some("")
-                || value.as_i64() == Some(0)
-                || value.as_f64() == Some(0.0);
-            let kept = falsy
+            let kept = falsy(value)
                 || match parameter.location {
                     Some(ParameterLocation::Header) => true,
                     Some(ParameterLocation::Query) => non_json,
@@ -130,14 +134,313 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
             let Some(schema) = content.schema.as_ref() else {
                 continue;
             };
-            for (wire, property) in &resolve(source, schema).properties {
-                if let Some(value) = resolve(source, property).example.as_ref() {
-                    out.push(Declared { wire, value });
+            multipart_examples(source, resolve(source, schema), &mut out, 0);
+        }
+    }
+    out
+}
+
+/// A multipart form's parts' declared examples, and those of an object part's
+/// own properties (runZero's `importTask.name`): the certified pair writes its
+/// placeholder for each.
+fn multipart_examples<'a>(
+    source: &'a OpenApi,
+    schema: &'a Schema,
+    out: &mut Vec<Declared<'a>>,
+    depth: usize,
+) {
+    if depth > 4 {
+        return;
+    }
+    for (wire, property) in &schema.properties {
+        let property = resolve(source, property);
+        if let Some(value) = property.example.as_ref() {
+            out.push(Declared { wire, value });
+        }
+        if !property.properties.is_empty() {
+            multipart_examples(source, property, out, depth + 1);
+        }
+    }
+}
+
+/// Whether a declared value is falsy: `""` or zero.
+fn falsy(value: &Value) -> bool {
+    value.as_str() == Some("") || value.as_f64() == Some(0.0)
+}
+
+/// The first non-null value of a parameter's `examples` map.
+fn first_map_example(parameter: &Parameter) -> Option<&Value> {
+    parameter
+        .examples
+        .values()
+        .find_map(|example| example.value.as_ref())
+}
+
+/// A worked-example argument line only crozier writes, passing an optional
+/// parameter's falsy declared example the certified pair leaves out of the
+/// call (ruling 2; unicourt's `q=""`).
+pub(super) fn kept_falsy_optional_line(pair: &Pair<'_>, crozier: &str) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let (Some((_, name, value)), Some(source)) = (
+        keyword_argument_line(crozier),
+        pair.context.source_document.as_ref(),
+    ) else {
+        return false;
+    };
+    source_operations(source)
+        .flat_map(|(_, parameters)| parameters)
+        .any(|parameter| {
+            parameter.required != Some(true)
+                && parameter_keyword(parameter, name)
+                && parameter
+                    .example
+                    .as_ref()
+                    .or_else(|| first_map_example(parameter))
+                    .filter(|declared| falsy(declared))
+                    .and_then(crate::ir::example_literal)
+                    .as_deref()
+                    == Some(value)
+        })
+}
+
+/// An importer-declined operation's single request body (every successful
+/// response answers something other than JSON, so the certified pair's
+/// importer builds no example and its fallback writes placeholders): the
+/// region where Fern's `request=` holds nothing but placeholders
+/// (`{"string": {"key": "value"}}`, `[{"key": "value"}, …]`, `[StoreLine(), …]`)
+/// and crozier's holds only values the operation's body examples declare
+/// (ihulsbus's ingredient amounts, SeekStorm's documents; ruling 2's principle).
+pub(super) fn declared_body_over_fallback(
+    pair: &Pair<'_>,
+) -> Result<Option<super::Region>, String> {
+    if !example_file(pair.rel) {
+        return Ok(None);
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let fern = request_blocks(pair.fern);
+    let crozier = request_blocks(pair.crozier);
+    if fern.len() != crozier.len() {
+        return Ok(None);
+    }
+    let declared = declined_body_tokens(source);
+    if declared.strings.is_empty() && declared.numbers.is_empty() {
+        return Ok(None);
+    }
+    for (fern_block, crozier_block) in fern.iter().zip(&crozier) {
+        let fern_text = pair.fern[fern_block.clone()].join("\n");
+        let crozier_text = pair.crozier[crozier_block.clone()].join("\n");
+        if fern_text == crozier_text {
+            continue;
+        }
+        let (fern_strings, _) = literal_tokens(&fern_text);
+        let (strings, numbers) = literal_tokens(&crozier_text);
+        let placeholder = fern_strings
+            .iter()
+            .all(|text| matches!(text.as_str(), "string" | "key" | "value"));
+        let declared_only = !strings.is_empty() || !numbers.is_empty();
+        let declared_only = declared_only
+            && strings
+                .iter()
+                .all(|text| declared.strings.contains(text) || text.parse::<usize>().is_ok())
+            && numbers.iter().all(|number| {
+                declared
+                    .numbers
+                    .iter()
+                    .any(|known| (known - number).abs() < 1e-9)
+            });
+        if placeholder && declared_only {
+            return Ok(Some(super::Region {
+                fern: fern_block.clone(),
+                crozier: crozier_block.clone(),
+            }));
+        }
+        return Ok(None);
+    }
+    Ok(None)
+}
+
+/// A call Fern writes empty on one line, `<prefix>()`, where crozier opens it
+/// over lines every one of which `admit` accepts (an optional argument a
+/// ruling keeps and Fern leaves out), and closes it with `<indent>)`.
+fn kept_arguments_call(
+    pair: &Pair<'_>,
+    admit: &dyn Fn(&Pair<'_>, usize) -> bool,
+) -> Option<super::Region> {
+    if !example_file(pair.rel) {
+        return None;
+    }
+    pair.fern.iter().enumerate().find_map(|(at, fern)| {
+        let opener = fern.strip_suffix("()").map(|head| format!("{head}("))?;
+        if !fern.contains("client.") || pair.crozier.contains(fern) {
+            return None;
+        }
+        let indent = &fern[..fern.len() - fern.trim_start().len()];
+        let start = pair.crozier.iter().position(|line| *line == opener)?;
+        let close = (start + 1..pair.crozier.len())
+            .find(|&index| pair.crozier[index] == format!("{indent})"))?;
+        (close > start + 1 && (start + 1..close).all(|index| admit(pair, index))).then(|| {
+            super::Region {
+                fern: at..at + 1,
+                crozier: start..close + 1,
+            }
+        })
+    })
+}
+
+/// [`kept_arguments_call`] for falsy optional examples (ruling 2), then
+/// [`declared_body_over_fallback`]: the `declared-example-over-placeholder`
+/// regions.
+pub(super) fn declared_example_regions(pair: &Pair<'_>) -> Result<Option<super::Region>, String> {
+    if let Some(region) = kept_arguments_call(pair, &|pair, index| {
+        pair.crozier
+            .get(index)
+            .is_some_and(|line| kept_falsy_optional_line(pair, line))
+    }) {
+        return Ok(Some(region));
+    }
+    declared_body_over_fallback(pair)
+}
+
+/// [`kept_arguments_call`] for optional timestamp examples (ruling 3).
+pub(super) fn unquoted_timestamp_call(pair: &Pair<'_>) -> Result<Option<super::Region>, String> {
+    Ok(kept_arguments_call(pair, &|pair, index| {
+        unquoted_timestamp_parameter_line(pair, index)
+    }))
+}
+
+/// The string and number values (keys included) every request body example
+/// of an importer-declined operation declares.
+#[derive(Default)]
+struct DeclaredTokens {
+    strings: std::collections::BTreeSet<String>,
+    numbers: Vec<f64>,
+}
+
+fn declined_body_tokens(source: &OpenApi) -> DeclaredTokens {
+    fn walk(value: &Value, out: &mut DeclaredTokens) {
+        match value {
+            Value::String(text) => {
+                out.strings.insert(text.clone());
+            }
+            Value::Number(number) => out.numbers.extend(number.as_f64()),
+            Value::Array(items) => items.iter().for_each(|item| walk(item, out)),
+            Value::Object(fields) => {
+                for (key, field) in fields {
+                    out.strings.insert(key.clone());
+                    walk(field, out);
                 }
+            }
+            _ => {}
+        }
+    }
+    let mut out = DeclaredTokens::default();
+    for (operation, _) in source_operations(source) {
+        if !non_json_success(operation) {
+            continue;
+        }
+        let Some(body) = operation.request_body.as_ref() else {
+            continue;
+        };
+        for media in body.content.values() {
+            media.example.iter().for_each(|value| walk(value, &mut out));
+            for example in media.examples.values() {
+                example.value.iter().for_each(|value| walk(value, &mut out));
             }
         }
     }
     out
+}
+
+/// Each `request=` argument of a worked call, as the range of lines it spans:
+/// one line, or an opener through the line closing its brackets.
+fn request_blocks(lines: &[&str]) -> Vec<std::ops::Range<usize>> {
+    let mut out = Vec::new();
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
+        if !line.trim_start().starts_with("request=") {
+            index += 1;
+            continue;
+        }
+        let mut depth = 0i32;
+        let mut end = index;
+        loop {
+            depth += bracket_depth(lines[end]);
+            if depth <= 0 || end + 1 >= lines.len() {
+                break;
+            }
+            end += 1;
+        }
+        out.push(index..end + 1);
+        index = end + 1;
+    }
+    out
+}
+
+/// The net bracket depth a line opens, outside string literals.
+fn bracket_depth(line: &str) -> i32 {
+    let mut depth = 0;
+    let mut quote = None;
+    let mut escaped = false;
+    for character in line.chars() {
+        match quote {
+            Some(delimiter) => {
+                if escaped {
+                    escaped = false;
+                } else if character == '\\' {
+                    escaped = true;
+                } else if character == delimiter {
+                    quote = None;
+                }
+            }
+            None => match character {
+                '"' | '\'' => quote = Some(character),
+                '[' | '{' | '(' => depth += 1,
+                ']' | '}' | ')' => depth -= 1,
+                _ => {}
+            },
+        }
+    }
+    depth
+}
+
+/// The string literals (unescaped) and the number literals of Python text.
+fn literal_tokens(text: &str) -> (Vec<String>, Vec<f64>) {
+    let mut strings = Vec::new();
+    let mut numbers = Vec::new();
+    let chars: Vec<char> = text.chars().collect();
+    let mut index = 0;
+    while index < chars.len() {
+        let character = chars[index];
+        if character == '"' || character == '\'' {
+            let mut value = String::new();
+            index += 1;
+            while index < chars.len() && chars[index] != character {
+                if chars[index] == '\\' && index + 1 < chars.len() {
+                    index += 1;
+                }
+                value.push(chars[index]);
+                index += 1;
+            }
+            strings.push(value);
+        } else if character.is_ascii_digit()
+            && (index == 0 || !(chars[index - 1].is_alphanumeric() || chars[index - 1] == '_'))
+        {
+            let start = index;
+            while index < chars.len() && (chars[index].is_ascii_digit() || chars[index] == '.') {
+                index += 1;
+            }
+            let literal: String = chars[start..index].iter().collect();
+            numbers.extend(literal.parse::<f64>().ok());
+            continue;
+        }
+        index += 1;
+    }
+    (strings, numbers)
 }
 
 /// `declared-example-over-placeholder`: a worked-example argument line where
@@ -307,10 +610,14 @@ fn declared_enum_member(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
 /// entry, each only where the document writes it unquoted.
 fn unquoted_timestamps<'a>(source: &'a OpenApi, parameter: &'a Parameter) -> Option<&'a str> {
     let unquoted = source.yaml_unquoted_timestamps.as_ref()?;
-    let declared = parameter.example.as_ref().or_else(|| {
-        let schema = resolve(source, parameter.schema.as_ref()?);
-        schema.example.as_ref().or_else(|| schema.examples.first())
-    })?;
+    let declared = parameter
+        .example
+        .as_ref()
+        .or_else(|| first_map_example(parameter))
+        .or_else(|| {
+            let schema = resolve(source, parameter.schema.as_ref()?);
+            schema.example.as_ref().or_else(|| schema.examples.first())
+        })?;
     declared
         .as_str()
         .filter(|value| unquoted.contains(*value))
@@ -384,13 +691,36 @@ pub(super) fn unquoted_timestamp_parameter_line(pair: &Pair<'_>, at: usize) -> b
     let Some(source) = pair.context.source_document.as_ref() else {
         return false;
     };
-    let optional: Vec<_> = timestamp_parameters(source)
-        .into_iter()
+    let all = timestamp_parameters(source);
+    let optional: Vec<_> = all
+        .iter()
         .filter(|(parameter, _)| parameter.required != Some(true))
+        .copied()
         .collect();
     let lines = pair.crozier;
     let Some(line) = lines.get(at) else {
         return false;
+    };
+    // `<name>=datetime.datetime.fromisoformat(`, `"<iso>",`, `),` for one of
+    // `parameters`.
+    let wrapped = |index: usize, parameters: &[(&Parameter, &str)]| -> bool {
+        let Some(line) = lines.get(index) else {
+            return false;
+        };
+        let Some(name) = line
+            .trim_start()
+            .strip_suffix("=datetime.datetime.fromisoformat(")
+        else {
+            return false;
+        };
+        let indent = &line[..line.len() - line.trim_start().len()];
+        parameters.iter().any(|(parameter, declared)| {
+            parameter_keyword(parameter, name)
+                && lines.get(index + 1).is_some_and(|next| {
+                    *next == format!("{indent}    {}", timestamp_spellings(declared)[2])
+                })
+                && lines.get(index + 2) == Some(&format!("{indent}),").as_str())
+        })
     };
     let passes = |index: usize| -> bool {
         let Some(line) = lines.get(index) else {
@@ -435,7 +765,9 @@ pub(super) fn unquoted_timestamp_parameter_line(pair: &Pair<'_>, at: usize) -> b
     if line.trim().is_empty() {
         return at >= 1 && imports(at - 1);
     }
-    passes(at) || (at >= 1 && passes(at - 1)) || (at >= 2 && passes(at - 2))
+    // The string and closing lines of any declared-timestamp call: the line
+    // alignment may pair Fern's one wrapped call with either of crozier's.
+    passes(at) || (at >= 1 && wrapped(at - 1, &all)) || (at >= 2 && wrapped(at - 2, &all))
 }
 
 /// The value ruling 5 keeps for a parameter: its (referenced) schema's first
@@ -577,6 +909,135 @@ mod tests {
             },
             "    label=\"label\",",
             "    label=\"\","
+        ));
+    }
+
+    #[test]
+    fn an_importer_declined_body_example_is_kept_only_over_fallback_placeholders() {
+        let context = context(
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/stores": {"delete": {
+                "requestBody": {"content": {"application/json": {"schema": {"type": "array",
+                    "items": {"type": "object"}},
+                    "examples": {"one": {"value": [{"itemId": "a-1", "crates": 4}]}}}}},
+                "responses": {"204": {"description": "ok", "content": {"text/plain": {"schema": {"type": "string"}}}}}
+            }}}}),
+        );
+        let region = |fern: &[&str], crozier: &[&str]| {
+            declared_body_over_fallback(&Pair {
+                rel: "reference.md",
+                fern,
+                crozier,
+                context: &context,
+            })
+            .expect("no engine error")
+        };
+        let fern = [
+            "call(",
+            "    request=[",
+            "        Store(),",
+            "        Store()",
+            "    ],",
+            ")",
+        ];
+        let kept = [
+            "call(",
+            "    request=[",
+            "        Store(",
+            "            item_id=\"a-1\",",
+            "            crates=4,",
+            "        )",
+            "    ],",
+            ")",
+        ];
+        assert_eq!(
+            region(&fern, &kept),
+            Some(super::super::Region {
+                fern: 1..5,
+                crozier: 1..7
+            })
+        );
+        // A value the document never declares, or Fern writing anything but
+        // placeholders, is no departure.
+        let other = [
+            "call(",
+            "    request=[",
+            "        Store(",
+            "            item_id=\"b-2\",",
+            "        )",
+            "    ],",
+            ")",
+        ];
+        assert_eq!(region(&fern, &other), None);
+        let fern_declared = [
+            "call(",
+            "    request=[",
+            "        Store(item_id=\"a-1\"),",
+            "    ],",
+            ")",
+        ];
+        assert_eq!(region(&fern_declared, &kept), None);
+    }
+
+    #[test]
+    fn a_falsy_optional_example_and_an_empty_call_are_kept() {
+        let context = context(
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/search": {"get": {
+                "parameters": [{"name": "q", "in": "query", "schema": {"type": "string"},
+                    "examples": {"blank": {"value": ""}}}],
+                "responses": {}
+            }}}}),
+        );
+        let lines = ["client.keepers.search(", "    q=\"\",", ")"];
+        let crozier = pair("reference.md", &lines, &context);
+        assert!(kept_falsy_optional_line(&crozier, "    q=\"\","));
+        assert!(!kept_falsy_optional_line(&crozier, "    q=\"x\","));
+        let fern = ["client.keepers.search()"];
+        let both = Pair {
+            rel: "reference.md",
+            fern: &fern,
+            crozier: &lines,
+            context: &context,
+        };
+        assert_eq!(
+            declared_example_regions(&both).expect("no engine error"),
+            Some(super::super::Region {
+                fern: 0..1,
+                crozier: 0..3
+            })
+        );
+        let other = ["client.keepers.search(", "    q=\"x\",", ")"];
+        let neither = Pair {
+            rel: "reference.md",
+            fern: &fern,
+            crozier: &other,
+            context: &context,
+        };
+        assert_eq!(
+            declared_example_regions(&neither).expect("no engine error"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_nested_multipart_property_example_is_kept() {
+        let context = context(
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/import": {"post": {
+                "requestBody": {"content": {"multipart/form-data": {"schema": {"type": "object",
+                    "properties": {"task": {"type": "object", "properties": {
+                        "label": {"type": "string", "example": "spring refit"}}}}}}}},
+                "responses": {}
+            }}}}),
+        );
+        let pair = pair("reference.md", &[], &context);
+        assert!(declared_example_over_placeholder(
+            &pair,
+            "        label=\"label\",",
+            "        label=\"spring refit\","
+        ));
+        assert!(!declared_example_over_placeholder(
+            &pair,
+            "        label=\"label\",",
+            "        label=\"autumn\","
         ));
     }
 

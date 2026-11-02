@@ -6,14 +6,16 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import BuoyMarker, LightMarker, RosterEntry
+    from .types import BuoyMarker, LightMarker, RosterEntry, StoreLine, WatchRota, WatchRotaCadence
     from .errors import NotFoundError
     from . import (
         beacons,
         charts,
         drills,
+        galleys,
         harbours,
         ledger,
+        manifests,
         markers,
         mirrors,
         passes,
@@ -21,6 +23,7 @@ if typing.TYPE_CHECKING:
         routes,
         soundings,
         stations,
+        voyages,
     )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .charts import (
@@ -33,6 +36,7 @@ if typing.TYPE_CHECKING:
     from .drills import StartDrillRequestSettingsValue, StartDrillResponse
     from .harbours import GetBerthResponse
     from .ledger import GetBlockResponse
+    from .manifests import ImportManifestRequestTask, ImportManifestResponse
     from .markers import PlaceMarkerRequestMarker, PlaceMarkerResponse
     from .mirrors import AddMirrorResponse
     from .passes import (
@@ -44,6 +48,7 @@ if typing.TYPE_CHECKING:
     )
     from .routes import PlanRoutesResponse
     from .version import __version__
+    from .voyages import PlanVoyageRotaResponse, SetVoyageWatchResponse
 _dynamic_imports: typing.Dict[str, str] = {
     "AddMirrorResponse": ".mirrors",
     "AsyncFernApi": ".client",
@@ -53,6 +58,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "GetBerthResponse": ".harbours",
     "GetBlockResponse": ".ledger",
+    "ImportManifestRequestTask": ".manifests",
+    "ImportManifestResponse": ".manifests",
     "IssueFormPassRequestGrant": ".passes",
     "IssueFormPassRequestTier": ".passes",
     "IssueFormPassResponse": ".passes",
@@ -63,19 +70,26 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PlaceMarkerRequestMarker": ".markers",
     "PlaceMarkerResponse": ".markers",
     "PlanRoutesResponse": ".routes",
+    "PlanVoyageRotaResponse": ".voyages",
     "RosterEntry": ".types",
     "SetChartLayersRequestLayersItem": ".charts",
     "SetChartLayersRequestLayersItemMatch": ".charts",
     "SetChartLayersResponse": ".charts",
+    "SetVoyageWatchResponse": ".voyages",
     "StartDrillRequestSettingsValue": ".drills",
     "StartDrillResponse": ".drills",
+    "StoreLine": ".types",
     "UploadChartResponse": ".charts",
+    "WatchRota": ".types",
+    "WatchRotaCadence": ".types",
     "__version__": ".version",
     "beacons": ".beacons",
     "charts": ".charts",
     "drills": ".drills",
+    "galleys": ".galleys",
     "harbours": ".harbours",
     "ledger": ".ledger",
+    "manifests": ".manifests",
     "markers": ".markers",
     "mirrors": ".mirrors",
     "passes": ".passes",
@@ -83,6 +97,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "routes": ".routes",
     "soundings": ".soundings",
     "stations": ".stations",
+    "voyages": ".voyages",
 }
 
 
@@ -116,6 +131,8 @@ __all__ = [
     "FernApi",
     "GetBerthResponse",
     "GetBlockResponse",
+    "ImportManifestRequestTask",
+    "ImportManifestResponse",
     "IssueFormPassRequestGrant",
     "IssueFormPassRequestTier",
     "IssueFormPassResponse",
@@ -126,19 +143,26 @@ __all__ = [
     "PlaceMarkerRequestMarker",
     "PlaceMarkerResponse",
     "PlanRoutesResponse",
+    "PlanVoyageRotaResponse",
     "RosterEntry",
     "SetChartLayersRequestLayersItem",
     "SetChartLayersRequestLayersItemMatch",
     "SetChartLayersResponse",
+    "SetVoyageWatchResponse",
     "StartDrillRequestSettingsValue",
     "StartDrillResponse",
+    "StoreLine",
     "UploadChartResponse",
+    "WatchRota",
+    "WatchRotaCadence",
     "__version__",
     "beacons",
     "charts",
     "drills",
+    "galleys",
     "harbours",
     "ledger",
+    "manifests",
     "markers",
     "mirrors",
     "passes",
@@ -146,4 +170,5 @@ __all__ = [
     "routes",
     "soundings",
     "stations",
+    "voyages",
 ]

@@ -34,9 +34,89 @@ paths:
           examples:
             one:
               value: 2
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            blank:
+              value: ""
+        - name: rosteredOn
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-07-04
+        - name: rosteredAfter
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-07-01
       responses:
         "200":
           description: Shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /keepers/callbacks:
+    get:
+      operationId: listKeeperCallbacks
+      tags: [keepers]
+      parameters:
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-06-30
+      responses:
+        "200":
+          description: Callbacks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /keepers/search:
+    get:
+      operationId: searchKeepers
+      tags: [keepers]
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            blank:
+              value: ""
+      responses:
+        "200":
+          description: Keepers
           content:
             application/json:
               schema:

@@ -9331,6 +9331,8 @@ impl<'a> ExampleCtx<'a> {
                      wire_name,
                      type_ref,
                      requirement,
+                     example,
+                     lengths,
                      ..
                  }| {
                     let recorded = self.recorded();
@@ -9367,8 +9369,24 @@ impl<'a> ExampleCtx<'a> {
                         // rendering `[]` (`mosip-esignet`'s
                         // `permittedAuthorizeScopes: []`); nor does an empty
                         // object an unknown map is given.
+                        // A field declaring its own example passes that instead,
+                        // as a top-level body field does (see
+                        // `ir::apply_body_example`): unicourt's case-track
+                        // `schedule.days` is `[]` in the request example and
+                        // `[1, 3, 5]` in its schema, which the certified pair
+                        // passes (measured in
+                        // docs/fern-measurements/handed-off/example-values/example-value-source/).
                         Some(serde_json::Value::Array(items)) if items.is_empty() => {
-                            self.value(&type_ref, Slot::Named(&wire_name))
+                            if example.is_some() {
+                                self.field_example(
+                                    &type_ref,
+                                    &wire_name,
+                                    example.as_deref(),
+                                    lengths,
+                                )
+                            } else {
+                                self.value(&type_ref, Slot::Named(&wire_name))
+                            }
                         }
                         Some(serde_json::Value::Object(fields))
                             if fields.is_empty() && self.resolves_to_unknown_map(&type_ref) =>
@@ -9381,6 +9399,12 @@ impl<'a> ExampleCtx<'a> {
                                 .unwrap_or_else(|| {
                                     example_from_json_as(value.clone(), !self.documentation)
                                 })
+                        }
+                        // A field the example leaves out (or names only by an
+                        // empty array the narrowing pruned) takes its own
+                        // declared example where it has one, as above.
+                        _ if example.is_some() => {
+                            self.field_example(&type_ref, &wire_name, example.as_deref(), lengths)
                         }
                         _ => self.value(&type_ref, Slot::Named(&wire_name)),
                     };
@@ -19650,6 +19674,19 @@ mod handed_off_example_value_tests {
     }
 
     #[test]
+    fn a_nested_field_the_example_omits_takes_its_own_example() {
+        let text = reference("example-value-source");
+        for call in ["plan_voyage_rota(", "set_voyage_watch("] {
+            let at = text.find(call).unwrap_or_else(|| panic!("no {call}"));
+            let block: String = text[at..].lines().take(12).collect::<Vec<_>>().join("\n");
+            assert!(
+                block.contains("            3,\n            5"),
+                "{call}: {block}"
+            );
+        }
+    }
+
+    #[test]
     fn a_declined_operation_passes_a_path_parameters_own_example() {
         assert_lines(
             "example-value-source",
@@ -19737,6 +19774,7 @@ mod handed_off_example_value_tests {
                 "    watch_token=\"watchToken\",",
                 "    grant=IssueFormPassRequestGrant.OVERNIGHT_STAY,",
                 "    tier=IssueFormPassRequestTier.STANDARD,",
+                "            3,",
                 "    depth=1024,",
                 "    fathoms=40,",
                 "        \"night\": True,",

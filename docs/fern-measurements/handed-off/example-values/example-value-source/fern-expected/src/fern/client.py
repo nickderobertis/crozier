@@ -12,8 +12,10 @@ if typing.TYPE_CHECKING:
     from .beacons.client import AsyncBeaconsClient, BeaconsClient
     from .charts.client import AsyncChartsClient, ChartsClient
     from .drills.client import AsyncDrillsClient, DrillsClient
+    from .galleys.client import AsyncGalleysClient, GalleysClient
     from .harbours.client import AsyncHarboursClient, HarboursClient
     from .ledger.client import AsyncLedgerClient, LedgerClient
+    from .manifests.client import AsyncManifestsClient, ManifestsClient
     from .markers.client import AsyncMarkersClient, MarkersClient
     from .mirrors.client import AsyncMirrorsClient, MirrorsClient
     from .passes.client import AsyncPassesClient, PassesClient
@@ -21,6 +23,7 @@ if typing.TYPE_CHECKING:
     from .routes.client import AsyncRoutesClient, RoutesClient
     from .soundings.client import AsyncSoundingsClient, SoundingsClient
     from .stations.client import AsyncStationsClient, StationsClient
+    from .voyages.client import AsyncVoyagesClient, VoyagesClient
 
 
 class FernApi:
@@ -106,6 +109,9 @@ class FernApi:
         self._soundings: typing.Optional[SoundingsClient] = None
         self._rosters: typing.Optional[RostersClient] = None
         self._beacons: typing.Optional[BeaconsClient] = None
+        self._galleys: typing.Optional[GalleysClient] = None
+        self._manifests: typing.Optional[ManifestsClient] = None
+        self._voyages: typing.Optional[VoyagesClient] = None
 
     @property
     def charts(self):
@@ -202,6 +208,30 @@ class FernApi:
 
             self._beacons = BeaconsClient(client_wrapper=self._client_wrapper)
         return self._beacons
+
+    @property
+    def galleys(self):
+        if self._galleys is None:
+            from .galleys.client import GalleysClient
+
+            self._galleys = GalleysClient(client_wrapper=self._client_wrapper)
+        return self._galleys
+
+    @property
+    def manifests(self):
+        if self._manifests is None:
+            from .manifests.client import ManifestsClient
+
+            self._manifests = ManifestsClient(client_wrapper=self._client_wrapper)
+        return self._manifests
+
+    @property
+    def voyages(self):
+        if self._voyages is None:
+            from .voyages.client import VoyagesClient
+
+            self._voyages = VoyagesClient(client_wrapper=self._client_wrapper)
+        return self._voyages
 
 
 def _make_default_async_client(
@@ -303,6 +333,9 @@ class AsyncFernApi:
         self._soundings: typing.Optional[AsyncSoundingsClient] = None
         self._rosters: typing.Optional[AsyncRostersClient] = None
         self._beacons: typing.Optional[AsyncBeaconsClient] = None
+        self._galleys: typing.Optional[AsyncGalleysClient] = None
+        self._manifests: typing.Optional[AsyncManifestsClient] = None
+        self._voyages: typing.Optional[AsyncVoyagesClient] = None
 
     @property
     def charts(self):
@@ -399,3 +432,27 @@ class AsyncFernApi:
 
             self._beacons = AsyncBeaconsClient(client_wrapper=self._client_wrapper)
         return self._beacons
+
+    @property
+    def galleys(self):
+        if self._galleys is None:
+            from .galleys.client import AsyncGalleysClient
+
+            self._galleys = AsyncGalleysClient(client_wrapper=self._client_wrapper)
+        return self._galleys
+
+    @property
+    def manifests(self):
+        if self._manifests is None:
+            from .manifests.client import AsyncManifestsClient
+
+            self._manifests = AsyncManifestsClient(client_wrapper=self._client_wrapper)
+        return self._manifests
+
+    @property
+    def voyages(self):
+        if self._voyages is None:
+            from .voyages.client import AsyncVoyagesClient
+
+            self._voyages = AsyncVoyagesClient(client_wrapper=self._client_wrapper)
+        return self._voyages

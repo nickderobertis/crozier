@@ -1052,6 +1052,30 @@ fn multipart_example_lines<'a>(
     Some((kept, removed))
 }
 
+/// Whether a compacted call `crozier` differs from Fern's `fern` only by kept
+/// declared examples (`declared-example-over-placeholder`), argument by
+/// argument and through nested constructor arguments (runZero's
+/// `import_task=ImportCustomIntegrationAssetsRequestImportTask(name=…)`).
+fn kept_call_argument(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let (Some((fern_call, fern_args)), Some((call, args))) = (
+        example_call_arguments(fern),
+        example_call_arguments(crozier),
+    ) else {
+        return false;
+    };
+    fern_call == call
+        && fern_args.len() == args.len()
+        && fern_args.iter().zip(&args).all(|(fern_arg, arg)| {
+            fern_arg == arg
+                || declared_values::declared_example_over_placeholder(
+                    pair,
+                    &format!("    {fern_arg},"),
+                    &format!("    {arg},"),
+                )
+                || kept_call_argument(pair, fern_arg, arg)
+        })
+}
+
 fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     let Some(prefix) = pair.rel.strip_suffix("client.py") else {
         return Ok(None);
@@ -1078,24 +1102,7 @@ fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Regi
         && reference.iter().zip(&corrected).all(|(fern, crozier)| {
             fern == crozier
                 || declared_values::declared_example_over_placeholder(pair, fern, crozier)
-                || match (
-                    example_call_arguments(fern),
-                    example_call_arguments(crozier),
-                ) {
-                    (Some((fern_call, fern_args)), Some((call, args))) => {
-                        fern_call == call
-                            && fern_args.len() == args.len()
-                            && fern_args.iter().zip(&args).all(|(fern_arg, arg)| {
-                                fern_arg == arg
-                                    || declared_values::declared_example_over_placeholder(
-                                        pair,
-                                        &format!("    {fern_arg},"),
-                                        &format!("    {arg},"),
-                                    )
-                            })
-                    }
-                    _ => false,
-                }
+                || kept_call_argument(pair, fern, crozier)
         });
     Ok((removed && same_call)
         .then(|| differing_window(pair.fern, pair.crozier))
@@ -1836,7 +1843,9 @@ pub fn rule(id: &str) -> Option<Rule> {
             ..none
         },
         "declared-example-over-placeholder" => Rule {
+            region: Some(declared_values::declared_example_regions),
             line: Some(declared_values::declared_example_over_placeholder),
+            added: Some(declared_values::kept_falsy_optional_line),
             added_at: Some(declared_values::kept_wrapped_list_line),
             ..none
         },
@@ -1845,6 +1854,7 @@ pub fn rule(id: &str) -> Option<Rule> {
             ..none
         },
         "unquoted-timestamp-parameter-example" => Rule {
+            region: Some(declared_values::unquoted_timestamp_call),
             line: Some(declared_values::unquoted_timestamp_parameter_example),
             added_at: Some(declared_values::unquoted_timestamp_parameter_line),
             ..none

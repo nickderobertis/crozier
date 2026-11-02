@@ -536,7 +536,205 @@ paths:
                 properties:
                   id:
                     type: string
+  /galleys/{galleyId}/stores:
+    delete:
+      operationId: removeGalleyStores
+      tags: [galleys]
+      description: An array body of referenced objects with a named example, on an operation answering text.
+      parameters:
+        - name: galleyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/StoreLine"
+            examples:
+              Biscuits:
+                value:
+                  - itemId: 6f1c2a3e-1b2c-4d5e-8f90-a1b2c3d4e5f6
+                    crates: 4
+      responses:
+        "204":
+          description: Removed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /galleys/{galleyId}/log:
+    post:
+      operationId: appendGalleyLog
+      tags: [galleys]
+      description: A free-form map body with array named examples, on an operation answering text.
+      parameters:
+        - name: galleyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              propertyNames:
+                type: string
+            examples:
+              Two:
+                value:
+                  - entry: oiled hinges
+                    cook: Elowen
+                  - entry: restocked salt
+                    cook: Piran
+      responses:
+        "200":
+          description: Count
+          content:
+            text/plain:
+              schema:
+                type: integer
+    patch:
+      operationId: amendGalleyLog
+      tags: [galleys]
+      description: An array body of unknown items with an example, on an operation answering text.
+      parameters:
+        - name: galleyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: {}
+            example:
+              - 0
+              - entry: swept deck
+      responses:
+        "200":
+          description: Count
+          content:
+            text/plain:
+              schema:
+                type: integer
+  /manifests/import:
+    post:
+      operationId: importManifest
+      tags: [manifests]
+      description: A multipart object part whose property declares an example.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [sheet, task]
+              properties:
+                sheet:
+                  type: string
+                  format: binary
+                task:
+                  type: object
+                  required: [label]
+                  properties:
+                    label:
+                      type: string
+                      example: spring refit
+                    notes:
+                      type: string
+                      example: hull and rigging
+      responses:
+        "200":
+          description: Imported
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /voyages/{voyageId}/watch:
+    put:
+      operationId: setVoyageWatch
+      tags: [voyages]
+      description: A nested field the request example gives an empty array.
+      parameters:
+        - name: voyageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rota]
+              properties:
+                rota:
+                  $ref: "#/components/schemas/WatchRota"
+            examples:
+              Daily:
+                value:
+                  rota:
+                    days: []
+                    cadence: daily
+      responses:
+        "200":
+          description: Set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+  /voyages/{voyageId}/rota:
+    post:
+      operationId: planVoyageRota
+      tags: [voyages]
+      description: The same field left out of a referenced body's referenced named example.
+      parameters:
+        - name: voyageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Daily:
+                $ref: "#/components/examples/DailyRota"
+            schema:
+              $ref: "#/components/schemas/RotaPlan"
+      responses:
+        "200":
+          description: Planned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
 components:
+  examples:
+    DailyRota:
+      value:
+        crew: starboard
+        rota:
+          cadence: daily
   parameters:
     LanternCode:
       name: lanternCode
@@ -546,6 +744,34 @@ components:
         type: string
       example: ltn:east-2
   schemas:
+    StoreLine:
+      type: object
+      properties:
+        itemId:
+          type: string
+          format: uuid
+        crates:
+          type: number
+    RotaPlan:
+      type: object
+      required: [crew, rota]
+      properties:
+        crew:
+          type: string
+        rota:
+          $ref: "#/components/schemas/WatchRota"
+    WatchRota:
+      type: object
+      required: [cadence, days]
+      properties:
+        days:
+          type: array
+          items:
+            type: integer
+          example: [1, 3, 5]
+        cadence:
+          type: string
+          enum: [daily, weekly]
     BuoyMarker:
       type: object
       required: [colour, shape]

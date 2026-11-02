@@ -1514,3 +1514,520 @@ client.beacons.get_lantern_manual(
 </dl>
 </details>
 
+## Galleys
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">remove_galley_stores</a>(...) -> str</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An array body of referenced objects with a named example, on an operation answering text.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, StoreLine
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.galleys.remove_galley_stores(
+    galley_id="galleyId",
+    request=[
+        StoreLine(),
+        StoreLine()
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**galley_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.List[StoreLine]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">append_galley_log</a>(...) -> str</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A free-form map body with array named examples, on an operation answering text.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.galleys.append_galley_log(
+    galley_id="galleyId",
+    request={
+        "string": {"key": "value"}
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**galley_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.Dict[str, typing.Any]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">amend_galley_log</a>(...) -> str</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An array body of unknown items with an example, on an operation answering text.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.galleys.amend_galley_log(
+    galley_id="galleyId",
+    request=[
+        {"key": "value"},
+        {"key": "value"}
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**galley_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.List[typing.Any]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Manifests
+<details><summary><code>client.manifests.<a href="src/fern/manifests/client.py">import_manifest</a>(...) -> ImportManifestResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A multipart object part whose property declares an example.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.manifests import ImportManifestRequestTask
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.manifests.import_manifest(
+    sheet="example_sheet",
+    task=ImportManifestRequestTask(
+        label="label",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**sheet:** `core.File` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**task:** `ImportManifestRequestTask` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Voyages
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">set_voyage_watch</a>(...) -> SetVoyageWatchResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A nested field the request example gives an empty array.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, WatchRota, WatchRotaCadence
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.voyages.set_voyage_watch(
+    voyage_id="voyageId",
+    rota=WatchRota(
+        days=[
+            1,
+            3,
+            5
+        ],
+        cadence=WatchRotaCadence.DAILY,
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**voyage_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rota:** `WatchRota` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">plan_voyage_rota</a>(...) -> PlanVoyageRotaResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The same field left out of a referenced body's referenced named example.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, WatchRota, WatchRotaCadence
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.voyages.plan_voyage_rota(
+    voyage_id="voyageId",
+    crew="starboard",
+    rota=WatchRota(
+        days=[
+            1,
+            3,
+            5
+        ],
+        cadence=WatchRotaCadence.DAILY,
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**voyage_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**crew:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rota:** `WatchRota` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

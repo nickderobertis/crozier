@@ -35,6 +35,7 @@ Instantiate and use the client with the following:
 
 ```python
 from fern import FernApi
+import datetime
 
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -43,6 +44,7 @@ client = FernApi(
 client.keepers.list_keeper_shifts(
     keeper_id="KPR-from-schema",
     season="winter",
+    rostered_on=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 ```
 
@@ -52,6 +54,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 
 ```python
 import asyncio
+import datetime
 
 from fern import AsyncFernApi
 
@@ -64,6 +67,7 @@ async def main() -> None:
     await client.keepers.list_keeper_shifts(
         keeper_id="KPR-from-schema",
         season="winter",
+        rostered_on=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
     )
 
 

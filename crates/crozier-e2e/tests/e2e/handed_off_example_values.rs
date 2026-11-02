@@ -308,6 +308,28 @@ fn ruled_example_values_are_what_crozier_writes() {
             "    keeper_id=\"KPR-from-schema\",",
             "    keeper_id=\"KPR-from-map\",",
         ),
+        // Ruling 3 over an `examples`-map date, ruling 2 over an empty call,
+        // a nested multipart property and an importer-declined body example.
+        (
+            "R4",
+            "    rostered_on=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),",
+            "    rostered_on=datetime.datetime.fromisoformat(\"2031-07-04T00:00:00+00:00\"),",
+        ),
+        (
+            "R4",
+            "client.keepers.search_keepers()",
+            "client.keepers.search_keepers(",
+        ),
+        (
+            "example-value-source",
+            "        label=\"label\",",
+            "        label=\"spring refit\",",
+        ),
+        (
+            "example-value-source",
+            "        StoreLine(),",
+            "            item_id=\"6f1c2a3e-1b2c-4d5e-8f90-a1b2c3d4e5f6\",",
+        ),
         // Ruling 2's principle: the enum's example member and the kept
         // example-value-source sub-rules.
         (
@@ -438,6 +460,26 @@ fn declared_value_departures_hold_only_their_lines() {
             "reference.md",
             "    keeper_id=\"KPR-from-schema\",",
             "    keeper_id=\"KPR-other\",",
+        ),
+        // The importer-declined body region, the empty-call regions and the
+        // falsy line each explain only the declared values.
+        (
+            "example-value-source",
+            "reference.md",
+            "        StoreLine(),\n        StoreLine()",
+            "        StoreLine(crates=9),\n        StoreLine()",
+        ),
+        (
+            "R4",
+            "reference.md",
+            "client.keepers.search_keepers()",
+            "client.keepers.search_keeper()",
+        ),
+        (
+            "R4",
+            "reference.md",
+            "client.keepers.list_keeper_callbacks()",
+            "client.keepers.list_keeper_callbacks(limit=1)",
         ),
     ] {
         let tree = perturbed(cause, rel, from, to);
