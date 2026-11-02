@@ -7220,7 +7220,12 @@ components:
 }
 
 #[test]
-fn standard_json_request_media_wins_over_earlier_ndjson() {
+/// The certified pair reads the first JSON key in declaration order, and
+/// `application/ndjson` is one: it spreads the ndjson schema and sends its key,
+/// leaving the later `application/json` alternative unread (generated from this
+/// very document; the rule is measured in
+/// `docs/fern-measurements/handed-off/bodies-media/media-type-recognition/`).
+fn earlier_ndjson_request_media_wins_over_later_application_json() {
     let files = render(
         r#"openapi: 3.0.3
 info: { title: Mixed JSON Media, version: 1.0.0 }
@@ -7248,17 +7253,20 @@ paths:
 "#,
     );
     let raw = &files["src/acme/records/raw_client.py"];
-    assert!(raw.contains("json_value: str"), "{raw}");
+    assert!(raw.contains("ndjson_value: int"), "{raw}");
     assert!(
-        raw.contains("json={\n                \"json_value\": json_value,"),
+        raw.contains("json={\n                \"ndjson_value\": ndjson_value,"),
         "{raw}"
     );
-    assert!(!raw.contains("ndjson_value"), "{raw}");
+    assert!(!raw.contains("json_value: str"), "{raw}");
     assert!(
-        raw.contains("\"content-type\": \"application/json\""),
+        raw.contains("\"content-type\": \"application/ndjson\""),
         "{raw}"
     );
-    assert!(!raw.contains("application/ndjson"), "{raw}");
+    assert!(
+        !raw.contains("\"content-type\": \"application/json\""),
+        "{raw}"
+    );
 }
 
 #[test]
