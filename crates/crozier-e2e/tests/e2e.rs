@@ -150,6 +150,12 @@ mod document_acceptance;
 /// the causes whose verdict rests on what an SDK sends or returns.
 #[path = "e2e/bodies_media.rs"]
 mod bodies_media;
+/// The union-modelling root causes the fixture-only witness searches handed
+/// off, each in a document written for it under
+/// `docs/fern-measurements/handed-off/union-modelling/`, held whole against the
+/// certified pair's tree in each enum mode its result depends on.
+#[path = "e2e/union_modelling.rs"]
+mod union_modelling;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), whose `test(/(^|::)sdk_env_/)` selector reads a test's full name and so selects a module's journey as well as one at the crate root (`every_sdk_env_journey_is_selected_by_the_sdk_env_tier` holds that); crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
@@ -926,6 +932,9 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             format!("tests/fixtures/{}/{FLAT_GOLDEN_DIR}", golden.fixture),
             departures_ledger::ComparedGolden::default(),
         );
+    }
+    for golden in union_modelling::goldens() {
+        add(golden, departures_ledger::ComparedGolden::default());
     }
     // llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] This inventory is the one list of compared goldens the ledger gate reconciles, and every golden is registered here; the nested-discriminator journey that compares this one is a type:e2e project, which nx.json's boundaries forbid this suite from reading.
     add(

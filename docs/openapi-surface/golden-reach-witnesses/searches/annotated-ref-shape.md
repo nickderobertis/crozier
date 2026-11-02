@@ -1,6 +1,6 @@
 # Arm search: `annotated-ref-shape`
 
-The unreached handling site(s) searched for: `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]`.
+The unreached handling site(s) searched for: `src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]`.
 Read with: `schema.allOf:annotated-ref`.
 
 A walked or fetched document declaring the row is a `document` row of the

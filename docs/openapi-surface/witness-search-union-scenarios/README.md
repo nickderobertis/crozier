@@ -126,8 +126,8 @@ that move beside the two arms the shape reached before.
 
 | key | verdict | arm | shape | renewed outcome |
 |---|---|---|---|---|
-| `nullable` | `search-incomplete` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | `union-member-nullability-dropped` | none-registrable |
-| `nullable` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | `nullable-union-component-optional-on-last-member` | none-registrable |
+| `nullable` | `search-incomplete` | `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]` | `union-member-nullability-dropped` | none-registrable |
+| `nullable` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[^ +if variants\.iter\(\)\.all\(is_plain_scalar\)$]` | `nullable-union-component-optional-on-last-member` | none-registrable |
 | `oneof` | `search-incomplete` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | `union-null-member-typed-any` | none-registrable |
 | `property-oneof-residual` | `search-incomplete` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | `inline-oneof-discriminator-without-tag-values` | none-registrable |
 | `additional-properties-schema` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |

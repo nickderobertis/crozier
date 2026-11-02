@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Rota desk
+  version: "1.0"
+paths:
+  /shifts/{shiftId}:
+    get:
+      operationId: getShift
+      parameters:
+        - name: shiftId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The shift.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+components:
+  schemas:
+    Cover:
+      title: Cover
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum:
+            - cover
+            - relief
+        hours:
+          type: integer
+    Training:
+      title: Training
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum:
+            - trainee
+            - mentor
+        course:
+          type: string
+    Leave:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum:
+            - annual
+            - sick
+        days:
+          type: integer
+    Shift:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        assignment:
+          oneOf:
+            - title: Cover
+              $ref: "#/components/schemas/Cover"
+            - title: Training
+              $ref: "#/components/schemas/Training"
+            - $ref: "#/components/schemas/Leave"
+          discriminator:
+            propertyName: role
+        backup:
+          description: Who stands in if the assignment falls through.
+          oneOf:
+            - $ref: "#/components/schemas/Cover"
+            - $ref: "#/components/schemas/Leave"
+          discriminator:
+            propertyName: role
+    HandoverShift:
+      allOf:
+        - $ref: "#/components/schemas/Shift"
+        - type: object
+          required:
+            - handedTo
+          properties:
+            handedTo:
+              type: string
