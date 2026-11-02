@@ -279,9 +279,9 @@ when the two differ.
 ### `declared-example-over-placeholder`
 
 - **Kind:** `usefulness`
-- **Trigger:** A worked example (README.md, reference.md, each client.py docstring) passing a multipart form part or header parameter that declares an example, a query parameter declaring one on an operation whose success body is not JSON, a path parameter declaring one beside a path parameter whose schema is empty, or a list item of an enum whose schema declares an example member.
+- **Trigger:** A worked example (README.md, reference.md, each client.py docstring) passing a multipart form part, a multipart object part's property or a header parameter that declares an example, a parameter's falsy example (its own or its examples map's), a query parameter declaring one on an operation whose success body is not JSON, a path parameter declaring one beside a path parameter whose schema is empty, a oneOf or anyOf property's own example, a list item of an enum whose schema declares an example member, or the request body example of an operation whose success body is not JSON.
 - **Fern writes:** Its own placeholder: the argument's wire name (label="label", survey_ref="X-Survey-Ref"), 1 for an integer, or the enum's first member (AlertKind.ALL).
-- **crozier writes:** The value the specification declares for the argument (label="", depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT). Every other argument and line is retained.
+- **crozier writes:** The value the specification declares for the argument (label="", depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT), or for the body (request=[StoreLine(item_id=…, crates=4)] where Fern writes [StoreLine(), StoreLine()]), including an optional argument Fern leaves out. Every other argument and line is retained.
 - **Why:** Design-review ruling 2 (falsy-property-example, 2026-11-01) keeps the value the API's author declared where the certified pair discards it for a synthesized placeholder, and its principle extends to the enum example member (example-enum-member) and to the kept example-value-source sub-rules; synthesized placeholders never count as more useful.
 - **Evidence:** [`docs/departures/evidence/declared-example-over-placeholder.md`](../../docs/departures/evidence/declared-example-over-placeholder.md)
 
@@ -540,7 +540,7 @@ when the two differ.
 ### `unquoted-timestamp-parameter-example`
 
 - **Kind:** `usefulness`
-- **Trigger:** A worked example passing a parameter whose example (its own, or its referenced schema's example or first examples entry) is an ISO date-time the YAML document writes unquoted, which YAML reads as a timestamp.
+- **Trigger:** A worked example passing a parameter whose example (its own, its examples map's first value, or its referenced schema's example or first examples entry) is an ISO date or date-time the YAML document writes unquoted, which YAML reads as a timestamp.
 - **Fern writes:** Its date-time placeholder (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")) or the parameter's name for a required parameter, and an optional parameter's declared example left out of the call.
 - **crozier writes:** The declared timestamp, as the call's datetime (datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")) or string ("2031-04-01T06:00:00Z"), including an optional parameter's, with the import datetime it needs. Every other argument and line is retained.
 - **Why:** Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01) keeps the unquoted ISO timestamp the API's author declared rather than the certified pair's placeholder.

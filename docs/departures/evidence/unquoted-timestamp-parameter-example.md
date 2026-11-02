@@ -37,6 +37,20 @@ parameter that is not temporal, is left out by both. On both sides each
 value has the argument's annotated type (`datetime.datetime` or `str`, read off
 the generated signatures; no call was executed).
 
+## An examples-map date
+
+[`R4/openapi.yml`](../../fern-measurements/handed-off/example-values/R4/openapi.yml) gives `rosteredOn` (required) and
+`rosteredAfter` (optional) an `examples` map whose first value is `null` and
+whose second is `2031-07-04` / `2031-07-01`, unquoted dates; `listKeeperCallbacks`
+takes `since` alone, shaped the same (unicourt's `libraryDate`). The certified
+pair writes `rostered_on=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")`,
+leaves `rostered_after` out, and writes `client.keepers.list_keeper_callbacks()`;
+crozier writes `2031-07-04T00:00:00+00:00`, `rostered_after=…("2031-07-01T00:00:00+00:00")`
+and `list_keeper_callbacks(since=…)`, the call split over lines. The rule reads
+the first non-null `examples` value as it reads the parameter's own example, and
+admits the multi-line call in place of Fern's empty one only when its every
+argument line is an optional timestamp argument it keeps.
+
 ## The rule
 
 `declared_values::unquoted_timestamp_parameter_example` admits a pair where

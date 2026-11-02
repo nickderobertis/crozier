@@ -403,9 +403,38 @@ fn ruled_example_values_are_what_crozier_writes() {
     assert!(vessels.contains("    port=\"falmouth\","));
 }
 
+/// The files `crozier compare` reports as differing between crozier's output
+/// over `spec` and the reference tree `reference`, every catalogued departure
+/// applied. The command, not the ledger-checked gate, so a perturbed tree's
+/// departures are never recorded against the committed golden.
+#[cfg(unix)]
+fn compare_differing(spec: &Path, reference: &Path) -> Vec<String> {
+    let work = tempfile::tempdir().expect("compare workspace");
+    std::fs::copy(spec, work.path().join("openapi.yml")).expect("copy the document");
+    let config = format!(
+        "generators:\n  python:\n    spec: ./openapi.yml\n    output: ./sdk\n    package-name: fern\n    project-name: default_package_name\n    reference:\n      command: cp -r '{}/.' \"$CROZIER_REFERENCE_OUTPUT/\"\n",
+        reference.display()
+    );
+    std::fs::write(work.path().join("crozier.yml"), config).expect("write the config");
+    let output = super::crozier()
+        .current_dir(work.path())
+        .args(["compare", "--json", "-", "./crozier.yml"])
+        .output()
+        .expect("run crozier compare");
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("crozier compare prints its JSON report");
+    report["results"][0]["comparison"]["differing"]
+        .as_array()
+        .expect("a comparison")
+        .iter()
+        .filter_map(|file| file.as_str().map(str::to_string))
+        .collect()
+}
+
 /// A copy of a cause's committed tree with one line changed: a `from` the tree
 /// no longer holds fails here, so a regenerated tree cannot leave a negative
 /// case silently unperturbed.
+#[cfg(unix)]
 fn perturbed(cause: &str, rel: &str, from: &str, to: &str) -> tempfile::TempDir {
     let copy = tempfile::tempdir().expect("tree copy tempdir");
     copy_dir(&cause_dir(cause).join("fern-expected"), copy.path());
@@ -419,6 +448,8 @@ fn perturbed(cause: &str, rel: &str, from: &str, to: &str) -> tempfile::TempDir 
 /// Each declared-value departure explains only its own line: a different
 /// placeholder on the certified side, or a changed line beside it, fails. A
 /// missing document writes no SDK.
+// `crozier compare` runs a reference command only on Unix (docs/compare.md).
+#[cfg(unix)]
 #[test]
 fn declared_value_departures_hold_only_their_lines() {
     for (cause, rel, from, to) in [
@@ -483,16 +514,17 @@ fn declared_value_departures_hold_only_their_lines() {
         ),
     ] {
         let tree = perturbed(cause, rel, from, to);
-        let dir = cause_dir(cause);
-        let golden = golden_path(&dir.join("fern-expected"));
-        let failures = tree_failures(cause, &dir.join("openapi.yml"), &[], &golden, tree.path());
+        let differing = compare_differing(&cause_dir(cause).join("openapi.yml"), tree.path());
         assert!(
-            failures
-                .iter()
-                .any(|failure| failure.contains(&format!("{rel} differs"))),
-            "{cause} {rel}: {failures:?}"
+            differing.iter().any(|file| file == rel),
+            "{cause} {rel}: {differing:?}"
         );
     }
+}
+
+/// A document that is not there writes no SDK.
+#[test]
+fn a_missing_measurement_document_writes_no_sdk() {
     let missing = tempfile::tempdir().expect("missing source tempdir");
     let out = missing.path().join("sdk");
     probe_command(&missing.path().join("openapi.yml"), &out)

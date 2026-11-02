@@ -51,6 +51,30 @@ the argument's name (or its enum's first member); crozier's are the values the
 document declares, which the ruling keeps. Synthesized placeholders never count
 as more useful.
 
+## The shapes the four open handed-off items added
+
+The same principle covers four further shapes, each in the measurements above
+or in [`R4/openapi.yml`](../../fern-measurements/handed-off/example-values/R4/openapi.yml), the certified pair's line(s) first:
+
+```text
+importer-declined body  request=[StoreLine(), StoreLine()]          request=[StoreLine(item_id="6f1c2a3e-…", crates=4)]   declared: the body's named example
+                        request={"string": {"key": "value"}}       request={"0": {"entry": "oiled hinges", …}, "1": …}
+                        request=[{"key": "value"}, {"key": "value"}] request=[0, {"entry": "swept deck"}]
+multipart object part   label="label"                               label="spring refit"                          declared: task.label example
+falsy examples map      (q left out; search_keepers())              q="" (search_keepers(q=""))                   declared: examples {blank: {value: ""}}
+union property          match="match"                               match=["depth"]                               declared: [depth]
+```
+
+The first three come from operations answering `text/plain` (`removeGalleyStores`,
+`appendGalleyLog`, `amendGalleyLog`), where the certified pair's importer
+builds no example and its fallback writes placeholders; the region rule
+admits Fern's `request=` only when it holds nothing but those placeholders
+(no keyword argument, strings `string`/`key`/`value`, numbers `1`/`1000000`),
+and crozier's only when its every string and number is one the operation's
+body examples declare. The real witnesses are ihulsbus's `delete_recipe_amounts`
+and SeekStorm's `index_document`/`update_document` (runZero's `import_task.name`,
+unicourt's `q`).
+
 ## The rule
 
 `declared_values::declared_example_over_placeholder` admits a worked-example

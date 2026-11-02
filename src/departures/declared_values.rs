@@ -236,11 +236,18 @@ pub(super) fn declared_body_over_fallback(
         if fern_text == crozier_text {
             continue;
         }
-        let (fern_strings, _) = literal_tokens(&fern_text);
+        let (fern_strings, fern_numbers) = literal_tokens(&fern_text);
         let (strings, numbers) = literal_tokens(&crozier_text);
-        let placeholder = fern_strings
-            .iter()
-            .all(|text| matches!(text.as_str(), "string" | "key" | "value"));
+        // Fern's side holds only placeholders: no keyword argument inside the
+        // value, its strings `string`/`key`/`value`, its numbers `1`/`1000000`.
+        let fern_value = fern_text.trim_start().trim_start_matches("request=");
+        let placeholder = !fern_value.contains('=')
+            && fern_strings
+                .iter()
+                .all(|text| matches!(text.as_str(), "string" | "key" | "value"))
+            && fern_numbers
+                .iter()
+                .all(|number| *number == 1.0 || *number == 1_000_000.0);
         let declared_only = !strings.is_empty() || !numbers.is_empty();
         let declared_only = declared_only
             && strings

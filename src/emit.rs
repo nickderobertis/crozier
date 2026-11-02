@@ -9377,7 +9377,10 @@ impl<'a> ExampleCtx<'a> {
                         // passes (measured in
                         // docs/fern-measurements/handed-off/example-values/example-value-source/).
                         Some(serde_json::Value::Array(items)) if items.is_empty() => {
-                            if example.is_some() {
+                            if example
+                                .as_deref()
+                                .is_some_and(|example| !matches!(example, "[]" | "{}"))
+                            {
                                 self.field_example(
                                     &type_ref,
                                     &wire_name,
@@ -9400,10 +9403,14 @@ impl<'a> ExampleCtx<'a> {
                                     example_from_json_as(value.clone(), !self.documentation)
                                 })
                         }
-                        // A field the example leaves out (or names only by an
-                        // empty array the narrowing pruned) takes its own
-                        // declared example where it has one, as above.
-                        _ if example.is_some() => {
+                        // A field the example leaves out takes its own declared
+                        // example where it has one, as above; an empty one
+                        // carries no value (ADME seismic's `parents: []` is
+                        // synthesized as `["parents"]`).
+                        _ if example
+                            .as_deref()
+                            .is_some_and(|example| !matches!(example, "[]" | "{}")) =>
+                        {
                             self.field_example(&type_ref, &wire_name, example.as_deref(), lengths)
                         }
                         _ => self.value(&type_ref, Slot::Named(&wire_name)),

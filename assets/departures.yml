@@ -167,18 +167,23 @@
   kind: usefulness
   trigger: >-
     A worked example (README.md, reference.md, each client.py docstring) passing
-    a multipart form part or header parameter that declares an example, a query
-    parameter declaring one on an operation whose success body is not JSON, a
-    path parameter declaring one beside a path parameter whose schema is empty,
-    or a list item of an enum whose schema declares an example member.
+    a multipart form part, a multipart object part's property or a header
+    parameter that declares an example, a parameter's falsy example (its own or
+    its examples map's), a query parameter declaring one on an operation whose
+    success body is not JSON, a path parameter declaring one beside a path
+    parameter whose schema is empty, a oneOf or anyOf property's own example, a
+    list item of an enum whose schema declares an example member, or the
+    request body example of an operation whose success body is not JSON.
   fern: >-
     Its own placeholder: the argument's wire name (label="label",
     survey_ref="X-Survey-Ref"), 1 for an integer, or the enum's first member
     (AlertKind.ALL).
   crozier: >-
     The value the specification declares for the argument (label="",
-    depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT). Every other
-    argument and line is retained.
+    depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT), or for the
+    body (request=[StoreLine(item_id=…, crates=4)] where Fern writes
+    [StoreLine(), StoreLine()]), including an optional argument Fern leaves out.
+    Every other argument and line is retained.
   reason: >-
     Design-review ruling 2 (falsy-property-example, 2026-11-01) keeps the value
     the API's author declared where the certified pair discards it for a
@@ -740,9 +745,10 @@
 - id: unquoted-timestamp-parameter-example
   kind: usefulness
   trigger: >-
-    A worked example passing a parameter whose example (its own, or its
-    referenced schema's example or first examples entry) is an ISO date-time
-    the YAML document writes unquoted, which YAML reads as a timestamp.
+    A worked example passing a parameter whose example (its own, its examples
+    map's first value, or its referenced schema's example or first examples
+    entry) is an ISO date or date-time the YAML document writes unquoted, which
+    YAML reads as a timestamp.
   fern: >-
     Its date-time placeholder
     (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")) or the

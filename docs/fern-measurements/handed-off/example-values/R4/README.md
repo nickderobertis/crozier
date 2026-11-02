@@ -4,7 +4,7 @@ The handed-off root cause `R4` from [`docs/openapi-surface/witness-search-fixtur
 
 ## The document
 
-`GET /keepers/{keeperId}/shifts`: `keeperId` declares a schema `example` (`KPR-from-schema`) beside a parameter `examples` map (`KPR-from-map`); optional `season` and `page` declare only `examples` maps.
+`GET /keepers/{keeperId}/shifts`: `keeperId` declares a schema `example` (`KPR-from-schema`) beside a parameter `examples` map (`KPR-from-map`); optional `season` and `page` declare only `examples` maps. The operation also takes an optional `q` whose `examples` value is `""`, and `rosteredOn` (required) and `rosteredAfter` (optional) whose `examples` maps give `null` then an unquoted date; `listKeeperCallbacks` and `searchKeepers` take only an optional `since` (unquoted-date `examples` value) and `q` (`""`) — the shapes of unicourt's `q` and `libraryDate`.
 
 ## The certified pair's output
 
@@ -14,7 +14,7 @@ The handed-off root cause `R4` from [`docs/openapi-surface/witness-search-fixtur
 
 The certified pair works `keeper_id` from the schema `example`; crozier from the map. Both treat `season` and `page` alike.
 
-**Verdict: `user-ruling` (design-review ruling 5, `declared-examples-array`).** crozier keeps the map's value, as `declared-examples-array-parameter-value`; with it applied, crozier's tree byte-matches `fern-expected/`. On the record's unicourt document the parameter-level `q` (`examples` value `""`) is the falsy case ruling 2 keeps.
+**Verdict: `user-ruling` (design-review ruling 5, `declared-examples-array`).** crozier keeps the map's value, as `declared-examples-array-parameter-value`. The pair leaves out `q` and `rosteredAfter`, writes its date-time placeholder for `rosteredOn`, and writes `list_keeper_callbacks()` and `search_keepers()` empty; crozier keeps the falsy `q` (ruling 2, `declared-example-over-placeholder`) and the unquoted dates (ruling 3, `unquoted-timestamp-parameter-example`), the empty calls included; with it applied, crozier's tree byte-matches `fern-expected/`. On the record's unicourt document the parameter-level `q` (`examples` value `""`) is the falsy case ruling 2 keeps.
 
 ## What holds it
 

@@ -12,7 +12,7 @@ Three bodies whose schema an array example does not fit: `{type: object, additio
 
 ## The comparison
 
-The certified pair turns each array example into the object keyed by index (`{"0": "focus", "1": "tilt"}`), in every writer, and puts one entry per line in the README; crozier wrote `{"key": "value"}` (and a list for the bare object's docstring). The record's `{"string": {"key": "value"}}` on SeekStorm is that document's importer fallback (its other named example nests arrays), not this rule.
+The certified pair turns each array example into the object keyed by index (`{"0": "focus", "1": "tilt"}`), in every writer, and puts one entry per line in the README; crozier wrote `{"key": "value"}` (and a list for the bare object's docstring). The record's `{"string": {"key": "value"}}` on SeekStorm is the importer fallback (its operation answers `text/plain`), not this rule; that shape is measured in `example-value-source/` (`appendGalleyLog`), where crozier keeps the declared example under ruling 2's principle.
 
 **Verdict: `default-matched`.** No ruling names it and both sides synthesize, so crozier matches the pair (`ir::index_keyed_map_example`); its tree byte-matches `fern-expected/`.
 
