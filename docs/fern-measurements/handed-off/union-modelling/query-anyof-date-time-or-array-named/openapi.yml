@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Courier depot
+  version: "1.0"
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      parameters:
+        - name: shipped_at
+          in: query
+          required: false
+          description: When the parcel shipped, or any of several moments.
+          schema:
+            anyOf:
+              - type: string
+                format: date-time
+                nullable: true
+              - type: array
+                items:
+                  type: string
+                  format: date-time
+                  nullable: true
+        - name: weight
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+                nullable: true
+              - type: array
+                items:
+                  type: integer
+                  nullable: true
+      responses:
+        "200":
+          description: The parcels.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

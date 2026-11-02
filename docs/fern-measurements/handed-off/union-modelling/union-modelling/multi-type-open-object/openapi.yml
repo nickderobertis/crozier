@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Ingest desk
+  version: "1.0"
+paths:
+  /batches:
+    post:
+      operationId: submitBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchReceipt"
+        "422":
+          description: The batch was refused.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - reason
+                properties:
+                  reason:
+                    type: string
+                  context:
+                    additionalProperties: {}
+                    type:
+                      - "null"
+                      - object
+                      - array
+components:
+  schemas:
+    BatchReceipt:
+      type: object
+      properties:
+        id:
+          type: string
+        details:
+          additionalProperties: {}
+          type:
+            - object
+            - array
+            - "null"
+        tags:
+          additionalProperties:
+            type: string
+          type:
+            - object
+            - "null"
