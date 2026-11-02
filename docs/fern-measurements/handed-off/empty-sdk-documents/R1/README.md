@@ -55,9 +55,11 @@ verified against the record:
 `fern-refusals.py evaluate-sdk`'s receipt over lolesports' exact bytes. The
 chain is OpenAPI validation, default and strict generation (equal trees), a
 wheel build, a fresh installation, and an import of every generated module, and
-every stage passed. The receipt was taken with the release binary built at this
-node's base, `6b4509ab9`. On the finished tree crozier's SDK for lolesports is
-byte-identical to that build's, file for file. The exception is recorded in
+every stage passed. The receipt was retaken with the debug binary built at
+`6745e50a6`, the merge of main's union-modelling change (#726), which rewrites
+the hoisted `allOf` member's model (`ShelfParentShelf` in the probe), so the SDK
+differs from the first receipt's (taken at `6b4509ab9`) and every stage still
+passes. The exception is recorded in
 [`extension-reference-cycle`'s evaluation](../../../../fern-refusals/extension-reference-cycle/evaluation.md),
 the class whose phrase the pair prints.
 
