@@ -140,6 +140,7 @@ Ten of the twenty-six documents the records name byte-match; the twenty-seventh,
 
 - revision `92c12d96d7b61d6d15e2214daa5e9c6000ab6e1c`, sha256 `d598753c3a86fd8a2434828fe39dcc8786a7a694bbe46080a0d24c9fa40e72df`
 - this node's cause: `inline-union-hoisting`; every cause its record lists: `inline-union-hoisting`
+- at this node's base (`6b4509ab9`) crozier differed from this tree in 155 files (96 differing, 52 only in the certified pair, 7 only in crozier), the 75 the parity-type-declarations node attributed to this area among them: one-value `type` enums the certified pair keeps on the streaming-event and content models, and one-member unions it writes as their member. Those are repaired here (`union-modelling/event-stream-beside-json`, the lone-`$ref` rule of `inline-union-hoisting`, `union-modelling/annotated-reference-beside-null`); none of the files that remain is a union-modelling file.
 - differs in differing (27) (`crozier compare`, finished tree), each file attributed below:
 
 ### `hashicorp/terraform-plugin-codegen-openapi:internal/cmd/testdata/edgecase/openapi_spec.yml`
