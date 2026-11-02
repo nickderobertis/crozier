@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Herbarium Scans
+  version: 1.0.0
+  description: Stores and returns scans of pressed plant specimens.
+servers:
+  - url: https://herbarium.example.com
+paths:
+  /specimens/{specimenId}/scan:
+    post:
+      operationId: renderScan
+      tags: [specimens]
+      summary: Render a scan at a resolution, as the image or as its metadata.
+      parameters:
+        - name: specimenId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dpi]
+              properties:
+                dpi:
+                  type: integer
+      responses:
+        '200':
+          description: The scan bytes, or its metadata.
+          content:
+            application/text:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                required: [specimenId, bytes]
+                properties:
+                  specimenId:
+                    type: string
+                  bytes:
+                    type: integer

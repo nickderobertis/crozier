@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Canal Lock Keeper
+  version: 1.0.0
+  description: Books passages through a canal lock.
+servers:
+  - url: https://locks.example.com
+paths:
+  /passages/{passageId}:
+    get:
+      operationId: getPassage
+      tags: [passages]
+      summary: One booked passage.
+      parameters:
+        - name: passageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The passage.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passage'
+        '404':
+          description: No such passage.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockFault'
+components:
+  schemas:
+    Passage:
+      type: object
+      required: [passageId, vessel]
+      properties:
+        passageId:
+          type: string
+        vessel:
+          type: string
+    LockFault:
+      type: object
+      nullable: true
+      required: [reason]
+      properties:
+        reason:
+          type: string
+        retryAfter:
+          type: integer
