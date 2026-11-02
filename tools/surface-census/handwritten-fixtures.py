@@ -1235,7 +1235,9 @@ def fixture_plan(repo_root: Path, base: Path) -> tuple[list[tuple[str, Cover]], 
         raise SystemExit(f"handwritten-reach: {base} is not a directory; pass --handwritten-dir or restore it")
     reach = golden_reach()
     sites = reach.read_sites_table(repo_root / REGIONS / "golden-reach-sites.tsv")
-    audit, failures = reach.read_cooccurrence(repo_root / REGIONS / "combination-cooccurrence.tsv")
+    audited = repo_root / REGIONS / "combination-cooccurrence.tsv"
+    # A tree from before the co-occurrence audit has no `co-occurrence` cover to place.
+    audit, failures = reach.read_cooccurrence(audited) if audited.is_file() else ({}, [])
     if failures:
         raise SystemExit("handwritten-reach: " + "; ".join(failures))
     planned: list[tuple[str, Cover]] = []
