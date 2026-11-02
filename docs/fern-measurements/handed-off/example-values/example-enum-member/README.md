@@ -8,7 +8,7 @@ The handed-off root cause `example-enum-member` from [`docs/openapi-surface/witn
 
 ## The certified pair's output
 
-`fern-expected/` is the complete, comment-stripped tree the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, `assets/scaffolding/metadata.json`) generated for `openapi.yml` under `python_enums`, through `tools/fern-goldens/fern-references.py generate measurements handed-off/example-values/example-enum-member` (its `docs/fern-measurements/cases.tsv` row), under the shared Fern lock.
+`fern-expected/` is the complete, comment-stripped tree the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, `assets/scaffolding/metadata.json`) generated for `openapi.yml` under `python_enums`, through `just fern-references measurements handed-off/example-values/example-enum-member` (its `docs/fern-measurements/cases.tsv` row), under the shared Fern lock.
 
 `expected-literals/fern-expected/` is the same document generated with `enum_type` unset (the `literals` mode), reduced to an overlay of `fern-expected/` (the files that differ, and `.crozier-overlay.json` naming the files Fern omits); its `cases.tsv` row is `handed-off/example-values/example-enum-member/expected-literals`.
 

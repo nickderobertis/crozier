@@ -5483,10 +5483,6 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
             .is_some_and(|members| members.iter().all(is_unknown))
 }
 
-/// The value Fern's IR example generator gives a string query parameter with no
-/// declared example (`generatePrimitiveStringExample`): its `default`, else a
-/// sample exactly `minLength` long, else one `maxLength` long when that is under
-/// ten, else nothing and the call passes the parameter's name.
 /// A `type: string` parameter's own `example`, else the first value of its
 /// `examples` map, where it holds no `/`.
 fn own_path_parameter_example(
@@ -5530,6 +5526,10 @@ fn schema_level_parameter_example(parameter: &crate::openapi::Parameter) -> Opti
     bounded_example_literal(typed_schema_example(schema)?, declares_int64(schema))
 }
 
+/// The value Fern's IR example generator gives a string query parameter with no
+/// declared example (`generatePrimitiveStringExample`): its `default`, else a
+/// sample exactly `minLength` long, else one `maxLength` long when that is under
+/// ten, else nothing and the call passes the parameter's name.
 fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
     parameter_example(doc, parameter).or_else(|| ir_fallback_parameter_example(parameter))
 }
@@ -5644,17 +5644,18 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
 /// `searchterms` items (`[763436008, 763434006, something invalid]`) as
 /// `["something invalid"]`.
 fn typed_schema_example(schema: &Schema) -> Option<&serde_json::Value> {
-    let fits = |value: &&serde_json::Value| scalar_example_fits(schema, value);
+    let fits = |value: &&serde_json::Value| fern_keeps_example_kind(schema, value);
     match schema.example.as_ref() {
         Some(example) => Some(example).filter(fits),
         None => schema.examples.iter().find(fits),
     }
 }
 
-/// Whether `value` is of the JSON type a scalar schema declares: no string for a
-/// boolean, integer or number, no number or boolean for a string. Any other
-/// schema takes any value.
-fn scalar_example_fits(schema: &Schema, value: &serde_json::Value) -> bool {
+/// Whether the certified pair's importer keeps `value` as an example of
+/// `schema` by its JSON kind: it drops a string for a boolean, integer or number
+/// and a number or boolean for a string, and keeps anything else (it checks no
+/// further compatibility).
+fn fern_keeps_example_kind(schema: &Schema, value: &serde_json::Value) -> bool {
     match schema.ty.as_ref().and_then(TypeField::primary) {
         Some("boolean" | "integer" | "number") => !value.is_string(),
         Some("string") => !(value.is_number() || value.is_boolean()),
@@ -7462,7 +7463,7 @@ fn resolve_request_body(
         // notehub's legacy webhook event posts one with a media `example`, and
         // the certified pair's call passes its entries (measured in
         // docs/fern-measurements/handed-off/example-values/map-body-media-example/).
-        let string_map = matches!(&type_ref, TypeRef::Dict(_, value)
+        let string_or_free_form_map = matches!(&type_ref, TypeRef::Dict(_, value)
             if **value == TypeRef::Primitive(Prim::Str) || **value == TypeRef::Primitive(Prim::Any));
         let mut body = single_with_override(
             type_ref,
@@ -7473,7 +7474,7 @@ fn resolve_request_body(
         );
         // Kafka Connect's configuration validation documents the declared map
         // example in both its method docstrings and its reference usage snippet.
-        if string_map {
+        if string_or_free_form_map {
             if let RequestBody::Single(single) = &mut body {
                 single.example = media_example(doc, media)
                     .map(|example| index_keyed_map_example(example).to_string())
@@ -7641,7 +7642,7 @@ fn resolve_request_body(
         // docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/).
         if let RequestBody::Single(single) = &mut body {
             let holds = |value: &&serde_json::Value| {
-                scalar_example_fits(schema, value)
+                fern_keeps_example_kind(schema, value)
                     && !(schema.ty.as_ref().and_then(TypeField::primary) == Some("string")
                         && (value.is_array() || value.is_object()))
             };

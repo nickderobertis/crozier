@@ -4,7 +4,7 @@
 //!
 //! - `declared-example-over-placeholder` (ruling 2, `falsy-property-example`,
 //!   and its principle): a parameter's falsy example, a multipart form part's or a header parameter's
-//!   declared example, a binary download's query parameter example, a path
+//!   declared example, a query parameter example on an operation answering no JSON, a path
 //!   parameter's example on an operation whose other path parameter declares an
 //!   empty schema, and an enum's declared example member.
 //! - `unquoted-timestamp-parameter-example` (ruling 3,
@@ -32,8 +32,10 @@ fn placeholder_for(wire: &str, value: &str) -> bool {
     value == format!("{wire:?}") || matches!(value, "1" | "1000000" | "1.1" | "True")
 }
 
-/// A schema declaring nothing at all (`schema: {}`).
-fn empty_schema(schema: &Schema) -> bool {
+/// A schema declaring no type, reference, format, composition, enum, `const`,
+/// properties or items (circleci's `schema: {}`); keywords outside that list,
+/// which such a schema has no use for, are not read.
+fn untyped_unstructured_schema(schema: &Schema) -> bool {
     schema.ty.is_none()
         && schema.reference.is_none()
         && schema.format.is_none()
@@ -87,9 +89,12 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
     for (operation, parameters) in source_operations(source) {
         let empty_path_schema = parameters.iter().any(|parameter| {
             parameter.location == Some(ParameterLocation::Path)
-                && parameter.schema.as_ref().is_some_and(empty_schema)
+                && parameter
+                    .schema
+                    .as_ref()
+                    .is_some_and(untyped_unstructured_schema)
         });
-        let binary = non_json_success(operation);
+        let non_json = non_json_success(operation);
         for parameter in &parameters {
             let Some(value) = parameter.example.as_ref() else {
                 continue;
@@ -101,7 +106,7 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
             let kept = falsy
                 || match parameter.location {
                     Some(ParameterLocation::Header) => true,
-                    Some(ParameterLocation::Query) => binary,
+                    Some(ParameterLocation::Query) => non_json,
                     Some(ParameterLocation::Path) => empty_path_schema,
                     _ => false,
                 };

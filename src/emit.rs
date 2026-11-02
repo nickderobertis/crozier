@@ -10185,7 +10185,6 @@ impl<'a> ExampleCtx<'a> {
         result
     }
 
-    /// The body of [`named_value`], wrapped by the cycle-guard bookkeeping.
     /// A discriminated union's synthesized value: its first member, built from
     /// that member's required fields.
     fn discriminated_union_value(
@@ -10320,6 +10319,7 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// The body of [`named_value`], wrapped by the cycle-guard bookkeeping.
     fn named_value_inner(&mut self, name: &str, slot: Slot) -> Example {
         match self.find(name) {
             Some(TypeDecl::Object(obj)) => {

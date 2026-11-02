@@ -14,7 +14,8 @@ use super::{
     walk_files, GoldenLedger,
 };
 
-/// Where the measurements live.
+/// Each cause's directory sits here under the record's own spelling of its name,
+/// which `example-values.tsv` and the area README cite.
 pub(super) const AREA_DIR: &str = "docs/fern-measurements/handed-off/example-values";
 
 /// Every cause the triage record names, each a directory under [`AREA_DIR`].
@@ -61,7 +62,8 @@ fn cause_dir(cause: &str) -> PathBuf {
     repo_root().join(AREA_DIR).join(cause)
 }
 
-/// crozier's tree over `spec` with `flags`, in a fresh directory.
+/// A failing run is a failure message, not a panic, so one cause's refusal is
+/// reported beside the other causes' differences.
 fn generate(spec: &Path, flags: &[&str]) -> Result<tempfile::TempDir, String> {
     let out = tempfile::tempdir().expect("crozier output tempdir");
     let result = probe_command(spec, out.path())
@@ -97,7 +99,8 @@ fn tree_failures(
     )
 }
 
-/// [`tree_failures`] against the ledger rows `ledger` gives.
+/// [`tree_failures`] for a tree whose ledger rows are not one golden's: a
+/// literals overlay inherits its base's rows (see [`literals_ledger`]).
 fn ledger_tree_failures(
     key: &str,
     spec: &Path,
@@ -130,21 +133,36 @@ fn literals_ledger(cause: &str) -> Result<GoldenLedger, Vec<String>> {
     let own = departure_ledger().golden(&golden_path(&overlay), &[])?;
     let inherited =
         departure_ledger().golden(&golden_path(&cause_dir(cause).join("fern-expected")), &[])?;
-    let manifest: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(overlay.join(MANIFEST)).expect("the overlay manifest"),
-    )
-    .expect("the manifest is JSON");
-    let removed: Vec<String> = manifest["removed"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|path| path.as_str().map(str::to_string))
-        .collect();
+    let removed = overlay_removed(&overlay);
     let files = walk_files(&overlay)
         .into_iter()
         .filter(|rel| rel != MANIFEST)
         .collect();
     Ok(own.inherit(inherited, files, &removed))
+}
+
+/// The files an overlay's manifest says the literals tree omits. A manifest
+/// without a `removed` array of paths is malformed and fails the test rather
+/// than standing for an overlay that removes nothing.
+fn overlay_removed(overlay: &Path) -> Vec<String> {
+    let path = overlay.join(MANIFEST);
+    let manifest: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&path)
+            .unwrap_or_else(|error| panic!("{}: {error}", path.display())),
+    )
+    .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    manifest
+        .get("removed")
+        .and_then(serde_json::Value::as_array)
+        .unwrap_or_else(|| panic!("{}: `removed` is not an array", path.display()))
+        .iter()
+        .map(|entry| {
+            entry
+                .as_str()
+                .unwrap_or_else(|| panic!("{}: a `removed` entry is not a path", path.display()))
+                .to_string()
+        })
+        .collect()
 }
 
 /// A cause's literals tree: its own `fern-expected/` minus the files the
@@ -155,12 +173,7 @@ fn literals_tree(cause: &str) -> tempfile::TempDir {
     let overlay = dir.join("expected-literals").join("fern-expected");
     let tree = tempfile::tempdir().expect("literals tree tempdir");
     copy_dir(&base, tree.path());
-    let manifest: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(overlay.join(MANIFEST)).expect("the overlay manifest"),
-    )
-    .expect("the manifest is JSON");
-    for removed in manifest["removed"].as_array().into_iter().flatten() {
-        let rel = removed.as_str().expect("a removed path");
+    for rel in overlay_removed(&overlay) {
         std::fs::remove_file(tree.path().join(rel)).expect("remove a file Fern omits");
     }
     for rel in walk_files(&overlay) {
@@ -238,7 +251,9 @@ fn handed_off_example_value_literals_overlays_match_fern() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
-/// The lines a cause's `reference.md` holds on each side.
+/// `reference.md` is the one writer that carries every worked call of a cause's
+/// document, so the ruled lines are read there (the docstrings and README
+/// carry the same values, held by the whole-tree comparison).
 fn reference_lines(cause: &str) -> (String, String) {
     let dir = cause_dir(cause);
     let out = generate(&dir.join("openapi.yml"), &[]).unwrap_or_else(|failure| panic!("{failure}"));

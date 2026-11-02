@@ -8,7 +8,7 @@ The handed-off root cause `property-schema-examples-array` from [`docs/openapi-s
 
 ## The certified pair's output
 
-`fern-expected/` is the complete, comment-stripped tree the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, `assets/scaffolding/metadata.json`) generated for `openapi.yml` under `python_enums`, through `tools/fern-goldens/fern-references.py generate measurements handed-off/example-values/property-schema-examples-array` (its `docs/fern-measurements/cases.tsv` row), under the shared Fern lock.
+`fern-expected/` is the complete, comment-stripped tree the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, `assets/scaffolding/metadata.json`) generated for `openapi.yml` under `python_enums`, through `just fern-references measurements handed-off/example-values/property-schema-examples-array` (its `docs/fern-measurements/cases.tsv` row), under the shared Fern lock.
 
 ## The comparison
 
