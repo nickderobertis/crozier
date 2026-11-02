@@ -443,7 +443,7 @@ def main() -> int:
             "merged": bool(b["merged"]), "ci_runs": len(runs_ci), "ci_failed": 0, "census_failures": 0,
             "census_runner_min": 0.0, "census_elapsed_min": 0.0, "census_wait_min": 0.0,
             "other_failures": 0, "attempts": len(gates), "census_attempts": 0, "redispatches": len(dispatches),
-            "census_redispatches": 0, "conflict_redispatches": 0, "derived_conflicts": 0, "code_conflicts": 0,
+            "census_redispatches": 0, "conflict_redispatches": 0, "derived_conflicts": 0, "mixed_conflicts": 0, "code_conflicts": 0,
             "conflict_wait_min": 0.0, "census_kinds": [], "rewrote": [],
         }
         failure_marks: list[tuple[dt.datetime, str, tuple[str, ...]]] = []
@@ -514,8 +514,10 @@ def main() -> int:
                     "share": round(len(outside) / len(derived), 3), "runner_min": 0.0, "elapsed_min": 0.0, "wait_min": wait,
                     "fix_files": ";".join(derived), "tasks": "", "excerpt": "",
                 })
-            if len(derived) < len(c["paths"]):
+            if not derived:
                 row["code_conflicts"] += 1
+            elif len(derived) < len(c["paths"]):
+                row["mixed_conflicts"] += 1
         # --- Re-dispatches, attributed to the latest failure before each.
         previous = None
         for d in dispatches:
@@ -582,6 +584,7 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         "derived": sum(c["derived_conflicts"] for c in changes),
         "changes_hit": sum(1 for c in changes if c["derived_conflicts"]),
         "code": sum(c["code_conflicts"] for c in changes),
+        "mixed": sum(c["mixed_conflicts"] for c in changes),
         "wait_min": round(sum(c["conflict_wait_min"] for c in changes), 1),
         "redispatches": sum(c["conflict_redispatches"] for c in changes),
         "median_wait_min": median(conflict_waits),
@@ -647,7 +650,7 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
     cols = [
         "pr", "branch", "merged", "ci_runs", "ci_failed", "census_failures", "census_runner_min", "census_elapsed_min",
         "census_wait_min", "other_failures", "attempts", "census_attempts", "redispatches", "census_redispatches",
-        "derived_conflicts", "conflict_redispatches", "conflict_wait_min", "code_conflicts", "census_kinds", "rewrote", "nodes", "runs",
+        "derived_conflicts", "mixed_conflicts", "conflict_redispatches", "conflict_wait_min", "code_conflicts", "census_kinds", "rewrote", "nodes", "runs",
     ]
     with (out / "changes.tsv").open("w", encoding="utf-8") as handle:
         handle.write("\t".join(cols) + "\n")
@@ -674,7 +677,7 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         f"- Publication attempts {totals['attempts']} (census-failed {c['attempts']}); re-dispatches {totals['redispatches']} "
         f"(after a census failure {c['redispatches']}, after a derived conflict {k['redispatches']}).",
         f"- Derived-table conflicts: {k['derived']} ({k['changes_hit']} changes), wait to next attempt {k['wait_min']} min "
-        f"(median {k['median_wait_min']} per conflict); "
+        f"(median {k['median_wait_min']} per conflict), {k['mixed']} of them also conflicting in code; "
         f"code-only conflicts {k['code']}.",
         "",
         "Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):",

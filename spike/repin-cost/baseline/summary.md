@@ -3,7 +3,7 @@
 - Changes: 27 (26 with a PR, 20 merged); CI runs 68, failed 28.
 - Census-tier CI failures: 15 (0.56 per change, 9 changes hit); runner 3453.6 min, elapsed 1403.4 min, wait to next run 2595.2 min (cycle 3998.6 min, median 230.9 per failure).
 - Publication attempts 47 (census-failed 6); re-dispatches 82 (after a census failure 9, after a derived conflict 9).
-- Derived-table conflicts: 10 (7 changes), wait to next attempt 3839.9 min (median 371.5 per conflict); code-only conflicts 5.
+- Derived-table conflicts: 10 (7 changes), wait to next attempt 3839.9 min (median 371.5 per conflict), 4 of them also conflicting in code; code-only conflicts 1.
 
 Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):
 

@@ -20,7 +20,8 @@
   "conflicts": {
     "derived": 10,
     "changes_hit": 7,
-    "code": 5,
+    "code": 1,
+    "mixed": 4,
     "wait_min": 3839.9,
     "redispatches": 9,
     "median_wait_min": 371.5
