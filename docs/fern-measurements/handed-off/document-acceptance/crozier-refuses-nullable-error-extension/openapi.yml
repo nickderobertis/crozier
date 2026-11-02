@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: Ledger exports
+  version: 1.0.0
+paths:
+  /exports/get:
+    post:
+      operationId: getExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - exportToken
+              properties:
+                exportToken:
+                  type: string
+      responses:
+        '200':
+          description: The export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+components:
+  schemas:
+    ExportResponse:
+      type: object
+      additionalProperties: true
+      required:
+        - exportId
+        - notices
+      properties:
+        exportId:
+          type: string
+        notices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notice'
+    Notice:
+      type: object
+      additionalProperties: true
+      required:
+        - noticeCode
+        - reason
+      properties:
+        noticeCode:
+          type: string
+        reason:
+          $ref: '#/components/schemas/Reason'
+    Reason:
+      type: object
+      additionalProperties: true
+      allOf:
+        - $ref: '#/components/schemas/LedgerError'
+        - type: object
+          properties:
+            accountId:
+              type: string
+      required:
+        - accountId
+        - errorCode
+        - errorMessage
+    LedgerError:
+      type: object
+      nullable: true
+      additionalProperties: true
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        retryable:
+          type: boolean
+          nullable: true

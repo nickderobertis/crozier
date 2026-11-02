@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+  title: Library members
+  version: 1.0.0
+paths:
+  /members/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: getMember
+      responses:
+        '200':
+          description: The member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+    put:
+      operationId: updateMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Member'
+                - type: object
+                  properties:
+                    password:
+                      type: string
+                    homeShelf:
+                      type: integer
+          application/x-www-form-urlencoded:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Member'
+                - type: object
+                  properties:
+                    password:
+                      type: string
+                    homeShelf:
+                      type: integer
+      responses:
+        '200':
+          description: The member updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+components:
+  schemas:
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The member's number
+        name:
+          type: string
+        email:
+          type: string
