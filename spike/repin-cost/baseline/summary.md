@@ -5,15 +5,17 @@
 - Publication attempts 47 (census-failed 6); re-dispatches 82 (after a census failure 9, after a derived conflict 9).
 - Derived-table conflicts: 10 (7 changes), wait to next attempt 3839.9 min (median 371.5 per conflict); code-only conflicts 5.
 
-| kind | events | changes | runner min | elapsed min | wait min | cycle min |
-| --- | --- | --- | --- | --- | --- | --- |
-| `derived-conflict` | 10 | 7 | 0.0 | 0.0 | 3839.9 | 3839.9 |
-| `measured-count` | 4 | 3 | 776.2 | 294.8 | 322.5 | 617.3 |
-| `other-artifact:docs/fern-refusals/classes.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 |
-| `other-artifact:docs/fern-refusals/documents.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 |
-| `other-artifact:docs/openapi-surface/witness-search-registries/outstanding.tsv` | 4 | 4 | 788.6 | 300.2 | 346.5 | 646.7 |
-| `port-digest` | 9 | 6 | 1287.9 | 532.1 | 1134.4 | 1666.5 |
-| `site-anchor` | 9 | 6 | 1389.3 | 576.7 | 1138.2 | 1714.9 |
+Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):
+
+| kind | events | changes | runner min | elapsed min | wait min | cycle min | publication attempts | re-dispatches |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `derived-conflict` | 10 | 7 | 0.0 | 0.0 | 3839.9 | 3839.9 | 0 | 9 |
+| `measured-count` | 4 | 3 | 776.2 | 294.8 | 322.5 | 617.3 | 2 | 3 |
+| `other-artifact:docs/fern-refusals/classes.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 | 1 | 1 |
+| `other-artifact:docs/fern-refusals/documents.tsv` | 1 | 1 | 68.0 | 30.2 | 9.6 | 39.8 | 1 | 1 |
+| `other-artifact:docs/openapi-surface/witness-search-registries/outstanding.tsv` | 4 | 4 | 788.6 | 300.2 | 346.5 | 646.7 | 4 | 4 |
+| `port-digest` | 9 | 6 | 1287.9 | 532.1 | 1134.4 | 1666.5 | 4 | 7 |
+| `site-anchor` | 9 | 6 | 1389.3 | 576.7 | 1138.2 | 1714.9 | 1 | 4 |
 
 | artifact outside the census | CI failures | conflicts | changes | cycle min | runner min |
 | --- | --- | --- | --- | --- | --- |

@@ -32,6 +32,8 @@
       "elapsed_min": 0.0,
       "wait_min": 3839.9,
       "changes": 7,
+      "redispatches": 9,
+      "attempts": 0,
       "cycle_min": 3839.9
     },
     "measured-count": {
@@ -40,6 +42,8 @@
       "elapsed_min": 294.8,
       "wait_min": 322.5,
       "changes": 3,
+      "attempts": 2,
+      "redispatches": 3,
       "cycle_min": 617.3
     },
     "other-artifact:docs/fern-refusals/classes.tsv": {
@@ -48,6 +52,8 @@
       "elapsed_min": 30.2,
       "wait_min": 9.6,
       "changes": 1,
+      "attempts": 1,
+      "redispatches": 1,
       "cycle_min": 39.8
     },
     "other-artifact:docs/fern-refusals/documents.tsv": {
@@ -56,6 +62,8 @@
       "elapsed_min": 30.2,
       "wait_min": 9.6,
       "changes": 1,
+      "attempts": 1,
+      "redispatches": 1,
       "cycle_min": 39.8
     },
     "other-artifact:docs/openapi-surface/witness-search-registries/outstanding.tsv": {
@@ -64,6 +72,8 @@
       "elapsed_min": 300.2,
       "wait_min": 346.5,
       "changes": 4,
+      "attempts": 4,
+      "redispatches": 4,
       "cycle_min": 646.7
     },
     "port-digest": {
@@ -72,6 +82,8 @@
       "elapsed_min": 532.1,
       "wait_min": 1134.4,
       "changes": 6,
+      "attempts": 4,
+      "redispatches": 7,
       "cycle_min": 1666.5
     },
     "site-anchor": {
@@ -80,6 +92,8 @@
       "elapsed_min": 576.7,
       "wait_min": 1138.2,
       "changes": 6,
+      "redispatches": 4,
+      "attempts": 1,
       "cycle_min": 1714.9
     }
   },

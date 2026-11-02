@@ -446,7 +446,9 @@ def main() -> int:
             "census_redispatches": 0, "conflict_redispatches": 0, "derived_conflicts": 0, "code_conflicts": 0,
             "conflict_wait_min": 0.0, "census_kinds": [], "rewrote": [],
         }
-        failure_marks: list[tuple[dt.datetime, str]] = []
+        failure_marks: list[tuple[dt.datetime, str, tuple[str, ...]]] = []
+        run_kinds: dict[int, list[str]] = {}
+        row["kind_attempts"], row["kind_redispatches"] = collections.Counter(), collections.Counter()
         # --- CI failures, each with its fix and the wait to the next CI run on this branch.
         for i, run in enumerate(runs_ci):
             if run["conclusion"] != "failure":
@@ -472,10 +474,11 @@ def main() -> int:
                 row["census_elapsed_min"] += run["elapsed_min"]
                 row["census_wait_min"] += wait
                 row["census_kinds"] = sorted(set(row["census_kinds"]) | set(kinds))
-                failure_marks.append((run["end"], "census"))
+                failure_marks.append((run["end"], "census", tuple(kinds)))
             else:
                 row["other_failures"] += 1
-                failure_marks.append((run["end"], tier))
+                failure_marks.append((run["end"], tier, tuple(kinds) if tier == "artifact" else ()))
+            run_kinds[run["id"]] = kinds if tier in ("census", "artifact") else []
             # A failure of a pinned artifact outside the census is a repin event too.
             if tier in ("census", "artifact"):
                 for k in kinds:
@@ -492,6 +495,8 @@ def main() -> int:
             match = [r for r in runs_ci if r["conclusion"] == "failure" and g["start"] - dt.timedelta(hours=3) <= r["end"] <= g["end"] + dt.timedelta(minutes=10)]
             if match and match[-1]["census"]:
                 row["census_attempts"] += 1
+            if match:
+                row["kind_attempts"].update(run_kinds.get(match[-1]["id"], []))
         # --- Conflicts.
         for c in conflicts:
             pinned = {p: artifact_kind(p) for p in c["paths"]}
@@ -501,7 +506,7 @@ def main() -> int:
             if derived:
                 row["derived_conflicts"] += 1
                 row["conflict_wait_min"] += wait
-                failure_marks.append((c["at"], "conflict"))
+                failure_marks.append((c["at"], "conflict", ("derived-conflict",)))
                 outside = sorted({pinned[p][1] for p in derived if pinned[p][0].startswith("other-artifact")})
                 events.append({
                     "pr": b["pr"], "branch": name, "source": "journal", "at": c["at"].isoformat(), "kind": "derived-conflict",
@@ -517,7 +522,9 @@ def main() -> int:
             before = [m for m in failure_marks if m[0] <= d["at"] and (previous is None or m[0] > previous)]
             previous = d["at"]
             if before:
-                last = max(before)[1]
+                latest = max(before, key=lambda m: m[0])
+                last = latest[1]
+                row["kind_redispatches"].update(latest[2])
                 if last == "census":
                     row["census_redispatches"] += 1
                 elif last == "conflict":
@@ -588,7 +595,14 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         slot["elapsed_min"] += e["elapsed_min"]
         slot["wait_min"] += e["wait_min"]
         slot["changes"].add(e["pr"] or e["branch"])
+    for c in changes:
+        for field, key in (("kind_attempts", "attempts"), ("kind_redispatches", "redispatches")):
+            for kind, count in c[field].items():
+                slot = by_kind.setdefault(kind, {"events": 0, "runner_min": 0.0, "elapsed_min": 0.0, "wait_min": 0.0, "changes": set()})
+                slot[key] = slot.get(key, 0) + count
     for slot in by_kind.values():
+        slot.setdefault("attempts", 0)
+        slot.setdefault("redispatches", 0)
         slot["changes"] = len(slot["changes"])
         slot["cycle_min"] = round(slot["elapsed_min"] + slot["wait_min"], 1)
         for key in ("runner_min", "elapsed_min", "wait_min"):
@@ -639,6 +653,8 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         handle.write("\t".join(cols) + "\n")
         for c in changes:
             handle.write("\t".join(";".join(v) if isinstance(v := c[k], list) else str(v) for k in cols) + "\n")
+    for c in changes:
+        c["kind_attempts"], c["kind_redispatches"] = dict(c["kind_attempts"]), dict(c["kind_redispatches"])
     ecols = ["pr", "branch", "source", "at", "kind", "tier", "artifact", "ci_run", "runner_min", "elapsed_min", "wait_min", "fix_files", "tasks", "excerpt"]
     with (out / "events.tsv").open("w", encoding="utf-8") as handle:
         handle.write("\t".join(ecols) + "\n")
@@ -661,11 +677,13 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         f"(median {k['median_wait_min']} per conflict); "
         f"code-only conflicts {k['code']}.",
         "",
-        "| kind | events | changes | runner min | elapsed min | wait min | cycle min |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):",
+        "",
+        "| kind | events | changes | runner min | elapsed min | wait min | cycle min | publication attempts | re-dispatches |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for kind, s in totals["by_kind"].items():
-        lines.append(f"| `{kind}` | {s['events']} | {s['changes']} | {s['runner_min']} | {s['elapsed_min']} | {s['wait_min']} | {s['cycle_min']} |")
+        lines.append(f"| `{kind}` | {s['events']} | {s['changes']} | {s['runner_min']} | {s['elapsed_min']} | {s['wait_min']} | {s['cycle_min']} | {s['attempts']} | {s['redispatches']} |")
     lines += ["", "| artifact outside the census | CI failures | conflicts | changes | cycle min | runner min |", "| --- | --- | --- | --- | --- | --- |"]
     for r in totals["artifacts_outside_census"]:
         lines.append(f"| `{r['artifact']}` | {r['ci_failures']} | {r['conflicts']} | {r['changes']} | {r['cycle_min']} | {r['runner_min']} |")
