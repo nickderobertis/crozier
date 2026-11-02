@@ -17329,7 +17329,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
 
         The positive writes two pattern strings and three plain integers; the
         decoys write a `null` alternative, mixed primitives, `integer` beside
-        `format: int64` or a `format: uint64` number (both longs), a lone alternative, a composition beside a `type`, and
+        `format: int64` or a `format: uint64` integer or number (all longs), a lone alternative, a composition beside a `type`, and
         the positive's composition inline as a property, where it is no class.
         """
         selector = "components.schemas:same-primitive-union"
@@ -17362,6 +17362,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
                 "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
                 "Unsigned": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "UnsignedInteger": {"anyOf": [{"type": "integer", "format": "uint64"}, {"type": "integer"}]},
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},
