@@ -332,9 +332,20 @@ pub(super) fn unquoted_timestamp_parameter_line(pair: &Pair<'_>, at: usize) -> b
                 && lines.get(index + 2) == Some(&format!("{indent}),").as_str())
         })
     };
+    let imports = |index: usize| {
+        lines
+            .get(index)
+            .is_some_and(|line| line.trim() == "import datetime")
+            && (0..lines.len()).any(|other| other != index && passes(other))
+    };
     if line.trim() == "import datetime" {
         // Needed only by a timestamp line this rule admits.
-        return (0..lines.len()).any(|index| index != at && passes(index));
+        return imports(at);
+    }
+    // A docstring separates the import it adds from the next one by a blank
+    // line.
+    if line.trim().is_empty() {
+        return at >= 1 && imports(at - 1);
     }
     passes(at) || (at >= 1 && passes(at - 1)) || (at >= 2 && passes(at - 2))
 }
@@ -542,6 +553,7 @@ mod tests {
         ));
         let lines = [
             "import datetime",
+            "",
             "client.tides.list_tides(",
             "    until=datetime.datetime.fromisoformat(",
             "        \"2031-04-03 08:15:00+00:00\",",
@@ -549,10 +561,16 @@ mod tests {
             ")",
         ];
         let added = pair("src/fern/tides/client.py", &lines, &context);
-        for at in [0, 2, 3, 4] {
+        for at in [0, 1, 3, 4, 5] {
             assert!(unquoted_timestamp_parameter_line(&added, at), "{at}");
         }
-        assert!(!unquoted_timestamp_parameter_line(&added, 1));
+        assert!(!unquoted_timestamp_parameter_line(&added, 2));
+        // A blank line after anything but the admitted import is no departure.
+        let blank = ["client.tides.list_tides(", "", ")"];
+        assert!(!unquoted_timestamp_parameter_line(
+            &pair("src/fern/tides/client.py", &blank, &context),
+            1
+        ));
         // The required parameter's line is never one Fern omits.
         let required =
             ["    since=datetime.datetime.fromisoformat(\"2031-04-02T08:15:00+00:00\"),"];

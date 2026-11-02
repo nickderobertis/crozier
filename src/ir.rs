@@ -5139,6 +5139,13 @@ fn optional_array_declares_example(doc: &OpenApi, parameter: &crate::openapi::Pa
             || parameter
                 .example
                 .as_ref()
+                .is_some_and(serde_json::Value::is_array)
+            // dnd5eapi's `challenge_rating`, `level` and `school` filters carry
+            // an `examples` map of arrays, and their calls pass none of them.
+            || parameter
+                .examples
+                .values()
+                .find_map(|example| component_example_value(doc, example))
                 .is_some_and(serde_json::Value::is_array))
 }
 
@@ -7492,10 +7499,18 @@ fn resolve_request_body(
             single.example = media_example(doc, media)
                 .map(|example| BodyExample::Literal(example.to_string()))
                 .or_else(|| {
+                    // Only over scalar items: nextgen's lab-order tests body
+                    // declares objects through `$ref` and an `example` of them,
+                    // and its golden passes `request=[]`.
+                    let scalar_items = items.reference.is_none()
+                        && matches!(
+                            items.ty.as_ref().and_then(TypeField::primary),
+                            Some("string" | "integer" | "number" | "boolean")
+                        );
                     schema
                         .example
                         .as_ref()
-                        .filter(|example| example.is_array())
+                        .filter(|example| scalar_items && example.is_array())
                         .map(|example| BodyExample::Schema(example.to_string()))
                 });
         }
@@ -7531,10 +7546,12 @@ fn resolve_request_body(
             content_type_override,
         );
         // A bare object's own schema example is a complete request value,
-        // as is the media type's example (which takes precedence).
+        // as is the media type's example (which takes precedence), an array
+        // one keyed by index as a map's is (Cyoda's `createCollection`; see
+        // [`index_keyed_map_example`]).
         if let RequestBody::Single(single) = &mut body {
             single.example = media_example(doc, media)
-                .map(|value| BodyExample::Literal(value.to_string()))
+                .map(|value| BodyExample::Literal(index_keyed_map_example(value).to_string()))
                 .or_else(|| {
                     schema_example(schema).map(|value| BodyExample::Schema(value.to_string()))
                 });

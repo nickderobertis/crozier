@@ -19679,6 +19679,7 @@ mod handed_off_example_value_tests {
             &[
                 "        \"0\": \"focus\",",
                 "        \"0\": {\"note\": \"wiped\", \"keeper\": \"Tamsin\"},",
+                "        \"0\": {\"kind\": \"polish\", \"minutes\": 12},",
             ],
             &["\"key\": \"value\""],
         );

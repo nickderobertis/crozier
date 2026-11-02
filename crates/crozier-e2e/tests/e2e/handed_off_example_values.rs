@@ -286,7 +286,13 @@ fn ruled_example_values_are_what_crozier_writes() {
     // Ruling 3 keeps an optional timestamp parameter the pair leaves out;
     // ruling 4 (minimal-worked-call) leaves out the two the pair omits, and
     // keeps one carrying a plain declared example, as the pair does.
-    let (_, timestamps) = reference_lines("yaml-timestamp-parameter-example");
+    let (fern_timestamps, timestamps) = reference_lines("yaml-timestamp-parameter-example");
+    assert!(
+        !fern_timestamps.contains("as_of="),
+        "the certified pair leaves an optional timestamp out"
+    );
+    assert!(timestamps
+        .contains("    as_of=datetime.datetime.fromisoformat(\"2031-05-01T00:00:00+00:00\"),"));
     assert!(timestamps
         .contains("    until=datetime.datetime.fromisoformat(\"2031-04-03T08:15:00+00:00\"),"));
     let (fern_optional, crozier_optional) = reference_lines("example-optional-members");

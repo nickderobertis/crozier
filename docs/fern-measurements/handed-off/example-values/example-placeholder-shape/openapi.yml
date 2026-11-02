@@ -68,3 +68,37 @@ paths:
                 properties:
                   count:
                     type: integer
+  /lenses/{lensId}/batch:
+    post:
+      operationId: batchLensRecords
+      tags: [lenses]
+      parameters:
+        - name: lensId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              format: json
+            examples:
+              pair:
+                summary: Two records
+                value:
+                  - kind: polish
+                    minutes: 12
+                  - kind: inspect
+                    minutes: 5
+      responses:
+        "200":
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer

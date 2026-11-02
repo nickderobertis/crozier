@@ -9,11 +9,12 @@ if typing.TYPE_CHECKING:
     from . import lenses
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-    from .lenses import AppendLensLogsResponse, UpdateLensSettingsResponse
+    from .lenses import AppendLensLogsResponse, BatchLensRecordsResponse, UpdateLensSettingsResponse
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AppendLensLogsResponse": ".lenses",
     "AsyncFernApi": ".client",
+    "BatchLensRecordsResponse": ".lenses",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
@@ -47,6 +48,7 @@ def __dir__():
 __all__ = [
     "AppendLensLogsResponse",
     "AsyncFernApi",
+    "BatchLensRecordsResponse",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",

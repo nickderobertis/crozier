@@ -6,6 +6,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawTidesClient, RawTidesClient
+from .types.get_gauge_response import GetGaugeResponse
 
 
 class TidesClient:
@@ -79,6 +80,42 @@ class TidesClient:
             station=station,
             request_options=request_options,
         )
+        return _response.data
+
+    def get_gauge(
+        self,
+        gauge_id: str,
+        *,
+        as_of: typing.Optional[dt.datetime] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetGaugeResponse:
+        """
+        Parameters
+        ----------
+        gauge_id : str
+
+        as_of : typing.Optional[dt.datetime]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetGaugeResponse
+            The gauge
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.tides.get_gauge(
+            gauge_id="gauge-12",
+        )
+        """
+        _response = self._raw_client.get_gauge(gauge_id, as_of=as_of, request_options=request_options)
         return _response.data
 
 
@@ -160,4 +197,48 @@ class AsyncTidesClient:
             station=station,
             request_options=request_options,
         )
+        return _response.data
+
+    async def get_gauge(
+        self,
+        gauge_id: str,
+        *,
+        as_of: typing.Optional[dt.datetime] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetGaugeResponse:
+        """
+        Parameters
+        ----------
+        gauge_id : str
+
+        as_of : typing.Optional[dt.datetime]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetGaugeResponse
+            The gauge
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.tides.get_gauge(
+                gauge_id="gauge-12",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_gauge(gauge_id, as_of=as_of, request_options=request_options)
         return _response.data

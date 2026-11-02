@@ -12434,7 +12434,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "reference.md",
         "src/fern/analyze/reports/client.py",
         "src/fern/collections/__init__.py",
-        "src/fern/collections/client.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/products/client.py",

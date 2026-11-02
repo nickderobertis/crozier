@@ -6,6 +6,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawLensesClient, RawLensesClient
 from .types.append_lens_logs_response import AppendLensLogsResponse
+from .types.batch_lens_records_response import BatchLensRecordsResponse
 from .types.update_lens_settings_response import UpdateLensSettingsResponse
 
 
@@ -95,6 +96,46 @@ class LensesClient:
         )
         """
         _response = self._raw_client.append_lens_logs(lens_id, request=request, request_options=request_options)
+        return _response.data
+
+    def batch_lens_records(
+        self,
+        lens_id: str,
+        *,
+        request: typing.Dict[str, typing.Any],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> BatchLensRecordsResponse:
+        """
+        Parameters
+        ----------
+        lens_id : str
+
+        request : typing.Dict[str, typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BatchLensRecordsResponse
+            Recorded
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.lenses.batch_lens_records(
+            lens_id="lensId",
+            request={
+                "0": {"kind": "polish", "minutes": 12},
+                "1": {"kind": "inspect", "minutes": 5},
+            },
+        )
+        """
+        _response = self._raw_client.batch_lens_records(lens_id, request=request, request_options=request_options)
         return _response.data
 
 
@@ -197,4 +238,52 @@ class AsyncLensesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.append_lens_logs(lens_id, request=request, request_options=request_options)
+        return _response.data
+
+    async def batch_lens_records(
+        self,
+        lens_id: str,
+        *,
+        request: typing.Dict[str, typing.Any],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> BatchLensRecordsResponse:
+        """
+        Parameters
+        ----------
+        lens_id : str
+
+        request : typing.Dict[str, typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BatchLensRecordsResponse
+            Recorded
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.lenses.batch_lens_records(
+                lens_id="lensId",
+                request={
+                    "0": {"kind": "polish", "minutes": 12},
+                    "1": {"kind": "inspect", "minutes": 5},
+                },
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.batch_lens_records(lens_id, request=request, request_options=request_options)
         return _response.data

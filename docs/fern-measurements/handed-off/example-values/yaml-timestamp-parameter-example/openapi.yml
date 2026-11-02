@@ -49,3 +49,31 @@ paths:
                 type: array
                 items:
                   type: number
+  /tides/{gaugeId}:
+    get:
+      operationId: getGauge
+      tags: [tides]
+      parameters:
+        - name: gaugeId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: gauge-12
+        - name: asOf
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: 2031-05-01T00:00:00Z
+      responses:
+        "200":
+          description: The gauge
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  level:
+                    type: number

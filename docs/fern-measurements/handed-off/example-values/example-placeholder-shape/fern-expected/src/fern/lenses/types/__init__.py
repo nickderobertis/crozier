@@ -7,9 +7,11 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .append_lens_logs_response import AppendLensLogsResponse
+    from .batch_lens_records_response import BatchLensRecordsResponse
     from .update_lens_settings_response import UpdateLensSettingsResponse
 _dynamic_imports: typing.Dict[str, str] = {
     "AppendLensLogsResponse": ".append_lens_logs_response",
+    "BatchLensRecordsResponse": ".batch_lens_records_response",
     "UpdateLensSettingsResponse": ".update_lens_settings_response",
 }
 
@@ -35,4 +37,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AppendLensLogsResponse", "UpdateLensSettingsResponse"]
+__all__ = ["AppendLensLogsResponse", "BatchLensRecordsResponse", "UpdateLensSettingsResponse"]

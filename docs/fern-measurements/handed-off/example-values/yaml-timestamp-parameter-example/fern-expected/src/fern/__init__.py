@@ -9,12 +9,14 @@ if typing.TYPE_CHECKING:
     from . import tides
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
+    from .tides import GetGaugeResponse
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
+    "GetGaugeResponse": ".tides",
     "__version__": ".version",
     "tides": ".tides",
 }
@@ -41,4 +43,12 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AsyncFernApi", "DefaultAioHttpClient", "DefaultAsyncHttpxClient", "FernApi", "__version__", "tides"]
+__all__ = [
+    "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "FernApi",
+    "GetGaugeResponse",
+    "__version__",
+    "tides",
+]

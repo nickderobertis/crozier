@@ -129,3 +129,72 @@ client.lenses.append_lens_logs(
 </dl>
 </details>
 
+<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py">batch_lens_records</a>(...) -> BatchLensRecordsResponse</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.lenses.batch_lens_records(
+    lens_id="lensId",
+    request={
+        "0": {"kind": "polish", "minutes": 12},
+        "1": {"kind": "inspect", "minutes": 5}
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**lens_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.Dict[str, typing.Any]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
