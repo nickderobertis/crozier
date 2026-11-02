@@ -5142,7 +5142,14 @@ SCHEMA_RESPONSE_PORT_DIGESTS = {
     "success_response_key": "3d340d826e0150bc",
     "success_response_with_content": "f60c706986edea69",
     "has_dispatchable_media": "1778b0cd46695752",
+    "fern_success_responses": "8dffaf40eced2bbd",
+    "fern_default_response": "88e8c6aeaf057b17",
 }
+
+# `FERN_SUCCESS_STATUSES` of `src/ir.rs`: the only success statuses Fern reads a
+# method's response from, in the order it tries them. The census test holds the
+# two lists equal.
+FERN_SUCCESS_STATUSES = ("200", "201", "202", "204")
 
 
 def required_names(node: dict[Any, Any]) -> list[str]:
@@ -7005,9 +7012,9 @@ class Census:
         def content(value):
             return isinstance(value, dict) and bool(value.get("content"))
 
-        # Fern reads 200, 201, 202 and 204 only, in that order, and falls back to
-        # `default` only when none of them is declared (`FERN_SUCCESS_STATUSES`).
-        read = [code for code in ("200", "201", "202", "204") if code in resolved]
+        # Fern reads `FERN_SUCCESS_STATUSES` only, in that order, and falls back
+        # to `default` only when none of them is declared.
+        read = [code for code in FERN_SUCCESS_STATUSES if code in resolved]
         key = next((code for code in read if content(resolved[code]) and dispatchable(resolved[code])), None)
         if key is None:
             key = next((code for code in read if dispatchable(resolved[code])), None)
