@@ -32,8 +32,11 @@ Two subcommands:
   regions, then its key; a row reaching every handling site ties at the bottom.
 
 What the site table declares is where crozier handles a feature; what the cell
-reports about those sites is measured, never read off the source. `just
-golden-reach` runs the whole pipeline; `just golden-reach-report` re-joins an
+reports about those sites is measured, never read off the source. Each test's
+executed regions persist in the store `reach_store.py` documents, so `measure
+--incremental` (and `just census-repin`, which every stale-table failure names)
+re-runs only the tests whose base entry executed changed code. `just
+golden-reach` is the full measurement; `just golden-reach-report` re-joins an
 existing measurement after the site table changes.
 """
 
@@ -52,8 +55,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import threading
 import tomllib
+import types
 from collections import Counter, defaultdict
 from enum import StrEnum
 from pathlib import Path
@@ -398,7 +401,7 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
         end = REPORT._item_end_line(lines, index - 1)
         if end is None:
             fail(
-                f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name}"
+                f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name} (`{REPIN}` re-anchors one whose code only moved)"
             )
         spans.append((index + 1, end))
     return spans
@@ -433,7 +436,10 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     lines = path.read_text(encoding="utf-8").splitlines()
     spans = _function_spans(lines, match.group("item"))
     if len(spans) != 1:
-        fail(f"site {spec!r} matches {len(spans)} functions; name exactly one (qualify a method as `Type::name`)")
+        fail(
+            f"site {spec!r} matches {len(spans)} functions; run `{REPIN}` if its code only moved, else name "
+            "exactly one (qualify a method as `Type::name`)"
+        )
     start, end = spans[0]
     arm = match.group("arm")
     if arm is None:
@@ -443,8 +449,9 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     hits = [n for n in range(start, end + 1) if pattern.search(lines[n - 1])]
     if len(hits) != 1:
         fail(
-            f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1; "
-            f"anchor it (`^`, a leading-space count, more of the line) in {SITES_TABLE.name} until one line matches"
+            f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1; run `{REPIN}`, "
+            f"which re-anchors a site whose code only moved, else anchor it (`^`, a leading-space count, more of "
+            f"the line) in {SITES_TABLE.name} until one line matches"
         )
     first = hits[0]
     if line_only:
@@ -457,7 +464,7 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     if opening is None:
         fail(
             f"site {spec!r}: no brace block opens on line {first} or within the "
-            f"next {_CONDITION_LINES} lines; use `[=regex]` for a one-line arm"
+            f"next {_CONDITION_LINES} lines; run `{REPIN}` if rustfmt moved it, else use `[=regex]` for a one-line arm"
         )
     code = lines[opening - 1].rstrip()
     if code.endswith("{"):
@@ -474,7 +481,7 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
         arm_end = REPORT._item_end_line(lines, opening - 2)
     if arm_end is None or arm_end > end:
         fail(
-            f"site {spec!r}: cannot bound the block opened on line {opening}; anchor the arm regex on a line that opens a balanced block, or use `[=regex]` for a one-line arm"
+            f"site {spec!r}: cannot bound the block opened on line {opening}; run `{REPIN}` if its code only moved, else anchor the arm regex on a line that opens a balanced block, or use `[=regex]` for a one-line arm"
         )
     arrow = code.find("=>")
     if arrow != -1 and arrow < open_col:
@@ -527,7 +534,7 @@ def run_llvm(argv: list[str], stdout: IO[str] | None = None) -> None:
         fail(
             f"`{tool_name(argv[0])} {argv[1]}` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
             f"the profiles and the instrumented binaries disagree; rebuild them with "
-            f"`just golden-reach` and retry"
+            f"`{REPIN}` and retry"
         )
 
 
@@ -535,11 +542,11 @@ def _instrumented_binaries(repo_root: Path) -> tuple[Path, Path]:
     deps = repo_root / "target" / "llvm-cov-target" / "debug" / "deps"
     candidates = [p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == EXE]
     if not candidates:
-        fail(f"no instrumented e2e binary under {deps} — run `just golden-reach`, which builds it")
+        fail(f"no instrumented e2e binary under {deps} — run `{REPIN}`, which builds it")
     e2e = max(candidates, key=lambda p: p.stat().st_mtime)
     crozier = repo_root / "target" / "llvm-cov-target" / "debug" / f"crozier{EXE}"
     if not crozier.is_file():
-        fail(f"no instrumented crozier binary at {crozier} — run `just golden-reach`, which builds it")
+        fail(f"no instrumented crozier binary at {crozier} — run `{REPIN}`, which builds it")
     return e2e, crozier
 
 
@@ -592,27 +599,28 @@ def uncommitted_changes(repo_root: Path) -> list[str]:
     return [line[3:] for line in status.stdout.splitlines() if line.strip()]
 
 
-# llmlint: ignore[changed_behavior_has_e2e] Its whole journey is an instrumented build plus one instrumented run of every golden test over the fetched corpus, which needs the network and tens of minutes, so it lives outside `just check` as `just fixtures-coverage` does. The refusals are tested; what a run produces is gated by `RankedBacklogTests` reconciling the committed ledger it writes.
-def measure(args: argparse.Namespace) -> int:
-    repo_root: Path = args.repo_root
-    if args.tests:
-        try:
-            re.compile(args.tests)
-        except re.error as error:
-            fail(f"--tests {args.tests!r} is not a regex ({error}); pass a Python regex over golden test names")
-    out: Path = args.out
-    for tool in ("cargo",):
-        if shutil.which(tool) is None:
-            fail(f"{tool} is not on PATH; install the pinned toolchain with `just bootstrap`")
-    # The ledger names the commit it was measured at, so the measured tree must
-    # be that commit's: a merge measured before it is committed would stamp its
-    # first parent.
-    dirty = uncommitted_changes(repo_root)
-    if dirty:
-        fail(
-            f"{len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); "
-            "commit them first so the ledger's measured commit is the tree measured"
-        )
+def _sibling(name: str) -> Any:
+    """A module of this directory by file name, registered so its dataclasses resolve."""
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    if spec is None or spec.loader is None:
+        fail(f"cannot load tools/surface-census/{name}.py; restore it from git")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+RS = _sibling("reach_store")
+STORE_FILE = "store.json.gz"
+REPIN = RS.REPIN
+
+
+def instrumented_build(repo_root: Path) -> tuple[Path, Path]:
+    """Build the instrumented e2e suite and crozier every measurement runs; return both binaries."""
+    if shutil.which("cargo") is None:
+        fail("cargo is not on PATH; install the pinned toolchain with `just bootstrap`")
     build = subprocess.run(
         [
             "cargo",
@@ -630,94 +638,337 @@ def measure(args: argparse.Namespace) -> int:
     )
     if build.returncode != 0:
         sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
-        fail("the instrumented build failed (its output is above); fix what it names and re-run `just golden-reach`")
-    e2e, crozier = _instrumented_binaries(repo_root)
-    listed = subprocess.run(
-        [str(e2e), "--list", "--format", "terse"],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
+        fail(f"the instrumented build failed (its output is above); fix what it names and re-run `{REPIN}`")
+    return _instrumented_binaries(repo_root)
+
+
+def golden_population(repo_root: Path) -> dict[str, Any]:
+    """Every golden test the e2e suite registers -> its inputs (fixture directory, source names)."""
+    census = _census_module()
+    registrations = census.golden_registrations(repo_root / census.GOLDEN_REGISTRY)
+    names: dict[str, set[str]] = defaultdict(set)
+    for name, api in census.corpus_aliases(repo_root / "tests" / "fixtures").items():
+        names[api].add(name)
+    return {
+        registration.test: RS.Inputs(registration.test, api, frozenset({api} | names[api]))
+        for api, registration in registrations.items()
+    }
+
+
+def golden_constants(repo_root: Path) -> dict[str, str]:
+    """`Corpus` constant -> the golden test that drives it, read off the e2e suite."""
+    census = _census_module()
+    source = (repo_root / census.GOLDEN_REGISTRY).read_text(encoding="utf-8")
+    by_api = {api: r.test for api, r in census.golden_registrations(repo_root / census.GOLDEN_REGISTRY).items()}
+    return {
+        constant: by_api[api]
+        for constant, api in re.findall(r'^const (\w+): Corpus = Corpus \{\s*api: "([^"]+)"', source, re.M)
+        if api in by_api
+    }
+
+
+def _export_regions(
+    profiles: list[Path], scratch: Path, objects: list[Path], profdata: str, llvm_cov: str, repo_root: Path
+) -> tuple[dict[str, list[list[int]]], dict[str, list[list[int]]]]:
+    merged = scratch / "merged.profdata"
+    run_llvm([profdata, "merge", "-sparse", *map(str, profiles), "-o", str(merged)])
+    export = scratch / "export.json"
+    extra = [argument for path in objects[1:] for argument in ("-object", str(path))]
+    with export.open("w", encoding="utf-8") as sink:
+        run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(objects[0]), *extra], stdout=sink)
+    return _covered(export, repo_root)
+
+
+def universe_regions(e2e: Path, crozier: Path, repo_root: Path, profdata: str, llvm_cov: str) -> dict:
+    """Every production counter region the two instrumented binaries carry, executed or not."""
+    with tempfile.TemporaryDirectory(prefix="golden-reach-universe-") as scratch:
+        raw = Path(scratch)
+        env = dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw"))
+        subprocess.run([str(e2e), "--list"], cwd=golden_test_cwd(repo_root), capture_output=True, env=env)
+        subprocess.run([str(crozier), "--version"], cwd=repo_root, capture_output=True, env=env)
+        profiles = sorted(raw.glob("*.profraw"))
+        if not profiles:
+            fail(f"the instrumented binaries wrote no profile; rebuild them with `{REPIN}`")
+        universe, _hit = _export_regions(profiles, raw, [crozier, e2e], profdata, llvm_cov, repo_root)
+    return universe
+
+
+class Step(NamedTuple):
+    """What one measurement step did."""
+
+    store: dict[str, Any]
+    base: str | None
+    full: str | None
+    tests_run: tuple[str, ...]
+    tests_carried: tuple[str, ...]
+    fixtures_run: tuple[str, ...]
+    fixtures_carried: tuple[str, ...]
+    reasons: dict[str, str]
+
+
+def measure_step(
+    repo_root: Path,
+    *,
+    base: dict[str, Any] | None,
+    full_reason: str = "",
+    forced_tests: frozenset[str] = frozenset(),
+    forced_fixtures: frozenset[str] = frozenset(),
+    select_tests: re.Pattern[str] | None = None,
+    select_fixtures: re.Pattern[str] | None = None,
+    include_tests: bool = True,
+    include_fixtures: bool = True,
+    handwritten_dir: Path | None = None,
+    jobs: int = 1,
+) -> Step:
+    """One step of the store from `base` to the tree at `repo_root`'s HEAD.
+
+    No base measures every selected test and fixture. Otherwise `reach_store.plan`
+    decides what re-runs, and every other entry is carried, translated to HEAD's
+    universe. A test or fixture left out (`include_*`) is carried only where the
+    carry rule allows, and dropped where it does not: nothing is carried for a
+    test that executed changed code.
+    """
+    handwritten = _load_handwritten_module()
+    head = RS.git(repo_root, "rev-parse", "HEAD").strip()
+    tree = RS.read_tree(repo_root)
+    versions = RS.toolchain(repo_root)
+    population = golden_population(repo_root)
+    if select_tests is not None:
+        population = {name: inputs for name, inputs in population.items() if select_tests.search(name)}
+    fixture_base = handwritten_dir or repo_root / "docs" / "openapi-surface" / "handwritten"
+    fixtures = handwritten.measured_fixtures(repo_root, fixture_base)
+    if select_fixtures is not None:
+        fixtures = {name: audiences for name, audiences in fixtures.items() if select_fixtures.search(name)}
+    if base is None:
+        plan = RS.Plan(full_reason or "no base", frozenset(population), frozenset(fixtures), (), {})
+    else:
+        plan = RS.plan(repo_root, base, tree, population, fixtures, golden_constants(repo_root), versions)
+    carry = base is not None and plan.full is None
+    run_tests = (set(plan.tests) if include_tests else set()) | (forced_tests & set(population))
+    run_fixtures = (set(plan.fixtures) if include_fixtures else set()) | (forced_fixtures & set(fixtures))
+    built = bool(run_tests or run_fixtures or not carry or plan.changed)
+    binaries: tuple[Path, Path] | None = None
+    if built:
+        binaries = instrumented_build(repo_root)
+        profdata, llvm_cov = _llvm_tool("llvm-profdata"), _llvm_tool("llvm-cov")
+        universe = universe_regions(*binaries, repo_root, profdata, llvm_cov)
+        functions = RS.universe_table(tree, universe)
+    else:
+        assert base is not None
+        table = tree.table()
+        functions = {key: {**table[key], "regions": base["functions"][key]["regions"]} for key in table}
+    tests: dict[str, Any] = {}
+    fixture_entries: dict[str, Any] = {}
+    if carry:
+        assert base is not None
+        for name, entry in base["tests"].items():
+            if name not in population or name in run_tests or name in plan.tests:
+                continue
+            moved = RS.remap(entry["regions"], base["functions"], functions)
+            if moved is None:
+                run_tests.add(name) if include_tests else None
+                continue
+            tests[name] = {"commit": entry["commit"], "regions": moved}
+        for name, entry in base["fixtures"].items():
+            if name not in fixtures or name in run_fixtures or name in plan.fixtures:
+                continue
+            moved = RS.remap(entry["regions"], base["functions"], functions)
+            control = RS.remap(entry.get("control", {}), base["functions"], functions)
+            if moved is None or control is None:
+                run_fixtures.add(name) if include_fixtures else None
+                continue
+            fixture_entries[name] = {"commit": entry["commit"], "regions": moved}
+            if "control" in entry:
+                fixture_entries[name]["control"] = control
+    if (run_tests or run_fixtures) and binaries is None:
+        binaries = instrumented_build(repo_root)
+    if run_tests or run_fixtures:
+        assert binaries is not None
+        e2e, crozier = binaries
+        profdata, llvm_cov = _llvm_tool("llvm-profdata"), _llvm_tool("llvm-cov")
+        if run_tests:
+            listed = _listed_golden_tests(e2e, repo_root)
+            unknown = sorted(run_tests - set(listed))
+            if unknown:
+                fail(f"the e2e suite registers {unknown[:3]} but its binary lists no such test; rebuild with `{REPIN}`")
+        env = dict(os.environ, CROZIER_REQUIRE_CORPUS="1")
+
+        def one(test: str) -> tuple[str, dict | None, str | None]:
+            with tempfile.TemporaryDirectory(prefix="golden-reach-") as scratch:
+                raw = Path(scratch)
+                run = run_golden_test(
+                    [str(e2e)], test, repo_root, dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw"))
+                )
+                if run.returncode != 0:
+                    return test, None, (run.stdout + run.stderr)[-3000:]
+                _universe, hit = _export_regions(
+                    sorted(raw.glob("*.profraw")), raw, [crozier, e2e], profdata, llvm_cov, repo_root
+                )
+            return test, hit, None
+
+        failures = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+            for test, hit, error in pool.map(one, sorted(run_tests)):
+                if error is not None or hit is None:
+                    failures.append((test, error))
+                    continue
+                tests[test] = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
+        for test, error in failures:
+            sys.stderr.write(f"--- {test} ---\n{error}\n")
+        if failures:
+            fail(
+                f"{len(failures)} golden test(s) failed under instrumentation; a failing "
+                f"golden measures nothing. Fix them (`just test-corpus-match`) and re-run `{REPIN}`."
+            )
+        tools = types.SimpleNamespace(run_llvm=run_llvm, _covered=_covered)
+        for name in sorted(run_fixtures):
+            spec, audiences = fixture_base / name / "openapi.yml", fixtures[name]
+            _universe, hit = handwritten.scoped_run(spec, audiences, crozier, profdata, llvm_cov, repo_root, tools)
+            entry = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
+            if audiences:
+                _universe, control = handwritten.scoped_run(spec, (), crozier, profdata, llvm_cov, repo_root, tools)
+                entry["control"] = RS.entry_regions(tree, functions, control)
+            fixture_entries[name] = entry
+    store = {
+        "schema": RS.SCHEMA,
+        "commit": head,
+        "rustc": versions[0],
+        "llvm": versions[1],
+        "full_at": base["full_at"] if carry and base is not None else head,
+        "steps_since_full": base["steps_since_full"] + 1 if carry and base is not None else 0,
+        "measured_at": RS.now_iso(),
+        "tests": dict(sorted(tests.items())),
+        "fixtures": dict(sorted(fixture_entries.items())),
+        "functions": functions,
+    }
+    return Step(
+        store,
+        base["commit"] if base is not None else None,
+        None if carry else plan.full or full_reason or "no base",
+        tuple(sorted(run_tests)),
+        tuple(sorted(set(tests) - run_tests)),
+        tuple(sorted(run_fixtures)),
+        tuple(sorted(set(fixture_entries) - run_fixtures)),
+        dict(plan.reasons),
     )
+
+
+def _listed_golden_tests(e2e: Path, repo_root: Path) -> list[str]:
+    listed = subprocess.run([str(e2e), "--list", "--format", "terse"], cwd=repo_root, capture_output=True, text=True)
     if listed.returncode != 0:
-        fail(
-            f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `just golden-reach`"
-        )
-    listing = listed.stdout
+        fail(f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `{REPIN}`")
     golden_test = _census_module().GOLDEN_TEST
-    tests = sorted(
+    return sorted(
         line.rsplit(": test", 1)[0]
-        for line in listing.splitlines()
+        for line in listed.stdout.splitlines()
         if line.endswith(": test") and golden_test.search(line)
     )
-    if args.tests:
-        selected: re.Pattern[str] = re.compile(args.tests)
-        tests = [t for t in tests if selected.search(t)]
-    if not tests:
-        fail(
-            "no golden test is selected — check the --tests regex against "
-            "`cargo nextest list -E 'binary(e2e)'`, or register the corpus's "
-            "`*_matches_fern_output` test in crates/crozier-e2e/tests/e2e.rs"
-        )
-    profdata = _llvm_tool("llvm-profdata")
-    llvm_cov = _llvm_tool("llvm-cov")
+
+
+def write_views(step: Step, out: Path, repo_root: Path) -> None:
+    """Save the store, and the per-test absolute view `report` and the arm search read, at HEAD."""
+    store = step.store
+    RS.save(store, out / STORE_FILE)
+    tree = RS.read_tree(repo_root)
     (out / "tests").mkdir(parents=True, exist_ok=True)
-    # Every region set is this build's: the universe is rewritten from this run's
-    # first export, and a full run starts from no per-test file at all, so a
-    # measurement never pairs one build's hits with another build's regions.
-    if not args.tests:
-        for stale in (out / "tests").glob("*.json"):
-            stale.unlink()
-    (out / "universe.json").unlink(missing_ok=True)
-    universe_lock = threading.Lock()
-    env = dict(os.environ, CROZIER_REQUIRE_CORPUS="1")
-
-    def one(test: str) -> tuple[str, str | None]:
-        with tempfile.TemporaryDirectory(prefix="golden-reach-") as scratch:
-            raw = Path(scratch)
-            run = run_golden_test([str(e2e)], test, repo_root, dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")))
-            if run.returncode != 0:
-                return test, (run.stdout + run.stderr)[-3000:]
-            profiles = sorted(str(p) for p in raw.glob("*.profraw"))
-            merged = raw / "merged.profdata"
-            run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
-            export = raw / "export.json"
-            with export.open("w", encoding="utf-8") as sink:
-                run_llvm(
-                    [llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier), "-object", str(e2e)],
-                    stdout=sink,
-                )
-            universe, hit = _covered(export, repo_root)
-            (out / "tests" / f"{test}.json").write_text(json.dumps(hit), encoding="utf-8")
-            universe_path = out / "universe.json"
-            with universe_lock:
-                if not universe_path.exists():
-                    universe_path.write_text(json.dumps(universe), encoding="utf-8")
-        return test, None
-
-    failures = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        for test, error in pool.map(one, tests):
-            if error is not None:
-                failures.append((test, error))
-    for test, error in failures:
-        sys.stderr.write(f"--- {test} ---\n{error}\n")
-    if failures:
-        fail(
-            f"{len(failures)} golden test(s) failed under instrumentation; a failing "
-            f"golden measures nothing. Fix them (`just test-corpus-match`) and re-run."
+    for stale in (out / "tests").glob("*.json"):
+        stale.unlink()
+    universe = RS.positions(tree, store["functions"])
+    (out / "universe.json").write_text(
+        json.dumps({f: sorted(map(list, r)) for f, r in sorted(universe.items())}), encoding="utf-8"
+    )
+    for name, entry in store["tests"].items():
+        hit = RS.positions(tree, store["functions"], entry["regions"])
+        (out / "tests" / f"{name}.json").write_text(
+            json.dumps({f: sorted(map(list, r)) for f, r in sorted(hit.items())}), encoding="utf-8"
         )
     (out / "provenance.json").write_text(
         json.dumps(
             {
-                "commit": subprocess.run(
-                    ["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True
-                ).stdout.strip(),
-                "tests": len(tests),
+                "commit": store["commit"],
+                "tests": len(store["tests"]),
+                "base": step.base,
+                "full": step.full,
+                "run": len(step.tests_run),
+                "carried": len(step.tests_carried),
             }
         ),
         encoding="utf-8",
     )
-    print(f"golden-reach: measured {len(tests)} golden test(s) into {out}")
+
+
+def local_store(out: Path) -> dict[str, Any] | None:
+    """The store this checkout's last measurement left, or None (a refused one is reported, then ignored)."""
+    path = out / STORE_FILE
+    if not path.is_file():
+        return None
+    try:
+        return RS.load(path)
+    except RS.StoreError as error:
+        print(f"golden-reach: ignoring {path}: {error}", file=sys.stderr)
+        return None
+
+
+def describe(step: Step) -> str:
+    """The one line a step reports: what ran, what was carried, and from which base."""
+    origin = (
+        f"full measurement ({step.full})" if step.full else f"from the base at {step.base[:12] if step.base else '?'}"
+    )
+    return (
+        f"{len(step.tests_run)} test(s) run, {len(step.tests_carried)} carried; "
+        f"{len(step.fixtures_run)} fixture(s) run, {len(step.fixtures_carried)} carried; {origin}"
+    )
+
+
+def measure(args: argparse.Namespace) -> int:
+    """`measure`: full by default, `--tests` re-runs a subset into the store, `--incremental` steps from a base."""
+    repo_root: Path = args.repo_root
+    selected: re.Pattern[str] | None = None
+    if args.tests:
+        try:
+            selected = re.compile(args.tests)
+        except re.error as error:
+            fail(f"--tests {args.tests!r} is not a regex ({error}); pass a Python regex over golden test names")
+    out: Path = args.out
+    # The ledger names the commit it was measured at, so the measured tree must
+    # be that commit's: a merge measured before it is committed would stamp its
+    # first parent.
+    dirty = uncommitted_changes(repo_root)
+    if dirty:
+        fail(
+            f"{len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); "
+            "commit them first so the ledger's measured commit is the tree measured"
+        )
+    with RS.instrumented_lock("golden-reach measure"):
+        if args.incremental:
+            choice = _sibling("reach_base").find(repo_root)
+            print(f"golden-reach: base: {choice.reason}", file=sys.stderr)
+            step = measure_step(repo_root, base=choice.store, full_reason=choice.reason, jobs=args.jobs)
+        elif selected is not None:
+            base = local_store(out)
+            population = golden_population(repo_root)
+            forced = frozenset(name for name in population if selected.search(name))
+            if not forced:
+                fail(
+                    "no golden test is selected — check the --tests regex against "
+                    "`cargo nextest list -E 'binary(e2e)'`, or register the corpus's "
+                    "`*_matches_fern_output` test in crates/crozier-e2e/tests/e2e.rs"
+                )
+            step = measure_step(
+                repo_root,
+                base=base,
+                full_reason="no store to merge into",
+                forced_tests=forced,
+                select_tests=None if base is not None else selected,
+                include_tests=base is None,
+                include_fixtures=False,
+                jobs=args.jobs,
+            )
+        else:
+            step = measure_step(repo_root, base=None, full_reason="a full measurement was asked for", jobs=args.jobs)
+    write_views(step, out, repo_root)
+    _sibling("reach_base").publish(step.store)
+    print(f"golden-reach: measured into {out}: {describe(step)}")
     return 0
 
 
@@ -815,7 +1066,7 @@ def compute(
             found = frozenset(r for r in universe.get(site.file, set()) if site.holds(r))
             if not found:
                 fail(
-                    f"site {spec} spans no production counter region; it handles nothing measurable. Point it at the arm that handles the feature, or re-run `just golden-reach` if src/ moved since the measurement"
+                    f"site {spec} spans no production counter region; it handles nothing measurable. Run `{REPIN}` if src/ moved since the measurement, else point it at the arm that handles the feature"
                 )
             inside[spec] = found
             for test, files in coverage.items():
@@ -864,7 +1115,7 @@ def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
     """The `crozier sites` cell a `golden` row carries: its measured reach.
 
     Generated from the ledger row and held to it by `RankedBacklogTests`, so the
-    cell is never edited by hand: re-run `just golden-reach-report`. A
+    cell is never edited by hand: run `just census-repin`. A
     row whose unreached arm has been searched for links its record, which sits at
     `golden-reach-witnesses/searches/<key>.md` beside the region files.
     """
@@ -926,16 +1177,13 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     """The committed ledger, parsed back into `(rank, Reach)` pairs in rank order."""
     lines = path.read_text(encoding="utf-8").splitlines()
     if len(lines) < 2 or not lines[0].startswith("# golden-reach ledger") or lines[1] != LEDGER_HEADER:
-        fail(f"{path} is not a golden-reach ledger; regenerate it with `just golden-reach-report`")
+        fail(f"{path} is not a golden-reach ledger; regenerate it with `{REPIN}`")
     out = []
     columns = len(LEDGER_HEADER.split("\t"))
     for number, line in enumerate(lines[2:], start=3):
         fields = line.split("\t")
         if len(fields) != columns:
-            fail(
-                f"{path}:{number} has {len(fields)} tab-separated fields, not {columns}; "
-                "regenerate it with `just golden-reach-report`"
-            )
+            fail(f"{path}:{number} has {len(fields)} tab-separated fields, not {columns}; regenerate it with `{REPIN}`")
         rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = fields
         parsed = []
         try:
@@ -948,7 +1196,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
         except ValueError:
             fail(
                 f"{path}:{number} carries a rank or a `site=hit/total` count that is not a number; "
-                "regenerate it with `just golden-reach-report`"
+                f"regenerate it with `{REPIN}`"
             )
         out.append(
             (
@@ -1109,7 +1357,7 @@ def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]
     with path.open(encoding="utf-8", newline="") as handle:
         lines = handle.read().splitlines()
     if not lines or tuple(lines[0].split("\t")) != columns:
-        fail(f"{path} does not start with the columns {list(columns)}; re-run `just handwritten-reach`")
+        fail(f"{path} does not start with the columns {list(columns)}; run `{REPIN}`")
     rows = []
     for number, line in enumerate(lines[1:], start=2):
         cells = line.split("\t")
@@ -1119,14 +1367,11 @@ def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]
             or not all(row[name] for name in columns)
             or not all(re.fullmatch(r"[0-9]+", row[name]) for name in ("regions_executed", "regions"))
         ):
-            fail(
-                f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; "
-                "re-run `just handwritten-reach`"
-            )
+            fail(f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; run `{REPIN}`")
         if int(row["regions_executed"]) > int(row["regions"]):
             fail(
                 f"{path}:{number} executes {row['regions_executed']} of only {row['regions']} regions, "
-                "a measurement no run can take; re-run `just handwritten-reach`"
+                f"a measurement no run can take; run `{REPIN}`"
             )
         rows.append(
             Measurement(
@@ -1377,7 +1622,7 @@ def _replace_between(text: str, begin: str, end: str, body: str, path: Path) -> 
         or text.count(end) != 1
         or text.index(begin) > text.index(end)
     ):
-        fail(f"{path} carries no single `{begin}` ... `{end}` section; restore the markers, then re-run")
+        fail(f"{path} carries no single `{begin}` ... `{end}` section; restore the markers, then run `{REPIN}`")
     head, rest = text.split(begin + "\n", 1)
     _old, tail = rest.split(end, 1)
     return head + begin + "\n" + body + end + tail
@@ -1564,7 +1809,7 @@ def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
-        fail(f"{path} is unreadable ({error}); re-run `just golden-reach` to measure again")
+        fail(f"{path} is unreadable ({error}); run `{REPIN}` to measure again")
 
     def region(r: Any) -> bool:
         # llvm-cov's spans: 1-based line and column pairs, the end not before the start.
@@ -1580,7 +1825,7 @@ def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
     ):
         fail(
             f"{path} is not a map of files to [line, col, line, col] regions (1-based, end after start); "
-            "re-run `just golden-reach` to measure again"
+            f"run `{REPIN}` to measure again"
         )
     return {f: {tuple(r) for r in regions} for f, regions in raw.items()}
 
@@ -1588,11 +1833,11 @@ def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
 def load_census(path: Path) -> dict[str, Any]:
     """The census's `--json` output, refused unless it carries its `sources` and `rows`."""
     if not path.is_file():
-        fail(f"no census at {path}; run `just golden-reach` (it writes one there)")
+        fail(f"no census at {path}; run `{REPIN}` (it writes one there)")
     try:
         census = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as error:
-        fail(f"{path} is not JSON ({error}); re-run `just golden-reach` to write it again")
+        fail(f"{path} is not JSON ({error}); run `{REPIN}` to write it again")
     shaped = (
         isinstance(census, dict)
         and isinstance(census.get("sources"), list)
@@ -1611,18 +1856,50 @@ def load_census(path: Path) -> dict[str, Any]:
         fail(
             f"{path} is not the census's `--json` output (`sources` naming string fixtures, and `rows` of "
             "string `selector` and `fixture` with a non-negative integer `count`); "
-            "re-run `just golden-reach` to write it again"
+            f"run `{REPIN}` to write it again"
         )
     return census
 
 
-def load_coverage(out: Path) -> tuple[dict[str, dict[str, set]], dict[str, set], str]:
+def load_coverage(out: Path, repo_root: Path | None = None) -> tuple[dict[str, dict[str, set]], dict[str, set], str]:
     universe_path = out / "universe.json"
     if not universe_path.is_file():
-        fail(f"no measurement under {out}; run `just golden-reach` first")
+        fail(f"no measurement under {out}; run `{REPIN}` first")
+    if repo_root is not None and (out / STORE_FILE).is_file():
+        stale_measurement(out, repo_root)
     universe = load_regions(universe_path)
     coverage = {path.stem: load_regions(path) for path in sorted((out / "tests").glob("*.json"))}
     return coverage, universe, measured_commit(out)
+
+
+def stale_measurement(out: Path, repo_root: Path) -> None:
+    """Refuse a measurement whose functions are not this tree's: its regions would land on other code."""
+    try:
+        store = RS.load(out / STORE_FILE)
+    except RS.StoreError as error:
+        fail(f"{error}; run `{REPIN}` to measure again")
+    changed = RS.stale_functions(RS.read_tree(repo_root), store["functions"])
+    if changed:
+        fail(
+            f"the measurement under {out} was taken at {store['commit'][:12]}, and {len(changed)} function(s) "
+            f"of this tree differ from it ({', '.join(changed[:3])}); run `{REPIN}`"
+        )
+
+
+def provenance_line(out: Path, commit: str, tests: int) -> str:
+    """The ledger's first line: the measured commit, the base, and the tests run at it and carried."""
+    line = (
+        f"golden-only tier, one scoped run per golden test, measured at commit {commit[:12]} over {tests} golden tests"
+    )
+    try:
+        recorded = json.loads((out / "provenance.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return line
+    if not isinstance(recorded, dict) or not isinstance(recorded.get("run"), int):
+        return line
+    base = recorded.get("base")
+    origin = f"base {base[:12]}" if isinstance(base, str) and not recorded.get("full") else "base none (full)"
+    return f"{line}; {origin}: {recorded['run']} run at {commit[:12]}, {recorded.get('carried', 0)} carried"
 
 
 def measured_commit(out: Path) -> str:
@@ -1631,9 +1908,9 @@ def measured_commit(out: Path) -> str:
     try:
         commit = json.loads(path.read_text(encoding="utf-8"))["commit"]
     except (OSError, ValueError, KeyError, TypeError) as error:
-        fail(f"{path} names no measured commit ({error!r}); run `just golden-reach` first")
+        fail(f"{path} names no measured commit ({error!r}); run `{REPIN}` first")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{7,40}", commit):
-        fail(f"{path} records {commit!r}, not a commit; run `just golden-reach` again")
+        fail(f"{path} records {commit!r}, not a commit; run `{REPIN}` again")
     return commit
 
 
@@ -1649,7 +1926,7 @@ def report(args: argparse.Namespace) -> int:
         rows = {key: region for key, region in rows.items() if key in args.keys}
         table = {key: row for key, row in table.items() if key in rows}
     census = load_census(Path(args.census) if args.census else args.out / "census.json")
-    coverage, universe, commit = load_coverage(args.out)
+    coverage, universe, commit = load_coverage(args.out, repo_root)
     fixture_tests = {f: t for f, t in fixture_test_map(repo_root).items() if t in coverage}
     reaches = compute(
         rows,
@@ -1660,10 +1937,7 @@ def report(args: argparse.Namespace) -> int:
         universe,
         repo_root,
     )
-    provenance = (
-        f"golden-only tier, one scoped run per golden test, measured at commit "
-        f"{commit[:12]} over {len(coverage)} golden tests"
-    )
+    provenance = provenance_line(args.out, commit, len(coverage))
     if args.keys:
         return scoped_report(args, reaches, commit, len(coverage))
     if args.write:
@@ -1745,7 +2019,7 @@ def sites(args: argparse.Namespace) -> int:
         for row in table.values():
             if not census_witnesses(census, row.selectors):
                 fail(
-                    f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or re-run `just golden-reach` if the census is stale"
+                    f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or run `{REPIN}` if the census is stale"
                 )
     seen = set()
     for row in table.values():
@@ -1757,6 +2031,35 @@ def sites(args: argparse.Namespace) -> int:
             if args.verbose:
                 print(f"{spec}\t{site.file}:{site.start}:{site.start_col}-{site.end}:{site.end_col}")
     print(f"golden-reach: {len(seen)} site(s) across {len(table)} row(s) resolve")
+    return 0
+
+
+def default_jobs() -> int:
+    """One instrumented run at a time on a shared host; CI's runner is the job's own."""
+    return 4 if os.environ.get("CI") else 1
+
+
+def package_base(args: argparse.Namespace) -> int:
+    """The base-publishing CI job's command: step from the nearest earlier base, package the result.
+
+    Writes `<package>/base.json.gz`, the artifact `golden-reach-base-<sha>` uploads.
+    """
+    repo_root: Path = args.repo_root
+    dirty = uncommitted_changes(repo_root)
+    if dirty:
+        fail(f"{len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); package a committed tree")
+    base_module = _sibling("reach_base")
+    with RS.instrumented_lock("golden-reach base"):
+        choice = base_module.find(repo_root, include_head=False)
+        print(f"golden-reach: base: {choice.reason}", file=sys.stderr)
+        step = measure_step(repo_root, base=choice.store, full_reason=choice.reason, jobs=args.jobs)
+    write_views(step, args.out, repo_root)
+    base_module.publish(step.store)
+    RS.save(step.store, args.package / base_module.ARTIFACT_FILE)
+    print(
+        f"golden-reach: packaged {args.package / base_module.ARTIFACT_FILE} for "
+        f"{base_module.ARTIFACT_PREFIX}{step.store['commit']}: {describe(step)}"
+    )
     return 0
 
 
@@ -1774,11 +2077,19 @@ def positive_int(text: str) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO)
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument(
+        "--out", type=Path, default=None, help="the measurement directory (default: REPO_ROOT/.local/golden-reach)"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     m = sub.add_parser("measure", help="one instrumented run per golden test")
-    m.add_argument("--jobs", type=positive_int, default=4)
-    m.add_argument("--tests", help="regex restricting the golden tests measured")
+    m.add_argument("--jobs", type=positive_int, default=default_jobs())
+    m.add_argument("--tests", help="re-run the golden tests this regex matches, merging them into the store")
+    m.add_argument(
+        "--incremental", action="store_true", help="step from the nearest saved base, re-running only what changed"
+    )
+    b = sub.add_parser("base", help="CI: measure from the nearest earlier base and package base.json.gz")
+    b.add_argument("--jobs", type=positive_int, default=default_jobs())
+    b.add_argument("--package", type=Path, required=True, help="directory to write base.json.gz into")
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")
     r.add_argument("--write", action="store_true", help="write the ledger and reach cells")
@@ -1792,7 +2103,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--table", type=Path, help="a site table other than the committed one")
     s.add_argument("--census", help="also check every selector against this census output")
     args = parser.parse_args(argv)
-    return {"measure": measure, "report": report, "arms": arms, "sites": sites}[args.command](args)
+    if args.out is None:
+        args.out = args.repo_root / ".local" / "golden-reach"
+    return {"measure": measure, "report": report, "arms": arms, "sites": sites, "base": package_base}[args.command](
+        args
+    )
 
 
 if __name__ == "__main__":

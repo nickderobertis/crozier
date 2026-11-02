@@ -301,14 +301,33 @@ fixtures-coverage *args:
 
 # Per `golden` census row: which of crozier's declared handling sites for it
 # (docs/openapi-surface/golden-reach-sites.tsv) the row's own witnesses execute
-# in the golden-only tier, one instrumented run per golden test. Writes the
-# ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden row's
-# reach cell. Outside `check`: runs the corpus instrumented.
+# in the golden-only tier, one instrumented run per golden test. The FULL
+# measurement: every golden test and hand-written fixture, from no base. Writes
+# the ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden
+# row's reach cell. Outside `check`: runs the corpus instrumented. To repin after
+# a change, `just census-repin` re-runs only what the change touched.
 golden-reach:
     python3 tools/corpus/corpus_sources.py check
     python3 tools/surface-census/golden-reach.py measure
     "$(bash ./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py --json > .local/golden-reach/census.json
     python3 tools/surface-census/golden-reach.py report --write
+
+# The one repin verb every census-tier failure names: re-anchor the site
+# patterns HEAD moved, re-measure from the nearest saved base only the golden
+# tests and hand-written fixtures whose base run executed changed code (all of
+# them for a change no function can own), and regenerate every derived table —
+# the witness-search registries index included. During a merge whose conflicts
+# are all derived content it resolves them by regenerating. Holds the host-wide
+# instrumented-measurement lock; `--jobs 1` outside CI. See
+# docs/openapi-surface-coverage.md "Golden reach, row by row".
+census-repin *args:
+    python3 tools/surface-census/census-repin.py "$@"
+
+# CI's base-publishing job (ci.yml `golden-reach-base`): measure HEAD from the
+# nearest earlier published base and package DIR/base.json.gz, which the job
+# uploads as the artifact golden-reach-base-<sha>.
+golden-reach-base dir:
+    python3 tools/surface-census/golden-reach.py base --package {{dir}}
 
 # Re-join the last `just golden-reach` measurement after the site table changes.
 golden-reach-report:

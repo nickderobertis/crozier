@@ -37,10 +37,12 @@ committed comparison diff, and `residuals.tsv` attributes every hunk of that
 diff, exactly once, to a scenario of the index or to `unowned`. Hunks are read
 from the diff itself, which must be well formed.
 
-Three subcommands: ``check`` prints every failure to stderr (nothing on success)
-and exits 1 when there is one; ``summary`` prints the counts the coverage report
-quotes, read off both tables; ``hunks DIFF`` prints the hunks of one comparison
-diff in the form `residuals.tsv` cites them.
+Four subcommands: ``check`` prints every failure to stderr (nothing on success)
+and exits 1 when there is one; ``write`` restates the index's derived cells
+(``DERIVED_COLUMNS``) from their catalogs, leaving every hand-decided cell as
+written; ``summary`` prints the counts the coverage report quotes, read off both
+tables; ``hunks DIFF`` prints the hunks of one comparison diff in the form
+`residuals.tsv` cites them.
 """
 
 from __future__ import annotations
@@ -1098,12 +1100,50 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
     ], []
 
 
+# The cells `generated_failures` re-derives from their catalogs, which `write` restates:
+# a golden's committed document, its metadata's settings, and the ledger's departures.
+DERIVED_COLUMNS = ("source", "settings", "outcome", "ids")
+
+
+def restate(root: Path) -> tuple[str, list[str]]:
+    """The index with every derived cell of a generated proof restated from its catalogs.
+
+    The hand-decided cells (owner, kind, goldens, tests, evidence, open, closer) are
+    kept as written; a refusal row has no derived cell. Returns the text and the
+    failures that kept a catalog from being read.
+    """
+    known, failures = catalogs(root)
+    rows, row_failures = read_tsv(root / INDEX, INDEX_HEADER)
+    failures += row_failures
+    for row in rows:
+        goldens = split(row["goldens"])
+        if row["kind"] == Kind.REFUSAL.value or not goldens:
+            continue
+        settings, defects, sources = [], set(), []
+        for golden in goldens:
+            setting, _problems = golden_settings(root, golden)
+            settings.append(setting or "?")
+            defects |= known.ledger.get(golden, set()) & known.defects
+            source = golden_source(root, golden)
+            if source is not None and source not in sources:
+                sources.append(source)
+        if sources:
+            row["source"] = ";".join(sources)
+        row["settings"] = ";".join(settings)
+        row["outcome"] = (Outcome.DEPARTURE if defects else Outcome.MATCH).value
+        row["ids"] = ";".join(sorted(defects)) or NONE
+    rows.sort(key=lambda row: row["shape"])
+    lines = ["\t".join(INDEX_HEADER), *("\t".join(row[column] for column in INDEX_HEADER) for row in rows)]
+    return "\n".join(lines) + "\n", failures
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("check", help="reconcile the index and witnesses; print each failure to stderr")
     sub.add_parser("summary", help="print the index's and the witnesses' counts")
+    sub.add_parser("write", help="restate every derived cell of the index from its catalogs")
     hunks = sub.add_parser("hunks", help="print a comparison diff's hunks as residuals.tsv cites them")
     hunks.add_argument("diff", type=Path)
     args = parser.parse_args(argv)
@@ -1119,6 +1159,16 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
             for hunk in found:
                 print(f"{hunk.file}\t{hunk.spelling}")
+            return 0
+        case "write":
+            text, failures = restate(args.repo_root)
+            if failures:
+                print("\n".join(failures), file=sys.stderr)
+                print("scenario-proof-index: repair the catalogs named above, then re-run", file=sys.stderr)
+                return 1
+            path = args.repo_root / INDEX
+            if path.read_text(encoding="utf-8") != text:
+                path.write_text(text, encoding="utf-8", newline="\n")
             return 0
         case "summary":
             lines, failures = summary(args.repo_root)

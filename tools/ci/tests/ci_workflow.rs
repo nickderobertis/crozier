@@ -296,3 +296,77 @@ fn the_release_job_runs_the_full_sweep() {
         "{runs:?}"
     );
 }
+
+/// The golden-reach base `just census-repin` steps from: published on each push
+/// to main, a newer push cancelling a run in progress, with only the read access
+/// its measurement and upload need, by the recipe the journey in
+/// `tools/surface-reach/tests/incremental_test.py` runs locally.
+#[test]
+fn the_golden_reach_base_is_published_for_each_push_to_main() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let branches: Vec<&str> = workflow
+        .get("on")
+        .and_then(|on| on.get("push"))
+        .and_then(|push| push.get("branches"))
+        .and_then(Value::as_array)
+        .expect("ci.yml runs on pushes to named branches")
+        .iter()
+        .map(|branch| branch.as_str().expect("branches are strings"))
+        .collect();
+    assert_eq!(branches, ["main"], "ci.yml's push trigger is main alone");
+    let job = job(&workflow, "golden-reach-base");
+    assert_eq!(
+        text(job, "if"),
+        Some("github.event_name == 'push' && github.ref == 'refs/heads/main'"),
+        "the base is published for pushes to main only"
+    );
+    let concurrency = job
+        .get("concurrency")
+        .expect("the job has a concurrency group");
+    assert_eq!(text(concurrency, "group"), Some("golden-reach-base"));
+    assert_eq!(
+        concurrency
+            .get("cancel-in-progress")
+            .and_then(Value::as_bool),
+        Some(true),
+        "a newer push cancels a base measurement in progress"
+    );
+    let permissions = job
+        .get("permissions")
+        .and_then(Value::as_object)
+        .expect("the job states its permissions");
+    let granted: Vec<(&str, &str)> = permissions
+        .iter()
+        .map(|(scope, level)| (scope.as_str(), level.as_str().expect("levels are strings")))
+        .collect();
+    assert_eq!(
+        granted,
+        [("contents", "read"), ("actions", "read")],
+        "checkout and the earlier base's download read; the upload needs no grant"
+    );
+    let steps = steps(job);
+    assert!(
+        steps.iter().any(|step| text(step, "run")
+            == Some("just golden-reach-base \"$RUNNER_TEMP/golden-reach-base\"")),
+        "the job measures through the `golden-reach-base` recipe"
+    );
+    let upload = steps
+        .iter()
+        .find(|step| {
+            text(step, "uses").is_some_and(|uses| uses.starts_with("actions/upload-artifact"))
+        })
+        .and_then(|step| step.get("with"))
+        .expect("the job uploads an artifact");
+    assert_eq!(
+        text(upload, "name"),
+        Some("golden-reach-base-${{ github.sha }}")
+    );
+    assert_eq!(
+        text(upload, "path"),
+        Some("${{ runner.temp }}/golden-reach-base/base.json.gz")
+    );
+    assert_eq!(
+        upload.get("retention-days").and_then(Value::as_u64),
+        Some(90)
+    );
+}
