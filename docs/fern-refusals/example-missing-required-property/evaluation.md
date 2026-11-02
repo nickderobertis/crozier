@@ -1,5 +1,9 @@
 # example-missing-required-property: refuse
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+A nullable parent's extension reached only through an object declaring `additionalProperties: true` is no refusal: measured variants show the certified pair generating it there and refusing it reached directly or through closed objects ([`crozier-refuses-nullable-error-extension`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-nullable-error-extension/README.md); plaid's `Warning.cause`). Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 9 probe and 9 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 130 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 130 of the 130 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

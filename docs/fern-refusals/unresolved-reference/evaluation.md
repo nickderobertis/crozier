@@ -1,5 +1,9 @@
 # unresolved-reference: refuse
 
+## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
+
+A Response Object's `links` are no Reference Objects crozier resolves: the certified pair ignores response links and generates over a Link Object `$ref` to a declared or an absent `components/links` entry, so the reference walk no longer descends into them ([`R14`](../../fern-measurements/handed-off/document-acceptance/R14/README.md), [`crozier-refuses-component-link-ref`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-component-link-ref/README.md)). A response written as a `$ref` to a component schema stays refused: the certified pair's parse fails on it ([`crozier-refuses-dangling-component-ref`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-dangling-component-ref/README.md)). Decision otherwise unchanged: **refuse**, in both modes.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 2 probe and 2 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 42 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 42 of the 42 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

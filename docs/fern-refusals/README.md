@@ -323,6 +323,23 @@ refuses. Both keep Fern's logs under
   credential, and crozier resolves it the same way: corpus row 309
   (`huatuo-node-tree`) is a real tree whose `BearerAuth` names
   `../components.yaml`, and its golden byte-matches (issue #351).
+- **The document-acceptance repairs (2026-11-01).** Six classes refused
+  documents the certified pair generates from, and are narrowed to what it
+  refuses: `unresolved-reference` (a response's `links`),
+  `path-without-leading-slash` (the empty path key),
+  `example-missing-required-property` (an extension behind an open object),
+  `type-name-collision` (a multipart component's nested types, a group-placed
+  component, first-letter-case component names) and
+  `request-property-name-collision` (a direct `allOf` parent's property);
+  `request-property-camelcase-collision` now also catches a bracketed query
+  name beside its bare name, where crozier wrote invalid Python. One class is
+  new: `missing-info-object`, an absent or null `info`, which the certified
+  pair fails to parse over the empty scaffold, so crozier refuses it in both
+  modes (the refusal rule, and ruling `empty-sdk-refused`). Each class's
+  `evaluation.md` records its shape; the measurements and the triage are
+  [`../fern-measurements/handed-off/document-acceptance/`](../fern-measurements/handed-off/document-acceptance/README.md).
+  No population document's `--fern-strict` verdict moved
+  ([`documents.tsv`](documents.tsv) is unchanged).
 - **The generator's own crashes** are classes too, measured in `fern generate`
   after a clean check: `generator-lint-failure` (the generated package fails
   `ruff check`, e.g. two union variants or a method and a sub-client given one
