@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  title: Greenhouse sensors
+  version: 1.0.0
+paths:
+  /readings/{readingId}:
+    get:
+      operationId: getReading
+      parameters:
+        - name: readingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The stored reading
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reading'
+  /calibrations/{calibrationId}:
+    get:
+      operationId: getCalibration
+      parameters:
+        - name: calibrationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The calibration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Calibration'
+  /seals/{sealId}:
+    get:
+      operationId: getSeal
+      parameters:
+        - name: sealId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The seal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Seal'
+components:
+  schemas:
+    Reading:
+      type: object
+      required:
+        - sensor
+      properties:
+        sensor:
+          type: string
+        humidity:
+          $ref: '#/components/schemas/Humidity'
+        dewPoint:
+          $ref: '#/components/schemas/DewPoint'
+        label:
+          $ref: '#/components/schemas/Label'
+        unit:
+          $ref: '#/components/schemas/Unit'
+        tags:
+          type: array
+          items: true
+        extra:
+          $ref: '#/components/schemas/Anything'
+    Humidity:
+      allOf:
+        - type: number
+        - true
+    DewPoint:
+      allOf:
+        - type: number
+        - false
+    Label:
+      anyOf:
+        - false
+        - type: string
+    Unit:
+      oneOf:
+        - type: string
+        - true
+    Anything:
+      allOf:
+        - true
+    Calibration:
+      allOf:
+        - $ref: '#/components/schemas/Reading'
+        - true
+    Seal:
+      type: object
+      properties:
+        sealedAt:
+          type: string
+        neverSent: false

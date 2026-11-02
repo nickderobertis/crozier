@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Doorbell alerts
+  version: 1.0.0
+paths:
+  /devices/{deviceId}/alerts:
+    post:
+      operationId: sendAlert
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAlertRequest'
+      responses:
+        '202':
+          description: The alert was queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueuedAlert'
+components:
+  schemas:
+    AlertPayload:
+      type: object
+      properties:
+        headline:
+          type: string
+          example: Someone is at the door
+        message:
+          type: string
+        muted:
+          type: boolean
+          default: false
+        chime:
+          type: string
+          enum:
+            - classic
+            - soft
+    SendAlertRequest:
+      allOf:
+        - $ref: '#/components/schemas/AlertPayload'
+        - type: object
+          properties:
+            deliverAt:
+              type: string
+              format: date-time
+        - anyOf:
+            - required:
+                - headline
+              properties:
+                headline:
+                  type: string
+                  minLength: 1
+            - required:
+                - message
+              properties:
+                message:
+                  type: string
+                  minLength: 1
+            - required:
+                - muted
+              properties:
+                muted:
+                  const: true
+    QueuedAlert:
+      type: object
+      required:
+        - alertId
+      properties:
+        alertId:
+          type: string

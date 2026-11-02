@@ -1,0 +1,15 @@
+# Recorded 2026-11-02T03:06Z on Linux with Python 3.14.7, httpx 0.28.1, pydantic 2.14.0, ruff 0.11.5.
+# crozier at this node's base (6b4509ab9c) and on the finished branch, each run as
+#   crozier generate python --spec openapi.yml --output <dir> --package-name fern --project-name default_package_name
+
+$ crozier@base generate ... (default mode)
+crozier: formatting src/fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:20:65: Duplicate parameter "shelf"
+exit: 1
+
+$ crozier@branch generate ... 
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-camelcase-collision/openapi.yml: request-property-camelcase-collision: GET /loans parameters "shelf" and "shelf[]" normalize to the same identifier; give them distinct names
+exit: 1
+
+$ crozier@branch generate ... --fern-strict
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-camelcase-collision/openapi.yml: request-property-camelcase-collision: GET /loans parameters "shelf" and "shelf[]" normalize to the same identifier; give them distinct names (fern-strict: Fern refuses this document)
+exit: 1

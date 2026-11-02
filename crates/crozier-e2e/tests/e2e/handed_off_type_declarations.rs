@@ -135,11 +135,18 @@ const MEASUREMENTS: &[(&str, &str, &str, &str)] = &[
     ),
 ];
 
-/// The one measurement whose comparison is not whole: the bodies record's
-/// `reference-body-param-doc` (owned by the `parity-bodies-media-r1` node)
-/// documents a bytes body beside JSON types as the component name, and that
-/// single `reference.md` line stays attributed to it.
+/// The one measurement whose comparison may carry another area's line: the
+/// bodies record's `reference-body-param-doc` (owned by the
+/// `parity-bodies-media-r1` node) once documented a bytes body beside JSON
+/// types as the component name, and that single `reference.md` line stays
+/// attributed to it. Since that node's repair (#722) the tree matches whole.
 const ORPHAN: &str = "orphan-type-emission";
+
+/// The `reference.md` line `reference-body-param-doc` owns, as the certified
+/// pair writes it and as crozier wrote it before that cause's repair.
+const ATTRIBUTED_CERTIFIED: &str =
+    "**request:** `typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]` — The create request";
+const ATTRIBUTED_BEFORE: &str = "**request:** `CreateKeyRequest` — The create request";
 
 fn spec(cause: &str) -> PathBuf {
     repo_root().join(DIR).join(cause).join("openapi.yml")
@@ -267,8 +274,57 @@ fn handed_off_type_declarations_match_the_certified_pair() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
-/// The orphan-type measurement is the certified pair's tree in both enum modes
-/// apart from one `reference.md` line another area owns: no model for a
+/// Every line of crozier's `reference.md` that differs from the certified
+/// pair's, as `line N: certified | crozier`, except the one attributed line
+/// when crozier writes it the way it did before `reference-body-param-doc`'s
+/// repair; a differing line count is itself a difference.
+fn reference_differences(certified: &str, written: &str) -> Vec<String> {
+    let certified: Vec<&str> = certified.split('\n').collect();
+    let written: Vec<&str> = written.split('\n').collect();
+    let mut differences: Vec<String> = certified
+        .iter()
+        .zip(&written)
+        .enumerate()
+        .filter(|(_, (fern, ours))| {
+            fern != ours && !(**fern == ATTRIBUTED_CERTIFIED && **ours == ATTRIBUTED_BEFORE)
+        })
+        .map(|(index, (fern, ours))| format!("line {}: {fern:?} | {ours:?}", index + 1))
+        .collect();
+    if certified.len() != written.len() {
+        differences.push(format!(
+            "{} lines certified, {} written",
+            certified.len(),
+            written.len()
+        ));
+    }
+    differences
+}
+
+/// crozier's SDK at `out` against the certified pair's tree in `mode`:
+/// `reference.md` line by line (only the attributed line may differ), every
+/// other file whole. The tree comparison sees the certified `reference.md` in
+/// crozier's place, so that file is judged by its line comparison alone.
+fn orphan_failures(out: &Path, mode: &str) -> Vec<String> {
+    let certified = std::fs::read_to_string(repo_root().join(golden(ORPHAN)).join("reference.md"))
+        .expect("the certified reference.md");
+    let reference = out.join("reference.md");
+    let written = std::fs::read_to_string(&reference).expect("crozier's reference.md");
+    let mut failures: Vec<String> = reference_differences(&certified, &written)
+        .into_iter()
+        .map(|difference| format!("{mode}: reference.md {difference}"))
+        .collect();
+    std::fs::write(&reference, &certified).expect("set the certified reference.md aside");
+    failures.extend(if mode == "literals" {
+        literals_failures(ORPHAN, out)
+    } else {
+        enum_failures(ORPHAN, out)
+    });
+    std::fs::write(&reference, &written).expect("restore crozier's reference.md");
+    failures
+}
+
+/// The orphan-type measurement is the certified pair's tree in both enum modes,
+/// apart at most from one `reference.md` line another area owns: no model for a
 /// download's JSON alternative, for a dropped readOnly body object or for a
 /// body only a replaced operation posts, and the model a bytes body names kept.
 #[test]
@@ -284,28 +340,40 @@ fn orphan_types_match_the_certified_pair_but_one_attributed_line() {
         assert!(!out.join(absent).exists(), "crozier wrote {absent}");
     }
     assert!(out.join("src/fern/types/create_key_request.py").is_file());
-    let expect_attributed = |failures: Vec<String>, mode: &str| {
-        let [only] = failures.as_slice() else {
-            panic!("{mode}: expected the one attributed reference.md difference: {failures:?}");
-        };
-        assert!(
-            only.contains("reference.md")
-                && only.contains("**request:** `CreateKeyRequest`")
-                && only.contains("typing.Union[bytes, typing.Iterator[bytes]"),
-            "{mode}: the difference is not reference-body-param-doc's line: {only}"
-        );
-    };
-    expect_attributed(enum_failures(ORPHAN, &out), "python-enums");
+    let failures = orphan_failures(&out, "python-enums");
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
     let literals = temp.path().join("literals");
     generate(ORPHAN, "literals", &literals);
-    expect_attributed(literals_failures(ORPHAN, &literals), "literals");
+    let failures = orphan_failures(&literals, "literals");
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+
+    let reference = out.join("reference.md");
+    let written = std::fs::read_to_string(&reference).expect("crozier's reference.md");
+    assert!(
+        written.contains(ATTRIBUTED_CERTIFIED),
+        "the attributed line moved"
+    );
+    // The attributed line written the way crozier wrote it before its owner's
+    // repair is the one difference held as attributed.
+    let attributed = written.replacen(ATTRIBUTED_CERTIFIED, ATTRIBUTED_BEFORE, 1);
+    std::fs::write(&reference, &attributed).expect("tamper");
+    assert!(orphan_failures(&out, "python-enums").is_empty());
+    // A second differing reference.md line beside it is not.
+    let second = attributed.replacen("get_archive_path", "get_archive_paths", 1);
+    std::fs::write(&reference, &second).expect("tamper");
+    let failures = orphan_failures(&out, "python-enums");
+    assert!(
+        matches!(failures.as_slice(), [only] if only.starts_with("python-enums: reference.md line 3:")),
+        "a second reference.md line must fail alone: {failures:?}"
+    );
+    std::fs::write(&reference, &written).expect("restore");
     // A model written back for the download's JSON alternative is unexplained.
     std::fs::copy(
         out.join("src/fern/types/create_key_request.py"),
         out.join("src/fern/types/get_archive_path_response.py"),
     )
     .expect("tamper");
-    assert!(enum_failures(ORPHAN, &out)
+    assert!(orphan_failures(&out, "python-enums")
         .iter()
         .any(|failure| failure.contains("get_archive_path_response.py")));
 }

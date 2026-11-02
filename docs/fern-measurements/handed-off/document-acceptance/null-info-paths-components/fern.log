@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document undefined
+::error title=[api]%3A python-sdk::Failed to parse openapi document undefined
+[api]: python-sdk Cannot read properties of null (reading 'version') 
+                  TypeError: Cannot read properties of null (reading 'version')
+                      at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:153960)
+                      at s3e (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+                      at e.getOpenAPIIr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+                      at async e.getDefinition (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:4907)
+                      at async e.buildFernWorkspace (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:24385)
+                      at async /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:4854:19711
+                      at async Xta.runInteractiveTask (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:5134:9137)
+                      at async Promise.all (index 0)
+                      at async aFt (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:4854:19463)
+                      at async /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:5272:4696
+::error title=[api]%3A python-sdk::Cannot read properties of null (reading 'version') %0ATypeError: Cannot read properties of null (reading 'version')%0A    at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:153960)%0A    at s3e (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)%0A    at async e.getDefinition (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:4907)%0A    at async e.buildFernWorkspace (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:24385)%0A    at async /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:4854:19711%0A    at async Xta.runInteractiveTask (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:5134:9137)%0A    at async Promise.all (index 0)%0A    at async aFt (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:4854:19463)%0A    at async /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:5272:4696
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <workspace>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

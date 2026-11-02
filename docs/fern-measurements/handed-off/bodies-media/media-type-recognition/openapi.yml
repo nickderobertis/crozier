@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Seed Bank Catalogue
+  version: 1.0.0
+  description: Records seed deposits and reports what a vault holds.
+servers:
+  - url: https://seeds.example.com
+paths:
+  /deposits:
+    post:
+      operationId: recordDeposit
+      tags: [deposits]
+      summary: Record a seed deposit sent as text/json.
+      requestBody:
+        required: true
+        content:
+          text/json:
+            schema:
+              $ref: '#/components/schemas/Deposit'
+      responses:
+        '200':
+          description: The deposit as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deposit'
+  /deposits/{depositId}/germination:
+    put:
+      operationId: recordGermination
+      tags: [deposits]
+      summary: Record a germination test sent with a capitalised media type.
+      parameters:
+        - name: depositId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          Application/json:
+            schema:
+              type: object
+              required: [sown, sprouted]
+              properties:
+                sown:
+                  type: integer
+                sprouted:
+                  type: integer
+      responses:
+        '204':
+          description: Recorded.
+  /vaults/{vaultId}:
+    get:
+      operationId: getVault
+      tags: [vaults]
+      summary: Describe a vault, answered under any media type.
+      parameters:
+        - name: vaultId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The vault.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Vault'
+components:
+  schemas:
+    Deposit:
+      type: object
+      required: [species, grams]
+      properties:
+        species:
+          type: string
+        grams:
+          type: number
+    Vault:
+      type: object
+      required: [vaultId, deposits]
+      properties:
+        vaultId:
+          type: string
+        deposits:
+          type: integer

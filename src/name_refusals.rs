@@ -304,7 +304,12 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                             .iter()
                             .find(|param| param.wire_name == wire)
                     })
-                    .is_some_and(|param| param.py_name == crate::naming::field_name(wire))
+                    .is_some_and(|param| {
+                        // The trailing `_` crozier's own collision pass adds is no
+                        // rename of Fern's: the parameter keeps its name there.
+                        let name = crate::naming::field_name(wire);
+                        param.py_name == name || param.py_name == format!("{name}_")
+                    })
             };
             let path_names: std::collections::HashSet<String> = (0..op.parameters.len())
                 .filter(|&index| {
@@ -516,8 +521,13 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                 if op.parameters.get(index).is_some_and(promoted) {
                     continue;
                 }
+                // Fern's camelCase normalization drops non-alphanumeric ends, so
+                // a `shelf[]` query parameter beside `shelf` is one name it
+                // refuses (docs/fern-measurements/handed-off/document-acceptance/
+                // never-compared-request-property-camelcase-collision/), where
+                // crozier would otherwise pass `shelf` twice.
                 let identifier = crate::naming::to_snake_case(name)
-                    .trim_matches('_')
+                    .trim_matches(|ch: char| !ch.is_alphanumeric())
                     .to_owned();
                 if let Some(previous) = parameter_names.insert(identifier, name) {
                     if previous != name {
@@ -1007,25 +1017,15 @@ pub(crate) fn validate_ir(
             return Err(refusal_error(refusal(path, Class::GeneratedFileNameTooLong, format!("type {} would write {}.py, exceeding the filename limit; shorten its declared name or nested property names", decl.name(), decl.module())), strict));
         }
     }
-    let mut component_names = std::collections::HashMap::new();
-    for (name, schema) in &doc.components.schemas {
-        if schema
-            .ty
-            .as_ref()
-            .and_then(|ty| ty.primary())
-            .is_some_and(|ty| ty != "object")
-            && schema.enum_values.is_none()
-        {
-            continue;
-        }
-        let normalized = crate::naming::class_name(name);
-        if let Some(previous) = component_names.insert(normalized.clone(), name) {
-            if previous.get(1..) != name.get(1..) {
-                continue;
-            }
-            return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {normalized}; give them distinct names")), strict));
-        }
-    }
+    // Two component schemas whose names differ only in their first letter's case
+    // (`PaymentType`, `paymentType`; `Shelf`, `shelf`) are one type to the
+    // certified pair, which keeps the later declaration and generates, as
+    // `deduplicate_type_names` does: no type-name refusal. Where an operation
+    // answers the earlier one, its example fails against the merged type and
+    // the certified pair refuses that as `example-unexpected-property` or
+    // `example-not-enum-value`, which crozier's example checks refuse first
+    // (docs/fern-measurements/handed-off/document-acceptance/
+    // crozier-refuses-type-name-collision/ and never-compared-type-name-collision/).
     let roots: std::collections::HashSet<_> = doc
         .components
         .schemas
@@ -1175,12 +1175,25 @@ pub(crate) fn validate_ir(
             })
         })
         .collect();
+    // A component declaring an SDK group (or `x-tags`) is written into that
+    // group's package rather than the root's: there it is its own declaration,
+    // not a second one beside it, and the certified pair generates it
+    // (docs/fern-measurements/handed-off/document-acceptance/
+    // crozier-refuses-type-name-collision/, AssemblyAI's `RedactedAudioStatus`).
+    let placed: std::collections::HashSet<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, schema)| schema.sdk_group_name().is_some() || schema.placement_tag().is_some())
+        .map(|(name, _)| crate::naming::class_name(name))
+        .collect();
     for tag in &ir.tag_types {
         if matches!(tag.decl, crate::ir::TypeDecl::Enum(_))
             && !tag.module.is_empty()
             && !tag.module.contains('/')
             && roots.contains(tag.decl.name())
             && !header_enums.contains(tag.decl.name())
+            && !placed.contains(tag.decl.name())
         {
             return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("enum {} in namespace {} collides with a schema declaration; give the types distinct declared names", tag.decl.name(), tag.module)), strict));
         }
@@ -1968,5 +1981,134 @@ mod tests {
             .unwrap();
             check_schema(&schema, "NonStringEnum", Path::new("api.yml"), &schemas).unwrap();
         }
+    }
+
+    /// A `shelf[]` query parameter beside `shelf` normalizes to one name, as
+    /// the certified pair's camelCase does, and is refused rather than written
+    /// as a call passing `shelf` twice; two distinct names are not.
+    #[test]
+    fn a_bracketed_query_name_collides_with_its_bare_name() {
+        let document = |second: &str| {
+            format!(
+                "openapi: 3.0.0\ninfo: {{title: t, version: '1'}}\npaths:\n  /loans:\n    get:\n      operationId: listLoans\n      parameters:\n        - {{name: shelf, in: query, schema: {{type: string}}}}\n        - {{name: '{second}', in: query, schema: {{type: array, items: {{type: string}}}}}}\n      responses: {{'204': {{description: OK}}}}\n"
+            )
+        };
+        let error = document_refusal(&document("shelf[]")).unwrap_or_default();
+        assert!(
+            error.contains(
+                "request-property-camelcase-collision: GET /loans parameters \"shelf\" and \"shelf[]\" normalize to the same identifier"
+            ),
+            "{error}"
+        );
+        assert_eq!(document_refusal(&document("shelves[]")), None);
+    }
+
+    /// Component schemas whose names differ only in their first letter's case
+    /// are one type to the certified pair, which generates them.
+    #[test]
+    fn components_differing_in_first_letter_case_are_no_refusal() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        for strict in [false, true] {
+            validate(&doc, &path, strict, &ir).unwrap();
+            validate_ir(&ir, &doc, &path, strict).unwrap();
+        }
+        let modes: Vec<_> = ir
+            .types
+            .iter()
+            .filter(|decl| decl.name() == "TransferMode")
+            .collect();
+        assert_eq!(modes.len(), 1);
+        // Two objects, or an enum whose later declaration drops a value, are
+        // no type-name refusal either: only an operation's example of the
+        // earlier one fails, which the example checks refuse
+        // (`document_refusals::examples` and the e2e controls).
+        for components in [
+            "{Thing: {type: object, properties: {id: {type: string}}}, thing: {type: object, properties: {name: {type: string}}}}",
+            "{Mode: {type: string, enum: [A, B]}, mode: {type: string, enum: [A]}}",
+        ] {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("openapi.yml");
+            std::fs::write(
+                &path,
+                format!("openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\ncomponents:\n  schemas: {components}\n"),
+            )
+            .unwrap();
+            let doc = crate::openapi::load(&path).unwrap();
+            let config = crate::config::GenerateConfig::new(
+                path.clone(),
+                "out".into(),
+                Some("fern".into()),
+                None,
+                None,
+                crate::settings::ExtraFields::default(),
+                "Api",
+            )
+            .unwrap();
+            for strict in [false, true] {
+                validate_ir(&crate::ir::build(&doc, &config), &doc, &path, strict)
+                    .unwrap_or_else(|error| panic!("{components}: {error}"));
+            }
+        }
+    }
+
+    /// A component its SDK group places in a tag's package is its own
+    /// declaration there, not an enum colliding with a root schema; the same
+    /// enum declared by a query parameter beside a root schema of its name
+    /// still refuses (the class's `namespaced-query-enum-diff` evidence).
+    #[test]
+    fn a_group_placed_component_enum_is_no_collision() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/openapi.yml",
+        );
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        assert!(ir
+            .tag_types
+            .iter()
+            .any(|tag| tag.module == "photos" && tag.decl.name() == "ProofStatus"));
+        for strict in [false, true] {
+            validate_ir(&ir, &doc, &path, strict).unwrap();
+        }
+        let control = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/type-name-collision/evidence/namespaced-query-enum-diff.yml");
+        let doc = crate::openapi::load(&control).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            control.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let error = validate_ir(&crate::ir::build(&doc, &config), &doc, &control, false)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("type-name-collision"), "{error}");
     }
 }
