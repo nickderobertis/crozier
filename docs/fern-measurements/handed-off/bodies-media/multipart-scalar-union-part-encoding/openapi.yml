@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Map Room Drawer Index
+  version: 1.0.0
+  description: Files scanned maps into the map room's drawers.
+servers:
+  - url: https://maproom.example.com
+paths:
+  /scans:
+    post:
+      operationId: fileScan
+      tags: [scans]
+      summary: File a scanned map into a drawer, named by label or by number.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [scan, drawer]
+              properties:
+                scan:
+                  type: string
+                  format: binary
+                drawer:
+                  oneOf:
+                    - type: string
+                    - type: integer
+      responses:
+        '204':
+          description: Filed.

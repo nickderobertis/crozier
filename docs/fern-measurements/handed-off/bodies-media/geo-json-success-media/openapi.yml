@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Trailhead Atlas
+  version: 1.0.0
+  description: Serves hiking trailheads as GeoJSON features.
+servers:
+  - url: https://trails.example.com
+paths:
+  /trailheads/{trailheadId}:
+    get:
+      operationId: getTrailhead
+      tags: [trailheads]
+      summary: One trailhead as a GeoJSON feature.
+      parameters:
+        - name: trailheadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The trailhead feature.
+          content:
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/TrailheadFeature'
+            text/html:
+              schema:
+                type: string
+components:
+  schemas:
+    TrailheadFeature:
+      type: object
+      required: [type, geometry]
+      properties:
+        type:
+          type: string
+        geometry:
+          $ref: '#/components/schemas/Point'
+        name:
+          type: string
+    Point:
+      type: object
+      required: [type, coordinates]
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number

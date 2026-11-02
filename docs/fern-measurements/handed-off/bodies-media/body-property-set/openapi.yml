@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Courier Dispatch Board
+  version: 1.0.0
+  description: Dispatches parcels to a courier, addressed by token or by user.
+servers:
+  - url: https://dispatch.example.com
+paths:
+  /dispatches:
+    post:
+      operationId: createDispatch
+      tags: [dispatches]
+      summary: Dispatch a parcel.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispatchRequest'
+      responses:
+        '204':
+          description: Dispatched.
+components:
+  schemas:
+    DispatchRequest:
+      allOf:
+        - $ref: '#/components/schemas/DispatchBase'
+        - type: object
+          required: [route]
+          properties:
+            route:
+              type: string
+            courierToken:
+              type: string
+            courierId:
+              type: string
+          anyOf:
+            - required: [courierToken]
+            - required: [courierId]
+    DispatchBase:
+      type: object
+      required: [parcel]
+      properties:
+        parcel:
+          type: string
+        fragile:
+          type: boolean
