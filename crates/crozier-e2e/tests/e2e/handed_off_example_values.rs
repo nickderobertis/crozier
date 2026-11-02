@@ -343,17 +343,15 @@ fn ruled_example_values_are_what_crozier_writes() {
     assert!(timestamps
         .contains("    until=datetime.datetime.fromisoformat(\"2031-04-03T08:15:00+00:00\"),"));
     let (fern_optional, crozier_optional) = reference_lines("example-optional-members");
-    for (fern, crozier) in [(&fern_optional, &crozier_optional)] {
-        assert!(
-            !crozier.contains("observed_from="),
-            "an unquoted examples-array timestamp leaves the call"
-        );
-        assert!(!fern.contains("observed_from="));
-        assert!(
-            crozier.contains("    lamp=\"lamp-east\","),
-            "a quoted examples entry stays"
-        );
-    }
+    assert!(
+        !crozier_optional.contains("observed_from="),
+        "an unquoted examples-array timestamp leaves the call"
+    );
+    assert!(!fern_optional.contains("observed_from="));
+    assert!(
+        crozier_optional.contains("    lamp=\"lamp-east\","),
+        "a quoted examples entry stays"
+    );
     let (_, vessels) = reference_lines("R11");
     assert!(
         !vessels.contains("owners=") && !vessels.contains("hulls="),
