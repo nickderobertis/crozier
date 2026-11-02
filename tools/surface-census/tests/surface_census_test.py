@@ -17329,7 +17329,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
 
         The positive writes two pattern strings and three plain integers; the
         decoys write a `null` alternative, mixed primitives, `integer` beside
-        `format: int64`, a lone alternative, a composition beside a `type`, and
+        `format: int64` or a `format: uint64` number (both longs), a lone alternative, a composition beside a `type`, and
         the positive's composition inline as a property, where it is no class.
         """
         selector = "components.schemas:same-primitive-union"
@@ -17340,7 +17340,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Port": {
                     "oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "maximum": 9}]
                 },
-                "Weight": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "Weight": {"oneOf": [{"type": "number", "format": "int32"}, {"type": "integer"}]},
                 "Settings": {
                     "oneOf": [{"type": "string", "format": "json-string"}, {"type": "string", "format": "json-string"}]
                 },
@@ -17361,6 +17361,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
                 "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
                 "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
+                "Unsigned": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},
