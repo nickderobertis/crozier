@@ -27,6 +27,9 @@ The measurements are
 [`crozier-refuses-path-pointer-ref`](../../fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/README.md),
 [`unresolved-reference`](../../fern-measurements/handed-off/empty-sdk-documents/unresolved-reference/README.md) and
 [`undeclared-error-response`](../../fern-measurements/handed-off/empty-sdk-documents/undeclared-error-response/README.md).
+arm-server and both PagerDuty documents, whose responses `$ref` a request body
+component or a `$defs` entry, are measured in
+[`response-outside-responses`](../../fern-measurements/handed-off/empty-sdk-documents/response-outside-responses/README.md).
 
 One pointer into `#/paths/` is not a refusal. A header `$ref` naming another
 operation's response header resolves at the pair, which generates the whole

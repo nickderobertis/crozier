@@ -14,7 +14,9 @@ recorded under [Intended departures](../README.md#intended-departures). Both
 of this class's documents are Stripe's SDK descriptions, and crozier refuses
 both in both modes, as the bodies-and-paths record's
 [false successes](../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md#the-certified-pairs-false-successes)
-list.
+list. A from-scratch probe of their shape and both documents' finished-tree
+outcomes are in
+[`extension-reference-cycle`](../../fern-measurements/handed-off/empty-sdk-documents/extension-reference-cycle/README.md).
 
 **The valid-OpenAPI exception: lolesports.** The pair prints this class's
 phrase, `Maximum call stack size exceeded`, over a document that has no

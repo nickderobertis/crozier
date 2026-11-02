@@ -24,8 +24,10 @@ exact bytes. The committed `fern-expected/` is that tree, comment-stripped, and
     [api]: Failed to parse openapi document Kiln Monitor
     [api]: Cannot read properties of null (reading 'schema')
 
-The class's committed shapes add the same `null` in a request body (refused by
-the pair) and an `image/png: {}` control (generated, 36 files).
+The class's committed shapes add the same `null` in three more places, each of
+which the pair empties: a request body, and the `components.responses` and
+`components.requestBodies` entries an operation's `$ref` names. They also add
+an `image/png: {}` control, which the pair generates (36 files).
 
 **The real document.** `linux-automation/tacd:openapi.yaml@df3958c92643f7e0b06ef1830b9bc2a5e55ab24a`
 (SHA-256 `b5dacb83849e3ef5b20249f712ed19ac60838e5052ce0a4de3b6c69aed29bd8c`).
@@ -36,7 +38,8 @@ phrase. crozier on the finished tree refuses it by default and under
     crozier: invalid OpenAPI document …/tacd.yaml: null-media-type: paths//v1/tac/display/content/get/responses/200/content/image/png
 
 **crozier.** It refuses `openapi.yml` in both modes, naming the class and the
-pointer, and writes no tree. `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs` holds that, the request-body probe's refusal
-and the control's generation.
+pointer, and writes no tree. `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs`
+holds that, the refusal of each of the class's three other probes in both modes
+with no tree written, and the control's generation.
 
 **Verdict.** `user-ruling` (`empty-sdk-refused`).

@@ -379,7 +379,8 @@ The classes the ruling settles, each with the ruling in its `evaluation.md`:
 Each affected document in `documents.tsv` already records crozier's strict
 refusal there: DigitalOcean, Codat's sync-for-expenses, both Setu documents,
 both Stripe documents, `beeequeue/arm-server` and both PagerDuty documents.
-`documents.tsv` is left as `build` wrote it. These affected documents are
+Each is listed, with its finished-tree outcome, in the
+[area inventory](../fern-measurements/handed-off/empty-sdk-documents/README.md). `documents.tsv` is left as `build` wrote it. These affected documents are
 **outside the refusal population**: no record `select` reads names them, so no
 `documents.tsv` row carries them. Each one's certified-pair run on its exact
 bytes is in its measurement directory:

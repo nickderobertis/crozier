@@ -28,11 +28,16 @@ comparison is on the finished tree.
 | `vickz84259/lolesports-api-docs` `openapi.yaml` | `74027a7950c7e4629d3cab01ddd3990457a9956d` | `5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c` | `R1` | empty SDK (its example builder overflows) | generates 243 files in both modes, the valid-OpenAPI exception; not compared, since the pair writes nothing to compare with |
 | `linux-automation/tacd` `openapi.yaml` | `df3958c92643f7e0b06ef1830b9bc2a5e55ab24a` | `b5dacb83849e3ef5b20249f712ed19ac60838e5052ce0a4de3b6c69aed29bd8c` | `R1`, `refusal-null-media-type` | empty SDK | refused in both modes, `null-media-type` |
 | `outstack/enveloper` `docs/api/openapi.yaml` | `cd8150d6d78c64ff48acdfb886c833a4600515df` | `95595ff60c5a51617e5bd497fb94eeba13e6b3566c271b5bf59403a5789145bf` | `missing-relative-file` (section E) | generates 44 files | byte-matches apart from catalogued departures (see [`missing-relative-file`](missing-relative-file/README.md)) |
+| `stripe/openapi` `preview/openapi.spec3.sdk.json` | `58e06a3214ae1574600fba64d40b770e5da6d505` | `60caefaab927e1b1b4a42125a5309a50300bb17552c2f5f8794108e9a7d529d4` | `extension-reference-cycle` ([measurement](extension-reference-cycle/README.md)) | empty SDK | refused in both modes, `extension-reference-cycle`, no tree |
+| `stripe/openapi` `latest/openapi.spec3.sdk.json` | `58e06a3214ae1574600fba64d40b770e5da6d505` | `92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a` | `extension-reference-cycle` ([measurement](extension-reference-cycle/README.md)) | empty SDK | refused in both modes, `extension-reference-cycle`, no tree |
+| `beeequeue/arm-server` `docs/openapi.yaml` | `86c9359fc9df49b9d42cf21dc67bdc99b1658fbf` | `79211321295936c435fd6781a48695018d2645aa2e2d5d539626eadb3eb0c17c` | `unresolved-reference` ([measurement](response-outside-responses/README.md)) | empty SDK | refused in both modes, `unresolved-reference`, no tree |
+| `jentic/jentic-public-apis` `apis/openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json` | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | `84fcb3ada8922a0a9c2ffe8efa6a93e7c35998ccda9db5d0f42fd340a8b1a936` | `unresolved-reference` ([measurement](response-outside-responses/README.md)) | empty SDK | refused in both modes, `unresolved-reference`, no tree |
+| `jentic/jentic-public-apis` `apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json` | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | `a0f7d0ded3d88daa940ed8b6e8fd1534c9f2c12752457e7d5b71f4c5f0d3f2b0` | `unresolved-reference` ([measurement](response-outside-responses/README.md)) | empty SDK | refused in both modes, `unresolved-reference`, no tree |
 
-The bodies-and-paths record's five other false successes were not re-run here:
-two Stripe documents (`extension-reference-cycle`), `beeequeue/arm-server` and
-two PagerDuty documents (`unresolved-reference`). Their `documents.tsv` rows
-record crozier's strict refusal, and the ruling applies to them unchanged.
+For the last five rows the pair's run is the committed population log at the
+pair, which [`extension-reference-cycle`](extension-reference-cycle/README.md)
+and [`response-outside-responses`](response-outside-responses/README.md) link.
+Fresh runs of their from-scratch probes are in those directories.
 
 Each measurement directory holds a probe document authored from scratch
 (`openapi.yml`), the certified pair's fresh output for it (`fern-expected/` and

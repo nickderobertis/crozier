@@ -126,6 +126,55 @@ fn a_response_or_parameter_pointer_into_paths_is_refused_in_both_modes() {
     );
 }
 
+/// The bodies-and-paths record's other false successes. Stripe's shape is an
+/// extension reaching back into its own schema through an object member.
+/// PagerDuty's and arm-server's is a response `$ref` naming a request body
+/// component or a `$defs` entry. The pair empties each, and crozier refuses
+/// each in both modes by the class the pair's error names.
+#[test]
+fn the_record_s_other_false_successes_are_refused_in_both_modes() {
+    for (case, log, phrase) in [
+        (
+            "extension-reference-cycle",
+            "fern.log",
+            "Maximum call stack size exceeded",
+        ),
+        (
+            "response-outside-responses",
+            "fern.log",
+            "Failed to resolve #/components/requestBodies/PacketBody",
+        ),
+        (
+            "response-outside-responses",
+            "defs-pointer.fern.log",
+            "Failed to resolve #/$defs/BadPacket",
+        ),
+    ] {
+        assert_log_records_false_success(case, log, phrase);
+    }
+    for case in ["extension-reference-cycle", "response-outside-responses"] {
+        assert_eq!(
+            file_count(&case_dir(case).join("fern-expected")),
+            SCAFFOLD_FILES
+        );
+    }
+    assert_refused(
+        &case_dir("extension-reference-cycle").join("openapi.yml"),
+        "extension-reference-cycle",
+        "properties/tenant/x-ledgerProperty",
+    );
+    assert_refused(
+        &case_dir("response-outside-responses").join("openapi.yml"),
+        "unresolved-reference",
+        "#/components/requestBodies/PacketBody",
+    );
+    assert_refused(
+        &case_dir("response-outside-responses").join("defs-pointer.yml"),
+        "unresolved-reference",
+        "#/$defs/BadPacket",
+    );
+}
+
 /// Setu's shape: an error response naming a `components/responses` entry the
 /// document never declares.
 #[test]
@@ -171,6 +220,30 @@ fn a_null_media_type_is_refused_in_both_modes() {
         "null-media-type",
         "paths//kiln/label/put/requestBody/content/text/plain",
     );
+    // The same `null` in the `components.responses` or
+    // `components.requestBodies` entry an operation's `$ref` names: the pair
+    // empties both (`shapes.tsv`), and crozier refuses each where it is written.
+    for (shape, element) in [
+        (
+            "component-response-probe.yml",
+            "components/responses/Snapshot/content/image/png",
+        ),
+        (
+            "component-request-body-probe.yml",
+            "components/requestBodies/Label/content/text/plain",
+        ),
+    ] {
+        let log = read(
+            &class
+                .join("evaluation-logs")
+                .join(format!("fern-{}.log", shape.trim_end_matches("-probe.yml"))),
+        );
+        assert!(
+            log.contains("generate exit: 0") && log.contains("Cannot read properties of null"),
+            "{shape}: the pair's empty SDK is no longer recorded:\n{log}"
+        );
+        assert_refused(&class.join(shape), "null-media-type", element);
+    }
     let temp = tempfile::tempdir().expect("output tempdir");
     let out = temp.path().join("sdk");
     probe_command(&class.join("empty-media-type-control.yml"), &out)

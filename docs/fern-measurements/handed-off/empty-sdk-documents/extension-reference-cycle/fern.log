@@ -1,0 +1,52 @@
+Fern CLI 5.163.1, python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Allotment Ledger
+::error title=[api]%3A::Failed to parse openapi document Allotment Ledger
+[api]: Maximum call stack size exceeded 
+       RangeError: Maximum call stack size exceeded
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:139796)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+           at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+::error title=[api]%3A::Maximum call stack size exceeded %0ARangeError: Maximum call stack size exceeded%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:139796)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)%0A    at fxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:140056)
+All checks passed
+
+generate exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Allotment Ledger
+::error title=[api]%3A python-sdk::Failed to parse openapi document Allotment Ledger
+[api]: python-sdk Maximum call stack size exceeded 
+                  RangeError: Maximum call stack size exceeded
+                      at Fhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:11402)
+                      at Nhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:11853)
+                      at zhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:12205)
+                      at mCo.getSkipped (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:13707)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15571)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+                      at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+::error title=[api]%3A python-sdk::Maximum call stack size exceeded %0ARangeError: Maximum call stack size exceeded%0A    at Fhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:11402)%0A    at Nhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:11853)%0A    at zhd (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:12205)%0A    at mCo.getSkipped (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:13707)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15571)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)%0A    at mCo.pruneProperties (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:206:15873)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <workspace>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

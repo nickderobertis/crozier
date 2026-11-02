@@ -33,13 +33,11 @@ verified:
 
 The bodies-and-paths record's
 [false successes](../../../../openapi-surface/witness-search-fixture-only-bodies-paths/README.md#the-certified-pairs-false-successes)
-holds these two and five more of the same kind, all recorded refused by both:
+holds these two and five more documents, triaged as rows of their own:
 
-- `beeequeue/arm-server` and both PagerDuty documents, as `unresolved-reference`;
-- both Stripe documents, as `extension-reference-cycle`.
-
-Those five were not re-run here; their `documents.tsv` rows record crozier's
-strict refusal.
+- both Stripe documents, in [`../extension-reference-cycle/`](../extension-reference-cycle/README.md);
+- arm-server and both PagerDuty documents, in
+  [`../response-outside-responses/`](../response-outside-responses/README.md).
 
 **crozier.** It refuses `openapi.yml` by default and under `--fern-strict`,
 naming `unresolved-reference` and the pointer, and writes no tree (`crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs`).

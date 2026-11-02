@@ -23,15 +23,20 @@ this pair ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)):
   The pair empties it the same way, though the property its importer fails to
   read there is `x-fern-sdk-method-name`, not `schema`, so the class's template
   leaves the property name open.
+- `component-response-probe` and `component-request-body-probe` write the
+  `null` in the `components.responses` or `components.requestBodies` entry an
+  operation's `$ref` names. The pair empties both, with the same two phrases.
 - `empty-media-type-control` writes `image/png: {}` instead, and the pair
   generates it (36 files).
 
 crozier's detector (`null_media_type` in `src/document_refusals.rs`) reads the
 `content` of every request body and response of an operation that is not
-ignored. It refuses the first `null` entry and names its pointer. Those are the
-forms the pair was measured on. A `components.responses` or
-`components.requestBodies` entry was not measured, so the detector leaves it
-to generation. Before this detector, crozier read a `null` entry as
+ignored. It reads the content where the operation writes it, or in the
+`components.requestBodies` or `components.responses` entry the operation's
+`$ref` names. It refuses the first `null` entry and names the pointer where
+that entry is written. Those four forms are the ones the pair was measured on.
+A component entry no operation reaches was not measured, so the detector
+leaves it to generation. Before this detector, crozier read a `null` entry as
 an empty Media Type Object and generated the whole SDK in both modes.
 
 The population carries the class on no document. Its one real document,

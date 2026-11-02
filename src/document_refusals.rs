@@ -311,14 +311,36 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
 }
 
 /// The first Media Type Object written as `null` (`image/png:` with no value)
-/// in an operation's request body or response: no Media Type Object at all, so
-/// invalid OpenAPI. Only the operation forms are measured, so a component
-/// entry is left to generation. Fern CLI 5.163.1 / fern-python-sdk 5.41.3
-/// fails to read it (`Cannot read properties of null (reading 'schema')`) and
-/// writes its empty SDK, so crozier refuses it in both modes under the user's
-/// `empty-sdk-refused` ruling (`docs/fern-refusals/null-media-type/`).
+/// in an operation's request body or response, written on the operation or in
+/// the `components.requestBodies` or `components.responses` entry its `$ref`
+/// names: no Media Type Object at all, so invalid OpenAPI. Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3 fails to read every one of those four forms
+/// (`Cannot read properties of null (reading '<…>')`) and writes its empty SDK,
+/// so crozier refuses it in both modes under the user's `empty-sdk-refused`
+/// ruling (`docs/fern-refusals/null-media-type/`). A component entry no
+/// operation reaches is unmeasured and left to generation.
 fn null_media_type(root: &serde_json::Value) -> Option<String> {
     use serde_json::Value;
+    // The body or response an operation writes, or the component its `$ref`
+    // names (and that component's pointer), so the refusal names where the
+    // `null` is written.
+    fn reached<'a>(
+        root: &'a Value,
+        owner: &'a Value,
+        element: String,
+        collection: &str,
+    ) -> (&'a Value, String) {
+        let prefix = format!("#/components/{collection}/");
+        owner
+            .get("$ref")
+            .and_then(Value::as_str)
+            .filter(|reference| reference.starts_with(&prefix))
+            .and_then(|reference| {
+                let target = yaml_pointer(root, &reference[1..])?;
+                Some((target, reference[2..].to_owned()))
+            })
+            .unwrap_or((owner, element))
+    }
     fn in_content(owner: &Value, element: &str) -> Option<String> {
         owner
             .get("content")
@@ -327,32 +349,43 @@ fn null_media_type(root: &serde_json::Value) -> Option<String> {
             .find(|(_, media)| media.is_null())
             .map(|(media_type, _)| format!("{element}/content/{media_type}"))
     }
-    fn in_responses(responses: Option<&Value>, element: &str) -> Option<String> {
-        responses
-            .and_then(Value::as_object)?
-            .iter()
-            .find_map(|(code, response)| in_content(response, &format!("{element}/{code}")))
-    }
-    if let Some(paths) = root.get("paths").and_then(Value::as_object) {
-        for (route, item) in paths {
-            for method in [
-                "get", "put", "post", "delete", "options", "head", "patch", "trace",
-            ] {
-                let Some(operation) = item.get(method) else {
-                    continue;
-                };
-                if ignored_reference_node(operation) {
-                    continue;
+    let paths = root.get("paths").and_then(Value::as_object)?;
+    for (route, item) in paths {
+        for method in [
+            "get", "put", "post", "delete", "options", "head", "patch", "trace",
+        ] {
+            let Some(operation) = item.get(method) else {
+                continue;
+            };
+            if ignored_reference_node(operation) {
+                continue;
+            }
+            let element = format!("paths/{route}/{method}");
+            if let Some(body) = operation.get("requestBody") {
+                let (body, at) = reached(
+                    root,
+                    body,
+                    format!("{element}/requestBody"),
+                    "requestBodies",
+                );
+                if let Some(found) = in_content(body, &at) {
+                    return Some(found);
                 }
-                let element = format!("paths/{route}/{method}");
-                let found = operation
-                    .get("requestBody")
-                    .and_then(|body| in_content(body, &format!("{element}/requestBody")))
-                    .or_else(|| {
-                        in_responses(operation.get("responses"), &format!("{element}/responses"))
-                    });
-                if found.is_some() {
-                    return found;
+            }
+            for (code, response) in operation
+                .get("responses")
+                .and_then(Value::as_object)
+                .into_iter()
+                .flatten()
+            {
+                let (response, at) = reached(
+                    root,
+                    response,
+                    format!("{element}/responses/{code}"),
+                    "responses",
+                );
+                if let Some(found) = in_content(response, &at) {
+                    return Some(found);
                 }
             }
         }
@@ -3084,7 +3117,7 @@ mod tests {
     }
 
     #[test]
-    fn a_null_media_type_is_found_in_operation_bodies_and_responses_only() {
+    fn a_null_media_type_is_found_where_an_operation_reaches_it() {
         let find = |spec: &str| null_media_type(&crate::yaml::from_str(spec).unwrap());
         assert_eq!(
             find("paths:\n  /kiln:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            image/png:\n"),
@@ -3094,7 +3127,16 @@ mod tests {
             find("paths:\n  /kiln:\n    put:\n      requestBody:\n        content:\n          text/plain:\n      responses: {'204': {description: OK}}\n"),
             Some("paths//kiln/put/requestBody/content/text/plain".to_owned())
         );
-        // A component entry is unmeasured and left to generation.
+        // A component an operation's `$ref` names is read where it is written.
+        assert_eq!(
+            find("paths:\n  /kiln:\n    get:\n      responses:\n        '200': {$ref: '#/components/responses/Picture'}\ncomponents:\n  responses:\n    Picture:\n      description: OK\n      content:\n        image/png:\n"),
+            Some("components/responses/Picture/content/image/png".to_owned())
+        );
+        assert_eq!(
+            find("paths:\n  /kiln:\n    put:\n      requestBody: {$ref: '#/components/requestBodies/Label'}\n      responses: {'204': {description: OK}}\ncomponents:\n  requestBodies:\n    Label:\n      content:\n        text/plain:\n"),
+            Some("components/requestBodies/Label/content/text/plain".to_owned())
+        );
+        // One no operation reaches is unmeasured and left to generation.
         assert_eq!(
             find("paths: {}\ncomponents:\n  responses:\n    Picture:\n      description: OK\n      content:\n        image/png:\n"),
             None
