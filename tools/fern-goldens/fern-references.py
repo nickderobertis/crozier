@@ -454,8 +454,13 @@ def check_evidence(path: Path) -> None:
     evidence it cannot restate."""
     text = path.read_text(encoding="utf-8")
     for key in EVIDENCE_KEYS:
-        if len(re.findall(rf'(?m)^{key} = "[^"]*"$', text)) != 1:
+        values = re.findall(rf'(?m)^{key} = "([^"]*)"$', text)
+        if len(values) != 1:
             raise ReferenceError(f"{rel(path)} has no single `{key}` line to restate; restore it from git")
+        if key == "digest" and not DIGEST.fullmatch(values[0]):
+            raise ReferenceError(f"{rel(path)}: `digest` {values[0]!r} is no 64-digit digest; restore it from git")
+        if key != "digest" and not VERSION.fullmatch(values[0]):
+            raise ReferenceError(f"{rel(path)}: `{key}` {values[0]!r} is no release version; restore it from git")
 
 
 def rewrite_evidence(path: Path, pair: Pair, digest: str) -> None:
@@ -467,8 +472,14 @@ def rewrite_evidence(path: Path, pair: Pair, digest: str) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
-NOTE_CLI = re.compile(r"Fern CLI [0-9]+\.[0-9]+\.[0-9]+")
-NOTE_SDK = re.compile(r"(fernapi/fern-python-sdk`?:? )[0-9]+\.[0-9]+\.[0-9]+")
+DIGEST = re.compile(r"[0-9a-f]{64}")
+# A stated version ends where no further version character follows, so a
+# restatement never rewrites the head of a longer token.
+_STATED = rf"{VERSION.pattern}(?![0-9A-Za-z-]|\.[0-9A-Za-z])"
+NOTE_CLI = re.compile(rf"Fern CLI {_STATED}")
+NOTE_SDK = re.compile(rf"(fernapi/fern-python-sdk`?:? ){_STATED}")
+# Every version a note states, however written, to refuse one that is malformed.
+NOTE_STATED = re.compile(r"(Fern CLI|fernapi/fern-python-sdk)`?:? ([0-9][^\s`]*)")
 NOTE_DIGEST = re.compile(r"(Canonical tree SHA-256: `)[0-9a-f]{64}(`)")
 
 
@@ -477,6 +488,10 @@ def check_evidence_note(path: Path) -> None:
     Fern CLI and the fern-python-sdk version), and a well-formed digest where it
     names one, so a regeneration never leaves its note stating the old ones."""
     text = path.read_text(encoding="utf-8")
+    for stated in NOTE_STATED.finditer(text):
+        version = stated.group(2).rstrip(".,;:)")
+        if not VERSION.fullmatch(version):
+            raise ReferenceError(f"{rel(path)} states {stated.group(1)} {version!r}, which is no release version")
     if not NOTE_CLI.search(text) or not NOTE_SDK.search(text):
         raise ReferenceError(f"{rel(path)} states no Fern CLI and fern-python-sdk version to restate")
     if "Canonical tree SHA-256" in text and not NOTE_DIGEST.search(text):

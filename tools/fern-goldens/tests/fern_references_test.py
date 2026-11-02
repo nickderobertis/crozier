@@ -1390,7 +1390,8 @@ class InventoryCheckTests(unittest.TestCase):
     def broken(self, path: Path, change: str | None = None) -> None:
         """Break one input of the copy for this test: move it away, or rewrite
         it as `change` says; the copy is restored once the test ends."""
-        aside = Path(self.scratch.name) / "aside" / self.id()
+        self.asides = getattr(self, "asides", 0) + 1
+        aside = Path(self.scratch.name) / "aside" / self.id() / str(self.asides)
         aside.parent.mkdir(parents=True, exist_ok=True)
         if path.is_dir():
             path.rename(aside)
@@ -1531,6 +1532,95 @@ class InventoryCheckTests(unittest.TestCase):
         malformed = re.sub(r"(Canonical tree SHA-256: `)[0-9a-f]{64}", "\\1abc123", note.read_text(encoding="utf-8"))
         self.broken(note, malformed)
         self.assert_names("measurements", name, "is no 64-digit digest")
+
+    def test_an_evidence_toml_naming_a_malformed_digest(self) -> None:
+        name = self.module.list_handwritten()[0]
+        evidence = self.root / "docs/openapi-surface/handwritten" / name / "evidence.toml"
+        text = evidence.read_text(encoding="utf-8")
+        self.broken(evidence, re.sub(r'(?m)^digest = "[0-9a-f]{64}"$', 'digest = "abc123"', text))
+        self.assert_names("handwritten", name, "`digest` 'abc123' is no 64-digit digest")
+
+    def test_an_evidence_toml_naming_a_malformed_version(self) -> None:
+        name = self.module.list_handwritten()[0]
+        evidence = self.root / "docs/openapi-surface/handwritten" / name / "evidence.toml"
+        text = evidence.read_text(encoding="utf-8")
+        self.broken(evidence, re.sub(r'(?m)^fern_cli_version = "[^"]*"$', 'fern_cli_version = "5.163"', text))
+        self.assert_names("handwritten", name, "`fern_cli_version` '5.163' is no release version")
+
+    def test_an_evidence_note_naming_a_malformed_version(self) -> None:
+        name, note = self.note_case(digest=False)
+        malformed = re.sub(
+            r"(fernapi/fern-python-sdk`?:? [0-9]+\.[0-9]+\.[0-9]+)", "\\1x", note.read_text(encoding="utf-8")
+        )
+        self.broken(note, malformed)
+        self.assert_names("measurements", name, "which is no release version")
+
+    def break_document(self, fixture: str) -> None:
+        """Move away every document `vendored_spec` could read for `fixture`."""
+        while (document := self.module.vendored_spec(fixture)).is_file():
+            self.broken(document)
+
+    def test_a_committed_corpus_row_with_no_registered_source(self) -> None:
+        rows, committed = self.module.corpus_rows(), self.module.committed_rows()
+        fixture = next(fixture for fixture in self.module.list_corpus() if rows.get(fixture) in committed)
+        registry = self.root / self.module.CORPUS_SOURCES
+        text = registry.read_text(encoding="utf-8")
+        kept = "".join(line for line in text.splitlines(keepends=True) if not line.startswith(f"{rows[fixture]}\t"))
+        self.broken(registry, kept)
+        self.assert_names("corpus", fixture, "records no file of it")
+
+    def test_a_corpus_row_whose_flat_golden_document_is_gone(self) -> None:
+        rows, flats = self.module.corpus_rows(), self.module.flat_goldens()
+        fixture = next(fixture for fixture in self.module.list_corpus() if fixture in rows and fixture not in flats)
+        spec = next(spec for flat, spec in flats.items() if spec != flat)
+        listing = self.root / self.module.FIXTURES / "flat-goldens.txt"
+        self.broken(listing, listing.read_text(encoding="utf-8") + f"{fixture}|{spec}\n")
+        self.break_document(spec)
+        self.assert_names("corpus", fixture, "the document its flat golden is generated from")
+
+    def test_a_vendored_packaged_fixture_whose_document_is_gone(self) -> None:
+        fixtures, rows = self.root / self.module.FIXTURES, self.module.corpus_rows()
+        fixture = next(f for f in self.module.list_corpus() if f not in rows and (fixtures / f / "expected").is_dir())
+        self.broken(fixtures / fixture / "openapi.yml")
+        self.assert_names("corpus", fixture, "its document")
+
+    def test_a_flat_fixture_outside_the_corpus_whose_document_is_gone(self) -> None:
+        fixtures, rows, flats = self.root / self.module.FIXTURES, self.module.corpus_rows(), self.module.flat_goldens()
+        fixture = next(
+            f
+            for f in self.module.list_corpus()
+            if f not in rows and f in flats and not (fixtures / f / "expected").is_dir()
+        )
+        self.break_document(flats[fixture])
+        self.assert_names("corpus", fixture, "the document its flat golden is generated from")
+
+    def recorded_overlay(self) -> str:
+        return next(item for item in self.module.list_overlays() if item.endswith("/expected-default-max-retries"))
+
+    def test_an_overlay_whose_manifest_is_no_json(self) -> None:
+        item = self.recorded_overlay()
+        self.broken(self.root / self.module.FIXTURES / item / self.module.OVERLAY_MANIFEST, "{")
+        self.assert_names("overlays", item, "cannot read")
+
+    def test_an_overlay_whose_base_golden_is_gone(self) -> None:
+        item = self.recorded_overlay()
+        self.broken(self.root / self.module.FIXTURES / item.partition("/")[0] / "expected")
+        self.assert_names("overlays", item, "the golden it is reduced against")
+
+    def test_an_overlay_outside_the_corpus_whose_document_is_gone(self) -> None:
+        rows = self.module.corpus_rows()
+        item = next(item for item in self.module.list_overlays() if item.partition("/")[0] not in rows)
+        self.break_document(item.partition("/")[0])
+        self.assert_names("overlays", item, "its document")
+
+    def test_a_family_whose_listing_fails_is_named_and_the_later_families_still_checked(self) -> None:
+        classes = self.root / self.module.REGISTRY / "classes.tsv"
+        text = classes.read_text(encoding="utf-8")
+        self.broken(classes, text.replace("class\t", "kind\t", 1))
+        case = self.module.list_departure_evidence()[0]
+        self.broken(self.root / "docs/departures/evidence" / case / "openapi.yml")
+        self.assert_names("refusals", "(its listing)", "has no `class` column")
+        self.assert_names("departure-evidence", case, "its document")
 
     def test_generate_refuses_a_broken_item_with_the_line_check_prints_before_fern_starts(self) -> None:
         case = self.case_with_own_document()
