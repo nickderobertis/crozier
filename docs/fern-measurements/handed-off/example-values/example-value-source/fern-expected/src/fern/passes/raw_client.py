@@ -10,6 +10,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.issue_form_pass_request_grant import IssueFormPassRequestGrant
+from .types.issue_form_pass_request_tier import IssueFormPassRequestTier
 from .types.issue_form_pass_response import IssueFormPassResponse
 from .types.issue_pass_request_grant import IssuePassRequestGrant
 from .types.issue_pass_response import IssuePassResponse
@@ -76,7 +77,12 @@ class RawPassesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def issue_form_pass(
-        self, *, grant: IssueFormPassRequestGrant, holder: str, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        grant: IssueFormPassRequestGrant,
+        holder: str,
+        tier: IssueFormPassRequestTier,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[IssueFormPassResponse]:
         """
         A form body's named example for an enum field.
@@ -86,6 +92,8 @@ class RawPassesClient:
         grant : IssueFormPassRequestGrant
 
         holder : str
+
+        tier : IssueFormPassRequestTier
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -101,6 +109,7 @@ class RawPassesClient:
             data={
                 "grant": grant,
                 "holder": holder,
+                "tier": tier,
             },
             headers={
                 "content-type": "application/x-www-form-urlencoded",
@@ -185,7 +194,12 @@ class AsyncRawPassesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def issue_form_pass(
-        self, *, grant: IssueFormPassRequestGrant, holder: str, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        grant: IssueFormPassRequestGrant,
+        holder: str,
+        tier: IssueFormPassRequestTier,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[IssueFormPassResponse]:
         """
         A form body's named example for an enum field.
@@ -195,6 +209,8 @@ class AsyncRawPassesClient:
         grant : IssueFormPassRequestGrant
 
         holder : str
+
+        tier : IssueFormPassRequestTier
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -210,6 +226,7 @@ class AsyncRawPassesClient:
             data={
                 "grant": grant,
                 "holder": holder,
+                "tier": tier,
             },
             headers={
                 "content-type": "application/x-www-form-urlencoded",

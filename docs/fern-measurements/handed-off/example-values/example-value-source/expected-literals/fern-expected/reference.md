@@ -818,6 +818,7 @@ client = FernApi(
 client.passes.issue_form_pass(
     grant="overnight-stay",
     holder="Kerensa",
+    tier="standard",
 )
 
 ```
@@ -843,6 +844,14 @@ client.passes.issue_form_pass(
 <dd>
 
 **holder:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tier:** `IssueFormPassRequestTier` 
     
 </dd>
 </dl>

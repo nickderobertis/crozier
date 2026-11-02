@@ -811,7 +811,7 @@ A form body's named example for an enum field.
 
 ```python
 from fern import FernApi
-from fern.passes import IssueFormPassRequestGrant
+from fern.passes import IssueFormPassRequestGrant, IssueFormPassRequestTier
 
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -820,6 +820,7 @@ client = FernApi(
 client.passes.issue_form_pass(
     grant=IssueFormPassRequestGrant.OVERNIGHT_STAY,
     holder="Kerensa",
+    tier=IssueFormPassRequestTier.STANDARD,
 )
 
 ```
@@ -845,6 +846,14 @@ client.passes.issue_form_pass(
 <dd>
 
 **holder:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tier:** `IssueFormPassRequestTier` 
     
 </dd>
 </dl>

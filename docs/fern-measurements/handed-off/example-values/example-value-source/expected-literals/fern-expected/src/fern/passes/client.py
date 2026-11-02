@@ -6,6 +6,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawPassesClient, RawPassesClient
 from .types.issue_form_pass_request_grant import IssueFormPassRequestGrant
+from .types.issue_form_pass_request_tier import IssueFormPassRequestTier
 from .types.issue_form_pass_response import IssueFormPassResponse
 from .types.issue_pass_request_grant import IssuePassRequestGrant
 from .types.issue_pass_response import IssuePassResponse
@@ -65,7 +66,12 @@ class PassesClient:
         return _response.data
 
     def issue_form_pass(
-        self, *, grant: IssueFormPassRequestGrant, holder: str, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        grant: IssueFormPassRequestGrant,
+        holder: str,
+        tier: IssueFormPassRequestTier,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> IssueFormPassResponse:
         """
         A form body's named example for an enum field.
@@ -75,6 +81,8 @@ class PassesClient:
         grant : IssueFormPassRequestGrant
 
         holder : str
+
+        tier : IssueFormPassRequestTier
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -94,9 +102,12 @@ class PassesClient:
         client.passes.issue_form_pass(
             grant="overnight-stay",
             holder="Kerensa",
+            tier="standard",
         )
         """
-        _response = self._raw_client.issue_form_pass(grant=grant, holder=holder, request_options=request_options)
+        _response = self._raw_client.issue_form_pass(
+            grant=grant, holder=holder, tier=tier, request_options=request_options
+        )
         return _response.data
 
 
@@ -159,7 +170,12 @@ class AsyncPassesClient:
         return _response.data
 
     async def issue_form_pass(
-        self, *, grant: IssueFormPassRequestGrant, holder: str, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        grant: IssueFormPassRequestGrant,
+        holder: str,
+        tier: IssueFormPassRequestTier,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> IssueFormPassResponse:
         """
         A form body's named example for an enum field.
@@ -169,6 +185,8 @@ class AsyncPassesClient:
         grant : IssueFormPassRequestGrant
 
         holder : str
+
+        tier : IssueFormPassRequestTier
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -193,10 +211,13 @@ class AsyncPassesClient:
             await client.passes.issue_form_pass(
                 grant="overnight-stay",
                 holder="Kerensa",
+                tier="standard",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.issue_form_pass(grant=grant, holder=holder, request_options=request_options)
+        _response = await self._raw_client.issue_form_pass(
+            grant=grant, holder=holder, tier=tier, request_options=request_options
+        )
         return _response.data

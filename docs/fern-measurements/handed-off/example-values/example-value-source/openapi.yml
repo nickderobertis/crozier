@@ -464,13 +464,17 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              required: [grant, holder]
+              required: [grant, holder, tier]
               properties:
                 grant:
                   type: string
                   enum: [day-visit, overnight-stay]
                 holder:
                   type: string
+                tier:
+                  type: string
+                  enum: [standard, priority]
+                  example: priority
             examples:
               overnight:
                 value:

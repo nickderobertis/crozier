@@ -30,7 +30,13 @@ if typing.TYPE_CHECKING:
     from .ledger import GetBlockResponse
     from .markers import PlaceMarkerRequestMarker, PlaceMarkerResponse
     from .mirrors import AddMirrorResponse
-    from .passes import IssueFormPassRequestGrant, IssueFormPassResponse, IssuePassRequestGrant, IssuePassResponse
+    from .passes import (
+        IssueFormPassRequestGrant,
+        IssueFormPassRequestTier,
+        IssueFormPassResponse,
+        IssuePassRequestGrant,
+        IssuePassResponse,
+    )
     from .routes import PlanRoutesResponse
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
@@ -43,6 +49,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetBerthResponse": ".harbours",
     "GetBlockResponse": ".ledger",
     "IssueFormPassRequestGrant": ".passes",
+    "IssueFormPassRequestTier": ".passes",
     "IssueFormPassResponse": ".passes",
     "IssuePassRequestGrant": ".passes",
     "IssuePassResponse": ".passes",
@@ -102,6 +109,7 @@ __all__ = [
     "GetBerthResponse",
     "GetBlockResponse",
     "IssueFormPassRequestGrant",
+    "IssueFormPassRequestTier",
     "IssueFormPassResponse",
     "IssuePassRequestGrant",
     "IssuePassResponse",
