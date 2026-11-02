@@ -15,7 +15,13 @@
     "wait_min": 2595.2,
     "attempts": 6,
     "redispatches": 9,
-    "median_cycle_min": 230.9
+    "median_cycle_min": 230.9,
+    "ci_retry_unresolved": 3,
+    "publications": 6,
+    "pub_wait_min": 286.7,
+    "pub_unresolved": 3,
+    "pub_observed": 3,
+    "median_pub_wait_min": 80.4
   },
   "conflicts": {
     "derived": 9,
@@ -35,6 +41,9 @@
       "changes": 6,
       "redispatches": 8,
       "attempts": 0,
+      "pub_observed": 0,
+      "pub_unresolved": 0,
+      "pub_wait_min": 0.0,
       "cycle_min": 3839.9
     },
     "measured-count": {
@@ -43,6 +52,9 @@
       "elapsed_min": 294.8,
       "wait_min": 322.5,
       "changes": 3,
+      "pub_observed": 1,
+      "pub_wait_min": 10.3,
+      "pub_unresolved": 1,
       "attempts": 2,
       "redispatches": 3,
       "cycle_min": 617.3
@@ -53,8 +65,11 @@
       "elapsed_min": 30.2,
       "wait_min": 9.6,
       "changes": 1,
+      "pub_observed": 1,
+      "pub_wait_min": 9.2,
       "attempts": 1,
       "redispatches": 1,
+      "pub_unresolved": 0,
       "cycle_min": 39.8
     },
     "other-artifact:docs/fern-refusals/documents.tsv": {
@@ -63,8 +78,11 @@
       "elapsed_min": 30.2,
       "wait_min": 9.6,
       "changes": 1,
+      "pub_observed": 1,
+      "pub_wait_min": 9.2,
       "attempts": 1,
       "redispatches": 1,
+      "pub_unresolved": 0,
       "cycle_min": 39.8
     },
     "other-artifact:docs/openapi-surface/witness-search-registries/outstanding.tsv": {
@@ -73,8 +91,11 @@
       "elapsed_min": 300.2,
       "wait_min": 346.5,
       "changes": 4,
+      "pub_observed": 4,
+      "pub_wait_min": 344.1,
       "attempts": 4,
       "redispatches": 4,
+      "pub_unresolved": 0,
       "cycle_min": 646.7
     },
     "port-digest": {
@@ -83,6 +104,9 @@
       "elapsed_min": 532.1,
       "wait_min": 1134.4,
       "changes": 6,
+      "pub_observed": 2,
+      "pub_wait_min": 276.4,
+      "pub_unresolved": 2,
       "attempts": 4,
       "redispatches": 7,
       "cycle_min": 1666.5
@@ -93,8 +117,11 @@
       "elapsed_min": 576.7,
       "wait_min": 1138.2,
       "changes": 6,
+      "pub_unresolved": 1,
       "redispatches": 4,
       "attempts": 1,
+      "pub_observed": 0,
+      "pub_wait_min": 0.0,
       "cycle_min": 1714.9
     }
   },

@@ -477,18 +477,38 @@ def main() -> int:
             "census_runner_min": 0.0, "census_elapsed_min": 0.0, "census_wait_min": 0.0,
             "other_failures": 0, "attempts": len(gates), "census_attempts": 0, "redispatches": len(dispatches),
             "census_redispatches": 0, "conflict_redispatches": 0, "derived_conflicts": 0, "mixed_conflicts": 0, "code_conflicts": 0,
-            "conflict_wait_min": 0.0, "census_kinds": [], "rewrote": [],
+            "conflict_wait_min": 0.0, "census_pub_failures": 0, "census_pub_wait_min": 0.0, "census_pub_unresolved": 0,
+            "census_ci_unresolved": 0, "census_kinds": [], "rewrote": [],
         }
         failure_marks: list[tuple[dt.datetime, str, tuple[str, ...]]] = []
         run_kinds: dict[int, list[str]] = {}
         row["kind_attempts"], row["kind_redispatches"] = collections.Counter(), collections.Counter()
+        # --- Journal publication attempts, each matched to the failed CI run that decided it, and the
+        # wall clock from its recorded end to the next attempt's recorded start on this branch.
+        gate_match: list[tuple[dict, dict | None]] = []
+        publication: dict[int, dict] = {}
+        for gi, g in enumerate(gates):
+            if g["verdict"] == "passed" or "gate" not in g["failed_checks"]:
+                continue
+            match = [r for r in runs_ci if r["conclusion"] == "failure" and g["start"] - dt.timedelta(hours=3) <= r["end"] <= g["end"] + dt.timedelta(minutes=10)]
+            decided = match[-1] if match else None
+            gate_match.append((g, decided))
+            if decided:
+                following = [n for n in gates[gi + 1 :] if n["start"] > g["end"]]
+                nxt_pub = following[0] if following else None
+                publication[decided["id"]] = {
+                    "pub_end": g["end"].isoformat(),
+                    "next_pub_start": nxt_pub["start"].isoformat() if nxt_pub else "",
+                    "pub_wait_min": minutes(g["end"], nxt_pub["start"]) if nxt_pub else None,
+                }
         # --- CI failures, each with its fix and the wait to the next CI run on this branch.
         for i, run in enumerate(runs_ci):
             if run["conclusion"] != "failure":
                 continue
             row["ci_failed"] += 1
             nxt = runs_ci[i + 1] if i + 1 < len(runs_ci) else None
-            wait = minutes(run["end"], nxt["start"]) if nxt and nxt["start"] > run["end"] else 0.0
+            ci_resolved = bool(nxt and nxt["start"] > run["end"])
+            wait = minutes(run["end"], nxt["start"]) if ci_resolved else 0.0
             fix = {}
             if nxt and has_commit(run["head"]) and has_commit(nxt["head"]):
                 fix = worker_pinned(run["head"], nxt["head"])
@@ -506,6 +526,14 @@ def main() -> int:
                 row["census_runner_min"] += run["runner_min"]
                 row["census_elapsed_min"] += run["elapsed_min"]
                 row["census_wait_min"] += wait
+                row["census_ci_unresolved"] += 0 if ci_resolved else 1
+                pub = publication.get(run["id"])
+                if pub:
+                    row["census_pub_failures"] += 1
+                    if pub["pub_wait_min"] is None:
+                        row["census_pub_unresolved"] += 1
+                    else:
+                        row["census_pub_wait_min"] += pub["pub_wait_min"]
                 row["census_kinds"] = sorted(set(row["census_kinds"]) | set(kinds))
                 failure_marks.append((run["end"], "census", tuple(kinds)))
             else:
@@ -514,22 +542,28 @@ def main() -> int:
             run_kinds[run["id"]] = kinds if tier in ("census", "artifact") else []
             # A failure of a pinned artifact outside the census is a repin event too.
             if tier in ("census", "artifact"):
+                pub = publication.get(run["id"])
+                if pub is None:
+                    pub_fields = {"pub_status": "no-publication", "pub_end": "", "next_pub_start": "", "pub_wait_min": ""}
+                elif pub["pub_wait_min"] is None:
+                    pub_fields = {"pub_status": "unresolved", "pub_end": pub["pub_end"], "next_pub_start": "", "pub_wait_min": ""}
+                else:
+                    pub_fields = {"pub_status": "observed", "pub_end": pub["pub_end"], "next_pub_start": pub["next_pub_start"],
+                                  "pub_wait_min": round(pub["pub_wait_min"] / len(kinds), 1)}
                 for k in kinds:
                     events.append({
+                        **pub_fields, "ci_next_run": "observed" if ci_resolved else "unresolved",
                         "pr": b["pr"], "branch": name, "source": "ci", "at": run["end"].isoformat(), "kind": k,
                         "tier": tier, "ci_run": run["id"], "runner_min": round(run["runner_min"] / len(kinds), 1),
                         "elapsed_min": round(run["elapsed_min"] / len(kinds), 1), "wait_min": round(wait / len(kinds), 1),
                         "fix_files": ";".join(sorted(fix)), "tasks": ";".join(run["tasks"]), "excerpt": run["excerpt"],
                     })
-        # --- Publication attempts the journal recorded, matched to the CI run that decided them.
-        for g in gates:
-            if g["verdict"] == "passed" or "gate" not in g["failed_checks"]:
-                continue
-            match = [r for r in runs_ci if r["conclusion"] == "failure" and g["start"] - dt.timedelta(hours=3) <= r["end"] <= g["end"] + dt.timedelta(minutes=10)]
-            if match and match[-1]["census"]:
+        # --- Publication attempts per kind (matched above).
+        for g, decided in gate_match:
+            if decided and decided["census"]:
                 row["census_attempts"] += 1
-            if match:
-                row["kind_attempts"].update(run_kinds.get(match[-1]["id"], []))
+            if decided:
+                row["kind_attempts"].update(run_kinds.get(decided["id"], []))
         # --- Conflicts.
         for c in conflicts:
             pinned = {p: artifact_kind(p) for p in c["paths"]}
@@ -571,7 +605,7 @@ def main() -> int:
         elif head:
             base = git("merge-base", "refs/repin-cost/main", head, check=False).strip() or None
             row["rewrote"] = sorted(pinned_changes(base, head)) if base else []
-        for key in ("census_runner_min", "census_elapsed_min", "census_wait_min", "conflict_wait_min"):
+        for key in ("census_runner_min", "census_elapsed_min", "census_wait_min", "conflict_wait_min", "census_pub_wait_min"):
             row[key] = round(row[key], 1)
         changes.append(row)
 
@@ -608,6 +642,10 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         if e["source"] == "ci" and e["tier"] == "census":
             census_cycles[e["ci_run"]] = census_cycles.get(e["ci_run"], 0.0) + e["elapsed_min"] + e["wait_min"]
     conflict_waits = [e["wait_min"] for e in events if e["kind"] == "derived-conflict"]
+    pub_waits: dict[int, float] = {}
+    for e in events:
+        if e["source"] == "ci" and e["tier"] == "census" and e.get("pub_status") == "observed":
+            pub_waits[e["ci_run"]] = pub_waits.get(e["ci_run"], 0.0) + e["pub_wait_min"]
     with_pr = [c for c in changes if c["pr"]]
     census = {
         "failures": sum(c["census_failures"] for c in changes),
@@ -618,6 +656,12 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         "attempts": sum(c["census_attempts"] for c in changes),
         "redispatches": sum(c["census_redispatches"] for c in changes),
         "median_cycle_min": median(list(census_cycles.values())),
+        "ci_retry_unresolved": sum(c["census_ci_unresolved"] for c in changes),
+        "publications": sum(c["census_pub_failures"] for c in changes),
+        "pub_wait_min": round(sum(c["census_pub_wait_min"] for c in changes), 1),
+        "pub_unresolved": sum(c["census_pub_unresolved"] for c in changes),
+        "pub_observed": sum(c["census_pub_failures"] - c["census_pub_unresolved"] for c in changes),
+        "median_pub_wait_min": median(list(pub_waits.values())),
     }
     conflicts = {
         "derived": sum(c["derived_conflicts"] for c in changes),
@@ -636,6 +680,12 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         slot["runner_min"] += e["runner_min"]
         slot["elapsed_min"] += e["elapsed_min"]
         slot["wait_min"] += e["wait_min"]
+        status = e.get("pub_status")
+        if status == "observed":
+            slot["pub_observed"] = slot.get("pub_observed", 0) + 1
+            slot["pub_wait_min"] = slot.get("pub_wait_min", 0.0) + e["pub_wait_min"]
+        elif status == "unresolved":
+            slot["pub_unresolved"] = slot.get("pub_unresolved", 0) + 1
         slot["changes"].add(e["pr"] or e["branch"])
     for c in changes:
         for field, key in (("kind_attempts", "attempts"), ("kind_redispatches", "redispatches")):
@@ -644,6 +694,9 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
                 slot[key] = slot.get(key, 0) + count
     for slot in by_kind.values():
         slot.setdefault("attempts", 0)
+        slot.setdefault("pub_observed", 0)
+        slot.setdefault("pub_unresolved", 0)
+        slot["pub_wait_min"] = round(slot.get("pub_wait_min", 0.0), 1)
         slot.setdefault("redispatches", 0)
         slot["changes"] = len(slot["changes"])
         slot["cycle_min"] = round(slot["elapsed_min"] + slot["wait_min"], 1)
@@ -688,7 +741,7 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
 def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: dict) -> None:
     cols = [
         "pr", "branch", "merged", "ci_runs", "ci_failed", "census_failures", "census_runner_min", "census_elapsed_min",
-        "census_wait_min", "other_failures", "attempts", "census_attempts", "redispatches", "census_redispatches",
+        "census_wait_min", "census_ci_unresolved", "census_pub_failures", "census_pub_wait_min", "census_pub_unresolved", "other_failures", "attempts", "census_attempts", "redispatches", "census_redispatches",
         "derived_conflicts", "mixed_conflicts", "conflict_redispatches", "conflict_wait_min", "code_conflicts", "census_kinds", "rewrote", "nodes", "runs",
     ]
     with (out / "changes.tsv").open("w", encoding="utf-8") as handle:
@@ -697,11 +750,16 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
             handle.write("\t".join(";".join(v) if isinstance(v := c[k], list) else str(v) for k in cols) + "\n")
     for c in changes:
         c["kind_attempts"], c["kind_redispatches"] = dict(c["kind_attempts"]), dict(c["kind_redispatches"])
-    ecols = ["pr", "branch", "source", "at", "kind", "tier", "artifact", "ci_run", "runner_min", "elapsed_min", "wait_min", "fix_files", "tasks", "excerpt"]
+    ecols = [
+        "pr", "branch", "source", "at", "kind", "tier", "artifact", "ci_run", "runner_min", "elapsed_min", "wait_min", "ci_next_run",
+        "pub_status", "pub_end", "next_pub_start", "pub_wait_min", "fix_files", "tasks", "excerpt",
+    ]
     with (out / "events.tsv").open("w", encoding="utf-8") as handle:
         handle.write("\t".join(ecols) + "\n")
         for e in sorted(events, key=lambda e: e["at"]):
-            handle.write("\t".join(str(e.get(k, "")) for k in ecols) + "\n")
+            # An unresolved CI retry wait is written blank, never as an observed 0.
+            shown = {**e, "wait_min": ""} if e.get("ci_next_run") == "unresolved" else e
+            handle.write("\t".join(str(shown.get(k, "")) for k in ecols) + "\n")
     (out / "totals.json").write_text(json.dumps(totals, indent=2, default=str) + "\n", encoding="utf-8")
     c, k = totals["census"], totals["conflicts"]
     n = max(totals["changes"], 1)
@@ -711,8 +769,12 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         f"- Changes: {totals['changes']} ({totals['changes_with_pr']} with a PR, {totals['merged']} merged); "
         f"CI runs {totals['ci_runs']}, failed {totals['ci_failed']}.",
         f"- Census-tier CI failures: {c['failures']} ({c['failures'] / n:.2f} per change, {c['changes_hit']} changes hit); "
-        f"runner {c['runner_min']} min, elapsed {c['elapsed_min']} min, wait to next run {c['wait_min']} min "
+        f"runner {c['runner_min']} min, elapsed {c['elapsed_min']} min, CI retry wait (failed run's end to the branch's next CI run's start) "
+        f"{c['wait_min']} min, {c['ci_retry_unresolved']} with no next CI run by the cutoff (unresolved, not counted) "
         f"(cycle {round(c['elapsed_min'] + c['wait_min'], 1)} min, median {c['median_cycle_min']} per failure).",
+        f"- Census-failed journal publications: {c['publications']} (the attempt's recorded end to the branch's next attempt's recorded start): "
+        f"{c['pub_observed']} observed, {c['pub_wait_min']} min (median {c['median_pub_wait_min']}); {c['pub_unresolved']} unresolved "
+        f"(no next publication by the cutoff); {c['failures'] - c['publications']} census failures had no journal publication.",
         f"- Publication attempts {totals['attempts']} (census-failed {c['attempts']}); re-dispatches {totals['redispatches']} "
         f"(after a census failure {c['redispatches']}, after a derived conflict {k['redispatches']}).",
         f"- Derived-table conflicts: {k['derived']} ({k['changes_hit']} changes), wait to next attempt {k['wait_min']} min "
@@ -721,11 +783,11 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         "",
         "Per kind (a failure naming several kinds counts once under each; its minutes are split evenly between them):",
         "",
-        "| kind | events | changes | runner min | elapsed min | wait min | cycle min | publication attempts | re-dispatches |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| kind | events | changes | runner min | elapsed min | wait min (CI retry; for a conflict, to the next attempt) | cycle min | publication attempts | publication interval min (observed / unresolved) | re-dispatches |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for kind, s in totals["by_kind"].items():
-        lines.append(f"| `{kind}` | {s['events']} | {s['changes']} | {s['runner_min']} | {s['elapsed_min']} | {s['wait_min']} | {s['cycle_min']} | {s['attempts']} | {s['redispatches']} |")
+        lines.append(f"| `{kind}` | {s['events']} | {s['changes']} | {s['runner_min']} | {s['elapsed_min']} | {s['wait_min']} | {s['cycle_min']} | {s['attempts']} | {f"{s['pub_wait_min']} ({s['pub_observed']} / {s['pub_unresolved']})" if s['pub_observed'] or s['pub_unresolved'] else "n/a"} | {s['redispatches']} |")
     lines += ["", "| artifact outside the census | CI failures | conflicts | changes | cycle min | runner min |", "| --- | --- | --- | --- | --- | --- |"]
     for r in totals["artifacts_outside_census"]:
         lines.append(f"| `{r['artifact']}` | {r['ci_failures']} | {r['conflicts']} | {r['changes']} | {r['cycle_min']} | {r['runner_min']} |")
