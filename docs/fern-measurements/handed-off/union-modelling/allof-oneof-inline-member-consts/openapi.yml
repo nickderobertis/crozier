@@ -1,0 +1,210 @@
+openapi: 3.1.0
+info:
+  title: Bakery orders
+  version: '1.0'
+paths:
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    HandoverOneOfConst:
+      allOf:
+      - type: object
+        properties: {}
+        additionalProperties: {}
+      - oneOf:
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              const: pickup
+            region:
+              type: string
+              description: Collection region, chosen at pickup.
+            slots:
+              type: object
+              additionalProperties:
+                type: object
+                required:
+                - opens
+                properties:
+                  opens:
+                    type: string
+                  closes:
+                    type: string
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              const: delivery
+            region:
+              type: string
+              description: Delivery region.
+            courier:
+              type: string
+    HandoverAnyOfConst:
+      allOf:
+      - type: object
+        properties: {}
+        additionalProperties: {}
+      - anyOf:
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              const: pickup
+            region:
+              type: string
+              description: Collection region, chosen at pickup.
+            slots:
+              type: object
+              additionalProperties:
+                type: object
+                required:
+                - opens
+                properties:
+                  opens:
+                    type: string
+                  closes:
+                    type: string
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              const: delivery
+            region:
+              type: string
+              description: Delivery region.
+            courier:
+              type: string
+    HandoverOneOfEnum:
+      allOf:
+      - type: object
+        properties: {}
+        additionalProperties: {}
+      - oneOf:
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              enum:
+              - pickup
+            region:
+              type: string
+              description: Collection region, chosen at pickup.
+            slots:
+              type: object
+              additionalProperties:
+                type: object
+                required:
+                - opens
+                properties:
+                  opens:
+                    type: string
+                  closes:
+                    type: string
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              enum:
+              - delivery
+            region:
+              type: string
+              description: Delivery region.
+            courier:
+              type: string
+    HandoverAnyOfEnum:
+      allOf:
+      - type: object
+        properties: {}
+        additionalProperties: {}
+      - anyOf:
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              enum:
+              - pickup
+            region:
+              type: string
+              description: Collection region, chosen at pickup.
+            slots:
+              type: object
+              additionalProperties:
+                type: object
+                required:
+                - opens
+                properties:
+                  opens:
+                    type: string
+                  closes:
+                    type: string
+        - type: object
+          additionalProperties: false
+          required:
+          - mode
+          - region
+          properties:
+            mode:
+              type: string
+              enum:
+              - delivery
+            region:
+              type: string
+              description: Delivery region.
+            courier:
+              type: string
+    Order:
+      type: object
+      properties:
+        byConst:
+          $ref: '#/components/schemas/HandoverOneOfConst'
+        anyConst:
+          $ref: '#/components/schemas/HandoverAnyOfConst'
+        byEnum:
+          $ref: '#/components/schemas/HandoverOneOfEnum'
+        anyEnum:
+          $ref: '#/components/schemas/HandoverAnyOfEnum'

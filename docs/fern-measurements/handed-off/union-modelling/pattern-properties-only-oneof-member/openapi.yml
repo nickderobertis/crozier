@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: Herbarium
+  version: "1.0"
+paths:
+  /specimens/{specimenId}:
+    get:
+      operationId: getSpecimen
+      parameters:
+        - name: specimenId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The specimen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specimen"
+components:
+  schemas:
+    LabelTranslations:
+      description: Translations keyed by a language tag pattern only.
+      oneOf:
+        - patternProperties:
+            "^[a-z]{2}$":
+              type: string
+          additionalProperties: false
+    CollectorRef:
+      type: object
+      required:
+        - collector
+      properties:
+        collector:
+          type: string
+    CollectorNote:
+      $ref: "#/components/schemas/CollectorRef"
+      anyOf:
+        - type: object
+          properties:
+            note:
+              type: string
+          unevaluatedProperties: false
+    CollectorAny:
+      $ref: "#/components/schemas/CollectorRef"
+      anyOf:
+        - type: object
+    Specimen:
+      type: object
+      properties:
+        labels:
+          $ref: "#/components/schemas/LabelTranslations"
+        note:
+          $ref: "#/components/schemas/CollectorNote"
+        loose:
+          $ref: "#/components/schemas/CollectorAny"
