@@ -28,10 +28,13 @@ const CASES: &[(&str, bool)] = &[
     ("pattern-properties-only-oneof-member", false),
     ("query-anyof-date-time-or-array-named", false),
     ("query-oneof-of-arrays", false),
+    ("union-modelling/annotated-reference-beside-null", true),
+    ("union-modelling/event-stream-beside-json", true),
     ("union-modelling/identical-primitive-members", false),
     ("union-modelling/multi-type-open-object", false),
     ("union-modelling/nullable-reference-member", false),
-    ("union-modelling/singleton-enum-tags", false),
+    ("union-modelling/singleton-enum-members", true),
+    ("union-modelling/singleton-enum-tags", true),
 ];
 
 /// Every committed tree under [`UNION_MODELLING_DIR`], for the compared-goldens
@@ -332,6 +335,11 @@ fn inline_unions_are_written_as_the_certified_pair_writes_them() {
         "{toolbox}"
     );
     assert!(read(&out, "src/fern/types/chisel_tool.py").contains("kind: ChiselToolKind"));
+    assert!(read(&out, "src/fern/types/kit.py").contains("Kit = ChiselTool"));
+    assert!(
+        toolbox.contains("spare: typing.Optional[ChiselTool] = None"),
+        "{toolbox}"
+    );
     for hoisted in ["toolbox_tools_item.py", "toolbox_labels.py"] {
         assert!(
             !out.join("src/fern/types").join(hoisted).exists(),
@@ -426,8 +434,15 @@ fn a_nullable_query_array_of_an_inline_enum_names_its_item() {
 fn union_modelling_sub_rules_match_the_certified_pair() {
     let case = "union-modelling/identical-primitive-members";
     let temp = matched(case);
-    assert!(read(&sdk(&temp), "src/fern/types/survey.py")
-        .contains("corners: typing.Optional[typing.List[typing.List[str]]]"));
+    let survey = read(&sdk(&temp), "src/fern/types/survey.py");
+    assert!(
+        survey.contains("corners: typing.Optional[typing.List[typing.List[str]]]"),
+        "{survey}"
+    );
+    assert!(
+        survey.contains("notes: typing.Optional[typing.Dict[str, str]]"),
+        "{survey}"
+    );
     mutation_is_named(
         case,
         &temp,
@@ -465,6 +480,7 @@ fn union_modelling_sub_rules_match_the_certified_pair() {
     let temp = matched(case);
     let author = read(&sdk(&temp), "src/fern/types/author.py");
     assert!(author.contains("class Author_Harbour("), "{author}");
+    assert!(read(&sdk(&temp), "src/fern/types/shipment.py").contains("class Shipment_Rail("));
     assert!(!read(&sdk(&temp), "src/fern/types/crew_member.py").contains("kind:"));
     mutation_is_named(
         case,
@@ -472,6 +488,57 @@ fn union_modelling_sub_rules_match_the_certified_pair() {
         "src/fern/types/crew_member.py",
         "class CrewMember(UniversalBaseModel):\n",
         "class CrewMember(UniversalBaseModel):\n    kind: CrewMemberKind\n",
+    );
+}
+
+/// `union-modelling`'s further sub-rules, measured while settling the
+/// handed-off documents (OpenResponses, Deepgram, runZero, Nussknacker, tianji).
+#[test]
+fn union_modelling_document_sub_rules_match_the_certified_pair() {
+    let case = "union-modelling/event-stream-beside-json";
+    let temp = matched(case);
+    assert!(read(&sdk(&temp), "src/fern/types/firing_started_event.py")
+        .contains("type: FiringStartedEventType"));
+    mutation_is_named(
+        case,
+        &temp,
+        "src/fern/types/firing_started_event.py",
+        "    type: FiringStartedEventType",
+        "    kind: FiringStartedEventType",
+    );
+
+    let case = "union-modelling/annotated-reference-beside-null";
+    let temp = matched(case);
+    let totals = read(&sdk(&temp), "src/fern/types/batch_totals.py");
+    assert!(
+        totals.contains("class BatchTotals(UniversalBaseModel):"),
+        "{totals}"
+    );
+    mutation_is_named(
+        case,
+        &temp,
+        "src/fern/types/batch_totals.py",
+        "class BatchTotals(UniversalBaseModel):",
+        "class BatchTotals(Totals):",
+    );
+
+    let case = "union-modelling/singleton-enum-members";
+    let temp = matched(case);
+    let client = read(&sdk(&temp), "src/fern/client.py");
+    assert!(
+        client.contains("finish: typing.Optional[OrderPrintRequestFinish] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("dpi: typing.Optional[float] = None"),
+        "{client}"
+    );
+    mutation_is_named(
+        case,
+        &temp,
+        "src/fern/client.py",
+        "dpi: typing.Optional[float] = None",
+        "dpi: typing.Optional[OrderPrintRequestDpi] = None",
     );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

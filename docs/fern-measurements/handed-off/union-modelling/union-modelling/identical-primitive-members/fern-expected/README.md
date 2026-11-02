@@ -40,8 +40,8 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.get_survey(
-    survey_id="surveyId",
+client.create_survey(
+    label="label",
 )
 ```
 
@@ -60,8 +60,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.get_survey(
-        survey_id="surveyId",
+    await client.create_survey(
+        label="label",
     )
 
 
@@ -77,7 +77,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.get_survey(...)
+    client.create_survey(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -94,7 +94,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.with_raw_response.get_survey(...)
+response = client.with_raw_response.create_survey(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -125,7 +125,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.get_survey(..., request_options={
+client.create_survey(..., request_options={
     "max_retries": 1
 })
 ```
@@ -140,7 +140,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.get_survey(..., request_options={
+client.create_survey(..., request_options={
     "timeout": 1
 })
 ```

@@ -68,6 +68,51 @@ components:
                 - harbour
             office:
               type: string
+    ModeRoad:
+      type: string
+      enum:
+        - road
+    ModeRail:
+      type: string
+      enum:
+        - rail
+    ModeSea:
+      type: string
+      enum:
+        - sea
+    Lorry:
+      type: object
+      required:
+        - mode
+        - plate
+      properties:
+        mode:
+          $ref: "#/components/schemas/ModeRoad"
+        plate:
+          type: string
+    Shipment:
+      oneOf:
+        - $ref: "#/components/schemas/Lorry"
+        - title: Train
+          type: object
+          required:
+            - mode
+            - wagons
+          properties:
+            mode:
+              $ref: "#/components/schemas/ModeRail"
+            wagons:
+              type: integer
+        - title: Vessel
+          type: object
+          required:
+            - mode
+            - hull
+          properties:
+            mode:
+              $ref: "#/components/schemas/ModeSea"
+            hull:
+              type: string
     Entry:
       type: object
       required:
@@ -77,3 +122,5 @@ components:
           type: string
         author:
           $ref: "#/components/schemas/Author"
+        shipment:
+          $ref: "#/components/schemas/Shipment"

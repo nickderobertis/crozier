@@ -19,6 +19,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Survey"
+  /surveys:
+    post:
+      operationId: createSurvey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label
+              properties:
+                label:
+                  anyOf:
+                    - type: string
+                      maxLength: 64
+                    - anyOf:
+                        - type: string
+                          format: ipv4
+                        - type: string
+                          format: ipv6
+      responses:
+        "200":
+          description: The new survey.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
 components:
   schemas:
     Survey:
@@ -35,6 +63,11 @@ components:
               oneOf:
                 - type: string
                 - type: string
+        notes:
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: string
         markers:
           type: array
           items:

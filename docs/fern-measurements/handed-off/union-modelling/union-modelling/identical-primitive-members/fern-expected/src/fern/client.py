@@ -10,6 +10,9 @@ from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.survey import Survey
 
 
+OMIT = typing.cast(typing.Any, ...)
+
+
 class FernApi:
     """
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
@@ -120,6 +123,34 @@ class FernApi:
         )
         """
         _response = self._raw_client.get_survey(survey_id, request_options=request_options)
+        return _response.data
+
+    def create_survey(self, *, label: str, request_options: typing.Optional[RequestOptions] = None) -> Survey:
+        """
+        Parameters
+        ----------
+        label : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Survey
+            The new survey.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.create_survey(
+            label="label",
+        )
+        """
+        _response = self._raw_client.create_survey(label=label, request_options=request_options)
         return _response.data
 
 
@@ -257,4 +288,40 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.get_survey(survey_id, request_options=request_options)
+        return _response.data
+
+    async def create_survey(self, *, label: str, request_options: typing.Optional[RequestOptions] = None) -> Survey:
+        """
+        Parameters
+        ----------
+        label : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Survey
+            The new survey.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.create_survey(
+                label="label",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_survey(label=label, request_options=request_options)
         return _response.data

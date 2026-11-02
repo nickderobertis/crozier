@@ -12,6 +12,13 @@ if typing.TYPE_CHECKING:
     from .contractor import Contractor
     from .crew_member import CrewMember
     from .entry import Entry
+    from .lorry import Lorry
+    from .mode_rail import ModeRail
+    from .mode_road import ModeRoad
+    from .mode_sea import ModeSea
+    from .shipment import Shipment, Shipment_Rail, Shipment_Road, Shipment_Sea
+    from .shipment_rail import ShipmentRail
+    from .shipment_sea import ShipmentSea
 _dynamic_imports: typing.Dict[str, str] = {
     "Author": ".author",
     "AuthorAutopilot": ".author_autopilot",
@@ -23,6 +30,16 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Contractor": ".contractor",
     "CrewMember": ".crew_member",
     "Entry": ".entry",
+    "Lorry": ".lorry",
+    "ModeRail": ".mode_rail",
+    "ModeRoad": ".mode_road",
+    "ModeSea": ".mode_sea",
+    "Shipment": ".shipment",
+    "ShipmentRail": ".shipment_rail",
+    "ShipmentSea": ".shipment_sea",
+    "Shipment_Rail": ".shipment",
+    "Shipment_Road": ".shipment",
+    "Shipment_Sea": ".shipment",
 }
 
 
@@ -58,4 +75,14 @@ __all__ = [
     "Contractor",
     "CrewMember",
     "Entry",
+    "Lorry",
+    "ModeRail",
+    "ModeRoad",
+    "ModeSea",
+    "Shipment",
+    "ShipmentRail",
+    "ShipmentSea",
+    "Shipment_Rail",
+    "Shipment_Road",
+    "Shipment_Sea",
 ]

@@ -32,11 +32,28 @@ components:
             - chisel
         widthMm:
           type: integer
+    PlaneTool:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - plane
+        soleMm:
+          type: integer
     LabelMap:
       type: object
       additionalProperties:
         type: string
         maxLength: 40
+    Kit:
+      description: The one kind of kit a toolbox can hold.
+      oneOf:
+        - $ref: "#/components/schemas/ChiselTool"
+      discriminator:
+        propertyName: kind
     Toolbox:
       type: object
       required:
@@ -47,6 +64,31 @@ components:
           items:
             oneOf:
               - $ref: "#/components/schemas/ChiselTool"
+        kit:
+          $ref: "#/components/schemas/Kit"
+        spare:
+          anyOf:
+            - allOf:
+                - $ref: "#/components/schemas/Kit"
+                - title: Spare kit
+            - type: "null"
+        racks:
+          oneOf:
+            - type: array
+              items:
+                oneOf:
+                  - $ref: "#/components/schemas/ChiselTool"
+                discriminator:
+                  propertyName: kind
+            - type: string
+        sets:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/ChiselTool"
+              - $ref: "#/components/schemas/PlaneTool"
+            discriminator:
+              propertyName: kind
         labels:
           anyOf:
             - allOf:

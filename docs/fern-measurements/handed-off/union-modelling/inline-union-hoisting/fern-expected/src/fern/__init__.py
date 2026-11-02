@@ -6,7 +6,18 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ChiselTool, ChiselToolKind, LabelMap, Toolbox
+    from .types import (
+        ChiselTool,
+        ChiselToolKind,
+        Kit,
+        LabelMap,
+        PlaneTool,
+        Toolbox,
+        ToolboxRacks,
+        ToolboxSetsItem,
+        ToolboxSetsItem_Chisel,
+        ToolboxSetsItem_Plane,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
@@ -17,8 +28,14 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
+    "Kit": ".types",
     "LabelMap": ".types",
+    "PlaneTool": ".types",
     "Toolbox": ".types",
+    "ToolboxRacks": ".types",
+    "ToolboxSetsItem": ".types",
+    "ToolboxSetsItem_Chisel": ".types",
+    "ToolboxSetsItem_Plane": ".types",
     "__version__": ".version",
 }
 
@@ -51,7 +68,13 @@ __all__ = [
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
+    "Kit",
     "LabelMap",
+    "PlaneTool",
     "Toolbox",
+    "ToolboxRacks",
+    "ToolboxSetsItem",
+    "ToolboxSetsItem_Chisel",
+    "ToolboxSetsItem_Plane",
     "__version__",
 ]

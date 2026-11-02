@@ -8,13 +8,23 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .chisel_tool import ChiselTool
     from .chisel_tool_kind import ChiselToolKind
+    from .kit import Kit
     from .label_map import LabelMap
+    from .plane_tool import PlaneTool
     from .toolbox import Toolbox
+    from .toolbox_racks import ToolboxRacks
+    from .toolbox_sets_item import ToolboxSetsItem, ToolboxSetsItem_Chisel, ToolboxSetsItem_Plane
 _dynamic_imports: typing.Dict[str, str] = {
     "ChiselTool": ".chisel_tool",
     "ChiselToolKind": ".chisel_tool_kind",
+    "Kit": ".kit",
     "LabelMap": ".label_map",
+    "PlaneTool": ".plane_tool",
     "Toolbox": ".toolbox",
+    "ToolboxRacks": ".toolbox_racks",
+    "ToolboxSetsItem": ".toolbox_sets_item",
+    "ToolboxSetsItem_Chisel": ".toolbox_sets_item",
+    "ToolboxSetsItem_Plane": ".toolbox_sets_item",
 }
 
 
@@ -39,4 +49,15 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ChiselTool", "ChiselToolKind", "LabelMap", "Toolbox"]
+__all__ = [
+    "ChiselTool",
+    "ChiselToolKind",
+    "Kit",
+    "LabelMap",
+    "PlaneTool",
+    "Toolbox",
+    "ToolboxRacks",
+    "ToolboxSetsItem",
+    "ToolboxSetsItem_Chisel",
+    "ToolboxSetsItem_Plane",
+]

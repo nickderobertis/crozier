@@ -12,6 +12,7 @@ class Survey(UniversalBaseModel):
     Pairs of grid references, each written either way.
     """
 
+    notes: typing.Optional[typing.Dict[str, str]] = None
     markers: typing.Optional[typing.List[int]] = None
     label: typing.Optional[str] = None
 

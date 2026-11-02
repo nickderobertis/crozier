@@ -105,10 +105,17 @@
     "docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/literals/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/identical-primitive-members/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/multi-type-open-object/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/nullable-reference-member/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-members/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-members/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/literals/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

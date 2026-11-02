@@ -241,3 +241,10 @@ handed-off/union-modelling/inline-union-hoisting	docs/fern-measurements/handed-o
 handed-off/union-modelling/inline-union-hoisting/literals	docs/fern-measurements/handed-off/union-modelling/inline-union-hoisting/openapi.yml	literals	packaged	-
 handed-off/union-modelling/inline-response-union-variant-naming	docs/fern-measurements/handed-off/union-modelling/inline-response-union-variant-naming/openapi.yml	python-enums	packaged	-
 handed-off/union-modelling/inline-response-union-variant-naming/literals	docs/fern-measurements/handed-off/union-modelling/inline-response-union-variant-naming/openapi.yml	literals	packaged	-
+handed-off/union-modelling/union-modelling/event-stream-beside-json	docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/openapi.yml	python-enums	packaged	-
+handed-off/union-modelling/union-modelling/event-stream-beside-json/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/openapi.yml	literals	packaged	-
+handed-off/union-modelling/union-modelling/annotated-reference-beside-null	docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/openapi.yml	python-enums	packaged	-
+handed-off/union-modelling/union-modelling/annotated-reference-beside-null/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/openapi.yml	literals	packaged	-
+handed-off/union-modelling/union-modelling/singleton-enum-members	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-members/openapi.yml	python-enums	packaged	-
+handed-off/union-modelling/union-modelling/singleton-enum-members/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-members/openapi.yml	literals	packaged	-
+handed-off/union-modelling/union-modelling/singleton-enum-tags/literals	docs/fern-measurements/handed-off/union-modelling/union-modelling/singleton-enum-tags/openapi.yml	literals	packaged	-
