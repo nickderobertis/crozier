@@ -1,0 +1,16 @@
+# The `fern-references-check` Nx project's uv workspace member (the workspace is
+# declared in the root pyproject.toml). It publishes nothing: there is no
+# [build-system], and `package = false` keeps uv from trying to build or install
+# it. Its workspace dependency is the member whose script its suite runs.
+[project]
+name = "crozier-fern-references-check"
+version = "0.0.0"
+description = "The weekly Fern goldens run's inputs, checked on every pull request."
+requires-python = ">=3.11"
+dependencies = ["crozier-fern-goldens"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+crozier-fern-goldens = { workspace = true }

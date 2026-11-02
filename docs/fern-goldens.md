@@ -292,14 +292,27 @@ just fern-references-list <family>              # the family's item names, one p
 just fern-references <family>                   # every item, at the certified pair
 just fern-references <family> <item>...         # exactly the named items
 just fern-references <family> --version V --cli-version C [<item>...]   # another pair
+just fern-references-check [<family>...]        # every item's inputs, without Fern
 ```
+
+`check` validates every item without starting Fern, Docker or a network
+request: each input its generation reads exists (its document, hand-written
+fixture, overlay base tree, and the files `cases.tsv`, `certified-trees.json`
+and the probe and refusal registries name), and each `evidence.toml` and
+`evidence.md` it restates states a restatable pair, and a well-formed digest
+where it names one. It prints `<family> <item>: <reason>` per broken item and
+exits 1 when any is. `generate` runs the same per-family validation first and
+refuses a broken item with that line, so the two never disagree. The
+`fern-references-check` project's test runs it over the real tree in crozier's
+pull-request gate, rerun by a change to any path it reads, so a change that
+breaks a weekly input fails its own pull request.
 
 | family | what it writes | through |
 |---|---|---|
 | `corpus` | `tests/fixtures/<fixture>/expected/` and `expected-flat/` | `fern-goldens generate` for a `CORPUS.md` row, `generate-fern-fixture.sh` for a vendored fixture |
 | `overlays` | `tests/fixtures/<fixture>/expected-literals/` and `expected-default-max-retries/` | `fern-overlay-goldens.sh --jobs 1` |
 | `handwritten` | `docs/openapi-surface/handwritten/<fixture>/fern-expected/`, with `evidence.toml`'s versions and `digest` | the probe workspace below |
-| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, or the case's Contract A `fern-refusal.txt` where its committed reference is Fern's refusal (a case Fern now generates from gets its tree and is reported), each `<stem>.fern.log` beside its `<stem>.openapi.*` refused document, and a case's pinned run its `measurement.json` records (its log and Fern's raw `raw_client.py`), as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a hand-written fixture's literals tree is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
+| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, or the case's Contract A `fern-refusal.txt` where its committed reference is Fern's refusal (a case Fern now generates from gets its tree and is reported), each `<stem>.fern.log` beside its `<stem>.openapi.*` refused document, and a case's pinned run its `measurement.json` records (its log and Fern's raw `raw_client.py`), as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a parameter fixture's literals tree (its document under `docs/openapi-surface/handwritten/`, or under `parameter-lowering/` for a proof retired there) is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
 | `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
 | `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
 | `departure-evidence` | `docs/departures/evidence/<id>/fern-reference/`, a departure note's own Fern tree, under the settings its `fern-reference.json` records | the probe workspace below |

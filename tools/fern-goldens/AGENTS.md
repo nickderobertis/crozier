@@ -7,3 +7,6 @@
   neither reaches the network).
 - Tests here run the scripts with stand-in tools; a suite that drives the real
   `git` or `just` belongs to `fern-goldens-git`.
+- `fern-references.py check` and `generate` share each family's `validate_*`:
+  an input a generation starts reading is validated there, and its path joins
+  `fern-references-check`'s test inputs (its trace test fails until it does).
