@@ -717,6 +717,7 @@ def measure_step(
     select_fixtures: re.Pattern[str] | None = None,
     include_tests: bool = True,
     include_fixtures: bool = True,
+    plan_fixtures: bool = True,
     handwritten_dir: Path | None = None,
     jobs: int = 1,
 ) -> Step:
@@ -736,7 +737,9 @@ def measure_step(
     if select_tests is not None:
         population = {name: inputs for name, inputs in population.items() if select_tests.search(name)}
     fixture_base = handwritten_dir or repo_root / "docs" / "openapi-surface" / "handwritten"
-    fixtures = handwritten.measured_fixtures(repo_root, fixture_base)
+    # Fixtures left out and none forced are never planned: a tree whose hand-written
+    # evidence does not plan (an older commit's) still measures its golden tests.
+    fixtures = handwritten.measured_fixtures(repo_root, fixture_base) if include_fixtures or forced_fixtures else {}
     if select_fixtures is not None:
         fixtures = {name: audiences for name, audiences in fixtures.items() if select_fixtures.search(name)}
     if base is None:
@@ -945,7 +948,13 @@ def measure(args: argparse.Namespace) -> int:
         if args.incremental:
             choice = _sibling("reach_base").find(repo_root)
             print(f"golden-reach: base: {choice.reason}", file=sys.stderr)
-            step = measure_step(repo_root, base=choice.store, full_reason=choice.reason, jobs=args.jobs)
+            step = measure_step(
+                repo_root,
+                base=choice.store,
+                full_reason=choice.reason,
+                plan_fixtures=not args.golden_only,
+                jobs=args.jobs,
+            )
         elif selected is not None:
             base = local_store(out)
             population = golden_population(repo_root)
@@ -967,7 +976,13 @@ def measure(args: argparse.Namespace) -> int:
                 jobs=args.jobs,
             )
         else:
-            step = measure_step(repo_root, base=None, full_reason="a full measurement was asked for", jobs=args.jobs)
+            step = measure_step(
+                repo_root,
+                base=None,
+                full_reason="a full measurement was asked for",
+                plan_fixtures=not args.golden_only,
+                jobs=args.jobs,
+            )
     write_views(step, out, repo_root)
     _sibling("reach_base").publish(step.store)
     print(f"golden-reach: measured into {out}: {describe(step)}")
@@ -2111,6 +2126,11 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--tests", help="re-run the golden tests this regex matches, merging them into the store")
     m.add_argument(
         "--incremental", action="store_true", help="step from the nearest saved base, re-running only what changed"
+    )
+    m.add_argument(
+        "--golden-only",
+        action="store_true",
+        help="measure the golden tests alone, leaving the hand-written fixtures out",
     )
     b = sub.add_parser("base", help="CI: measure from the nearest earlier base and package base.json.gz")
     b.add_argument("--jobs", type=positive_int, default=default_jobs())
