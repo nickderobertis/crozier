@@ -261,11 +261,24 @@ components:
         .unwrap_or_else(|error| panic!("the twins are refused (strict: {fern_strict}): {error}"));
         let models: Vec<_> = files
             .iter()
-            .filter(|file| file.path.to_string_lossy().replace('\\', "/").starts_with("src/acme/types/user"))
+            .filter(|file| {
+                file.path
+                    .to_string_lossy()
+                    .replace('\\', "/")
+                    .starts_with("src/acme/types/user")
+            })
             .collect();
         assert_eq!(models.len(), 1, "one User model (strict: {fern_strict})");
-        assert!(models[0].contents.contains("b: typing.Optional[str]"), "{}", models[0].contents);
-        assert!(!models[0].contents.contains("a: typing.Optional[str]"), "{}", models[0].contents);
+        assert!(
+            models[0].contents.contains("b: typing.Optional[str]"),
+            "{}",
+            models[0].contents
+        );
+        assert!(
+            !models[0].contents.contains("a: typing.Optional[str]"),
+            "{}",
+            models[0].contents
+        );
     }
 }
 
