@@ -2907,10 +2907,10 @@ unreached by any Fern-accepted document.
 | 3 | `discriminator-mapping` | `schemas` | **3** | **235** | **44** | open — real-specification witness search remains open |
 | 4 | `oneof-anyof-variant` | `schemas` | **3** | **102** | **3** | open — real-specification witness search remains open |
 | 5 | `allof` | `schemas` | **3** | **37** | **112** | open — real-specification witness search remains open |
-| 6 | `oneof` | `schemas` | **2** | **181** | **118** | open — real-specification witness search remains open |
+| 6 | `oneof` | `schemas` | **2** | **184** | **118** | open — real-specification witness search remains open |
 | 7 | `oneof-discriminated-union` | `schemas` | **2** | **170** | **58** | owned — first-pass search record below |
 | 8 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **5** | open — real-specification witness search remains open |
-| 9 | `parameter-schema` | `parameters` | **2** | **53** | **257** | open — real-specification witness search remains open |
+| 9 | `parameter-schema` | `parameters` | **2** | **55** | **257** | open — real-specification witness search remains open |
 | 10 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **13** | open — real-specification witness search remains open |
 | 11 | `parameter-in-path` | `parameters` | **2** | **28** | **219** | open — real-specification witness search remains open |
 | 12 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
@@ -2922,10 +2922,10 @@ unreached by any Fern-accepted document.
 | 18 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **192** | **11** | open — real-specification witness search remains open |
 | 19 | `anyof-oneof-variant` | `schemas` | **1** | **90** | **9** | owned — first-pass search record below |
 | 20 | `additional-properties-schema` | `schemas` | **1** | **86** | **177** | open — real-specification witness search remains open |
-| 21 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
-| 22 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
-| 23 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
-| 24 | `oneof-sole-non-null-member` | `schemas` | **1** | **46** | **8** | open — real-specification witness search remains open |
+| 21 | `oneof-sole-non-null-member` | `schemas` | **1** | **57** | **8** | open — real-specification witness search remains open |
+| 22 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
+| 23 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
+| 24 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 25 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **45** | **1** | open — real-specification witness search remains open |
 | 26 | `parameter-style-form-query-object` | `parameters` | **1** | **30** | **22** | open — real-specification witness search remains open |
 | 27 | `annotated-ref-shape` | `schemas` | **1** | **23** | **14** | owned — first-pass search record below |
@@ -3233,10 +3233,10 @@ why. The changes that took the arm off:
 | 18 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
 | 19 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 90 | `exhausted` | `inline-anyof-variants` |
 | 20 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 21 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 22 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 23 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
-| 24 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
+| 21 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
+| 22 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 23 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
+| 24 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 48 | `search-incomplete` | `survey-map-value-union` |
 | 25 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 45 | `exhausted` | `inline-oneof-variants` |
 | 26 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `search-incomplete` | `ore-bin-screen` |
 | 27 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]` | 16 | `exhausted` | `inline-oneof-variants` |
@@ -3264,10 +3264,10 @@ why. The changes that took the arm off:
 | 49 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
 | 50 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 51 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 52 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `search-incomplete` | `slashless-json-response` |
-| 53 | `nullable` | `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
-| 54 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 55 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
+| 52 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
+| 53 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `search-incomplete` | `slashless-json-response` |
+| 54 | `nullable` | `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
+| 55 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 56 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
 | 57 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `meadow-tag-code` |
 | 58 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` | — |
