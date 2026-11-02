@@ -356,8 +356,9 @@ fn inline_unions_are_written_as_the_certified_pair_writes_them() {
     );
 }
 
-/// The component union of constraint-only branches matched the certified
-/// pair at this node's base (`already-matching`), and still does.
+/// A component's union of constraint-only branches names its variants
+/// `{Name}Zero` and after the first property that tells a branch apart
+/// (`HarvestBoardHarvests`), not by the branches' `const` values.
 #[test]
 fn a_constraint_only_union_names_its_variants_as_fern_does() {
     let case = "inline-response-union-variant-naming";
