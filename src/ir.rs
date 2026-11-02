@@ -30703,4 +30703,81 @@ mod emission_parity_tests {
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
     }
+
+    #[test]
+    fn only_an_unquoted_examples_entry_of_a_referenced_schema_counts_as_a_timestamp() {
+        let mut doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0", "paths": {},
+            "components": {"schemas": {
+                "Moment": {"type": "string", "format": "date-time", "examples": ["2032-06-01T04:30:00Z"]},
+                "Quoted": {"type": "string", "format": "date-time", "examples": ["2032-06-02T04:30:00Z"]}}}
+        }))
+        .expect("a document");
+        doc.yaml_unquoted_timestamps =
+            Some(["2032-06-01T04:30:00Z".to_string()].into_iter().collect());
+        let parameter =
+            |reference: &str, example: Option<serde_json::Value>| -> crate::openapi::Parameter {
+                let mut value = serde_json::json!({"name": "from", "in": "query",
+                "schema": {"$ref": format!("#/components/schemas/{reference}")}});
+                if let Some(example) = example {
+                    value["example"] = example;
+                }
+                serde_json::from_value(value).expect("a parameter")
+            };
+        assert!(super::referenced_examples_entry_is_unquoted_timestamp(
+            &doc,
+            &parameter("Moment", None)
+        ));
+        assert!(!super::referenced_examples_entry_is_unquoted_timestamp(
+            &doc,
+            &parameter("Quoted", None)
+        ));
+        assert!(!super::referenced_examples_entry_is_unquoted_timestamp(
+            &doc,
+            &parameter("Moment", Some(serde_json::json!("2032-06-03T00:00:00Z")))
+        ));
+    }
+
+    #[test]
+    fn an_optional_array_declares_an_example_on_its_schema_or_itself() {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(serde_json::json!({"openapi": "3.0.3", "paths": {}}))
+                .expect("a document");
+        let parameter = |value: serde_json::Value| -> crate::openapi::Parameter {
+            serde_json::from_value(value).expect("a parameter")
+        };
+        let array = serde_json::json!({"type": "array", "items": {"type": "string"}});
+        let mut with_schema_example = array.clone();
+        with_schema_example["example"] = serde_json::json!(["a"]);
+        assert!(super::optional_array_declares_example(
+            &doc,
+            &parameter(
+                serde_json::json!({"name": "f", "in": "query", "schema": with_schema_example})
+            )
+        ));
+        assert!(super::optional_array_declares_example(
+            &doc,
+            &parameter(
+                serde_json::json!({"name": "f", "in": "query", "schema": array, "example": ["a"]})
+            )
+        ));
+        let item_only =
+            serde_json::json!({"type": "array", "items": {"type": "string", "example": "a"}});
+        assert!(!super::optional_array_declares_example(
+            &doc,
+            &parameter(serde_json::json!({"name": "f", "in": "query", "schema": item_only}))
+        ));
+    }
+
+    #[test]
+    fn a_map_example_given_as_an_array_is_keyed_by_index() {
+        assert_eq!(
+            super::index_keyed_map_example(&serde_json::json!(["focus", {"a": 1}])),
+            serde_json::json!({"0": "focus", "1": {"a": 1}})
+        );
+        assert_eq!(
+            super::index_keyed_map_example(&serde_json::json!({"k": "v"})),
+            serde_json::json!({"k": "v"})
+        );
+    }
 }

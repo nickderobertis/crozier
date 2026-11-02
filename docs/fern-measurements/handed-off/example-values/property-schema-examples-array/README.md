@@ -1,0 +1,1 @@
+# property-schema-examples-array

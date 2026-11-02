@@ -19534,3 +19534,161 @@ mod emission_parity_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod handed_off_example_value_tests {
+    //! Each worked-example value repair driven through the whole generator over
+    //! its measurement document under
+    //! `docs/fern-measurements/handed-off/example-values/`, asserting the
+    //! `reference.md` lines a user reads.
+
+    fn reference(case: &str) -> String {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/example-values")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        super::generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .find(|file| file.path.to_string_lossy() == "reference.md")
+            .expect("a reference.md")
+            .contents
+    }
+
+    fn assert_lines(case: &str, present: &[&str], absent: &[&str]) {
+        let text = reference(case);
+        for line in present {
+            assert!(
+                text.lines().any(|candidate| candidate == *line),
+                "{case}: no `{line}`\n{text}"
+            );
+        }
+        for fragment in absent {
+            assert!(
+                !text.contains(fragment),
+                "{case}: `{fragment}` remains\n{text}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_parameters_leave_the_call_where_the_certified_pair_omits_them() {
+        assert_lines(
+            "R11",
+            &["    port=\"falmouth\","],
+            &["owners=", "hulls=", "flags="],
+        );
+        assert_lines(
+            "example-optional-members",
+            &[
+                "    quoted_from=datetime.datetime.fromisoformat(\"2032-06-02T04:30:00+00:00\"),",
+                "    lamp=\"lamp-east\",",
+            ],
+            &["observed_from="],
+        );
+    }
+
+    #[test]
+    fn a_mistyped_example_takes_the_placeholder_and_an_examples_array_its_first_fit() {
+        assert_lines(
+            "mistyped-scalar-example",
+            &[
+                "    postcode=\"postcode\",",
+                "    capacity=1000000,",
+                "    code=\"code\",",
+                "        \"west quay\"",
+                "    level=1.1,",
+            ],
+            &["40213", "551188", "7781", "level=\"3\""],
+        );
+    }
+
+    #[test]
+    fn an_examples_entry_holding_a_double_quote_is_worked() {
+        assert_lines(
+            "property-schema-examples-array",
+            &["        \"hold at \\\"Wolf Rock\\\"\","],
+            &["\"waypoints\""],
+        );
+        assert_eq!(
+            super::parse_example_value(r#"["a", 'say "hi"', True]"#),
+            Some(serde_json::json!(["a", "say \"hi\"", true]))
+        );
+        assert_eq!(super::parse_example_value("['never closed"), None);
+    }
+
+    #[test]
+    fn a_map_body_takes_its_media_example_and_an_array_one_keyed_by_index() {
+        assert_lines(
+            "map-body-media-example",
+            &[
+                "        \"body\": {\"text\": \"lens cleaned\"},",
+                "        \"file\": \"maintenance.log\"",
+            ],
+            &["\"key\": \"value\""],
+        );
+        assert_lines(
+            "example-placeholder-shape",
+            &[
+                "        \"0\": \"focus\",",
+                "        \"0\": {\"note\": \"wiped\", \"keeper\": \"Tamsin\"},",
+            ],
+            &["\"key\": \"value\""],
+        );
+    }
+
+    #[test]
+    fn a_ref_and_const_union_parameter_takes_the_referenced_example() {
+        assert_lines(
+            "param-oneof-ref-and-const-example",
+            &[
+                "    watch_id=\"7c1e2a90-55b1-4d0a-9e57-3f0c2b6d8a11\",",
+                "    scope=\"7c1e2a90-55b1-4d0a-9e57-3f0c2b6d8a11\",",
+            ],
+            &["\"every\"", "MINE"],
+        );
+    }
+
+    #[test]
+    fn a_discriminated_example_builds_the_member_its_tag_names() {
+        assert_lines(
+            "example-matching-union-variant",
+            &[
+                "    seal=VerifySealRequestSeal_Stamp(",
+                "        stamp_id=\"stamp_id\",",
+            ],
+            &["_Wax"],
+        );
+    }
+
+    #[test]
+    fn the_example_value_source_repairs_write_the_certified_pairs_values() {
+        assert_lines(
+            "example-value-source",
+            &[
+                "        \"Mount\\'s Bay\",",
+                "        \"PLY\",",
+                "    height=1000000,",
+                "    watch_token=\"watchToken\",",
+                "        \"night\": True,",
+            ],
+            &["xWatchToken", "height=1,", "\"codes\""],
+        );
+        assert_lines(
+            "schema-examples-array-parameter-value",
+            &["    edition=\"second\","],
+            &[],
+        );
+    }
+}

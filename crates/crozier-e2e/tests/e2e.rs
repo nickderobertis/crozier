@@ -68,6 +68,14 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The worked-example value causes the fixture-only witness searches handed
+/// off, measured under `docs/fern-measurements/handed-off/example-values/` and
+/// held whole in both enum modes, with the values a design-review ruling keeps.
+#[path = "e2e/handed_off_example_values.rs"]
+mod handed_off_example_values;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// A boolean the document writes as `1` or `0`, in both formats and modes.
 #[path = "e2e/document_booleans.rs"]
