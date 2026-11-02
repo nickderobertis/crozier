@@ -19,7 +19,8 @@ cell, arm section, coverage count or `handwritten-reach.tsv` row names. In order
    digest can attribute), carrying the rest (`reach_store.py`).
 4. **Regenerate every derived file**: the ledger, reach cells and arm sections,
    `handwritten-reach.tsv`, the census tallies, `scenario-proof-index.tsv`, the
-   region keys, the coverage headline and the witness-search registries index.
+   region keys, the coverage headline, the arm searches' outstanding list and the
+   witness-search registries index.
 5. **During a merge** whose conflicted hunks all lie in derived content, those
    hunks are resolved by regenerating (the merge is committed first, so the
    measurement names a commit); any other conflicted hunk is refused by name.
@@ -81,6 +82,7 @@ WHOLLY_DERIVED = {
         "witness-search-keys.tsv",
         "witness-search-registries/outstanding.tsv",
         "witness-search-registries/candidates.tsv",
+        "golden-reach-witnesses/outstanding.tsv",
     )
 }
 SCENARIO_INDEX = (REGIONS / "scenario-proof-index.tsv").as_posix()
@@ -540,6 +542,11 @@ def regenerate(root: Path, store: dict[str, Any], out: Path, scoped: bool = Fals
         [python, str(tools / "witness-search-region-keys.py"), "--regions-dir", str(root / REGIONS)],
         "the region keys",
         root / REGIONS / "witness-search-keys.tsv",
+    )
+    _run(
+        root,
+        [python, str(tools / "golden-reach-search.py"), "outstanding"],
+        "the arm searches' outstanding list",
     )
     _run(
         root,

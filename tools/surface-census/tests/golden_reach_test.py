@@ -2605,7 +2605,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertEqual(
             committed.read_bytes(),
             (self.scratch / "outstanding.tsv").read_bytes(),
-            "re-run `python3 tools/surface-census/golden-reach-search.py outstanding` and commit the list",
+            "the arm searches' outstanding list is stale; run `just census-repin`, which regenerates it",
         )
 
     def test_a_screened_candidate_only_holds_a_search_open_while_this_builds_probe_reaches_the_arm(self) -> None:
