@@ -1837,6 +1837,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "declared-example-over-placeholder" => Rule {
             line: Some(declared_values::declared_example_over_placeholder),
+            added_at: Some(declared_values::kept_wrapped_list_line),
             ..none
         },
         "declared-examples-array-parameter-value" => Rule {

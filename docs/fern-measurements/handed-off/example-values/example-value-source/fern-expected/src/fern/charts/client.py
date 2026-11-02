@@ -6,6 +6,8 @@ from .. import core
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawChartsClient, RawChartsClient
+from .types.set_chart_layers_request_layers_item import SetChartLayersRequestLayersItem
+from .types.set_chart_layers_response import SetChartLayersResponse
 from .types.upload_chart_response import UploadChartResponse
 
 
@@ -126,6 +128,52 @@ class ChartsClient:
         """
         with self._raw_client.bundle_charts(request=request, request_options=request_options) as r:
             yield from r.data
+
+    def set_chart_layers(
+        self,
+        chart_id: str,
+        *,
+        layers: typing.Sequence[SetChartLayersRequestLayersItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SetChartLayersResponse:
+        """
+        A scalar-or-list union property's declared example inside an array item.
+
+        Parameters
+        ----------
+        chart_id : str
+
+        layers : typing.Sequence[SetChartLayersRequestLayersItem]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SetChartLayersResponse
+            Set
+
+        Examples
+        --------
+        from fern.charts import SetChartLayersRequestLayersItem
+
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.charts.set_chart_layers(
+            chart_id="chartId",
+            layers=[
+                SetChartLayersRequestLayersItem(
+                    label="soundings",
+                    match="match",
+                )
+            ],
+        )
+        """
+        _response = self._raw_client.set_chart_layers(chart_id, layers=layers, request_options=request_options)
+        return _response.data
 
 
 class AsyncChartsClient:
@@ -260,3 +308,57 @@ class AsyncChartsClient:
         async with self._raw_client.bundle_charts(request=request, request_options=request_options) as r:
             async for _chunk in r.data:
                 yield _chunk
+
+    async def set_chart_layers(
+        self,
+        chart_id: str,
+        *,
+        layers: typing.Sequence[SetChartLayersRequestLayersItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SetChartLayersResponse:
+        """
+        A scalar-or-list union property's declared example inside an array item.
+
+        Parameters
+        ----------
+        chart_id : str
+
+        layers : typing.Sequence[SetChartLayersRequestLayersItem]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SetChartLayersResponse
+            Set
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.charts import SetChartLayersRequestLayersItem
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.charts.set_chart_layers(
+                chart_id="chartId",
+                layers=[
+                    SetChartLayersRequestLayersItem(
+                        label="soundings",
+                        match="match",
+                    )
+                ],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.set_chart_layers(chart_id, layers=layers, request_options=request_options)
+        return _response.data

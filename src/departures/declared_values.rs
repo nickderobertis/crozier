@@ -17,7 +17,10 @@
 //! Every rule checks the source document, so a value is admitted only where the
 //! document declares exactly the value crozier writes for that argument.
 
-use super::{argument_names, example_file, keyword_argument_line, source_operations, Pair};
+use super::{
+    argument_names, example_file, keyword_argument_line, list_argument_at, source_operations,
+    visit_source_schemas, Pair,
+};
 use crate::openapi::{OpenApi, Operation, Parameter, ParameterLocation, Schema};
 use serde_json::Value;
 
@@ -147,7 +150,7 @@ pub(super) fn declared_example_over_placeholder(
     if !example_file(pair.rel) {
         return false;
     }
-    if declared_enum_member(pair, fern, crozier) {
+    if declared_enum_member(pair, fern, crozier) || kept_wrapped_list(pair, fern, crozier) {
         return true;
     }
     let (Some((fern_indent, fern_name, fern_value)), Some((indent, name, value))) =
@@ -161,11 +164,91 @@ pub(super) fn declared_example_over_placeholder(
     let Some(source) = pair.context.source_document.as_ref() else {
         return false;
     };
-    kept_declared_values(source).iter().any(|declared| {
-        argument_names(declared.wire, name)
-            || argument_names(crate::ir::header_param_stem(declared.wire), name)
-    } && placeholder_for(declared.wire, fern_value)
-        && crate::ir::example_literal(declared.value).as_deref() == Some(value))
+    kept_value(source, name, fern_value, value)
+}
+
+/// Whether `value` is a kept declared value of the argument `name`, beside
+/// Fern's placeholder `fern_value` for it.
+fn kept_value(source: &OpenApi, name: &str, fern_value: &str, value: &str) -> bool {
+    let kept = |wire: &str, declared: &Value| {
+        (argument_names(wire, name) || argument_names(crate::ir::header_param_stem(wire), name))
+            && placeholder_for(wire, fern_value)
+            && crate::ir::example_literal(declared).as_deref() == Some(value)
+    };
+    kept_declared_values(source)
+        .iter()
+        .any(|declared| kept(declared.wire, declared.value))
+        || union_property_examples(source)
+            .iter()
+            .any(|(wire, declared)| kept(wire, declared))
+}
+
+/// Every property whose schema is a `oneOf` or `anyOf` and declares its own
+/// `example` (guardian's `filterValue`, `oneOf: [string, array of string]`
+/// exampled `[type]`), which the certified pair works as its first
+/// alternative's placeholder: the union-typed sub-rule of example-value-source.
+fn union_property_examples(source: &OpenApi) -> Vec<(String, Value)> {
+    let mut out = Vec::new();
+    visit_source_schemas(Some(source), &mut |schema| {
+        for (wire, property) in &schema.properties {
+            if property.one_of.is_some() || property.any_of.is_some() {
+                if let Some(example) = &property.example {
+                    out.push((wire.clone(), example.clone()));
+                }
+            }
+        }
+    });
+    out
+}
+
+/// The opener of a wrapped list crozier writes for a kept union-typed value,
+/// `<name>=[`, beside Fern's one-line placeholder: the list it opens (read from
+/// crozier's lines) must be the declared example.
+fn kept_wrapped_list(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let (Some((fern_indent, fern_name, fern_value)), Some(source)) = (
+        keyword_argument_line(fern),
+        pair.context.source_document.as_ref(),
+    ) else {
+        return false;
+    };
+    let Some(name) = crozier
+        .strip_prefix(fern_indent)
+        .and_then(|rest| rest.strip_suffix("=["))
+        .filter(|name| *name == fern_name)
+    else {
+        return false;
+    };
+    pair.crozier.iter().enumerate().any(|(at, line)| {
+        *line == crozier
+            && list_argument_at(pair.crozier, at).is_some_and(|(_, items)| {
+                kept_value(source, name, fern_value, &format!("[{}]", items.join(", ")))
+            })
+    })
+}
+
+/// An item or the closer of a wrapped list [`kept_wrapped_list`] admits, the
+/// lines only crozier writes.
+pub(super) fn kept_wrapped_list_line(pair: &Pair<'_>, at: usize) -> bool {
+    if !example_file(pair.rel)
+        || pair
+            .crozier
+            .get(at)
+            .is_some_and(|line| line.ends_with("=["))
+    {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    list_argument_at(pair.crozier, at).is_some_and(|(name, items)| {
+        let value = format!("[{}]", items.join(", "));
+        union_property_examples(source)
+            .iter()
+            .any(|(wire, declared)| {
+                argument_names(wire, name)
+                    && crate::ir::example_literal(declared).as_deref() == Some(value.as_str())
+            })
+    })
 }
 
 /// The enum schemas declaring an `example` other than their first member: the
@@ -495,6 +578,35 @@ mod tests {
             "    label=\"label\",",
             "    label=\"\","
         ));
+    }
+
+    #[test]
+    fn a_union_property_example_is_kept_on_one_line_or_wrapped() {
+        let context = context(serde_json::json!({"openapi": "3.0.3", "paths": {},
+            "components": {"schemas": {"Layer": {"type": "object", "properties": {
+                "match": {"oneOf": [{"type": "string"},
+                    {"type": "array", "items": {"type": "string"}}], "example": ["depth"]}}}}}}));
+        let rule = declared_example_over_placeholder;
+        let one = pair("src/fern/charts/client.py", &[], &context);
+        assert!(rule(
+            &one,
+            "            match=\"match\",",
+            "            match=[\"depth\"],"
+        ));
+        assert!(!rule(
+            &one,
+            "            match=\"match\",",
+            "            match=[\"other\"],"
+        ));
+        let wrapped = ["    match=[", "        \"depth\"", "    ],"];
+        let wrapped_pair = pair("reference.md", &wrapped, &context);
+        assert!(rule(&wrapped_pair, "    match=\"match\",", "    match=["));
+        assert!(kept_wrapped_list_line(&wrapped_pair, 1));
+        assert!(kept_wrapped_list_line(&wrapped_pair, 2));
+        let other = ["    match=[", "        \"other\"", "    ],"];
+        let other_pair = pair("reference.md", &other, &context);
+        assert!(!rule(&other_pair, "    match=\"match\",", "    match=["));
+        assert!(!kept_wrapped_list_line(&other_pair, 1));
     }
 
     #[test]

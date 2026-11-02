@@ -326,6 +326,11 @@ fn ruled_example_values_are_what_crozier_writes() {
         ),
         (
             "example-value-source",
+            "            match=\"match\",",
+            "            match=[",
+        ),
+        (
+            "example-value-source",
             "    harbour_slug=\"harbourSlug\",",
             "    harbour_slug=\"cornwall/porthleven\",",
         ),

@@ -4,7 +4,7 @@ The handed-off root cause `example-value-source` from [`docs/openapi-surface/wit
 
 ## The document
 
-One operation per sub-rule the record lists (each named in its `description`): a multipart text part's example; a binary download's query example; a binary download's array body example; a `format: uri` and a pattern-only string; path parameters beside one with an empty schema; a union-typed property's example; an array body's schema example; a map property's schema example (`anyOf` value); a required array query example; a media named example for an enum field, as JSON and as an urlencoded form (with a property-level enum example beside it); `format: uint64`; bounded integers on a JSON and on a text operation; a header on an operation whose body has no worked example; and path parameters' own examples on importer-declined operations.
+One operation per sub-rule the record lists (each named in its `description`): a multipart text part's example; a binary download's query example; a binary download's array body example; a `format: uri` and a pattern-only string; path parameters beside one with an empty schema; a union-typed property's example (object variants, and a `oneOf` of a string and a list inside an array item); an array body's schema example; a map property's schema example (`anyOf` value); a required array query example; a media named example for an enum field, as JSON and as an urlencoded form (with a property-level enum example beside it); `format: uint64`; bounded integers on a JSON and on a text operation; a header on an operation whose body has no worked example; and path parameters' own examples on importer-declined operations.
 
 ## The certified pair's output
 
@@ -23,7 +23,8 @@ Sub-rule by sub-rule (certified pair → crozier at base → outcome):
 | path parameter beside an empty schema (an example holding `/`) | `harbour_slug="harbourSlug"` | `"cornwall/porthleven"` | kept, same departure |
 | binary download's array body media example | as crozier | — | matched at base |
 | `format: uri` / pattern-only string | name placeholders | format/pattern samples | matched through the catalogued `schema-rejected-name-example` |
-| union-typed property example | as crozier | — | matched at base |
+| union-typed property example, object variants | as crozier | — | matched at base |
+| union-typed property example, `oneOf [string, array]` (guardian's `filterValue`) | `match="match"` | `["depth"]` | kept, `declared-example-over-placeholder` |
 | array body's schema example | `["Mount's Bay", …]` | `["string"]` | repaired |
 | map property's schema example | `{"night": True, …}` | `{"key": 1}` | repaired |
 | required array query example | `["PLY", "FAL"]` | `["codes"]` | repaired |

@@ -230,6 +230,92 @@ client.charts.bundle_charts(...)
 </dl>
 </details>
 
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py">set_chart_layers</a>(...) -> SetChartLayersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A scalar-or-list union property's declared example inside an array item.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.charts import SetChartLayersRequestLayersItem
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.charts.set_chart_layers(
+    chart_id="chartId",
+    layers=[
+        SetChartLayersRequestLayersItem(
+            label="soundings",
+            match="match",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**chart_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**layers:** `typing.List[SetChartLayersRequestLayersItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Mirrors
 <details><summary><code>client.mirrors.<a href="src/fern/mirrors/client.py">add_mirror</a>(...) -> AddMirrorResponse</code></summary>
 <dl>

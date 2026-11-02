@@ -490,6 +490,52 @@ paths:
                 properties:
                   id:
                     type: string
+  /charts/{chartId}/layers:
+    put:
+      operationId: setChartLayers
+      tags: [charts]
+      description: A scalar-or-list union property's declared example inside an array item.
+      parameters:
+        - name: chartId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [layers]
+              properties:
+                layers:
+                  type: array
+                  items:
+                    type: object
+                    required: [label, match]
+                    properties:
+                      label:
+                        type: string
+                        example: soundings
+                      match:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: string
+                        example:
+                          - depth
+      responses:
+        "200":
+          description: Set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
 components:
   parameters:
     LanternCode:

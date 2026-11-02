@@ -6,8 +6,16 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .set_chart_layers_request_layers_item import SetChartLayersRequestLayersItem
+    from .set_chart_layers_request_layers_item_match import SetChartLayersRequestLayersItemMatch
+    from .set_chart_layers_response import SetChartLayersResponse
     from .upload_chart_response import UploadChartResponse
-_dynamic_imports: typing.Dict[str, str] = {"UploadChartResponse": ".upload_chart_response"}
+_dynamic_imports: typing.Dict[str, str] = {
+    "SetChartLayersRequestLayersItem": ".set_chart_layers_request_layers_item",
+    "SetChartLayersRequestLayersItemMatch": ".set_chart_layers_request_layers_item_match",
+    "SetChartLayersResponse": ".set_chart_layers_response",
+    "UploadChartResponse": ".upload_chart_response",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +39,9 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["UploadChartResponse"]
+__all__ = [
+    "SetChartLayersRequestLayersItem",
+    "SetChartLayersRequestLayersItemMatch",
+    "SetChartLayersResponse",
+    "UploadChartResponse",
+]

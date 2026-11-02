@@ -12,7 +12,10 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.not_found_error import NotFoundError
+from .types.set_chart_layers_request_layers_item import SetChartLayersRequestLayersItem
+from .types.set_chart_layers_response import SetChartLayersResponse
 from .types.upload_chart_response import UploadChartResponse
 from pydantic import ValidationError
 
@@ -201,6 +204,63 @@ class RawChartsClient:
 
             yield _stream()
 
+    def set_chart_layers(
+        self,
+        chart_id: str,
+        *,
+        layers: typing.Sequence[SetChartLayersRequestLayersItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SetChartLayersResponse]:
+        """
+        A scalar-or-list union property's declared example inside an array item.
+
+        Parameters
+        ----------
+        chart_id : str
+
+        layers : typing.Sequence[SetChartLayersRequestLayersItem]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SetChartLayersResponse]
+            Set
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"charts/{encode_path_param(chart_id)}/layers",
+            method="PUT",
+            json={
+                "layers": convert_and_respect_annotation_metadata(
+                    object_=layers, annotation=typing.Sequence[SetChartLayersRequestLayersItem], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SetChartLayersResponse,
+                    parse_obj_as(
+                        type_=SetChartLayersResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawChartsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -384,3 +444,60 @@ class AsyncRawChartsClient:
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield await _stream()
+
+    async def set_chart_layers(
+        self,
+        chart_id: str,
+        *,
+        layers: typing.Sequence[SetChartLayersRequestLayersItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SetChartLayersResponse]:
+        """
+        A scalar-or-list union property's declared example inside an array item.
+
+        Parameters
+        ----------
+        chart_id : str
+
+        layers : typing.Sequence[SetChartLayersRequestLayersItem]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SetChartLayersResponse]
+            Set
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"charts/{encode_path_param(chart_id)}/layers",
+            method="PUT",
+            json={
+                "layers": convert_and_respect_annotation_metadata(
+                    object_=layers, annotation=typing.Sequence[SetChartLayersRequestLayersItem], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SetChartLayersResponse,
+                    parse_obj_as(
+                        type_=SetChartLayersResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

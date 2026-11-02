@@ -23,7 +23,12 @@ if typing.TYPE_CHECKING:
         stations,
     )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
-    from .charts import UploadChartResponse
+    from .charts import (
+        SetChartLayersRequestLayersItem,
+        SetChartLayersRequestLayersItemMatch,
+        SetChartLayersResponse,
+        UploadChartResponse,
+    )
     from .client import AsyncFernApi, FernApi
     from .drills import StartDrillRequestSettingsValue, StartDrillResponse
     from .harbours import GetBerthResponse
@@ -59,6 +64,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PlaceMarkerResponse": ".markers",
     "PlanRoutesResponse": ".routes",
     "RosterEntry": ".types",
+    "SetChartLayersRequestLayersItem": ".charts",
+    "SetChartLayersRequestLayersItemMatch": ".charts",
+    "SetChartLayersResponse": ".charts",
     "StartDrillRequestSettingsValue": ".drills",
     "StartDrillResponse": ".drills",
     "UploadChartResponse": ".charts",
@@ -119,6 +127,9 @@ __all__ = [
     "PlaceMarkerResponse",
     "PlanRoutesResponse",
     "RosterEntry",
+    "SetChartLayersRequestLayersItem",
+    "SetChartLayersRequestLayersItemMatch",
+    "SetChartLayersResponse",
     "StartDrillRequestSettingsValue",
     "StartDrillResponse",
     "UploadChartResponse",

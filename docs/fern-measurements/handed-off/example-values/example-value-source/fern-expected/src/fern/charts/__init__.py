@@ -6,8 +6,18 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import UploadChartResponse
-_dynamic_imports: typing.Dict[str, str] = {"UploadChartResponse": ".types"}
+    from .types import (
+        SetChartLayersRequestLayersItem,
+        SetChartLayersRequestLayersItemMatch,
+        SetChartLayersResponse,
+        UploadChartResponse,
+    )
+_dynamic_imports: typing.Dict[str, str] = {
+    "SetChartLayersRequestLayersItem": ".types",
+    "SetChartLayersRequestLayersItemMatch": ".types",
+    "SetChartLayersResponse": ".types",
+    "UploadChartResponse": ".types",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +41,9 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["UploadChartResponse"]
+__all__ = [
+    "SetChartLayersRequestLayersItem",
+    "SetChartLayersRequestLayersItemMatch",
+    "SetChartLayersResponse",
+    "UploadChartResponse",
+]
