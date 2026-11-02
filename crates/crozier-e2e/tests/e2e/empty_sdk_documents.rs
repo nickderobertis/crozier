@@ -268,6 +268,27 @@ fn a_null_media_type_is_refused_in_both_modes() {
         .assert()
         .success();
     assert!(!read(&ignored_out.join("src/fern/client.py")).contains("get_snapshot"));
+    // A component entry no operation's `$ref` names is unmeasured, so it is
+    // left to generation in both modes.
+    let unreached = temp.path().join("unreached.yml");
+    std::fs::write(
+        &unreached,
+        read(&class.join("component-response-probe.yml")).replace(
+            "          $ref: '#/components/responses/Snapshot'\n",
+            "          description: The picture.\n",
+        ),
+    )
+    .unwrap();
+    assert!(!read(&unreached).contains("$ref: '#/components/responses/Snapshot'"));
+    for strict in [false, true] {
+        let unreached_out = temp.path().join(format!("unreached-sdk-{strict}"));
+        let mut command = probe_command(&unreached, &unreached_out);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        assert!(read(&unreached_out.join("src/fern/client.py")).contains("def get_snapshot("));
+    }
 }
 
 /// lolesports' shape is valid OpenAPI the pair empties only because its
