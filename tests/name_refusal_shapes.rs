@@ -226,18 +226,47 @@ components:
     );
 }
 
+/// Two component schemas whose names differ only in their first letter's case
+/// are one type to the certified pair, which keeps the later declaration and
+/// generates when no operation answers the earlier one (measured in
+/// `docs/fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/`,
+/// its `first-letter-operationless-probe`): one `User` model, the later's.
 #[test]
-fn component_schemas_differing_only_in_initial_case_are_refused() {
-    assert_refused(
+fn component_schemas_differing_only_in_initial_case_merge_into_the_later() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let spec = write(
+        dir.path(),
         r#"paths: {}
 components:
   schemas:
     user: {type: object, properties: {a: {type: string}}}
     User: {type: object, properties: {b: {type: string}}}
 "#,
-        "type-name-collision",
-        r#"component schemas "user" and "User" both declare type User"#,
     );
+    for fern_strict in [false, true] {
+        let files = render_files(GenerateArgs {
+            spec: spec.clone(),
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+            layout: crozier::settings::Layout::Packaged,
+        })
+        .unwrap_or_else(|error| panic!("the twins are refused (strict: {fern_strict}): {error}"));
+        let models: Vec<_> = files
+            .iter()
+            .filter(|file| file.path.to_string_lossy().replace('\\', "/").starts_with("src/acme/types/user"))
+            .collect();
+        assert_eq!(models.len(), 1, "one User model (strict: {fern_strict})");
+        assert!(models[0].contents.contains("b: typing.Optional[str]"), "{}", models[0].contents);
+        assert!(!models[0].contents.contains("a: typing.Optional[str]"), "{}", models[0].contents);
+    }
 }
 
 const PARAMETER_ENUM: &str = r#"paths:

@@ -143,7 +143,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     // The certified pair reads `info.version` before anything else, so a
     // document whose `info` is absent or written as null fails its parse and
     // yields the empty scaffold under exit 0 (docs/fern-refusals/missing-info-object/).
-    if root.get("info").is_none_or(serde_json::Value::is_null) {
+    // A file declaring no `openapi` at all is no OpenAPI document, which the
+    // loader reports as such rather than as a refusal.
+    if root.get("openapi").is_some() && root.get("info").is_none_or(serde_json::Value::is_null) {
         return refusal(path, strict, Class::MissingInfoObject, "info");
     }
     if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
@@ -4166,6 +4168,11 @@ components:
         }
         std::fs::write(&file, "openapi: 3.0.0\ninfo: {}\npaths: {}\n").unwrap();
         check_structure_file(&file, false).unwrap();
+        // No `openapi` key: not an OpenAPI document, left to the loader's
+        // "missing `openapi` version" error rather than refused.
+        std::fs::write(&file, "just: some yaml\nnot: openapi\n").unwrap();
+        check_structure_file(&file, false).unwrap();
+        check_structure_file(&file, true).unwrap();
         let error = check_structure_file(&measured("null-info-paths-components"), false)
             .unwrap_err()
             .to_string();
