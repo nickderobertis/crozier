@@ -2616,7 +2616,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "14f75555ff7ff98a",
-    "prop_type_ref": "03e47a0aef8703fb",
+    "prop_type_ref": "802699a6b0b7f321",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -3652,8 +3652,8 @@ def is_reference_node(node: dict[Any, Any], kind_name: str) -> bool:
 # crozier would render as one generated class: that is `naming::class_name`, the
 # transform `src/ir.rs`'s `ref_to_class` gives a named schema — `OBRate1_0` and
 # `OB_Rate1_0` both name `ObRate10`. It is `to_pascal_case` plus the two cases
-# `class_name` treats specially: a leading digit is spelled out as an English word,
-# and every remaining non-identifier character folds to `_`.
+# `class_name` treats specially: a leading number is spelled out in English words
+# (`undefined` past 9,999), and every remaining non-identifier character folds to `_`.
 #
 # `tools/surface-census/tests/surface_census_test.py` reconciles both ports against the expectations
 # `src/naming.rs`'s own unit tests pin, so crozier's casing cannot change without
@@ -3849,8 +3849,8 @@ def to_pascal_case(text: str) -> str:
     return out
 
 
-# `naming::class_name` spells a leading digit out, so a schema name that starts
-# with one still yields a legal class name (`5GmmCause` -> `FiveGmmCause`).
+# `numeric_class_name` spells a number from these words, so a schema name that starts
+# with digits still yields a legal class name (`5GmmCause` -> `FiveGmmCause`).
 _DIGIT_WORDS = (
     "Zero",
     "One",
@@ -3897,15 +3897,27 @@ def numeric_class_name(value: int) -> str:
     return small[value // divisor] + suffix + (numeric_class_name(value % divisor) if value % divisor else "")
 
 
+def _class_name_pascal(words: str) -> str:
+    """`naming::class_name` before `sanitize_identifier`: a leading number spelled whole.
+
+    The whole leading ASCII-digit run is spelled in words and the rest re-cased
+    after it (`401Response` -> `FourHundredOneResponse`, `007Agent` ->
+    `SevenAgent`); past 9,999 the speller (`spelled_leading_number`) writes
+    `undefined`, so `999999Seats` is `UndefinedSeats`.
+    """
+    rest = words.lstrip("0123456789")
+    number = words[: len(words) - len(rest)]
+    if not number:
+        return to_pascal_case(words)
+    value = int(number.lstrip("0") or "0")
+    spelled = numeric_class_name(value) if value <= 9999 else "Undefined"
+    return to_pascal_case(f"{spelled} {rest}")
+
+
 def class_name(schema_key: str) -> str:
     """`naming::class_name`: the Python class name crozier gives a named schema."""
-    if re.fullmatch(r"0|[1-9][0-9]{0,3}", schema_key):
-        return numeric_class_name(int(schema_key))
     words = "".join(c if c.isalnum() or c == "_" else " " for c in schema_key)
-    pascal = to_pascal_case(words)
-    if pascal and _is_digit(pascal[0]):
-        pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
-    return sanitize_identifier(pascal)
+    return sanitize_identifier(_class_name_pascal(words))
 
 
 # The entries in naming.rs's DEBURRED_LATIN that NFKD does not spell the same
@@ -3961,7 +3973,7 @@ NAMING_PORT_DIGESTS = {
     "collapse_digit_boundaries": "24c31560b089ab63",
     "split_words": "225b4ae99e3ce99a",
     "to_snake_case": "3c9366b3588a08c6",
-    "class_name": "c91fec9908234a17",
+    "class_name": "45a755959a66dc41",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
     "is_reserved_method": "6c7d2d1e00b4d9a6",
 }
@@ -5112,7 +5124,7 @@ UNION_PORT_DIGESTS = {
     "untyped_const_tag": "df10174704350956",
     "inferred_union_discriminant_property": "a1a3229b10970d85",
     "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "8c1ce5136f0b7968",
+    "base_type_ref": "acfac357a9b46fce",
     "last_composed_variant": "3ac394950dc70c7f",
     "is_composed_member": "ea34dd7fa128f6b3",
     "is_map": "ce58b2f1f60a3f18",
@@ -5127,7 +5139,7 @@ UNION_PORT_DIGESTS = {
 # accepts. The offline tier pins each by the same
 # normalized-body digest; `Type::method` names the method of `impl ... for Type`.
 SCALAR_PORT_DIGESTS = {
-    ("src/ir.rs", "number_prim"): "c9732240eb18acac",
+    ("src/ir.rs", "number_prim"): "1b2664ec7ba49051",
     ("src/ir.rs", "int_prim"): "f99116f9f8a7240f",
     ("src/openapi.rs", "bool_literal"): "9ae8fdd0eba9b349",
     ("src/openapi.rs", "LiteralTypeOverride::from"): "6b29bbd32bbd4fb1",
@@ -5977,7 +5989,7 @@ UNPROMOTED_HEADERS = frozenset(
 # element keeps a `null` member's optionality on the list's item is no part of
 # the port: it decides the element's annotation, not which parameters hoist.
 PARAMETER_PORT_DIGESTS = {
-    "hoist_param_enum": "cd66a155d41f0dfd",
+    "hoist_param_enum": "759dfe47ff365b8c",
     "global_headers": "dfc5358f962e3b3f",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "390fcb123906c067",
@@ -7780,7 +7792,7 @@ class Census:
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
                     return "long" if form == "int64" else "int"
-                case "number" if form in ("int32", "int64", "uint64"):
+                case "number" if form in ("int32", "int64", "uint32", "uint64"):
                     return "long" if form == "int64" else "int"
                 case "number":
                     return "float"
@@ -8022,13 +8034,9 @@ class Census:
             return []
 
         def needs_sanitizing(key: str) -> bool:
-            # class_name spells leading digits first and short-circuits wholly
-            # canonical numbers before it ever calls sanitize_identifier.
-            if re.fullmatch(r"0|[1-9][0-9]{0,3}", key):
-                return False
-            pascal = to_pascal_case(key)
-            if pascal and _is_digit(pascal[0]):
-                pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
+            # class_name spells a leading number before it ever calls
+            # sanitize_identifier.
+            pascal = _class_name_pascal(key)
             return sanitize_identifier(pascal) != pascal
 
         return [

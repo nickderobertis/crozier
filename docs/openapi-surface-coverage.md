@@ -4921,14 +4921,18 @@ leftmost member of every case. Cases 8a to 8d are `is_inline_struct` read one
 disjunct at a time, as in `nested_array_element`; cases 12a to 12f are the same
 helper read again, inside the one-member arity its own arm tests. Cases 11a and
 11b are read at their gate: the arms inside it — the member's string enum, its
-`$ref`, an unknown, a map, an inline struct, and an array whose inline element
-hoists as case 15's does (corpus row 218's `directoryScopeOptions`) — are not
-split into rows.
+`$ref`, an unknown, an annotated `$ref` copied where it is used (a map target
+typed as the nullable map), a map, an inline struct, and an array whose inline
+element hoists as case 15's does (corpus row 218's `directoryScopeOptions`) — are
+not split into rows.
 
 Case 17 precedes the annotated-reference gate. It hoists a string enum reference
 narrowed by the second `allOf` member's pattern. Cases 11a and 11b retain the
-nullable member's description for an enum, and use the enclosing description
-before the member's description for an inline object; their selectors do not change.
+nullable member's description for an enum, and use the member's own description
+before the enclosing one for an inline object (the `description-source`
+measurement); their selectors do not change. Case 7a documents its hoisted enum
+through `inline_enum_doc` rather than `clean_doc`, which moves the docstring and
+no selector.
 Within the same nullable-member gate, a member that is itself a `oneOf` or
 `anyOf` and has no reference or `allOf` now hoists as the property's named union,
 retaining the outer description. The existing 11a/11b selectors still name
