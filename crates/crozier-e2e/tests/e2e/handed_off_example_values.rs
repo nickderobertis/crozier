@@ -157,10 +157,20 @@ fn overlay_removed(overlay: &Path) -> Vec<String> {
         .unwrap_or_else(|| panic!("{}: `removed` is not an array", path.display()))
         .iter()
         .map(|entry| {
-            entry
+            let rel = entry
                 .as_str()
-                .unwrap_or_else(|| panic!("{}: a `removed` entry is not a path", path.display()))
-                .to_string()
+                .unwrap_or_else(|| panic!("{}: a `removed` entry is not a path", path.display()));
+            // Every entry is deleted under a temporary copy of the tree, so one
+            // that could leave it (absolute, or climbing out with `..`) is
+            // refused before it is joined.
+            assert!(
+                Path::new(rel)
+                    .components()
+                    .all(|part| matches!(part, std::path::Component::Normal(_))),
+                "{}: `removed` entry `{rel}` is not a relative path inside the tree",
+                path.display()
+            );
+            rel.to_string()
         })
         .collect()
 }
@@ -441,7 +451,11 @@ fn compare_differing(spec: &Path, reference: &Path) -> Vec<String> {
         .as_array()
         .expect("a comparison")
         .iter()
-        .filter_map(|file| file.as_str().map(str::to_string))
+        .map(|file| {
+            file.as_str()
+                .unwrap_or_else(|| panic!("a `differing` entry is not a path: {file}"))
+                .to_string()
+        })
         .collect()
 }
 
