@@ -585,3 +585,20 @@ def test_the_coverage_index_states_the_contract_this_reader_enforces() -> None:
     base = _load("reach_base", "reach_base.py")
     assert f"`{base.ARTIFACT_PREFIX}<40-hex commit>`, one file `{base.ARTIFACT_FILE}`, kept 90 days" in flat
     assert f"`schema` ({RS.SCHEMA}; any other is refused)" in keys
+
+
+def test_a_region_ending_at_a_token_boundary_encodes_the_same_whatever_follows_it() -> None:
+    """An end right after `tag` is one position, whether `)` follows at once or after a trailing comma."""
+    before = "fn caller(tag: &str) -> usize {\n    count(tag)\n}\n"
+    after = "fn caller(tag: &str) -> usize {\n    count(\n        tag,\n    )\n}\n"
+    old, new = tree_of(before), tree_of(after)
+    assert old.functions["src/lib.rs::caller"].digest == new.functions["src/lib.rs::caller"].digest
+    start = before.index("tag)")
+    region = (*_line_col(before, start), *_line_col(before, start + 3))
+    start = after.index("tag,")
+    moved = (*_line_col(after, start), *_line_col(after, start + 3))
+    assert old.encode("src/lib.rs", region) == new.encode("src/lib.rs", moved)
+
+
+def _line_col(source: str, offset: int) -> tuple[int, int]:
+    return source.count("\n", 0, offset) + 1, offset - (source.rfind("\n", 0, offset) + 1) + 1

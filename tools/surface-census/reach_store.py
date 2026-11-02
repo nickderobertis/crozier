@@ -40,7 +40,9 @@ the region encoding below, sorted.
 
 **The region encoding.** A region is ``[t0, o0, t1, o1]``: its start and its
 (exclusive) end, each a token index into its function's token stream and a byte
-offset from that token's first byte. Because the position is relative to the
+offset from that token's first byte — the start from the last token starting at
+or before it, the end from the last token starting before it (so an end right
+after a token is that token's length, whatever follows it). Because the position is relative to the
 item's own tokens, it maps every region exactly onto its line and column in any
 later tree where the item's digest is unchanged, through comments, whitespace
 and rustfmt reflow inside or above it. llvm-cov reports byte columns; a
@@ -519,11 +521,17 @@ class Function:
     trait_ctx: bool = False
     _starts: list[int] = field(default_factory=list)
 
-    def encode(self, offset: int) -> list[int]:
-        """A byte offset as `[token index, offset from that token's start]` within this function."""
+    def encode(self, offset: int, *, end: bool = False) -> list[int]:
+        """A byte offset as `[token index, offset from that token's start]` within this function.
+
+        A start counts from the last token starting at or before it; an (exclusive)
+        end from the last token starting before it, so an end right after a token is
+        that token's length whatever follows it — a bracket at once, or a trailing
+        comma and a newline after a reflow.
+        """
         if not self._starts:
             self._starts = [self.file.tokens[k].start for k in self.indices]
-        k = max(bisect.bisect_right(self._starts, offset) - 1, 0)
+        k = max((bisect.bisect_left if end else bisect.bisect_right)(self._starts, offset) - 1, 0)
         return [k, offset - self._starts[k]]
 
     def decode(self, position: list[int]) -> int:
@@ -582,7 +590,7 @@ class Tree:
         function = self.owner(file, start)
         if function is None:
             return None
-        return function.key, function.encode(start) + function.encode(end)
+        return function.key, function.encode(start) + function.encode(end, end=True)
 
     def decode(self, key: str, encoded: list[int]) -> tuple[str, tuple[int, int, int, int]]:
         function = self.functions.get(key)
