@@ -737,9 +737,9 @@ def measure_step(
     if select_tests is not None:
         population = {name: inputs for name, inputs in population.items() if select_tests.search(name)}
     fixture_base = handwritten_dir or repo_root / "docs" / "openapi-surface" / "handwritten"
-    # Fixtures left out and none forced are never planned: a tree whose hand-written
+    # `plan_fixtures=False` measures the golden tests alone: a tree whose hand-written
     # evidence does not plan (an older commit's) still measures its golden tests.
-    fixtures = handwritten.measured_fixtures(repo_root, fixture_base) if include_fixtures or forced_fixtures else {}
+    fixtures = handwritten.measured_fixtures(repo_root, fixture_base) if plan_fixtures else {}
     if select_fixtures is not None:
         fixtures = {name: audiences for name, audiences in fixtures.items() if select_fixtures.search(name)}
     if base is None:
