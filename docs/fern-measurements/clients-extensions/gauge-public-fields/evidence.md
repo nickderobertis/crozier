@@ -1,9 +1,9 @@
 # A property written `x-fern-ignore: true`
 
 Source: `docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml`, an
-independently authored document. Fern CLI 5.163.1; fernapi/fern-python-sdk
-5.41.3; enum_type: python_enums; package_name: fern; project_name:
-default_package_name. Complete unedited comment-stripped certified output.
+independently authored document. Fern CLI 5.163.1;
+fernapi/fern-python-sdk 5.41.3; enum_type: python_enums; package_name: fern;
+project_name: default_package_name. Complete unedited comment-stripped certified output.
 
 It was the hand-written cover of `ignore-extension-on-property-kept` until
 corpus row 4015 (`nvke-controller`) declared the shape in a real document

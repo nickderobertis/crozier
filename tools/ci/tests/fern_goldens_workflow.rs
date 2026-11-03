@@ -109,7 +109,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     let jobs = mapping(&workflow, "jobs");
     assert_eq!(
         jobs.keys().map(String::as_str).collect::<Vec<_>>(),
-        ["plan", "shard", "assemble", "decide", "publish"]
+        ["plan", "shard", "assemble", "decide", "publish", "conclude"]
     );
     for (name, job) in jobs {
         let job = job.as_object().expect("a job is a mapping");
@@ -197,7 +197,11 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     // `just fixtures-diff` runs through Nx, so the decision bootstraps it first,
     // and compares only once the tree is the one the pull request would carry.
     let decide = nested_mapping(jobs, "decide");
-    assert!(decide.get("if").is_none(), "decide needs a green assembly");
+    assert_eq!(
+        text(decide, "if"),
+        "always() && needs.assemble.result == 'success'",
+        "decide needs a sound assembly, even after a shard's job failed"
+    );
     let decide_steps = steps(decide);
     let (bootstrap, bootstrap_step) = named_step(decide_steps, "Bootstrap");
     assert_eq!(text(bootstrap_step, "run"), "just bootstrap");
@@ -221,7 +225,10 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
             .map(|needs| needs.iter().filter_map(Value::as_str).collect::<Vec<_>>()),
         Some(vec!["plan", "decide"])
     );
-    assert_eq!(text(publish, "if"), "needs.plan.outputs.complete == 'true'");
+    assert_eq!(
+        text(publish, "if"),
+        "always() && needs.decide.result == 'success' && needs.plan.outputs.complete == 'true'"
+    );
     let publish_steps = steps(publish);
     let (_, checkout) = uses_steps(publish_steps, "actions/checkout@v4")[0];
     assert_eq!(
@@ -243,6 +250,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         ("decide", "apply"),
         ("decide", "decide"),
         ("publish", "publish"),
+        ("conclude", "conclude"),
     ] {
         let job = nested_mapping(jobs, job);
         assert!(
@@ -253,6 +261,192 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
             }),
             "{phase} runs as tools/fern-goldens/weekly.py {phase}"
         );
+    }
+}
+
+/// How GitHub decides whether a job runs, over the subset of its expression
+/// language these jobs use: `&&` of `always()` and `needs.<job>.result` or
+/// `needs.<job>.outputs.<name>` compared with a quoted string. Without
+/// `always()` the job also needs every job before it, transitively, to have
+/// succeeded: a failed shard skips a job two `needs` away that does not opt in.
+fn runs(
+    jobs: &Mapping,
+    name: &str,
+    results: &std::collections::BTreeMap<&str, &str>,
+    outputs: &[(&str, &str)],
+) -> bool {
+    fn needs_of<'a>(jobs: &'a Mapping, name: &str) -> Vec<&'a str> {
+        match nested_mapping(jobs, name).get("needs") {
+            None => Vec::new(),
+            Some(Value::String(one)) => vec![one.as_str()],
+            Some(Value::Array(many)) => many.iter().filter_map(Value::as_str).collect(),
+            Some(other) => panic!("{name}'s needs is {other:?}"),
+        }
+    }
+    let job = nested_mapping(jobs, name);
+    let needs = needs_of(jobs, name);
+    let mut ancestors = needs.clone();
+    let mut index = 0;
+    while index < ancestors.len() {
+        for need in needs_of(jobs, ancestors[index]) {
+            if !ancestors.contains(&need) {
+                ancestors.push(need);
+            }
+        }
+        index += 1;
+    }
+    let succeeded = ancestors
+        .iter()
+        .all(|need| results.get(need) == Some(&"success"));
+    let Some(condition) = job.get("if").and_then(Value::as_str) else {
+        return succeeded;
+    };
+    let mut always = false;
+    let mut holds = true;
+    for term in condition.split("&&").map(str::trim) {
+        if term == "always()" {
+            always = true;
+            continue;
+        }
+        let (left, right) = term
+            .split_once(" == ")
+            .unwrap_or_else(|| panic!("{name}: unsupported condition term {term:?}"));
+        let wanted = right.trim_matches('\'');
+        let path: Vec<&str> = left.split('.').collect();
+        let actual = match path.as_slice() {
+            ["needs", need, "result"] => {
+                assert!(needs.contains(need), "{name} reads {need} it does not need");
+                results.get(need).copied().unwrap_or("skipped")
+            }
+            ["needs", "plan", "outputs", output] => outputs
+                .iter()
+                .find_map(|(key, value)| (key == output).then_some(*value))
+                .unwrap_or(""),
+            _ => panic!("{name}: unsupported condition operand {left:?}"),
+        };
+        holds &= actual == wanted;
+    }
+    holds && (always || succeeded)
+}
+
+/// Every path a run can take through the jobs, each phase ending as the script
+/// does for that case, and how the run concludes: a failed job fails the run.
+#[test]
+fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_concludes_red_for_them() {
+    let workflow = workflow();
+    let jobs = mapping(&workflow, "jobs");
+    // (case, complete, shard job, assembly, decision, conclusion's exit,
+    //  published, run conclusion)
+    for (case, complete, shard, assemble, decide, conclude, published, run) in [
+        (
+            "match", "true", "success", "success", "success", "success", true, "success",
+        ),
+        (
+            "diff", "true", "success", "success", "success", "success", true, "success",
+        ),
+        // `shard` exits 0 over a failed item; the bundle carries it by name.
+        (
+            "failed item",
+            "true",
+            "success",
+            "success",
+            "success",
+            "failure",
+            true,
+            "failure",
+        ),
+        // A shard whose job died uploads nothing; its items are not generated.
+        (
+            "missing shard",
+            "true",
+            "failure",
+            "success",
+            "success",
+            "failure",
+            true,
+            "failure",
+        ),
+        (
+            "bundle fault",
+            "true",
+            "success",
+            "failure",
+            "-",
+            "-",
+            false,
+            "failure",
+        ),
+        (
+            "cannot run",
+            "true",
+            "success",
+            "success",
+            "failure",
+            "-",
+            false,
+            "failure",
+        ),
+        (
+            "subset, failed item",
+            "false",
+            "success",
+            "success",
+            "success",
+            "failure",
+            false,
+            "failure",
+        ),
+        (
+            "subset, all checked",
+            "false",
+            "success",
+            "success",
+            "success",
+            "success",
+            false,
+            "success",
+        ),
+    ] {
+        let outputs = [("run", "true"), ("complete", complete)];
+        let ends = std::collections::BTreeMap::from([
+            ("plan", "success"),
+            ("shard", shard),
+            ("assemble", assemble),
+            ("decide", decide),
+            ("publish", "success"),
+            ("conclude", conclude),
+        ]);
+        let mut results = std::collections::BTreeMap::new();
+        for name in jobs.keys() {
+            let name = name.as_str();
+            let result = if runs(jobs, name, &results, &outputs) {
+                ends[name]
+            } else {
+                "skipped"
+            };
+            assert_ne!(
+                result, "-",
+                "{case}: {name} runs, which this case says it cannot reach"
+            );
+            results.insert(name, result);
+        }
+        assert_eq!(
+            results["publish"] == "success",
+            published,
+            "{case}: {results:?}"
+        );
+        let concluded = if results.values().any(|result| *result == "failure") {
+            "failure"
+        } else {
+            "success"
+        };
+        assert_eq!(concluded, run, "{case}: {results:?}");
+        if published && run == "failure" {
+            assert_eq!(
+                results["conclude"], "failure",
+                "{case}: the run turns red after publishing"
+            );
+        }
     }
 }
 

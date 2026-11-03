@@ -220,6 +220,11 @@ fern-references *args:
 fern-references-list family:
     python3 tools/fern-goldens/fern-references.py list "$1"
 
+# Validate every Fern reference item's inputs (or the named families'), offline:
+# no Fern, Docker or network. One `<family> <item>: <reason>` line per broken item.
+fern-references-check *families:
+    @python3 tools/fern-goldens/fern-references.py check {{families}}
+
 fern-goldens-compare:
     ./tools/fern-goldens/fern-goldens compare
 
@@ -231,7 +236,7 @@ fern-goldens-result *args:
 
 # Process/filesystem/workflow-boundary coverage for the automation itself.
 test-fern-goldens:
-    @just nx run-many --targets=test --projects=fern-goldens,fern-goldens-git,fern-goldens-weekly
+    @just nx run-many --targets=test --projects=fern-goldens,fern-goldens-git,fern-goldens-weekly,fern-references-check
 
 # Live Fern measurement for the witness-supply probe Fern refuses. Separate
 # from `check`: Fern's pinned Python generator runs in Docker and needs network.
