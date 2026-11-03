@@ -3096,7 +3096,9 @@ class RecipeWiringTests(unittest.TestCase):
         self.assertEqual(
             "uv run --locked --all-packages pytest --cov --cov-report= "
             f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
-            "tools/surface-census/tests/apis_guru_gap_screen_test.py",
+            "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
+            "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_lock_test.py "
+            "tools/surface-census/tests/repin_messages_test.py",
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
@@ -18884,12 +18886,18 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "restate-coverage.py": ("\u2014",),
         "update-predicate-grammar.py": ("\u2014",),
         "witness-search-region-keys.py": ("\u2014",),
+        "census-repin.py": ("--tests", "("),
     }
     LEGACY: ClassVar[dict[str, str]] = {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
 
     def test_every_entry_point_writes_its_diagnostics_as_utf8(self) -> None:
-        # residual-attribution.py prints only `json.dumps` output, which is ASCII whatever it reports.
-        scripts = {path.name for path in (REPO / "tools/surface-census").glob("*.py")} - {"residual-attribution.py"}
+        # residual-attribution.py prints only `json.dumps` output, which is ASCII whatever it reports;
+        # a module with no `__main__` block (reach_store.py, reach_base.py) is imported, never run.
+        scripts = {
+            path.name
+            for path in (REPO / "tools/surface-census").glob("*.py")
+            if 'if __name__ == "__main__":' in path.read_text(encoding="utf-8")
+        } - {"residual-attribution.py"}
         self.assertEqual(scripts, set(self.ECHOED), "give a new entry point the UTF-8 stream guard and a row here")
         for name, args in self.ECHOED.items():
             with self.subTest(name):

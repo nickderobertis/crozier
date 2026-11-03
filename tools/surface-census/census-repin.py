@@ -648,7 +648,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 re.compile(pattern)
             except re.error as error:
-                parser.error(f"{pattern!r} is not a regex ({error})")
+                parser.error(f"{pattern!r} is not a regex ({error}) — pass a Python regex over test or fixture names")
     return repin(args, lambda line: print(line, file=sys.stderr, flush=True))
 
 
