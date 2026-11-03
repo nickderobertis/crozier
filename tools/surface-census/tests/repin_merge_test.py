@@ -223,3 +223,20 @@ def test_a_conflict_in_a_hand_written_line_is_refused_by_name_and_the_merge_left
     assert LEDGER not in message, "the derived ledger hunk is not named"
     assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0, "the merge is left open"
     assert {path: (root / path).read_bytes() for path in conflicted} == conflicted, "nothing was rewritten"
+
+
+@pytest.mark.parametrize("cells", [{"kind": "refusal"}, {"kind": "real", "goldens": "—"}])
+def test_a_scenario_row_the_writer_skips_keeps_its_conflict(tmp_path: Path, cells: dict[str, str]) -> None:
+    root = conflicted(
+        tmp_path,
+        INDEX,
+        header() + row(**cells) + "\n",
+        header() + row(**(cells | {"settings": "ours"})) + "\n",
+        header() + row(**(cells | {"settings": "theirs"})) + "\n",
+    )
+    before = (root / INDEX).read_bytes()
+    with pytest.raises(SystemExit) as refused:
+        VERB.resolve_merge(root)
+    assert f"{INDEX}:2:" in str(refused.value) and "is not derived content" in str(refused.value)
+    assert (root / INDEX).read_bytes() == before, "a skipped row's authored values must not be discarded"
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0

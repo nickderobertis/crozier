@@ -158,6 +158,8 @@ def _scenario_rows_derived(ours: list[str], theirs: list[str]) -> bool:
         a, b = left.split("\t"), right.split("\t")
         if len(a) != len(columns) or len(b) != len(columns) or a[0] != b[0]:
             return False
+        if not index.has_derived_cells(a[columns.index("kind")], a[columns.index("goldens")]):
+            return False
         if any(x != y for name, x, y in zip(columns, a, b, strict=True) if name not in derived):
             return False
     return True

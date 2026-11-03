@@ -1105,6 +1105,11 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
 DERIVED_COLUMNS = ("source", "settings", "outcome", "ids")
 
 
+def has_derived_cells(kind: str, goldens: str) -> bool:
+    """Only generated proofs with golden inputs have cells the writer can replace."""
+    return kind != Kind.REFUSAL.value and bool(split(goldens))
+
+
 def restate(root: Path) -> tuple[str, list[str]]:
     """The index with every derived cell of a generated proof restated from its catalogs.
 
@@ -1117,7 +1122,7 @@ def restate(root: Path) -> tuple[str, list[str]]:
     failures += row_failures
     for row in rows:
         goldens = split(row["goldens"])
-        if row["kind"] == Kind.REFUSAL.value or not goldens:
+        if not has_derived_cells(row["kind"], row["goldens"]):
             continue
         settings, defects, sources = [], set(), []
         for golden in goldens:
