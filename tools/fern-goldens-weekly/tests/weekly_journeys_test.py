@@ -1128,6 +1128,29 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertNotIn(f"+ {rows[60]}", section)
         self.assertIn("… 11 more (the decision artifact lists them all)", section)
 
+    def test_a_decision_naming_a_ledger_change_the_recipe_cannot_write_publishes_nothing(self) -> None:
+        """publish reads the decision's ledger changes: one naming a path outside
+        the repository or a file the ledger recipe never writes, or rows that are
+        not strings, is refused before anything reaches the remote."""
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide", LEDGER_ROWS=json.dumps([LEDGER_ROW.format(line=4)]))
+        self.assertEqual("diff", state.outcome(), self.summary())
+        record = state.artifacts / "decision/decision.json"
+        written = json.loads(record.read_text(encoding="utf-8"))
+        (change,) = written["ledger"]["changes"]
+        for case, altered, message in (
+            ("outside the repository", {"path": "../escape.tsv"}, "'../escape.tsv' is no path inside the repository"),
+            ("no recipe output", {"path": "README.md"}, "README.md is no file the ledger recipe writes"),
+            ("rows that are not strings", {"added": [1]}, "`added` must be a list of strings"),
+        ):
+            with self.subTest(case):
+                ledger = {**written["ledger"], "changes": [{**change, **altered}]}
+                record.write_text(json.dumps({**written, "ledger": ledger}), encoding="utf-8")
+                refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(message, refused.stderr)
+                self.assert_untouched()
+
     def test_a_decision_without_applys_ledger_record_is_refused_and_publishes_nothing(self) -> None:
         """decide reads the ledger recipe's outcome `apply` recorded: missing,
         unreadable or of another schema, it refuses to decide."""
@@ -1826,6 +1849,15 @@ class WeeklyRunTests(unittest.TestCase):
             (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")
         seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
         self.assertRegex(seen.stdout, r"memory available 0\.1 GiB\n$", "the enclosing group's limit is tighter")
+        # An enclosing group setting no limit (`max`), or with a malformed limit
+        # or usage, limits nothing: the job's own group is what is left.
+        for name, amount in (("memory.max", "max"), ("memory.max", "1G"), ("memory.current", "lots")):
+            with self.subTest(enclosing=f"{name} {amount}"):
+                (cgroup.parent / "memory.max").write_text(f"{2**30}\n", encoding="utf-8")
+                (cgroup.parent / "memory.current").write_text(f"{2**30 - 2**27}\n", encoding="utf-8")
+                (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")
+                seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+                self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", seen.stderr)
         for name in ("memory.max", "memory.current", "memory.stat"):
             (cgroup.parent / name).unlink()
         # Nothing left at all: held back, never read as memory nothing reports.

@@ -998,7 +998,7 @@ def own_cgroup() -> Path:
     return Path("/sys/fs/cgroup") / relative.lstrip("/")
 
 
-# llmlint: ignore[changed_behavior_has_e2e] Only the platform without /proc/meminfo (macOS, Windows) reaches the None return; the weekly workflow runs on ubuntu-latest and its journeys skip off Linux-like hosts, so no journey host lacks the file. The journeys drive the meminfo and cgroup-limit branches through `resources` and `decide`, and accept either spelling in their resource pattern.
+# llmlint: ignore[changed_behavior_has_e2e] Only a platform without /proc/meminfo reaches the None return: of the journey hosts, the macOS check leg, where their resource pattern accepts `unknown (no /proc/meminfo)` (Windows skips them). A Linux host always has the file, so the Linux legs drive the meminfo and cgroup-limit branches through `resources` and `decide` and never this one.
 def memory_available() -> int | None:
     """The bytes this process can still use: the kernel's `MemAvailable`,
     held to any cgroup limit around it; None on a platform reporting neither."""
@@ -1036,7 +1036,7 @@ def progress(line: str) -> None:
         sys.stdout.flush()
 
 
-# llmlint: ignore[changed_behavior_has_e2e] The cpu_count branch is the platform without sched_getaffinity (macOS, Windows), where no journey runs (the weekly workflow is ubuntu-latest's); the journeys drive the affinity branch by pinning `decide` to one CPU and to the test's own set.
+# llmlint: ignore[changed_behavior_has_e2e] The cpu_count branch is the platform without sched_getaffinity: of the journey hosts, the macOS check leg, where every journey running `decide` without `--jobs` reaches it but none asserts the count it yields, since the cases asserting the default skip off Linux (Windows skips every journey). The Linux journeys drive the affinity branch by pinning `decide` to one CPU and to the test's own set.
 def cpus() -> int:
     """The CPUs this process may run on: the runner's, or a container's set."""
     if hasattr(os, "sched_getaffinity"):
