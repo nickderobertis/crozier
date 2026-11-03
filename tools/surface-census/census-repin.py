@@ -43,7 +43,10 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, NamedTuple, NoReturn
+from typing import TYPE_CHECKING, Any, NamedTuple, NoReturn, Protocol
+
+if TYPE_CHECKING:
+    from reach_store import Function, ParsedFile, Store
 
 HERE = Path(__file__).resolve().parent
 REGIONS = Path("docs") / "openapi-surface"
@@ -53,6 +56,7 @@ EOL = 1 << 30
 
 
 def _load(name: str, file: str) -> Any:
+    """A sibling script by path: its hyphenated name is no importable module, so it is typed `Any`."""
     if name in sys.modules:
         return sys.modules[name]
     spec = importlib.util.spec_from_file_location(name, HERE / file)
@@ -107,14 +111,15 @@ def conflict_hunks(text: str, path: str) -> list[Hunk]:
         index += 1
         while index < len(lines) and not lines[index].startswith(">>>>>>> "):
             line = lines[index]
-            if line.startswith("||||||| "):
-                part = "base"
-            elif line == "=======":
-                part = "theirs"
-            elif part == "ours":
-                ours.append(line)
-            elif part == "theirs":
-                theirs.append(line)
+            match line, part:
+                case _, _ if line.startswith("||||||| "):
+                    part = "base"
+                case "=======", _:
+                    part = "theirs"
+                case _, "ours":
+                    ours.append(line)
+                case _, "theirs":
+                    theirs.append(line)
             index += 1
         hunks.append(Hunk(path, start, ours, theirs))
         index += 1
@@ -266,20 +271,20 @@ def _matched_line(spec: str, root: Path) -> int:
     return next(n for n in range(start, end + 1) if pattern.search(lines[n - 1]))
 
 
-def _token_at(parsed: Any, offset: int) -> int:
+def _token_at(parsed: ParsedFile, offset: int) -> int:
     starts = [token.start for token in parsed.tokens]
     import bisect
 
     return max(bisect.bisect_right(starts, offset) - 1, 0)
 
 
-def _line_tokens(parsed: Any, line: int) -> list[int]:
+def _line_tokens(parsed: ParsedFile, line: int) -> list[int]:
     lo = parsed.line_starts[line - 1]
     hi = parsed.line_starts[line] if line < len(parsed.line_starts) else len(parsed.source)
     return [k for k, token in enumerate(parsed.tokens) if lo <= token.start < hi]
 
 
-def _pattern(parsed: Any, indices: list[int]) -> str:
+def _pattern(parsed: ParsedFile, indices: list[int]) -> str:
     """A regex matching those tokens as they sit on one line: each escaped, gaps as one space."""
     out = []
     for position, k in enumerate(indices):
@@ -288,23 +293,34 @@ def _pattern(parsed: Any, indices: list[int]) -> str:
             out.append(" ")
         text = token.text.encode("latin-1").decode("utf-8", "replace")
         for char in text:
-            if char.isalnum() or char == "_":
-                out.append(char)
-            elif char in "[]|'\" \t":
-                out.append(f"\\x{ord(char):02x}")
-            else:
-                out.append(re.escape(char))
+            match char:
+                case _ if char.isalnum() or char == "_":
+                    out.append(char)
+                # Characters a spec cannot hold literally: its `[...]`, a table's `|`, a TOML quote, a space.
+                case "[" | "]" | "|" | "'" | '"' | " " | "\t":
+                    out.append(f"\\x{ord(char):02x}")
+                case _:
+                    out.append(re.escape(char))
     return "".join(out).replace(" ; ", " \\x3b ")
 
 
-def _site_offsets(site: Any, parsed: Any) -> tuple[int, int | None]:
+class _Span(Protocol):
+    """A resolved site's span, as golden-reach.py's `Site` gives it (that module is loaded by path)."""
+
+    start: int
+    end: int
+    start_col: int
+    end_col: int
+
+
+def _site_offsets(site: _Span, parsed: ParsedFile) -> tuple[int, int | None]:
     start = parsed.offset(site.start, site.start_col)
     end = None if site.end_col == EOL else parsed.offset(site.end, site.end_col)
     return start, end
 
 
-def _old_new_code(old: Any, a: int, b: int, new: Any, function: Any, guess: int) -> tuple[str, str]:
-    def lines(parsed: Any, lo: int, hi: int) -> str:
+def _old_new_code(old: ParsedFile, a: int, b: int, new: ParsedFile, function: Function, guess: int) -> tuple[str, str]:
+    def lines(parsed: ParsedFile, lo: int, hi: int) -> str:
         first = parsed.position(parsed.tokens[lo].start)[0]
         last = parsed.position(parsed.tokens[hi].start)[0]
         body = parsed.source.decode("utf-8", "replace").splitlines()[first - 1 : last]
@@ -488,7 +504,7 @@ def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> 
         stdout.write_text(run.stdout, encoding="utf-8")
 
 
-def regenerate(root: Path, store: dict[str, Any], out: Path, scoped: bool = False) -> list[str]:
+def regenerate(root: Path, store: Store, out: Path, scoped: bool = False) -> list[str]:
     """Every derived file, each from its own generator, in dependency order; return what was skipped.
 
     A scoped measurement (`--tests`/`--fixtures`) holds a subset of the witnesses,

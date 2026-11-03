@@ -3,8 +3,9 @@
 - The surface-census scripts' suites that drive a real host toolchain: the
   scoped `fixtures-coverage` recipe (real `cargo nextest` selection, real
   instrumented `cargo llvm-cov`), the hand-written reach recipe (an
-  instrumented crozier build over temporary fixtures), and golden-reach against
-  the real `llvm-profdata`. They are a project of their own so the offline
+  instrumented crozier build over temporary fixtures), golden-reach against
+  the real `llvm-profdata`, and the instrumented-measurement lock across every
+  measuring entry point (real `just` recipes, a stand-in `cargo`). They are a project of their own so the offline
   census tests stay cheap; each reads the surface-census scripts it exercises
   through its inputs. A census suite that needs the built crozier or `ruff`
   lands here, never in `surface-census`.

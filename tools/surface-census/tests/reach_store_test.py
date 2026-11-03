@@ -227,6 +227,13 @@ def _store(tree: Any, commit: str, tests: dict[str, list[str]], fixtures: dict[s
     return store
 
 
+def _one_function(store: dict, **change: Any) -> dict:
+    """`store` with its `render` function record changed, and no entry naming it."""
+    functions = {key: dict(value) for key, value in store["functions"].items()}
+    functions["src/lib.rs::render"].update(change)
+    return {**store, "tests": {}, "functions": functions}
+
+
 def test_the_store_round_trips_byte_stably_and_refuses_any_other_schema(tmp_path: Path) -> None:
     store = _store(tree_of(LIB), "a" * 40, {"t": ["src/lib.rs::render"]}, {})
     path = tmp_path / "base.json.gz"
@@ -240,6 +247,10 @@ def test_the_store_round_trips_byte_stably_and_refuses_any_other_schema(tmp_path
         ({k: v for k, v in store.items() if k != "llvm"}, "not exactly"),
         ({**store, "commit": "main"}, "40-hex"),
         ({**store, "tests": {"t": {"commit": "a" * 40, "regions": {"src/lib.rs::render": [5]}}}}, "entry"),
+        (_one_function(store, digest="not-a-digest"), "hex digest"),
+        (_one_function(store, start=9, end=3), "start <= end"),
+        (_one_function(store, file="src/other.rs"), "`<file>::<path>`"),
+        (_one_function(store, regions=[[0, -1, 0, 1]]), "token-relative regions"),
     ):
         with gzip.open(path, "wt", encoding="utf-8") as handle:
             json.dump(broken, handle)

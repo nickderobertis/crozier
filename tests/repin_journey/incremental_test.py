@@ -333,7 +333,13 @@ def test_a_two_step_chain_equals_a_full_measurement_of_the_same_tree(clone: Clon
 
 
 NON_ATTRIBUTABLE: dict[str, dict[str, Edit]] = {
-    "a const in a measured crate's source": {"src/lib.rs": ("", "\n#[allow(dead_code)]\nconst REPIN_PROBE: u8 = 1;\n")},
+    # Unused on purpose: only the item's addition outside every function is the change measured.
+    "a const in a measured crate's source": {
+        "src/lib.rs": (
+            "",
+            "\n// A probe the repin journey adds; nothing reads it.\n#[allow(dead_code)]\nconst REPIN_PROBE: u8 = 1;\n",
+        )
+    },
     "a template the crate embeds": {"templates/version.py.j2": ("", "{# a comment renders nothing #}")},
 }
 
@@ -419,6 +425,37 @@ def test_a_fixture_tree_and_a_fixture_document_re_run_exactly_their_test_and_fix
     assert f"re-ran test {TESTS[2]}: its golden's fixture tree changed" in run.stderr
     assert f"re-ran fixture {FIXTURE}: its fixture changed" in run.stderr
     assert_step(clone, STATE.c0, {TESTS[2], FIXTURE}, STATE.s0)
+
+
+def test_dirty_measured_inputs_are_refused_before_anything_is_measured_and_pass_once_committed(clone: Clone) -> None:
+    clone.checkout(STATE.branch(), STATE.c0)
+    source = clone.root / "src" / "ir.rs"
+    source.write_text(source.read_text(encoding="utf-8").replace("    if untagged {\n", "    if untagged {\n\n", 1))
+    store = (clone.root / ".local" / "golden-reach" / "store.json.gz").read_bytes()
+    refused = clone.repin(check=False)
+    assert refused.returncode != 0
+    assert "1 measured input(s) differ from HEAD (src/ir.rs); commit them first" in refused.stderr
+    assert git(clone.root, "status", "--porcelain", "--untracked-files=no") == "M src/ir.rs", "nothing else was written"
+    assert (clone.root / ".local" / "golden-reach" / "store.json.gz").read_bytes() == store, "nothing was measured"
+    clone.commit("a blank line inside a function", {}, keep=True)
+    clone.repin()
+    assert_step(clone, STATE.c0, set(), STATE.s0)
+
+
+def test_an_entry_whose_region_the_new_build_lacks_is_re_run_not_carried(clone: Clone) -> None:
+    """A carried entry must land on HEAD's universe; one region it cannot place sends its test back to run."""
+    clone.checkout(STATE.branch(), STATE.c0)
+    base = RS.load(clone.cached(STATE.c0))
+    key = f"{ONLY_FIRST[0]}::{ONLY_FIRST[1]}"
+    base["functions"][key]["regions"].append([0, 0, 0, 999_999])
+    base["tests"][TESTS[0]]["regions"][key].append(len(base["functions"][key]["regions"]) - 1)
+    cache = clone.scratch / f"bases-{STATE.branch()}"
+    RS.save(base, cache / STATE.c0 / "base.json.gz")
+    clone.commit("a body edit only the second test runs", SECOND_EDIT)
+    run = clone.repin(env=dict(clone.env, CROZIER_GOLDEN_REACH_BASE_CACHE=str(cache)))
+    assert f"re-ran test {TESTS[1]}: it executed changed {ONLY_SECOND[0]}::{ONLY_SECOND[1]}" in run.stderr
+    assert f"re-ran test {TESTS[0]}" not in run.stderr, "the plan carries it; only the remap sends it back"
+    assert_step(clone, STATE.c0, {TESTS[0], TESTS[1]}, STATE.s0)
 
 
 def test_measure_tests_re_runs_the_named_tests_into_the_store_and_carries_the_rest(clone: Clone) -> None:
@@ -548,17 +585,20 @@ class GitHub(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = self.path.split("?", 1)[0]
-        if path == "/rate_limit":
-            core = {"limit": 5000, "used": 0, "remaining": 5000, "reset": int(time.time()) + 3600}
-            self._send(200, json.dumps({"resources": {"core": core}}).encode())
-        elif path == f"/repos/{SLUG}/actions/artifacts":
-            listed = [{"id": i, "name": f"golden-reach-base-{sha}"} for i, sha in enumerate(sorted(self.artifacts), 1)]
-            self._send(200, json.dumps({"artifacts": listed}).encode())
-        elif path.endswith("/zip"):
-            index = int(path.rsplit("/", 2)[-2])
-            self._send(200, self.artifacts[sorted(self.artifacts)[index - 1]])
-        else:
-            self._send(404, b"{}")
+        match path:
+            case "/rate_limit":
+                core = {"limit": 5000, "used": 0, "remaining": 5000, "reset": int(time.time()) + 3600}
+                self._send(200, json.dumps({"resources": {"core": core}}).encode())
+            case _ if path == f"/repos/{SLUG}/actions/artifacts":
+                listed = [
+                    {"id": i, "name": f"golden-reach-base-{sha}"} for i, sha in enumerate(sorted(self.artifacts), 1)
+                ]
+                self._send(200, json.dumps({"artifacts": listed}).encode())
+            case _ if path.endswith("/zip"):
+                index = int(path.rsplit("/", 2)[-2])
+                self._send(200, self.artifacts[sorted(self.artifacts)[index - 1]])
+            case _:
+                self._send(404, b"{}")
 
 
 STALE = {

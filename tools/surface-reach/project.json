@@ -72,6 +72,31 @@
         "{workspaceRoot}/.coverage-data/surface-reach/test-handwritten-reach"
       ]
     },
+    "test-lock": {
+      "metadata": {
+        "description": "Every entry point that measures waits on the host-wide instrumented-measurement lock: the real `just` recipes and scripts over a scratch clone, with a stand-in `cargo` recording when a build would start."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/repin_lock_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-reach/test-lock/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/*",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-reach/test-lock"
+      ]
+    },
     "test-llvm": {
       "executor": "nx:run-commands",
       "options": {
@@ -124,6 +149,7 @@
       "dependsOn": [
         "test-fixtures-coverage",
         "test-handwritten-reach",
+        "test-lock",
         "test-llvm",
         "test-residual-attribution"
       ]

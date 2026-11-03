@@ -80,7 +80,7 @@ import tomllib
 from collections.abc import Generator, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, NamedTuple, NoReturn, NotRequired, TypedDict
+from typing import IO, Any, NamedTuple, NoReturn, NotRequired, TypedDict
 
 SCHEMA = 1
 ITEMS = "{items}"
@@ -89,6 +89,7 @@ MAX_AGE_DAYS = 7
 MAX_STEPS = 20
 REPIN = "just census-repin"
 SHA = re.compile(r"[0-9a-f]{40}")
+DIGEST = re.compile(rf"[0-9a-f]{{{DIGEST_HEX}}}")
 
 
 class StoreError(ValueError):
@@ -397,41 +398,53 @@ def _scan_items(
                 test_modules.append(name)
             i = end + 1
             continue
-        if keyword == "fn" and _IDENT.fullmatch(name):
-            body = _fn_body(tokens, match, i, end + 1)
-            const_fn = any(t.text == "const" for t in tokens[start:i])
-            key = "::".join([*path, name])
-            items.append(Item(key, "fn", first, end, tuple(attributes)))
-            if body is not None:
-                units.append(Unit(key, first, start, end, const_fn, trait_ctx))
-                _scan_nested(tokens, match, body + 1, end, [*path, name], units)
-        elif keyword == "mod" and tokens[end].text == "}":
-            items.append(Item("::".join([*path, name]), "mod", first, end, tuple(attributes)))
-            opening = _first_brace(tokens, i, end)
-            _scan_items(tokens, match, opening + 1, end, [*path, name], False, units, items, test_spans, test_modules)
-        elif keyword in ("impl", "trait") and tokens[end].text == "}":
-            opening = _first_brace(tokens, i, end)
-            if keyword == "trait":
-                owner, inside_trait = name, True
-            else:
-                header = list(range(i + 1, opening))
-                at_for = next(
-                    (k for k in header if tokens[k].text == "for" and _depth(tokens, i + 1, k) == 0),
-                    None,
+        match keyword:
+            case "fn" if _IDENT.fullmatch(name):
+                body = _fn_body(tokens, match, i, end + 1)
+                const_fn = any(t.text == "const" for t in tokens[start:i])
+                key = "::".join([*path, name])
+                items.append(Item(key, "fn", first, end, tuple(attributes)))
+                if body is not None:
+                    units.append(Unit(key, first, start, end, const_fn, trait_ctx))
+                    _scan_nested(tokens, match, body + 1, end, [*path, name], units)
+            case "mod" if tokens[end].text == "}":
+                items.append(Item("::".join([*path, name]), "mod", first, end, tuple(attributes)))
+                opening = _first_brace(tokens, i, end)
+                _scan_items(
+                    tokens, match, opening + 1, end, [*path, name], False, units, items, test_spans, test_modules
                 )
-                where = next((k for k in header if tokens[k].text == "where"), opening)
-                if at_for is not None:
-                    trait = _type_name(tokens, i + 1, at_for)
-                    owner, inside_trait = f"<{_type_name(tokens, at_for + 1, where)} as {trait}>", True
+            case "impl" | "trait" if tokens[end].text == "}":
+                opening = _first_brace(tokens, i, end)
+                if keyword == "trait":
+                    owner, inside_trait = name, True
                 else:
-                    owner, inside_trait = _type_name(tokens, i + 1, where), False
-            items.append(Item("::".join([*path, f"{keyword} {owner}"]), keyword, first, end, tuple(attributes)))
-            _scan_items(
-                tokens, match, opening + 1, end, [*path, owner], inside_trait, units, items, test_spans, test_modules
-            )
-        else:
-            label = name if _IDENT.fullmatch(name) else keyword
-            items.append(Item("::".join([*path, f"{keyword} {label}"]), keyword, first, end, tuple(attributes)))
+                    header = list(range(i + 1, opening))
+                    at_for = next(
+                        (k for k in header if tokens[k].text == "for" and _depth(tokens, i + 1, k) == 0),
+                        None,
+                    )
+                    where = next((k for k in header if tokens[k].text == "where"), opening)
+                    if at_for is not None:
+                        trait = _type_name(tokens, i + 1, at_for)
+                        owner, inside_trait = f"<{_type_name(tokens, at_for + 1, where)} as {trait}>", True
+                    else:
+                        owner, inside_trait = _type_name(tokens, i + 1, where), False
+                items.append(Item("::".join([*path, f"{keyword} {owner}"]), keyword, first, end, tuple(attributes)))
+                _scan_items(
+                    tokens,
+                    match,
+                    opening + 1,
+                    end,
+                    [*path, owner],
+                    inside_trait,
+                    units,
+                    items,
+                    test_spans,
+                    test_modules,
+                )
+            case _:
+                label = name if _IDENT.fullmatch(name) else keyword
+                items.append(Item("::".join([*path, f"{keyword} {label}"]), keyword, first, end, tuple(attributes)))
         i = end + 1
 
 
@@ -770,15 +783,22 @@ def validate(store: Any, where: str) -> Store:
         raise StoreError(f"{where}'s `measured_at` is not ISO 8601 ({error})") from error
     functions = store["functions"]
     if not isinstance(functions, dict) or not all(
-        isinstance(value, dict)
+        isinstance(key, str)
+        and isinstance(value, dict)
         and isinstance(value.get("file"), str)
+        and key.startswith(f"{value['file']}::")
         and type(value.get("start")) is int
         and type(value.get("end")) is int
+        and 1 <= value["start"] <= value["end"]
         and isinstance(value.get("digest"), str)
+        and DIGEST.fullmatch(value["digest"]) is not None
         and _valid_regions(value.get("regions"))
-        for value in functions.values()
+        for key, value in functions.items()
     ):
-        raise StoreError(f"{where}'s `functions` is not a map of key -> file, start, end, digest and regions")
+        raise StoreError(
+            f"{where}'s `functions` is not a map of `<file>::<path>` -> its file, a 1-based start <= end, "
+            f"a {DIGEST_HEX}-hex digest and token-relative regions"
+        )
     for name in ("tests", "fixtures"):
         entries = store[name]
         if not isinstance(entries, dict) or not all(_valid_entry(e, functions) for e in entries.values()):
@@ -1057,43 +1077,44 @@ def _references(tokens: list[Token], lo: int, hi: int) -> set[str]:
         return len(span) - 1
 
     for k, token in enumerate(span):
-        text = token.text
-        if text == "let":
-            end = statement_end(k, ";")
-            stop = next((j for j in range(k + 1, end) if span[j].text in ("=", ":")), end)
-            for j in range(k + 1, stop):
-                bind(j, end, enclosing[k])
-        elif text == "for":
-            body = statement_end(k, "{")
-            stop = next((j for j in range(k + 1, body) if span[j].text == "in"), body)
-            for j in range(k + 1, stop):
-                bind(j, body, match.get(body, len(span) - 1))
-        elif text == "fn" and k + 1 < len(span) and _IDENT.fullmatch(span[k + 1].text):
-            opening = next((j for j in range(k + 2, len(span)) if span[j].text in ("(", "{", ";")), None)
-            if opening is None or span[opening].text != "(" or opening not in match:
-                continue
-            body = next((j for j in range(match[opening], len(span)) if span[j].text in ("{", ";")), None)
-            if body is None or span[body].text != "{":
-                continue
-            for j in range(opening + 1, match[opening]):
-                if span[j + 1].text == ":" and span[j + 2].text != ":":
+        match token.text:
+            case "let":
+                end = statement_end(k, ";")
+                stop = next((j for j in range(k + 1, end) if span[j].text in ("=", ":")), end)
+                for j in range(k + 1, stop):
+                    bind(j, end, enclosing[k])
+            case "for":
+                body = statement_end(k, "{")
+                stop = next((j for j in range(k + 1, body) if span[j].text == "in"), body)
+                for j in range(k + 1, stop):
                     bind(j, body, match.get(body, len(span) - 1))
-        elif text == "|" and k and span[k - 1].text in _CLOSURE_OPENERS:
-            closing = next((j for j in range(k + 1, len(span)) if span[j].text == "|"), None)
-            if closing is None:
-                continue
-            body = closing + 1
-            if body < len(span) and span[body].text == "-":
-                body = next((j for j in range(body, len(span)) if span[j].text == "{"), body)
-            stop = match.get(body, statement_end(closing, ","))
-            colon = False
-            for j in range(k + 1, closing):
-                if span[j].text == ":":
-                    colon = True
-                elif span[j].text == ",":
-                    colon = False
-                elif not colon:
-                    bind(j, closing, stop)
+            case "fn" if k + 1 < len(span) and _IDENT.fullmatch(span[k + 1].text):
+                opening = next((j for j in range(k + 2, len(span)) if span[j].text in ("(", "{", ";")), None)
+                if opening is None or span[opening].text != "(" or opening not in match:
+                    continue
+                body = next((j for j in range(match[opening], len(span)) if span[j].text in ("{", ";")), None)
+                if body is None or span[body].text != "{":
+                    continue
+                for j in range(opening + 1, match[opening]):
+                    if span[j + 1].text == ":" and span[j + 2].text != ":":
+                        bind(j, body, match.get(body, len(span) - 1))
+            case "|" if k and span[k - 1].text in _CLOSURE_OPENERS:
+                closing = next((j for j in range(k + 1, len(span)) if span[j].text == "|"), None)
+                if closing is None:
+                    continue
+                body = closing + 1
+                if body < len(span) and span[body].text == "-":
+                    body = next((j for j in range(body, len(span)) if span[j].text == "{"), body)
+                stop = match.get(body, statement_end(closing, ","))
+                colon = False
+                for j in range(k + 1, closing):
+                    match span[j].text:
+                        case ":":
+                            colon = True
+                        case ",":
+                            colon = False
+                        case _ if not colon:
+                            bind(j, closing, stop)
     found = set()
     for k, token in enumerate(span):
         if k in binders or not _IDENT.fullmatch(token.text):
@@ -1374,7 +1395,7 @@ def instrumented_lock(label: str) -> Generator[None]:
         handle.close()
 
 
-def _try_lock(handle: Any) -> bool:
+def _try_lock(handle: IO[str]) -> bool:
     if sys.platform == "win32":
         import msvcrt
 
@@ -1392,7 +1413,7 @@ def _try_lock(handle: Any) -> bool:
         return False
 
 
-def _lock(handle: Any) -> None:
+def _lock(handle: IO[str]) -> None:
     if sys.platform == "win32":
         import msvcrt
 
@@ -1407,7 +1428,7 @@ def _lock(handle: Any) -> None:
     fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
 
 
-def _unlock(handle: Any) -> None:
+def _unlock(handle: IO[str]) -> None:
     if sys.platform == "win32":
         import msvcrt
 

@@ -59,7 +59,10 @@ import tomllib
 from collections import Counter, defaultdict
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, Any, NamedTuple, NoReturn
+from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+
+if TYPE_CHECKING:
+    from reach_store import Store
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -695,7 +698,7 @@ def universe_regions(e2e: Path, crozier: Path, repo_root: Path, profdata: str, l
 class Step(NamedTuple):
     """What one measurement step did."""
 
-    store: dict[str, Any]
+    store: Store
     base: str | None
     full: str | None
     tests_run: tuple[str, ...]
@@ -708,7 +711,7 @@ class Step(NamedTuple):
 def measure_step(
     repo_root: Path,
     *,
-    base: dict[str, Any] | None,
+    base: Store | None,
     full_reason: str = "",
     forced_tests: frozenset[str] = frozenset(),
     forced_fixtures: frozenset[str] = frozenset(),
@@ -758,7 +761,9 @@ def measure_step(
     else:
         assert base is not None
         table = tree.table()
-        functions = {key: {**table[key], "regions": base["functions"][key]["regions"]} for key in table}
+        functions = table
+        for key, record in functions.items():
+            record["regions"] = base["functions"][key]["regions"]
     tests: dict[str, Any] = {}
     fixture_entries: dict[str, Any] = {}
     if carry:
@@ -833,7 +838,7 @@ def measure_step(
                 _universe, control = handwritten.scoped_run(spec, (), crozier, profdata, llvm_cov, repo_root, tools)
                 entry["control"] = RS.entry_regions(tree, functions, control)
             fixture_entries[name] = entry
-    store = {
+    store: Store = {
         "schema": RS.SCHEMA,
         "commit": head,
         "rustc": versions[0],
@@ -911,7 +916,7 @@ def write_views(step: Step, out: Path, repo_root: Path) -> None:
     )
 
 
-def local_store(out: Path) -> dict[str, Any] | None:
+def local_store(out: Path) -> Store | None:
     """The store this checkout's last measurement left, or None (a refused one is reported, then ignored)."""
     path = out / STORE_FILE
     if not path.is_file():

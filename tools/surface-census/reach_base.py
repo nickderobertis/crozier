@@ -41,7 +41,10 @@ import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple, Protocol
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Protocol
+
+if TYPE_CHECKING:
+    from reach_store import Store
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -49,6 +52,7 @@ ARTIFACT_PREFIX = "golden-reach-base-"
 ARTIFACT_FILE = "base.json.gz"
 CACHE_ENV = "CROZIER_GOLDEN_REACH_BASE_CACHE"
 ANCESTORS = 400
+REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
 
 def _load(name: str, path: Path) -> Any:
@@ -94,9 +98,9 @@ class Artifact(NamedTuple):
 class Choice(NamedTuple):
     """The base a step starts from (None: measure fully), where it came from, and why."""
 
-    store: dict[str, Any] | None
+    store: Store | None
     commit: str | None
-    source: str  # "cache", "artifact" or "none"
+    source: Literal["cache", "artifact", "none"]
     reason: str
 
 
@@ -109,7 +113,7 @@ def cached_path(commit: str) -> Path:
     return cache_dir() / commit / ARTIFACT_FILE
 
 
-def publish(store: dict[str, Any]) -> Path:
+def publish(store: Store) -> Path:
     """Leave `store` in the host cache under its own commit, for the next step on this host."""
     path = cached_path(store["commit"])
     RS.save(store, path)
@@ -153,11 +157,14 @@ def _token() -> tuple[str | None, str]:
 
 def repository(root: Path) -> str | None:
     """`owner/name` of the GitHub repository: `GITHUB_REPOSITORY`, else the `origin` remote."""
-    if os.environ.get("GITHUB_REPOSITORY"):
-        return os.environ["GITHUB_REPOSITORY"]
+    named = os.environ.get("GITHUB_REPOSITORY")
+    if named:
+        # It is interpolated into an API path, so it is one `owner/name` and nothing else.
+        return named if REPOSITORY.fullmatch(named) else None
     url = subprocess.run(["git", "remote", "get-url", "origin"], cwd=root, capture_output=True, text=True).stdout
     found = re.search(r"github\.com[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?\s*$", url)
-    return f"{found.group(1)}/{found.group(2)}" if found else None
+    slug = f"{found.group(1)}/{found.group(2)}" if found else None
+    return slug if slug is not None and REPOSITORY.fullmatch(slug) else None
 
 
 class Guard(Protocol):
@@ -226,7 +233,7 @@ def _call(guard: Guard, url: str, token: str, accept: str = "application/vnd.git
     return response.status, body
 
 
-def _cached(commits: list[str]) -> tuple[int, dict[str, Any], str] | tuple[None, None, str]:
+def _cached(commits: list[str]) -> tuple[int, Store, str] | tuple[None, None, str]:
     """The nearest valid cached base among `commits` as `(index, store, note)`."""
     notes = []
     for index, commit in enumerate(commits):

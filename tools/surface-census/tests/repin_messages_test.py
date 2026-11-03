@@ -95,3 +95,39 @@ def test_a_stale_outstanding_row_names_the_verb(tmp_path: Path) -> None:
     stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=120)
     assert stale.returncode == 1
     assert f"outstanding.tsv is stale; run `{VERB}`" in stale.stderr
+
+
+def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_is_repaired(tmp_path: Path) -> None:
+    """`write` names a golden whose metadata does not read, leaves the index as it was, then restates it."""
+    root = tmp_path / "repo"
+    subprocess.run(["git", "clone", "-q", "--shared", str(REPO), str(root)], check=True, timeout=600)
+    script = root / "tools/surface-census/scenario-proof-index.py"
+    shutil.copy2(REPO / "tools/surface-census/scenario-proof-index.py", script)
+    index = root / "docs/openapi-surface/scenario-proof-index.tsv"
+    row = next(
+        line
+        for line in index.read_text(encoding="utf-8").splitlines()[1:]
+        if "\treal\t" in line and line.split("\t")[7] == "match"
+    )
+    golden = row.split("\t")[4].split(";")[0]
+    metadata = root / golden / ".fern" / "metadata.json"
+    good = metadata.read_bytes()
+    metadata.write_text("{ not json", encoding="utf-8")
+    # A stale derived cell the writer would restate, were its catalogs readable.
+    stale = index.read_text(encoding="utf-8").replace(row, row.replace("\tmatch\t", "\tdeparture\t", 1), 1)
+    assert stale != index.read_text(encoding="utf-8")
+    index.write_text(stale, encoding="utf-8")
+    refused = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(root), "write"], capture_output=True, text=True, timeout=300
+    )
+    assert refused.returncode == 1
+    assert f"golden {golden}'s metadata is not JSON" in refused.stderr
+    assert index.read_text(encoding="utf-8") == stale, "a refused write leaves the index as it was"
+    metadata.write_bytes(good)
+    written = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(root), "write"], capture_output=True, text=True, timeout=300
+    )
+    assert written.returncode == 0, written.stderr
+    assert index.read_text(encoding="utf-8") == (REPO / "docs/openapi-surface/scenario-proof-index.tsv").read_text(
+        encoding="utf-8"
+    ), "the repaired catalogs restate the committed index"

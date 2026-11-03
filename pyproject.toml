@@ -147,6 +147,9 @@ extra-paths = [
     "tools/fern-goldens/tests",
     "tools/fern-refusals/tests",
     "tools/llmlint/tests",
+    # reach_store.py: the scripts load it by path at run time and name its store
+    # types for the type checker only.
+    "tools/surface-census",
     "tools/surface-census/tests",
     "tools/witness-search/tests",
 ]
