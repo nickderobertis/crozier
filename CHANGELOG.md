@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.154](https://github.com/nickderobertis/crozier/compare/v0.0.153...v0.0.154) - 2026-11-03
+
+### Fixed
+
+- *(parity)* settle documents the certified pair turns into an empty SDK ([#725](https://github.com/nickderobertis/crozier/pull/725))
+
 ## [0.0.153](https://github.com/nickderobertis/crozier/compare/v0.0.152...v0.0.153) - 2026-11-02
 
 ### Fixed
