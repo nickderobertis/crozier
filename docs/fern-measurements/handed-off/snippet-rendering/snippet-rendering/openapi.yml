@@ -15,6 +15,7 @@ paths:
         - $ref: '#/components/parameters/StrictMode'
         - $ref: '#/components/parameters/TenantCode'
         - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
       requestBody:
         required: true
         content:
@@ -47,6 +48,7 @@ paths:
         - $ref: '#/components/parameters/StrictMode'
         - $ref: '#/components/parameters/TenantCode'
         - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
         - name: zone
           in: query
           required: true
@@ -78,6 +80,7 @@ paths:
         - $ref: '#/components/parameters/StrictMode'
         - $ref: '#/components/parameters/TenantCode'
         - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
         - name: ids[]
           in: query
           required: true
@@ -116,6 +119,13 @@ components:
       description: The harbour shift the request is filed under.
       schema:
         type: integer
+    TideMetres:
+      name: X-Tide-Metres
+      in: header
+      required: true
+      description: The tide height the request is filed against, in metres.
+      schema:
+        type: number
   schemas:
     Receipt:
       type: object

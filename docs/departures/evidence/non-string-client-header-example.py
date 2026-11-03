@@ -1,6 +1,11 @@
 # llmlint: ignore-file[new_code_lands_in_a_project] Departure evidence stays beside its note in docs/departures/evidence, as request-alias-reference-parameters.py does; crozier-e2e runs it and reads this folder through its e2eReads input.
 """Validate a docstring's client construction against the actual constructor.
 
+The construction each docstring example writes is validated against the actual
+constructor's annotations, then the client is constructed exactly as documented
+and called through its public API over a socket to a local HTTP server, which
+records the header values it receives.
+
 Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
 exit 2 reports invalid CLI arguments on stderr.
 """
@@ -9,15 +14,18 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
+import http.server
 import importlib
 import inspect
 import json
+from collections.abc import Iterator
 from pathlib import Path
 import sys
 import textwrap
+import threading
 import typing
 
-import httpx
 from pydantic import TypeAdapter, ValidationError
 
 parser = argparse.ArgumentParser()
@@ -29,10 +37,11 @@ if not (args.sdk / "fern" / "__init__.py").is_file():
 sys.path.insert(0, str(args.sdk.resolve()))
 sdk = importlib.import_module("fern")
 
-# The measurement's three promoted headers: the two whose declared type is not
-# a string, and the string one whose `YOUR_*` placeholder is correct.
-TYPED = {"strict_mode": bool, "shift_number": int}
+# The measurement's promoted headers whose declared type is not a string, and
+# the string one whose `YOUR_*` placeholder is correct.
+TYPED = {"strict_mode": bool, "shift_number": int, "tide_metres": float}
 STRING = "tenant_code"
+WIRE = ("X-Strict-Mode", "X-Tenant-Code", "X-Shift-Number", "X-Tide-Metres")
 
 
 def construction(doc: str, class_name: str) -> dict[str, object]:
@@ -45,6 +54,34 @@ def construction(doc: str, class_name: str) -> dict[str, object]:
     ]
     assert len(calls) == 1, f"{len(calls)} constructions of {class_name}"
     return {keyword.arg or "": ast.literal_eval(keyword.value) for keyword in calls[0].keywords}
+
+
+@contextlib.contextmanager
+def local_server() -> Iterator[tuple[str, list[dict[str, str]]]]:
+    """A local HTTP server answering `[]`, and the headers of each request."""
+    received: list[dict[str, str]] = []
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            received.append({wire: self.headers.get(wire, "") for wire in WIRE})
+            body = b"[]"
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_: object) -> None:
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}", received
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 verdicts: dict[str, str] = {}
@@ -71,17 +108,8 @@ for where, doc in examples.items():
             assert args.expected == "valid", (where, name, value)
             verdicts[f"{where} {name}"] = f"{value!r} has its declared type"
 
-# The documented construction, sent: the headers each value puts on the wire.
-sent: list[dict[str, str]] = []
-
-
-def handle(request: httpx.Request) -> httpx.Response:
-    sent.append({wire: request.headers[wire] for wire in ("X-Strict-Mode", "X-Tenant-Code", "X-Shift-Number")})
-    return httpx.Response(200, json=[])
-
-
-arguments = construction(examples["FernApi"] or "", "FernApi")
-with httpx.Client(transport=httpx.MockTransport(handle)) as transport:
-    client = sdk.FernApi(base_url="https://ledger.example.test", httpx_client=transport, **arguments)
-    client.berths.list_berths(zone="north", codes=["C-100"])
-print(json.dumps({"constructions": verdicts, "sent_headers": sent}, sort_keys=True))
+# The documented construction, sent: the header values it puts on the wire.
+documented = construction(examples["FernApi"] or "", "FernApi")
+with local_server() as (base_url, received):
+    sdk.FernApi(base_url=base_url, **documented).berths.list_berths(zone="north", codes=["C-100"])
+print(json.dumps({"constructions": verdicts, "sent_headers": received}, sort_keys=True))

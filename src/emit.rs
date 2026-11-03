@@ -20531,13 +20531,14 @@ mod snippet_rendering_tests {
             [
                 "strict_mode=True",
                 "tenant_code=\"YOUR_TENANT_CODE\"",
-                "shift_number=1"
+                "shift_number=1",
+                "tide_metres=1.1"
             ]
         );
         let client = file(&ir, "src/fern/client.py");
         assert_contains(
             &client,
-            "    client = FernApi(\n        strict_mode=True,\n        tenant_code=\"YOUR_TENANT_CODE\",\n        shift_number=1,\n",
+            "    client = FernApi(\n        strict_mode=True,\n        tenant_code=\"YOUR_TENANT_CODE\",\n        shift_number=1,\n        tide_metres=1.1,\n",
         );
         assert!(!client.contains("YOUR_STRICT_MODE"), "{client}");
     }

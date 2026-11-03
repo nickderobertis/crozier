@@ -134,8 +134,8 @@ fn handed_off_snippet_rendering_literals_overlays_match_fern() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
-/// The certified pair's and crozier's copy of `rel` for a cause.
-fn file_lines(cause: &str, rel: &str) -> (String, String) {
+/// The certified pair's and crozier's text of `rel` for a cause.
+fn file_texts(cause: &str, rel: &str) -> (String, String) {
     let dir = cause_dir(cause);
     let out = generate(&dir.join("openapi.yml"), &[]).unwrap_or_else(|failure| panic!("{failure}"));
     let read = |path: PathBuf| {
@@ -181,6 +181,12 @@ fn catalogued_snippet_defects_are_what_crozier_writes() {
         ),
         (
             "snippet-rendering",
+            "src/fern/berths/client.py",
+            "            tide_metres=\"YOUR_TIDE_METRES\",",
+            "            tide_metres=1.1,",
+        ),
+        (
+            "snippet-rendering",
             "src/fern/client.py",
             "        tenant_code=\"YOUR_TENANT_CODE\",",
             "        tenant_code=\"YOUR_TENANT_CODE\",",
@@ -193,7 +199,7 @@ fn catalogued_snippet_defects_are_what_crozier_writes() {
             "    request=b\"string\",",
         ),
     ] {
-        let (fern_reference, crozier_reference) = file_lines(cause, rel);
+        let (fern_reference, crozier_reference) = file_texts(cause, rel);
         let has = |text: &str, line: &str| text.lines().any(|candidate| candidate == line);
         assert!(
             has(&fern_reference, fern),
@@ -209,7 +215,7 @@ fn catalogued_snippet_defects_are_what_crozier_writes() {
         );
     }
     // The parameter list keeps the certified spelling, matched byte for byte.
-    let (_, reference) = file_lines("snippet-rendering", "reference.md");
+    let (_, reference) = file_texts("snippet-rendering", "reference.md");
     assert!(reference
         .contains("**codes_array:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]`"));
 }

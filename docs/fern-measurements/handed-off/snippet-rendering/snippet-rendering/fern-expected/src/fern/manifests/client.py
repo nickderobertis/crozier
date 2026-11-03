@@ -50,6 +50,7 @@ class ManifestsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
         client.manifests.file_manifest(
             request={
@@ -110,6 +111,7 @@ class AsyncManifestsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
 
 

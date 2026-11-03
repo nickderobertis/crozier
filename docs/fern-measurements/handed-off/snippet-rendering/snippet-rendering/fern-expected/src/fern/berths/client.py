@@ -53,6 +53,7 @@ class BerthsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
         client.berths.list_berths(
             zone="zone",
@@ -88,6 +89,7 @@ class BerthsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
         client.berths.release_berths(
             ids=["B-7"],
@@ -144,6 +146,7 @@ class AsyncBerthsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
 
 
@@ -187,6 +190,7 @@ class AsyncBerthsClient:
             strict_mode="YOUR_STRICT_MODE",
             tenant_code="YOUR_TENANT_CODE",
             shift_number="YOUR_SHIFT_NUMBER",
+            tide_metres="YOUR_TIDE_METRES",
         )
 
 

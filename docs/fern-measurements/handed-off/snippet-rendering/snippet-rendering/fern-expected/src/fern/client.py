@@ -35,6 +35,7 @@ class FernApi:
     strict_mode : bool
     tenant_code : str
     shift_number : int
+    tide_metres : float
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -67,6 +68,7 @@ class FernApi:
         strict_mode="YOUR_STRICT_MODE",
         tenant_code="YOUR_TENANT_CODE",
         shift_number="YOUR_SHIFT_NUMBER",
+        tide_metres="YOUR_TIDE_METRES",
     )
     """
 
@@ -78,6 +80,7 @@ class FernApi:
         strict_mode: bool,
         tenant_code: str,
         shift_number: int,
+        tide_metres: float,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -94,6 +97,7 @@ class FernApi:
             strict_mode=strict_mode,
             tenant_code=tenant_code,
             shift_number=shift_number,
+            tide_metres=tide_metres,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -165,6 +169,7 @@ class AsyncFernApi:
     strict_mode : bool
     tenant_code : str
     shift_number : int
+    tide_metres : float
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -197,6 +202,7 @@ class AsyncFernApi:
         strict_mode="YOUR_STRICT_MODE",
         tenant_code="YOUR_TENANT_CODE",
         shift_number="YOUR_SHIFT_NUMBER",
+        tide_metres="YOUR_TIDE_METRES",
     )
     """
 
@@ -208,6 +214,7 @@ class AsyncFernApi:
         strict_mode: bool,
         tenant_code: str,
         shift_number: int,
+        tide_metres: float,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -224,6 +231,7 @@ class AsyncFernApi:
             strict_mode=strict_mode,
             tenant_code=tenant_code,
             shift_number=shift_number,
+            tide_metres=tide_metres,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None

@@ -7,8 +7,8 @@ the `src/` directory of an SDK generated from
 beside it. For each of `replace_draft` and `replace_chart`, the `request` value
 of the `reference.md` worked call and of the sync and async docstring examples is
 validated strictly against the actual method's `request` annotation, then the
-call is made through the public client to a local HTTPX transport, which records
-what it sent.
+call is made through the public client over a socket to a local HTTP server,
+which records the request it receives.
 
 Exit 0 prints one JSON line (each example's verdict and each request sent);
 exit 1 means a check failed; exit 2 reports invalid arguments or an SDK this
@@ -19,16 +19,20 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
+import dataclasses
+import http.server
 import importlib
 import inspect
 import json
 import re
 import sys
 import textwrap
+import threading
 import typing
+from collections.abc import Iterator
 from pathlib import Path
 
-import httpx
 from pydantic import TypeAdapter, ValidationError
 
 METHODS = ("replace_draft", "replace_chart")
@@ -78,24 +82,46 @@ for method in METHODS:
             assert args.expected == "valid" and value == b"string", (where, value)
             examples[f"{method} {where}"] = "bytes example has its declared type"
 
-sent: list[dict[str, str]] = []
+@dataclasses.dataclass(frozen=True)
+class Sent:
+    """One request the local server received."""
+
+    method: str
+    path: str
+    content_type: str
+    body: str
 
 
-def handle(request: httpx.Request) -> httpx.Response:
-    sent.append(
-        {
-            "method": request.method,
-            "path": request.url.path,
-            "content-type": request.headers.get("content-type", ""),
-            "body": request.read().decode(),
-        }
-    )
-    return httpx.Response(204)
+@contextlib.contextmanager
+def local_server() -> Iterator[tuple[str, list[Sent]]]:
+    """A local HTTP server answering `204 No Content`, and what it received."""
+    sent: list[Sent] = []
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_PUT(self) -> None:
+            length = int(self.headers.get("content-length") or 0)
+            sent.append(
+                Sent(self.command, self.path, self.headers.get("content-type", ""), self.rfile.read(length).decode())
+            )
+            self.send_response(204)
+            self.end_headers()
+
+        def log_message(self, *_: object) -> None:
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}", sent
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
-with httpx.Client(transport=httpx.MockTransport(handle)) as transport:
-    client = sdk.FernApi(base_url="https://looms.example.test", httpx_client=transport)
+with local_server() as (base_url, sent):
+    client = sdk.FernApi(base_url=base_url)
     for method in METHODS:
         assert getattr(client.patterns, method)(pattern_id="twill-4", request=b"string") is None
-assert [request["content-type"] for request in sent] == ["application/json"] * len(METHODS), sent
-print(json.dumps({"examples": examples, "sent": sent}, sort_keys=True))
+assert [request.content_type for request in sent] == ["application/json"] * len(METHODS), sent
+print(json.dumps({"examples": examples, "sent": [dataclasses.asdict(request) for request in sent]}, sort_keys=True))

@@ -2,28 +2,28 @@
 
 Run on 2026-11-03 (Python 3.14.7, HTTPX 0.28.1, Pydantic 2.14.0): the certified pair's tree from a copy of `fern-expected/`, crozier's from
 `crozier generate` over `openapi.yml` at this branch, each through the departure's own proof script
-under `docs/departures/evidence/`.
+under `docs/departures/evidence/`, whose requests go over a socket to a local HTTP server.
 
 ## bracket-query-parameter-call-keyword: certified pair (fern-expected/src)
 
 $ python bracket-query-parameter-call-keyword.py fern-expected/src --reference fern-expected/reference.md --expected invalid
-{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "wire_requests": 3}
+{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "requests": 3}
 exit 0
 
 ## bracket-query-parameter-call-keyword: crozier
 
 $ python bracket-query-parameter-call-keyword.py sdk/src --reference sdk/reference.md --expected valid
-{"bindings": {"AsyncFernApi.list_berths": "codes binds", "AsyncFernApi.release_berths": "ids binds", "FernApi.list_berths": "codes binds", "FernApi.release_berths": "ids binds"}, "wire_requests": 3}
+{"bindings": {"AsyncFernApi.list_berths": "codes binds", "AsyncFernApi.release_berths": "ids binds", "FernApi.list_berths": "codes binds", "FernApi.release_berths": "ids binds"}, "requests": 3}
 exit 0
 
 ## non-string-client-header-example: certified pair (fern-expected/src)
 
 $ python non-string-client-header-example.py fern-expected/src --expected invalid
-{"constructions": {"AsyncFernApi shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "AsyncFernApi strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation", "BerthsClient.list_berths shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "BerthsClient.list_berths strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation", "FernApi shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "FernApi strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation"}, "sent_headers": [{"X-Shift-Number": "YOUR_SHIFT_NUMBER", "X-Strict-Mode": "YOUR_STRICT_MODE", "X-Tenant-Code": "YOUR_TENANT_CODE"}]}
+{"constructions": {"AsyncFernApi shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "AsyncFernApi strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation", "AsyncFernApi tide_metres": "'YOUR_TIDE_METRES' rejected by the float annotation", "BerthsClient.list_berths shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "BerthsClient.list_berths strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation", "BerthsClient.list_berths tide_metres": "'YOUR_TIDE_METRES' rejected by the float annotation", "FernApi shift_number": "'YOUR_SHIFT_NUMBER' rejected by the int annotation", "FernApi strict_mode": "'YOUR_STRICT_MODE' rejected by the bool annotation", "FernApi tide_metres": "'YOUR_TIDE_METRES' rejected by the float annotation"}, "sent_headers": [{"X-Shift-Number": "YOUR_SHIFT_NUMBER", "X-Strict-Mode": "YOUR_STRICT_MODE", "X-Tenant-Code": "YOUR_TENANT_CODE", "X-Tide-Metres": "YOUR_TIDE_METRES"}]}
 exit 0
 
 ## non-string-client-header-example: crozier
 
 $ python non-string-client-header-example.py sdk/src --expected valid
-{"constructions": {"AsyncFernApi shift_number": "1 has its declared type", "AsyncFernApi strict_mode": "True has its declared type", "BerthsClient.list_berths shift_number": "1 has its declared type", "BerthsClient.list_berths strict_mode": "True has its declared type", "FernApi shift_number": "1 has its declared type", "FernApi strict_mode": "True has its declared type"}, "sent_headers": [{"X-Shift-Number": "1", "X-Strict-Mode": "True", "X-Tenant-Code": "YOUR_TENANT_CODE"}]}
+{"constructions": {"AsyncFernApi shift_number": "1 has its declared type", "AsyncFernApi strict_mode": "True has its declared type", "AsyncFernApi tide_metres": "1.1 has its declared type", "BerthsClient.list_berths shift_number": "1 has its declared type", "BerthsClient.list_berths strict_mode": "True has its declared type", "BerthsClient.list_berths tide_metres": "1.1 has its declared type", "FernApi shift_number": "1 has its declared type", "FernApi strict_mode": "True has its declared type", "FernApi tide_metres": "1.1 has its declared type"}, "sent_headers": [{"X-Shift-Number": "1", "X-Strict-Mode": "True", "X-Tenant-Code": "YOUR_TENANT_CODE", "X-Tide-Metres": "1.1"}]}
 exit 0

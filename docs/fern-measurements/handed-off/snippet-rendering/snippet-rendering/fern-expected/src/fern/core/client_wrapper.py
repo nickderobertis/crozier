@@ -14,6 +14,7 @@ class BaseClientWrapper:
         strict_mode: bool,
         tenant_code: str,
         shift_number: int,
+        tide_metres: float,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -25,6 +26,7 @@ class BaseClientWrapper:
         self._strict_mode = strict_mode
         self._tenant_code = tenant_code
         self._shift_number = shift_number
+        self._tide_metres = tide_metres
         self._headers = headers
         self._base_url = base_url
         self._timeout = timeout
@@ -47,6 +49,7 @@ class BaseClientWrapper:
         headers["X-Strict-Mode"] = str(self._strict_mode)
         headers["X-Tenant-Code"] = self._tenant_code
         headers["X-Shift-Number"] = str(self._shift_number)
+        headers["X-Tide-Metres"] = str(self._tide_metres)
         return headers
 
     def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:
@@ -75,6 +78,7 @@ class SyncClientWrapper(BaseClientWrapper):
         strict_mode: bool,
         tenant_code: str,
         shift_number: int,
+        tide_metres: float,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -88,6 +92,7 @@ class SyncClientWrapper(BaseClientWrapper):
             strict_mode=strict_mode,
             tenant_code=tenant_code,
             shift_number=shift_number,
+            tide_metres=tide_metres,
             headers=headers,
             base_url=base_url,
             timeout=timeout,
@@ -113,6 +118,7 @@ class AsyncClientWrapper(BaseClientWrapper):
         strict_mode: bool,
         tenant_code: str,
         shift_number: int,
+        tide_metres: float,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -127,6 +133,7 @@ class AsyncClientWrapper(BaseClientWrapper):
             strict_mode=strict_mode,
             tenant_code=tenant_code,
             shift_number=shift_number,
+            tide_metres=tide_metres,
             headers=headers,
             base_url=base_url,
             timeout=timeout,
