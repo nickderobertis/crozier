@@ -123,7 +123,10 @@ TEXT_DIFFS_OMITTED = (
     "differing files and tags each regression, without their text diffs. `just fixtures-diff <corpus>` prints "
     "them on a checkout of this branch."
 )
-# How many of one file's changed ledger rows the pull request body lists.
+# A ledger row runs to at most about 180 characters, so 60 of them stay near
+# 11 KB. That leaves most of BODY_LIMIT for the failing items' reports, and
+# enough rows for a reviewer to see the drift's pattern. The artifact lists
+# every row.
 LEDGER_BODY_ROWS = 60
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
