@@ -4,8 +4,10 @@
   scoped `fixtures-coverage` recipe (real `cargo nextest` selection, real
   instrumented `cargo llvm-cov`), the hand-written reach recipe (an
   instrumented crozier build over temporary fixtures), golden-reach against
-  the real `llvm-profdata`, and the instrumented-measurement lock across every
-  measuring entry point (real `just` recipes, a stand-in `cargo`). They are a project of their own so the offline
+  the real `llvm-profdata`, repin composition over a tiny dependency-free Rust
+  workspace (real CLIs and instrumentation, without the corpus build), and the
+  instrumented-measurement lock across every measuring entry point (real `just`
+  recipes, a stand-in `cargo`). They are a project of their own so the offline
   census tests stay cheap; each reads the surface-census scripts it exercises
   through its inputs. A census suite that needs the built crozier or `ruff`
   lands here, never in `surface-census`.
