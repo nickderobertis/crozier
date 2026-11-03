@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import runpy
 import shutil
 import signal
 import subprocess
@@ -296,7 +297,7 @@ def pull():
 
 match command:
     case "label list":
-        done(json.dumps([{"name": name} for name in state["labels"]]))
+        done(json.dumps([{"name": name} for name in state["labels"]]) if state["labels"] else "")
     case "label create":
         state["labels"].append(args[2])
         done()
@@ -978,6 +979,128 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(0, again.ran("resolve").returncode)
         self.assertIsNone(again.plan)
         self.assertIn("is the certified pair already", again.ran("resolve").stdout)
+
+    def test_an_oversized_mandatory_overview_refuses_before_publication(self) -> None:
+        self.publish_seed()
+        self.stand_in(
+            {"rules": {"probe": self.refusal_rule, "Harbour Lanterns": {"generate": [2, "generation failed"]}}}
+        )
+        state = self.run_workflow(stop_after="assemble")
+        bundle = state.artifacts / "bundle"
+        manifest = bundle / "bundle.json"
+        record = json.loads(manifest.read_text(encoding="utf-8"))
+        failed = next(entry for entry in record["items"] if entry["status"] == "failed")
+        failed["detail"] = "failure " * 10000
+        manifest.write_text(json.dumps(record), encoding="utf-8")
+        decider = self.clone()
+        applied = self.phase(decider, "apply", "--bundle", str(bundle))
+        self.assertEqual(0, applied.returncode, applied.stderr)
+        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision"))
+        self.assertEqual(1, decided.returncode, decided.stdout)
+        self.assertIn("mandatory pull request overview exceeds the body limit", decided.stderr)
+        self.assertTrue((state.artifacts / "decision/decision.json").is_file(), "the full result is retained")
+        self.assertFalse((state.artifacts / "decision/body.md").exists())
+        self.assertIsNone(state.publish)
+        self.assert_untouched()
+
+    def test_large_diff_publication_accounts_for_every_kind_before_reports(self) -> None:
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide")
+        decision_dir = state.artifacts / "decision"
+        path = decision_dir / "decision.json"
+        decision = json.loads(path.read_text(encoding="utf-8"))
+        decision["outcome"] = "diff"
+        decision["ledger"] = {
+            "schema_version": decision["schema_version"],
+            "outcome": "refused",
+            "detail": "ledger recipe refused oversized test",
+            "changes": [],
+        }
+        decision["failing"] = {
+            "corpus": [{"item": f"large-{n}", "report": "mismatch " * 1000} for n in range(898)],
+            "handwritten": [{"item": "broken-comparison", "report": "mismatch"}],
+        }
+        decision["failing"]["corpus"][0] = {
+            "item": "uncompared-corpus",
+            "report": "ledger drift",
+            "ledger_drift": ["stale row"],
+            "files_compared": False,
+        }
+        decision["refusals_changed"] = [{"item": "heap-exhausted", "detail": "unsettled"}]
+        decision["unfetchable"] = [{"item": "subsloth", "detail": "unavailable"}]
+        decision["unchecked"] = [
+            {
+                "family": "measurements",
+                "item": "broken-input",
+                "status": "failed",
+                "detail": "missing document",
+                "log": "missing.log",
+            }
+        ]
+        decision["known_changed"] = [
+            {"item": f"changed-upstream-{n}", "detail": "generates", "report": "new output" * 2000} for n in range(12)
+        ]
+        path.write_text(json.dumps(decision), encoding="utf-8")
+        # Compose the artifact with the production composer, then hand it to
+        # publish exactly as the workflow's decision job does.
+        module = runpy.run_path(str(REPO / "tools/fern-goldens/weekly.py"))
+        pair = module["Pair"](*CANDIDATE)
+        composed = module["Decision"](pair, True, decision["bundle"])
+        composed.failing = {
+            family: [module["FailingItem"](**entry) for entry in entries]
+            for family, entries in decision["failing"].items()
+        }
+        composed.refusals_changed = [module["RefusalChange"](**entry) for entry in decision["refusals_changed"]]
+        composed.unfetchable = [module["Unfetchable"](**entry) for entry in decision["unfetchable"]]
+        composed.unchecked = [module["Unchecked"].from_json(entry, "test") for entry in decision["unchecked"]]
+        composed.known_changed = [module["KnownFailureChange"](**entry) for entry in decision["known_changed"]]
+        composed.ledger = module["LedgerChange"].from_json(decision["ledger"], "test")
+        bundle = module["read_bundle"](state.artifacts / "bundle")
+        with unittest.mock.patch.dict(os.environ, {"GITHUB_RUN_ID": "77", "GITHUB_REPOSITORY": "owner/crozier"}):
+            (decision_dir / "body.md").write_text(
+                module["body"](composed, bundle, module["Pair"](*OLD)), encoding="utf-8"
+            )
+        published = self.publish(
+            state.artifacts / "bundle", decision_dir, GITHUB_RUN_ID="77", GITHUB_REPOSITORY="owner/crozier"
+        )
+        self.assertEqual(0, published.returncode, published.stderr)
+        (pull,) = self.pulls()
+        body = pull["body"]
+        self.assertLessEqual(len(body), 60000)
+        overview = body.split("## Failing items", 1)[0]
+        for name in (
+            "heap-exhausted",
+            "subsloth",
+            "broken-input",
+            "changed-upstream",
+            "broken-comparison",
+            "uncompared-corpus",
+            "ledger recipe refused oversized test",
+        ):
+            self.assertIn(name, overview)
+        for n in range(12):
+            self.assertIn(f"changed-upstream-{n}", overview)
+        self.assertIn("changed known failures: 12", overview)
+        optional_omitted = re.search(r"(\d+) ledger or known-failure report\(s\) omitted", overview)
+        self.assertIsNotNone(optional_omitted)
+        assert optional_omitted is not None
+        retained_optional = body.count(": what this carries</summary>")
+        self.assertGreater(int(optional_omitted[1]), 0)
+        self.assertGreater(retained_optional, 0)
+        self.assertEqual(12, int(optional_omitted[1]) + retained_optional)
+        self.assertIn("new output", body)
+
+        self.assertIn("Failing items: 899", overview)
+        self.assertIn("corpus: 898", overview)
+        self.assertIn("handwritten: 1", overview)
+        self.assertIn("fern-goldens-decision", overview)
+        self.assertIn("https://github.com/owner/crozier/actions/runs/77#artifacts", overview)
+        omitted = re.search(r"(\d+) failing item\(s\) omitted", overview)
+        self.assertIsNotNone(omitted)
+        assert omitted is not None
+        self.assertEqual(899, int(omitted[1]) + body.count("<details><summary>report</summary>"))
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("label fern-goldens: created", published.stdout)
 
     def test_a_small_engine_difference_opens_a_diff_pull_request_naming_the_item(self) -> None:
         self.publish_seed()

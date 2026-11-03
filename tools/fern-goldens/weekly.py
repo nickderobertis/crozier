@@ -1208,6 +1208,8 @@ def gh(repo: str, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def gh_objects(listed: subprocess.CompletedProcess[str], what: str) -> list[dict[str, object]]:
+    if not listed.stdout.strip():
+        return []
     try:
         found = json.loads(listed.stdout)
     except ValueError as error:
@@ -2525,6 +2527,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
     if os.environ.get("GITHUB_RUN_ID") and os.environ.get("GITHUB_REPOSITORY"):
         server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
         run_url = f"{server}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+    optional_reports: list[list[str]] = []
     families: dict[str, int] = {}
     for entry in bundle.items:
         families[entry.family] = families.get(entry.family, 0) + 1
@@ -2582,20 +2585,6 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
         ]
         lines += [f"- {entry.line()}" for entry in decision.unchecked]
         lines += [""]
-    if decision.failing:
-        lines += ["## Failing items", ""]
-        if decision.text_diffs_omitted():
-            lines += [TEXT_DIFFS_OMITTED, ""]
-        budget = BODY_LIMIT // max(1, sum(len(entries) for entries in decision.failing.values()))
-        limit = min(REPORT_LIMIT, max(400, budget))
-        for family, entries in decision.failing.items():
-            lines += [f"### {family} ({len(entries)})", ""]
-            for entry in entries:
-                report = entry.report
-                if len(report) > limit:
-                    report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
-                lines += [f"- {entry.summary()}", "", "<details><summary>report</summary>", "", fenced(report), ""]
-                lines += ["</details>", ""]
     if decision.known_reproduced:
         lines += ["## Known upstream Fern failures reproduced", ""]
         lines += [
@@ -2613,15 +2602,26 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             shown = listed[:LEDGER_BODY_ROWS] + (
                 [f"… {more} more (the decision artifact lists them all)"] if more > 0 else []
             )
-            lines += [f"<details><summary>{rows.path}</summary>", "", fenced("\n".join(shown)), "", "</details>", ""]
+            optional_reports.append(
+                [f"<details><summary>{rows.path}</summary>", "", fenced("\n".join(shown)), "", "</details>", ""]
+            )
     if decision.known_changed:
         lines += ["## Known upstream Fern failures that changed", ""]
         for change in decision.known_changed:
             report = change.report
             if len(report) > REPORT_LIMIT:
                 report = report[:REPORT_LIMIT] + "\n… (truncated; the bundle carries the whole file)"
-            lines += [f"- corpus `{change.item}`: {change.detail}", "", "<details><summary>what this carries</summary>"]
-            lines += ["", fenced(report), "", "</details>", ""]
+            lines += [f"- corpus `{change.item}`: {change.detail}", ""]
+            optional_reports.append(
+                [
+                    f"<details><summary>{change.item}: what this carries</summary>",
+                    "",
+                    fenced(report),
+                    "",
+                    "</details>",
+                    "",
+                ]
+            )
     if decision.refusals_changed:
         lines += ["## Refusal classes whose Fern outcome changed", ""]
         lines += [
@@ -2636,13 +2636,77 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
         lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
         lines += [""]
+    if decision.outcome == Outcome.DIFF:
+        # Reserve the complete overview before spending space on comparison reports.
+        total = sum(len(entries) for entries in decision.failing.values())
+        lines += ["## Comparison totals", "", f"Failing items: {total}.", ""]
+        lines += [f"- {family}: {len(entries)}" for family, entries in decision.failing.items()]
+        lines += [
+            f"- changed known failures: {len(decision.known_changed)}",
+            f"- changed refusal probes: {len(decision.refusals_changed)}",
+            f"- not regenerated: {len(decision.unfetchable)}",
+            f"- not compared (including broken inputs): {len(decision.unchecked)}",
+            f"- ledger refusals or changes: {int(decision.ledger is not None)}",
+            "",
+            "## Non-corpus failures and references not compared",
+            "",
+        ]
+        for family, entries in decision.failing.items():
+            lines += [
+                f"- {family} {entry.summary()}" for entry in entries if family != "corpus" or not entry.files_compared
+            ]
+        full_list = "Full list and reports: the run's `fern-goldens-decision` artifact (`decision.json`)."
+        if run_url:
+            full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
+        lines += ["", full_list, ""]
+        reports: list[str] = []
+        omitted_reports = 0
+        for block in optional_reports:
+            if len("\n".join(lines + reports + block)) > BODY_LIMIT - 4000:
+                omitted_reports += 1
+            else:
+                reports += block
+        lines += [f"{omitted_reports} ledger or known-failure report(s) omitted; the artifact holds them all.", ""]
+        shown = 0
+        budget = BODY_LIMIT // max(1, total)
+        limit = min(REPORT_LIMIT, max(400, budget))
+        for family, entries in decision.failing.items():
+            for entry in entries:
+                report = entry.report
+                if len(report) > limit:
+                    report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
+                block = [
+                    f"### {family} ({len(entries)})",
+                    "",
+                    f"- {entry.summary()}",
+                    "",
+                    "<details><summary>report</summary>",
+                    "",
+                    fenced(report),
+                    "",
+                    "</details>",
+                    "",
+                ]
+                # Leave room for inventory, omission counts and the workflow link.
+                if len("\n".join(lines + reports + block)) > BODY_LIMIT - 4000:
+                    continue
+                reports += block
+                shown += 1
+        lines += [f"{total - shown} failing item(s) omitted from the detailed list below.", ""]
+        if decision.failing:
+            lines += ["## Failing items", ""]
+            if decision.text_diffs_omitted():
+                lines += [TEXT_DIFFS_OMITTED, ""]
+        lines += reports
     lines += ["## Inventory", "", "| family | items |", "|---|---:|"]
     lines += [f"| {family} | {count} |" for family, count in families.items()]
     if run_url:
         lines += ["", f"Run: {run_url}"]
     lines += ["", "🤖 Generated by the Fern goldens workflow."]
     text = "\n".join(lines) + "\n"
-    return text if len(text) <= BODY_LIMIT + 5000 else text[:BODY_LIMIT] + "\n… (truncated)\n"
+    if len(text) > BODY_LIMIT:
+        raise WeeklyError("mandatory pull request overview exceeds the body limit; see the decision artifact")
+    return text
 
 
 def decide(args: argparse.Namespace) -> int:
