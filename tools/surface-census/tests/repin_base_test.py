@@ -101,7 +101,8 @@ class GitHub(BaseHTTPRequestHandler):
         if path.startswith(prefix) and path.endswith("/zip") and self.mode in ("redirect", "redirect-away"):
             # GitHub answers an artifact download with a redirect to its blob storage.
             index = path[len(prefix) : -len("/zip")]
-            here = f"http://127.0.0.1:{self.server.server_address[1]}"
+            host, port = self.headers["Host"].rsplit(":", 1)
+            here = f"http://{host}:{port}"
             target = f"{here}/blob/{index}" if self.mode == "redirect" else f"http://storage.example.invalid/{index}"
             self.send_response(302)
             self.send_header("Location", target)

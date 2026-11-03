@@ -199,14 +199,14 @@ def _char_width(text: str, j: int) -> int:
 
 def _matches(tokens: list[Token]) -> dict[int, int]:
     """Opening bracket index -> its closing index, for `()`, `[]` and `{}`."""
-    pairs = {"(": ")", "[": "]", "{": "}"}
     stack: list[int] = []
     out: dict[int, int] = {}
     for index, token in enumerate(tokens):
-        if token.text in pairs:
-            stack.append(index)
-        elif token.text in (")", "]", "}") and stack:
-            out[stack.pop()] = index
+        match token.text:
+            case "(" | "[" | "{":
+                stack.append(index)
+            case ")" | "]" | "}" if stack:
+                out[stack.pop()] = index
     return out
 
 
@@ -449,10 +449,12 @@ def _scan_items(
 def _depth(tokens: list[Token], lo: int, hi: int) -> int:
     depth = 0
     for index in range(lo, hi):
-        if tokens[index].text == "<":
-            depth += 1
-        elif tokens[index].text == ">" and tokens[index - 1].text != "-":
-            depth -= 1
+        match tokens[index].text:
+            case "<":
+                depth += 1
+            # The `>` of a `->` closes nothing.
+            case ">" if tokens[index - 1].text != "-":
+                depth -= 1
     return depth
 
 
@@ -1051,10 +1053,11 @@ def _references(tokens: list[Token], lo: int, hi: int) -> set[str]:
     enclosing: list[int] = [len(span) - 1] * len(span)
     stack: list[int] = []
     for k, token in enumerate(span):
-        if token.text == "{":
-            stack.append(match.get(k, len(span) - 1))
-        elif token.text == "}" and stack:
-            stack.pop()
+        match token.text:
+            case "{":
+                stack.append(match.get(k, len(span) - 1))
+            case "}" if stack:
+                stack.pop()
         if stack:
             enclosing[k] = stack[-1]
     scopes: dict[str, list[tuple[int, int]]] = {}
