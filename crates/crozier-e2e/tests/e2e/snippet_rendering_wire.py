@@ -44,8 +44,11 @@ args = parser.parse_args()
 if not (args.sdk / "fern" / "__init__.py").is_file():
     parser.error("sdk must contain the generated fern package")
 sys.path.insert(0, str(args.sdk.resolve()))
-sdk = importlib.import_module("fern")
-client_module = importlib.import_module("fern.patterns.client")
+try:
+    sdk = importlib.import_module("fern")
+    client_module = importlib.import_module("fern.patterns.client")
+except ImportError as error:
+    parser.error(f"cannot import the generated SDK under {args.sdk}: {error}")
 reference = (args.sdk.parent / "reference.md").read_text(encoding="utf-8")
 
 
