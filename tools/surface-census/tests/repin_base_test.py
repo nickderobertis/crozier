@@ -76,6 +76,10 @@ class GitHub(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"resources": {"core": core}}).encode())
             return
         type(self).calls[path] += 1
+        if path.startswith("/blob/"):
+            # Blob storage takes the redirect's own signed URL, never the API token.
+            self._send(200, self.artifacts[sorted(self.artifacts)[int(path[len("/blob/") :]) - 1]], "application/zip")
+            return
         if self.headers.get("Authorization") != "Bearer offline-token" or self.mode == "refused":
             self._send(401, b'{"message": "Bad credentials"}')
             return
@@ -94,6 +98,16 @@ class GitHub(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"total_count": len(listed), "artifacts": listed}).encode())
             return
         prefix = f"/repos/{SLUG}/actions/artifacts/"
+        if path.startswith(prefix) and path.endswith("/zip") and self.mode in ("redirect", "redirect-away"):
+            # GitHub answers an artifact download with a redirect to its blob storage.
+            index = path[len(prefix) : -len("/zip")]
+            here = f"http://127.0.0.1:{self.server.server_address[1]}"
+            target = f"{here}/blob/{index}" if self.mode == "redirect" else f"http://storage.example.invalid/{index}"
+            self.send_response(302)
+            self.send_header("Location", target)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         if path.startswith(prefix) and path.endswith("/zip"):
             if self.mode == "download-fails":
                 self._send(500, b'{"message": "Server Error"}')
@@ -170,19 +184,31 @@ def history(tmp_path: Path) -> tuple[Path, list[str]]:
     return root, commits
 
 
-def lookup(root: Path, cache: Path, api: str, *, token: str | None = "offline-token") -> subprocess.CompletedProcess:
+def lookup(
+    root: Path,
+    cache: Path,
+    api: str,
+    *,
+    token: str | None = "offline-token",
+    extra: dict[str, str] | None = None,
+    gh_token: str | None = None,
+) -> subprocess.CompletedProcess:
+    """`census-repin --base-only` over `root`. With no `token`, only git is on PATH, and a
+    stand-in `gh` printing `gh_token` for `gh auth token` when one is given."""
     env = {
         key: value for key, value in os.environ.items() if key not in ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_REPOSITORY")
     }
-    env |= {"CROZIER_GITHUB_API_URL": api, "CROZIER_GOLDEN_REACH_BASE_CACHE": str(cache)}
+    env |= {"CROZIER_GITHUB_API_URL": api, "CROZIER_GOLDEN_REACH_BASE_CACHE": str(cache)} | (extra or {})
     if token is not None:
         env["GITHUB_TOKEN"] = token
     else:
-        # No `gh` login either: only git on PATH.
         tools = cache.parent / "bin"
         tools.mkdir(exist_ok=True)
         if not (tools / "git").exists():
             (tools / "git").symlink_to(shutil.which("git") or "/usr/bin/git")
+        if gh_token is not None:
+            (tools / "gh").write_text(f'#!/bin/sh\n[ "$1 $2" = "auth token" ] && echo {gh_token}\n', encoding="utf-8")
+            (tools / "gh").chmod(0o755)
         env["PATH"] = str(tools)
     run = subprocess.run(
         [sys.executable, str(VERB), "--repo-root", str(root), "--base-only"],
@@ -374,3 +400,56 @@ def test_an_expired_or_malformed_artifact_record_is_passed_over_for_the_next_anc
     ]
     run = lookup(root, tmp_path / "cache", github)
     assert f"census-repin: base {c2} (artifact): downloaded golden-reach-base-{c2}" in run.stdout
+
+
+@pytest.mark.parametrize(
+    ("case", "token", "extra", "gh_token", "base"),
+    [
+        ("GH_TOKEN alone", None, {"GH_TOKEN": "offline-token"}, None, "c3"),
+        ("gh auth token when neither variable is set", None, {}, "offline-token", "c3"),
+        ("GITHUB_TOKEN before GH_TOKEN", "a-refused-token", {"GH_TOKEN": "offline-token"}, None, "c1"),
+    ],
+    ids=["GH_TOKEN", "gh auth token", "GITHUB_TOKEN wins"],
+)
+@pytest.mark.skipif(sys.platform == "win32", reason="the stand-in `gh` is a shell script")
+def test_the_lookup_authenticates_with_each_credential_in_order(
+    history: tuple[Path, list[str]],
+    github: str,
+    tmp_path: Path,
+    case: str,
+    token: str | None,
+    extra: dict[str, str],
+    gh_token: str | None,
+    base: str,
+) -> None:
+    root, (c1, _c2, c3, _c4) = history
+    cache = tmp_path / "cache"
+    cached(cache, c1)
+    GitHub.artifacts = {c3: artifact(store(c3), tmp_path)}
+    run = lookup(root, cache, github, token=token, extra=extra, gh_token=gh_token)
+    expected = {"c1": c1, "c3": c3}[base]
+    assert f"census-repin: base {expected} " in run.stdout, (case, run.stdout)
+    if base == "c1":
+        assert "GitHub refused the token from GITHUB_TOKEN (HTTP 401)" in run.stdout
+
+
+@pytest.mark.parametrize(
+    ("mode", "chosen"),
+    [("redirect", "artifact"), ("redirect-away", "cache")],
+    ids=["a redirect to artifact storage", "a redirect to a host the lookup refuses"],
+)
+def test_an_artifact_download_follows_only_the_redirects_it_allows(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path, mode: str, chosen: str
+) -> None:
+    root, (c1, _c2, c3, _c4) = history
+    cache = tmp_path / "cache"
+    cached(cache, c1)
+    GitHub.artifacts = {c3: artifact(store(c3), tmp_path)}
+    GitHub.mode = mode
+    run = lookup(root, cache, github)
+    if chosen == "artifact":
+        assert f"census-repin: base {c3} (artifact): downloaded golden-reach-base-{c3}" in run.stdout
+        assert GitHub.calls["/blob/1"] == 1
+    else:
+        assert f"downloading golden-reach-base-{c3} failed" in run.stdout and "redirect" in run.stdout
+        assert f"census-repin: base {c1} (cache):" in run.stdout

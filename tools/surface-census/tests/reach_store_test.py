@@ -247,6 +247,9 @@ def test_the_store_round_trips_byte_stably_and_refuses_any_other_schema(tmp_path
     RS.save(RS.load(path), path)
     assert path.read_bytes() == first, "one content is one byte stream (mtime-free gzip, sorted keys)"
     assert RS.load(path) == store
+    path.write_bytes(gzip.compress(b"{}")[:10] + b"not deflate data" + gzip.compress(b"{}")[-8:])
+    with pytest.raises(RS.StoreError, match="not a gzip-compressed JSON store"):
+        RS.load(path)
     for broken, message in (
         ({**store, "schema": 2}, "schema 2"),
         ({k: v for k, v in store.items() if k != "llvm"}, "not exactly"),

@@ -77,6 +77,7 @@ import re
 import subprocess
 import sys
 import tomllib
+import zlib
 from collections.abc import Generator, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -817,7 +818,7 @@ def load(path: Path) -> Store:
     try:
         with gzip.open(path, "rt", encoding="utf-8") as handle:
             data = json.load(handle)
-    except (OSError, ValueError, EOFError) as error:
+    except (OSError, ValueError, EOFError, zlib.error) as error:
         raise StoreError(f"{path} is not a gzip-compressed JSON store ({error})") from error
     return validate(data, str(path))
 
@@ -1014,12 +1015,14 @@ _PATH_WORDS = frozenset({"crate", "super", "self", "Self", "std", "core", "alloc
 def _item_name(item: Item) -> str:
     """The identifier code refers to an item by: its own name, an impl's type, a macro's name."""
     last = item.key.rsplit("::", 1)[-1]
-    if item.kind in ("impl", "trait"):
-        owner = last.split(" ", 1)[1] if " " in last else last
-        return owner.removeprefix("<").split(" as ", 1)[0].rstrip(">")
-    if item.kind == "macro":
-        return last.removeprefix("macro_rules! ").rstrip("!")
-    return last.split(" ", 1)[-1]
+    match item.kind:
+        case "impl" | "trait":
+            owner = last.split(" ", 1)[1] if " " in last else last
+            return owner.removeprefix("<").split(" as ", 1)[0].rstrip(">")
+        case "macro":
+            return last.removeprefix("macro_rules! ").rstrip("!")
+        case _:
+            return last.split(" ", 1)[-1]
 
 
 class _Suite(NamedTuple):
