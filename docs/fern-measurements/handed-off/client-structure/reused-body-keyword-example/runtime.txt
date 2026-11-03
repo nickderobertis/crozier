@@ -1,4 +1,4 @@
-Recorded 2026-11-02 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7. crozier built at 77a3e7995, generated from openapi.yml with --package-name fern --project-name default_package_name. Each side's README.md synchronous `client.questions.file_question(` worked call is compiled (the script below, mode `compile` for the certified tree and `run` for crozier's); crozier's is then run with its client's httpx transport replaced by httpx.MockTransport, printing each request it sends.
+Recorded 2026-11-03 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7. crozier built at 3756f7ad2, generated from openapi.yml with --package-name fern --project-name default_package_name. Each side's README.md synchronous `client.questions.file_question(` worked call is compiled (the script below, mode `compile` for the certified tree and `run` for crozier's); crozier's is then run with its client's httpx transport replaced by httpx.MockTransport, printing each request it sends. The script writes a compilation error to stderr and everything else to stdout; each block records both streams as they interleaved under `python -u ... 2>&1`.
 
 ## certified (fern-expected/)
 from fern import FernApi
@@ -37,7 +37,7 @@ fern-api/docs fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd6
     import re
     import sys
     from pathlib import Path
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("tree", type=Path, help="a generated SDK tree holding README.md and src/")
     parser.add_argument("mode", choices=["compile", "run"])
@@ -55,7 +55,7 @@ fern-api/docs fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd6
     try:
         code = compile(snippet, "README.md", "exec")
     except SyntaxError as error:
-        print(f"SyntaxError: {error.msg} (line {error.lineno})")
+        print(f"SyntaxError: {error.msg} (line {error.lineno})", file=sys.stderr)
         sys.exit(1)
     print("compiles")
     if args.mode == "run":
