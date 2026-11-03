@@ -148,6 +148,8 @@
       ]
     },
     "docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected": {},
+    "docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected": {},
+    "docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R8/fern-expected": {},

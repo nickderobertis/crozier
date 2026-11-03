@@ -3,7 +3,9 @@ name: Fern goldens
 # Every Monday: check the newest Fern against every committed Fern reference
 # crozier byte-matches against, and propose what changed as one pull request on
 # `fern-goldens/update`. Each job is one phase of tools/fern-goldens/weekly.py,
-# which holds every decision; see docs/fern-goldens.md.
+# which holds every decision; see docs/fern-goldens.md. An item that failed to
+# generate, or whose shard uploaded nothing, is named and the rest still decided
+# and published; the last job then turns the run red for it.
 on:
   schedule:
     # Monday 05:17 UTC. Scheduled workflows run from the default branch.
@@ -173,8 +175,11 @@ jobs:
           retention-days: 14
           overwrite: true
 
+  # A sound bundle is decided even when a shard's job failed: its items are
+  # carried in it as not generated, never hidden behind it.
   decide:
     needs: [plan, assemble]
+    if: always() && needs.assemble.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -229,7 +234,7 @@ jobs:
   # its decision.
   publish:
     needs: [plan, decide]
-    if: needs.plan.outputs.complete == 'true'
+    if: always() && needs.decide.result == 'success' && needs.plan.outputs.complete == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -255,4 +260,25 @@ jobs:
         run: |
           python3 tools/fern-goldens/weekly.py publish --bundle .local/fern-goldens-weekly/bundle \
             --decision .local/fern-goldens-weekly/decision --repo "$GITHUB_REPOSITORY" \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+  # The run's status once its decision, and any publication, is done: red when
+  # an item failed or was not generated, so a week with a broken input is never
+  # green, while everything else it found is already decided and published.
+  conclude:
+    needs: [plan, decide, publish]
+    if: always() && needs.decide.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-decision
+          path: .local/fern-goldens-weekly/decision
+
+      - name: Conclude the run
+        run: |
+          python3 tools/fern-goldens/weekly.py conclude --decision .local/fern-goldens-weekly/decision \
             --summary "$GITHUB_STEP_SUMMARY"

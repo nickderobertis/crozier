@@ -1,0 +1,52 @@
+Fern CLI 5.163.1, python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Kiln Monitor
+::error title=[api]%3A::Failed to parse openapi document Kiln Monitor
+[api]: Cannot read properties of null (reading 'schema') 
+       TypeError: Cannot read properties of null (reading 'schema')
+           at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110806
+           at Array.find (<anonymous>)
+           at Szc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110786)
+           at KLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:109275)
+           at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:117421)
+           at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)
+           at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+           at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+           at Array.forEach (<anonymous>)
+           at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+::error title=[api]%3A::Cannot read properties of null (reading 'schema') %0ATypeError: Cannot read properties of null (reading 'schema')%0A    at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110806%0A    at Array.find (<anonymous>)%0A    at Szc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110786)%0A    at KLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:109275)%0A    at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:117421)%0A    at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+All checks passed
+
+generate exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Kiln Monitor
+::error title=[api]%3A python-sdk::Failed to parse openapi document Kiln Monitor
+[api]: python-sdk Cannot read properties of null (reading 'schema') 
+                  TypeError: Cannot read properties of null (reading 'schema')
+                      at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110806
+                      at Array.find (<anonymous>)
+                      at Szc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110786)
+                      at KLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:109275)
+                      at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:117421)
+                      at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)
+                      at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+                      at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+                      at Array.forEach (<anonymous>)
+                      at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+::error title=[api]%3A python-sdk::Cannot read properties of null (reading 'schema') %0ATypeError: Cannot read properties of null (reading 'schema')%0A    at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110806%0A    at Array.find (<anonymous>)%0A    at Szc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:110786)%0A    at KLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:109275)%0A    at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:117421)%0A    at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <workspace>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

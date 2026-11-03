@@ -1,0 +1,5 @@
+fern_cli_version: 5.163.1
+fern_python_sdk_version: 5.41.3
+generate_exit: 0
+diagnostic: Cannot read properties of null (reading 'schema')
+output_tree: 35 files, 28 Python, from a document Fern did not parse

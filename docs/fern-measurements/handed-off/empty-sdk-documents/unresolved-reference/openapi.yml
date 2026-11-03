@@ -1,0 +1,76 @@
+openapi: 3.0.3
+info:
+  title: Tide Gauges
+  version: 1.0.0
+paths:
+  /gauges:
+    get:
+      operationId: listGauges
+      parameters:
+        - name: harbour
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The gauges.
+          headers:
+            X-Rate-Remaining:
+              description: Requests left in this window.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gauge'
+        '404':
+          description: No harbour of that name.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /gauges/{gaugeId}/readings:
+    get:
+      operationId: listReadings
+      parameters:
+        - name: gaugeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/paths/~1gauges/get/parameters/0'
+      responses:
+        '200':
+          description: The gauge's readings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reading'
+components:
+  schemas:
+    Gauge:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        level:
+          type: number
+    Reading:
+      type: object
+      properties:
+        level:
+          type: number
+        taken_at:
+          type: string
+          format: date-time
+    Problem:
+      type: object
+      properties:
+        message:
+          type: string
