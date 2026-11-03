@@ -44,6 +44,7 @@ const LITERALS: &[&str] = &[
     "example-matching-union-variant",
     "example-value-source",
     "param-oneof-ref-and-const-example",
+    "property-schema-examples-array",
 ];
 
 /// The overlay manifest `tools/fern-goldens/golden_overlay.py` writes.

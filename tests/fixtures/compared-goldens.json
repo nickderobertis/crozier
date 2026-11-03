@@ -162,6 +162,11 @@
       ]
     },
     "docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},

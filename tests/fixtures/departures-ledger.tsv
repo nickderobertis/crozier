@@ -930,6 +930,7 @@ docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-examp
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/example-values/property-schema-examples-array/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

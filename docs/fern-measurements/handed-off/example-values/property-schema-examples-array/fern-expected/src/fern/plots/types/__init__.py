@@ -7,7 +7,13 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .plot_course_response import PlotCourseResponse
-_dynamic_imports: typing.Dict[str, str] = {"PlotCourseResponse": ".plot_course_response"}
+    from .plot_request_berths_item import PlotRequestBerthsItem
+    from .plot_request_tide import PlotRequestTide
+_dynamic_imports: typing.Dict[str, str] = {
+    "PlotCourseResponse": ".plot_course_response",
+    "PlotRequestBerthsItem": ".plot_request_berths_item",
+    "PlotRequestTide": ".plot_request_tide",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +37,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["PlotCourseResponse"]
+__all__ = ["PlotCourseResponse", "PlotRequestBerthsItem", "PlotRequestTide"]

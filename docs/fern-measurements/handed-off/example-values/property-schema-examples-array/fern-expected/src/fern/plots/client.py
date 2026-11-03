@@ -6,6 +6,8 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawPlotsClient, RawPlotsClient
 from .types.plot_course_response import PlotCourseResponse
+from .types.plot_request_berths_item import PlotRequestBerthsItem
+from .types.plot_request_tide import PlotRequestTide
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -32,6 +34,8 @@ class PlotsClient:
         waypoints: typing.Sequence[str],
         vessel: str,
         legs: int,
+        berths: typing.Sequence[PlotRequestBerthsItem],
+        tide: PlotRequestTide,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> PlotCourseResponse:
         """
@@ -43,6 +47,10 @@ class PlotsClient:
 
         legs : int
 
+        berths : typing.Sequence[PlotRequestBerthsItem]
+
+        tide : PlotRequestTide
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -53,6 +61,8 @@ class PlotsClient:
 
         Examples
         --------
+        from fern.plots import PlotRequestBerthsItem, PlotRequestTide
+
         from fern import FernApi
 
         client = FernApi(
@@ -67,10 +77,12 @@ class PlotsClient:
             ],
             vessel="Morwenna",
             legs=4,
+            berths=[PlotRequestBerthsItem.QUAY_NORTH, PlotRequestBerthsItem.QUAY_NORTH],
+            tide=PlotRequestTide.FLOOD,
         )
         """
         _response = self._raw_client.plot_course(
-            waypoints=waypoints, vessel=vessel, legs=legs, request_options=request_options
+            waypoints=waypoints, vessel=vessel, legs=legs, berths=berths, tide=tide, request_options=request_options
         )
         return _response.data
 
@@ -96,6 +108,8 @@ class AsyncPlotsClient:
         waypoints: typing.Sequence[str],
         vessel: str,
         legs: int,
+        berths: typing.Sequence[PlotRequestBerthsItem],
+        tide: PlotRequestTide,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> PlotCourseResponse:
         """
@@ -106,6 +120,10 @@ class AsyncPlotsClient:
         vessel : str
 
         legs : int
+
+        berths : typing.Sequence[PlotRequestBerthsItem]
+
+        tide : PlotRequestTide
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -118,6 +136,8 @@ class AsyncPlotsClient:
         Examples
         --------
         import asyncio
+
+        from fern.plots import PlotRequestBerthsItem, PlotRequestTide
 
         from fern import AsyncFernApi
 
@@ -136,12 +156,17 @@ class AsyncPlotsClient:
                 ],
                 vessel="Morwenna",
                 legs=4,
+                berths=[
+                    PlotRequestBerthsItem.QUAY_NORTH,
+                    PlotRequestBerthsItem.QUAY_NORTH,
+                ],
+                tide=PlotRequestTide.FLOOD,
             )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.plot_course(
-            waypoints=waypoints, vessel=vessel, legs=legs, request_options=request_options
+            waypoints=waypoints, vessel=vessel, legs=legs, berths=berths, tide=tide, request_options=request_options
         )
         return _response.data

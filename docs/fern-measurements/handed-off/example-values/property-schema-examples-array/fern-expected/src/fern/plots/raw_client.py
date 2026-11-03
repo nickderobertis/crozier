@@ -10,6 +10,8 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.plot_course_response import PlotCourseResponse
+from .types.plot_request_berths_item import PlotRequestBerthsItem
+from .types.plot_request_tide import PlotRequestTide
 from pydantic import ValidationError
 
 
@@ -26,6 +28,8 @@ class RawPlotsClient:
         waypoints: typing.Sequence[str],
         vessel: str,
         legs: int,
+        berths: typing.Sequence[PlotRequestBerthsItem],
+        tide: PlotRequestTide,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[PlotCourseResponse]:
         """
@@ -36,6 +40,10 @@ class RawPlotsClient:
         vessel : str
 
         legs : int
+
+        berths : typing.Sequence[PlotRequestBerthsItem]
+
+        tide : PlotRequestTide
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -52,6 +60,8 @@ class RawPlotsClient:
                 "waypoints": waypoints,
                 "vessel": vessel,
                 "legs": legs,
+                "berths": berths,
+                "tide": tide,
             },
             headers={
                 "content-type": "application/json",
@@ -89,6 +99,8 @@ class AsyncRawPlotsClient:
         waypoints: typing.Sequence[str],
         vessel: str,
         legs: int,
+        berths: typing.Sequence[PlotRequestBerthsItem],
+        tide: PlotRequestTide,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[PlotCourseResponse]:
         """
@@ -99,6 +111,10 @@ class AsyncRawPlotsClient:
         vessel : str
 
         legs : int
+
+        berths : typing.Sequence[PlotRequestBerthsItem]
+
+        tide : PlotRequestTide
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -115,6 +131,8 @@ class AsyncRawPlotsClient:
                 "waypoints": waypoints,
                 "vessel": vessel,
                 "legs": legs,
+                "berths": berths,
+                "tide": tide,
             },
             headers={
                 "content-type": "application/json",

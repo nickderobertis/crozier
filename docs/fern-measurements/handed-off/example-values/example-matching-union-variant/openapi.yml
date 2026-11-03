@@ -65,6 +65,123 @@ paths:
                 properties:
                   valid:
                     type: boolean
+  /shelves/stock:
+    post:
+      operationId: stockShelf
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shelf]
+              properties:
+                shelf:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - $ref: "#/components/schemas/WaxSeal"
+                      - $ref: "#/components/schemas/StampSeal"
+            example:
+              shelf:
+                top:
+                  format: stamp
+                  stamp_id: st-0102
+                  inked: true
+      responses:
+        "200":
+          description: Stocked
+  /badges/verify:
+    post:
+      operationId: verifyBadge
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [badge]
+              properties:
+                badge:
+                  oneOf:
+                    - $ref: "#/components/schemas/TinBadge"
+                    - $ref: "#/components/schemas/CopperBadge"
+            example:
+              badge:
+                kind: copper
+                serial: cu-0007
+      responses:
+        "200":
+          description: Verified
+  /seals/register:
+    post:
+      operationId: registerSeal
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SealRegistration"
+            examples:
+              Stamped:
+                summary: A stamped seal
+                value:
+                  seal:
+                    format: stamp
+                    stamp_id: st-0203
+      responses:
+        "200":
+          description: Registered
+  /charms/verify:
+    post:
+      operationId: verifyCharm
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  oneOf:
+                    - $ref: "#/components/schemas/WaxSeal"
+                    - $ref: "#/components/schemas/CharmSeal"
+            example:
+              token:
+                format: charm
+                charm: 5
+                motto: Fortune
+      responses:
+        "200":
+          description: Verified
+  /charms/inspect:
+    post:
+      operationId: inspectCharm
+      tags: [seals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  oneOf:
+                    - $ref: "#/components/schemas/WaxSeal"
+                    - $ref: "#/components/schemas/CharmSeal"
+            example:
+              token:
+                format: charm
+                motto: Plenty
+      responses:
+        "200":
+          description: Inspected
 components:
   schemas:
     WaxSeal:
@@ -113,4 +230,44 @@ components:
           type: string
           enum: ["2.0"]
         keeper:
+          type: string
+    TinBadge:
+      type: object
+      required: [kind, serial]
+      properties:
+        kind:
+          $ref: "#/components/schemas/TinKind"
+        serial:
+          type: string
+    CopperBadge:
+      type: object
+      required: [kind, serial]
+      properties:
+        kind:
+          $ref: "#/components/schemas/CopperKind"
+        serial:
+          type: string
+    TinKind:
+      type: string
+      enum: [tin]
+    CopperKind:
+      type: string
+      enum: [copper]
+    SealRegistration:
+      type: object
+      required: [seal]
+      properties:
+        seal:
+          oneOf:
+            - $ref: "#/components/schemas/WaxSeal"
+            - $ref: "#/components/schemas/StampSeal"
+    CharmSeal:
+      type: object
+      required: [format, charm, motto]
+      properties:
+        format:
+          type: string
+          enum: [charm]
+        charm: {}
+        motto:
           type: string

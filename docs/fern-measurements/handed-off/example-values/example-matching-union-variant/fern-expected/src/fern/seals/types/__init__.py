@@ -6,11 +6,47 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .inspect_charm_request_token import (
+        InspectCharmRequestToken,
+        InspectCharmRequestToken_Charm,
+        InspectCharmRequestToken_Wax,
+    )
+    from .seal_registration_seal import SealRegistrationSeal, SealRegistrationSeal_Stamp, SealRegistrationSeal_Wax
+    from .stock_shelf_request_shelf_value import (
+        StockShelfRequestShelfValue,
+        StockShelfRequestShelfValue_Stamp,
+        StockShelfRequestShelfValue_Wax,
+    )
+    from .verify_badge_request_badge import (
+        VerifyBadgeRequestBadge,
+        VerifyBadgeRequestBadge_Copper,
+        VerifyBadgeRequestBadge_Tin,
+    )
+    from .verify_charm_request_token import (
+        VerifyCharmRequestToken,
+        VerifyCharmRequestToken_Charm,
+        VerifyCharmRequestToken_Wax,
+    )
     from .verify_logbook_request_entry import VerifyLogbookRequestEntry
     from .verify_logbook_response import VerifyLogbookResponse
     from .verify_seal_request_seal import VerifySealRequestSeal, VerifySealRequestSeal_Stamp, VerifySealRequestSeal_Wax
     from .verify_seal_response import VerifySealResponse
 _dynamic_imports: typing.Dict[str, str] = {
+    "InspectCharmRequestToken": ".inspect_charm_request_token",
+    "InspectCharmRequestToken_Charm": ".inspect_charm_request_token",
+    "InspectCharmRequestToken_Wax": ".inspect_charm_request_token",
+    "SealRegistrationSeal": ".seal_registration_seal",
+    "SealRegistrationSeal_Stamp": ".seal_registration_seal",
+    "SealRegistrationSeal_Wax": ".seal_registration_seal",
+    "StockShelfRequestShelfValue": ".stock_shelf_request_shelf_value",
+    "StockShelfRequestShelfValue_Stamp": ".stock_shelf_request_shelf_value",
+    "StockShelfRequestShelfValue_Wax": ".stock_shelf_request_shelf_value",
+    "VerifyBadgeRequestBadge": ".verify_badge_request_badge",
+    "VerifyBadgeRequestBadge_Copper": ".verify_badge_request_badge",
+    "VerifyBadgeRequestBadge_Tin": ".verify_badge_request_badge",
+    "VerifyCharmRequestToken": ".verify_charm_request_token",
+    "VerifyCharmRequestToken_Charm": ".verify_charm_request_token",
+    "VerifyCharmRequestToken_Wax": ".verify_charm_request_token",
     "VerifyLogbookRequestEntry": ".verify_logbook_request_entry",
     "VerifyLogbookResponse": ".verify_logbook_response",
     "VerifySealRequestSeal": ".verify_seal_request_seal",
@@ -42,6 +78,21 @@ def __dir__():
 
 
 __all__ = [
+    "InspectCharmRequestToken",
+    "InspectCharmRequestToken_Charm",
+    "InspectCharmRequestToken_Wax",
+    "SealRegistrationSeal",
+    "SealRegistrationSeal_Stamp",
+    "SealRegistrationSeal_Wax",
+    "StockShelfRequestShelfValue",
+    "StockShelfRequestShelfValue_Stamp",
+    "StockShelfRequestShelfValue_Wax",
+    "VerifyBadgeRequestBadge",
+    "VerifyBadgeRequestBadge_Copper",
+    "VerifyBadgeRequestBadge_Tin",
+    "VerifyCharmRequestToken",
+    "VerifyCharmRequestToken_Charm",
+    "VerifyCharmRequestToken_Wax",
     "VerifyLogbookRequestEntry",
     "VerifyLogbookResponse",
     "VerifySealRequestSeal",

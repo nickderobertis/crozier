@@ -9,7 +9,7 @@ if typing.TYPE_CHECKING:
     from . import plots
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-    from .plots import PlotCourseResponse
+    from .plots import PlotCourseResponse, PlotRequestBerthsItem, PlotRequestTide
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
@@ -17,6 +17,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "PlotCourseResponse": ".plots",
+    "PlotRequestBerthsItem": ".plots",
+    "PlotRequestTide": ".plots",
     "__version__": ".version",
     "plots": ".plots",
 }
@@ -49,6 +51,8 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "FernApi",
     "PlotCourseResponse",
+    "PlotRequestBerthsItem",
+    "PlotRequestTide",
     "__version__",
     "plots",
 ]

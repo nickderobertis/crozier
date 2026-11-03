@@ -27,7 +27,7 @@ components:
   schemas:
     PlotRequest:
       type: object
-      required: [waypoints, vessel, legs]
+      required: [waypoints, vessel, legs, berths, tide]
       properties:
         waypoints:
           type: array
@@ -46,3 +46,16 @@ components:
           type: integer
           examples:
             - 4
+        berths:
+          type: array
+          items:
+            type: string
+            enum: [quay-north, quay-south, mooring-buoy]
+          examples:
+            - - harbour
+              - anchorage
+        tide:
+          type: string
+          enum: [flood, ebb, slack]
+          examples:
+            - spring

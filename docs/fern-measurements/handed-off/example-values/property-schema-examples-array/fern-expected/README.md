@@ -35,6 +35,7 @@ Instantiate and use the client with the following:
 
 ```python
 from fern import FernApi
+from fern.plots import PlotRequestBerthsItem, PlotRequestTide
 
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -49,6 +50,11 @@ client.plots.plot_course(
     ],
     vessel="Morwenna",
     legs=4,
+    berths=[
+        PlotRequestBerthsItem.QUAY_NORTH,
+        PlotRequestBerthsItem.QUAY_NORTH
+    ],
+    tide=PlotRequestTide.FLOOD,
 )
 ```
 
@@ -58,6 +64,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 
 ```python
 import asyncio
+from fern.plots import PlotRequestBerthsItem, PlotRequestTide
 
 from fern import AsyncFernApi
 
@@ -76,6 +83,11 @@ async def main() -> None:
         ],
         vessel="Morwenna",
         legs=4,
+        berths=[
+            PlotRequestBerthsItem.QUAY_NORTH,
+            PlotRequestBerthsItem.QUAY_NORTH
+        ],
+        tide=PlotRequestTide.FLOOD,
     )
 
 

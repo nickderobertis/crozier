@@ -14,6 +14,7 @@
 
 ```python
 from fern import FernApi
+from fern.plots import PlotRequestBerthsItem, PlotRequestTide
 
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -28,6 +29,11 @@ client.plots.plot_course(
     ],
     vessel="Morwenna",
     legs=4,
+    berths=[
+        PlotRequestBerthsItem.QUAY_NORTH,
+        PlotRequestBerthsItem.QUAY_NORTH
+    ],
+    tide=PlotRequestTide.FLOOD,
 )
 
 ```
@@ -61,6 +67,22 @@ client.plots.plot_course(
 <dd>
 
 **legs:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**berths:** `typing.List[PlotRequestBerthsItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tide:** `PlotRequestTide` 
     
 </dd>
 </dl>

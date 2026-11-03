@@ -9134,10 +9134,22 @@ impl<'a> ExampleCtx<'a> {
                         };
                     }
                     let literal = value.to_string();
-                    Some(
-                        self.value_from_example(inner, &literal)
-                            .unwrap_or_else(|| example_from_json_as(value, !self.documentation)),
-                    )
+                    if let Some(item) = self.value_from_example(inner, &literal) {
+                        return Some(item);
+                    }
+                    // A string naming no member of the item enum is no example:
+                    // Fern works that item as the enum's first member (vercel's
+                    // `target` examples `[production, preview]` are two
+                    // `…TargetItem.MPORT_…_PRODUCTIO`; measured as `berths` in
+                    // docs/fern-measurements/handed-off/example-values/property-schema-examples-array/).
+                    let enum_item = matches!(
+                        inner.as_ref(),
+                        TypeRef::Named(name) if matches!(self.find(name), Some(TypeDecl::Enum(_)))
+                    );
+                    if enum_item && value.is_string() {
+                        return Some(self.value(inner, Slot::Plain));
+                    }
+                    Some(example_from_json_as(value, !self.documentation))
                 })
                 .collect();
             return Some(if self.documentation {
@@ -9350,6 +9362,19 @@ impl<'a> ExampleCtx<'a> {
         // `…Seal_Stamp(stamp_id="stamp_id")` (measured in
         // docs/fern-measurements/handed-off/example-values/example-matching-union-variant/).
         if member.source.is_some() {
+            // A member requiring an unknown (`{}`) field is one Fern's example
+            // builder never picks by its tag: the example is worked as the
+            // union's first member, whether or not it gives that field
+            // (nussknacker's `TypedObjectWithValue` `value: {}` is worked as
+            // `…_TypedClass(…)`; measured as `verify_charm`/`inspect_charm` in
+            // docs/fern-measurements/handed-off/example-values/example-matching-union-variant/).
+            if member
+                .fields
+                .iter()
+                .any(|field| field.spec_required && self.resolves_to_any(&field.type_ref))
+            {
+                return Some(self.discriminated_union_value(union, Slot::Plain));
+            }
             let mut matched = union.clone();
             if let Some(index) = matched
                 .members
@@ -19828,6 +19853,19 @@ mod handed_off_example_value_tests {
     }
 
     #[test]
+    fn an_examples_entry_naming_no_enum_member_is_worked_as_the_first_member() {
+        assert_lines(
+            "property-schema-examples-array",
+            &[
+                "        PlotRequestBerthsItem.QUAY_NORTH,",
+                "        PlotRequestBerthsItem.QUAY_NORTH",
+                "    tide=PlotRequestTide.FLOOD,",
+            ],
+            &["\"harbour\"", "\"anchorage\"", "\"spring\""],
+        );
+    }
+
+    #[test]
     fn a_map_body_takes_its_media_example_and_an_array_one_keyed_by_index() {
         assert_lines(
             "map-body-media-example",
@@ -19869,8 +19907,23 @@ mod handed_off_example_value_tests {
                 "        stamp_id=\"stamp_id\",",
                 "    entry=EntryV2(",
                 "            keeper=\"Morwenna\",",
+                "        \"top\": StockShelfRequestShelfValue_Stamp(",
+                "    badge=VerifyBadgeRequestBadge_Copper(",
+                "    seal=SealRegistrationSeal_Stamp(",
             ],
-            &["_Wax", "EntryV1("],
+            &["VerifySealRequestSeal_Wax", "EntryV1("],
+        );
+    }
+
+    #[test]
+    fn a_tagged_member_requiring_an_unknown_field_is_worked_as_the_first() {
+        assert_lines(
+            "example-matching-union-variant",
+            &[
+                "    token=VerifyCharmRequestToken_Wax(",
+                "    token=InspectCharmRequestToken_Wax(",
+            ],
+            &["RequestToken_Charm(", "motto="],
         );
     }
 
