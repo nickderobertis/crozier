@@ -1,0 +1,139 @@
+openapi: 3.1.0
+info:
+  title: Recipe Planner
+  version: 1.0.0
+paths:
+  /plans:
+    post:
+      operationId: createPlan
+      summary: Create a meal plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanBody'
+      responses:
+        '200':
+          description: The plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+components:
+  schemas:
+    Course:
+      type: string
+      enum:
+        - starter
+        - main
+        - dessert
+    Diet:
+      type: object
+      properties:
+        vegetarian:
+          type: boolean
+    CreatePlanBody:
+      type: object
+      properties:
+        course:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Course'
+                - description: Which course to plan, if any.
+            - type: 'null'
+        diet:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Diet'
+                - description: Dietary needs the plan must respect.
+            - type: 'null'
+        servings:
+          anyOf:
+            - type: integer
+              description: How many people eat.
+            - type: 'null'
+        garnish:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Garnish'
+                - description: The garnish to plan for.
+            - type: 'null'
+    Plan:
+      type: object
+      properties:
+        planId:
+          type: string
+        course:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Course'
+                - description: The planned course.
+            - type: 'null'
+        garnish:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Garnish'
+                - description: The garnish served on top.
+            - type: 'null'
+        pairing:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Pairing'
+                - description: The drink poured alongside.
+            - type: 'null'
+        sides:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Side'
+                - description: The side dish, whichever kind.
+            - type: 'null'
+        extras:
+          type: object
+          properties:
+            topping:
+              anyOf:
+                - allOf:
+                    - $ref: '#/components/schemas/Garnish'
+                    - description: The topping added at the table.
+                - type: 'null'
+            note:
+              type: string
+    Herb:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - herb
+        name:
+          type: string
+    Grain:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - grain
+        cups:
+          type: number
+    Garnish:
+      description: Something scattered over the dish.
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - $ref: '#/components/schemas/Herb'
+    Pairing:
+      oneOf:
+        - $ref: '#/components/schemas/Diet'
+    Side:
+      description: A side dish of one kind or another.
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - $ref: '#/components/schemas/Herb'
+        - $ref: '#/components/schemas/Grain'

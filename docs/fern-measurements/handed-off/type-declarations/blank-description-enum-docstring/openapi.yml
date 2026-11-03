@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Ferry Timetable
+  version: 1.0.0
+paths:
+  /crossings/{crossingId}:
+    get:
+      operationId: getCrossing
+      summary: Read one crossing
+      parameters:
+        - name: crossingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The crossing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crossing'
+components:
+  schemas:
+    Crossing:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: string
+            description: ''
+            enum:
+              - WEEKDAY
+              - WEEKEND
+        weather:
+          type: string
+          description: ''
+          enum:
+            - CALM
+            - ROUGH
+        deck:
+          type: string
+          description: ' '
+          enum:
+            - UPPER
+            - LOWER
+        vessel:
+          $ref: '#/components/schemas/Vessel'
+        berth:
+          $ref: '#/components/schemas/Berth'
+    Vessel:
+      type: string
+      description: ''
+      enum:
+        - CATAMARAN
+        - MONOHULL
+    Berth:
+      type: object
+      description: ''
+      properties:
+        pier:
+          type: string

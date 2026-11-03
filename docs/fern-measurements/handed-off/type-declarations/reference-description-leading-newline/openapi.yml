@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Seed Library Exchange
+  version: 1.0.0
+paths:
+  /packets:
+    post:
+      operationId: depositPacket
+      summary: Deposit a seed packet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PacketCreateRequest'
+      responses:
+        '200':
+          description: The packet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packet'
+  /packets/{packetId}/notes:
+    post:
+      operationId: addPacketNote
+      summary: Add a note to a packet
+      parameters:
+        - name: packetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PacketNoteCreateRequest'
+      responses:
+        '201':
+          description: Added
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    PacketCreateRequest:
+      type: object
+      required:
+        - variety
+      properties:
+        variety:
+          type: string
+          description: "\nThe variety's common name."
+        labels:
+          anyOf:
+            - type: object
+              additionalProperties:
+                type: string
+              description: "\nKey-value labels kept with the packet. Keys are short words.\n\nValues are free text of at most 64 characters.\n"
+            - type: 'null'
+          title: Labels
+        origin:
+          type: string
+          description: "\n        Where the seed was saved.\n        (ex. a garden name)\n        "
+    Packet:
+      type: object
+      properties:
+        packetId:
+          type: string
+        variety:
+          type: string
+    TextNote:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+    PhotoNote:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+    NoteData:
+      anyOf:
+        - $ref: '#/components/schemas/TextNote'
+        - $ref: '#/components/schemas/PhotoNote'
+    PacketNoteCreateRequest:
+      $ref: '#/components/schemas/NoteData'
+      title: PacketNoteCreateRequest

@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.155](https://github.com/nickderobertis/crozier/compare/v0.0.154...v0.0.155) - 2026-11-03
+
+### Fixed
+
+- *(parity)* match the certified pair's worked-example values on the handed-off documents ([#727](https://github.com/nickderobertis/crozier/pull/727))
+
 ## [0.0.154](https://github.com/nickderobertis/crozier/compare/v0.0.153...v0.0.154) - 2026-11-03
 
 ### Fixed

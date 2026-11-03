@@ -143,6 +143,15 @@ mod refusal_parity;
 mod emission_parity;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The type-declaration root causes the fixture-only witness searches handed
+/// off, each settled against a from-scratch document under
+/// `docs/fern-measurements/handed-off/type-declarations/` and held whole
+/// against the certified pair's tree in both enum modes.
+#[path = "e2e/handed_off_type_declarations.rs"]
+mod handed_off_type_declarations;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// The document-acceptance handed-off area: documents the certified pair reads
 /// where crozier refused, failed to parse or wrote invalid Python, each
 /// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
@@ -989,6 +998,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
+        (handed_off_type_declarations::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1019,6 +1029,28 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
                 add(
                     format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
                     compared,
+                );
+            }
+        }
+    }
+    if let Ok(entries) = std::fs::read_dir(root.join(handed_off_type_declarations::DIR)) {
+        for entry in entries.filter_map(Result::ok) {
+            if entry
+                .path()
+                .join(handed_off_type_declarations::LITERALS)
+                .is_dir()
+            {
+                add(
+                    format!(
+                        "{}/{}/{}",
+                        handed_off_type_declarations::DIR,
+                        entry.file_name().to_string_lossy(),
+                        handed_off_type_declarations::LITERALS
+                    ),
+                    departures_ledger::ComparedGolden {
+                        excluded: vec![literals_mode::MANIFEST.to_string()],
+                        carve_outs: Default::default(),
+                    },
                 );
             }
         }
