@@ -11,6 +11,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -2866,6 +2867,22 @@ class ReporterContractTests(unittest.TestCase):
         self.assertIn('pub const LEDGER: &str = "tests/fixtures/departures-ledger.tsv";', ledger)
         self.assertIn('"{LEDGER}: `{}` is stale: ', ledger)
         self.assertIn('"{LEDGER}: `{}` is unrecorded: ', ledger)
+
+    def test_the_ledger_outputs_weekly_carries_are_the_ones_the_recipe_writes(self) -> None:
+        """`weekly.py apply` restores and the publication carries exactly the
+        files `just departures-ledger` (crates/crozier-e2e/departures-ledger.sh)
+        writes, so a new output can never escape either."""
+        script = (REPO / "crates/crozier-e2e/departures-ledger.sh").read_text(encoding="utf-8")
+        written = tuple(re.findall(r"(?m)^(?:ledger|inventory_file)=(\S+)$", script))
+        spec = importlib.util.spec_from_file_location("weekly_outputs", REPO / "tools/fern-goldens/weekly.py")
+        assert spec is not None and spec.loader is not None
+        weekly = importlib.util.module_from_spec(spec)
+        sys.modules["weekly_outputs"] = weekly
+        spec.loader.exec_module(weekly)
+        self.assertEqual(2, len(written), "the recipe names its ledger and inventory outputs")
+        self.assertEqual(written, weekly.LEDGER_OUTPUTS)
+        self.assertEqual(("just", "departures-ledger"), weekly.LEDGER_RECIPE)
+        self.assertIn("\ndepartures-ledger:\n", (REPO / "justfile").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

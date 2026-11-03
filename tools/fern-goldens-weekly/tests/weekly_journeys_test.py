@@ -338,10 +338,16 @@ import json, os, pathlib, subprocess, sys
 args = sys.argv[1:]
 root = pathlib.Path(os.environ["CROZIER_FERN_WEEKLY_ROOT"])
 # crozier-e2e's ledger recipe, which needs the whole fixture tree and its
-# build: by default every row as committed; LEDGER_ROWS the rows it finds;
-# LEDGER_REFUSE a comparison failing while it records, so it writes nothing.
+# build: by default every row as committed; LEDGER_ROWS the rows it finds and
+# LEDGER_INVENTORY the example-value inventory's; LEDGER_REFUSE a comparison
+# failing while it records, after part of the files are written.
 if args == ["departures-ledger"]:
+    inventory = root / "docs/departures/evidence/invalid-example-values/inventory.tsv"
     if os.environ.get("LEDGER_REFUSE"):
+        # Part of what it records reaches the files before a comparison fails.
+        (root / "tests/fixtures/departures-ledger.tsv").write_text("golden\tfile\tline\tdeparture\npartial\n")
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text("partial\n")
         print("departures-ledger: a comparison failed while recording (above)", file=sys.stderr)
         print("departures-ledger: fix it, then rerun just departures-ledger", file=sys.stderr)
         sys.exit(1)
@@ -349,6 +355,9 @@ if args == ["departures-ledger"]:
     header, *rows = ledger.read_text(encoding="utf-8").splitlines()
     rows = json.loads(os.environ["LEDGER_ROWS"]) if os.environ.get("LEDGER_ROWS") else rows
     ledger.write_text("\n".join([header, *rows]) + "\n", encoding="utf-8")
+    if os.environ.get("LEDGER_INVENTORY"):
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text("\n".join(["golden\tfile\tvalue", *json.loads(os.environ["LEDGER_INVENTORY"])]) + "\n")
     print(f"departures-ledger: wrote tests/fixtures/departures-ledger.tsv ({len(rows)} rows)")
     sys.exit(0)
 if "fetch-corpus" not in args:
@@ -1027,7 +1036,9 @@ class WeeklyRunTests(unittest.TestCase):
         regenerated ledger and names each changed row."""
         self.publish_seed()
         moved = LEDGER_ROW.format(line=4)
-        state = self.run_workflow(LEDGER_ROWS=json.dumps([moved]))
+        inventory = "docs/departures/evidence/invalid-example-values/inventory.tsv"
+        value = "tests/fixtures/alpha/expected\tsrc/fern/types/lantern.py\tnot-a-date"
+        state = self.run_workflow(LEDGER_ROWS=json.dumps([moved]), LEDGER_INVENTORY=json.dumps([value]))
         self.assertRegex(
             state.ran("apply").stdout,
             r"departures ledger: `just departures-ledger` started; .*\n.*departures ledger: regenerated in [0-9.]+s; "
@@ -1044,14 +1055,15 @@ class WeeklyRunTests(unittest.TestCase):
                     "path": "tests/fixtures/departures-ledger.tsv",
                     "added": [moved],
                     "removed": [LEDGER_ROW.format(line=3)],
-                }
+                },
+                {"path": inventory, "added": [value], "removed": []},
             ],
             ledger["changes"],
         )
         self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"], "a changed ledger is never auto-merged")
-        self.assertIn("the departures ledger regenerated with 2 row(s) changed", pull["body"])
+        self.assertIn("the departures ledger regenerated with 3 row(s) changed", pull["body"])
         section = pull["body"].split("## Departures ledger", 1)[1].split("## Inventory", 1)[0]
         self.assertIn("tests/fixtures/departures-ledger.tsv: 1 row(s) added, 1 removed", section)
         self.assertIn(f"+ {moved}", section)
@@ -1061,8 +1073,24 @@ class WeeklyRunTests(unittest.TestCase):
             self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
             "the pull request carries the regenerated ledger",
         )
-        self.assertIn("- departures ledger: regenerated with 2 row(s) changed", self.summary())
+        self.assertEqual(f"golden\tfile\tvalue\n{value}", self.remote_file("fern-goldens/update", inventory))
+        self.assertIn(f"{inventory}: 1 row(s) added, 0 removed", section)
+        self.assertIn("- departures ledger: regenerated with 3 row(s) changed", self.summary())
         self.assertEqual("success", state.status())
+        # The publication lays only the decision artifact's own regular file.
+        carried = state.artifacts / "decision/ledger/tests/fixtures/departures-ledger.tsv"
+        outside = self.scratch / "elsewhere.tsv"
+        outside.write_text("anything on the runner\n", encoding="utf-8")
+        carried.unlink()
+        carried.symlink_to(outside)
+        for case in ("a link", "missing"):
+            with self.subTest(case):
+                refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(
+                    "the decision carries no regular file ledger/tests/fixtures/departures-ledger.tsv", refused.stderr
+                )
+                carried.unlink(missing_ok=True)
 
     def test_a_refused_ledger_recipe_keeps_mains_ledger_and_drift_is_a_diff_naming_corpora_not_compared(
         self,
@@ -1139,7 +1167,12 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(
             self.remote_file("main", "tests/fixtures/departures-ledger.tsv"),
             self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
-            "main's ledger is what the pull request keeps",
+            "main's ledger is what the pull request keeps, whatever the refusing recipe wrote",
+        )
+        self.assertNotIn(
+            "docs/departures/evidence/invalid-example-values/inventory.tsv",
+            self.published_tree(),
+            "an output main has none of stays absent",
         )
         self.assertEqual("success", state.status())
 
@@ -1701,6 +1734,15 @@ class WeeklyRunTests(unittest.TestCase):
         limit(2.0)
         seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
         self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", "the limit less what the group cannot reclaim")
+        # A tighter enclosing group is what is left.
+        for name, amount in (("memory.max", 2**30), ("memory.current", 2**30 - 2**27), ("memory.stat", "anon 1")):
+            (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.1 GiB\n$", "the enclosing group's limit is tighter")
+        for name in ("memory.max", "memory.current", "memory.stat"):
+            (cgroup.parent / name).unlink()
+        # Nothing left at all: held back, never read as memory nothing reports.
+        limit(1.25)
         text = self.killed_decision(
             decider,
             bundle,
@@ -1713,7 +1755,7 @@ class WeeklyRunTests(unittest.TestCase):
         )
         lines = text.splitlines()
         hanging = next(index for index, line in enumerate(lines) if "comparison 3/8" in line and " started: " in line)
-        self.assertIn("memory available 0.8 GiB", lines[hanging])
+        self.assertIn("memory available 0.0 GiB", lines[hanging])
         self.assertEqual(
             ["1 started", "1 ended", "2 started", "2 ended", "3 started"],
             [

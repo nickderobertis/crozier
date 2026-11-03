@@ -2326,12 +2326,17 @@ class Admission:
         self.turn = 1
         self.changed = threading.Condition()
 
+    def short(self) -> bool:
+        """Less than the reserve is available (never, where nothing reports it)."""
+        available = memory_available()
+        return available is not None and available < self.reserve
+
     @contextlib.contextmanager
     def slot(self, number: int, started: Callable[[], None]) -> Generator[None]:
         """Wait for the `number`th comparison's turn and room for it, then
         announce it (`started`) before the next one may start."""
         with self.changed:
-            while self.turn != number or (self.running and (memory_available() or self.reserve) < self.reserve):
+            while self.turn != number or (self.running and self.short()):
                 self.changed.wait(timeout=2.0)
             started()
             self.running += 1
@@ -2649,9 +2654,14 @@ def commit_tree(
     apply_bundle(base, bundle_path)
     for path in decision.ledger.carried() if decision.ledger else ():
         carried = decision_path / LEDGER_CARRIED / path
-        if not carried.is_file():
-            raise WeeklyError(f"the decision carries no {LEDGER_CARRIED}/{path}; re-run the decision job")
-        shutil.copy2(carried, inside(base, path, "the decision's ledger"))
+        # The artifact's own regular file, as every bundle file is: never a
+        # link, which could name anything on the runner.
+        links = [link for link in (carried, *carried.parents) if link.is_symlink()]
+        if links or not carried.is_file() or not carried.resolve().is_relative_to(decision_path.resolve()):
+            raise WeeklyError(f"the decision carries no regular file {LEDGER_CARRIED}/{path}; re-run the decision job")
+        target = inside(base, path, "the decision's ledger")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(carried, target)
     if decision.outcome == Outcome.MATCH:
         path = base / CHECKS
         rows = read_tsv(path, CHECKS_HEADER) if path.is_file() else []
