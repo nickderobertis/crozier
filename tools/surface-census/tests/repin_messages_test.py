@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[3]
 REGIONS = REPO / "docs" / "openapi-surface"
 VERB = "just census-repin"
@@ -175,7 +177,9 @@ def test_a_report_over_a_tree_its_measurement_predates_names_the_verb_and_succee
     reach.stale_measurement(out, root)
 
 
-def test_a_corrupt_checkout_store_is_reported_and_ignored_rather_than_stepped_from(tmp_path: Path, capsys: Any) -> None:
+def test_a_corrupt_checkout_store_is_reported_and_ignored_rather_than_stepped_from(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     reach = _load("repin_messages_golden_reach", REPO / "tools/surface-census/golden-reach.py")
     (tmp_path / reach.STORE_FILE).write_bytes(b"not gzip")
     assert reach.local_store(tmp_path) is None, "a measurement never steps from a store it cannot read"

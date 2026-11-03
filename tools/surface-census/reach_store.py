@@ -128,69 +128,60 @@ def tokenize(source: bytes) -> list[Token]:
     tokens: list[Token] = []
     i, n = 0, len(text)
     while i < n:
-        c = text[i]
-        if c in " \t\r\n\f\v":
-            i += 1
-            continue
-        if text.startswith("//", i):
-            newline = text.find("\n", i)
-            i = n if newline == -1 else newline + 1
-            continue
+        match text[i]:
+            case " " | "\t" | "\r" | "\n" | "\f" | "\v":
+                i += 1
+            case "/" if text.startswith("//", i):
+                newline = text.find("\n", i)
+                i = n if newline == -1 else newline + 1
+            case "/" if text.startswith("/*", i):
+                i = _comment_end(text, i)
+            case _:
+                end = _token_end(text, i)
+                tokens.append(Token(i, end, text[i:end]))
+                i = end
+    return tokens
+
+
+def _comment_end(text: str, i: int) -> int:
+    """Just past the (nested) block comment opening at `i`."""
+    depth, i = 1, i + 2
+    while i < len(text) and depth:
         if text.startswith("/*", i):
-            depth, i = 1, i + 2
-            while i < n and depth:
-                if text.startswith("/*", i):
-                    depth, i = depth + 1, i + 2
-                elif text.startswith("*/", i):
-                    depth, i = depth - 1, i + 2
-                else:
-                    i += 1
-            continue
-        raw = _RAW.match(text, i)
-        if raw:
+            depth, i = depth + 1, i + 2
+        elif text.startswith("*/", i):
+            depth, i = depth - 1, i + 2
+        else:
+            i += 1
+    return i
+
+
+def _token_end(text: str, i: int) -> int:
+    """Just past the token starting at `i`: a literal whole, an identifier or number, else one character."""
+    n, c = len(text), text[i]
+    char = i + (1 if c == "'" else 2)
+    match c:
+        case _ if (raw := _RAW.match(text, i)) is not None:
             closer = '"' + raw.group(1)
             end = text.find(closer, raw.end())
-            end = n if end == -1 else end + len(closer)
-            tokens.append(Token(i, end, text[i:end]))
-            i = end
-            continue
-        quoted = _PREFIXED.match(text, i)
-        if quoted:
+            return n if end == -1 else end + len(closer)
+        case _ if (quoted := _PREFIXED.match(text, i)) is not None:
             j = quoted.end()
             while j < n and text[j] != '"':
                 j += 2 if text[j] == "\\" else 1
-            end = min(j + 1, n)
-            tokens.append(Token(i, end, text[i:end]))
-            i = end
-            continue
-        if c == "'" or (c == "b" and text.startswith("b'", i)):
-            start = i
-            j = i + (2 if c == "b" else 1)
-            width = _char_width(text, j)
-            if width:
-                end = j + width + 1
-                tokens.append(Token(start, end, text[start:end]))
-                i = end
-                continue
-            if c == "'":
-                ident = _IDENT.match(text, j)
-                end = ident.end() if ident else j
-                tokens.append(Token(start, end, text[start:end]))
-                i = end
-                continue
-        ident = _IDENT.match(text, i)
-        if ident:
-            tokens.append(Token(i, ident.end(), ident.group()))
-            i = ident.end()
-            continue
-        number = _NUMBER.match(text, i)
-        if number:
-            tokens.append(Token(i, number.end(), number.group()))
-            i = number.end()
-            continue
-        tokens.append(Token(i, i + 1, c))
-        i += 1
-    return tokens
+            return min(j + 1, n)
+        case "'" | "b" if (c == "'" or text.startswith("b'", i)) and (width := _char_width(text, char)):
+            return char + width + 1
+        case "'":
+            # A lifetime or label: the quote and the identifier after it.
+            ident = _IDENT.match(text, i + 1)
+            return ident.end() if ident else i + 1
+        case _ if (ident := _IDENT.match(text, i)) is not None:
+            return ident.end()
+        case _ if (number := _NUMBER.match(text, i)) is not None:
+            return number.end()
+        case _:
+            return i + 1
 
 
 def _char_width(text: str, j: int) -> int:

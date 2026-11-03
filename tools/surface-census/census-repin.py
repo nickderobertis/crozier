@@ -192,20 +192,17 @@ def derived_hunk(hunk: Hunk, text: str) -> bool:
 def take_ours(text: str) -> str:
     out, part = [], None
     for line in text.splitlines(keepends=True):
-        if line.startswith("<<<<<<< "):
-            part = "ours"
-            continue
-        if part is not None and line.startswith("||||||| "):
-            part = "base"
-            continue
-        if part is not None and line.rstrip("\r\n") == "=======":
-            part = "theirs"
-            continue
-        if part is not None and line.startswith(">>>>>>> "):
-            part = None
-            continue
-        if part in (None, "ours"):
-            out.append(line)
+        match part:
+            case _ if line.startswith("<<<<<<< "):
+                part = "ours"
+            case str() if line.startswith("||||||| "):
+                part = "base"
+            case str() if line.rstrip("\r\n") == "=======":
+                part = "theirs"
+            case str() if line.startswith(">>>>>>> "):
+                part = None
+            case None | "ours":
+                out.append(line)
     return "".join(out)
 
 

@@ -260,9 +260,27 @@ class Journey:
 STATE = Journey()
 
 
+def protected(clone: Clone) -> list[str]:
+    """The coverage index's sections a scoped run leaves alone: both arm sections and the headline sentence."""
+    text = (clone.root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    sections = [
+        text.split(begin, 1)[1].split(end, 1)[0]
+        for begin, end in (
+            ("<!-- BEGIN GENERATED ARM COUNTS", "<!-- END GENERATED ARM COUNTS -->"),
+            ("<!-- BEGIN GENERATED ARM TABLE", "<!-- END GENERATED ARM TABLE -->"),
+        )
+    ]
+    headline = re.search(r"acquires \d+ sources.*?evidence only\.", text, re.S)
+    assert headline, "the coverage headline the restater writes"
+    return [*sections, headline.group(0)]
+
+
 def test_a_missing_base_measures_fully_and_says_why(clone: Clone) -> None:
     STATE.c0 = clone.head()
+    before = protected(clone)
     run = clone.repin(verbose=False)
+    assert protected(clone) == before, "a scoped run leaves the arm sections and the coverage headline alone"
+    assert "the arm sections and the coverage headline left to an unscoped run" in run.stdout
     summary = run.stdout.splitlines()
     assert len(summary) == 1, "a successful repin prints one line"
     assert "full: cannot ask GitHub for a nearer base" in summary[0] and "no cached base either" in summary[0]
