@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Keeper roster
+  version: 1.0.0
+paths:
+  /keepers/{keeperId}/shifts:
+    get:
+      operationId: listKeeperShifts
+      tags: [keepers]
+      parameters:
+        - name: keeperId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: KPR-from-schema
+          examples:
+            first:
+              summary: From the map
+              value: KPR-from-map
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            winter:
+              value: winter
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          examples:
+            one:
+              value: 2
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            blank:
+              value: ""
+        - name: rosteredOn
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-07-04
+        - name: rosteredAfter
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-07-01
+      responses:
+        "200":
+          description: Shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /keepers/callbacks:
+    get:
+      operationId: listKeeperCallbacks
+      tags: [keepers]
+      parameters:
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+          examples:
+            none:
+              value: null
+            day:
+              value: 2031-06-30
+      responses:
+        "200":
+          description: Callbacks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /keepers/search:
+    get:
+      operationId: searchKeepers
+      tags: [keepers]
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            blank:
+              value: ""
+      responses:
+        "200":
+          description: Keepers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: Watch sessions
+  version: 1.0.0
+paths:
+  /watches/{watchId}/end:
+    post:
+      operationId: endWatch
+      tags: [watches]
+      parameters:
+        - name: watchId
+          in: path
+          required: true
+          description: The watch to end, or `every` for all watches.
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/WatchId"
+              - type: string
+                const: every
+      responses:
+        "204":
+          description: Ended
+  /watches:
+    get:
+      operationId: listWatches
+      tags: [watches]
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema:
+            oneOf:
+              - type: string
+                const: mine
+              - $ref: "#/components/schemas/WatchId"
+      responses:
+        "200":
+          description: Watches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    WatchId:
+      type: string
+      examples:
+        - 7c1e2a90-55b1-4d0a-9e57-3f0c2b6d8a11

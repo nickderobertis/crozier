@@ -9,7 +9,7 @@ byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 enum-media-selection	schema-example-outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	2	2
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
-ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	875	1656
+ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	875	1675
 ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::header_param_stem	9	9
 ferry-mapping-outside-schemas	ref-pointer-undeclared-component-head	src/ir.rs::Builder::discriminated_union[if all_dangling \{]	28	28
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -31,7 +31,7 @@ harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::described
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::resolved_schema_example_literal	10	37
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::schema_example	7	7
 harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example	32	52
-harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example_value	16	39
+harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example_value	19	71
 harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::resolve_ref	8	9
 harbor-relay-registration	combo-inline-body-read-only-property	src/ir.rs::resolve_request_body[=\.is_none_or\(\x7cproperty\x7c property\.read_only != Some\(true\)\)]	3	3
 harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
@@ -113,7 +113,7 @@ survey-map-value-union	anyof-map-variant-anyof-value	src/ir.rs::InlineHoister::h
 survey-map-value-union	anyof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
 survey-map-value-union	oneof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	48	48
 thermostat-nullable-member	nullable	src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]	2	2
-tidepool-survey-log	discriminator-mapping	src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	18	20
+tidepool-survey-log	discriminator-mapping	src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	18	20
 tidepool-survey-log	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if union_target \{]	27	32
 union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
 verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1

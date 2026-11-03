@@ -69,7 +69,7 @@ archive and the pools as they stood.
 | `schema-example-empty-object` | `schema.example:empty-object` | a declarer of the selector (a Schema Object whose selected example is `{}`) on which the instrumented crozier `just handwritten-reach` builds, run over that document alone, executes `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` |
 | `schema-example-object-on-map` | `schema.example:object-on-map` | a declarer of the selector (a Schema Object writing `additionalProperties`, with no non-empty `properties`, whose selected example is an object) on which that instrumented run executes `src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]` |
 | `schema-example-outside-enum` | `schema.example:outside-enum` | a declarer of the selector (a Schema Object with a string-valued `enum` whose selected example is a string none of its members is) on which that instrumented run executes `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` |
-| `discriminator-mapping` | `schema.discriminator.mapping` | a declarer of the selector on which that instrumented run executes `src/ir.rs::Builder::discriminated_union[if union_target \{]` or `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
+| `discriminator-mapping` | `schema.discriminator.mapping` | a declarer of the selector on which that instrumented run executes `src/ir.rs::Builder::discriminated_union[if union_target \{]` or `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
 | `oneof-string-const-variant` | `schema.oneOf>schema.const:string-valued` | a declarer of the selector on which that instrumented run executes `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` |
 
 ### Declarers and screening
@@ -111,7 +111,7 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 
 | key | verdict | declaring documents | registration status |
 |---|---|---|---|
-| `discriminator-mapping` | `exhausted` | 899 | every declarer decided ([arm probe](#discriminator-mapping-arm-probe)): no admissible real document executes either arm and generates at the certified pair; admitted lower-proof `tidepool-survey-log` fixture covering `src/ir.rs::Builder::discriminated_union[if union_target \{]` and `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
+| `discriminator-mapping` | `exhausted` | 899 | every declarer decided ([arm probe](#discriminator-mapping-arm-probe)): no admissible real document executes either arm and generates at the certified pair; admitted lower-proof `tidepool-survey-log` fixture covering `src/ir.rs::Builder::discriminated_union[if union_target \{]` and `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` |
 | `oneof-string-const-variant` | `search-incomplete` | 70 | no admissible real document reaches the arm and generates at the certified pair ([bound](#remaining-bounds-after-the-source-repairs)); admitted lower-proof `compass-choice` fixture |
 | `property-map-value-enum` | `search-incomplete` | 106 | registered: corpus row 3003, `fletch-mcp`; complete certified-pair SDK byte-match, arm reach measured ([map-value search](#map-value-branch-search)) |
 | `property-map-value-oneof` | `search-incomplete` | 83 | no admissible real document reaches the arm and byte-matches at the certified pair ([map-value search](#map-value-branch-search)); admitted lower-proof `shelf-labels-map-variants` fixture covering `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` |
@@ -195,7 +195,7 @@ The removed arm covers were identified with
 Excluding renamed sites, four covers were removed: `discriminator-mapping`'s
 `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]`,
 `src/ir.rs::Builder::discriminated_union[if union_target \{]`,
-`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
+`src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`,
 and `oneof-string-const-variant`'s
 `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]`.
 The first already has registered golden reach; the other three were searched
@@ -219,7 +219,7 @@ the wrapper holds it whole in `value`.
 Every one of the 899 `discriminator-mapping` declarers in
 [`census.tsv`](census.tsv) has a decision in its `arm` cell for
 `src/ir.rs::Builder::discriminated_union[if union_target \{]` and
-`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`.
+`src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]`.
 The rule deciding them: a declarer whose instrumented crozier run executes
 neither arm cannot witness either arm, whatever Fern does with it, so it is
 decided `not a witness for either arm` and owes no admissibility screen and no

@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Vessel registry
+  version: 1.0.0
+paths:
+  /vessels:
+    get:
+      operationId: listVessels
+      tags: [vessels]
+      parameters:
+        - name: owners[]
+          in: query
+          required: false
+          example:
+            - harbourmaster@example.com
+          schema:
+            type: array
+            example:
+              - harbourmaster@example.com
+            items:
+              type: string
+              format: email
+        - name: hulls[]
+          in: query
+          required: false
+          schema:
+            type: array
+            example:
+              - STEEL
+              - TIMBER
+            items:
+              $ref: "#/components/schemas/Hull"
+        - name: flags
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          example:
+            - red
+            - white
+        - name: port
+          in: query
+          required: false
+          schema:
+            type: string
+          example: falmouth
+      responses:
+        "200":
+          description: Vessels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Hull:
+      type: string
+      enum: [STEEL, TIMBER, COMPOSITE]
