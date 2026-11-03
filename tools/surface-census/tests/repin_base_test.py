@@ -454,3 +454,56 @@ def test_an_artifact_download_follows_only_the_redirects_it_allows(
     else:
         assert f"downloading golden-reach-base-{c3} failed" in run.stdout and "redirect" in run.stdout
         assert f"census-repin: base {c1} (cache):" in run.stdout
+
+
+def test_the_ci_jobs_packaged_base_is_found_by_the_verb_on_a_later_commit(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The job's own command (`golden-reach.py base --package`, which `just golden-reach-base` runs) packages
+    `base.json.gz`; uploaded under the name `ci.yml` gives it, the verb at a child commit with no artifact of
+    its own takes it. Only the instrumented measurement is stood in for: its stores are proven elsewhere."""
+    root, (c1, _c2, c3, c4) = history
+    workflow = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    job = workflow.split("\n  golden-reach-base:\n", 1)[1].split("\n  gate:\n", 1)[0]
+    assert 'run: just golden-reach-base "$RUNNER_TEMP/golden-reach-base"' in job
+    assert "path: ${{ runner.temp }}/golden-reach-base/base.json.gz" in job
+    assert "name: golden-reach-base-${{ github.sha }}" in job
+    recipe = (REPO / "justfile").read_text(encoding="utf-8").split("\ngolden-reach-base dir:\n", 1)[1].split("\n\n")[0]
+    assert recipe.strip() == "python3 tools/surface-census/golden-reach.py base --package {{dir}}"
+
+    reach = _load("repin_base_golden_reach", "golden-reach.py")
+    stepped_from: list[str | None] = []
+
+    def measured(repo_root: Path, *, base: dict | None, full_reason: str, jobs: int) -> Any:
+        stepped_from.append(base["commit"] if base else None)
+        head = git(repo_root, "rev-parse", "HEAD")
+        return reach.Step(store(head, full_at=c1, steps_since_full=1), c1, None, (), (), (), (), {})
+
+    monkeypatch.setattr(reach, "measure_step", measured)
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg"))
+    monkeypatch.setenv("CROZIER_GOLDEN_REACH_BASE_CACHE", str(tmp_path / "job-cache"))
+    monkeypatch.setenv("CROZIER_GITHUB_API_URL", github)
+    monkeypatch.setenv("GITHUB_TOKEN", "offline-token")
+    GitHub.artifacts = {c1: artifact(store(c1), tmp_path)}
+    git(root, "checkout", "-q", "--detach", c3)
+    runner_temp = tmp_path / "runner-temp"
+    assert reach.main(["--repo-root", str(root), "base", "--package", str(runner_temp / "golden-reach-base")]) == 0
+    git(root, "checkout", "-q", "main")
+    assert stepped_from == [c1], "the job measures from the nearest earlier published base"
+    packaged = runner_temp / "golden-reach-base" / "base.json.gz"
+    assert RS.load(packaged)["commit"] == c3
+
+    # actions/upload-artifact zips the one file at its base name, under the name the job gives it.
+    upload = io.BytesIO()
+    with zipfile.ZipFile(upload, "w") as archive:
+        archive.write(packaged, packaged.name)
+    name = "golden-reach-base-${{ github.sha }}".replace("${{ github.sha }}", c3)
+    assert name == f"golden-reach-base-{c3}"
+    GitHub.artifacts, GitHub.calls = {c1: GitHub.artifacts[c1], c3: upload.getvalue()}, Counter()
+    assert git(root, "rev-parse", "HEAD") == c4 and git(root, "rev-parse", "HEAD^") == c3
+    cache = tmp_path / "cache"
+    run = lookup(root, cache, github)
+    assert f"census-repin: base {c3} (artifact): downloaded {name}" in run.stdout, run.stdout
+    assert RS.load(cache / c3 / "base.json.gz") == RS.load(packaged), (
+        "the verb steps from exactly what the job packaged"
+    )

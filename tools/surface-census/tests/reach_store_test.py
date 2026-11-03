@@ -4,8 +4,8 @@ The store keeps each golden test's executed counter regions relative to its
 enclosing function, and `plan` decides what a change re-runs. These cases drive
 the real parser over real Rust source, the real store files on disk, `plan` over
 a real scratch git repository (every rule of the carry rule, one commit each),
-and the real host lock from a second process. The instrumented journey is
-`tests/repin_journey/incremental_test.py`.
+and the real host lock from a second process. No committed suite measures
+crozier instrumented through the verb: that journey is a development check only.
 """
 
 from __future__ import annotations

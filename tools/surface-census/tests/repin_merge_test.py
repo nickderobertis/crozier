@@ -136,3 +136,90 @@ def test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections(
         VERB.resolve_merge(root)
     assert f"{COVERAGE}:" in str(refused.value) and "is not derived content" in str(refused.value)
     assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0, "the merge is left open"
+
+
+LEDGER = "docs/openapi-surface/golden-reach.tsv"
+SITES = "docs/openapi-surface/golden-reach-sites.tsv"
+SCHEMAS = "docs/openapi-surface/schemas.md"
+
+
+def ledger(commit: str, reached: str) -> str:
+    return (
+        f"# golden-reach ledger — measured at commit {commit} over 2 golden tests\n"
+        "rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites\tnote\n"
+        f"1\tschema-x\tschemas.md\t0\t0\t{reached}\t2\t0\tsrc/lib.rs::pick\t\n"
+    )
+
+
+def region_row(census: str, reach: str) -> str:
+    return f"# Schemas\n\n| key | in | object | answer | census | reach | a | b |\n|---|---|---|---|---|---|---|---|\n| `schema-x` | both | Schema Object | golden | {census} | reach: {reach} |  |  |\n"
+
+
+def conflicted_files(tmp_path: Path, files: dict[str, tuple[str, str, str]]) -> Path:
+    """A repository mid-merge whose every file in `files` conflicts between its `ours` and `theirs`."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    git(root, "init", "-q", "-b", "main")
+
+    def write(side: int) -> None:
+        for path, texts in files.items():
+            (root / path).parent.mkdir(parents=True, exist_ok=True)
+            (root / path).write_text(texts[side], encoding="utf-8")
+
+    write(0)
+    commit(root, "base")
+    git(root, "checkout", "-q", "-b", "theirs")
+    write(2)
+    commit(root, "theirs")
+    git(root, "checkout", "-q", "main")
+    write(1)
+    commit(root, "ours")
+    assert git(root, "merge", "-q", "theirs", check=False).returncode != 0, "the branches must conflict"
+    assert set(git(root, "diff", "--name-only", "--diff-filter=U").stdout.split()) == set(files)
+    return root
+
+
+def test_a_merge_whose_conflicts_are_all_ledger_rows_and_reach_cells_is_completed(tmp_path: Path) -> None:
+    root = conflicted_files(
+        tmp_path,
+        {
+            LEDGER: (ledger("aaaaaaa", "3"), ledger("bbbbbbb", "4"), ledger("ccccccc", "5")),
+            SCHEMAS: (
+                region_row("Census 1", "**1** of **1** sites"),
+                region_row("Census 1", "**1** of **2** sites"),
+                region_row("Census 1", "**2** of **2** sites"),
+            ),
+        },
+    )
+    assert VERB.resolve_merge(root) == 2
+    parents = git(root, "rev-list", "--parents", "-n", "1", "HEAD").stdout.split()
+    assert len(parents) == 3 and parents[2] == git(root, "rev-parse", "theirs").stdout.strip(), "HEAD is the merge"
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode != 0, "no merge is open"
+    assert git(root, "status", "--porcelain").stdout == "", "every resolved file is committed"
+    for path in (LEDGER, SCHEMAS):
+        assert "<<<<<<<" not in (root / path).read_text(encoding="utf-8"), path
+
+
+def test_a_conflict_in_a_hand_written_line_is_refused_by_name_and_the_merge_left_open(tmp_path: Path) -> None:
+    sites = "key\tselectors\tsites\tnote\nschema-x\tschema.x\tsrc/lib.rs::pick\t{}\n"
+    root = conflicted_files(
+        tmp_path,
+        {
+            LEDGER: (ledger("aaaaaaa", "3"), ledger("bbbbbbb", "4"), ledger("ccccccc", "5")),
+            SITES: (sites.format("a note"), sites.format("our note"), sites.format("their note")),
+            SCHEMAS: (
+                region_row("Census 1", "**1** of **1** sites"),
+                region_row("Census ours", "**1** of **1** sites"),
+                region_row("Census theirs", "**1** of **1** sites"),
+            ),
+        },
+    )
+    conflicted = {path: (root / path).read_bytes() for path in (LEDGER, SITES, SCHEMAS)}
+    with pytest.raises(SystemExit) as refused:
+        VERB.resolve_merge(root)
+    message = str(refused.value)
+    assert f"{SITES}:2: `schema-x\tschema.x\tsrc/lib.rs::pick\tour note` is not derived content" in message, message
+    assert f"{SCHEMAS}:5: `" in message, "a region row whose authored census cell differs is not derived either"
+    assert LEDGER not in message, "the derived ledger hunk is not named"
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0, "the merge is left open"
+    assert {path: (root / path).read_bytes() for path in conflicted} == conflicted, "nothing was rewritten"

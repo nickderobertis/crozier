@@ -63,7 +63,48 @@ def test_a_line_rustfmt_split_is_followed_into_head(tmp_path: Path) -> None:
     _verb().REACH.resolve_site(moves[SPEC], root)
 
 
+# A second `if x {` line, deeper in the same function: the old pattern now matches two lines.
+DUPLICATED = BASE.replace(
+    "    y\n}", "    for _ in 0..1 {\n        if x {\n            continue;\n        }\n    }\n    y\n}"
+)
+
+
+def test_a_duplicate_line_is_re_anchored_and_the_new_spec_rewritten_everywhere_it_is_quoted(tmp_path: Path) -> None:
+    root, base = repository(tmp_path, BASE, DUPLICATED)
+    verb = _verb()
+    assert verb._broken(SPEC, root), "the duplicate leaves the old pattern ambiguous"
+    toml = SPEC.replace("\\", "\\\\")
+    quoting = {
+        "docs/openapi-surface/golden-reach.tsv": f"# ledger\nrank\tkey\tregion\tsites\n1\tk\tschema.x\t{SPEC}\n",
+        "docs/openapi-surface/handwritten-reach.tsv": f"fixture\tsite\nf\t{SPEC}\n",
+        "docs/openapi-surface/handwritten/f/evidence.toml": f'[[gate]]\nsite = "{toml}"\n',
+        "docs/openapi-surface/schemas.md": f"| `x` | reached `{SPEC}` 1/1 |\n",
+        "docs/openapi-surface-coverage.md": f"The arm `{SPEC}` handles it.\n",
+    }
+    for path, text in quoting.items():
+        (root / path).parent.mkdir(parents=True, exist_ok=True)
+        (root / path).write_text(text, encoding="utf-8")
+    moves = verb.reanchor_all(root, base)
+    assert list(moves) == [SPEC]
+    new = moves[SPEC]
+    assert new != SPEC and new.startswith("src/lib.rs::pick[")
+    site = verb.REACH.resolve_site(new, root)
+    assert site.start == 2, "the new spec anchors the line the old one did, not its twin"
+    changed = {p.relative_to(root).as_posix() for p in verb.rewrite_specs(root, moves)}
+    assert changed == {SITES, *quoting}
+    for path in (SITES, *quoting):
+        text = (root / path).read_text(encoding="utf-8")
+        assert SPEC not in text and (new in text or new.replace("\\", "\\\\") in text), path
+    assert verb.site_specs(root) == [new]
+    assert verb.reanchor_all(root, base) == {}, "every site resolves to exactly one line once rewritten"
+
+
 REFUSALS = {
+    "an anchored arm whose code changed": (
+        BASE,
+        BASE.replace("    if x {\n", "    if x && y > 0 {\n"),
+        "the anchored code changed: `src/lib.rs::pick` at HEAD no longer holds it token for token",
+    ),
     "a site that did not resolve at the base either": (
         BASE.replace("    if x {\n", "    if x {\n    // if x {\n"),
         BASE.replace("    if x {\n", "    if x\n    {\n"),
