@@ -30,8 +30,6 @@ exit 0
 fern-api/docs fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2: SyntaxError: keyword argument repeated: domain
 fern-api/docs fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62: SyntaxError: keyword argument repeated: domain
 
-llmlint: ignore-block[boundary_inputs_validated] This is the verbatim script the run above recorded, invoked once per tree the transcript names; it reads no outside input, and editing it would make this record describe a run that never happened.
-
 ## script
 
     """Compile a README's first Python snippet, then (crozier's tree) run it through httpx.MockTransport."""
@@ -58,5 +56,3 @@ llmlint: ignore-block[boundary_inputs_validated] This is the verbatim script the
         exec(code, {"__name__": "snippet"})
         for request in seen:
             print(request.method, str(request.url), request.content.decode())
-
-llmlint: ignore-end[boundary_inputs_validated]
