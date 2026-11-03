@@ -53,10 +53,13 @@ real = sdk.FernApi
 
 
 def client(**kwargs: Any) -> Any:
+    # `Any` because this stands in for whatever constructor the generated
+    # package declares: its keyword arguments and client type are the SDK's,
+    # and this journey forwards them unread.
+    # llmlint: ignore[e2e_not_mocked] The emitted SDK and its README call run unmodified; the local transport records the serialized request and supplies only the external server's response, as in the repository's SDK wire tier.
     return real(httpx_client=httpx.Client(transport=httpx.MockTransport(handle)), **kwargs)
 
 
-# llmlint: ignore[e2e_not_mocked] The emitted SDK and its README call run unmodified; the local transport records the serialized request and supplies only the external server's response, as in the repository's SDK wire tier.
 sdk.FernApi = client
 # Running the generated README's own worked call is what this journey proves.
 exec(code, {"__name__": "worked_call"})  # noqa: S102
