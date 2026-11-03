@@ -1081,6 +1081,15 @@ class WeeklyRunTests(unittest.TestCase):
         for n in range(12):
             self.assertIn(f"changed-upstream-{n}", overview)
         self.assertIn("changed known failures: 12", overview)
+        optional_omitted = re.search(r"(\d+) ledger or known-failure report\(s\) omitted", overview)
+        self.assertIsNotNone(optional_omitted)
+        assert optional_omitted is not None
+        retained_optional = body.count(": what this carries</summary>")
+        self.assertGreater(int(optional_omitted[1]), 0)
+        self.assertGreater(retained_optional, 0)
+        self.assertEqual(12, int(optional_omitted[1]) + retained_optional)
+        self.assertIn("new output", body)
+
         self.assertIn("Failing items: 899", overview)
         self.assertIn("corpus: 898", overview)
         self.assertIn("handwritten: 1", overview)

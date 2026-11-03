@@ -1181,7 +1181,7 @@ class GitHubListingTests(unittest.TestCase):
     def listing(self, stdout: str) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(["gh"], 0, stdout, "")
 
-    def test_only_a_json_list_of_objects_is_a_listing(self) -> None:
+    def test_empty_output_or_a_json_list_of_objects_is_a_listing(self) -> None:
         self.assertEqual([], weekly.gh_objects(self.listing("[]\n"), "labels"))
         self.assertEqual([], weekly.gh_objects(self.listing(""), "labels"))
         self.assertEqual([{"name": "x"}], weekly.gh_objects(self.listing('[{"name": "x"}]'), "labels"))
