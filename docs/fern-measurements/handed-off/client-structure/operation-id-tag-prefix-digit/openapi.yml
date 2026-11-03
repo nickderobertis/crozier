@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Alias Registry
+  version: 1.0.0
+  description: A registry of call-sign aliases, written to measure an operationId that is its tag followed by a word ending in a digit.
+servers:
+  - url: https://aliases.example.org
+paths:
+  /alias/v2:
+    get:
+      operationId: aliasVal2
+      tags: [alias]
+      responses:
+        '200':
+          description: The second-generation alias.
+          content:
+            application/json:
+              schema:
+                type: string
+  /alias:
+    get:
+      operationId: aliasList
+      tags: [alias]
+      responses:
+        '200':
+          description: Every alias.
+          content:
+            application/json:
+              schema:
+                type: string
+  /alias/v3:
+    get:
+      operationId: aliasV3
+      tags: [alias]
+      responses:
+        '200':
+          description: The third-generation alias.
+          content:
+            application/json:
+              schema:
+                type: string

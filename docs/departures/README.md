@@ -196,7 +196,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 29 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 30 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -464,6 +464,15 @@ when the two differ.
 - **crozier writes:** The keyword once, as the constructor declares it.
 - **Why:** A call repeating a keyword argument does not bind: Python rejects it as a `SyntaxError` before the example runs, so the documented client cannot be built as written.
 - **Evidence:** [`docs/departures/evidence/repeated-credential-example-keyword.md`](../../docs/departures/evidence/repeated-credential-example-keyword.md)
+
+### `repeated-query-body-example-keyword`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose required query parameter shares its name with a property of its JSON request body, where the body `$ref`s a component referenced somewhere else too (a response's array items, say), so Fern keeps it a named model and the signature renames the body argument `<model>_<name>`: the worked call in `README.md` and `reference.md`.
+- **Fern writes:** The worked call passing the query parameter's keyword twice (`bench="bench", bench="bench"`), where its own signature and docstring name the second `question_bench`. The same mechanism as `repeated-credential-example-keyword`, in a method call rather than the client constructor.
+- **crozier writes:** The renamed body argument (`question_bench="bench"`), as the signature declares it and as the docstring's example already passes it.
+- **Why:** A call repeating a keyword argument does not bind: Python rejects it as a `SyntaxError` before the example runs, and the signature's required `question_bench` is never passed.
+- **Evidence:** [`docs/departures/evidence/repeated-query-body-example-keyword.md`](../../docs/departures/evidence/repeated-query-body-example-keyword.md)
 
 ### `request-alias-reference-parameters`
 

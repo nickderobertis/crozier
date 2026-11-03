@@ -158,6 +158,15 @@ mod handed_off_type_declarations;
 #[path = "e2e/document_acceptance.rs"]
 mod document_acceptance;
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The client-structure root causes the fixture-only witness searches handed
+/// off, each in a document written for it under
+/// `docs/fern-measurements/handed-off/client-structure/`, held whole against
+/// the certified pair's tree.
+#[path = "e2e/client_structure.rs"]
+mod client_structure;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The handed-off body and media-type root causes, each measured on a
 /// from-scratch document under `docs/fern-measurements/handed-off/bodies-media/`
 /// and held whole against the certified pair's tree, with the wire journeys of
@@ -1002,6 +1011,14 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
+        (
+            client_structure::CLIENT_STRUCTURE_DIR,
+            client_structure::PYTHON_ENUMS_TREE,
+        ),
+        (
+            client_structure::CLIENT_STRUCTURE_DIR,
+            client_structure::LITERALS_TREE,
+        ),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,

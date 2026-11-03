@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Keeper Desk
+  version: 1.0.0
+  description: >-
+    Files growers' questions with the greenhouse keepers. The bench a question
+    is filed under is a query parameter, the question body names its bench too,
+    and the same question schema is listed back by the open-questions response,
+    so the body stays a named model.
+servers:
+  - url: https://desk.greenhouse.test
+paths:
+  /questions:
+    post:
+      operationId: fileQuestion
+      tags:
+        - questions
+      summary: File a question for the keepers
+      parameters:
+        - name: bench
+          in: query
+          required: true
+          description: The bench the question is filed under.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+      responses:
+        '200':
+          description: The filed question's ticket.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+    get:
+      operationId: listOpenQuestions
+      tags:
+        - questions
+      summary: List the questions still open
+      responses:
+        '200':
+          description: The open questions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenQuestions'
+components:
+  schemas:
+    Question:
+      type: object
+      required:
+        - bench
+        - asked_by
+      properties:
+        bench:
+          type: string
+          description: The bench the question is about.
+        asked_by:
+          type: string
+          description: The grower asking.
+        urgent:
+          type: boolean
+          description: Whether a keeper should answer today.
+    Ticket:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+    OpenQuestions:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
