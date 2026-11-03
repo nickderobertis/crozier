@@ -47,7 +47,8 @@ Every run below is a container held to those limits (`--memory 16g
 --memory-swap 16g --cpus 4`, with 4 pinned CPUs). It ran the job's steps from
 rustup onward over run 41564405289's `fern-goldens-bundle`. Memory comes from
 the cgroup, sampled every 2 s with `memory.peak` and `memory.events` read at the
-end. Disk is `du` of HOME plus `/tmp`, sampled about every 3 s.
+end. Disk is `du` of HOME plus `/tmp`, sampled about every 4 s (858 samples
+over the 58.4-minute run on 7797af82c).
 
 ### Findings
 
@@ -60,8 +61,10 @@ end. Disk is `du` of HOME plus `/tmp`, sampled about every 3 s.
   failed for each.
 - **`netbox.dev` alone, over the regenerated tree.** It hit the 16 GiB cap and
   was OOM-killed after 87 s (`oom_kill 1`). With `CROZIER_DIFF_SUMMARY_ONLY=1`
-  it peaked at 375 MiB with the same verdict. Over main's committed tree it uses
-  330 MB. Its text diffs need more memory than the runner has.
+  the cgroup peaked at 375 MiB, and the report ended in the ledger-drift
+  processing failure that discards the text diffs anyway. Over main's committed
+  tree its largest process reached a 330,524 kB resident set. Its text diffs
+  need more memory than the runner has.
 - **Which resource the original job ran out of: memory, likely, not
   established.** In the window where GitHub's runner died, the baseline stayed
   far inside both limits. `netbox.dev` is comparison 170 of 314 run one at a
@@ -96,7 +99,7 @@ The same capped run on 7797af82c completed every step and wrote its decision.
   - 2 corpora were not regenerated because their upstream specs are
     unfetchable: `viskit-studio` and `subsloth`.
 - No other host measurement was running when it launched. My own test runs used
-  other host cores during its first ~25 minutes.
+  other host cores during its first ~15 minutes.
 
 ## What a failed run's log now shows
 
