@@ -22,7 +22,3 @@ The supplemental verdict is **parity-gap-repaired**, within
 per item. The real-CLI test
 `an_invalid_sourced_union_list_item_matches_the_certified_tree` compares the
 complete output; the emitter unit test asserts both constructors and operators.
-
-An earlier, provisional repair discarded imports from the first item while
-falling back for the entire list. This fresh measurement contradicted that
-repair: the first item belongs in the output. The final renderer preserves it.
