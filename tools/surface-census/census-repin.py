@@ -112,19 +112,34 @@ def conflict_hunks(text: str, path: str) -> list[Hunk]:
             index += 1
             continue
         start, ours, theirs, part = index + 1, [], [], "ours"
+        separator, base_seen = False, False
         index += 1
         while index < len(lines) and not lines[index].startswith(">>>>>>> "):
             line = lines[index]
+            if (
+                line.startswith("<<<<<<< ")
+                or (line == "=======" and separator)
+                or (line.startswith("||||||| ") and (base_seen or separator))
+            ):
+                refuse(
+                    f"{path}:{start}: malformed conflict markers; resolve the hunk by hand, then re-run `just census-repin`"
+                )
             match line, part:
                 case _, _ if line.startswith("||||||| "):
                     part = "base"
+                    base_seen = True
                 case "=======", _:
                     part = "theirs"
+                    separator = True
                 case _, "ours":
                     ours.append(line)
                 case _, "theirs":
                     theirs.append(line)
             index += 1
+        if index == len(lines) or not separator:
+            refuse(
+                f"{path}:{start}: incomplete conflict markers (separator or closing marker missing); resolve the hunk by hand, then re-run `just census-repin`"
+            )
         hunks.append(Hunk(path, start, ours, theirs, index + 1))
         index += 1
     return hunks

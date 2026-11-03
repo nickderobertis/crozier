@@ -240,3 +240,24 @@ def test_a_scenario_row_the_writer_skips_keeps_its_conflict(tmp_path: Path, cell
     assert f"{INDEX}:2:" in str(refused.value) and "is not derived content" in str(refused.value)
     assert (root / INDEX).read_bytes() == before, "a skipped row's authored values must not be discarded"
     assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0
+
+
+@pytest.mark.parametrize("damage", ["missing separator", "missing closer", "nested opener"])
+def test_an_incomplete_conflict_is_refused_before_any_rewrite(tmp_path: Path, damage: str) -> None:
+    root = conflicted(tmp_path, LEDGER, ledger("a" * 40, "1/2"), ledger("b" * 40, "0/2"), ledger("c" * 40, "2/2"))
+    path = root / LEDGER
+    text = path.read_text(encoding="utf-8")
+    if damage == "missing separator":
+        text = text.replace("=======\n", "", 1)
+    elif damage == "missing closer":
+        text = "\n".join(line for line in text.splitlines() if not line.startswith(">>>>>>> ")) + "\n"
+    else:
+        text = text.replace("<<<<<<< HEAD\n", "<<<<<<< HEAD\n<<<<<<< nested\n", 1)
+    path.write_text(text, encoding="utf-8")
+    head = git(root, "rev-parse", "HEAD").stdout
+    with pytest.raises(SystemExit) as refused:
+        VERB.resolve_merge(root)
+    assert f"{LEDGER}:1:" in str(refused.value) and "conflict markers" in str(refused.value)
+    assert path.read_text(encoding="utf-8") == text
+    assert git(root, "rev-parse", "HEAD").stdout == head
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0
