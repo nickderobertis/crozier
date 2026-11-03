@@ -1221,7 +1221,9 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("recipe refused, so main's ledger is kept", pull["body"])
         # Its reports carry no text diffs, and the decision and the body say so
         # with the command that prints them.
-        self.assertIn("`just fixtures-diff <corpus>` prints them", state.recorded()["text_diffs_omitted"])
+        omitted = state.recorded()["text_diffs_omitted"]
+        assert isinstance(omitted, str)
+        self.assertIn("`just fixtures-diff <corpus>` prints them", omitted)
         failing_section = pull["body"].split("## Failing items", 1)[1]
         self.assertIn("compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`)", failing_section)
         self.assertIn("`just fixtures-diff <corpus>` prints them", self.summary())
@@ -1834,7 +1836,18 @@ class WeeklyRunTests(unittest.TestCase):
         after = [re.findall(r"comparison ([0-9])/8 .*\) (started|ended)", line)[0] for line in lines[hanging + 1 :]]
         self.assertEqual({"4", "5", "6", "7", "8"}, {number for number, moment in after if moment == "ended"}, text)
         self.assertNotIn(("3", "ended"), after, "the rest started beside the running one once the group had room")
-        self.assertIn("memory available 62.", text)
+        # What is reported is the tighter of the machine's and the group's, so
+        # the machine running this test bounds it too; decide guarantees only
+        # that each comparison it started beside the running one had at least
+        # the reserve (1 GiB) available, and never more than the group leaves
+        # (64 - (1.75 - 0.5) = 62.75 GiB).
+        released = [
+            float(re.findall(r"memory available ([0-9.]+) GiB", line)[-1])
+            for line in lines[hanging + 1 :]
+            if " started: " in line
+        ]
+        self.assertEqual(5, len(released), text)
+        self.assertTrue(all(1.0 <= amount <= 62.8 for amount in released), text)
 
     def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
         """A runner that dies mid-step leaves only what the step already wrote:
@@ -1952,6 +1965,8 @@ class WeeklyRunTests(unittest.TestCase):
         (SIGTERM, exit 143) once its hanging comparison has started and the
         `others` it can finish have ended (after `release`'s action, its count
         too); what its step log then holds."""
+        if sys.platform == "win32":
+            raise unittest.SkipTest("terminating a decision mid-comparison needs POSIX process groups")
         jobs, reserve = limits
         log = self.scratch / f"decide-{jobs}-{reserve}.log"
         with log.open("w", encoding="utf-8") as written:
@@ -2209,6 +2224,8 @@ class WeeklyRunTests(unittest.TestCase):
         it; a rejection lists each item its report names, and a report naming
         none is listed whole under its family. An item's name inside a longer
         one (`lantern` in `types/lantern.py` or `alpha_lanterns`) names no item."""
+        if sys.platform == "win32":
+            raise unittest.SkipTest("the default job count is read from the CPU affinity Linux reports")
         compare_all = "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml"
         refuse = "{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/lantern-refused/probe.yml --output {scratch}/out"
         (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
