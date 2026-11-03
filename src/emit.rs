@@ -2624,19 +2624,25 @@ fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
 }
 
 /// A constructor example matching the header's type. Date fields use Fern's
-/// measured date-example form instead of an invalid string placeholder.
+/// measured date-example form instead of an invalid string placeholder, and a
+/// boolean or numeric one the generator's own placeholder for its type, where
+/// Fern writes a `YOUR_*` string (the `non-string-client-header-example`
+/// departure, measured in
+/// docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
 fn global_header_example(header: &GlobalHeader) -> String {
-    if header.py_type() == HeaderType::Date {
-        format!(
+    match header.py_type() {
+        HeaderType::Date => format!(
             "{}=datetime.date.fromisoformat(\"2023-01-15\")",
             header.py_name
-        )
-    } else {
-        format!(
+        ),
+        HeaderType::Bool => format!("{}=True", header.py_name),
+        HeaderType::Int => format!("{}=1", header.py_name),
+        HeaderType::Float => format!("{}=1.1", header.py_name),
+        HeaderType::Str | HeaderType::List(_) => format!(
             "{}=\"YOUR_{}\"",
             header.py_name,
             header.py_name.to_uppercase()
-        )
+        ),
     }
 }
 
@@ -9384,6 +9390,15 @@ impl<'a> ExampleCtx<'a> {
             }
             return Some(self.discriminated_union_value(&matched, Slot::Plain));
         }
+        Some(self.member_from_values(member, values))
+    }
+
+    /// A union member constructed from an example's `values`, as a model is.
+    fn member_from_values(
+        &mut self,
+        member: &crate::ir::UnionMember,
+        values: &serde_json::Map<String, serde_json::Value>,
+    ) -> Example {
         let fields = member
             .fields
             .iter()
@@ -9405,7 +9420,7 @@ impl<'a> ExampleCtx<'a> {
             .collect();
         self.record_ref(&member.class_name);
         let args = self.example_call_args(fields, values);
-        Some(Example::Call(member.class_name.clone(), args))
+        Example::Call(member.class_name.clone(), args)
     }
 
     /// The keyword arguments of a model constructor built from an example's
@@ -9931,6 +9946,103 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// A union-typed field of a member built from its component's schema
+    /// example: each value the example gives selects its member by the
+    /// discriminant it carries. That member is built from its own component's
+    /// schema example where it declares one (the measurement's
+    /// `SensorReadingChecksItem_Threshold(limit=80)`), synthesized where its
+    /// component is an object without one (Kong's `TimeRange_Relative`), and
+    /// from the value the example gives where the member is inline, crozier
+    /// hoisting it from a composed variant (Kong's
+    /// `AdvancedFiltersItem_ControlPlane(operator=…, value=[…])`). Without a
+    /// usable example the field is synthesized.
+    fn sourced_union_value(&mut self, t: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        let mut inner = t;
+        loop {
+            inner = match inner {
+                TypeRef::Optional(inner) => inner.as_ref(),
+                TypeRef::Named(name) => match self.find(name) {
+                    Some(TypeDecl::Alias(alias)) => &alias.target,
+                    _ => break,
+                },
+                _ => break,
+            };
+        }
+        let (item_type, listed) = match inner {
+            TypeRef::List(item) | TypeRef::Set(item) => (item.as_ref(), true),
+            other => (other, false),
+        };
+        let union = self.discriminated_union_of(item_type);
+        let value = example.and_then(parse_example_value);
+        let (Some(union), Some(value)) = (union, value) else {
+            return self.value(t, Slot::Named(wire));
+        };
+        let build = |ctx: &mut Self, item: &serde_json::Value| -> Option<Example> {
+            let tag = item.get(&union.discriminant_property)?.as_str()?;
+            let member = union
+                .members
+                .iter()
+                .find(|member| member.discriminant == tag)?;
+            // A member crozier hoisted from a composed variant is named for the
+            // member itself (`AdvancedFiltersItemControlPlane`); it is no
+            // component of the document, so the example's values build it.
+            let hoisted = member
+                .class_name
+                .strip_prefix(&format!("{}_", union.name))
+                .map(|suffix| format!("{}{suffix}", union.name));
+            let source = member
+                .source
+                .as_deref()
+                .filter(|source| hoisted.as_deref() != Some(*source))
+                .map(|source| ctx.find(source));
+            match source {
+                Some(Some(TypeDecl::Object(object))) if !object.example_fields.is_empty() => {
+                    Some(ctx.union_member_value(union, Some(member), Slot::Named(wire)))
+                }
+                // A plain component object without an example of its own is the
+                // tag's member synthesized (Kong's `TimeRange_Relative`).
+                Some(Some(TypeDecl::Object(_))) => {
+                    ctx.value_from_example(item_type, &item.to_string())
+                }
+                _ if member.layout.is_wrapped() => {
+                    ctx.value_from_example(item_type, &item.to_string())
+                }
+                _ => Some(ctx.member_from_values(member, item.as_object()?)),
+            }
+        };
+        if listed {
+            let Some(items) = value.as_array() else {
+                return self.value(t, Slot::Named(wire));
+            };
+            let mut built = Vec::with_capacity(items.len());
+            for item in items {
+                match build(self, item) {
+                    Some(example) => built.push(example),
+                    None => return self.value(t, Slot::Named(wire)),
+                }
+            }
+            if self.documentation {
+                Example::ReferenceList(built)
+            } else {
+                Example::ExplicitList(built)
+            }
+        } else {
+            build(self, &value).unwrap_or_else(|| self.value(t, Slot::Named(wire)))
+        }
+    }
+
+    /// The discriminated union `t` names, through aliases.
+    fn discriminated_union_of(&self, t: &TypeRef) -> Option<&'a crate::ir::DiscriminatedUnion> {
+        match t {
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::DiscriminatedUnion(union)) => Some(union),
+                Some(TypeDecl::Alias(a)) => self.discriminated_union_of(&a.target),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Whether a type is, through optionals, lists and aliases, a discriminated
     /// union (`List[SensorReadingChecksItem]`).
     fn resolves_to_discriminated_union(&self, t: &TypeRef) -> bool {
@@ -10357,7 +10469,18 @@ impl<'a> ExampleCtx<'a> {
         u: &crate::ir::DiscriminatedUnion,
         slot: Slot,
     ) -> Example {
-        match u.members.first() {
+        self.union_member_value(u, u.members.first(), slot)
+    }
+
+    /// The synthesized value of one member of `u` (its first, for
+    /// [`Self::discriminated_union_value`]).
+    fn union_member_value(
+        &mut self,
+        u: &crate::ir::DiscriminatedUnion,
+        member: Option<&crate::ir::UnionMember>,
+        slot: Slot,
+    ) -> Example {
+        match member {
             // A wrapper holding a union whole passes its payload as `value`,
             // the one argument Fern's docstring writer leaves without a
             // trailing comma (the hand-written `tidepool-survey-log`
@@ -10455,7 +10578,7 @@ impl<'a> ExampleCtx<'a> {
                     } else if empty_only {
                         self.empty_object()
                     } else if sourced && self.resolves_to_discriminated_union(&ty) {
-                        self.value(&ty, Slot::Named(&wire_name))
+                        self.sourced_union_value(&ty, &wire_name, example.as_deref())
                     } else if let Some(value) = example
                         .as_deref()
                         .filter(|_| sourced)
@@ -20396,6 +20519,30 @@ mod snippet_rendering_tests {
     }
 
     #[test]
+    fn docstring_constructions_give_each_client_header_its_declared_type() {
+        let ir = ir("snippet-rendering");
+        let examples: Vec<String> = ir
+            .global_headers
+            .iter()
+            .map(super::global_header_example)
+            .collect();
+        assert_eq!(
+            examples,
+            [
+                "strict_mode=True",
+                "tenant_code=\"YOUR_TENANT_CODE\"",
+                "shift_number=1"
+            ]
+        );
+        let client = file(&ir, "src/fern/client.py");
+        assert_contains(
+            &client,
+            "    client = FernApi(\n        strict_mode=True,\n        tenant_code=\"YOUR_TENANT_CODE\",\n        shift_number=1,\n",
+        );
+        assert!(!client.contains("YOUR_STRICT_MODE"), "{client}");
+    }
+
+    #[test]
     fn a_free_form_body_schema_example_keeps_each_top_level_value_on_one_line() {
         let ir = ir("snippet-rendering");
         for name in ["README.md", "reference.md"] {
@@ -20503,7 +20650,7 @@ mod snippet_rendering_tests {
         let reference = file(&ir, "reference.md");
         assert_contains(
             &reference,
-            "from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingChecksItem_Threshold\n",
+            "from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingAlertsItem_Vent, AlertOperator, SensorReadingSeason_Autumn, AutumnSeasonPhase, SensorReadingChecksItem_Threshold\n",
         );
         assert_contains(
             &reference,
@@ -20514,6 +20661,18 @@ mod snippet_rendering_tests {
         assert_contains(
             &reference,
             "                SensorReadingChecksItem_Threshold(\n                    limit=80,\n",
+        );
+        // A member hoisted from a composed variant is built from the values the
+        // example gives it, the tag choosing the member.
+        assert_contains(
+            &reference,
+            "            alerts=[\n                SensorReadingAlertsItem_Vent(\n                    operator=AlertOperator.ABOVE,\n                    levels=[\n                        \"high\",\n                        \"critical\"\n                    ],\n                )\n            ],\n",
+        );
+        // A plain component without an example of its own is the tag's member,
+        // synthesized: `phase` is its placeholder, not the example's `late`.
+        assert_contains(
+            &reference,
+            "            season=SensorReadingSeason_Autumn(\n                phase=AutumnSeasonPhase.EARLY,\n            ),\n",
         );
     }
 

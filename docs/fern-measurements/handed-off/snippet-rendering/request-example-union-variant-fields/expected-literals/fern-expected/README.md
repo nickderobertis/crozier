@@ -35,7 +35,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingBench, SensorReadingChecksItem_Threshold
+from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingBench, SensorReadingAlertsItem_Vent, SensorReadingSeason_Autumn, SensorReadingChecksItem_Threshold
 
 client = FernApi()
 
@@ -52,6 +52,18 @@ client.boards.create_board(
             bench=SensorReadingBench(
                 row=4,
                 side="west",
+            ),
+            alerts=[
+                SensorReadingAlertsItem_Vent(
+                    operator="above",
+                    levels=[
+                        "high",
+                        "critical"
+                    ],
+                )
+            ],
+            season=SensorReadingSeason_Autumn(
+                phase="early",
             ),
             checks=[
                 SensorReadingChecksItem_Threshold(
@@ -102,6 +114,18 @@ async def main() -> None:
                 bench=SensorReadingBench(
                     row=4,
                     side="west",
+                ),
+                alerts=[
+                    SensorReadingAlertsItem_Vent(
+                        operator="above",
+                        levels=[
+                            "high",
+                            "critical"
+                        ],
+                    )
+                ],
+                season=SensorReadingSeason_Autumn(
+                    phase="early",
                 ),
                 checks=[
                     SensorReadingChecksItem_Threshold(

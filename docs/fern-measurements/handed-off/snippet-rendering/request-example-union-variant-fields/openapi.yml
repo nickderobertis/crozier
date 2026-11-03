@@ -94,6 +94,13 @@ components:
         checks:
           - kind: threshold
             limit: 32.5
+        alerts:
+          - target: vent
+            operator: above
+            levels: [high, critical]
+        season:
+          kind: autumn
+          phase: late
       properties:
         source:
           type: string
@@ -112,6 +119,26 @@ components:
               type: integer
             side:
               type: string
+        alerts:
+          type: array
+          items:
+            discriminator:
+              propertyName: target
+              mapping:
+                bench: '#/components/schemas/BenchAlert'
+                vent: '#/components/schemas/VentAlert'
+            oneOf:
+              - $ref: '#/components/schemas/BenchAlert'
+              - $ref: '#/components/schemas/VentAlert'
+        season:
+          discriminator:
+            propertyName: kind
+            mapping:
+              spring: '#/components/schemas/SpringSeason'
+              autumn: '#/components/schemas/AutumnSeason'
+          oneOf:
+            - $ref: '#/components/schemas/SpringSeason'
+            - $ref: '#/components/schemas/AutumnSeason'
         checks:
           type: array
           items:
@@ -123,6 +150,77 @@ components:
             oneOf:
               - $ref: '#/components/schemas/ThresholdCheck'
               - $ref: '#/components/schemas/TrendCheck'
+    AlertOperator:
+      type: string
+      enum: [below, above]
+    BenchAlert:
+      oneOf:
+        - title: Ranged bench alert
+          type: object
+          required: [operator, levels, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            levels:
+              type: array
+              items:
+                type: string
+            target:
+              type: string
+              enum: [bench]
+        - title: Cleared bench alert
+          type: object
+          required: [operator, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            target:
+              type: string
+              enum: [bench]
+    VentAlert:
+      oneOf:
+        - title: Ranged vent alert
+          type: object
+          required: [operator, levels, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            levels:
+              type: array
+              items:
+                type: string
+            target:
+              type: string
+              enum: [vent]
+        - title: Cleared vent alert
+          type: object
+          required: [operator, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            target:
+              type: string
+              enum: [vent]
+    SpringSeason:
+      type: object
+      required: [kind, phase]
+      properties:
+        kind:
+          type: string
+          enum: [spring]
+        phase:
+          type: string
+          enum: [early, late]
+    AutumnSeason:
+      type: object
+      required: [kind, phase]
+      properties:
+        kind:
+          type: string
+          enum: [autumn]
+        phase:
+          type: string
+          enum: [early, late]
     ForecastReading:
       type: object
       required: [source]

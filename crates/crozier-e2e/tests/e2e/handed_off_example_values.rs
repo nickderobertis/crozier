@@ -65,7 +65,7 @@ fn cause_dir(cause: &str) -> PathBuf {
 
 /// A failing run is a failure message, not a panic, so one cause's refusal is
 /// reported beside the other causes' differences.
-fn generate(spec: &Path, flags: &[&str]) -> Result<tempfile::TempDir, String> {
+pub(super) fn generate(spec: &Path, flags: &[&str]) -> Result<tempfile::TempDir, String> {
     let out = tempfile::tempdir().expect("crozier output tempdir");
     let result = probe_command(spec, out.path())
         .args(flags)
@@ -84,7 +84,7 @@ fn generate(spec: &Path, flags: &[&str]) -> Result<tempfile::TempDir, String> {
 
 /// crozier's output over `spec` compared whole with `expected`, every departure
 /// held to `golden`'s ledger rows.
-fn tree_failures(
+pub(super) fn tree_failures(
     key: &str,
     spec: &Path,
     flags: &[&str],
@@ -102,7 +102,7 @@ fn tree_failures(
 
 /// [`tree_failures`] for a tree whose ledger rows are not one golden's: a
 /// literals overlay inherits its base's rows (see [`literals_ledger`]).
-fn ledger_tree_failures(
+pub(super) fn ledger_tree_failures(
     key: &str,
     spec: &Path,
     flags: &[&str],
@@ -128,12 +128,14 @@ fn ledger_tree_failures(
 /// A literals overlay's ledger rows: its own for the files it carries, its
 /// cause's `fern-expected/` rows for every file it inherits.
 fn literals_ledger(cause: &str) -> Result<GoldenLedger, Vec<String>> {
-    let overlay = cause_dir(cause)
-        .join("expected-literals")
-        .join("fern-expected");
+    literals_ledger_in(&cause_dir(cause))
+}
+
+/// [`literals_ledger`] for the measurement directory `dir` of any area.
+pub(super) fn literals_ledger_in(dir: &Path) -> Result<GoldenLedger, Vec<String>> {
+    let overlay = dir.join("expected-literals").join("fern-expected");
     let own = departure_ledger().golden(&golden_path(&overlay), &[])?;
-    let inherited =
-        departure_ledger().golden(&golden_path(&cause_dir(cause).join("fern-expected")), &[])?;
+    let inherited = departure_ledger().golden(&golden_path(&dir.join("fern-expected")), &[])?;
     let removed = overlay_removed(&overlay);
     let files = walk_files(&overlay)
         .into_iter()
@@ -145,7 +147,7 @@ fn literals_ledger(cause: &str) -> Result<GoldenLedger, Vec<String>> {
 /// The files an overlay's manifest says the literals tree omits. A manifest
 /// without a `removed` array of paths is malformed and fails the test rather
 /// than standing for an overlay that removes nothing.
-fn overlay_removed(overlay: &Path) -> Vec<String> {
+pub(super) fn overlay_removed(overlay: &Path) -> Vec<String> {
     let path = overlay.join(MANIFEST);
     let manifest: serde_json::Value = serde_json::from_str(
         &std::fs::read_to_string(&path)
@@ -179,7 +181,11 @@ fn overlay_removed(overlay: &Path) -> Vec<String> {
 /// A cause's literals tree: its own `fern-expected/` minus the files the
 /// overlay's manifest removes, with the overlay's files laid over it.
 fn literals_tree(cause: &str) -> tempfile::TempDir {
-    let dir = cause_dir(cause);
+    literals_tree_in(&cause_dir(cause))
+}
+
+/// [`literals_tree`] for the measurement directory `dir` of any area.
+pub(super) fn literals_tree_in(dir: &Path) -> tempfile::TempDir {
     let base = dir.join("fern-expected");
     let overlay = dir.join("expected-literals").join("fern-expected");
     let tree = tempfile::tempdir().expect("literals tree tempdir");
@@ -433,7 +439,7 @@ fn ruled_example_values_are_what_crozier_writes() {
 /// applied. The command, not the ledger-checked gate, so a perturbed tree's
 /// departures are never recorded against the committed golden.
 #[cfg(unix)]
-fn compare_differing(spec: &Path, reference: &Path) -> Vec<String> {
+pub(super) fn compare_differing(spec: &Path, reference: &Path) -> Vec<String> {
     let work = tempfile::tempdir().expect("compare workspace");
     std::fs::copy(spec, work.path().join("openapi.yml")).expect("copy the document");
     let config = format!(

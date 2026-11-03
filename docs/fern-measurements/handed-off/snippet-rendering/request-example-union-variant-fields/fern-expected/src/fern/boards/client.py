@@ -48,12 +48,16 @@ class BoardsClient:
         Examples
         --------
         from fern import (
+            AlertOperator,
+            AutumnSeasonPhase,
             FernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChannelsItem,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
             Window,
         )
 
@@ -71,6 +75,15 @@ class BoardsClient:
                     bench=SensorReadingBench(
                         row=4,
                         side="west",
+                    ),
+                    alerts=[
+                        SensorReadingAlertsItem_Vent(
+                            operator=AlertOperator.ABOVE,
+                            levels=["high", "critical"],
+                        )
+                    ],
+                    season=SensorReadingSeason_Autumn(
+                        phase=AutumnSeasonPhase.EARLY,
                     ),
                     checks=[
                         SensorReadingChecksItem_Threshold(
@@ -105,12 +118,16 @@ class BoardsClient:
         Examples
         --------
         from fern import (
+            AlertOperator,
+            AutumnSeasonPhase,
             FernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChannelsItem,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
             Window,
         )
 
@@ -128,6 +145,15 @@ class BoardsClient:
                     bench=SensorReadingBench(
                         row=4,
                         side="west",
+                    ),
+                    alerts=[
+                        SensorReadingAlertsItem_Vent(
+                            operator=AlertOperator.ABOVE,
+                            levels=["high", "critical"],
+                        )
+                    ],
+                    season=SensorReadingSeason_Autumn(
+                        phase=AutumnSeasonPhase.EARLY,
                     ),
                     checks=[
                         SensorReadingChecksItem_Threshold(
@@ -180,12 +206,16 @@ class AsyncBoardsClient:
         import asyncio
 
         from fern import (
+            AlertOperator,
             AsyncFernApi,
+            AutumnSeasonPhase,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChannelsItem,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
             Window,
         )
 
@@ -206,6 +236,15 @@ class AsyncBoardsClient:
                         bench=SensorReadingBench(
                             row=4,
                             side="west",
+                        ),
+                        alerts=[
+                            SensorReadingAlertsItem_Vent(
+                                operator=AlertOperator.ABOVE,
+                                levels=["high", "critical"],
+                            )
+                        ],
+                        season=SensorReadingSeason_Autumn(
+                            phase=AutumnSeasonPhase.EARLY,
                         ),
                         checks=[
                             SensorReadingChecksItem_Threshold(
@@ -245,12 +284,16 @@ class AsyncBoardsClient:
         import asyncio
 
         from fern import (
+            AlertOperator,
             AsyncFernApi,
+            AutumnSeasonPhase,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChannelsItem,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
             Window,
         )
 
@@ -271,6 +314,15 @@ class AsyncBoardsClient:
                         bench=SensorReadingBench(
                             row=4,
                             side="west",
+                        ),
+                        alerts=[
+                            SensorReadingAlertsItem_Vent(
+                                operator=AlertOperator.ABOVE,
+                                levels=["high", "critical"],
+                            )
+                        ],
+                        season=SensorReadingSeason_Autumn(
+                            phase=AutumnSeasonPhase.EARLY,
                         ),
                         checks=[
                             SensorReadingChecksItem_Threshold(

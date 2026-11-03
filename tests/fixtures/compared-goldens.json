@@ -172,6 +172,28 @@
     "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/R15/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/R17/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/byte-text-response-reference-snippet/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/example-empty-array-field/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/example-map-of-model-values/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/example-presence/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/json-binary-body-snippet/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/map-body-placeholder-layout/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/readme-endpoint-choice/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/fern-expected": {},
+    "docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R8/fern-expected": {},

@@ -13,7 +13,7 @@
 <dd>
 
 ```python
-from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingChecksItem_Threshold
+from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingAlertsItem_Vent, AlertOperator, SensorReadingSeason_Autumn, AutumnSeasonPhase, SensorReadingChecksItem_Threshold
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -33,6 +33,18 @@ client.boards.create_board(
             bench=SensorReadingBench(
                 row=4,
                 side="west",
+            ),
+            alerts=[
+                SensorReadingAlertsItem_Vent(
+                    operator=AlertOperator.ABOVE,
+                    levels=[
+                        "high",
+                        "critical"
+                    ],
+                )
+            ],
+            season=SensorReadingSeason_Autumn(
+                phase=AutumnSeasonPhase.EARLY,
             ),
             checks=[
                 SensorReadingChecksItem_Threshold(
@@ -90,7 +102,7 @@ client.boards.create_board(
 <dd>
 
 ```python
-from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingChecksItem_Threshold
+from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingAlertsItem_Vent, AlertOperator, SensorReadingSeason_Autumn, AutumnSeasonPhase, SensorReadingChecksItem_Threshold
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -110,6 +122,18 @@ client.boards.preview_board(
             bench=SensorReadingBench(
                 row=4,
                 side="west",
+            ),
+            alerts=[
+                SensorReadingAlertsItem_Vent(
+                    operator=AlertOperator.ABOVE,
+                    levels=[
+                        "high",
+                        "critical"
+                    ],
+                )
+            ],
+            season=SensorReadingSeason_Autumn(
+                phase=AutumnSeasonPhase.EARLY,
             ),
             checks=[
                 SensorReadingChecksItem_Threshold(

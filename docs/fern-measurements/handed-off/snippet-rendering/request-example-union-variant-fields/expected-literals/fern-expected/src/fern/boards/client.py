@@ -51,8 +51,10 @@ class BoardsClient:
             FernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
         )
 
         client = FernApi()
@@ -66,6 +68,15 @@ class BoardsClient:
                     bench=SensorReadingBench(
                         row=4,
                         side="west",
+                    ),
+                    alerts=[
+                        SensorReadingAlertsItem_Vent(
+                            operator="above",
+                            levels=["high", "critical"],
+                        )
+                    ],
+                    season=SensorReadingSeason_Autumn(
+                        phase="early",
                     ),
                     checks=[
                         SensorReadingChecksItem_Threshold(
@@ -103,8 +114,10 @@ class BoardsClient:
             FernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
         )
 
         client = FernApi()
@@ -118,6 +131,15 @@ class BoardsClient:
                     bench=SensorReadingBench(
                         row=4,
                         side="west",
+                    ),
+                    alerts=[
+                        SensorReadingAlertsItem_Vent(
+                            operator="above",
+                            levels=["high", "critical"],
+                        )
+                    ],
+                    season=SensorReadingSeason_Autumn(
+                        phase="early",
                     ),
                     checks=[
                         SensorReadingChecksItem_Threshold(
@@ -173,8 +195,10 @@ class AsyncBoardsClient:
             AsyncFernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
         )
 
         client = AsyncFernApi()
@@ -191,6 +215,15 @@ class AsyncBoardsClient:
                         bench=SensorReadingBench(
                             row=4,
                             side="west",
+                        ),
+                        alerts=[
+                            SensorReadingAlertsItem_Vent(
+                                operator="above",
+                                levels=["high", "critical"],
+                            )
+                        ],
+                        season=SensorReadingSeason_Autumn(
+                            phase="early",
                         ),
                         checks=[
                             SensorReadingChecksItem_Threshold(
@@ -233,8 +266,10 @@ class AsyncBoardsClient:
             AsyncFernApi,
             Panel,
             PanelReading_Sensors,
+            SensorReadingAlertsItem_Vent,
             SensorReadingBench,
             SensorReadingChecksItem_Threshold,
+            SensorReadingSeason_Autumn,
         )
 
         client = AsyncFernApi()
@@ -251,6 +286,15 @@ class AsyncBoardsClient:
                         bench=SensorReadingBench(
                             row=4,
                             side="west",
+                        ),
+                        alerts=[
+                            SensorReadingAlertsItem_Vent(
+                                operator="above",
+                                levels=["high", "critical"],
+                            )
+                        ],
+                        season=SensorReadingSeason_Autumn(
+                            phase="early",
                         ),
                         checks=[
                             SensorReadingChecksItem_Threshold(
