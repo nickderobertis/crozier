@@ -227,42 +227,6 @@ jobs:
         run: just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime
   # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
-  # census-repin's instrumented journey (tests/repin_journey): a pinned crozier
-  # clone measured step by step, hours long, so it is a promoted tier with a job
-  # and a bound of its own rather than a share of `check`'s. Its inputs name only
-  # the repin tooling, so the affected tier selects it only when that changes; a
-  # `src/` change never does. Not a gate context: nothing waits on it.
-  repin-journey:
-    name: repin-journey
-    runs-on: ubuntu-latest
-    timeout-minutes: 330
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: extractions/setup-just@v2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - name: Install Nx (bun.lock)
-        run: just install-nx
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Install ruff
-        run: ./scripts/install-ruff.sh
-      - name: Install the pinned Rust toolchain
-        run: just install-toolchain
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest,cargo-llvm-cov
-      - name: The repin journey
-        env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=repin-journey
-
   # The golden-reach base for this push to main: `just census-repin` steps from
   # the nearest first-parent ancestor that has one, re-measuring only what a
   # change touched. The job measures HEAD from the nearest earlier published base

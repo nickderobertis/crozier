@@ -22,7 +22,6 @@ members = [
     "crozier-llmlint-tooling",
     "crozier-nested-discriminator-runtime",
     "crozier-python-workspace",
-    "crozier-repin-journey",
     "crozier-runtime",
     "crozier-screenshots",
     "crozier-surface-census",
@@ -453,17 +452,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "coverage", specifier = ">=7.16" }]
-
-[[package]]
-name = "crozier-repin-journey"
-version = "0.0.0"
-source = { virtual = "tests/repin_journey" }
-dependencies = [
-    { name = "crozier-surface-census" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "crozier-surface-census", virtual = "tools/surface-census" }]
 
 [[package]]
 name = "crozier-runtime"
