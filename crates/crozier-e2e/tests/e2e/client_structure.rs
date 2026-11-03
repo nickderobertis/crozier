@@ -551,6 +551,7 @@ fn required_framing_headers_are_no_arguments() {
 /// the certified pair's README and reference worked calls pass the query
 /// keyword twice. crozier passes the renamed body argument the signature
 /// declares; the departure explains exactly those lines.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This journey generates one small SDK through the binary and holds it to its certified tree and departure ledger, on the crozier-e2e edge every other golden comparison shares; giving these generator journeys their own edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads", to which the planner deferred it.
 #[test]
 fn a_query_clash_on_a_reused_body_keeps_the_renamed_keyword() {
     let case = "reused-body-keyword-example";
