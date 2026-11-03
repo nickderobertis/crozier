@@ -1020,6 +1020,12 @@ class WeeklyRunTests(unittest.TestCase):
             "corpus": [{"item": f"large-{n}", "report": "mismatch " * 1000} for n in range(898)],
             "handwritten": [{"item": "broken-comparison", "report": "mismatch"}],
         }
+        decision["failing"]["corpus"][0] = {
+            "item": "uncompared-corpus",
+            "report": "ledger drift",
+            "ledger_drift": ["stale row"],
+            "files_compared": False,
+        }
         decision["refusals_changed"] = [{"item": "heap-exhausted", "detail": "unsettled"}]
         decision["unfetchable"] = [{"item": "subsloth", "detail": "unavailable"}]
         decision["unchecked"] = [
@@ -1068,6 +1074,7 @@ class WeeklyRunTests(unittest.TestCase):
             "broken-input",
             "changed-upstream",
             "broken-comparison",
+            "uncompared-corpus",
             "ledger recipe refused oversized test",
         ):
             self.assertIn(name, overview)

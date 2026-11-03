@@ -2648,12 +2648,13 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             f"- not compared (including broken inputs): {len(decision.unchecked)}",
             f"- ledger refusals or changes: {int(decision.ledger is not None)}",
             "",
-            "## Non-corpus comparison failures",
+            "## Non-corpus failures and references not compared",
             "",
         ]
         for family, entries in decision.failing.items():
-            if family != "corpus":
-                lines += [f"- {family} {entry.summary()}" for entry in entries]
+            lines += [
+                f"- {family} {entry.summary()}" for entry in entries if family != "corpus" or not entry.files_compared
+            ]
         full_list = "Full list and reports: the run's `fern-goldens-decision` artifact (`decision.json`)."
         if run_url:
             full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
