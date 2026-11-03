@@ -16010,6 +16010,9 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
     (selected, failures)
 }
 
+#[path = "e2e/fixture_diff_report.rs"]
+mod fixture_diff_report;
+
 /// Mismatch-investigation aid — NOT a gate (ignored by default). Complementing
 /// [`report_fixture_gaps`], it
 /// prints the normalized unified diff of every committed fixture file crozier does
@@ -16021,21 +16024,25 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
 /// Scope with two env vars (the `just` recipe forwards its positional args):
 /// `CROZIER_DIFF_CORPUS=<api>` limits to one corpus, `CROZIER_DIFF_FILE=<substr>`
 /// to fixture paths containing `<substr>`. The Fern refresh automation instead
-/// invokes one exact corpus at a time with `CROZIER_DIFF_SUMMARY_ONLY=1`; that
-/// reports every differing path without retaining potentially huge unified diffs.
+/// invokes one exact corpus at a time. Text diffs are rendered one file at a
+/// time within fixed byte and alignment-cell limits; larger pairs name the
+/// omitted line counts. `CROZIER_DIFF_SUMMARY_ONLY=1` skips text rendering.
 /// `CROZIER_DIFF_CORPORA=<api>,...` remains available for exact multi-corpus
 /// callers. Missing registry entries are processing failures rather than silent
 /// omissions. Pure reporter — it never asserts on a diff (a diff is the point).
 #[test]
 #[ignore = "mismatch-investigation aid, not a gate; run via `just fixtures-diff`"]
 fn report_fixture_diffs() {
+    let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
+    if fixture_diff_report::synthetic_report(include_text_diffs) {
+        return;
+    }
     let corpus_filter = std::env::var("CROZIER_DIFF_CORPUS")
         .ok()
         .filter(|s| !s.is_empty());
     let file_filter = std::env::var("CROZIER_DIFF_FILE")
         .ok()
         .filter(|s| !s.is_empty());
-    let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
 
     let requested = std::env::var("CROZIER_DIFF_CORPORA").ok();
     // A flat golden with no packaged sibling is not a registered corpus, so it is
@@ -16099,7 +16106,7 @@ fn report_fixture_diffs() {
             &expected_root,
             out.path(),
             file_filter.as_deref(),
-            include_text_diffs,
+            false,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
             Some(&spec),
         ) {
@@ -16110,7 +16117,14 @@ fn report_fixture_diffs() {
                 continue;
             }
         };
-        print_fixture_differences(&differences, &unmatched);
+        fixture_diff_report::print(
+            &differences,
+            &unmatched,
+            &expected_root,
+            out.path(),
+            Some(&spec),
+            include_text_diffs,
+        );
         total += differences.len();
     }
     for golden in flat_goldens {
@@ -16139,7 +16153,7 @@ fn report_fixture_diffs() {
             &expected_root,
             out.path(),
             file_filter.as_deref(),
-            include_text_diffs,
+            false,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
             Some(&spec),
         ) {
@@ -16151,7 +16165,14 @@ fn report_fixture_diffs() {
             }
         };
         // A flat golden has no `unmatched` list: every difference is a regression.
-        print_fixture_differences(&differences, &std::collections::HashSet::new());
+        fixture_diff_report::print(
+            &differences,
+            &std::collections::HashSet::new(),
+            &expected_root,
+            out.path(),
+            Some(&spec),
+            include_text_diffs,
+        );
         total += differences.len();
     }
     println!(
