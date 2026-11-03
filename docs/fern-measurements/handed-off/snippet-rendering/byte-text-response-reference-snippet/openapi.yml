@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: Film Lab
+  version: 1.0.0
+  description: A film lab's developing queue, written to measure the reference.md usage of operations answering text/plain bytes.
+servers:
+  - url: https://filmlab.example
+paths:
+  /reels/{reelId}/develop/{pass}:
+    post:
+      operationId: developReel
+      tags: [reels]
+      summary: Develop a reel from its scan
+      parameters:
+        - name: reelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pass
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [scan]
+              properties:
+                scan:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: The developing log.
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: byte
+        '404':
+          description: No such reel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /reels/{reelId}/notes:
+    post:
+      operationId: annotateReel
+      tags: [reels]
+      summary: Attach a notes file to a reel
+      parameters:
+        - name: reelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [notes]
+              properties:
+                notes:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: The stored notes' text.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: No such reel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /reels/{reelId}/log:
+    get:
+      operationId: getReelLog
+      tags: [reels]
+      summary: Read a reel's developing log
+      parameters:
+        - name: reelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tail
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The developing log.
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: byte
+        '404':
+          description: No such reel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        message:
+          type: string

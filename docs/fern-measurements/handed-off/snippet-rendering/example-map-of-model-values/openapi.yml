@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Archive Finder
+  version: 1.0.0
+  description: A regional archive's finder, written to measure how a request example's map values are worked when they are objects of a referenced model.
+servers:
+  - url: https://finder.archive.example
+paths:
+  /records/search:
+    post:
+      operationId: searchRecords
+      tags: [records]
+      summary: Search archived records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                filters:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - type: array
+                        items:
+                          type: string
+                      - $ref: '#/components/schemas/Span'
+                      - type: array
+                        minItems: 1
+                        items:
+                          $ref: '#/components/schemas/Span'
+                bounds:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/Span'
+            example:
+              query: harbour charters
+              filters:
+                language:
+                  - Welsh
+                accessioned:
+                  from: '1901-01-01'
+                  to: '1910-12-31'
+                sealed:
+                  - from: '1921-01-01'
+                    to: '1921-12-31'
+                  - from: '1938-01-01'
+                    to: '1938-12-31'
+              bounds:
+                shelf:
+                  from: A
+                  to: F
+      responses:
+        '200':
+          description: The matching records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+components:
+  schemas:
+    Span:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        from:
+          oneOf:
+            - type: string
+            - type: number
+          example: '1900-01-01'
+        to:
+          oneOf:
+            - type: string
+            - type: number
+          example: '1999-12-31'
