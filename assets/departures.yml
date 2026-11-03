@@ -481,6 +481,29 @@
     built as written.
   evidence: docs/departures/evidence/repeated-credential-example-keyword.md
 
+- id: repeated-query-body-example-keyword
+  kind: fern-defect
+  trigger: >-
+    An operation whose required query parameter shares its name with a property
+    of its JSON request body, where the body `$ref`s a component referenced
+    somewhere else too (a response's array items, say), so Fern keeps it a
+    named model and the signature renames the body argument
+    `<model>_<name>`: the worked call in `README.md` and `reference.md`.
+  fern: >-
+    The worked call passing the query parameter's keyword twice
+    (`bench="bench", bench="bench"`), where its own signature and docstring
+    name the second `question_bench`. The same mechanism as
+    `repeated-credential-example-keyword`, in a method call rather than the
+    client constructor.
+  crozier: >-
+    The renamed body argument (`question_bench="bench"`), as the signature
+    declares it and as the docstring's example already passes it.
+  reason: >-
+    A call repeating a keyword argument does not bind: Python rejects it as a
+    `SyntaxError` before the example runs, and the signature's required
+    `question_bench` is never passed.
+  evidence: docs/departures/evidence/repeated-query-body-example-keyword.md
+
 - id: request-alias-reference-parameters
   kind: fern-defect
   trigger: An aliased object JSON body is flattened into method arguments but reference.md advertises a whole request argument.

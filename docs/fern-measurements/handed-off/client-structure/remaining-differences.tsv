@@ -3,8 +3,6 @@ boruta	reference.md	differs	example-presence	docs/openapi-surface/witness-search
 boruta	src/fern/assets/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 crystalshards	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 crystalshards	src/fern/shards/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-fai-e82	reference.md	differs	unnamed-repeated-body-keyword	docs/fern-measurements/handed-off/client-structure/README.md
-fai-6f9	reference.md	differs	unnamed-repeated-body-keyword	docs/fern-measurements/handed-off/client-structure/README.md
 resemble	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 resemble	src/fern/custom_pronunciations/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 skyvern-docs	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md

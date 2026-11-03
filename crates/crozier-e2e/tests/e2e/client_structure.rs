@@ -20,7 +20,6 @@ pub(crate) const CLIENT_STRUCTURE_DIR: &str = "docs/fern-measurements/handed-off
 pub(crate) const PYTHON_ENUMS_TREE: &str = "fern-expected";
 /// The complete certified-pair tree generated with Fern's default literals.
 pub(crate) const LITERALS_TREE: &str = "expected-literals";
-
 fn spec(case: &str) -> PathBuf {
     repo_root()
         .join(CLIENT_STRUCTURE_DIR)
@@ -545,3 +544,40 @@ fn required_framing_headers_are_no_arguments() {
 }
 
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// `repeated-query-body-example-keyword`, the last residual of `R12`'s FAI
+/// documents: a required query parameter sharing its name with a property of a
+/// `$ref` body that is also referenced from a response stays a named model, and
+/// the certified pair's README and reference worked calls pass the query
+/// keyword twice. crozier passes the renamed body argument the signature
+/// declares; the departure explains exactly those lines.
+#[test]
+fn a_query_clash_on_a_reused_body_keeps_the_renamed_keyword() {
+    let case = "reused-body-keyword-example";
+    let (_temp, out) = matching(case, "python-enums");
+    let client = read(&out, "src/fern/questions/client.py");
+    assert!(client.contains("        bench: str,\n        question_bench: str,\n"));
+    let call = "    bench=\"bench\",\n    question_bench=\"bench\",\n    asked_by=\"asked_by\",\n";
+    for rel in ["README.md", "reference.md"] {
+        let text = read(&out, rel);
+        assert!(
+            text.contains(call),
+            "{rel} lacks the renamed keyword:\n{text}"
+        );
+        assert!(!text.contains("    bench=\"bench\",\n    bench=\"bench\",\n"));
+    }
+    // `matching` held the comparison to this golden's ledger rows exactly: the
+    // departure explains crozier's three renamed-keyword lines and nothing else.
+    // A renamed keyword the signature does not declare is no departure: the
+    // adjacent unexplained mismatch must still fail, in both files.
+    for rel in ["README.md", "reference.md"] {
+        regression_is_named(
+            case,
+            "python-enums",
+            &out,
+            rel,
+            "    question_bench=\"bench\",",
+            "    body_bench=\"bench\",",
+        );
+    }
+}

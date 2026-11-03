@@ -771,6 +771,14 @@ docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-exp
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	86	schema-rejected-name-example
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	134	schema-rejected-name-example
 docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/fern-expected	src/fern/packets/client.py	179	schema-rejected-name-example
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	README.md	44	repeated-query-body-example-keyword
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	reference.md	73	repeated-query-body-example-keyword
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected	src/fern/questions/raw_client.py	101	body-query-parameter-value
 docs/fern-measurements/handed-off/client-structure/single-operation-tag-root-method/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/single-operation-tag-root-method/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/single-operation-tag-root-method/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

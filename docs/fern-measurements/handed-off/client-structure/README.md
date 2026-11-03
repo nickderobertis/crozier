@@ -50,17 +50,22 @@ union-modelling area attributes its other response files; Nussknacker's worked
 call builds the variant the example fits (`example-matching-union-variant`,
 the schemas record); and the jentic Ironclad copy's two `__init__.py` files
 differ only by the `WorkflowsCreateCommentRequest` export
-(`orphan-type-emission`). FAI's `R13` files all cleared; what remains is one
-line no record names (below).
+(`orphan-type-emission`). FAI's `R13` files all cleared, leaving one
+`reference.md` line in each copy, which this node pinned and catalogued as the
+`fern-defect` departure `repeated-query-body-example-keyword` (below).
+
+Both FAI copies were then compared once more with crozier built with that
+departure: each byte-matches its certified-pair tree, the departure applied to
+its `reference.md` `create_query` call (line 3338 of the `e82e728` tree, 2992 of
+the `6f9d392` tree) beside the catalogued `body-query-parameter-value` in
+`src/fern/query/raw_client.py`. Thirteen documents byte-match in all.
 
 `record` names the source record (`witness-search-fixture-only-<record>`);
 `causes` gives this area's causes first and, after "also", the other causes the
 record lists for the document. Every file a document still differs in is listed
 with its attributed cause in
 [`remaining-differences.tsv`](remaining-differences.tsv); none is attributed to
-a cause of this area. Each is a named root cause of another area's record but
-FAI's one line, the unnamed residual `unnamed-repeated-body-keyword` described
-under [FAI](#notes-on-the-comparison).
+a cause of this area; each is a named root cause of another area's record.
 
 | document | sha256 | record | causes | on the finished tree |
 |---|---|---|---|---|
@@ -88,8 +93,8 @@ under [FAI](#notes-on-the-comparison).
 | `APIs-guru/openapi-directory:APIs/osf.io/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `cdcf786527cbc25296204b370846686f3e76083f12c7a50e419b19aa53b03e5b` | bodies-paths | reference-section-title; also media-type-recognition, orphan-type-emission, snippet-rendering | 39 files differ, each attributed to another area's cause: `orphan-type-emission` (37), `snippet-rendering` (2) |
 | `AMRC-FactoryPlus/documentation:static/spec/cluster-manager.yaml@cfb2f488ff2f4b29c90235b12e9f8ed497772b59` | `be5e37894ab0582a6f6498609754319fcccdbbb140e7a055902d74534616fd8f` | operations-extensions | R2 | byte-matches |
 | `darwin-studios/darwin-cli:openapi.json@0ae98a805869b7acabd737365c193b0afcbd0d7e` | `ee5e2a219e2f0911107a11eab0d98405e91f2b6d8fddf0f0d5730f445421a952` | operations-extensions | R10; also R9 | byte-matches |
-| `fern-api/docs:fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2` | `74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4` | operations-extensions | R12; also R13 | 1 file differs: the unnamed residual `unnamed-repeated-body-keyword` (1) |
-| `fern-api/docs:fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62` | `5aa6dbf5778778503f76e63dea7f13313434d0d883f25a93792190fba0a6f621` | operations-extensions | R12; also R13 | 1 file differs: the unnamed residual `unnamed-repeated-body-keyword` (1) |
+| `fern-api/docs:fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2` | `74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4` | operations-extensions | R12; also R13 | byte-matches |
+| `fern-api/docs:fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62` | `5aa6dbf5778778503f76e63dea7f13313434d0d883f25a93792190fba0a6f621` | operations-extensions | R12; also R13 | byte-matches |
 | `nextcloud/client-sdks:go/api/openapi.yaml@02bc7281ee36fe8862a61e94e12c91381c5866bf` | `adbf311837cc8d83ef91b6c826c003e0fa25b437abebe8f902180600109443b9` | operations-extensions | R16; also R15 | byte-matches |
 | `APIs-guru/openapi-directory:APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743` | operations-extensions | R18; also R17, R19 (repaired by vtex-output-parity) | byte-matches |
 | `hey-api/hey-api:specs/openapi/val-town.json@9d56b7e1aa05434a34d6e1dbb35b786d8f69dc4e` | `30fbd0e53946ee2af6180a3ef05bdda12dc2ce838c0e42eb7a2f0a624724cab8` | schemas | operation-id-tag-prefix-digit | 1 files differ, each attributed to another area's cause: `description-source` (1) |
@@ -106,8 +111,9 @@ under [FAI](#notes-on-the-comparison).
   katana, whose other two causes the merged body and media-type repairs
   cleared. The merged union-modelling repairs (#726) then cleared darwin-cli
   (`R10` beside `R9`), nextcloud (`R16` beside `R15`) and both radio-aktywne
-  documents (`method-name-derivation` beside three other areas' causes): eleven
-  documents byte-match in all. Registering any of them is
+  documents (`method-name-derivation` beside three other areas' causes), and
+  the catalogued `repeated-query-body-example-keyword` departure then cleared
+  both FAI copies (`R12` beside `R13`): thirteen documents byte-match in all. Registering any of them is
   `remeasure-and-register`'s work, not this node's.
 - **val-town.** The schemas record lists only `operation-id-tag-prefix-digit`
   for it, the cause of its first differing line, and that cause is repaired
@@ -127,24 +133,27 @@ under [FAI](#notes-on-the-comparison).
   the `WorkflowsCreateCommentRequest` export crozier adds
   (`orphan-type-emission`), so those blocks clear with that cause, as the record
   states. The departure still absorbs this cause's whole difference.
-- **FAI (`unnamed-repeated-body-keyword`).** With `R12` repaired here and
-  `R13` by the merged union-modelling repairs, both FAI copies differ in one
-  line of `reference.md`: for `create_query`, a required query parameter
-  `domain` beside a property `domain` of the `$ref`'d body schema `Query`, the
-  certified pair's worked call passes `domain="domain"` twice, where its own
-  signature and docstring, and crozier, name the second `query_domain`. Python
-  rejects a repeated keyword argument (`SyntaxError`), so this is a standing
-  Fern-defect kind, and the manager approved cataloguing it as a
-  `kind: fern-defect` departure once a from-scratch document reproduced it.
-  None did: five authored documents, generated one at a time by the certified
-  pair under the host locks, each wrote the renamed keyword correctly in every
-  worked call — a path parameter beside a body property; a query parameter
-  beside a property of a `$ref`'d body `Planting`; the same with bearer auth and
-  two named servers (FAI's snippet style); the body schema named `Query`; and a
-  3.1 document with FastAPI-style `title`s, the colliding property not first
-  and a snake_case operationId. No record names the difference, so it stays an
-  unnamed residual under the manager's ruling, with a follow-up drafted to
-  bisect FAI's own document for the trigger. No departure was added.
+- **FAI (`repeated-query-body-example-keyword`).** With `R12` repaired here and
+  `R13` by the merged union-modelling repairs, each FAI copy differed in one
+  `reference.md` line: for `create_query`, a required query parameter `domain`
+  beside a property `domain` of the `$ref`'d body schema `Query`, the certified
+  pair's worked call passes `domain="domain"` twice, where its own signature
+  and docstring, and crozier, name the second `query_domain`. Compiling that
+  snippet from either certified tree fails (`SyntaxError: keyword argument
+  repeated: domain`), a standing Fern-defect kind. FAI's own tree gave the
+  trigger: `Query` is also listed by `GetQueriesResponse.queries`, so the
+  certified pair keeps it a named model (`types/query.py`), while FAI's other
+  clash (`create_feedback`, a path `domain` beside the once-used, inlined
+  `CreateFeedbackRequest`) is written correctly. Seven from-scratch
+  generations, run one at a time under the host locks with the manager's
+  approval, confirmed it: five shapes without the reuse, and a path-parameter
+  clash on a reused body, are written correctly; a query clash on a reused body
+  repeats the keyword. That document is
+  [`reused-body-keyword-example/`](reused-body-keyword-example/README.md),
+  and the departure is catalogued with its evidence note, a narrow rule, ledger
+  lines, unit tests and a crozier-e2e journey, under the manager's ruling (a
+  standing Fern-defect kind). The `R12` row's verdict is unchanged: the cause
+  itself was a parity gap and is repaired.
 - **`R10` beside `R9`.** darwin-cli's union imports share one statement as the
   certified pair writes them, and with `R9` repaired by the merged
   union-modelling work the document byte-matches.
