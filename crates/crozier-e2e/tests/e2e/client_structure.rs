@@ -543,8 +543,6 @@ fn required_framing_headers_are_no_arguments() {
     }
 }
 
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
-
 /// `repeated-query-body-example-keyword`, the last residual of `R12`'s FAI
 /// documents: a required query parameter sharing its name with a property of a
 /// `$ref` body that is also referenced from a response stays a named model, and
@@ -581,3 +579,5 @@ fn a_query_clash_on_a_reused_body_keeps_the_renamed_keyword() {
         );
     }
 }
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
