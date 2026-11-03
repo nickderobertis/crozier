@@ -9,7 +9,7 @@ byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 enum-media-selection	schema-example-outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	2	2
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
-ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	878	1681
+ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	889	1728
 ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::header_param_stem	9	9
 ferry-mapping-outside-schemas	ref-pointer-undeclared-component-head	src/ir.rs::Builder::discriminated_union[if all_dangling \{]	28	28
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -26,7 +26,7 @@ format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => Typ
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 harbor-nullable-inline-object	oneof-sole-non-null-member	src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]	11	11
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::annotated_ref_type	32	36
-harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::collect_fields	127	201
+harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::collect_fields	133	207
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::described_all_of_ref	30	33
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::resolved_schema_example_literal	10	37
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::schema_example	7	7
@@ -101,7 +101,7 @@ ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]
 ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
-request-media-methods	request-body-content	src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]	4	4
+request-media-methods	request-body-content	src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]	4	4
 request-media-methods	request-body-content	src/openapi.rs::Operation::with_sdk_method_name	8	8
 sensor-batch-query	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]	2	2
 shelf-labels-map-variants	property-map-value-oneof	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	17	18

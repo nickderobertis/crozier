@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Kiln Firing Log
+  version: 1.0.0
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      summary: List firings
+      responses:
+        '200':
+          description: The firings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/12HourCycle'
+        '401':
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Response'
+  /kilns/{kilnId}:
+    get:
+      operationId: getKiln
+      summary: Read one kiln
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The kiln
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/3dKilnModel'
+        '404':
+          description: No such kiln
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404NotFound'
+components:
+  schemas:
+    401Response:
+      type: object
+      properties:
+        reason:
+          type: string
+    404NotFound:
+      type: object
+      properties:
+        missing:
+          type: string
+    12HourCycle:
+      type: object
+      properties:
+        peak:
+          type: integer
+        cone:
+          $ref: '#/components/schemas/1000Cone'
+        agent:
+          $ref: '#/components/schemas/007Agent'
+        club:
+          $ref: '#/components/schemas/21Club'
+        plan:
+          $ref: '#/components/schemas/1234Plan'
+        audience:
+          $ref: '#/components/schemas/2500000Viewers'
+        security:
+          $ref: '#/components/schemas/2FAStatus'
+        seats:
+          $ref: '#/components/schemas/999999Seats'
+        pixels:
+          $ref: '#/components/schemas/1000000Pixels'
+        crew:
+          $ref: '#/components/schemas/110Crew'
+        stock:
+          $ref: '#/components/schemas/9999Stock'
+        steps:
+          $ref: '#/components/schemas/10000Steps'
+        bricks:
+          $ref: '#/components/schemas/45678Bricks'
+    1000Cone:
+      type: object
+      properties:
+        rating:
+          type: string
+    3dKilnModel:
+      type: object
+      properties:
+        shelves:
+          type: integer
+    007Agent:
+      type: object
+      properties:
+        codename:
+          type: string
+    21Club:
+      type: object
+      properties:
+        members:
+          type: integer
+    1234Plan:
+      type: object
+      properties:
+        steps:
+          type: integer
+    2500000Viewers:
+      type: object
+      properties:
+        peak:
+          type: integer
+    2FAStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+    999999Seats:
+      type: object
+      properties:
+        filled:
+          type: integer
+    1000000Pixels:
+      type: object
+      properties:
+        width:
+          type: integer
+    110Crew:
+      type: object
+      properties:
+        shift:
+          type: string
+    9999Stock:
+      type: object
+      properties:
+        level:
+          type: integer
+    10000Steps:
+      type: object
+      properties:
+        walked:
+          type: integer
+    45678Bricks:
+      type: object
+      properties:
+        laid:
+          type: integer

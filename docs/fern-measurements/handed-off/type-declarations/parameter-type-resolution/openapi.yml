@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: Radio Archive Index
+  version: 1.0.0
+paths:
+  /broadcasts/{station}:
+    get:
+      operationId: listBroadcasts
+      summary: List broadcasts of a station
+      parameters:
+        - name: station
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: after
+          in: query
+          required: false
+          description: Only list broadcasts after this local time.
+          schema:
+            oneOf:
+              - anyOf:
+                  - $ref: '#/components/schemas/LocalTime'
+                  - type: string
+                    contentMediaType: application/json
+                    contentSchema:
+                      $ref: '#/components/schemas/LocalTime'
+                title: BroadcastAfter
+              - type: 'null'
+        - name: before
+          in: query
+          required: false
+          description: Only list broadcasts before this local time, if one is given.
+          schema:
+            oneOf:
+              - anyOf:
+                  - $ref: '#/components/schemas/BroadcastBefore'
+                  - type: string
+                    contentMediaType: application/json
+                    contentSchema:
+                      $ref: '#/components/schemas/BroadcastBefore'
+              - type: 'null'
+        - name: window
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - anyOf:
+                  - $ref: '#/components/schemas/Window'
+                  - type: string
+                    contentMediaType: application/json
+                    contentSchema:
+                      $ref: '#/components/schemas/Window'
+              - type: 'null'
+      responses:
+        '200':
+          description: The broadcasts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /broadcasts/{station}/tags:
+    patch:
+      operationId: tagBroadcast
+      summary: Tag one broadcast, given as a pair of its id and its tags
+      parameters:
+        - name: station
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: false
+              prefixItems:
+                - type: integer
+                  format: int64
+                  minimum: 0
+                - type: object
+                  additionalProperties: {}
+      responses:
+        '200':
+          description: Tags applied
+          content:
+            application/json:
+              schema:
+                type: integer
+components:
+  schemas:
+    LocalTime:
+      type: string
+      format: date-time
+    BroadcastBefore:
+      anyOf:
+        - $ref: '#/components/schemas/LocalTime'
+        - type: 'null'
+    Window:
+      type: object
+      properties:
+        start:
+          type: string
+        hours:
+          type: integer

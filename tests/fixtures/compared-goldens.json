@@ -190,6 +190,60 @@
     "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/R19/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/R3/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/R6/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/R7/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/allof-description-wrapper/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/allof-member-description-docstring/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/blank-description-enum-docstring/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/blank-description-enum-docstring/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/description-source/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/description-source/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/digit-leading-schema-name/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/inline-type-naming/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/inline-type-naming/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/map-value-modelling/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/nullable-anyof-allof-described-member/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/nullable-anyof-allof-described-member/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/nullable-anyof-member-description-alias-docstring/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/nullable-anyof-member-description-alias-docstring/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/number-uint32-format/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/orphan-type-emission/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/orphan-type-emission/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/parameter-type-resolution/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/reference-description-leading-newline/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/schema-type-resolution/fern-expected": {},
+    "docs/fern-measurements/handed-off/type-declarations/type-placement/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/type-declarations/type-placement/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R13/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/R8/fern-expected": {},

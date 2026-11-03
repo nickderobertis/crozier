@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: Bakery Oven Monitor
+  version: 1.0.0
+paths:
+  /ovens/{ovenId}/status:
+    get:
+      operationId: getOvenStatus
+      summary: Read an oven's status
+      parameters:
+        - name: ovenId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OvenStatus'
+    put:
+      operationId: replaceOvenStatus
+      summary: Replace an oven's status
+      parameters:
+        - name: ovenId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OvenStatus'
+      responses:
+        '204':
+          description: Replaced
+components:
+  schemas:
+    Alarm:
+      type: object
+      properties:
+        code:
+          type: string
+        raisedAt:
+          type: string
+          format: date-time
+    OvenStatus:
+      type: object
+      properties:
+        alarms:
+          type: array
+          description: Alarms raised by the oven controller.
+          properties:
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Alarm'
+        trays:
+          type: array
+          properties:
+            empty:
+              type: boolean
+          items:
+            type: object
+            properties:
+              loaf:
+                type: string
+        history:
+          $ref: '#/components/schemas/AlarmHistory'
+    AlarmHistory:
+      type: array
+      description: Alarms already cleared.
+      properties:
+        empty:
+          type: boolean
+      items:
+        $ref: '#/components/schemas/Alarm'

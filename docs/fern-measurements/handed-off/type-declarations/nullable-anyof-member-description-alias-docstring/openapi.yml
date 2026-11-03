@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: Observatory Queue
+  version: 1.0.0
+paths:
+  /jobs:
+    get:
+      operationId: listJobs
+      summary: List queued jobs
+      responses:
+        '200':
+          description: The jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPage'
+components:
+  schemas:
+    NextCursor:
+      anyOf:
+        - type: string
+          description: The value to pass as 'after' for the next page. Null when there are no more pages.
+        - type: 'null'
+    RetryBudget:
+      anyOf:
+        - type: integer
+          description: Retries left before the job is dropped.
+        - type: 'null'
+      description: The outer description of the budget.
+    JobPage:
+      type: object
+      properties:
+        next:
+          $ref: '#/components/schemas/NextCursor'
+        budget:
+          $ref: '#/components/schemas/RetryBudget'
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+    Job:
+      type: object
+      additionalProperties: false
+      properties:
+        jobId:
+          type: string
+        stopped:
+          anyOf:
+            - type: string
+              description: Why the job stopped.
+              enum:
+                - CANCELLED
+                - COMPLETED
+            - type: 'null'
+        stoppedAt:
+          anyOf:
+            - type: number
+              description: When the job stopped, in epoch seconds.
+            - type: 'null'
