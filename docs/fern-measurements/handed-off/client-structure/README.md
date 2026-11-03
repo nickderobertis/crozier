@@ -74,8 +74,11 @@ byte-match in all.
 `causes` gives this area's causes first and, after "also", the other causes the
 record lists for the document. Every file a document still differs in is listed
 with its attributed cause in
-[`remaining-differences.tsv`](remaining-differences.tsv); none is attributed to
-a cause of this area; each is a named root cause of another area's record.
+[`remaining-differences.tsv`](remaining-differences.tsv), whose `source` column
+names the record that owns the cause; none is attributed to a cause of this
+area, and every one is a root cause that record's `### Root causes` table names:
+`R6` the operations-and-extensions record's, every other the bodies-and-paths
+record's.
 
 | document | sha256 | record | causes | on the finished tree |
 |---|---|---|---|---|
@@ -130,9 +133,11 @@ a cause of this area; each is a named root cause of another area's record.
 - **val-town.** The schemas record lists only `operation-id-tag-prefix-digit`
   for it, the cause of its first differing line, and that cause is repaired
   (`alias_val2` now matches), and the merged response repairs cleared its
-  `const` responses. Its one remaining file is an `allOf` member's description
-  (`description-source`), a cause the bodies-and-paths record names for other
-  documents.
+  `const` responses. Its one remaining file, `src/fern/types/membership_role.py`,
+  is an `allOf` member's description kept on an alias: the bodies-and-paths
+  record's (`docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md`)
+  root cause `description-source`, whose row names exactly that rule, so the
+  file is that area's to repair and none of it is this area's.
 - **Skyvern's two first-party documents** now match everywhere but three
   `reference.md` parameter descriptions that begin with a line break, the
   operations-and-extensions record's `R6`.
