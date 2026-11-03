@@ -842,7 +842,14 @@ def toolchain(root: Path) -> tuple[str, str]:
     if run.returncode != 0:
         fail(f"`rustc -vV` exited {run.returncode}: {run.stderr.strip()[-300:]}; install the pinned toolchain")
     fields = dict(line.split(": ", 1) for line in run.stdout.splitlines() if ": " in line)
-    return f"{fields.get('release', '?')} {fields.get('commit-hash', '?')}", fields.get("LLVM version", "?")
+    missing = [
+        name
+        for name in ("release", "commit-hash", "LLVM version")
+        if not fields.get(name, "").strip() or fields[name] in ("?", "unknown")
+    ]
+    if missing:
+        fail(f"`rustc -vV` omitted a usable {', '.join(missing)}; install the pinned toolchain before measuring")
+    return f"{fields['release']} {fields['commit-hash']}", fields["LLVM version"]
 
 
 def now_iso() -> str:
@@ -1323,13 +1330,25 @@ def plan(
             rerun.setdefault(test, "its own e2e test or Corpus literal changed")
     functions = base["functions"]
     changed = stale_functions(tree, functions)
+    old_functions: dict[str, Function] = {}
+    old_files: set[str] = set()
     for key in changed:
         if key.endswith(f"::{ITEMS}"):
             return full(f"{key.rsplit('::', 1)[0]} changed outside function bodies")
         here, there = tree.functions.get(key), functions.get(key)
-        if here is not None and here.const_fn:
+        if there is not None and there["file"] not in old_files:
+            path = there["file"]
+            source = show(root, base["commit"], path)
+            if source is None:
+                return full(f"the base source for `{key}` is unavailable")
+            old_functions.update(read_tree(root, {path: source}).functions)
+            old_files.add(path)
+        old = old_functions.get(key)
+        if (here is not None and here.const_fn) or (old is not None and old.const_fn):
             return full(f"`{key}` is a const fn, evaluated where no counter runs")
-        if (here is None or there is None) and (" as " in key or (here is not None and here.trait_ctx)):
+        if (here is None or there is None) and (
+            " as " in key or (here is not None and here.trait_ctx) or (old is not None and old.trait_ctx)
+        ):
             return full(f"`{key}` was added to or removed from a trait or trait impl")
     changed_set = set(changed)
     for name, entry in base["tests"].items():

@@ -518,6 +518,9 @@ FULL_CASES = [
         "Cargo.lock changed beyond",
     ),
     ("a const fn", {"src/lib.rs": ("    4\n", "    5\n")}, "const fn"),
+    ("a removed const fn", {"src/lib.rs": ("pub const fn width() -> usize {\n    4\n}", "")}, "const fn"),
+    ("a const fn made ordinary", {"src/lib.rs": ("pub const fn width()", "pub fn width()")}, "const fn"),
+    ("a removed trait default", {"src/lib.rs": ("    fn area(&self) -> u8 {\n        0\n    }", "")}, "trait"),
     (
         "an override added to a trait impl",
         {

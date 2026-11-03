@@ -10,6 +10,7 @@ and a row of `witness-search-registries/outstanding.tsv` through
 from __future__ import annotations
 
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -184,3 +185,74 @@ def test_a_corrupt_checkout_store_is_reported_and_ignored_rather_than_stepped_fr
     (tmp_path / reach.STORE_FILE).write_bytes(b"not gzip")
     assert reach.local_store(tmp_path) is None, "a measurement never steps from a store it cannot read"
     assert "ignoring" in capsys.readouterr().err
+
+
+def test_a_layout_only_change_reports_regions_translated_from_the_store(tmp_path: Path) -> None:
+    root, out = tmp_path / "repo", tmp_path / "out"
+    source = root / "src/lib.rs"
+    source.parent.mkdir(parents=True)
+    source.write_text("pub fn a() -> u8 {\n    1\n}\n", encoding="utf-8")
+    reach = _measured(root, out)
+    rs = reach.RS
+    saved = rs.load(out / reach.STORE_FILE)
+    tree = rs.read_tree(root)
+    original = {"src/lib.rs": [[1, 1, 3, 2]]}
+    saved["functions"] = rs.universe_table(tree, original)
+    saved["tests"] = {
+        "alpha": {"commit": saved["commit"], "regions": rs.entry_regions(tree, saved["functions"], original)}
+    }
+    rs.save(saved, out / reach.STORE_FILE)
+    (out / "tests").mkdir()
+    (out / "universe.json").write_text(json.dumps(original), encoding="utf-8")
+    (out / "tests/alpha.json").write_text(json.dumps(original), encoding="utf-8")
+    (out / "provenance.json").write_text(json.dumps({"commit": saved["commit"]}), encoding="utf-8")
+    source.write_text("// moved unchanged code\npub fn a() -> u8\n{ 1 }\n", encoding="utf-8")
+    coverage, universe, measured = reach.load_coverage(out, root)
+    expected = {"src/lib.rs": {(2, 1, 3, 6)}}
+    assert universe == expected and coverage == {"alpha": expected}
+    assert measured == saved["commit"], "layout translation cannot invent a new execution commit"
+    # Drive the user-facing report too: the old absolute coordinates span no
+    # counter in the moved function and used to make this journey fail.
+    regions = root / "docs/openapi-surface"
+    regions.mkdir(parents=True)
+    (regions / "schemas.md").write_text(
+        "| `type` | both | Schema Object.type | golden | census | | | |\n", encoding="utf-8"
+    )
+    (regions / "golden-reach-sites.tsv").write_text(
+        "key\tselectors\tsites\tnote\ntype\tschema.type\tsrc/lib.rs::a\t\n", encoding="utf-8"
+    )
+    registry = root / "crates/crozier-e2e/tests/e2e.rs"
+    registry.parent.mkdir(parents=True)
+    registry.write_text('feature_target_goldens! {\n    alpha_matches_fern_output => "alpha"\n}\n', encoding="utf-8")
+    fixtures = root / "tests/fixtures"
+    fixtures.mkdir(parents=True)
+    (fixtures / "CORPUS.md").write_text("# No acquired sources\n", encoding="utf-8")
+    saved["tests"]["alpha_matches_fern_output"] = saved["tests"].pop("alpha")
+    rs.save(saved, out / reach.STORE_FILE)
+    (out / "census.json").write_text(
+        json.dumps(
+            {
+                "sources": [{"fixture": "alpha"}],
+                "rows": [{"selector": "schema.type", "fixture": "alpha", "count": 1}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    reported = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "tools/surface-census/golden-reach.py"),
+            "--repo-root",
+            str(root),
+            "--out",
+            str(out),
+            "report",
+            "--write",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert reported.returncode == 0, reported.stdout + reported.stderr
+    assert "src/lib.rs::a=1/1" in (regions / "golden-reach.tsv").read_text(encoding="utf-8")
+    assert "reach: **1** of **1** handling sites reached" in (regions / "schemas.md").read_text(encoding="utf-8")

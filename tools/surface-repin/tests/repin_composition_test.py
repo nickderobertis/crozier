@@ -297,8 +297,12 @@ def exercise(root: Path, tmp_path: Path) -> None:
             "pub fn beta()", "// moved beta\npub fn beta()"
         ),
     )
+    refused = run("just", "census-repin", "--jobs", "1", success=False)
+    assert "measured input(s) differ from HEAD" in refused.stderr
+    assert store(root) == base, "a dirty-input refusal cannot overwrite the last measurement"
     c1 = commit(root, "change alpha and move beta")
-    stepped = measure("--incremental")
+    run("just", "census-repin", "--jobs", "1")
+    stepped = store(root)
     assert stepped["tests"][ALPHA]["commit"] == c1
     assert stepped["tests"][BETA]["commit"] == c0, "an unchanged test must retain its execution provenance"
     assert stepped["fixtures"]["configured"]["commit"] == c1
@@ -307,6 +311,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
         file: [[start + 2, col, end + 2, end_col] for start, col, end, end_col in regions]
         for file, regions in original_beta.items()
     }, "every carried region must move past the added statement and comment"
+    commit(root, "record the first repinned tables")
     merged = measure("--tests", f"^{ALPHA}$")
     assert merged["tests"][BETA] == stepped["tests"][BETA]
     assert merged["fixtures"] == stepped["fixtures"]
@@ -367,3 +372,114 @@ def exercise(root: Path, tmp_path: Path) -> None:
         if path == ledger_path:
             before, after = b"\n".join(before.splitlines()[1:]), b"\n".join(after.splitlines()[1:])
         assert after == before, f"a second complete repin moved {path.relative_to(root)}"
+
+    # A valid old counter universe can contain a region the rebuilt binary no
+    # longer emits. Consume that saved artifact through the real CLI: an
+    # included witness must execute again; an excluded witness must disappear.
+    for excluded in (False, True):
+        saved = store(root)
+        key = "src/lib.rs::beta"
+        regions = saved["functions"][key]["regions"]
+        extra = [0, 0, 0, 1]
+        assert extra not in regions
+        regions.append(extra)
+        saved["tests"][BETA]["regions"][key].append(len(regions) - 1)
+        previous = saved["tests"][BETA]["commit"]
+        for destination in (
+            root / ".local/golden-reach/store.json.gz",
+            tmp_path / "bases" / saved["commit"] / "base.json.gz",
+        ):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with gzip.open(destination, "wt", encoding="utf-8") as handle:
+                json.dump(saved, handle)
+        library = root / "src/lib.rs"
+        library.write_text(
+            library.read_text(encoding="utf-8").replace(
+                "pub fn alpha() -> usize {", "pub fn alpha() -> usize {\n    std::hint::black_box(());"
+            ),
+            encoding="utf-8",
+        )
+        changed = commit(root, "rebuild the counter universe")
+        if excluded:
+            recovered = measure("--tests", f"^{ALPHA}$")
+            assert BETA not in recovered["tests"], "an excluded entry with a vanished counter cannot survive"
+            assert not (root / f".local/golden-reach/tests/{BETA}.json").exists()
+        else:
+            recovered = measure("--incremental")
+            assert recovered["tests"][BETA]["commit"] == changed != previous
+            assert extra not in recovered["functions"][key]["regions"]
+
+    measure("--incremental")
+    for excluded in (False, True):
+        saved = store(root)
+        key = "src/lib.rs::beta"
+        regions = saved["functions"][key]["regions"]
+        extra = [0, 0, 0, 1]
+        assert extra not in regions
+        regions.append(extra)
+        saved["fixtures"]["configured"]["control"][key].append(len(regions) - 1)
+        previous = saved["fixtures"]["configured"]["commit"]
+        for destination in (
+            root / ".local/golden-reach/store.json.gz",
+            tmp_path / "bases" / saved["commit"] / "base.json.gz",
+        ):
+            with gzip.open(destination, "wt", encoding="utf-8") as handle:
+                json.dump(saved, handle)
+        library = root / "src/lib.rs"
+        with library.open("a", encoding="utf-8") as handle:
+            handle.write(f"\npub fn unused_probe_{int(excluded)}() -> usize {{ 9 }}\n")
+        changed = commit(root, "rebuild without changing any executed function")
+        if excluded:
+            recovered = measure("--tests", f"^{ALPHA}$")
+            assert not recovered["fixtures"], "an excluded fixture with a vanished control counter cannot survive"
+        else:
+            recovered = measure("--incremental")
+            assert recovered["fixtures"]["configured"]["commit"] == changed != previous
+            assert recovered["tests"] == saved["tests"], "only the fixture with the vanished control counter executes"
+
+
+def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:
+    """A real executable supplies malformed rustc output at the process boundary."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    fixture(root)
+    version = subprocess.run(["rustc", "-vV"], capture_output=True, text=True, check=True).stdout
+    shim = tmp_path / "compiler.rs"
+    shim.write_text(
+        "fn main() {\n"
+        " let exe = std::env::current_exe().unwrap();\n"
+        ' if exe.file_stem().unwrap() == "rustc" {\n'
+        '  print!("{}", std::env::var("PROBE_RUSTC_VERSION").unwrap());\n'
+        " } else {\n"
+        '  std::fs::write(std::env::var("PROBE_BUILD_MARKER").unwrap(), "built").unwrap();\n'
+        "  std::process::exit(17);\n"
+        " }\n}\n",
+        encoding="utf-8",
+    )
+    binaries = tmp_path / "bin"
+    binaries.mkdir()
+    suffix = ".exe" if os.name == "nt" else ""
+    compiler = binaries / f"rustc{suffix}"
+    subprocess.run(["rustc", str(shim), "-o", str(compiler)], check=True, capture_output=True)
+    shutil.copy2(compiler, binaries / f"cargo{suffix}")
+    marker = tmp_path / "build-started"
+    for field in ("release", "commit-hash", "LLVM version"):
+        env = os.environ | {
+            "PATH": str(binaries) + os.pathsep + os.environ["PATH"],
+            "XDG_CACHE_HOME": str(tmp_path / "cache"),
+            "PROBE_RUSTC_VERSION": "\n".join(line for line in version.splitlines() if not line.startswith(field + ":")),
+            "PROBE_BUILD_MARKER": str(marker),
+        }
+        result = subprocess.run(
+            [PYTHON, "tools/surface-census/golden-reach.py", "measure", "--jobs", "1"],
+            cwd=root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert result.returncode != 0
+        assert f"omitted a usable {field}" in result.stderr
+        assert "install the pinned toolchain" in result.stderr
+        assert not marker.exists(), "an unidentified compiler cannot start an instrumented build"
+        assert not (root / ".local/golden-reach/store.json.gz").exists()

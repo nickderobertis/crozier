@@ -72,6 +72,7 @@ members = [
     "tools/python-workspace",
     "tools/surface-census",
     "tools/surface-reach",
+    "tools/surface-repin",
     "tools/witness-search",
     "tools/witness-search-git",
     # Promoted tiers holding Python harnesses: format, lint and typecheck only;
@@ -211,5 +212,6 @@ omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
 "python-workspace" = ["tools/python-workspace/", "*/tools/python-workspace/"]
 "surface-census" = ["tools/surface-census/", "*/tools/surface-census/"]
 "surface-reach" = ["tools/surface-reach/", "*/tools/surface-reach/"]
+"surface-repin" = ["tools/surface-repin/", "*/tools/surface-repin/"]
 "witness-search" = ["tools/witness-search/", "*/tools/witness-search/"]
 "witness-search-git" = ["tools/witness-search-git/", "*/tools/witness-search-git/"]

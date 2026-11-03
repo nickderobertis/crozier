@@ -64,7 +64,7 @@ from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from reach_store import Entry, Inputs, Store
+    from reach_store import Entry, Inputs, Store, Tree
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -1954,24 +1954,33 @@ def load_coverage(out: Path, repo_root: Path | None = None) -> tuple[dict[str, d
     if not universe_path.is_file():
         fail(f"no measurement under {out}; run `{REPIN}` first")
     if repo_root is not None and (out / STORE_FILE).is_file():
-        stale_measurement(out, repo_root)
+        store, tree = stale_measurement(out, repo_root)
+        # Absolute JSON files are compatibility views of this token-relative store.
+        # Decode the authoritative entries at the current layout, including columns.
+        coverage = {
+            name: RS.positions(tree, store["functions"], entry["regions"]) for name, entry in store["tests"].items()
+        }
+        return coverage, RS.positions(tree, store["functions"]), store["commit"]
     universe = load_regions(universe_path)
     coverage = {path.stem: load_regions(path) for path in sorted((out / "tests").glob("*.json"))}
     return coverage, universe, measured_commit(out)
 
 
-def stale_measurement(out: Path, repo_root: Path) -> None:
+def stale_measurement(out: Path, repo_root: Path) -> tuple[Store, Tree]:
     """Refuse a measurement whose functions are not this tree's: its regions would land on other code."""
     try:
         store = RS.load(out / STORE_FILE)
     except RS.StoreError as error:
         fail(f"{error}; run `{REPIN}` to measure again")
-    changed = RS.stale_functions(RS.read_tree(repo_root), store["functions"])
+    tree = RS.read_tree(repo_root)
+    changed = RS.stale_functions(tree, store["functions"])
     if changed:
         fail(
             f"the measurement under {out} was taken at {store['commit'][:12]}, and {len(changed)} function(s) "
             f"of this tree differ from it ({', '.join(changed[:3])}); run `{REPIN}`"
         )
+
+    return store, tree
 
 
 def provenance_line(out: Path, commit: str, tests: int) -> str:
