@@ -1092,6 +1092,57 @@ class WeeklyRunTests(unittest.TestCase):
                 )
                 carried.unlink(missing_ok=True)
 
+    def test_a_ledger_change_past_the_body_limit_lists_the_first_rows_and_keeps_every_row(self) -> None:
+        """The pull request body lists the first changed rows of a ledger
+        output and how many more; the decision artifact keeps every one."""
+        self.publish_seed()
+        rows = [LEDGER_ROW.format(line=line) for line in range(10, 80)]
+        state = self.run_workflow(LEDGER_ROWS=json.dumps(rows))
+        self.assertEqual("diff", state.outcome(), self.summary())
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        (change,) = ledger["changes"]
+        self.assertEqual((rows, [LEDGER_ROW.format(line=3)]), (change["added"], change["removed"]))
+        (pull,) = self.pulls()
+        section = pull["body"].split("## Departures ledger", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn(f"+ {rows[59]}", section)
+        self.assertNotIn(f"+ {rows[60]}", section)
+        self.assertIn("… 11 more (the decision artifact lists them all)", section)
+
+    def test_a_decision_without_applys_ledger_record_is_refused_and_publishes_nothing(self) -> None:
+        """decide reads the ledger recipe's outcome `apply` recorded: missing,
+        unreadable or of another schema, it refuses to decide."""
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        record = decider / ".local/fern-goldens-weekly/ledger.json"
+        written = json.loads(record.read_text(encoding="utf-8"))
+        for case, mutate, message in (
+            ("missing", record.unlink, "is missing; run `apply` before `decide`"),
+            ("unreadable", lambda: record.write_text("{", encoding="utf-8"), "ledger record"),
+            (
+                "another schema",
+                lambda: record.write_text(json.dumps({**written, "schema_version": 4}), encoding="utf-8"),
+                "is no ledger record of this tool's schema; re-run `apply`",
+            ),
+            (
+                "an unknown outcome",
+                lambda: record.write_text(json.dumps({**written, "outcome": "skipped"}), encoding="utf-8"),
+                "outcome 'skipped' is none of regenerated, refused",
+            ),
+        ):
+            with self.subTest(case):
+                record.write_text(json.dumps(written), encoding="utf-8")
+                mutate()
+                output = self.scratch / f"decision-{case.replace(' ', '-')}"
+                decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(output))
+                self.assertEqual(1, decided.returncode, decided.stdout)
+                self.assertIn(message, decided.stderr)
+                self.assertFalse((output / "decision.json").exists(), "nothing a publication could read")
+        self.assert_untouched()
+
     def test_a_refused_ledger_recipe_keeps_mains_ledger_and_drift_is_a_diff_naming_corpora_not_compared(
         self,
     ) -> None:
