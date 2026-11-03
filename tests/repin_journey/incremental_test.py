@@ -266,7 +266,10 @@ def test_a_missing_base_measures_fully_and_says_why(clone: Clone) -> None:
     summary = run.stdout.splitlines()
     assert len(summary) == 1, "a successful repin prints one line"
     assert "full: cannot ask GitHub for a nearer base" in summary[0] and "no cached base either" in summary[0]
-    assert not [line for line in run.stderr.splitlines() if line.startswith("census-repin:")], run.stderr
+    # Only the lock may speak while the run waits on another measurement: it says so, and when it takes it.
+    lock = ("waiting for the instrumented-measurement lock", "took the instrumented-measurement lock")
+    chatter = [line for line in run.stderr.splitlines() if line.startswith("census-repin:")]
+    assert not [line for line in chatter if not any(phrase in line for phrase in lock)], run.stderr
     store = assert_step(clone, None, set(TESTS) | {FIXTURE}, {})
     assert store["full_at"] == STATE.c0 and store["steps_since_full"] == 0
     assert clone.cached(STATE.c0).is_file(), "the step leaves its store as the next step's cached base"
