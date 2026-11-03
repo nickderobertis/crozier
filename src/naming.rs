@@ -993,7 +993,9 @@ pub fn is_reserved(name: &str) -> bool {
 /// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
 /// `json_`, and `construct` (`BaseModel.construct()`) is `construct_`, measured
 /// on the authored probe `376-354-model-property-construct`, and `dict`
-/// (`BaseModel.dict()`) is `dict_`, as Nussknacker's `TypedDict.dict` is. The protection
+/// (`BaseModel.dict()`) is `dict_`, measured on the from-scratch
+/// `docs/fern-measurements/handed-off/client-structure/reserved-name-suffix/`
+/// document (as Nussknacker's `TypedDict.dict` is). The protection
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 #[must_use]
@@ -1143,6 +1145,10 @@ mod tests {
         assert_eq!(model_field_name("self"), "self_");
         assert_eq!(model_field_name("construct"), "construct_");
         assert_eq!(field_name("construct"), "construct");
+        // `BaseModel.dict()`: the certified pair's `Packet.dict` is `dict_` in the
+        // `reserved-name-suffix` measurement; outside a model it keeps its spelling.
+        assert_eq!(model_field_name("dict"), "dict_");
+        assert_eq!(field_name("dict"), "dict");
     }
 
     #[test]
