@@ -28,7 +28,12 @@ job of its own, so every decision lives here where the tests drive it:
   decide    crozier's own comparison over that tree, through the gates
             `decision-gates.tsv` names, of every item that generated: match,
             diff (which an item that failed or was not generated always is), or
-            red when a comparison cannot run
+            red when a comparison cannot run; it writes a line as each
+            comparison starts and ends (elapsed time, verdict) and the free disk
+            and available memory at every boundary, so a runner that dies
+            mid-step leaves a log naming the comparison it was in
+  resources the free disk and available memory, before a setup step of the
+            decision job, so a death there names the step and what was left
   publish   the one pull request on `fern-goldens/update`, reconciled with what
             the remote already holds: a diff stays open for a person; a match
             records the pair in `tests/fixtures/fern-pair-checks.tsv` and is
@@ -38,7 +43,7 @@ job of its own, so every decision lives here where the tests drive it:
             naming each, so a broken input is published for a person and still
             never passes as a green week
 
-Each phase prints one line and appends its Markdown to `--summary` (the step
+Each phase prints one line (`decide` also its progress) and appends its Markdown to `--summary` (the step
 summary). Every artifact one phase hands the next is a typed record, validated
 when it is read. Exit status: 0 when the phase finished (a diff is a finished
 decision), 1 when it found a failure (each named on stderr and in the summary),
@@ -48,10 +53,13 @@ decision), 1 when it found a failure (each named on stderr and in the summary),
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
+import contextlib
 import datetime
 import hashlib
 import importlib.machinery
 import importlib.util
+import itertools
 import json
 import math
 import os
@@ -61,8 +69,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Generator, Iterable, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
@@ -95,7 +104,30 @@ NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
 BASE = "main"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
+# The repository's recipe that rewrites every departure ledger row over the
+# tree, and the files it writes: `apply` runs it over the laid-down references.
+LEDGER_RECIPE = ("just", "departures-ledger")
+LEDGER_OUTPUTS = (
+    "tests/fixtures/departures-ledger.tsv",
+    "docs/departures/evidence/invalid-example-values/inventory.tsv",
+)
+LEDGER_RECORD = Path(".local/fern-goldens-weekly/ledger.json")
+# Where the decision artifact carries a regenerated ledger the pull request lays.
+LEDGER_CARRIED = "ledger"
+# The switch a gate command carries to compare without text diffs, and what the
+# decision then says of every report that switch shaped.
+SUMMARY_ONLY = "CROZIER_DIFF_SUMMARY_ONLY=1"
+TEXT_DIFFS_OMITTED = (
+    "The weekly run compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`): a corpus report names its "
+    "differing files and tags each regression, without their text diffs. `just fixtures-diff <corpus>` prints "
+    "them on a checkout of this branch."
+)
+# A ledger row runs to at most about 180 characters, so 60 of them stay near
+# 11 KB. That leaves most of BODY_LIMIT for the failing items' reports, and
+# enough rows for a reviewer to see the drift's pattern. The artifact lists
+# every row.
+LEDGER_BODY_ROWS = 60
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
 # in `.github/budgets.yaml`, whose test holds the two equal.
@@ -108,6 +140,11 @@ SHARD_MARGIN = 0.25
 JOB_SETUP_MINUTES = 4.0
 PLAN_MINUTES = 1.0
 ASSEMBLY_MINUTES = 2.0
+# The GiB a decision keeps available before it starts another comparison
+# beside a running one (`decide --reserve-gib`): the largest a single corpus
+# comparison grew to over run 41564405289's tree, bunq.com's 5.7 GiB, with
+# headroom (docs/fern-goldens.md).
+COMPARISON_RESERVE_GIB = 6.0
 # Estimated, not measured: a crozier build and its golden gates over the tree.
 DECISION_MINUTES = 30.0
 PUBLISH_MINUTES = 1.0
@@ -569,10 +606,95 @@ class Bundle:
 
 @dataclass(frozen=True)
 class FailingItem:
-    """An item crozier's comparison rejected, with the comparison's own report."""
+    """An item crozier's comparison rejected, with the comparison's own report.
+    `ledger_drift` names the departure ledger rows the corpus reporter found
+    stale or unrecorded, which stop it before it compares the corpus's files
+    (`files_compared` false)."""
 
     item: str
     report: str
+    ledger_drift: tuple[str, ...] = ()
+    files_compared: bool = True
+
+    def summary(self) -> str:
+        if not self.ledger_drift:
+            return f"`{self.item}`"
+        compared = "" if self.files_compared else "; files not compared"
+        return f"`{self.item}`: ledger drift: {len(self.ledger_drift)} row(s){compared}"
+
+    def to_json(self) -> dict[str, object]:
+        # Optional, and omitted for a plain rejection.
+        drift = {"ledger_drift": list(self.ledger_drift), "files_compared": self.files_compared}
+        return {"item": self.item, "report": self.report, **(drift if self.ledger_drift else {})}
+
+
+class LedgerOutcome(StrEnum):
+    """How the departures ledger recipe ended over the laid-down references."""
+
+    REGENERATED = "regenerated"
+    REFUSED = "refused"
+
+
+@dataclass(frozen=True)
+class LedgerRun:
+    """What `apply` recorded of the ledger recipe: its outcome and its last
+    lines (a refusal's reason)."""
+
+    outcome: LedgerOutcome
+    detail: str
+
+    def to_json(self) -> dict[str, object]:
+        return {"schema_version": SCHEMA_VERSION, "outcome": self.outcome.value, "detail": self.detail}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerRun:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} is no ledger record of this tool's schema; re-run `apply`")
+        outcome = field_of(record, "outcome", str, where)
+        if outcome not in set(LedgerOutcome):
+            raise WeeklyError(f"{where}: outcome {outcome!r} is none of {', '.join(LedgerOutcome)}")
+        return cls(LedgerOutcome(outcome), field_of(record, "detail", str, where))
+
+
+@dataclass(frozen=True)
+class LedgerRows:
+    """One ledger output's rows the tree adds and removes against its base."""
+
+    path: str
+    added: tuple[str, ...]
+    removed: tuple[str, ...]
+
+    def to_json(self) -> dict[str, object]:
+        return {"path": self.path, "added": list(self.added), "removed": list(self.removed)}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerRows:
+        path = safe_path(field_of(record, "path", str, where), where)
+        if path not in LEDGER_OUTPUTS:
+            raise WeeklyError(f"{where}: {path} is no file the ledger recipe writes")
+        return cls(path, tuple(strings_of(record, "added", where)), tuple(strings_of(record, "removed", where)))
+
+
+@dataclass(frozen=True)
+class LedgerChange:
+    """The departures ledger at the candidate pair, when it is not main's: the
+    recipe regenerated it with rows changed, or refused and main's was kept.
+    Either way the run is a difference, never a match."""
+
+    run: LedgerRun
+    changes: tuple[LedgerRows, ...]
+
+    def carried(self) -> tuple[str, ...]:
+        """The regenerated files the pull request carries."""
+        return tuple(rows.path for rows in self.changes) if self.run.outcome == LedgerOutcome.REGENERATED else ()
+
+    def to_json(self) -> dict[str, object]:
+        return {**self.run.to_json(), "changes": [rows.to_json() for rows in self.changes]}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerChange:
+        changes = tuple(LedgerRows.from_json(entry, where) for entry in field_of(record, "changes", list, where))
+        return cls(LedgerRun.from_json(record, where), changes)
 
 
 @dataclass(frozen=True)
@@ -583,6 +705,18 @@ class KnownFailureChange:
     item: str
     detail: str
     report: str
+
+
+@dataclass(frozen=True)
+class KnownReproduced:
+    """A registered known upstream Fern failure the candidate reproduced
+    exactly: no golden, so no item's comparison; named so no item vanishes."""
+
+    family: str
+    item: str
+
+    def line(self) -> str:
+        return f"{self.family} `{self.item}`: known Fern failure reproduced"
 
 
 @dataclass(frozen=True)
@@ -662,14 +796,20 @@ class Decision:
     unchecked: list[Unchecked] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
+    ledger: LedgerChange | None = None
+    known_reproduced: list[KnownReproduced] = field(default_factory=list)
 
     @property
     def outcome(self) -> Outcome:
         if self.cannot_run:
             return Outcome.FAILURE
-        changed = self.known_changed or self.refusals_changed
+        changed = self.known_changed or self.refusals_changed or self.ledger
         # An item nothing checked is never a match: the pair is not recorded.
         return Outcome.DIFF if self.failing or self.unfetchable or changed or self.unchecked else Outcome.MATCH
+
+    def text_diffs_omitted(self) -> bool:
+        """Whether any comparison ran summary-only, so its report has no text diffs."""
+        return any(SUMMARY_ONLY in run.command.split() for run in self.gates)
 
     def title(self) -> str:
         return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
@@ -681,7 +821,7 @@ class Decision:
             "complete": self.complete,
             "pair": self.pair.to_json(),
             "bundle": self.bundle,
-            "failing": {family: [vars(entry) for entry in entries] for family, entries in self.failing.items()},
+            "failing": {family: [entry.to_json() for entry in entries] for family, entries in self.failing.items()},
             "unfetchable": [vars(entry) for entry in self.unfetchable],
             "cannot_run": self.cannot_run,
             "gates": [{**vars(run_), "verdict": run_.verdict.value} for run_ in self.gates],
@@ -691,6 +831,12 @@ class Decision:
             **({"refusals_changed": [vars(entry) for entry in self.refusals_changed]} if self.refusals_changed else {}),
             # Optional too: a run with every item checked carries none.
             **({"unchecked": [entry.to_json() for entry in self.unchecked]} if self.unchecked else {}),
+            # Optional: a ledger the candidate leaves as main's carries none.
+            **({"ledger": self.ledger.to_json()} if self.ledger else {}),
+            # Optional: said whenever a summary-only comparison shaped a report.
+            **({"text_diffs_omitted": TEXT_DIFFS_OMITTED} if self.text_diffs_omitted() else {}),
+            # Optional: most weeks reproduce no registered Fern failure.
+            **({"known_reproduced": [vars(entry) for entry in self.known_reproduced]} if self.known_reproduced else {}),
         }
 
 
@@ -706,6 +852,7 @@ class RecordedDecision:
     known_changed: tuple[KnownFailureChange, ...] = ()
     refusals_changed: tuple[RefusalChange, ...] = ()
     unchecked: tuple[Unchecked, ...] = ()
+    ledger: LedgerChange | None = None
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -741,10 +888,15 @@ class RecordedDecision:
                 field_of(record, "unchecked", list, where) if isinstance(record, dict) and "unchecked" in record else []
             )
         )
-        if (known_changed or refusals_changed or unchecked) and outcome == Outcome.MATCH:
+        ledger = (
+            LedgerChange.from_json(record["ledger"], f"{where} ledger")
+            if isinstance(record, dict) and "ledger" in record
+            else None
+        )
+        if (known_changed or refusals_changed or unchecked or ledger) and outcome == Outcome.MATCH:
             raise WeeklyError(
-                f"{where}: a match changes no known failure or refusal and leaves no item unchecked; "
-                "re-run the decision job"
+                f"{where}: a match changes no known failure, refusal or departure ledger and leaves no item "
+                "unchecked; re-run the decision job"
             )
         return cls(
             Outcome(outcome),
@@ -755,6 +907,7 @@ class RecordedDecision:
             known_changed,
             refusals_changed,
             unchecked,
+            ledger,
         )
 
 
@@ -794,6 +947,106 @@ def run(
     if check and result.returncode != 0:
         raise WeeklyError(f"`{' '.join(argv)}` exited {result.returncode}: {result.stderr.strip()[-2000:]}")
     return result
+
+
+CGROUP_ENV = "CROZIER_FERN_WEEKLY_CGROUP"
+
+
+def cgroup_available(directory: Path) -> int | None:
+    """What a cgroup v2 memory limit leaves this process: for its cgroup and
+    each enclosing one that sets `memory.max`, the limit less what the group
+    holds that it cannot reclaim (`memory.current` less `inactive_file`); the
+    tightest of them, or None where no enclosing group sets a limit. A runner
+    VM sets none, so its machine's memory is what is left; a container held to
+    a runner's size sets one, which `/proc/meminfo` there does not show."""
+    tightest: int | None = None
+    for group in (directory, *directory.parents):
+        try:
+            limit = (group / "memory.max").read_text(encoding="utf-8").strip()
+            current = int((group / "memory.current").read_text(encoding="utf-8").strip())
+            stat = (group / "memory.stat").read_text(encoding="utf-8").splitlines()
+        except (OSError, ValueError):
+            continue
+        if not limit.isdigit():
+            continue
+        # Only a well-formed `inactive_file <bytes>` line counts as reclaimable;
+        # anything else counts nothing, which can only understate what is left.
+        fields = [line.split() for line in stat]
+        reclaimable = next(
+            (
+                int(cells[1])
+                for cells in fields
+                if len(cells) == 2 and cells[0] == "inactive_file" and cells[1].isdigit()
+            ),
+            0,
+        )
+        left = max(0, int(limit) - (current - reclaimable))
+        tightest = left if tightest is None else min(tightest, left)
+    return tightest
+
+
+def own_cgroup() -> Path:
+    """This process's cgroup v2 directory (`CROZIER_FERN_WEEKLY_CGROUP` names
+    another), from `/proc/self/cgroup`'s unified `0::` line."""
+    if os.environ.get(CGROUP_ENV):
+        return Path(os.environ[CGROUP_ENV])
+    try:
+        lines = Path("/proc/self/cgroup").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    relative = next((line[3:] for line in lines if line.startswith("0::")), "/")
+    return Path("/sys/fs/cgroup") / relative.lstrip("/")
+
+
+# llmlint: ignore[changed_behavior_has_e2e] Only a platform without /proc/meminfo reaches the None return: of the journey hosts, the macOS check leg, where their resource pattern accepts `unknown (no /proc/meminfo)` (Windows skips them). A Linux host always has the file, so the Linux legs drive the meminfo and cgroup-limit branches through `resources` and `decide` and never this one.
+def memory_available() -> int | None:
+    """The bytes this process can still use: the kernel's `MemAvailable`,
+    held to any cgroup limit around it; None on a platform reporting neither."""
+    machine: int | None = None
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            name, _, value = line.partition(":")
+            if name == "MemAvailable" and value.split() and value.split()[0].isdigit():
+                machine = int(value.split()[0]) * 1024
+    except OSError:
+        pass
+    limited = cgroup_available(own_cgroup())
+    known = [amount for amount in (machine, limited) if amount is not None]
+    return min(known) if known else None
+
+
+def resources(base: Path) -> str:
+    """What the machine has left, as a step log line states it: the free disk of
+    the filesystem `base` is on and the memory the kernel reports available."""
+    disk = f"{shutil.disk_usage(base).free / 2**30:.1f} GiB"
+    available = memory_available()
+    memory = "unknown (no /proc/meminfo)" if available is None else f"{available / 2**30:.1f} GiB"
+    return f"disk free {disk} on {base}, memory available {memory}"
+
+
+PROGRESS = threading.Lock()
+
+
+def progress(line: str) -> None:
+    """One line of a long phase's progress, written through at once and whole
+    (comparisons run in threads): a runner that dies mid-phase leaves its log
+    saying how far the phase got."""
+    with PROGRESS:
+        sys.stdout.write(f"fern-goldens-weekly: {line}\n")
+        sys.stdout.flush()
+
+
+# llmlint: ignore[changed_behavior_has_e2e] The cpu_count branch is the platform without sched_getaffinity: of the journey hosts, the macOS check leg, where every journey running `decide` without `--jobs` reaches it but none asserts the count it yields, since the cases asserting the default skip off Linux (Windows skips every journey). The Linux journeys drive the affinity branch by pinning `decide` to one CPU and to the test's own set.
+def cpus() -> int:
+    """The CPUs this process may run on: the runner's, or a container's set."""
+    if hasattr(os, "sched_getaffinity"):
+        return max(1, len(os.sched_getaffinity(0)))
+    return max(1, os.cpu_count() or 1)
+
+
+def resources_phase(args: argparse.Namespace) -> int:
+    progress(f"before {args.before}: {resources(root())}")
+    return 0
 
 
 def git(base: Path, *args: str, check: bool = True) -> str:
@@ -1103,7 +1356,7 @@ def resolve(args: argparse.Namespace) -> int:
     scope = "the whole reference inventory" if complete else f"the diagnostic subset `{items}`"
     line = reason or f"Checking {pair.label()} over {scope} (certified: {current.label()})."
     summarize(args.summary, ["## Fern goldens: pair", "", line])
-    print(f"fern-goldens-weekly: {line}")
+    print(f"fern-goldens-weekly: {line}", flush=True)
     return 0
 
 
@@ -1815,9 +2068,75 @@ def verify_applied(base: Path, path: Path, bundle: Bundle) -> None:
         raise WeeklyError(f"this checkout declares {certified(base).label()}, not the bundle's {bundle.pair.label()}")
 
 
+def committed_rows(base: Path, path: str) -> list[str]:
+    """A ledger output's rows at the checkout's commit (none where it has no such file)."""
+    shown = run(["git", "-C", str(base), "show", f"HEAD:{path}"], base)
+    return shown.stdout.splitlines()[1:] if shown.returncode == 0 else []
+
+
+def tree_rows(base: Path, path: str) -> list[str]:
+    target = base / path
+    return target.read_text(encoding="utf-8").splitlines()[1:] if target.is_file() else []
+
+
+def regenerate_ledger(base: Path) -> LedgerRun:
+    """The repository's departures ledger recipe over the laid-down references.
+    It refuses, writing nothing, while any comparison fails (a week Fern and
+    crozier differ); main's ledger is then what the tree keeps, and the
+    refusal is what the decision reports."""
+    progress(f"departures ledger: `{' '.join(LEDGER_RECIPE)}` started; {resources(base)}")
+    started = time.monotonic()
+    result = run(LEDGER_RECIPE, base)
+    elapsed = time.monotonic() - started
+    tail = "\n".join(((result.stdout or "") + (result.stderr or "")).strip().splitlines()[-20:])
+    if result.returncode == 0:
+        outcome = LedgerOutcome.REGENERATED
+    else:
+        outcome = LedgerOutcome.REFUSED
+        for path in LEDGER_OUTPUTS:
+            # Main's, byte for byte, whatever a refusing run left.
+            if run(["git", "-C", str(base), "checkout", "HEAD", "--", path], base).returncode != 0:
+                (base / path).unlink(missing_ok=True)
+    progress(f"departures ledger: {outcome.value} in {elapsed:.1f}s; {resources(base)}")
+    ledger = LedgerRun(outcome, tail)
+    (base / LEDGER_RECORD).parent.mkdir(parents=True, exist_ok=True)
+    write_json(base / LEDGER_RECORD, ledger.to_json())
+    return ledger
+
+
+def ledger_change(base: Path) -> LedgerChange | None:
+    """What `apply`'s ledger recipe left against main's: None when it
+    regenerated every output unchanged."""
+    record = base / LEDGER_RECORD
+    if not record.is_file():
+        raise WeeklyError(f"{LEDGER_RECORD} is missing; run `apply` before `decide`")
+    ledger = LedgerRun.from_json(read_json(record, "ledger record"), str(LEDGER_RECORD))
+    changes = []
+    for path in LEDGER_OUTPUTS:
+        before, after = committed_rows(base, path), tree_rows(base, path)
+        if before == after:
+            continue
+        removed, added = list(before), []
+        for row in after:
+            if row in removed:
+                removed.remove(row)
+            else:
+                added.append(row)
+        changes.append(LedgerRows(path, tuple(added), tuple(removed)))
+    if ledger.outcome == LedgerOutcome.REGENERATED and not changes:
+        return None
+    return LedgerChange(ledger, tuple(changes))
+
+
 def apply(args: argparse.Namespace) -> int:
-    bundle = apply_bundle(root(), Path(args.bundle))
-    print(f"fern-goldens-weekly: applied {len(bundle.items)} item(s) at {bundle.pair.label()}")
+    base = root()
+    bundle = apply_bundle(base, Path(args.bundle))
+    ledger = regenerate_ledger(base)
+    kept = "" if ledger.outcome == LedgerOutcome.REGENERATED else " (the recipe refused; main's is kept)"
+    print(
+        f"fern-goldens-weekly: applied {len(bundle.items)} item(s) at {bundle.pair.label()}; "
+        f"departures ledger {ledger.outcome.value}{kept}"
+    )
     return 0
 
 
@@ -1870,6 +2189,9 @@ class GateResult:
     verdict: Verdict
     report: str
     exit: int | None = None
+    # The ledger rows a corpus report names as stale or unrecorded, when that
+    # drift is all it could not process.
+    drift: tuple[str, ...] = ()
 
 
 DIFFS = re.compile(r"(?m)^(\d+) differing file\(s\) across the reported corpora\.$")
@@ -1877,23 +2199,49 @@ GENERATION = re.compile(r"(?m)^(\d+) comparison generation failure\(s\) across t
 PROCESSING = re.compile(r"(?m)^(\d+) comparison processing failure\(s\) across the reported corpora\.$")
 REGRESSION = re.compile(r"(?m)^--- .* \[REGRESSION")
 SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
+PROCESSING_FAILED = "  Comparison processing failed: "
+DRIFT = re.compile(r"^tests/fixtures/departures-ledger\.tsv: `(.+)` is (stale|unrecorded): ")
+
+
+def ledger_drift(output: str, processing: int) -> tuple[str, ...]:
+    """The ledger rows a report's processing failures name, when every one of
+    them is the departure ledger's drift and nothing else: each block from
+    `Comparison processing failed:` to its blank line, each line a stale or
+    unrecorded row. Empty when any failure is anything else."""
+    rows: list[str] = []
+    blocks = 0
+    lines = output.splitlines()
+    for number, line in enumerate(lines):
+        if not line.startswith(PROCESSING_FAILED):
+            continue
+        blocks += 1
+        block = [line.removeprefix(PROCESSING_FAILED)]
+        block += list(itertools.takewhile(bool, lines[number + 1 :]))
+        matched = [DRIFT.match(text) for text in block]
+        if not all(matched):
+            return ()
+        rows += [f"{match.group(2)}: {match.group(1)}" for match in matched if match]
+    return tuple(rows) if blocks == processing and rows else ()
 
 
 # llmlint: ignore[changed_behavior_has_e2e] `report_fixture_diffs` is crozier-e2e's ignored reporter over a committed corpus golden, so driving it needs the whole fixture tree and the e2e build; tools/fern-goldens/tests/weekly_test.py drives this reader over the reporter's own report shapes, and tools/fern-goldens-git/tests/fern_goldens_git_test.py holds those shapes to the strings the reporter prints.
-def read_report(code: int, output: str) -> Verdict:
+def read_report(code: int, output: str) -> tuple[Verdict, tuple[str, ...]]:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in
-    `unmatched` or a Crozier generation failure is a rejection; a comparison it
-    could not process (a processing failure), a setup failure or a report
-    without its summaries is a comparison that could not run, which is never a
-    decision, so it fails the run and nothing is published."""
+    `unmatched` or a Crozier generation failure is a rejection; so is a corpus
+    whose departure ledger rows drifted (returned with those rows), which the
+    reporter states before it compares the corpus's files. A comparison it
+    could not otherwise process, a setup failure or a report without its
+    summaries is a comparison that could not run, which is never a decision, so
+    it fails the run and nothing is published."""
     summaries = [pattern.search(output) for pattern in (DIFFS, GENERATION, PROCESSING)]
     if code != 0 or any(match is None for match in summaries) or SETUP.search(output):
-        return Verdict.CANNOT_RUN
+        return Verdict.CANNOT_RUN, ()
     _diffs, generation, processing = (int(match.group(1)) for match in summaries if match is not None)
     if processing:
-        return Verdict.CANNOT_RUN
-    return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS
+        drift = ledger_drift(output, processing)
+        return (Verdict.REJECT, drift) if drift else (Verdict.CANNOT_RUN, ())
+    return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS, ()
 
 
 def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
@@ -1908,7 +2256,8 @@ def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
             return GateResult(Verdict.CANNOT_RUN, str(error))
     output = (result.stdout or "") + (result.stderr or "")
     if gate.verdict == "fixtures-report":
-        return GateResult(read_report(result.returncode, output), output, result.returncode)
+        verdict, drift = read_report(result.returncode, output)
+        return GateResult(verdict, output, result.returncode, drift)
     if result.returncode in gate.passes:
         return GateResult(Verdict.PASS, output, result.returncode)
     if result.returncode in gate.rejects:
@@ -1916,19 +2265,48 @@ def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
     return GateResult(Verdict.CANNOT_RUN, output, result.returncode)
 
 
+EDGE = "A-Za-z0-9_.-"
+RUNS = re.compile(f"[{EDGE}]+")
+
+
+class ReportIndex:
+    """A family gate's report, indexed by the runs of name characters
+    (`[A-Za-z0-9_.-]+`) each line holds, so splitting it over a thousand items
+    reads it once. A token standing alone in a line occupies whole runs of
+    it, so only the lines holding every run of the token can name it; the
+    token's own pattern then decides each of those exactly."""
+
+    def __init__(self, report: str) -> None:
+        self.lines = report.splitlines()
+        self.runs: dict[str, set[int]] = {}
+        for number, line in enumerate(self.lines):
+            for run in RUNS.findall(line):
+                self.runs.setdefault(run, set()).add(number)
+
+    def naming(self, token: str) -> set[int]:
+        pattern = re.compile(rf"(?<![{EDGE}]){re.escape(token)}(?![{EDGE}])")
+        runs = RUNS.findall(token)
+        if runs:
+            held = [self.runs.get(run, set()) for run in runs]
+            candidates: Iterable[int] = set.intersection(*sorted(held, key=len))
+        else:
+            candidates = range(len(self.lines))
+        return {number for number in candidates if pattern.search(self.lines[number])}
+
+    def excerpt(self, tokens: Iterable[str], context: int = 4, limit: int = 80) -> str:
+        """The lines that name an item, with the lines after each, which is how
+        the report attributes a failure. A token names the item only standing
+        alone: `lantern` in `handwritten/lantern/` or `lantern: …`, never
+        inside `types/lantern.py` or `alpha_lanterns`."""
+        keep: set[int] = set()
+        for token in tokens:
+            for number in self.naming(token) if token else ():
+                keep.update(range(number, min(number + context + 1, len(self.lines))))
+        return "\n".join(self.lines[number] for number in sorted(keep)[:limit])
+
+
 def excerpt(report: str, tokens: Iterable[str], context: int = 4, limit: int = 80) -> str:
-    """The lines of a family gate's own report that name an item, with the
-    lines after each, which is how the report attributes a failure. A token
-    names the item only standing alone: `lantern` in `handwritten/lantern/` or
-    `lantern: …`, never inside `types/lantern.py` or `alpha_lanterns`."""
-    edge = r"[A-Za-z0-9_.-]"
-    wanted = [re.compile(rf"(?<!{edge}){re.escape(token)}(?!{edge})") for token in tokens if token]
-    lines = report.splitlines()
-    keep: set[int] = set()
-    for number, line in enumerate(lines):
-        if any(pattern.search(line) for pattern in wanted):
-            keep.update(range(number, min(number + context + 1, len(lines))))
-    return "\n".join(lines[number] for number in sorted(keep)[:limit])
+    return ReportIndex(report).excerpt(tokens, context, limit)
 
 
 def record_gate(
@@ -1951,9 +2329,10 @@ def attribute(
     item whose name or regenerated files appear in it, with those lines; the
     report's tail under the first family when it names none."""
     named = False
+    index = ReportIndex(report)
     for family in families:
         for entry in items[family]:
-            part = excerpt(report, [entry.item, *entry.changed])
+            part = index.excerpt([entry.item, *entry.changed])
             if not part:
                 continue
             named = True
@@ -1979,8 +2358,65 @@ def known_change_report(base: Path, entry: ItemResult) -> str:
     return f"{registration} removed; the generated reference ({len(written)} file(s)):\n" + "\n".join(written)
 
 
-def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, families: Iterable[str]) -> Decision:
-    decision = Decision(bundle.pair, bundle.complete, digest)
+@dataclass(frozen=True)
+class Comparison:
+    """One run of a gate the decision makes: over the families it decides and,
+    for a per-item gate, the item."""
+
+    gate: Gate
+    families: tuple[str, ...]
+    item: str | None
+
+    def label(self, number: int, total: int) -> str:
+        item = f" `{self.item}`" if self.item else ""
+        return f"comparison {number}/{total} ({','.join(self.families)}{item})"
+
+
+class Admission:
+    """When a comparison may start: in the planned order, and beside a running
+    one only while `reserve` bytes of memory are still available (one always
+    runs; a platform that reports no memory never waits on it)."""
+
+    def __init__(self, reserve: float) -> None:
+        self.reserve = reserve
+        self.running = 0
+        self.turn = 1
+        self.changed = threading.Condition()
+
+    def short(self) -> bool:
+        """Less than the reserve is available (never, where nothing reports it)."""
+        available = memory_available()
+        return available is not None and available < self.reserve
+
+    @contextlib.contextmanager
+    def slot(self, number: int, started: Callable[[], None]) -> Generator[None]:
+        """Wait for the `number`th comparison's turn and room for it, then
+        announce it (`started`) before the next one may start."""
+        with self.changed:
+            while self.turn != number or (self.running and self.short()):
+                self.changed.wait(timeout=2.0)
+            started()
+            self.running += 1
+            self.turn += 1
+            self.changed.notify_all()
+        try:
+            yield
+        finally:
+            with self.changed:
+                self.running -= 1
+                self.changed.notify_all()
+
+
+def decide_bundle(
+    base: Path,
+    bundle: Bundle,
+    digest: str,
+    reports: Path,
+    families: Iterable[str],
+    jobs: int = 1,
+    reserve: float = COMPARISON_RESERVE_GIB * 2**30,
+) -> Decision:
+    decision = Decision(bundle.pair, bundle.complete, digest, ledger=ledger_change(base))
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
         match entry.status:
@@ -1997,6 +2433,8 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             )
         if entry.status == Status.REFUSAL_CHANGED:
             decision.refusals_changed.append(RefusalChange(entry.item, entry.detail))
+        if entry.status == Status.KNOWN:
+            decision.known_reproduced.append(KnownReproduced(entry.family, entry.item))
     reports.mkdir(parents=True, exist_ok=True)
     # A command several family rows name runs once, and its report is split over
     # every family those rows name.
@@ -2005,6 +2443,7 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
     undecided = sorted(set(items) - {family for gate in table for family in gate.families})
     if undecided:
         raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
+    runs: list[Comparison] = []
     for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
@@ -2013,18 +2452,65 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        for family in decided:
-            for entry in items[family]:
-                result = run_gate(base, gate, entry.item)
-                record_gate(decision, reports, gate, family, entry.item, result)
-                if result.verdict == Verdict.REJECT:
-                    decision.failing.setdefault(family, []).append(FailingItem(entry.item, result.report.strip()))
-    for gate, named in shared.values():
-        result = run_gate(base, gate, None)
-        record_gate(decision, reports, gate, ",".join(named), None, result)
-        if result.verdict == Verdict.REJECT:
-            attribute(decision, gate, named, items, result.report)
+        # A known upstream Fern failure reproduced exactly has no golden for an
+        # item's comparison to read; the family gate decides its registration.
+        runs += [
+            Comparison(gate, (family,), entry.item)
+            for family in decided
+            for entry in items[family]
+            if entry.status != Status.KNOWN
+        ]
+    per_item = len(runs)
+    runs += [Comparison(gate, tuple(named), None) for gate, named in shared.values()]
+    progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
+    admission = Admission(reserve)
+
+    def timed(number: int, run: Comparison) -> GateResult:
+        label = run.label(number, len(runs))
+        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
+            started = time.monotonic()
+            result = run_gate(base, run.gate, run.item)
+            elapsed = time.monotonic() - started
+            progress(f"{label} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
+        return result
+
+    # Each item's comparison is one process on one core (the corpus reporter
+    # formats file by file), so they share the machine; a family's runs a whole
+    # suite across every core, so those run one at a time after them. Results
+    # are recorded in the planned order, whatever order they finish in.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+        results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item]))
+    results += [timed(number, run) for number, run in enumerate(runs[per_item:], per_item + 1)]
+    for run, result in zip(runs, results, strict=True):
+        record_gate(decision, reports, run.gate, ",".join(run.families), run.item, result)
+        if result.verdict != Verdict.REJECT:
+            continue
+        if run.item is not None:
+            failing = FailingItem(run.item, result.report.strip(), result.drift, files_compared=not result.drift)
+            decision.failing.setdefault(run.families[0], []).append(failing)
+        else:
+            attribute(decision, run.gate, list(run.families), items, result.report)
     return decision
+
+
+def ledger_headline(ledger: LedgerChange) -> str:
+    rows = sum(len(change.added) + len(change.removed) for change in ledger.changes)
+    if ledger.run.outcome == LedgerOutcome.REGENERATED:
+        return f"regenerated with {rows} row(s) changed"
+    return "recipe refused, so main's ledger is kept"
+
+
+def ledger_lines(ledger: LedgerChange | None) -> list[str]:
+    """The decision's departures ledger, line by line, for the summary and the
+    pull request body: never a match."""
+    if ledger is None:
+        return []
+    lines = [ledger_headline(ledger)]
+    if ledger.run.outcome == LedgerOutcome.REFUSED:
+        last = ledger.run.detail.strip().splitlines()[-1:] or ["(no output)"]
+        lines.append(f"`{' '.join(LEDGER_RECIPE)}` refused: {last[0]}")
+    lines += [f"{rows.path}: {len(rows.added)} row(s) added, {len(rows.removed)} removed" for rows in ledger.changes]
+    return lines
 
 
 def fenced(text: str) -> str:
@@ -2071,6 +2557,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.refusals_changed
             else ""
         )
+        ledger = f", and the departures ledger {ledger_headline(decision.ledger)}" if decision.ledger else ""
         unchecked = (
             f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran), "
             "so the run that opened this concluded failure"
@@ -2078,7 +2565,8 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             else ""
         )
         lines.append(
-            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}{unchecked}. "
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}{ledger}"
+            f"{unchecked}. "
             "This carries the regenerated references and the new pair; crozier's checks on it show what crozier "
             "must change. It is not auto-merged."
         )
@@ -2096,6 +2584,8 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
         lines += [""]
     if decision.failing:
         lines += ["## Failing items", ""]
+        if decision.text_diffs_omitted():
+            lines += [TEXT_DIFFS_OMITTED, ""]
         budget = BODY_LIMIT // max(1, sum(len(entries) for entries in decision.failing.values()))
         limit = min(REPORT_LIMIT, max(400, budget))
         for family, entries in decision.failing.items():
@@ -2104,8 +2594,26 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
                 report = entry.report
                 if len(report) > limit:
                     report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
-                lines += [f"- `{entry.item}`", "", "<details><summary>report</summary>", "", fenced(report), ""]
+                lines += [f"- {entry.summary()}", "", "<details><summary>report</summary>", "", fenced(report), ""]
                 lines += ["</details>", ""]
+    if decision.known_reproduced:
+        lines += ["## Known upstream Fern failures reproduced", ""]
+        lines += [
+            "Fern failed on each exactly as its registration records, so there is no golden for an item's "
+            "comparison; crozier's suite holds the registration.",
+            "",
+        ]
+        lines += [f"- {entry.line()}" for entry in decision.known_reproduced]
+        lines += [""]
+    if decision.ledger:
+        lines += ["## Departures ledger", "", *ledger_lines(decision.ledger), ""]
+        for rows in decision.ledger.changes:
+            listed = [f"+ {row}" for row in rows.added] + [f"- {row}" for row in rows.removed]
+            more = len(listed) - LEDGER_BODY_ROWS
+            shown = listed[:LEDGER_BODY_ROWS] + (
+                [f"… {more} more (the decision artifact lists them all)"] if more > 0 else []
+            )
+            lines += [f"<details><summary>{rows.path}</summary>", "", fenced("\n".join(shown)), "", "</details>", ""]
     if decision.known_changed:
         lines += ["## Known upstream Fern failures that changed", ""]
         for change in decision.known_changed:
@@ -2144,12 +2652,26 @@ def decide(args: argparse.Namespace) -> int:
     current = certified_at_base(base)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
+    if args.jobs < 0:
+        raise WeeklyError(f"--jobs {args.jobs}: name how many comparisons run at once, or 0 for one per CPU")
+    if not args.reserve_gib >= 0:
+        raise WeeklyError(f"--reserve-gib {args.reserve_gib}: name the GiB to keep available, 0 or more")
     decision = decide_bundle(
-        base, bundle, bundle_digest(Path(args.bundle)), output / "reports", load_references(base).FAMILY
+        base,
+        bundle,
+        bundle_digest(Path(args.bundle)),
+        output / "reports",
+        load_references(base).FAMILY,
+        args.jobs or cpus(),
+        args.reserve_gib * 2**30,
     )
+    for path in decision.ledger.carried() if decision.ledger else ():
+        carried = output / LEDGER_CARRIED / path
+        carried.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(base / path, carried)
     write_json(output / "decision.json", decision.to_json())
     (output / "body.md").write_text(body(decision, bundle, current), encoding="utf-8", newline="\n")
-    failing = [f"{family} `{entry.item}`" for family, entries in decision.failing.items() for entry in entries]
+    failing = [f"{family} {entry.summary()}" for family, entries in decision.failing.items() for entry in entries]
     summarize(
         args.summary,
         [
@@ -2160,7 +2682,10 @@ def decide(args: argparse.Namespace) -> int:
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- **not checked**: {entry.line()}" for entry in decision.unchecked),
             *(f"- differs: {line}" for line in failing),
+            *([f"- {TEXT_DIFFS_OMITTED}"] if failing and decision.text_diffs_omitted() else []),
+            *(f"- departures ledger: {line}" for line in ledger_lines(decision.ledger)),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
+            *(f"- {entry.line()}" for entry in decision.known_reproduced),
             *(f"- refusal changed: `{change.item}`: {change.detail}" for change in decision.refusals_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],
@@ -2181,9 +2706,26 @@ def mark(steps: list[Step], name: str, outcome: str) -> None:
     print(f"fern-goldens-weekly: publish: {name}: {outcome}")
 
 
-def commit_tree(base: Path, bundle_path: Path, decision: RecordedDecision, checked_on: str) -> None:
-    """The one commit the pull request carries, on the planned base."""
+def commit_tree(
+    base: Path, bundle_path: Path, decision: RecordedDecision, checked_on: str, decision_path: Path
+) -> None:
+    """The one commit the pull request carries, on the planned base, with the
+    departures ledger the decision regenerated."""
     apply_bundle(base, bundle_path)
+    for path in decision.ledger.carried() if decision.ledger else ():
+        carried = decision_path / LEDGER_CARRIED / path
+        # The artifact's own regular file, as every bundle file is: never a
+        # link, which could name anything on the runner. Only the components
+        # inside the artifact: where it sits may be reached through one (macOS's
+        # temporary directories are under `/var`, a link to `/private/var`).
+        relative = Path(LEDGER_CARRIED) / path
+        inner = (relative, *relative.parents[:-1])
+        links = [part for part in inner if (decision_path / part).is_symlink()]
+        if links or not carried.is_file() or not carried.resolve().is_relative_to(decision_path.resolve()):
+            raise WeeklyError(f"the decision carries no regular file {LEDGER_CARRIED}/{path}; re-run the decision job")
+        target = inside(base, path, "the decision's ledger")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(carried, target)
     if decision.outcome == Outcome.MATCH:
         path = base / CHECKS
         rows = read_tsv(path, CHECKS_HEADER) if path.is_file() else []
@@ -2293,7 +2835,7 @@ def publish(args: argparse.Namespace) -> int:
             datetime.date.fromisoformat(checked_on)
         except ValueError as error:
             raise WeeklyError(f"--checked-on {checked_on!r} is no YYYY-MM-DD date") from error
-        commit_tree(base, Path(args.bundle), decision, checked_on)
+        commit_tree(base, Path(args.bundle), decision, checked_on, Path(args.decision))
         mark(steps, "commit", git(base, "rev-parse", "--short=12", "HEAD"))
         push(base, steps)
         # Every write reads the remote first: a branch already holding this tree,
@@ -2367,6 +2909,7 @@ PHASES: dict[str, Callable[[argparse.Namespace], int]] = {
     "assemble": assemble,
     "apply": apply,
     "decide": decide,
+    "resources": resources_phase,
     "publish": publish,
     "conclude": conclude,
 }
@@ -2401,6 +2944,17 @@ def main(argv: list[str] | None = None) -> int:
     phase = commands.add_parser("decide", help="crozier's comparison over the applied tree")
     phase.add_argument("--bundle", required=True)
     phase.add_argument("--output", required=True)
+    phase.add_argument(
+        "--jobs", type=int, default=0, help="item comparisons run at once (default 0: one per CPU this may use)"
+    )
+    phase.add_argument(
+        "--reserve-gib",
+        type=float,
+        default=COMPARISON_RESERVE_GIB,
+        help="start another comparison beside a running one only while this much memory is available",
+    )
+    phase = commands.add_parser("resources", help="the runner's free disk and available memory, before a step")
+    phase.add_argument("--before", required=True, help="the step about to run")
     phase = commands.add_parser("publish", help="open, update or finish the one pull request")
     phase.add_argument("--bundle", required=True)
     phase.add_argument("--decision", required=True)

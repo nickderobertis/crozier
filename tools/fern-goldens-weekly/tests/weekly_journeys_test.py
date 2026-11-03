@@ -21,13 +21,15 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 import unittest.mock
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypedDict
@@ -59,6 +61,13 @@ CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "d
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
 TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
+# The departures ledger the seed commits: one row, of the corpus fixture alpha.
+LEDGER_HEADER = "golden\tfile\tline\tdeparture"
+LEDGER_ROW = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{line}\tsdk-name-version-headers"
+# A comparison that never ends, touching $HANG_SENTINEL as it starts, and the
+# free disk and memory every progress line of `decide` states.
+HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
+RESOURCE = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
 
 
 class RuffDiagnostic(TypedDict):
@@ -324,13 +333,36 @@ sys.exit(2)
 
 JUST = r"""
 #!/usr/bin/env python3
-import os, pathlib, subprocess, sys
+import json, os, pathlib, subprocess, sys
 
 args = sys.argv[1:]
-if "fetch-corpus" not in args:
-    print(f"just stand-in: only fetch-corpus, not {args}", file=sys.stderr)
-    sys.exit(2)
 root = pathlib.Path(os.environ["CROZIER_FERN_WEEKLY_ROOT"])
+# crozier-e2e's ledger recipe, which needs the whole fixture tree and its
+# build: by default every row as committed; LEDGER_ROWS the rows it finds and
+# LEDGER_INVENTORY the example-value inventory's; LEDGER_REFUSE a comparison
+# failing while it records, after part of the files are written.
+if args == ["departures-ledger"]:
+    inventory = root / "docs/departures/evidence/invalid-example-values/inventory.tsv"
+    if os.environ.get("LEDGER_REFUSE"):
+        # Part of what it records reaches the files before a comparison fails.
+        (root / "tests/fixtures/departures-ledger.tsv").write_text("golden\tfile\tline\tdeparture\npartial\n")
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text("partial\n")
+        print("departures-ledger: a comparison failed while recording (above)", file=sys.stderr)
+        print("departures-ledger: fix it, then rerun just departures-ledger", file=sys.stderr)
+        sys.exit(1)
+    ledger = root / "tests/fixtures/departures-ledger.tsv"
+    header, *rows = ledger.read_text(encoding="utf-8").splitlines()
+    rows = json.loads(os.environ["LEDGER_ROWS"]) if os.environ.get("LEDGER_ROWS") else rows
+    ledger.write_text("\n".join([header, *rows]) + "\n", encoding="utf-8")
+    if os.environ.get("LEDGER_INVENTORY"):
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text("\n".join(["golden\tfile\tvalue", *json.loads(os.environ["LEDGER_INVENTORY"])]) + "\n")
+    print(f"departures-ledger: wrote tests/fixtures/departures-ledger.tsv ({len(rows)} rows)")
+    sys.exit(0)
+if "fetch-corpus" not in args:
+    print(f"just stand-in: only fetch-corpus and departures-ledger, not {args}", file=sys.stderr)
+    sys.exit(2)
 result = subprocess.run(
     [root / "tools" / "corpus" / "fetch-corpus.sh", *args[args.index("fetch-corpus") + 1 :]],
     cwd=root, text=True, capture_output=True, check=False,
@@ -378,6 +410,7 @@ class Journey:
     plan: Completed | None = None
     shards: list[Completed] = field(default_factory=list)
     assemble: Completed | None = None
+    apply: Completed | None = None
     decide: Completed | None = None
     decision: dict[str, object] | None = None
     publish: Completed | None = None
@@ -544,6 +577,9 @@ class WeeklyRunTests(unittest.TestCase):
         )
         (fixtures / "flat-goldens.txt").write_text("# fixture|spec\n", encoding="utf-8")
         (fixtures / "fern-generator-config.txt").write_text("# fixture|audiences|…\n", encoding="utf-8")
+        (fixtures / "departures-ledger.tsv").write_text(
+            f"{LEDGER_HEADER}\n{LEDGER_ROW.format(line=3)}\n", encoding="utf-8"
+        )
         (fixtures / "fern-pair-checks.tsv").write_text(
             "fern_cli_version\tfern_python_sdk_version\tchecked_on\toutcome\n", encoding="utf-8"
         )
@@ -720,7 +756,9 @@ class WeeklyRunTests(unittest.TestCase):
         path = self.scratch / "summary.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
-    def run_workflow(self, items: str = "", *, stop_after: str = "", lose: str = "", **env: str) -> Journey:
+    def run_workflow(
+        self, items: str = "", *, stop_after: str = "", lose: str = "", decide_jobs: str = "", **env: str
+    ) -> Journey:
         """The workflow's jobs in order, each in its own checkout, stopping
         where a job's failure stops the workflow as its `needs` and `if` do: a
         red assembly or decision skips every phase after it, and the conclusion
@@ -800,13 +838,15 @@ class WeeklyRunTests(unittest.TestCase):
             self.clone(), "assemble", "--plan", str(plan), "--shards", str(artifacts), "--output", str(bundle), **env
         )
         state.assemble = assembled
-        if assembled.returncode != 0:
+        if assembled.returncode != 0 or stop_after == "assemble":
             return state
         decider = self.clone()
         applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
+        state.apply = applied
         self.assertEqual(0, applied.returncode, applied.stderr)
         decision = artifacts / "decision"
-        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), **env)
+        jobs = ("--jobs", decide_jobs) if decide_jobs else ()
+        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), *jobs, **env)
         state.decide = decided
         state.decision = (
             json.loads((decision / "decision.json").read_text(encoding="utf-8"))
@@ -988,6 +1028,258 @@ class WeeklyRunTests(unittest.TestCase):
             self.remote_file(branch, "tests/fixtures/fern-pair-checks.tsv"),
             "a diff records no checked pair",
         )
+
+    def test_a_departures_ledger_regenerated_with_changed_rows_is_a_diff_carrying_it(self) -> None:
+        """`apply` regenerates the departures ledger over the laid-down
+        references with the repository's recipe; rows it changes from main's
+        make the run a diff, never a match, and the pull request carries the
+        regenerated ledger and names each changed row."""
+        self.publish_seed()
+        moved = LEDGER_ROW.format(line=4)
+        inventory = "docs/departures/evidence/invalid-example-values/inventory.tsv"
+        value = "tests/fixtures/alpha/expected\tsrc/fern/types/lantern.py\tnot-a-date"
+        state = self.run_workflow(LEDGER_ROWS=json.dumps([moved]), LEDGER_INVENTORY=json.dumps([value]))
+        self.assertRegex(
+            state.ran("apply").stdout,
+            r"departures ledger: `just departures-ledger` started; .*\n.*departures ledger: regenerated in [0-9.]+s; "
+            r".*\n.*applied 8 item\(s\) at .*; departures ledger regenerated\n$",
+        )
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual({}, state.failing(), "every comparison passes: only the ledger differs")
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        self.assertEqual("regenerated", ledger["outcome"])
+        self.assertNotIn("text_diffs_omitted", state.recorded(), "no comparison here ran summary-only")
+        self.assertEqual(
+            [
+                {
+                    "path": "tests/fixtures/departures-ledger.tsv",
+                    "added": [moved],
+                    "removed": [LEDGER_ROW.format(line=3)],
+                },
+                {"path": inventory, "added": [value], "removed": []},
+            ],
+            ledger["changes"],
+        )
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"], "a changed ledger is never auto-merged")
+        self.assertIn("the departures ledger regenerated with 3 row(s) changed", pull["body"])
+        section = pull["body"].split("## Departures ledger", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn("tests/fixtures/departures-ledger.tsv: 1 row(s) added, 1 removed", section)
+        self.assertIn(f"+ {moved}", section)
+        self.assertIn(f"- {LEDGER_ROW.format(line=3)}", section)
+        self.assertEqual(
+            f"{LEDGER_HEADER}\n{moved}",
+            self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
+            "the pull request carries the regenerated ledger",
+        )
+        self.assertEqual(f"golden\tfile\tvalue\n{value}", self.remote_file("fern-goldens/update", inventory))
+        self.assertIn(f"{inventory}: 1 row(s) added, 0 removed", section)
+        self.assertIn("- departures ledger: regenerated with 3 row(s) changed", self.summary())
+        self.assertEqual("success", state.status())
+        # The artifact reached through a link, as macOS's temporary directories
+        # are (`/var` is one), still carries its own regular file.
+        alias = self.scratch / "decision-alias"
+        alias.symlink_to(state.artifacts / "decision", target_is_directory=True)
+        again = self.publish(state.artifacts / "bundle", alias)
+        self.assertEqual(0, again.returncode, again.stderr)
+        # The publication lays only the decision artifact's own regular file.
+        carried = state.artifacts / "decision/ledger/tests/fixtures/departures-ledger.tsv"
+        linked = state.artifacts / "decision/ledger/tests"
+        # A link to a directory inside the artifact: still a link, so refused.
+        moved_tests = state.artifacts / "decision/ledger/moved-tests"
+        linked.rename(moved_tests)
+        linked.symlink_to(moved_tests, target_is_directory=True)
+        refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn(
+            "the decision carries no regular file ledger/tests/fixtures/departures-ledger.tsv", refused.stderr
+        )
+        linked.unlink()
+        moved_tests.rename(linked)
+        outside = self.scratch / "elsewhere.tsv"
+        outside.write_text("anything on the runner\n", encoding="utf-8")
+        carried.unlink()
+        carried.symlink_to(outside)
+        for case in ("a link", "missing"):
+            with self.subTest(case):
+                refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(
+                    "the decision carries no regular file ledger/tests/fixtures/departures-ledger.tsv", refused.stderr
+                )
+                carried.unlink(missing_ok=True)
+
+    def test_a_ledger_change_past_the_body_limit_lists_the_first_rows_and_keeps_every_row(self) -> None:
+        """The pull request body lists the first changed rows of a ledger
+        output and how many more; the decision artifact keeps every one."""
+        self.publish_seed()
+        rows = [LEDGER_ROW.format(line=line) for line in range(10, 80)]
+        state = self.run_workflow(LEDGER_ROWS=json.dumps(rows))
+        self.assertEqual("diff", state.outcome(), self.summary())
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        (change,) = ledger["changes"]
+        self.assertEqual((rows, [LEDGER_ROW.format(line=3)]), (change["added"], change["removed"]))
+        (pull,) = self.pulls()
+        section = pull["body"].split("## Departures ledger", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn(f"+ {rows[59]}", section)
+        self.assertNotIn(f"+ {rows[60]}", section)
+        self.assertIn("… 11 more (the decision artifact lists them all)", section)
+
+    def test_a_decision_naming_a_ledger_change_the_recipe_cannot_write_publishes_nothing(self) -> None:
+        """publish reads the decision's ledger changes: one naming a path outside
+        the repository or a file the ledger recipe never writes, or rows that are
+        not strings, is refused before anything reaches the remote."""
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide", LEDGER_ROWS=json.dumps([LEDGER_ROW.format(line=4)]))
+        self.assertEqual("diff", state.outcome(), self.summary())
+        record = state.artifacts / "decision/decision.json"
+        written = json.loads(record.read_text(encoding="utf-8"))
+        (change,) = written["ledger"]["changes"]
+        for case, altered, message in (
+            ("outside the repository", {"path": "../escape.tsv"}, "'../escape.tsv' is no path inside the repository"),
+            ("no recipe output", {"path": "README.md"}, "README.md is no file the ledger recipe writes"),
+            ("rows that are not strings", {"added": [1]}, "`added` must be a list of strings"),
+        ):
+            with self.subTest(case):
+                ledger = {**written["ledger"], "changes": [{**change, **altered}]}
+                record.write_text(json.dumps({**written, "ledger": ledger}), encoding="utf-8")
+                refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(message, refused.stderr)
+                self.assert_untouched()
+
+    def test_a_decision_without_applys_ledger_record_is_refused_and_publishes_nothing(self) -> None:
+        """decide reads the ledger recipe's outcome `apply` recorded: missing,
+        unreadable or of another schema, it refuses to decide."""
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        record = decider / ".local/fern-goldens-weekly/ledger.json"
+        written = json.loads(record.read_text(encoding="utf-8"))
+        for case, mutate, message in (
+            ("missing", record.unlink, "is missing; run `apply` before `decide`"),
+            ("unreadable", lambda: record.write_text("{", encoding="utf-8"), "ledger record"),
+            (
+                "another schema",
+                lambda: record.write_text(json.dumps({**written, "schema_version": 4}), encoding="utf-8"),
+                "is no ledger record of this tool's schema; re-run `apply`",
+            ),
+            (
+                "an unknown outcome",
+                lambda: record.write_text(json.dumps({**written, "outcome": "skipped"}), encoding="utf-8"),
+                "outcome 'skipped' is none of regenerated, refused",
+            ),
+        ):
+            with self.subTest(case):
+                record.write_text(json.dumps(written), encoding="utf-8")
+                mutate()
+                output = self.scratch / f"decision-{case.replace(' ', '-')}"
+                decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(output))
+                self.assertEqual(1, decided.returncode, decided.stdout)
+                self.assertIn(message, decided.stderr)
+                self.assertFalse((output / "decision.json").exists(), "nothing a publication could read")
+        self.assert_untouched()
+
+    def test_a_refused_ledger_recipe_keeps_mains_ledger_and_drift_is_a_diff_naming_corpora_not_compared(
+        self,
+    ) -> None:
+        """The recipe refuses while any comparison fails, so main's ledger is
+        kept and the refusal recorded; the corpus reporter then names that
+        ledger's drifted rows, which stop it before it compares the corpus's
+        files: a difference naming the rows and that the files were not
+        compared, never a comparison that could not run."""
+        reporter = self.seed / "stand-in-fixtures-report"
+        write_executable(
+            reporter,
+            r"""
+            #!/usr/bin/env python3
+            import sys
+
+            import os
+
+            # The weekly gate compares summary-only, as its row asks.
+            assert os.environ.get("CROZIER_DIFF_SUMMARY_ONLY") == "1", "the corpus gate runs summary-only"
+            corpus = sys.argv[1]
+            drift = corpus == "alpha"
+            row = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{}\tsdk-name-version-headers"
+            print(f"=== {corpus} ===")
+            if drift:
+                print(
+                    "  Comparison processing failed: tests/fixtures/departures-ledger.tsv: "
+                    f"`{row.format(3)}` is stale: the comparison no longer applies that departure there"
+                )
+                print(
+                    f"tests/fixtures/departures-ledger.tsv: `{row.format(4)}` is unrecorded: the comparison applies "
+                    "that departure, but the ledger has no such row"
+                )
+                print()
+            else:
+                print("  no differences.")
+            print("0 comparison generation failure(s) across the reported corpora.")
+            print(f"{int(drift)} comparison processing failure(s) across the reported corpora.")
+            print("\n0 differing file(s) across the reported corpora.")
+            """,
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                "corpus\titem\tfixtures-report\tenv CROZIER_DIFF_SUMMARY_ONLY=1 {root}/stand-in-fixtures-report {item}"
+                if line.startswith("corpus\t")
+                else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(LEDGER_REFUSE="1")
+        self.assertIn("departures ledger refused (the recipe refused; main's is kept)", state.ran("apply").stdout)
+        decided = state.ran("decide")
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual({"corpus": ["alpha"]}, state.failing())
+        failing = state.recorded()["failing"]
+        assert isinstance(failing, dict)
+        (alpha,) = failing["corpus"]
+        self.assertFalse(alpha["files_compared"])
+        self.assertEqual(
+            [f"stale: {LEDGER_ROW.format(line=3)}", f"unrecorded: {LEDGER_ROW.format(line=4)}"], alpha["ledger_drift"]
+        )
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        self.assertEqual(("refused", []), (ledger["outcome"], ledger["changes"]))
+        self.assertIn("a comparison failed while recording", ledger["detail"])
+        self.assertIn("- differs: corpus `alpha`: ledger drift: 2 row(s); files not compared", self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("- `alpha`: ledger drift: 2 row(s); files not compared", pull["body"])
+        self.assertIn("recipe refused, so main's ledger is kept", pull["body"])
+        # Its reports carry no text diffs, and the decision and the body say so
+        # with the command that prints them.
+        omitted = state.recorded()["text_diffs_omitted"]
+        assert isinstance(omitted, str)
+        self.assertIn("`just fixtures-diff <corpus>` prints them", omitted)
+        failing_section = pull["body"].split("## Failing items", 1)[1]
+        self.assertIn("compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`)", failing_section)
+        self.assertIn("`just fixtures-diff <corpus>` prints them", self.summary())
+        self.assertIn("`just departures-ledger` refused: departures-ledger: fix it, then rerun", pull["body"])
+        self.assertEqual(
+            self.remote_file("main", "tests/fixtures/departures-ledger.tsv"),
+            self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
+            "main's ledger is what the pull request keeps, whatever the refusing recipe wrote",
+        )
+        self.assertNotIn(
+            "docs/departures/evidence/invalid-example-values/inventory.tsv",
+            self.published_tree(),
+            "an output main has none of stays absent",
+        )
+        self.assertEqual("success", state.status())
 
     def test_a_refusal_class_crozier_does_not_refuse_is_a_diff(self) -> None:
         """A regenerated refusal record says Fern refuses a document crozier
@@ -1505,6 +1797,274 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(state.publish)
         self.assert_untouched()
 
+    def hanging_decision(self) -> tuple[Path, Path, Journey, Path]:
+        """A decision job's checkout with the bundle applied, its hand-written
+        item's comparison (3 of 8) one that never ends: the checkout, the
+        bundle, the run so far and the file that comparison touches as it starts."""
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "".join(
+                line.split("\t", 3)[0] + "\titem\texit:0/3\t" + HANG + "\n"
+                if line.startswith("handwritten\t")
+                else line + "\n"
+                for line in GATES.splitlines()
+            ),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        before = self.phase(decider, "resources", "--before", "apply")
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {RESOURCE}\n$")
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        return decider, bundle, state, self.scratch / "hanging-comparison-started"
+
+    def test_a_cgroup_memory_limit_holds_comparisons_back_until_memory_is_released(self) -> None:
+        """Inside a container held to a runner's size, `/proc/meminfo` shows the
+        host; the cgroup's limit is what is left. Its memory, not the host's, is
+        what decide reports and what it starts another comparison against, and
+        comparisons held back start once the group has room again."""
+        decider, bundle, state, sentinel = self.hanging_decision()
+        cgroup = self.scratch / "cgroup/job"
+        cgroup.mkdir(parents=True)
+
+        def limit(gib: float) -> None:
+            (cgroup / "memory.max").write_text(f"{int(gib * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.current").write_text(f"{int(1.75 * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.stat").write_text(f"anon {2**30}\ninactive_file {2**29}\n", encoding="utf-8")
+
+        limit(2.0)
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", "the limit less what the group cannot reclaim")
+        # A malformed statistic counts nothing reclaimable: 2 - 1.75.
+        (cgroup / "memory.stat").write_text("anon 1\ninactive_file lots\n", encoding="utf-8")
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.2 GiB\n$", seen.stderr)
+        limit(2.0)
+        # A tighter enclosing group is what is left.
+        for name, amount in (("memory.max", 2**30), ("memory.current", 2**30 - 2**27), ("memory.stat", "anon 1")):
+            (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.1 GiB\n$", "the enclosing group's limit is tighter")
+        # An enclosing group setting no limit (`max`), or with a malformed limit
+        # or usage, limits nothing: the job's own group is what is left.
+        for name, amount in (("memory.max", "max"), ("memory.max", "1G"), ("memory.current", "lots")):
+            with self.subTest(enclosing=f"{name} {amount}"):
+                (cgroup.parent / "memory.max").write_text(f"{2**30}\n", encoding="utf-8")
+                (cgroup.parent / "memory.current").write_text(f"{2**30 - 2**27}\n", encoding="utf-8")
+                (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")
+                seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+                self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", seen.stderr)
+        for name in ("memory.max", "memory.current", "memory.stat"):
+            (cgroup.parent / name).unlink()
+        # Nothing left at all: held back, never read as memory nothing reports.
+        limit(1.25)
+        text = self.killed_decision(
+            decider,
+            bundle,
+            state.artifacts / "decision",
+            sentinel,
+            (2, "1"),
+            2,
+            env={"CROZIER_FERN_WEEKLY_CGROUP": str(cgroup)},
+            release=(lambda: limit(64.0), 7),
+        )
+        lines = text.splitlines()
+        hanging = next(index for index, line in enumerate(lines) if "comparison 3/8" in line and " started: " in line)
+        self.assertIn("memory available 0.0 GiB", lines[hanging])
+        self.assertEqual(
+            ["1 started", "1 ended", "2 started", "2 ended", "3 started"],
+            [
+                " ".join(re.findall(r"comparison ([0-9])/8 .*\) (started|ended)", line)[0])
+                for line in lines[1 : hanging + 1]
+            ],
+            "held to one at a time while the group had less than the reserve",
+        )
+        after = [re.findall(r"comparison ([0-9])/8 .*\) (started|ended)", line)[0] for line in lines[hanging + 1 :]]
+        self.assertEqual({"4", "5", "6", "7", "8"}, {number for number, moment in after if moment == "ended"}, text)
+        self.assertNotIn(("3", "ended"), after, "the rest started beside the running one once the group had room")
+        # What is reported is the tighter of the machine's and the group's, so
+        # the machine running this test bounds it too; decide guarantees only
+        # that each comparison it started beside the running one had at least
+        # the reserve (1 GiB) available, and never more than the group leaves
+        # (64 - (1.75 - 0.5) = 62.75 GiB).
+        released = [
+            float(re.findall(r"memory available ([0-9.]+) GiB", line)[-1])
+            for line in lines[hanging + 1 :]
+            if " started: " in line
+        ]
+        self.assertEqual(5, len(released), text)
+        self.assertTrue(all(1.0 <= amount <= 62.8 for amount in released), text)
+
+    def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
+        """A runner that dies mid-step leaves only what the step already wrote:
+        the decision writes each comparison's start and end (its elapsed time and
+        verdict) and the free disk and available memory at every boundary as it
+        runs, so the log of a decision killed inside a comparison names it."""
+        decider, bundle, state, sentinel = self.hanging_decision()
+        resource = RESOURCE
+        # The decision job's line before each setup step: the step it is about to run and what is left.
+        before = self.phase(decider, "resources", "--before", "apply")
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {resource}\n$")
+        refused = self.phase(
+            decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), "--jobs", "-1"
+        )
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("--jobs -1: name how many comparisons run at once", refused.stderr)
+        refused = self.phase(
+            decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), "--reserve-gib", "-1"
+        )
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("--reserve-gib -1.0: name the GiB to keep available, 0 or more", refused.stderr)
+        hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(HANG)}`; {resource}"
+        # One at a time, the runner dies with the hanging comparison the log's
+        # last line; several at once, it dies once every other one has ended.
+        # A reserve no machine has keeps several allowed comparisons to one at a time.
+        # By default one per CPU decide may use: pinned to one, one at a time.
+        for jobs, reserve, others in ((1, "6", 2), (2, "6", 7), (4, "1048576", 2), (0, "6", 2)):
+            with self.subTest(jobs=jobs, reserve=reserve):
+                if sys.platform != "linux" and (not jobs or reserve == "1048576"):
+                    # Off Linux decide reads no CPU affinity to pin and no memory to reserve.
+                    self.skipTest("the CPU affinity and available memory decide admits by are Linux's")
+                sentinel.unlink(missing_ok=True)
+                text = self.killed_decision(
+                    decider, bundle, state.artifacts / "decision", sentinel, (jobs, reserve), others
+                )
+                jobs = jobs or 1
+                lines = text.splitlines()
+                self.assertTrue(lines, "the killed decision's log is empty: its progress never reached the step log")
+                self.assertRegex(
+                    lines[0],
+                    rf"^fern-goldens-weekly: decide: 8 comparison\(s\) to run, up to {jobs} item comparison\(s\) "
+                    rf"at once; {resource}$",
+                )
+                ended = [line for line in lines if " ended: " in line]
+                self.assertEqual(others, len(ended), text)
+                for line in ended:
+                    self.assertRegex(
+                        line, rf"^fern-goldens-weekly: comparison [0-9]/8 \(.*\) ended: pass in [0-9.]+s; {resource}$"
+                    )
+                self.assertNotIn("comparison 3/8 (handwritten `lantern`) ended", text)
+                self.assertEqual(
+                    1, sum(bool(re.fullmatch(rf"fern-goldens-weekly: {hanging}", line)) for line in lines), text
+                )
+                # Started in the planned order, never more at once than allowed:
+                # two at once when two may run, else one at a time.
+                events = [
+                    re.match(r"fern-goldens-weekly: comparison ([0-9])/8 .*\) (started|ended): ", line)
+                    for line in lines
+                ]
+                starts = [int(event.group(1)) for event in events if event and event.group(2) == "started"]
+                self.assertEqual(sorted(starts), starts, text)
+                flight, widest = set(), 0
+                for event in filter(None, events):
+                    (flight.add if event.group(2) == "started" else flight.discard)(event.group(1))
+                    widest = max(widest, len(flight))
+                self.assertEqual(1 if others == 2 else jobs, widest, text)
+                if others == 2:
+                    self.assertRegex(
+                        lines[-1], rf"^fern-goldens-weekly: {hanging}$", "the last line names where it died"
+                    )
+                self.assertFalse((state.artifacts / "decision/decision.json").exists(), "a killed decision writes none")
+
+    def test_comparisons_finishing_out_of_order_are_recorded_in_the_planned_order(self) -> None:
+        """Comparisons run side by side finish in any order; the decision and its
+        reports list them in the planned order."""
+        slow = 'sh -c \'sleep 3; exec "$0" "$@"\' '
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            gates.read_text(encoding="utf-8").replace(
+                "exit:0/3\t{root}/target/release/crozier compare {root}/tests/fixtures/",
+                "exit:0/3\t" + slow + "{root}/target/release/crozier compare {root}/tests/fixtures/",
+            ),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(decide_jobs="4")
+        decided = state.ran("decide")
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("match", state.outcome(), self.summary())
+        ended = re.findall(r"comparison ([0-9])/8 \(.*\) ended: pass", decided.stdout)
+        self.assertEqual(["1", "2"], sorted(ended[-2:]), "the slowed corpus comparisons finish last")
+        runs = state.recorded()["gates"]
+        assert isinstance(runs, list)
+        self.assertEqual(
+            [("corpus", "alpha"), ("corpus", "beta"), ("handwritten", "lantern")],
+            [(run["family"], run["item"]) for run in runs[:3]],
+        )
+        self.assertEqual(
+            ["0000-corpus-alpha.log", "0001-corpus-beta.log", "0002-handwritten-lantern.log"],
+            [run["report"] for run in runs[:3]],
+        )
+        self.assertEqual("success", state.status())
+
+    def killed_decision(
+        self,
+        root: Path,
+        bundle: Path,
+        output: Path,
+        sentinel: Path,
+        limits: tuple[int, str],
+        others: int,
+        *,
+        env: Mapping[str, str] | None = None,
+        release: tuple[Callable[[], None], int] | None = None,
+    ) -> str:
+        """A decision terminated as the runner's shutdown terminates its step
+        (SIGTERM, exit 143) once its hanging comparison has started and the
+        `others` it can finish have ended (after `release`'s action, its count
+        too); what its step log then holds."""
+        if sys.platform == "win32":
+            raise unittest.SkipTest("terminating a decision mid-comparison needs POSIX process groups")
+        jobs, reserve = limits
+        pin: Callable[[], None] | None = None
+        if not jobs:
+            if sys.platform != "linux":
+                raise unittest.SkipTest("the default job count is read from the CPU affinity Linux reports")
+
+            def pin() -> None:
+                # The default sizes itself to the CPUs it may use: pinned to one here.
+                os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+
+        log = self.scratch / f"decide-{jobs}-{reserve}.log"
+        with log.open("w", encoding="utf-8") as written:
+            decide = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(root / "tools/fern-goldens/weekly.py"),
+                    *("decide", "--bundle", str(bundle), "--output", str(output)),
+                    *("--jobs", str(jobs), "--reserve-gib", reserve),
+                ],
+                cwd=root,
+                env=self.environment(root, HANG_SENTINEL=str(sentinel), **(env or {})),
+                stdout=written,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                preexec_fn=pin,
+            )
+            self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
+            stages = [(None, others)] if release is None else [(None, others), release]
+            for action, count in stages:
+                if action is not None:
+                    # Settled before the release: nothing more starts while held.
+                    time.sleep(3)
+                    self.assertEqual(others, log.read_text(encoding="utf-8").count(" ended: "))
+                    action()
+                for _ in range(1200):
+                    ended = log.read_text(encoding="utf-8").count(" ended: ")
+                    if (sentinel.exists() and ended >= count) or decide.poll() is not None:
+                        break
+                    time.sleep(0.1)
+                self.assertTrue(sentinel.exists(), log.read_text(encoding="utf-8"))
+            decide.terminate()
+            self.assertEqual(-signal.SIGTERM, decide.wait(timeout=30))
+            os.killpg(decide.pid, signal.SIGKILL)
+        return log.read_text(encoding="utf-8")
+
     def test_a_corpus_comparison_that_could_not_be_processed_is_red_and_publishes_nothing(self) -> None:
         """The corpus gate reads `report_fixture_diffs`' report; one that says it
         could not process an item's comparison is no decision. The report comes
@@ -1725,6 +2285,8 @@ class WeeklyRunTests(unittest.TestCase):
         it; a rejection lists each item its report names, and a report naming
         none is listed whole under its family. An item's name inside a longer
         one (`lantern` in `types/lantern.py` or `alpha_lanterns`) names no item."""
+        if sys.platform != "linux":
+            raise unittest.SkipTest("the default job count is read from the CPU affinity Linux reports")
         compare_all = "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml"
         refuse = "{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/lantern-refused/probe.yml --output {scratch}/out"
         (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
@@ -1748,6 +2310,23 @@ class WeeklyRunTests(unittest.TestCase):
         state = self.run_workflow()
         self.assertEqual("diff", state.outcome(), self.summary())
         self.assertEqual(1, state.gate_commands().count(compare_all), "the shared command ran once")
+        # By default as many item comparisons at once as the CPUs decide may
+        # use; each family's runs alone, after every item comparison.
+        progress = state.ran("decide").stdout.splitlines()
+        self.assertIn(f"up to {len(os.sched_getaffinity(0))} item comparison(s) at once", progress[0])
+        events = [
+            (match.group(1), match.group(2) is not None, match.group(3))
+            for match in (
+                re.match(r"fern-goldens-weekly: comparison ([0-9]+)/[0-9]+ \(.*?( `.*`)?\) (started|ended): ", line)
+                for line in progress
+            )
+            if match
+        ]
+        families = [index for index, (_, per_item, moment) in enumerate(events) if not per_item and moment == "started"]
+        self.assertEqual(2, len(families), progress)
+        self.assertTrue(all(per_item for _, per_item, _ in events[: families[0]]), progress)
+        for index in families:
+            self.assertEqual((events[index][0], False, "ended"), events[index + 1], "a family's comparison runs alone")
         self.assertEqual({"corpus": ["alpha"], "refusals": ["(the gate's report names no item)"]}, state.failing())
         runs = state.recorded()["gates"]
         assert isinstance(runs, list)
@@ -1889,15 +2468,53 @@ class WeeklyRunTests(unittest.TestCase):
         decides and publishes the rest, and the row keeps no golden."""
         manifest = self.register_known_failure(CANDIDATE.generator)
         self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
+        # The corpus reporter, as `report_fixture_diffs` behaves: a corpus with
+        # no golden matches no corpus, and it panics.
+        reporter = self.seed / "stand-in-fixtures-report"
+        write_executable(
+            reporter,
+            r"""
+            #!/usr/bin/env python3
+            import pathlib, sys
+
+            root, corpus = sys.argv[1:]
+            if not (pathlib.Path(root) / "tests/fixtures" / corpus / "expected").is_dir():
+                print(f"CROZIER_DIFF_CORPUS={corpus!r} matched no corpus (or its spec is unfetched)", file=sys.stderr)
+                sys.exit(101)
+            print(f"=== {corpus} ===\n  no differences.")
+            print("0 comparison generation failure(s) across the reported corpora.")
+            print("0 comparison processing failure(s) across the reported corpora.")
+            print("\n0 differing file(s) across the reported corpora.")
+            """,
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                "corpus\titem\tfixtures-report\t{root}/stand-in-fixtures-report {root} {item}"
+                if line.startswith("corpus\t")
+                else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.git(self.seed, "add", "-A")
+        self.git(self.seed, "commit", "-qm", "the corpus reporter")
+        self.git(self.seed, "push", "-q", str(self.remote), "HEAD:refs/heads/main")
         state = self.run_workflow()
         self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
         self.assertEqual("known-upstream-failure", self.statuses(state)["gamma"])
         self.assertIn("corpus `gamma`: known-upstream-failure", self.summary())
         self.assertEqual("match", state.outcome(), self.summary())
+        self.assertNotIn(("corpus", "gamma"), state.gated(), "a reproduced known failure has no golden to compare")
+        self.assertIn(("corpus", "alpha"), state.gated())
+        self.assertEqual([{"family": "corpus", "item": "gamma"}], state.recorded()["known_reproduced"])
+        self.assertIn("- corpus `gamma`: known Fern failure reproduced", self.summary())
         self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
         (pull,) = self.pulls()
         self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
         self.assertIn("| corpus | 3 |", pull["body"])
+        self.assertIn("- corpus `gamma`: known Fern failure reproduced", pull["body"])
         self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in self.published_tree()))
 
     def test_a_known_failure_reproduced_at_a_candidate_version_is_carried_to_it_and_adopted(self) -> None:

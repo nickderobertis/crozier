@@ -396,14 +396,30 @@ phases.
 5. **Decide** (`decide` job). The bundle is laid over a checkout and every
    statement of the pair restated (`certified_pair.py restate`), so the tree is
    the one the pull request would carry; crozier is built from it, so its own
-   version stamps are the candidate pair's. Every item is then decided by
+   version stamps are the candidate pair's. `apply` then runs the departures
+   ledger recipe (`just departures-ledger`) over that tree. When it succeeds the
+   regenerated ledger is the tree's; it refuses, writing nothing, while any
+   comparison fails (a week Fern and crozier differ), and main's ledger is kept
+   and the refusal recorded. Either way the departures ledger is never a match:
+   rows the regenerated ledger changes from main's, or a refusal, make the run
+   a diff whose pull request carries that ledger and lists each changed row
+   under **Departures ledger**. Every item is then decided by
    crozier's own comparison and nothing else, through the gates
    [`decision-gates.tsv`](../tools/fern-goldens/decision-gates.tsv) names:
    - **per item**: each corpus golden and its flat golden, through `just
      fixtures-diff <fixture>` (`report_fixture_diffs`: the parity engine, the
-     departure catalog and the golden's ledger rows). A difference outside the
-     corpus's `unmatched` list, or a crozier generation failure, is a diff; a
-     comparison the reporter could not process is one that could not run;
+     departure catalog and the golden's ledger rows), summary-only
+     (`CROZIER_DIFF_SUMMARY_ONLY=1`): building the text diffs took netbox.dev's
+     reporter past 16 GB over run 41564405289's tree (375 MiB without them), so
+     a report names the differing files and their regressions, and the decision
+     and the pull request say that `just fixtures-diff <corpus>` prints the
+     text. A difference outside the
+     corpus's `unmatched` list, or a crozier generation failure, is a diff; so
+     is a corpus whose departure ledger rows drifted (stale or unrecorded),
+     which the reporter states before it compares that corpus's files, so the
+     decision and the pull request name its rows and say its files were not
+     compared; any other comparison the reporter could not process is one that
+     could not run;
    - **per family**: every other family, through the crozier-e2e suite
      (the tests `just test-e2e` runs, printing only what fails, which hold the overlay, hand-written,
      measurement, probe, authored-probe, departure-evidence and refusal-class
@@ -413,8 +429,24 @@ phases.
      whose name or regenerated files its report names, with the report's lines
      for it (or the report's tail, when it names none).
 
-   An item that failed or was not generated goes through no gate; every other
-   item is decided. A comparison that cannot run is a failure, never a pass. The
+   Each per-item comparison is one single-threaded process (the corpus reporter
+   formats file by file), so `decide` runs them `--jobs` at once (default: one
+   per CPU it may use), starting each in the planned order and starting another
+   beside a running one only while `--reserve-gib` (default 6) of memory is
+   still available — over the 5.7 GiB the largest single comparison, corpus
+   `bunq.com`, grew to over run 41564405289's tree. The per-family gates run
+   alone after them, since each runs a whole suite across every core. One at a
+   time, in a container held to the job's runner (4 CPUs, 16 GB), the first 143
+   corpus items took about 19 seconds each — about 100 minutes for the
+   inventory, past what the job's `timeout-minutes` leaves after setup.
+   The decision is recorded in the planned order whatever order the comparisons
+   finish in.
+
+   An item that failed or was not generated goes through no gate, nor does a
+   corpus item that reproduced its registered known upstream Fern failure
+   exactly (it has no golden; the suite holds its registration, and the
+   decision and the pull request name it as a known Fern failure reproduced);
+   every other item is decided. A comparison that cannot run is a failure, never a pass. The
    `fern-goldens-decision` artifact holds the decision and every gate's report.
 6. **Publish** (`publish` job, a run over the whole inventory only), under
    `RELEASE_PLZ_TOKEN` — the PAT `release-plz.yml` uses, since a pull request
@@ -477,6 +509,17 @@ with each other, a shard at another pair or base, a symbolic link an item left,
 a malformed record, or two shards writing one file), a comparison that cannot
 run, or a missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any
 Fern runs).
+
+**A runner that dies mid-job still leaves its place in the log.** A runner
+that shuts down (`The runner has received a shutdown signal`, exit 143) writes
+no summary and uploads nothing, so the `decide` job's log says how far it got
+as it goes: `weekly.py resources --before <step>` prints the free disk and
+available memory before bootstrap, apply and build, and `decide` prints, as it
+runs, `comparison <n>/<total> (<family> <item>) started: <command>; disk free
+…, memory available …` and `… ended: <verdict> in <seconds>s; disk free …,
+memory available …`. Each comparison that started and never ended is one the
+runner died in, its start line saying what was left as it began (one at a
+time, that is the log's last line).
 
 A failure during publication — pushing the branch, labelling, opening or
 updating the pull request, or enabling auto-merge — also ends the run red; its
