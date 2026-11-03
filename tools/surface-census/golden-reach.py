@@ -561,6 +561,11 @@ def _covered(export: Path, repo_root: Path) -> tuple[dict[str, list[list[int]]],
     return universe, {f: v for f, v in hit.items() if v}
 
 
+def covered(export: Path, repo_root: Path) -> tuple[dict[str, list[list[int]]], dict[str, list[list[int]]]]:
+    """(every production region, the executed ones) of one export: what a scoped run reads back."""
+    return _covered(export, repo_root)
+
+
 def golden_test_cwd(repo_root: Path) -> Path:
     """Where a golden test runs: the e2e crate's directory, as cargo runs it.
 

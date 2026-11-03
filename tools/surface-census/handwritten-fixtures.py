@@ -1402,6 +1402,12 @@ def measure(args: argparse.Namespace) -> int:
     return 0
 
 
+def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
+    """Build the instrumented crozier every measurement runs (golden-reach.py's own build), and return it."""
+    _e2e, crozier = reach.instrumented_build(repo_root)
+    return crozier
+
+
 class CoverageTools(Protocol):
     """What a scoped run needs of golden-reach.py: running an llvm tool, and reading an export."""
 
