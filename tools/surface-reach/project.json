@@ -72,33 +72,6 @@
         "{workspaceRoot}/.coverage-data/surface-reach/test-handwritten-reach"
       ]
     },
-    "test-incremental": {
-      "metadata": {
-        "description": "`just census-repin` over a scratch clone of a pinned crozier commit, measured instrumented step by step; its inputs are the tooling it drives, never the crate's sources, which the pinned commit fixes."
-      },
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/incremental_test.py",
-        "env": {
-          "COVERAGE_FILE": ".coverage-data/surface-reach/test-incremental/.coverage"
-        }
-      },
-      "cache": true,
-      "inputs": [
-        "default",
-        "{workspaceRoot}/tools/surface-census/**/*",
-        "{workspaceRoot}/tools/witness-search/*.py",
-        "{workspaceRoot}/tools/corpus/*.py",
-        "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile",
-        "{workspaceRoot}/rust-toolchain.toml",
-        "pythonTooling"
-      ],
-      "parallelism": false,
-      "outputs": [
-        "{workspaceRoot}/.coverage-data/surface-reach/test-incremental"
-      ]
-    },
     "test-llvm": {
       "executor": "nx:run-commands",
       "options": {
@@ -151,7 +124,6 @@
       "dependsOn": [
         "test-fixtures-coverage",
         "test-handwritten-reach",
-        "test-incremental",
         "test-llvm",
         "test-residual-attribution"
       ]

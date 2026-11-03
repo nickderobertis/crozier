@@ -89,6 +89,9 @@ class GitHub(BaseHTTPRequestHandler):
             return
         prefix = f"/repos/{SLUG}/actions/artifacts/"
         if path.startswith(prefix) and path.endswith("/zip"):
+            if self.mode == "download-fails":
+                self._send(500, b'{"message": "Server Error"}')
+                return
             index = int(path[len(prefix) : -len("/zip")])
             self._send(200, self.artifacts[sorted(self.artifacts)[index - 1]], "application/zip")
             return
@@ -286,3 +289,31 @@ def test_a_downloaded_base_of_another_schema_is_refused(
     GitHub.artifacts = {c3: buffer.getvalue()}
     run = lookup(root, tmp_path / "cache", github)
     assert f"refused golden-reach-base-{c3}:" in run.stdout and "schema 2" in run.stdout
+
+
+@pytest.mark.parametrize(
+    ("case", "reason"),
+    [
+        ("download-fails", "downloading golden-reach-base-{c3} answered HTTP 500"),
+        ("no-member", "golden-reach-base-{c3} holds no readable base.json.gz"),
+    ],
+    ids=["download answers 500", "zip without base.json.gz"],
+)
+def test_a_failed_download_falls_back_to_the_nearest_cached_base(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path, case: str, reason: str
+) -> None:
+    root, (c1, _c2, c3, _c4) = history
+    cache = tmp_path / "cache"
+    cached(cache, c1)
+    if case == "no-member":
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            archive.writestr("other.txt", "not a base")
+        GitHub.artifacts = {c3: buffer.getvalue()}
+    else:
+        GitHub.artifacts = {c3: artifact(store(c3), tmp_path)}
+        GitHub.mode = case
+    run = lookup(root, cache, github)
+    assert reason.format(c3=c3) in run.stdout
+    assert f"census-repin: base {c1} (cache):" in run.stdout and f"using the cached base at {c1[:12]}" in run.stdout
+    assert not (cache / c3).exists()

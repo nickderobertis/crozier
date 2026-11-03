@@ -41,7 +41,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Protocol
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -68,6 +68,27 @@ RS = _load("reach_store", HERE / "reach_store.py")
 
 def _guard_module() -> Any:
     return _load("rate_limit_guard", REPO / "tools" / "witness-search" / "rate_limit_guard.py")
+
+
+class Artifact(NamedTuple):
+    """One `golden-reach-base-<sha>` record of GitHub's artifact list."""
+
+    commit: str
+    id: int
+    expired: bool
+
+    @classmethod
+    def parse(cls, record: object) -> Artifact | None:
+        """The record if it names a base artifact with an integer id, else None (any other artifact)."""
+        if not isinstance(record, dict):
+            return None
+        name, ident, expired = record.get("name"), record.get("id"), record.get("expired", False)
+        if not isinstance(name, str) or not name.startswith(ARTIFACT_PREFIX):
+            return None
+        commit = name[len(ARTIFACT_PREFIX) :]
+        if not RS.SHA.fullmatch(commit) or type(ident) is not int or not isinstance(expired, bool):
+            return None
+        return cls(commit, ident, expired)
 
 
 class Choice(NamedTuple):
@@ -139,11 +160,19 @@ def repository(root: Path) -> str | None:
     return f"{found.group(1)}/{found.group(2)}" if found else None
 
 
+class Guard(Protocol):
+    """The rate-limit guard's reservation interface, as `rate_limit_guard.RateLimitGuard` offers it."""
+
+    def acquire(self, bucket: str, *, cost: int = 1) -> None: ...
+
+    def record(self, response: object) -> None: ...
+
+
 class _WouldWait(RuntimeError):
     """The guard would sleep before admitting the call."""
 
 
-def _no_wait_guard() -> Any:
+def _no_wait_guard() -> Guard:
     guard_module = _guard_module()
 
     class NoWaitGuard(guard_module.RateLimitGuard):
@@ -164,7 +193,7 @@ def _allowed_redirect(url: str) -> bool:
     )
 
 
-def _call(guard: Any, url: str, token: str, accept: str = "application/vnd.github+json") -> tuple[int, bytes]:
+def _call(guard: Guard, url: str, token: str, accept: str = "application/vnd.github+json") -> tuple[int, bytes]:
     """One GET through the guard: acquire, call, record. Returns the status and the body."""
     guard_module = _guard_module()
     request = urllib.request.Request(
@@ -178,6 +207,7 @@ def _call(guard: Any, url: str, token: str, accept: str = "application/vnd.githu
     )
     guard.acquire("core")
     try:
+        # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and synchronous so it runs installless, and the rate-limit guard it reserves through is synchronous; a lookup makes at most two calls in sequence, which an async client would not speed up.
         response = guard_module.open_checked(request, _allowed_redirect, timeout=120)
     except urllib.error.HTTPError as error:
         body = error.read() if error.fp else b""
@@ -267,17 +297,17 @@ def find(root: Path, *, include_head: bool = True) -> Choice:
         listed = json.loads(body)["artifacts"]
     except (ValueError, KeyError, TypeError):
         return fallback("the artifact list was not JSON with an `artifacts` array")
-    published: dict[str, dict[str, Any]] = {}
-    for artifact in listed if isinstance(listed, list) else []:
-        name = artifact.get("name", "") if isinstance(artifact, dict) else ""
-        if name.startswith(ARTIFACT_PREFIX) and not artifact.get("expired"):
-            published.setdefault(name[len(ARTIFACT_PREFIX) :], artifact)
+    published: dict[str, Artifact] = {}
+    for record in listed if isinstance(listed, list) else []:
+        artifact = Artifact.parse(record)
+        if artifact is not None and not artifact.expired:
+            published.setdefault(artifact.commit, artifact)
     chosen = next((commit for commit in candidates if commit in published), None)
     if chosen is None:
         return fallback(f"no nearer ancestor has a `{ARTIFACT_PREFIX}<sha>` artifact")
     artifact = published[chosen]
     try:
-        status, body = _call(guard, f"{api}/repos/{slug}/actions/artifacts/{artifact['id']}/zip", token)
+        status, body = _call(guard, f"{api}/repos/{slug}/actions/artifacts/{artifact.id}/zip", token)
     except _WouldWait as error:
         return fallback(f"found {ARTIFACT_PREFIX}{chosen} but did not download it: {error}")
     except (OSError, RuntimeError, ValueError, guard_module.SecondaryLimit) as error:

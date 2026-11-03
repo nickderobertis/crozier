@@ -80,7 +80,7 @@ import tomllib
 from collections.abc import Generator, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, NamedTuple, NoReturn
+from typing import Any, NamedTuple, NoReturn, NotRequired, TypedDict
 
 SCHEMA = 1
 ITEMS = "{items}"
@@ -97,9 +97,6 @@ class StoreError(ValueError):
 
 def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach: {message}")
-
-
-# --- Tokens -----------------------------------------------------------------
 
 
 class Token(NamedTuple):
@@ -216,9 +213,6 @@ def _matches(tokens: list[Token]) -> dict[int, int]:
         elif token.text in (")", "]", "}") and stack:
             out[stack.pop()] = index
     return out
-
-
-# --- Items ------------------------------------------------------------------
 
 
 @dataclass
@@ -504,9 +498,6 @@ def _digest(texts: Iterable[str]) -> str:
     return hashlib.sha256(joined).hexdigest()[:DIGEST_HEX]
 
 
-# --- The tree ---------------------------------------------------------------
-
-
 @dataclass
 class Function:
     """One function key of a tree: where its tokens are, and their digest."""
@@ -601,9 +592,16 @@ class Tree:
         line1, col1 = parsed.position(function.decode(encoded[2:]))
         return parsed.path, (line0, col0, line1, col1)
 
-    def table(self) -> dict[str, dict[str, Any]]:
+    def table(self) -> dict[str, FunctionRecord]:
+        """Every function's record at this tree, its counter regions not yet known (empty)."""
         return {
-            key: {"file": function.file.path, "start": function.start, "end": function.end, "digest": function.digest}
+            key: {
+                "file": function.file.path,
+                "start": function.start,
+                "end": function.end,
+                "digest": function.digest,
+                "regions": [],
+            }
             for key, function in sorted(self.functions.items())
         }
 
@@ -678,11 +676,39 @@ def read_tree(root: Path, sources: Mapping[str, bytes] | None = None) -> Tree:
     return Tree(root, functions, files)
 
 
-# --- The store --------------------------------------------------------------
+class FunctionRecord(TypedDict):
+    """One `functions` value: where the item is in its tree, its token digest, its counter regions."""
+
+    file: str
+    start: int
+    end: int
+    digest: str
+    regions: list[list[int]]
 
 
-Entry = dict[str, Any]
-Store = dict[str, Any]
+class Entry(TypedDict):
+    """One `tests` or `fixtures` value: the commit it last ran at, and per function its executed regions."""
+
+    commit: str
+    regions: dict[str, list[int]]
+    control: NotRequired[dict[str, list[int]]]
+
+
+class Store(TypedDict):
+    """A schema-1 store, its keys exactly `TOP_LEVEL`."""
+
+    schema: int
+    commit: str
+    rustc: str
+    llvm: str
+    full_at: str
+    steps_since_full: int
+    measured_at: str
+    tests: dict[str, Entry]
+    fixtures: dict[str, Entry]
+    functions: dict[str, FunctionRecord]
+
+
 TOP_LEVEL = (
     "schema",
     "commit",
@@ -699,8 +725,7 @@ TOP_LEVEL = (
 
 def _valid_regions(value: Any) -> bool:
     return isinstance(value, list) and all(
-        isinstance(r, list) and len(r) == 4 and all(type(n) is int for n in r) and r[0] >= 0 and r[2] >= 0
-        for r in value
+        isinstance(r, list) and len(r) == 4 and all(type(n) is int and n >= 0 for n in r) for r in value
     )
 
 
@@ -761,7 +786,7 @@ def validate(store: Any, where: str) -> Store:
     return store
 
 
-def measured_at(store: Mapping[str, Any]) -> datetime.datetime:
+def measured_at(store: Mapping[str, object]) -> datetime.datetime:
     stamp = datetime.datetime.fromisoformat(str(store["measured_at"]).replace("Z", "+00:00"))
     return stamp if stamp.tzinfo else stamp.replace(tzinfo=datetime.UTC)
 
@@ -800,10 +825,7 @@ def now_iso() -> str:
     return datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-# --- Entries: llvm-cov regions in, positions out ----------------------------
-
-
-def universe_table(tree: Tree, universe: Mapping[str, Iterable[Iterable[int]]]) -> dict[str, dict[str, Any]]:
+def universe_table(tree: Tree, universe: Mapping[str, Iterable[Iterable[int]]]) -> dict[str, FunctionRecord]:
     """The store's `functions` for `tree`, each with its counter regions from an llvm-cov universe."""
     table = tree.table()
     regions: dict[str, set[tuple[int, ...]]] = {key: set() for key in table}
@@ -818,7 +840,7 @@ def universe_table(tree: Tree, universe: Mapping[str, Iterable[Iterable[int]]]) 
 
 
 def entry_regions(
-    tree: Tree, functions: Mapping[str, Mapping[str, Any]], hit: Mapping[str, Iterable[Iterable[int]]]
+    tree: Tree, functions: Mapping[str, FunctionRecord], hit: Mapping[str, Iterable[Iterable[int]]]
 ) -> dict[str, list[int]]:
     """An entry's `regions` map: per function, the indices of `hit`'s regions in `functions`."""
     index = {key: {tuple(r): i for i, r in enumerate(value["regions"])} for key, value in functions.items()}
@@ -839,7 +861,7 @@ def entry_regions(
 
 
 def remap(
-    entry_map: Mapping[str, list[int]], old: Mapping[str, Mapping[str, Any]], new: Mapping[str, Mapping[str, Any]]
+    entry_map: Mapping[str, list[int]], old: Mapping[str, FunctionRecord], new: Mapping[str, FunctionRecord]
 ) -> dict[str, list[int]] | None:
     """Carry an entry's indices from `old`'s universe to `new`'s; None when a region is gone."""
     out: dict[str, list[int]] = {}
@@ -858,7 +880,7 @@ def remap(
 
 
 def positions(
-    tree: Tree, functions: Mapping[str, Mapping[str, Any]], indices: Mapping[str, list[int]] | None = None
+    tree: Tree, functions: Mapping[str, FunctionRecord], indices: Mapping[str, list[int]] | None = None
 ) -> dict[str, set[tuple[int, int, int, int]]]:
     """Absolute llvm-cov regions per file: the universe, or one entry's executed set."""
     out: dict[str, set[tuple[int, int, int, int]]] = {}
@@ -870,14 +892,11 @@ def positions(
     return out
 
 
-def stale_functions(tree: Tree, functions: Mapping[str, Mapping[str, Any]]) -> list[str]:
+def stale_functions(tree: Tree, functions: Mapping[str, FunctionRecord]) -> list[str]:
     """The keys whose digest in `functions` differs from `tree` (or that only one side has)."""
     here = {key: function.digest for key, function in tree.functions.items()}
     there = {key: value["digest"] for key, value in functions.items()}
     return sorted(key for key in here.keys() | there.keys() if here.get(key) != there.get(key))
-
-
-# --- What a change re-runs --------------------------------------------------
 
 
 # Paths whose change no function digest can attribute: every test re-runs.
@@ -1202,7 +1221,7 @@ class Inputs:
 
 def plan(
     root: Path,
-    base: Mapping[str, Any],
+    base: Store,
     tree: Tree,
     tests: Mapping[str, Inputs],
     fixtures: Iterable[str],
@@ -1304,9 +1323,6 @@ def plan(
             rerun_fixtures.setdefault(name, "it has no base entry")
     reasons = {**{f"test {k}": v for k, v in rerun.items()}, **{f"fixture {k}": v for k, v in rerun_fixtures.items()}}
     return Plan(None, frozenset(rerun), frozenset(rerun_fixtures), tuple(changed), reasons)
-
-
-# --- The host-wide instrumented-measurement lock ----------------------------
 
 
 def cache_root() -> Path:

@@ -1121,7 +1121,8 @@ def restate(root: Path) -> tuple[str, list[str]]:
             continue
         settings, defects, sources = [], set(), []
         for golden in goldens:
-            setting, _problems = golden_settings(root, golden)
+            setting, problems = golden_settings(root, golden)
+            failures += [f"{INDEX} {row['shape']}: {problem}" for problem in problems]
             settings.append(setting or "?")
             defects |= known.ledger.get(golden, set()) & known.defects
             source = golden_source(root, golden)

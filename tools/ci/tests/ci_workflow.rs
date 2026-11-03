@@ -300,7 +300,7 @@ fn the_release_job_runs_the_full_sweep() {
 /// The golden-reach base `just census-repin` steps from: published on each push
 /// to main, a newer push cancelling a run in progress, with only the read access
 /// its measurement and upload need, by the recipe the journey in
-/// `tools/surface-reach/tests/incremental_test.py` runs locally.
+/// `tests/repin_journey/incremental_test.py` runs locally.
 #[test]
 fn the_golden_reach_base_is_published_for_each_push_to_main() {
     let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
@@ -368,5 +368,34 @@ fn the_golden_reach_base_is_published_for_each_push_to_main() {
     assert_eq!(
         upload.get("retention-days").and_then(Value::as_u64),
         Some(90)
+    );
+}
+
+/// census-repin's journey runs in a job and under a bound of its own, through
+/// `ci-check` over its promoted project, and gates nothing.
+#[test]
+fn the_repin_journey_has_its_own_bounded_job_outside_the_gate() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let journey = job(&workflow, "repin-journey");
+    assert_eq!(text(journey, "runs-on"), Some("ubuntu-latest"));
+    assert_eq!(
+        journey.get("timeout-minutes").and_then(Value::as_u64),
+        Some(330)
+    );
+    assert!(
+        steps(journey)
+            .iter()
+            .any(|step| text(step, "run") == Some("just ci-check --projects=repin-journey")),
+        "the job runs the affected tier over the repin-journey project"
+    );
+    let gated = job(&workflow, "gate")
+        .get("needs")
+        .and_then(Value::as_array)
+        .expect("gate aggregates its legs");
+    assert!(
+        !gated
+            .iter()
+            .any(|need| need.as_str() == Some("repin-journey")),
+        "the journey is not a gate context"
     );
 }

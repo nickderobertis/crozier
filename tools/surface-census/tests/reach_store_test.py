@@ -5,7 +5,7 @@ enclosing function, and `plan` decides what a change re-runs. These cases drive
 the real parser over real Rust source, the real store files on disk, `plan` over
 a real scratch git repository (every rule of the carry rule, one commit each),
 and the real host lock from a second process. The instrumented journey is
-`tools/surface-reach/tests/incremental_test.py`.
+`tests/repin_journey/incremental_test.py`.
 """
 
 from __future__ import annotations
@@ -246,8 +246,6 @@ def test_the_store_round_trips_byte_stably_and_refuses_any_other_schema(tmp_path
         with pytest.raises(RS.StoreError, match=message):
             RS.load(path)
 
-
-# --- The carry rule, over a real git repository ----------------------------
 
 E2E = textwrap.dedent(
     """\
@@ -527,9 +525,6 @@ def test_the_drift_bound_measures_fully_and_says_why(repo: Path, top: dict, vers
 
 def test_twenty_steps_is_still_inside_the_bound(repo: Path) -> None:
     assert step(repo, {}, base_of(repo, steps_since_full=19)).full is None
-
-
-# --- The lock ---------------------------------------------------------------
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the holder takes the lock with fcntl")

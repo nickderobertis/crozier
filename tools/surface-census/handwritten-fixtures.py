@@ -42,7 +42,7 @@ import tempfile
 import tomllib
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
+from typing import IO, Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -1398,8 +1398,22 @@ def measure(args: argparse.Namespace) -> int:
     return 0
 
 
+class CoverageTools(Protocol):
+    """What a scoped run needs of golden-reach.py: running an llvm tool, and reading an export."""
+
+    def run_llvm(self, argv: list[str], stdout: IO[str] | None = None) -> None: ...
+
+    def covered(self, export: Path, repo_root: Path) -> tuple[dict, dict]: ...
+
+
 def scoped_run(
-    spec: Path, audiences: tuple[str, ...], crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any
+    spec: Path,
+    audiences: tuple[str, ...],
+    crozier: Path,
+    profdata: str,
+    llvm_cov: str,
+    repo_root: Path,
+    reach: CoverageTools,
 ) -> tuple[dict, dict]:
     """(every production region, the executed ones) of one crozier run over `spec` alone,
     filtered to the fixture's `audiences` as the gate generates it."""
@@ -1437,7 +1451,7 @@ def scoped_run(
         export = raw / "export.json"
         with export.open("w", encoding="utf-8") as sink:
             reach.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier)], stdout=sink)
-        return reach._covered(export, repo_root)
+        return reach.covered(export, repo_root)
 
 
 def main(argv: list[str] | None = None) -> int:

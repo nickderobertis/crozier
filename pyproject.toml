@@ -79,6 +79,7 @@ members = [
     "tests/corpus_match",
     "tests/corpus_match_selection",
     "tests/live_e2e",
+    "tests/repin_journey",
     "tests/runtime",
     "tests/nested-discriminator/runtime",
 ]

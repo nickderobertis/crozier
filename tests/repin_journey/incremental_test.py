@@ -48,13 +48,14 @@ import threading
 import time
 import zipfile
 from collections.abc import Iterator
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, ClassVar
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[2]
 PINNED = "a08dc0421817103e9492361b5ef2cc78b79ff1e0"
 OVERLAY = ("tools", "justfile", "scripts")
 # Three quick golden tests: the first executes `ONLY_FIRST` and the others do not;
@@ -109,7 +110,7 @@ class Clone:
         self.root = root
         self.scratch = scratch
         self.cache = scratch / "bases"
-        self.env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
+        self.env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "VIRTUAL_ENV")}
         self.env["CROZIER_GOLDEN_REACH_BASE_CACHE"] = str(self.cache)
 
     def head(self) -> str:
@@ -150,8 +151,17 @@ class Clone:
             )
         return run
 
-    def repin(self, *extra: str, scoped: bool = True, **kwargs: Any) -> subprocess.CompletedProcess:
-        return self.run("just", "census-repin", *(SCOPE if scoped else ()), *extra, **kwargs)
+    def repin(
+        self,
+        *extra: str,
+        scoped: bool = True,
+        verbose: bool = True,
+        env: dict[str, str] | None = None,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess:
+        """`just census-repin`, scoped to the journey's selection, naming each re-run and why."""
+        argv = ["just", "census-repin", *(SCOPE if scoped else ()), *(("--verbose",) if verbose else ()), *extra]
+        return self.run(*argv, env=env, check=check)
 
     def store(self) -> dict:
         return RS.load(self.root / ".local" / "golden-reach" / "store.json.gz")
@@ -229,24 +239,43 @@ def ledger_rows(clone: Clone) -> list[str]:
     return (clone.root / "docs" / "openapi-surface" / "golden-reach.tsv").read_text(encoding="utf-8").split("\n")[1:]
 
 
-# --- The steps, in order ----------------------------------------------------
+@dataclass
+class Journey:
+    """The commits the steps build on and the entries each base recorded, shared down the module."""
 
-STATE: dict[str, Any] = {}
+    c0: str = ""
+    c1: str = ""
+    c2: str = ""
+    s0: dict[str, str] = field(default_factory=dict)
+    s1: dict[str, str] = field(default_factory=dict)
+    consumer: dict[str, str] = field(default_factory=dict)
+    branches: int = 0
+
+    def branch(self) -> str:
+        """A fresh branch name for a case that starts again from the pinned tooling commit."""
+        self.branches += 1
+        return f"case-{self.branches}"
+
+
+STATE = Journey()
 
 
 def test_a_missing_base_measures_fully_and_says_why(clone: Clone) -> None:
-    STATE["c0"] = clone.head()
-    run = clone.repin()
-    assert "measured fully: cannot ask GitHub for a nearer base" in run.stderr and "no cached base either" in run.stderr
+    STATE.c0 = clone.head()
+    run = clone.repin(verbose=False)
+    summary = run.stdout.splitlines()
+    assert len(summary) == 1, "a successful repin prints one line"
+    assert "full: cannot ask GitHub for a nearer base" in summary[0] and "no cached base either" in summary[0]
+    assert not [line for line in run.stderr.splitlines() if line.startswith("census-repin:")], run.stderr
     store = assert_step(clone, None, set(TESTS) | {FIXTURE}, {})
-    assert store["full_at"] == STATE["c0"] and store["steps_since_full"] == 0
-    assert clone.cached(STATE["c0"]).is_file(), "the step leaves its store as the next step's cached base"
+    assert store["full_at"] == STATE.c0 and store["steps_since_full"] == 0
+    assert clone.cached(STATE.c0).is_file(), "the step leaves its store as the next step's cached base"
     first, second = ONLY_FIRST[1], ONLY_SECOND[1]
     assert executed_by(store, f"{ONLY_FIRST[0]}::{first}") == {TESTS[0]}, (
         "re-pin ONLY_FIRST to a function only the first test runs"
     )
     assert executed_by(store, f"{ONLY_SECOND[0]}::{second}") == {TESTS[1]}, "re-pin ONLY_SECOND likewise"
-    STATE["s0"] = entries(store)
+    STATE.s0 = entries(store)
 
 
 NO_OP = "    std::hint::black_box(());\n"
@@ -275,25 +304,25 @@ REFLOW: dict[str, Edit] = {
 
 
 def test_a_function_body_edit_re_runs_exactly_the_tests_that_executed_it(clone: Clone) -> None:
-    STATE["c1"] = clone.commit("a body edit", BODY_EDIT)
+    STATE.c1 = clone.commit("a body edit", BODY_EDIT)
     run = clone.repin()
     assert f"re-ran test {TESTS[0]}: it executed changed {ONLY_FIRST[0]}::{ONLY_FIRST[1]}" in run.stderr
-    store = assert_step(clone, STATE["c0"], {TESTS[0]}, STATE["s0"])
-    assert store["full_at"] == STATE["c0"] and store["steps_since_full"] == 1
-    STATE["s1"] = entries(store)
+    store = assert_step(clone, STATE.c0, {TESTS[0]}, STATE.s0)
+    assert store["full_at"] == STATE.c0 and store["steps_since_full"] == 1
+    STATE.s1 = entries(store)
 
 
 def test_a_two_step_chain_equals_a_full_measurement_of_the_same_tree(clone: Clone) -> None:
-    STATE["c2"] = clone.commit("a reflow and a second body edit", REFLOW | SECOND_EDIT)
+    STATE.c2 = clone.commit("a reflow and a second body edit", REFLOW | SECOND_EDIT)
     clone.repin()
-    store = assert_step(clone, STATE["c1"], {TESTS[1]}, STATE["s1"])
+    store = assert_step(clone, STATE.c1, {TESTS[1]}, STATE.s1)
     assert store["steps_since_full"] == 2
     incremental = (region_sets(clone, store), ledger_rows(clone), reach_cells(clone), clone.ledger_line())
     full_env = dict(clone.env, CROZIER_GOLDEN_REACH_BASE_CACHE=str(clone.scratch / "bases-full"))
     clone.run("git", "checkout", "--", "docs")
     clone.repin(env=full_env)
     full = clone.store()
-    assert full["steps_since_full"] == 0 and all(e == STATE["c2"] for e in entries(full).values())
+    assert full["steps_since_full"] == 0 and all(e == STATE.c2 for e in entries(full).values())
     assert region_sets(clone, full) == incremental[0], "the chain's per-test region sets are a full measurement's"
     assert ledger_rows(clone) == incremental[1], "the chain's ledger rows are a full measurement's"
     assert reach_cells(clone) == incremental[2], "the chain's reach cells are a full measurement's"
@@ -308,7 +337,7 @@ NON_ATTRIBUTABLE: dict[str, dict[str, Edit]] = {
 
 @pytest.mark.parametrize("case", [*NON_ATTRIBUTABLE, "a Cargo.lock dependency"])
 def test_a_change_no_function_owns_re_runs_every_test(clone: Clone, case: str) -> None:
-    clone.checkout(f"full-{len(STATE)}", STATE["c0"])
+    clone.checkout(STATE.branch(), STATE.c0)
     if case == "a Cargo.lock dependency":
         lock = (clone.root / "Cargo.lock").read_text(encoding="utf-8")
         version = re.search(r'name = "itoa"\nversion = "1\.0\.(\d+)"', lock)
@@ -329,7 +358,7 @@ def test_a_change_no_function_owns_re_runs_every_test(clone: Clone, case: str) -
 
 @pytest.mark.parametrize("case", ["a release's own version bump", "CHANGELOG.md alone"])
 def test_a_release_bump_or_a_changelog_edit_re_runs_nothing(clone: Clone, case: str) -> None:
-    clone.checkout(f"none-{len(STATE)}", STATE["c0"])
+    clone.checkout(STATE.branch(), STATE.c0)
     if case == "CHANGELOG.md alone":
         clone.commit(case, {"CHANGELOG.md": ("", "\n<!-- a note -->\n")})
     else:
@@ -346,7 +375,7 @@ def test_a_release_bump_or_a_changelog_edit_re_runs_nothing(clone: Clone, case: 
         )
     run = clone.repin()
     assert "re-ran" not in run.stderr
-    assert_step(clone, STATE["c0"], set(), STATE["s0"])
+    assert_step(clone, STATE.c0, set(), STATE.s0)
 
 
 @pytest.mark.parametrize(
@@ -362,19 +391,18 @@ def test_a_release_bump_or_a_changelog_edit_re_runs_nothing(clone: Clone, case: 
     ],
 )
 def test_the_drift_bound_measures_fully_and_names_why(clone: Clone, case: str, change: dict, reason: str) -> None:
-    clone.checkout(f"bound-{len(STATE)}", STATE["c0"])
+    clone.checkout(STATE.branch(), STATE.c0)
     clone.commit(case, {"CHANGELOG.md": ("", f"\n<!-- {case} -->\n")})
-    cache = clone.scratch / f"bases-{len(STATE)}"
-    STATE[case] = True
-    base = RS.load(clone.cached(STATE["c0"]))
-    RS.save({**base, **change}, cache / STATE["c0"] / "base.json.gz")
+    cache = clone.scratch / f"bases-{STATE.branch()}"
+    base = RS.load(clone.cached(STATE.c0))
+    RS.save({**base, **change}, cache / STATE.c0 / "base.json.gz")
     run = clone.repin(env=dict(clone.env, CROZIER_GOLDEN_REACH_BASE_CACHE=str(cache)))
     assert f"census-repin: measured fully: {reason}" in run.stderr
     assert all(commit == clone.head() for commit in entries(clone.store()).values())
 
 
 def test_a_fixture_tree_and_a_fixture_document_re_run_exactly_their_test_and_fixture(clone: Clone) -> None:
-    clone.checkout("inputs", STATE["c0"])
+    clone.checkout("inputs", STATE.c0)
     api = TESTS[2].removesuffix("_matches_fern_output").replace("_", "-")
     expected = sorted((clone.root / "tests" / "fixtures" / api / "expected").rglob("*.py"))[0]
     clone.commit(
@@ -387,10 +415,27 @@ def test_a_fixture_tree_and_a_fixture_document_re_run_exactly_their_test_and_fix
     run = clone.repin()
     assert f"re-ran test {TESTS[2]}: its golden's fixture tree changed" in run.stderr
     assert f"re-ran fixture {FIXTURE}: its fixture changed" in run.stderr
-    assert_step(clone, STATE["c0"], {TESTS[2], FIXTURE}, STATE["s0"])
+    assert_step(clone, STATE.c0, {TESTS[2], FIXTURE}, STATE.s0)
 
 
-# --- Re-anchoring and merges ------------------------------------------------
+def test_measure_tests_re_runs_the_named_tests_into_the_store_and_carries_the_rest(clone: Clone) -> None:
+    clone.checkout(STATE.branch(), STATE.c0)
+    clone.commit("a note", {"CHANGELOG.md": ("", "\n<!-- measure --tests -->\n")})
+    local = clone.root / ".local" / "golden-reach" / "store.json.gz"
+    RS.save(RS.load(clone.cached(STATE.c0)), local)
+    run = clone.run(sys.executable, "tools/surface-census/golden-reach.py", "measure", "--tests", f"^{TESTS[1]}$")
+    assert "1 test(s) run, 2 carried" in run.stdout
+    store = clone.store()
+    assert {name: e["commit"] for name, e in store["tests"].items()} == {
+        TESTS[0]: STATE.c0,
+        TESTS[1]: clone.head(),
+        TESTS[2]: STATE.c0,
+    }
+    assert store["fixtures"][FIXTURE]["commit"] == STATE.c0, "a merge carries the fixtures it did not re-run"
+    refused = clone.run(
+        sys.executable, "tools/surface-census/golden-reach.py", "measure", "--tests", "x", "--incremental", check=False
+    )
+    assert refused.returncode != 0 and "not allowed with argument --tests" in refused.stderr
 
 
 def files_quoting(clone: Clone, spec: str) -> set[str]:
@@ -409,8 +454,7 @@ def files_quoting(clone: Clone, spec: str) -> set[str]:
     ],
 )
 def test_a_moved_anchor_is_re_anchored_everywhere_it_is_quoted(clone: Clone, case: str, edit: tuple[str, str]) -> None:
-    clone.checkout(f"anchor-{len(STATE)}", STATE["c0"])
-    STATE[case] = True
+    clone.checkout(STATE.branch(), STATE.c0)
     quoting = files_quoting(clone, SITE)
     assert {"docs/openapi-surface/golden-reach-sites.tsv", "docs/openapi-surface/golden-reach.tsv"} <= quoting
     clone.commit(case, {"src/ir.rs": edit})
@@ -425,7 +469,7 @@ def test_a_moved_anchor_is_re_anchored_everywhere_it_is_quoted(clone: Clone, cas
 
 
 def test_an_anchored_arm_whose_code_changed_is_refused_and_nothing_is_rewritten(clone: Clone) -> None:
-    clone.checkout("changed-arm", STATE["c0"])
+    clone.checkout("changed-arm", STATE.c0)
     clone.commit("the arm's code changes", {"src/ir.rs": ("    if untagged {\n", "    if untagged && true {\n")})
     run = clone.repin(check=False)
     assert run.returncode != 0
@@ -439,9 +483,9 @@ def test_an_anchored_arm_whose_code_changed_is_refused_and_nothing_is_rewritten(
 
 
 def _branches_that_conflict(clone: Clone, theirs: dict, ours: dict) -> None:
-    clone.checkout("theirs", STATE["c0"])
+    clone.checkout("theirs", STATE.c0)
     clone.commit("theirs", theirs)
-    clone.checkout("ours", STATE["c0"])
+    clone.checkout("ours", STATE.c0)
     clone.commit("ours", ours)
     merge = subprocess.run(["git", "merge", "-q", "theirs"], cwd=clone.root, capture_output=True, text=True)
     assert merge.returncode != 0, "the two branches must conflict"
@@ -485,9 +529,6 @@ def test_a_conflict_in_a_hand_written_line_is_refused_by_name(clone: Clone) -> N
     assert run.returncode != 0
     assert "docs/openapi-surface/golden-reach-sites.tsv:2: `" in run.stderr and "is not derived content" in run.stderr
     git(clone.root, "merge", "--abort")
-
-
-# --- The CI job's base, served back, and every derived output restored ------
 
 
 class GitHub(BaseHTTPRequestHandler):
@@ -537,7 +578,10 @@ STALE = {
 def _stale(clone: Clone) -> dict[str, Edit]:
     """One edit per derived output, each making it disagree with its generator."""
     regions = clone.root / "docs" / "openapi-surface"
-    read = lambda path: (clone.root / path).read_text(encoding="utf-8")  # noqa: E731
+
+    def read(path: str) -> str:
+        return (clone.root / path).read_text(encoding="utf-8")
+
     edits: dict[str, Edit] = {}
     ledger = read("docs/openapi-surface/golden-reach.tsv").split("\n")
     edits["docs/openapi-surface/golden-reach.tsv"] = (ledger[2], ledger[2].replace("\t", "\t9", 1))
@@ -571,36 +615,37 @@ def _stale(clone: Clone) -> dict[str, Edit]:
 
 
 def test_the_ci_jobs_base_is_found_accepted_and_stepped_from_and_every_derived_output_restored(clone: Clone) -> None:
-    clone.checkout("published", STATE["c0"])
+    clone.checkout("published", STATE.c0)
     server = ThreadingHTTPServer(("127.0.0.1", 0), GitHub)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     api = f"http://127.0.0.1:{server.server_address[1]}"
     try:
         git(clone.root, "remote", "add", "origin", f"https://github.com/{SLUG}.git")
-        git(clone.root, "update-ref", "refs/remotes/origin/main", STATE["c0"])
+        git(clone.root, "update-ref", "refs/remotes/origin/main", STATE.c0)
         ci = dict(clone.env, CROZIER_GITHUB_API_URL=api, GITHUB_TOKEN="offline-token")
         ci["CROZIER_GOLDEN_REACH_BASE_CACHE"] = str(clone.scratch / "ci-runner-cache")
         package = clone.scratch / "package"
         # The job's own command, as ci.yml runs it; the upload is the one step substituted.
         job = clone.run("just", "golden-reach-base", str(package), env=ci)
-        assert f"packaged {package / 'base.json.gz'} for golden-reach-base-{STATE['c0']}" in job.stdout
+        assert f"packaged {package / 'base.json.gz'} for golden-reach-base-{STATE.c0}" in job.stdout
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w") as archive:
             archive.write(package / "base.json.gz", "base.json.gz")
-        GitHub.artifacts = {STATE["c0"]: buffer.getvalue()}
+        GitHub.artifacts = {STATE.c0: buffer.getvalue()}
         published = RS.load(package / "base.json.gz")
-        assert published["commit"] == STATE["c0"] and len(published["tests"]) > len(TESTS)
+        assert published["commit"] == STATE.c0 and len(published["tests"]) > len(TESTS)
         stale = _stale(clone)
         later = clone.commit("every derived output made stale", stale)
         consumer = dict(ci, CROZIER_GOLDEN_REACH_BASE_CACHE=str(clone.scratch / "consumer-cache"))
+        STATE.consumer = consumer
         run = clone.repin(scoped=False, env=consumer)
-        assert f"downloaded golden-reach-base-{STATE['c0']}" in run.stderr
+        assert f"downloaded golden-reach-base-{STATE.c0}" in run.stderr
         assert "measured fully" not in run.stderr, "the step carries every entry from the published base"
         store = clone.store()
-        assert store["commit"] == later and store["full_at"] == STATE["c0"] and store["steps_since_full"] == 1
-        assert all(e["commit"] == STATE["c0"] for e in store["tests"].values())
+        assert store["commit"] == later and store["full_at"] == STATE.c0 and store["steps_since_full"] == 1
+        assert all(e["commit"] == STATE.c0 for e in store["tests"].values())
         assert clone.ledger_line().endswith(
-            f"; base {STATE['c0'][:12]}: 0 run at {later[:12]}, {len(store['tests'])} carried"
+            f"; base {STATE.c0[:12]}: 0 run at {later[:12]}, {len(store['tests'])} carried"
         )
         for path, edit in stale.items():
             text = (clone.root / path).read_text(encoding="utf-8")
@@ -636,3 +681,22 @@ def test_the_ci_jobs_base_is_found_accepted_and_stepped_from_and_every_derived_o
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_measure_incremental_golden_only_steps_the_golden_tests_alone(clone: Clone) -> None:
+    """After the unscoped repin above (a whole-corpus store at its commit), a note-only commit carries every test."""
+    previous = clone.head()
+    tests = len(clone.store()["tests"])
+    clone.commit("another note", {"CHANGELOG.md": ("", "\n<!-- measure --incremental -->\n")})
+    run = clone.run(
+        sys.executable,
+        "tools/surface-census/golden-reach.py",
+        "measure",
+        "--incremental",
+        "--golden-only",
+        env=STATE.consumer,
+    )
+    assert f"0 test(s) run, {tests} carried" in run.stdout and f"from the base at {previous[:12]}" in run.stdout
+    store = clone.store()
+    assert store["fixtures"] == {}, "--golden-only plans no hand-written fixture"
+    assert all(entry["commit"] != clone.head() for entry in store["tests"].values())

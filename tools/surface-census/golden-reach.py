@@ -56,7 +56,6 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-import types
 from collections import Counter, defaultdict
 from enum import StrEnum
 from pathlib import Path
@@ -812,7 +811,7 @@ def measure_step(
         failures = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
             for done, (test, hit, error) in enumerate(pool.map(one, sorted(run_tests)), start=1):
-                if done % 25 == 0 and done < len(run_tests):
+                if done % 25 == 0 and done < len(run_tests) and sys.stderr.isatty():
                     print(f"golden-reach: ran {done} of {len(run_tests)} golden test(s)", file=sys.stderr, flush=True)
                 if error is not None or hit is None:
                     failures.append((test, error))
@@ -825,7 +824,7 @@ def measure_step(
                 f"{len(failures)} golden test(s) failed under instrumentation; a failing "
                 f"golden measures nothing. Fix them (`just test-corpus-match`) and re-run `{REPIN}`."
             )
-        tools = types.SimpleNamespace(run_llvm=run_llvm, _covered=_covered)
+        tools = _CoverageTools()
         for name in sorted(run_fixtures):
             spec, audiences = fixture_base / name / "openapi.yml", fixtures[name]
             _universe, hit = handwritten.scoped_run(spec, audiences, crozier, profdata, llvm_cov, repo_root, tools)
@@ -856,6 +855,16 @@ def measure_step(
         tuple(sorted(set(fixture_entries) - run_fixtures)),
         dict(plan.reasons),
     )
+
+
+class _CoverageTools:
+    """This module's llvm runner and export reader, as `handwritten-fixtures.py`'s `CoverageTools`."""
+
+    def run_llvm(self, argv: list[str], stdout: IO[str] | None = None) -> None:
+        run_llvm(argv, stdout)
+
+    def covered(self, export: Path, repo_root: Path) -> tuple[dict, dict]:
+        return _covered(export, repo_root)
 
 
 def _listed_golden_tests(e2e: Path, repo_root: Path) -> list[str]:
@@ -944,10 +953,11 @@ def measure(args: argparse.Namespace) -> int:
             f"{len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); "
             "commit them first so the ledger's measured commit is the tree measured"
         )
+    origin = ""
     with RS.instrumented_lock("golden-reach measure"):
         if args.incremental:
             choice = _sibling("reach_base").find(repo_root)
-            print(f"golden-reach: base: {choice.reason}", file=sys.stderr)
+            origin = choice.reason
             step = measure_step(
                 repo_root,
                 base=choice.store,
@@ -973,6 +983,7 @@ def measure(args: argparse.Namespace) -> int:
                 select_tests=None if base is not None else selected,
                 include_tests=base is None,
                 include_fixtures=False,
+                plan_fixtures=not args.golden_only,
                 jobs=args.jobs,
             )
         else:
@@ -985,7 +996,7 @@ def measure(args: argparse.Namespace) -> int:
             )
     write_views(step, out, repo_root)
     _sibling("reach_base").publish(step.store)
-    print(f"golden-reach: measured into {out}: {describe(step)}")
+    print(f"golden-reach: measured into {out}: {describe(step)}" + (f" (base: {origin})" if origin else ""))
     return 0
 
 
@@ -2091,14 +2102,13 @@ def package_base(args: argparse.Namespace) -> int:
     base_module = _sibling("reach_base")
     with RS.instrumented_lock("golden-reach base"):
         choice = base_module.find(repo_root, include_head=False)
-        print(f"golden-reach: base: {choice.reason}", file=sys.stderr)
         step = measure_step(repo_root, base=choice.store, full_reason=choice.reason, jobs=args.jobs)
     write_views(step, args.out, repo_root)
     base_module.publish(step.store)
     RS.save(step.store, args.package / base_module.ARTIFACT_FILE)
     print(
         f"golden-reach: packaged {args.package / base_module.ARTIFACT_FILE} for "
-        f"{base_module.ARTIFACT_PREFIX}{step.store['commit']}: {describe(step)}"
+        f"{base_module.ARTIFACT_PREFIX}{step.store['commit']}: {describe(step)} (base: {choice.reason})"
     )
     return 0
 
@@ -2123,8 +2133,10 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     m = sub.add_parser("measure", help="one instrumented run per golden test")
     m.add_argument("--jobs", type=positive_int, default=default_jobs())
-    m.add_argument("--tests", help="re-run the golden tests this regex matches, merging them into the store")
-    m.add_argument(
+    # A merge re-runs what it names; a step re-runs what changed: one or the other.
+    how = m.add_mutually_exclusive_group()
+    how.add_argument("--tests", help="re-run the golden tests this regex matches, merging them into the store")
+    how.add_argument(
         "--incremental", action="store_true", help="step from the nearest saved base, re-running only what changed"
     )
     m.add_argument(

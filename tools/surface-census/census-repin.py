@@ -26,7 +26,9 @@ cell, arm section, coverage count or `handwritten-reach.tsv` row names. In order
    measurement names a commit); any other conflicted hunk is refused by name.
 
 It holds the host-wide instrumented-measurement lock around every instrumented
-build and run, defaults to `--jobs 1` outside CI, and prints one summary line.
+build and run, defaults to `--jobs 1` outside CI, and prints one summary line,
+naming the base it stepped from and why (or why it measured fully); `--verbose`
+also names each re-anchored site and each re-run with its reason.
 """
 
 from __future__ import annotations
@@ -70,8 +72,6 @@ BASES = _load("reach_base", "reach_base.py")
 def refuse(message: str) -> NoReturn:
     raise SystemExit(f"census-repin: {message}")
 
-
-# --- Step 5: a merge whose conflicts are derived ---------------------------
 
 WHOLLY_DERIVED = {
     (REGIONS / name).as_posix()
@@ -139,10 +139,12 @@ def _region_row_derived(ours: list[str], theirs: list[str]) -> bool:
 
 
 def _scenario_rows_derived(ours: list[str], theirs: list[str]) -> bool:
+    """Both sides are the same index rows, differing only in the cells its `write` restates."""
     if len(ours) != len(theirs) or not ours:
         return False
-    derived = set(SCENARIO_DERIVED)
-    columns = SCENARIO_COLUMNS
+    index = _load("census_repin_scenario_index", "scenario-proof-index.py")
+    derived = set(index.DERIVED_COLUMNS)
+    columns = index.INDEX_HEADER
     for left, right in zip(ours, theirs, strict=True):
         a, b = left.split("\t"), right.split("\t")
         if len(a) != len(columns) or len(b) != len(columns) or a[0] != b[0]:
@@ -150,23 +152,6 @@ def _scenario_rows_derived(ours: list[str], theirs: list[str]) -> bool:
         if any(x != y for name, x, y in zip(columns, a, b, strict=True) if name not in derived):
             return False
     return True
-
-
-SCENARIO_COLUMNS = (
-    "shape",
-    "owner",
-    "kind",
-    "source",
-    "goldens",
-    "settings",
-    "tests",
-    "outcome",
-    "ids",
-    "evidence",
-    "open",
-    "closer",
-)
-SCENARIO_DERIVED = ("source", "settings", "outcome", "ids")
 
 
 def _generated_sections(text: str) -> list[tuple[int, int]]:
@@ -245,9 +230,6 @@ def resolve_merge(root: Path) -> int:
         RS.git(root, "add", "--", path)
     RS.git(root, "commit", "--no-edit", "--quiet")
     return resolved
-
-
-# --- Step 2: re-anchoring ---------------------------------------------------
 
 
 class Anchor(NamedTuple):
@@ -493,9 +475,6 @@ def reanchor_all(root: Path, base_commit: str | None) -> dict[str, str]:
     return moves
 
 
-# --- Step 4: derived files --------------------------------------------------
-
-
 def census_python(root: Path) -> str:
     run = subprocess.run(["bash", "scripts/census-python.sh"], cwd=root, capture_output=True, text=True)
     return run.stdout.strip() if run.returncode == 0 and run.stdout.strip() else sys.executable
@@ -561,8 +540,6 @@ def regenerate(root: Path, store: dict[str, Any], out: Path, scoped: bool = Fals
     return ["the arm sections", "the coverage headline"] if scoped else []
 
 
-# --- The verb ---------------------------------------------------------------
-
 INPUTS = re.compile(
     r"(src/|templates/|assets/|crates/|tests/fixtures/|tools/corpus/|\.cargo/|Cargo\.(toml|lock)$|"
     r"rust-toolchain|build\.rs$|docs/openapi-surface/handwritten/[^/]+/openapi\.yml$)"
@@ -616,19 +593,19 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
     REACH.write_views(step, out, root)
     BASES.publish(step.store)
     skipped = regenerate(root, step.store, out, scoped=bool(args.tests or args.fixtures))
-    if skipped:
-        say(f"census-repin: a scoped measurement leaves {' and '.join(skipped)} to an unscoped run")
     after = tracked_changes(root)
     for path in after:
         current = (root / path).read_bytes() if (root / path).is_file() else None
         if path not in before or before[path] != current:
             rewritten.add(path)
+    origin = f"full: {step.full}" if step.full else f"base {(step.base or '?')[:12]}: {choice.reason}"
+    notes = [f"a merge's {merged} derived conflict hunk(s) resolved"] if merged else []
+    notes += [f"{' and '.join(skipped)} left to an unscoped run"] if skipped else []
     print(
         f"census-repin: {len(step.tests_run)} test(s) run, {len(step.tests_carried)} carried, "
         f"{len(step.fixtures_run)} fixture(s) run, {len(step.fixtures_carried)} carried; "
         f"{len(moves)} site(s) re-anchored, {len(rewritten)} file(s) rewritten "
-        f"(measured {step.store['commit'][:12]}, "
-        f"{'full: ' + step.full if step.full else 'base ' + (step.base or '?')[:12]})"
+        f"(measured {step.store['commit'][:12]}, {origin}){''.join('; ' + note for note in notes)}"
     )
     return 0
 
@@ -642,6 +619,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--base-only", action="store_true", help="print the base a repin would step from, and why; measure nothing"
     )
+    parser.add_argument(
+        "--verbose", action="store_true", help="also name each re-anchored site, each re-run and why, on stderr"
+    )
     args = parser.parse_args(argv)
     for pattern in (args.tests, args.fixtures):
         if pattern:
@@ -649,7 +629,9 @@ def main(argv: list[str] | None = None) -> int:
                 re.compile(pattern)
             except re.error as error:
                 parser.error(f"{pattern!r} is not a regex ({error}) — pass a Python regex over test or fixture names")
-    return repin(args, lambda line: print(line, file=sys.stderr, flush=True))
+    return repin(
+        args, (lambda line: print(line, file=sys.stderr, flush=True)) if args.verbose else (lambda _line: None)
+    )
 
 
 if __name__ == "__main__":
