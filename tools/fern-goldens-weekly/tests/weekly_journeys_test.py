@@ -1535,44 +1535,77 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(0, before.returncode, before.stderr)
         self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {resource}\n$")
         self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
-        log = self.scratch / "decide.log"
+        refused = self.phase(
+            decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), "--jobs", "-1"
+        )
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("--jobs -1: name how many comparisons run at once", refused.stderr)
+        hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(hang)}`; {resource}"
+        # One at a time, the runner dies with the hanging comparison the log's
+        # last line; several at once, it dies once every other one has ended.
+        # A reserve no machine has keeps several allowed comparisons to one at a time.
+        for jobs, reserve, others in ((1, "6", 2), (4, "6", 7), (4, "1048576", 2)):
+            with self.subTest(jobs=jobs, reserve=reserve):
+                sentinel.unlink(missing_ok=True)
+                text = self.killed_decision(
+                    decider, bundle, state.artifacts / "decision", sentinel, (jobs, reserve), others
+                )
+                lines = text.splitlines()
+                self.assertTrue(lines, "the killed decision's log is empty: its progress never reached the step log")
+                self.assertRegex(
+                    lines[0],
+                    rf"^fern-goldens-weekly: decide: 8 comparison\(s\) to run, up to {jobs} item comparison\(s\) "
+                    rf"at once; {resource}$",
+                )
+                ended = [line for line in lines if " ended: " in line]
+                self.assertEqual(others, len(ended), text)
+                for line in ended:
+                    self.assertRegex(
+                        line, rf"^fern-goldens-weekly: comparison [0-9]/8 \(.*\) ended: pass in [0-9.]+s; {resource}$"
+                    )
+                self.assertNotIn("comparison 3/8 (handwritten `lantern`) ended", text)
+                self.assertEqual(
+                    1, sum(bool(re.fullmatch(rf"fern-goldens-weekly: {hanging}", line)) for line in lines), text
+                )
+                if jobs == 1:
+                    self.assertRegex(
+                        lines[-1], rf"^fern-goldens-weekly: {hanging}$", "the last line names where it died"
+                    )
+                self.assertFalse((state.artifacts / "decision/decision.json").exists(), "a killed decision writes none")
+
+    def killed_decision(
+        self, root: Path, bundle: Path, output: Path, sentinel: Path, limits: tuple[int, str], others: int
+    ) -> str:
+        """A decision terminated as the runner's shutdown terminates its step
+        (SIGTERM, exit 143) once its hanging comparison has started and the
+        `others` it can finish have ended; what its step log then holds."""
+        jobs, reserve = limits
+        log = self.scratch / f"decide-{jobs}-{reserve}.log"
         with log.open("w", encoding="utf-8") as written:
             decide = subprocess.Popen(
                 [
                     sys.executable,
-                    str(decider / "tools/fern-goldens/weekly.py"),
-                    *("decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision")),
+                    str(root / "tools/fern-goldens/weekly.py"),
+                    *("decide", "--bundle", str(bundle), "--output", str(output)),
+                    *("--jobs", str(jobs), "--reserve-gib", reserve),
                 ],
-                cwd=decider,
-                env=self.environment(decider, HANG_SENTINEL=str(sentinel)),
+                cwd=root,
+                env=self.environment(root, HANG_SENTINEL=str(sentinel)),
                 stdout=written,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,
             )
             self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
-            for _ in range(600):
-                if sentinel.exists() or decide.poll() is not None:
+            for _ in range(1200):
+                ended = log.read_text(encoding="utf-8").count(" ended: ")
+                if (sentinel.exists() and ended >= others) or decide.poll() is not None:
                     break
                 time.sleep(0.1)
             self.assertTrue(sentinel.exists(), log.read_text(encoding="utf-8"))
-            # What the runner's shutdown does to the step: SIGTERM, exit 143.
             decide.terminate()
             self.assertEqual(-signal.SIGTERM, decide.wait(timeout=30))
             os.killpg(decide.pid, signal.SIGKILL)
-        text = log.read_text(encoding="utf-8")
-        lines = text.splitlines()
-        self.assertTrue(lines, "the killed decision's log is empty: its progress never reached the step log")
-        self.assertRegex(lines[0], rf"^fern-goldens-weekly: decide: 8 comparison\(s\) to run; {resource}$")
-        ended = [line for line in lines if " ended: " in line]
-        self.assertEqual(2, len(ended), text)
-        for line in ended:
-            self.assertRegex(line, rf"comparison [12]/8 \(corpus `(alpha|beta)`\) ended: pass in [0-9.]+s; {resource}$")
-        self.assertRegex(
-            lines[-1],
-            rf"^fern-goldens-weekly: comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(hang)}`; {resource}$",
-            "the last line names the comparison the runner died in and the resources at its start",
-        )
-        self.assertFalse((state.artifacts / "decision/decision.json").exists(), "a killed decision writes none")
+        return log.read_text(encoding="utf-8")
 
     def test_a_corpus_comparison_that_could_not_be_processed_is_red_and_publishes_nothing(self) -> None:
         """The corpus gate reads `report_fixture_diffs`' report; one that says it

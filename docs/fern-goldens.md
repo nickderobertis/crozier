@@ -478,6 +478,16 @@ a malformed record, or two shards writing one file), a comparison that cannot
 run, or a missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any
 Fern runs).
 
+**A runner that dies mid-job still leaves its place in the log.** A runner
+that shuts down (`The runner has received a shutdown signal`, exit 143) writes
+no summary and uploads nothing, so the `decide` job's log says how far it got
+as it goes: `weekly.py resources --before <step>` prints the free disk and
+available memory before bootstrap, apply and build, and `decide` prints, as it
+runs, `comparison <n>/<total> (<family> <item>) started: <command>; disk free
+…, memory available …` and `… ended: <verdict> in <seconds>s; disk free …,
+memory available …`. The last such line names the comparison the runner died
+in and what it had left when it started.
+
 A failure during publication — pushing the branch, labelling, opening or
 updating the pull request, or enabling auto-merge — also ends the run red; its
 summary lists the steps that completed. Every write reads the remote first, so

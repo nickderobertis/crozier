@@ -53,6 +53,7 @@ decision), 1 when it found a failure (each named on stderr and in the summary),
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import datetime
 import hashlib
 import importlib.machinery
@@ -66,6 +67,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field, replace
@@ -113,6 +115,11 @@ SHARD_MARGIN = 0.25
 JOB_SETUP_MINUTES = 4.0
 PLAN_MINUTES = 1.0
 ASSEMBLY_MINUTES = 2.0
+# The GiB a decision keeps available before it starts another comparison
+# beside a running one (`decide --reserve-gib`): the largest a single corpus
+# comparison grew to over run 41564405289's tree, bunq.com's 5.7 GiB, with
+# headroom (docs/fern-goldens.md).
+COMPARISON_RESERVE_GIB = 6.0
 # Estimated, not measured: a crozier build and its golden gates over the tree.
 DECISION_MINUTES = 30.0
 PUBLISH_MINUTES = 1.0
@@ -801,29 +808,48 @@ def run(
     return result
 
 
+def memory_available() -> int | None:
+    """The bytes the kernel reports available (`MemAvailable`), or None on a
+    platform without `/proc/meminfo`."""
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            name, _, value = line.partition(":")
+            if name == "MemAvailable" and value.split() and value.split()[0].isdigit():
+                return int(value.split()[0]) * 1024
+    except OSError:
+        return None
+    return None
+
+
 def resources(base: Path) -> str:
     """What the machine has left, as a step log line states it: the free disk of
-    the filesystem `base` is on and the memory the kernel reports available
-    (`MemAvailable`; a platform without `/proc/meminfo` says so)."""
+    the filesystem `base` is on and the memory the kernel reports available."""
     try:
         disk = f"{shutil.disk_usage(base).free / 2**30:.1f} GiB"
     except OSError as error:
         disk = f"unknown ({error.strerror})"
-    memory = "unknown (no /proc/meminfo)"
-    try:
-        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
-            name, _, value = line.partition(":")
-            if name == "MemAvailable" and value.split()[0].isdigit():
-                memory = f"{int(value.split()[0]) / 2**20:.1f} GiB"
-    except OSError:
-        pass
+    available = memory_available()
+    memory = "unknown (no /proc/meminfo)" if available is None else f"{available / 2**30:.1f} GiB"
     return f"disk free {disk} on {base}, memory available {memory}"
 
 
+PROGRESS = threading.Lock()
+
+
 def progress(line: str) -> None:
-    """One line of a long phase's progress, written through at once: a runner
-    that dies mid-phase leaves its log saying how far the phase got."""
-    print(f"fern-goldens-weekly: {line}", flush=True)
+    """One line of a long phase's progress, written through at once and whole
+    (comparisons run in threads): a runner that dies mid-phase leaves its log
+    saying how far the phase got."""
+    with PROGRESS:
+        sys.stdout.write(f"fern-goldens-weekly: {line}\n")
+        sys.stdout.flush()
+
+
+def cpus() -> int:
+    """The CPUs this process may run on: the runner's, or a container's set."""
+    if hasattr(os, "sched_getaffinity"):
+        return max(1, len(os.sched_getaffinity(0)))
+    return max(1, os.cpu_count() or 1)
 
 
 def resources_phase(args: argparse.Namespace) -> int:
@@ -2014,7 +2040,15 @@ def known_change_report(base: Path, entry: ItemResult) -> str:
     return f"{registration} removed; the generated reference ({len(written)} file(s)):\n" + "\n".join(written)
 
 
-def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, families: Iterable[str]) -> Decision:
+def decide_bundle(
+    base: Path,
+    bundle: Bundle,
+    digest: str,
+    reports: Path,
+    families: Iterable[str],
+    jobs: int = 1,
+    reserve: float = COMPARISON_RESERVE_GIB * 2**30,
+) -> Decision:
     decision = Decision(bundle.pair, bundle.complete, digest)
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
@@ -2040,7 +2074,7 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
     undecided = sorted(set(items) - {family for gate in table for family in gate.families})
     if undecided:
         raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
-    runs: list[tuple[Gate, list[str], str | None]] = []
+    per_item: list[tuple[Gate, list[str], str | None]] = []
     for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
@@ -2049,15 +2083,45 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        runs += [(gate, [family], entry.item) for family in decided for entry in items[family]]
-    runs += [(gate, named, None) for gate, named in shared.values()]
-    progress(f"decide: {len(runs)} comparison(s) to run; {resources(base)}")
-    for number, (gate, named, item) in enumerate(runs, 1):
+        per_item += [(gate, [family], entry.item) for family in decided for entry in items[family]]
+    runs = per_item + [(gate, named, None) for gate, named in shared.values()]
+    progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
+
+    # How many comparisons are running, and the next one allowed to start.
+    running, turn = [0], [1]
+    admission = threading.Condition()
+
+    def timed(number: int, run: tuple[Gate, list[str], str | None]) -> GateResult:
+        gate, named, item = run
         label = f"comparison {number}/{len(runs)} ({','.join(named)}{f' `{item}`' if item else ''})"
-        progress(f"{label} started: `{gate.command}`; {resources(base)}")
-        started = time.monotonic()
-        result = run_gate(base, gate, item)
-        progress(f"{label} ended: {result.verdict.value} in {time.monotonic() - started:.1f}s; {resources(base)}")
+        with admission:
+            # In the planned order; one comparison always runs, and another
+            # starts only while the memory the largest measured one grows to is
+            # still available.
+            while turn[0] != number or (running[0] and (memory_available() or reserve) < reserve):
+                admission.wait(timeout=2.0)
+            running[0] += 1
+            turn[0] += 1
+            admission.notify_all()
+        try:
+            progress(f"{label} started: `{gate.command}`; {resources(base)}")
+            started = time.monotonic()
+            result = run_gate(base, gate, item)
+            progress(f"{label} ended: {result.verdict.value} in {time.monotonic() - started:.1f}s; {resources(base)}")
+        finally:
+            with admission:
+                running[0] -= 1
+                admission.notify_all()
+        return result
+
+    # Each item's comparison is one process on one core (the corpus reporter
+    # formats file by file), so they share the machine; a family's runs a whole
+    # suite across every core, so those run one at a time after them. Results
+    # are recorded in the planned order, whatever order they finish in.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+        results = list(pool.map(timed, range(1, len(per_item) + 1), per_item))
+    results += [timed(number, run) for number, run in enumerate(runs[len(per_item) :], len(per_item) + 1)]
+    for (gate, named, item), result in zip(runs, results, strict=True):
         record_gate(decision, reports, gate, ",".join(named), item, result)
         if result.verdict != Verdict.REJECT:
             continue
@@ -2185,8 +2249,18 @@ def decide(args: argparse.Namespace) -> int:
     current = certified_at_base(base)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
+    if args.jobs < 0:
+        raise WeeklyError(f"--jobs {args.jobs}: name how many comparisons run at once, or 0 for one per CPU")
+    if not args.reserve_gib >= 0:
+        raise WeeklyError(f"--reserve-gib {args.reserve_gib}: name the GiB to keep available, 0 or more")
     decision = decide_bundle(
-        base, bundle, bundle_digest(Path(args.bundle)), output / "reports", load_references(base).FAMILY
+        base,
+        bundle,
+        bundle_digest(Path(args.bundle)),
+        output / "reports",
+        load_references(base).FAMILY,
+        args.jobs or cpus(),
+        args.reserve_gib * 2**30,
     )
     write_json(output / "decision.json", decision.to_json())
     (output / "body.md").write_text(body(decision, bundle, current), encoding="utf-8", newline="\n")
@@ -2443,6 +2517,15 @@ def main(argv: list[str] | None = None) -> int:
     phase = commands.add_parser("decide", help="crozier's comparison over the applied tree")
     phase.add_argument("--bundle", required=True)
     phase.add_argument("--output", required=True)
+    phase.add_argument(
+        "--jobs", type=int, default=0, help="item comparisons run at once (default 0: one per CPU this may use)"
+    )
+    phase.add_argument(
+        "--reserve-gib",
+        type=float,
+        default=COMPARISON_RESERVE_GIB,
+        help="start another comparison beside a running one only while this much memory is available",
+    )
     phase = commands.add_parser("resources", help="the runner's free disk and available memory, before a step")
     phase.add_argument("--before", required=True, help="the step about to run")
     phase = commands.add_parser("publish", help="open, update or finish the one pull request")
