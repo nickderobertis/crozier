@@ -1,4 +1,4 @@
-Recorded 2026-11-02 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7. crozier built at f65a46c24 (the departure added after it changes only the comparison, not what crozier generates), generated from openapi.yml with --package-name fern --project-name default_package_name. Each side's README.md worked call (the synchronous `client.questions.file_question(` snippet) is compiled; crozier's is then run with its client's httpx transport replaced by httpx.MockTransport, printing each request it sends.
+Recorded 2026-11-02 with Python 3.12.14, httpx 0.28.1 and pydantic 2.11.7. crozier built at 77a3e7995, generated from openapi.yml with --package-name fern --project-name default_package_name. Each side's README.md synchronous `client.questions.file_question(` worked call is compiled (the script below, mode `compile` for the certified tree and `run` for crozier's); crozier's is then run with its client's httpx transport replaced by httpx.MockTransport, printing each request it sends.
 
 ## certified (fern-expected/)
 from fern import FernApi
@@ -26,25 +26,40 @@ compiles
 POST https://desk.greenhouse.test/questions?bench=bench {"bench":"bench","asked_by":"asked_by"}
 exit 0
 
-## FAI's own certified trees (shared cache), reference.md `client.query.create_query(` snippet compiled
+## FAI's own certified trees (shared cache), reference.md `client.query.create_query(` snippet compiled with Python's compile()
 fern-api/docs fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2: SyntaxError: keyword argument repeated: domain
 fern-api/docs fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62: SyntaxError: keyword argument repeated: domain
 
 ## script
 
-    """Compile a README's first Python snippet, then (crozier's tree) run it through httpx.MockTransport."""
-    import json, re, sys
-    tree, run = sys.argv[1], sys.argv[2] == "run"
-    readme = open(f"{tree}/README.md", encoding="utf-8").read()
-    snippet = next(s for s in re.findall(r"```python\n(.*?)```", readme, re.S) if "client.questions.file_question(" in s and "await" not in s)
+    """Compile a README's synchronous file_question worked call; with `run`, execute it through httpx.MockTransport."""
+    import argparse
+    import re
+    import sys
+    from pathlib import Path
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tree", type=Path, help="a generated SDK tree holding README.md and src/")
+    parser.add_argument("mode", choices=["compile", "run"])
+    args = parser.parse_args()
+    readme_path = args.tree / "README.md"
+    if not readme_path.is_file():
+        parser.error(f"{readme_path} is not a file")
+    readme = readme_path.read_text(encoding="utf-8")
+    snippets = [s for s in re.findall(r"```python\n(.*?)```", readme, re.S)
+                if "client.questions.file_question(\n" in s and "asked_by=" in s and "await" not in s]
+    if len(snippets) != 1:
+        parser.error(f"{readme_path} holds {len(snippets)} synchronous file_question worked calls, not one")
+    snippet = snippets[0]
     print(snippet.rstrip())
     try:
         code = compile(snippet, "README.md", "exec")
     except SyntaxError as error:
-        print(f"SyntaxError: {error.msg} (line {error.lineno})"); sys.exit(1)
+        print(f"SyntaxError: {error.msg} (line {error.lineno})")
+        sys.exit(1)
     print("compiles")
-    if run:
-        sys.path.insert(0, f"{tree}/src")
+    if args.mode == "run":
+        sys.path.insert(0, str(args.tree / "src"))
         import httpx
         import fern
         seen = []
