@@ -9377,7 +9377,11 @@ impl<'a> ExampleCtx<'a> {
                 .iter()
                 .any(|field| field.spec_required && self.resolves_to_any(&field.type_ref))
             {
-                return Some(self.discriminated_union_value(union, Slot::Plain));
+                return Some(self.discriminated_union_value(
+                    union,
+                    union.members.first(),
+                    Slot::Plain,
+                ));
             }
             let mut matched = union.clone();
             if let Some(index) = matched
@@ -9388,7 +9392,11 @@ impl<'a> ExampleCtx<'a> {
                 let chosen = matched.members.remove(index);
                 matched.members.insert(0, chosen);
             }
-            return Some(self.discriminated_union_value(&matched, Slot::Plain));
+            return Some(self.discriminated_union_value(
+                &matched,
+                matched.members.first(),
+                Slot::Plain,
+            ));
         }
         Some(self.member_from_values(member, values))
     }
@@ -9997,7 +10005,7 @@ impl<'a> ExampleCtx<'a> {
                 .map(|source| ctx.find(source));
             match source {
                 Some(Some(TypeDecl::Object(object))) if !object.example_fields.is_empty() => {
-                    Some(ctx.union_member_value(union, Some(member), Slot::Named(wire)))
+                    Some(ctx.discriminated_union_value(union, Some(member), Slot::Named(wire)))
                 }
                 // A plain component object without an example of its own is the
                 // tag's member synthesized (Kong's `TimeRange_Relative`).
@@ -10462,19 +10470,10 @@ impl<'a> ExampleCtx<'a> {
         result
     }
 
-    /// A discriminated union's synthesized value: its first member, built from
-    /// that member's required fields.
+    /// A discriminated union's synthesized value: `member` (callers pass its
+    /// first, or the one an example's tag names), built from that member's
+    /// required fields.
     fn discriminated_union_value(
-        &mut self,
-        u: &crate::ir::DiscriminatedUnion,
-        slot: Slot,
-    ) -> Example {
-        self.union_member_value(u, u.members.first(), slot)
-    }
-
-    /// The synthesized value of one member of `u` (its first, for
-    /// [`Self::discriminated_union_value`]).
-    fn union_member_value(
         &mut self,
         u: &crate::ir::DiscriminatedUnion,
         member: Option<&crate::ir::UnionMember>,
@@ -10762,7 +10761,9 @@ impl<'a> ExampleCtx<'a> {
                     None => Example::Atom("None".to_string()),
                 }
             }
-            Some(TypeDecl::DiscriminatedUnion(u)) => self.discriminated_union_value(u, slot),
+            Some(TypeDecl::DiscriminatedUnion(u)) => {
+                self.discriminated_union_value(u, u.members.first(), slot)
+            }
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
