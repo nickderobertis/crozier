@@ -13492,7 +13492,7 @@ class FinishedStateGateTests(unittest.TestCase):
     NAMED_ARM = "src/ir.rs::Builder::discriminated_union[if union_target \\{]"
     NAMED_ARMS = (
         NAMED_ARM,
-        "src/emit.rs::ExampleCtx::named_value_inner[Some\\(m\\) if m\\.layout\\.is_wrapped\\(\\) => \\{]",
+        "src/emit.rs::ExampleCtx::discriminated_union_value[Some\\(m\\) if m\\.layout\\.is_wrapped\\(\\) => \\{]",
     )
     COVERING_FIXTURE = "docs/openapi-surface/handwritten/tidepool-survey-log/evidence.toml"
     BOUNDED_RECORD = "docs/openapi-surface/witness-search-unproven-features/README.md"
@@ -17360,9 +17360,10 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         """A component composition of one primitive, and nothing beside it.
 
         The positive writes two pattern strings, three plain integers, and an
-        integer beside a `uint64` or `uint32` number; the decoys write a `null`
-        alternative, mixed primitives, a `float` number beside `integer`, `integer` beside
-        `format: int64`, a lone alternative, a composition beside a `type`, and
+        integer beside an `int32` or `uint32` number; the decoys write a `null`
+        alternative, mixed primitives, a `float` number beside `integer`, `integer`
+        beside `format: int64` or a `format: uint64` integer or number (all longs),
+        a lone alternative, a composition beside a `type`, and
         the positive's composition inline as a property, where it is no class.
         """
         selector = "components.schemas:same-primitive-union"
@@ -17373,7 +17374,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Port": {
                     "oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "maximum": 9}]
                 },
-                "Weight": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "Weight": {"oneOf": [{"type": "number", "format": "int32"}, {"type": "integer"}]},
                 # `number_prim` reads `format: uint32` on a number as an integer too.
                 "Count": {"oneOf": [{"type": "number", "format": "uint32"}, {"type": "integer"}]},
                 "Settings": {
@@ -17397,6 +17398,8 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
                 "Fraction": {"oneOf": [{"type": "number", "format": "float"}, {"type": "integer"}]},
                 "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
+                "Unsigned": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "UnsignedInteger": {"anyOf": [{"type": "integer", "format": "uint64"}, {"type": "integer"}]},
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},

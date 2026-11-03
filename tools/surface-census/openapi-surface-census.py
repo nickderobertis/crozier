@@ -5149,7 +5149,7 @@ UNION_PORT_DIGESTS = {
 # normalized-body digest; `Type::method` names the method of `impl ... for Type`.
 SCALAR_PORT_DIGESTS = {
     ("src/ir.rs", "number_prim"): "1b2664ec7ba49051",
-    ("src/ir.rs", "int_prim"): "f99116f9f8a7240f",
+    ("src/ir.rs", "int_prim"): "1f5450ca73084537",
     ("src/openapi.rs", "bool_literal"): "9ae8fdd0eba9b349",
     ("src/openapi.rs", "LiteralTypeOverride::from"): "6b29bbd32bbd4fb1",
 }
@@ -7814,9 +7814,9 @@ class Census:
                 case "string":
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
-                    return "long" if form == "int64" else "int"
+                    return "long" if form in ("int64", "uint64") else "int"
                 case "number" if form in ("int32", "int64", "uint32", "uint64"):
-                    return "long" if form == "int64" else "int"
+                    return "long" if form in ("int64", "uint64") else "int"
                 case "number":
                     return "float"
                 case "boolean":

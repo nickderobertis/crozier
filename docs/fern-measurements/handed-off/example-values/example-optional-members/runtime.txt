@@ -1,0 +1,15 @@
+# A YAML 1.1 parse of the measurement documents (2026-11-01).
+# The command reads each parameter's example with PyYAML's safe_load, as a YAML
+# parser that resolves timestamps (the certified pair's included) does.
+$ python3 -I -c "import yaml; ..."  (see README.md)
+python 3.14.7 PyYAML 6.0.3
+since        example -> datetime: datetime.datetime(2031, 4, 2, 8, 15, tzinfo=datetime.timezone.utc)
+until        example -> datetime: datetime.datetime(2031, 4, 3, 8, 15, tzinfo=datetime.timezone.utc)
+loggedAfter  example -> datetime: datetime.datetime(2031, 4, 1, 6, 0, tzinfo=datetime.timezone.utc)
+recordedOn   example -> datetime: datetime.datetime(2031, 4, 1, 6, 0, tzinfo=datetime.timezone.utc)
+station      example -> str: 'pier-7'
+gaugeId      example -> str: 'gauge-12'
+asOf         example -> datetime: datetime.datetime(2031, 5, 1, 0, 0, tzinfo=datetime.timezone.utc)
+Moment       examples[0] -> datetime: datetime.datetime(2032, 6, 1, 4, 30, tzinfo=datetime.timezone.utc)
+QuotedMoment examples[0] -> str: '2032-06-02T04:30:00Z'
+LampCode     examples[0] -> str: 'lamp-east'
