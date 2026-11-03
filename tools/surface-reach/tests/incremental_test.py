@@ -119,9 +119,14 @@ class Clone:
         git(self.root, "reset", "-q", "--hard")
         git(self.root, "checkout", "-q", "-B", name, at)
 
-    def commit(self, message: str, edits: dict[str, Edit]) -> str:
-        """Replace each `old` by `new` once in its file (an empty `old` appends), commit, return the commit."""
-        git(self.root, "reset", "-q", "--hard")
+    def commit(self, message: str, edits: dict[str, Edit], *, keep: bool = False) -> str:
+        """Replace each `old` by `new` once in its file (an empty `old` appends), commit, return the commit.
+
+        The working tree is reset first (a step's regenerated tables are not part of the
+        next commit) unless `keep` commits what a tool already changed in it.
+        """
+        if not keep:
+            git(self.root, "reset", "-q", "--hard")
         for path, edit in edits.items():
             target = self.root / path
             text = target.read_text(encoding="utf-8") if target.exists() else ""
@@ -309,7 +314,8 @@ def test_a_change_no_function_owns_re_runs_every_test(clone: Clone, case: str) -
         version = re.search(r'name = "itoa"\nversion = "1\.0\.(\d+)"', lock)
         assert version and int(version.group(1)) > 0, "re-pin the dependency the case moves"
         clone.run("cargo", "update", "--quiet", "-p", "itoa", "--precise", f"1.0.{int(version.group(1)) - 1}")
-        clone.commit("a dependency", {})
+        assert git(clone.root, "status", "--porcelain", "Cargo.lock"), "cargo update changed nothing"
+        clone.commit("a dependency", {}, keep=True)
         reason = "Cargo.lock changed beyond crozier's own version"
     else:
         clone.commit(case, NON_ATTRIBUTABLE[case])
