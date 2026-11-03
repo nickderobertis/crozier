@@ -2715,8 +2715,12 @@ def commit_tree(
     for path in decision.ledger.carried() if decision.ledger else ():
         carried = decision_path / LEDGER_CARRIED / path
         # The artifact's own regular file, as every bundle file is: never a
-        # link, which could name anything on the runner.
-        links = [link for link in (carried, *carried.parents) if link.is_symlink()]
+        # link, which could name anything on the runner. Only the components
+        # inside the artifact: where it sits may be reached through one (macOS's
+        # temporary directories are under `/var`, a link to `/private/var`).
+        relative = Path(LEDGER_CARRIED) / path
+        inner = (relative, *relative.parents[:-1])
+        links = [part for part in inner if (decision_path / part).is_symlink()]
         if links or not carried.is_file() or not carried.resolve().is_relative_to(decision_path.resolve()):
             raise WeeklyError(f"the decision carries no regular file {LEDGER_CARRIED}/{path}; re-run the decision job")
         target = inside(base, path, "the decision's ledger")

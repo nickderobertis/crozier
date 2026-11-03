@@ -1078,8 +1078,26 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn(f"{inventory}: 1 row(s) added, 0 removed", section)
         self.assertIn("- departures ledger: regenerated with 3 row(s) changed", self.summary())
         self.assertEqual("success", state.status())
+        # The artifact reached through a link, as macOS's temporary directories
+        # are (`/var` is one), still carries its own regular file.
+        alias = self.scratch / "decision-alias"
+        alias.symlink_to(state.artifacts / "decision", target_is_directory=True)
+        again = self.publish(state.artifacts / "bundle", alias)
+        self.assertEqual(0, again.returncode, again.stderr)
         # The publication lays only the decision artifact's own regular file.
         carried = state.artifacts / "decision/ledger/tests/fixtures/departures-ledger.tsv"
+        linked = state.artifacts / "decision/ledger/tests"
+        # A link to a directory inside the artifact: still a link, so refused.
+        moved_tests = state.artifacts / "decision/ledger/moved-tests"
+        linked.rename(moved_tests)
+        linked.symlink_to(moved_tests, target_is_directory=True)
+        refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn(
+            "the decision carries no regular file ledger/tests/fixtures/departures-ledger.tsv", refused.stderr
+        )
+        linked.unlink()
+        moved_tests.rename(linked)
         outside = self.scratch / "elsewhere.tsv"
         outside.write_text("anything on the runner\n", encoding="utf-8")
         carried.unlink()
@@ -1877,6 +1895,9 @@ class WeeklyRunTests(unittest.TestCase):
         # By default one per CPU decide may use: pinned to one, one at a time.
         for jobs, reserve, others in ((1, "6", 2), (2, "6", 7), (4, "1048576", 2), (0, "6", 2)):
             with self.subTest(jobs=jobs, reserve=reserve):
+                if sys.platform != "linux" and (not jobs or reserve == "1048576"):
+                    # Off Linux decide reads no CPU affinity to pin and no memory to reserve.
+                    self.skipTest("the CPU affinity and available memory decide admits by are Linux's")
                 sentinel.unlink(missing_ok=True)
                 text = self.killed_decision(
                     decider, bundle, state.artifacts / "decision", sentinel, (jobs, reserve), others
@@ -1968,6 +1989,15 @@ class WeeklyRunTests(unittest.TestCase):
         if sys.platform == "win32":
             raise unittest.SkipTest("terminating a decision mid-comparison needs POSIX process groups")
         jobs, reserve = limits
+        pin: Callable[[], None] | None = None
+        if not jobs:
+            if sys.platform != "linux":
+                raise unittest.SkipTest("the default job count is read from the CPU affinity Linux reports")
+
+            def pin() -> None:
+                # The default sizes itself to the CPUs it may use: pinned to one here.
+                os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+
         log = self.scratch / f"decide-{jobs}-{reserve}.log"
         with log.open("w", encoding="utf-8") as written:
             decide = subprocess.Popen(
@@ -1982,8 +2012,7 @@ class WeeklyRunTests(unittest.TestCase):
                 stdout=written,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,
-                # The default sizes itself to the CPUs it may use: pinned to one here.
-                preexec_fn=(lambda: os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})) if not jobs else None,
+                preexec_fn=pin,
             )
             self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
             stages = [(None, others)] if release is None else [(None, others), release]
@@ -2224,7 +2253,7 @@ class WeeklyRunTests(unittest.TestCase):
         it; a rejection lists each item its report names, and a report naming
         none is listed whole under its family. An item's name inside a longer
         one (`lantern` in `types/lantern.py` or `alpha_lanterns`) names no item."""
-        if sys.platform == "win32":
+        if sys.platform != "linux":
             raise unittest.SkipTest("the default job count is read from the CPU affinity Linux reports")
         compare_all = "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml"
         refuse = "{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/lantern-refused/probe.yml --output {scratch}/out"
