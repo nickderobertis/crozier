@@ -413,6 +413,19 @@ phases.
      whose name or regenerated files its report names, with the report's lines
      for it (or the report's tail, when it names none).
 
+   Each per-item comparison is one single-threaded process (the corpus reporter
+   formats file by file), so `decide` runs them `--jobs` at once (default: one
+   per CPU it may use), starting each in the planned order and starting another
+   beside a running one only while `--reserve-gib` (default 6) of memory is
+   still available — over the 5.7 GiB the largest single comparison, corpus
+   `bunq.com`, grew to over run 41564405289's tree. The per-family gates run
+   alone after them, since each runs a whole suite across every core. One at a
+   time, in a container held to the job's runner (4 CPUs, 16 GB), the first 143
+   corpus items took about 19 seconds each — about 100 minutes for the
+   inventory, past what the job's `timeout-minutes` leaves after setup.
+   The decision is recorded in the planned order whatever order the comparisons
+   finish in.
+
    An item that failed or was not generated goes through no gate; every other
    item is decided. A comparison that cannot run is a failure, never a pass. The
    `fern-goldens-decision` artifact holds the decision and every gate's report.
@@ -485,8 +498,9 @@ as it goes: `weekly.py resources --before <step>` prints the free disk and
 available memory before bootstrap, apply and build, and `decide` prints, as it
 runs, `comparison <n>/<total> (<family> <item>) started: <command>; disk free
 …, memory available …` and `… ended: <verdict> in <seconds>s; disk free …,
-memory available …`. The last such line names the comparison the runner died
-in and what it had left when it started.
+memory available …`. Each comparison that started and never ended is one the
+runner died in, its start line saying what was left as it began (one at a
+time, that is the log's last line).
 
 A failure during publication — pushing the branch, labelling, opening or
 updating the pull request, or enabling auto-merge — also ends the run red; its
