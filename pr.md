@@ -26,6 +26,13 @@ The weekly Fern goldens workflow's `decide` job now finishes on a standard
 - Splitting the crozier-e2e family report over the 1,080 items is indexed. It
   took 18 minutes before and takes 2.3 seconds now, with the same excerpts.
 - The weekly artifacts move to schema 5 (golden `tools/fern-goldens/tests/golden/weekly-v5`).
+  The minutes reader (`.github/fern-goldens-budget.mjs`) reads the plan at 5.
+- Publication refuses a carried ledger file when a link sits inside the decision
+  artifact, and no longer when one sits above it. macOS temporary directories
+  are under `/var`, which is a link to `/private/var`.
+- The journeys that pin CPU affinity or reserve memory skip on any platform
+  other than Linux. Linux is the only platform that reports those, and
+  `ubuntu-latest` is where the weekly workflow runs.
 
 ## Why
 
