@@ -2,7 +2,7 @@
 
 The test holds the host-wide lock (`${XDG_CACHE_HOME}/crozier/instrumented-measurement.lock`,
 with `XDG_CACHE_HOME` pointed at a scratch directory) and starts each supported
-entry point that measures in turn — the `census-repin`, `golden-reach`,
+entry point that measures, all at once — the `census-repin`, `golden-reach`,
 `handwritten-reach` and `golden-reach-base` (CI's command) recipes, and the two
 scripts' `measure` — over a real scratch clone of this repository. A `cargo` on
 PATH records that it was called, so the case shows each entry point reports it is
@@ -61,15 +61,8 @@ ENTRY_POINTS = {
 }
 
 
-@pytest.mark.parametrize("entry", ENTRY_POINTS, ids=list(ENTRY_POINTS))
-def test_an_entry_point_waits_for_the_lock_and_builds_only_once_it_is_released(
-    clone: Path, tmp_path: Path, entry: str
-) -> None:
-    import fcntl
-
-    marker = tmp_path / "cargo-called"
-    shims = tmp_path / "bin"
-    shims.mkdir()
+def _stand_in_cargo(shims: Path, marker: Path) -> None:
+    shims.mkdir(parents=True)
     cargo = shims / "cargo"
     cargo.write_text(
         textwrap.dedent(
@@ -83,35 +76,60 @@ def test_an_entry_point_waits_for_the_lock_and_builds_only_once_it_is_released(
         encoding="utf-8",
     )
     cargo.chmod(0o755)
+
+
+def _wait_line(process: subprocess.Popen[str], deadline: float) -> list[str]:
+    """Stderr up to the line saying the process waits for the lock (or to its exit)."""
+    assert process.stderr is not None
+    seen: list[str] = []
+    while time.monotonic() < deadline:
+        line = process.stderr.readline()
+        if not line and process.poll() is not None:
+            break
+        seen.append(line)
+        if "waiting for the instrumented-measurement lock" in line:
+            break
+    return seen
+
+
+def test_every_entry_point_waits_for_the_lock_and_builds_only_once_it_is_released(clone: Path, tmp_path: Path) -> None:
+    """All six start together against one held lock, so the case costs one entry point's wait, not six."""
+    import fcntl
+
     xdg = tmp_path / "xdg"
     lock = xdg / "crozier" / "instrumented-measurement.lock"
     lock.parent.mkdir(parents=True)
-    env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
-    env |= {
-        "XDG_CACHE_HOME": str(xdg),
-        "CROZIER_GOLDEN_REACH_BASE_CACHE": str(tmp_path / "bases"),
-        "PATH": f"{shims}{os.pathsep}{env['PATH']}",
-    }
-    argv = [part.replace("{package}", str(tmp_path / "package")) for part in ENTRY_POINTS[entry]]
+    base_env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
+    processes: dict[str, tuple[subprocess.Popen[str], Path]] = {}
     with lock.open("a+") as held:
         fcntl.flock(held.fileno(), fcntl.LOCK_EX)
-        process = subprocess.Popen(argv, cwd=clone, env=env, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        assert process.stderr is not None
-        seen = []
+        for index, (entry, command) in enumerate(ENTRY_POINTS.items()):
+            scratch = tmp_path / f"entry-{index}"
+            marker = scratch / "cargo-called"
+            _stand_in_cargo(scratch / "bin", marker)
+            env = base_env | {
+                "XDG_CACHE_HOME": str(xdg),
+                "CROZIER_GOLDEN_REACH_BASE_CACHE": str(scratch / "bases"),
+                "PATH": f"{scratch / 'bin'}{os.pathsep}{base_env['PATH']}",
+            }
+            argv = [part.replace("{package}", str(scratch / "package")) for part in command]
+            processes[entry] = (
+                subprocess.Popen(argv, cwd=clone, env=env, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True),
+                marker,
+            )
         deadline = time.monotonic() + 600
-        while time.monotonic() < deadline:
-            line = process.stderr.readline()
-            if not line and process.poll() is not None:
-                break
-            seen.append(line)
-            if "waiting for the instrumented-measurement lock" in line:
-                break
-        assert any("waiting for the instrumented-measurement lock" in line for line in seen), "".join(seen)
+        seen = {entry: _wait_line(process, deadline) for entry, (process, _marker) in processes.items()}
         time.sleep(2)
-        assert process.poll() is None, f"{entry} went on without the lock: {''.join(seen)}"
-        assert not marker.exists(), f"{entry} started an instrumented build while another measurement held the lock"
+        for entry, (process, marker) in processes.items():
+            said = "".join(seen[entry])
+            assert "waiting for the instrumented-measurement lock" in said, f"{entry}: {said}"
+            assert process.poll() is None, f"{entry} went on without the lock: {said}"
+            assert not marker.exists(), f"{entry} started an instrumented build while another measurement held the lock"
         fcntl.flock(held.fileno(), fcntl.LOCK_UN)
-    _out, err = process.communicate(timeout=600)
-    assert marker.exists(), f"{entry} never started its build once the lock was free:\n{err[-2000:]}"
-    assert "llvm-cov" in marker.read_text(encoding="utf-8")
-    assert process.returncode != 0, "the cargo stand-in fails the build, so the entry point must report it"
+    for entry, (process, marker) in processes.items():
+        _out, err = process.communicate(timeout=600)
+        assert marker.exists(), f"{entry} never started its build once the lock was free:\n{err[-2000:]}"
+        assert "llvm-cov" in marker.read_text(encoding="utf-8"), entry
+        assert process.returncode != 0, (
+            f"{entry}: the cargo stand-in fails the build, so the entry point must report it"
+        )
