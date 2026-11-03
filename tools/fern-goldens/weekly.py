@@ -2248,19 +2248,48 @@ def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
     return GateResult(Verdict.CANNOT_RUN, output, result.returncode)
 
 
+EDGE = "A-Za-z0-9_.-"
+RUNS = re.compile(f"[{EDGE}]+")
+
+
+class ReportIndex:
+    """A family gate's report, indexed by the runs of name characters
+    (`[A-Za-z0-9_.-]+`) each line holds, so splitting it over a thousand items
+    reads it once. A token standing alone in a line occupies whole runs of
+    it, so only the lines holding every run of the token can name it; the
+    token's own pattern then decides each of those exactly."""
+
+    def __init__(self, report: str) -> None:
+        self.lines = report.splitlines()
+        self.runs: dict[str, set[int]] = {}
+        for number, line in enumerate(self.lines):
+            for run in RUNS.findall(line):
+                self.runs.setdefault(run, set()).add(number)
+
+    def naming(self, token: str) -> set[int]:
+        pattern = re.compile(rf"(?<![{EDGE}]){re.escape(token)}(?![{EDGE}])")
+        runs = RUNS.findall(token)
+        if runs:
+            held = [self.runs.get(run, set()) for run in runs]
+            candidates: Iterable[int] = set.intersection(*sorted(held, key=len))
+        else:
+            candidates = range(len(self.lines))
+        return {number for number in candidates if pattern.search(self.lines[number])}
+
+    def excerpt(self, tokens: Iterable[str], context: int = 4, limit: int = 80) -> str:
+        """The lines that name an item, with the lines after each, which is how
+        the report attributes a failure. A token names the item only standing
+        alone: `lantern` in `handwritten/lantern/` or `lantern: …`, never
+        inside `types/lantern.py` or `alpha_lanterns`."""
+        keep: set[int] = set()
+        for token in tokens:
+            for number in self.naming(token) if token else ():
+                keep.update(range(number, min(number + context + 1, len(self.lines))))
+        return "\n".join(self.lines[number] for number in sorted(keep)[:limit])
+
+
 def excerpt(report: str, tokens: Iterable[str], context: int = 4, limit: int = 80) -> str:
-    """The lines of a family gate's own report that name an item, with the
-    lines after each, which is how the report attributes a failure. A token
-    names the item only standing alone: `lantern` in `handwritten/lantern/` or
-    `lantern: …`, never inside `types/lantern.py` or `alpha_lanterns`."""
-    edge = r"[A-Za-z0-9_.-]"
-    wanted = [re.compile(rf"(?<!{edge}){re.escape(token)}(?!{edge})") for token in tokens if token]
-    lines = report.splitlines()
-    keep: set[int] = set()
-    for number, line in enumerate(lines):
-        if any(pattern.search(line) for pattern in wanted):
-            keep.update(range(number, min(number + context + 1, len(lines))))
-    return "\n".join(lines[number] for number in sorted(keep)[:limit])
+    return ReportIndex(report).excerpt(tokens, context, limit)
 
 
 def record_gate(
@@ -2283,9 +2312,10 @@ def attribute(
     item whose name or regenerated files appear in it, with those lines; the
     report's tail under the first family when it names none."""
     named = False
+    index = ReportIndex(report)
     for family in families:
         for entry in items[family]:
-            part = excerpt(report, [entry.item, *entry.changed])
+            part = index.excerpt([entry.item, *entry.changed])
             if not part:
                 continue
             named = True
