@@ -29,6 +29,14 @@
       "verdict": "pass",
       "exit": 1,
       "report": "reports/r.txt"
+    },
+    {
+      "command": "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
+      "family": "corpus",
+      "item": "a",
+      "verdict": "reject",
+      "exit": 0,
+      "report": "reports/a.txt"
     }
   ],
   "title": "test(fern-goldens): regenerate at Fern CLI 2.0.0 / fern-python-sdk 3.0.0",
@@ -70,6 +78,7 @@
       }
     ]
   },
+  "text_diffs_omitted": "The weekly run compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`): a corpus report names its differing files and tags each regression, without their text diffs. `just fixtures-diff <corpus>` prints them on a checkout of this branch.",
   "known_reproduced": [
     {
       "family": "corpus",

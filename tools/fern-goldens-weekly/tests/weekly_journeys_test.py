@@ -1049,6 +1049,7 @@ class WeeklyRunTests(unittest.TestCase):
         ledger = state.recorded()["ledger"]
         assert isinstance(ledger, dict)
         self.assertEqual("regenerated", ledger["outcome"])
+        self.assertNotIn("text_diffs_omitted", state.recorded(), "no comparison here ran summary-only")
         self.assertEqual(
             [
                 {
@@ -1158,6 +1159,10 @@ class WeeklyRunTests(unittest.TestCase):
             #!/usr/bin/env python3
             import sys
 
+            import os
+
+            # The weekly gate compares summary-only, as its row asks.
+            assert os.environ.get("CROZIER_DIFF_SUMMARY_ONLY") == "1", "the corpus gate runs summary-only"
             corpus = sys.argv[1]
             drift = corpus == "alpha"
             row = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{}\tsdk-name-version-headers"
@@ -1182,7 +1187,7 @@ class WeeklyRunTests(unittest.TestCase):
         gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
         gates.write_text(
             "\n".join(
-                "corpus\titem\tfixtures-report\t{root}/stand-in-fixtures-report {item}"
+                "corpus\titem\tfixtures-report\tenv CROZIER_DIFF_SUMMARY_ONLY=1 {root}/stand-in-fixtures-report {item}"
                 if line.startswith("corpus\t")
                 else line
                 for line in gates.read_text(encoding="utf-8").splitlines()
@@ -1214,6 +1219,12 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(pull["autoMergeRequest"])
         self.assertIn("- `alpha`: ledger drift: 2 row(s); files not compared", pull["body"])
         self.assertIn("recipe refused, so main's ledger is kept", pull["body"])
+        # Its reports carry no text diffs, and the decision and the body say so
+        # with the command that prints them.
+        self.assertIn("`just fixtures-diff <corpus>` prints them", state.recorded()["text_diffs_omitted"])
+        failing_section = pull["body"].split("## Failing items", 1)[1]
+        self.assertIn("compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`)", failing_section)
+        self.assertIn("`just fixtures-diff <corpus>` prints them", self.summary())
         self.assertIn("`just departures-ledger` refused: departures-ledger: fix it, then rerun", pull["body"])
         self.assertEqual(
             self.remote_file("main", "tests/fixtures/departures-ledger.tsv"),

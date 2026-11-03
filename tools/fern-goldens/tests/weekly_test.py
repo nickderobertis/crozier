@@ -469,7 +469,7 @@ class GateTableTests(unittest.TestCase):
         commands = {gate.command for gate in gates}
         self.assertEqual(
             {
-                "just fixtures-diff {item}",
+                "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry",
                 "python3 tools/fern-refusals/fern-refusals.py check",
@@ -907,6 +907,16 @@ def contract_artifacts() -> dict[str, dict[str, object]]:
         ledger, (weekly.LedgerRows("tests/fixtures/departures-ledger.tsv", (row.format(46),), (row.format(45),)),)
     )
     decision.known_reproduced.append(weekly.KnownReproduced("corpus", "calorieninjas.com"))
+    decision.gates.append(
+        weekly.GateRun(
+            "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
+            "corpus",
+            "a",
+            weekly.Verdict.REJECT,
+            0,
+            "reports/a.txt",
+        )
+    )
     return {
         "plan.json": plan.to_json(),
         "result.json": shard.to_json(),

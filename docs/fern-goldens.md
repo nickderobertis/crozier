@@ -408,7 +408,12 @@ phases.
    [`decision-gates.tsv`](../tools/fern-goldens/decision-gates.tsv) names:
    - **per item**: each corpus golden and its flat golden, through `just
      fixtures-diff <fixture>` (`report_fixture_diffs`: the parity engine, the
-     departure catalog and the golden's ledger rows). A difference outside the
+     departure catalog and the golden's ledger rows), summary-only
+     (`CROZIER_DIFF_SUMMARY_ONLY=1`): building the text diffs took netbox.dev's
+     reporter past 16 GB over run 41564405289's tree (375 MiB without them), so
+     a report names the differing files and their regressions, and the decision
+     and the pull request say that `just fixtures-diff <corpus>` prints the
+     text. A difference outside the
      corpus's `unmatched` list, or a crozier generation failure, is a diff; so
      is a corpus whose departure ledger rows drifted (stale or unrecorded),
      which the reporter states before it compares that corpus's files, so the

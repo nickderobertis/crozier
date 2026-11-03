@@ -115,6 +115,14 @@ LEDGER_OUTPUTS = (
 LEDGER_RECORD = Path(".local/fern-goldens-weekly/ledger.json")
 # Where the decision artifact carries a regenerated ledger the pull request lays.
 LEDGER_CARRIED = "ledger"
+# The switch a gate command carries to compare without text diffs, and what the
+# decision then says of every report that switch shaped.
+SUMMARY_ONLY = "CROZIER_DIFF_SUMMARY_ONLY=1"
+TEXT_DIFFS_OMITTED = (
+    "The weekly run compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`): a corpus report names its "
+    "differing files and tags each regression, without their text diffs. `just fixtures-diff <corpus>` prints "
+    "them on a checkout of this branch."
+)
 # How many of one file's changed ledger rows the pull request body lists.
 LEDGER_BODY_ROWS = 60
 
@@ -796,6 +804,10 @@ class Decision:
         # An item nothing checked is never a match: the pair is not recorded.
         return Outcome.DIFF if self.failing or self.unfetchable or changed or self.unchecked else Outcome.MATCH
 
+    def text_diffs_omitted(self) -> bool:
+        """Whether any comparison ran summary-only, so its report has no text diffs."""
+        return any(SUMMARY_ONLY in run.command.split() for run in self.gates)
+
     def title(self) -> str:
         return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
 
@@ -818,6 +830,8 @@ class Decision:
             **({"unchecked": [entry.to_json() for entry in self.unchecked]} if self.unchecked else {}),
             # Optional: a ledger the candidate leaves as main's carries none.
             **({"ledger": self.ledger.to_json()} if self.ledger else {}),
+            # Optional: said whenever a summary-only comparison shaped a report.
+            **({"text_diffs_omitted": TEXT_DIFFS_OMITTED} if self.text_diffs_omitted() else {}),
             # Optional: most weeks reproduce no registered Fern failure.
             **({"known_reproduced": [vars(entry) for entry in self.known_reproduced]} if self.known_reproduced else {}),
         }
@@ -2567,6 +2581,8 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
         lines += [""]
     if decision.failing:
         lines += ["## Failing items", ""]
+        if decision.text_diffs_omitted():
+            lines += [TEXT_DIFFS_OMITTED, ""]
         budget = BODY_LIMIT // max(1, sum(len(entries) for entries in decision.failing.values()))
         limit = min(REPORT_LIMIT, max(400, budget))
         for family, entries in decision.failing.items():
@@ -2663,6 +2679,7 @@ def decide(args: argparse.Namespace) -> int:
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- **not checked**: {entry.line()}" for entry in decision.unchecked),
             *(f"- differs: {line}" for line in failing),
+            *([f"- {TEXT_DIFFS_OMITTED}"] if failing and decision.text_diffs_omitted() else []),
             *(f"- departures ledger: {line}" for line in ledger_lines(decision.ledger)),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
             *(f"- {entry.line()}" for entry in decision.known_reproduced),

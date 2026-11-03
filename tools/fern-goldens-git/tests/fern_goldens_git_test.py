@@ -2861,6 +2861,8 @@ class ReporterContractTests(unittest.TestCase):
         ):
             self.assertIn(printed, source)
         self.assertIn("differing file(s) across the reported corpora", source)
+        # The weekly corpus gate's switch: the report without its text diffs.
+        self.assertIn('std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none()', source)
         # The ledger drift the decision reads as a difference, never as a
         # comparison that could not run: each row's line, as the ledger prints it.
         ledger = (REPO / "tests/support/departures_ledger.rs").read_text(encoding="utf-8")
