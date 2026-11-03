@@ -15638,6 +15638,10 @@ class NamingMirrorTests(unittest.TestCase):
         for wire, expected in self.table_cases("class_name", minimum=10):
             with self.subTest(wire=wire):
                 self.assertEqual(expected, census.class_name(wire))
+        # A schema name's leading number can be longer than Python converts to
+        # an `int` (4,300 digits); it is past the speller's bound like any other.
+        self.assertEqual("UndefinedHuge", census.class_name("9" * 5000 + "Huge"))
+        self.assertEqual("NineThousandNineHundredNinetyNineStock", census.class_name("0" * 5000 + "9999Stock"))
 
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.

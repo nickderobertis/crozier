@@ -3913,8 +3913,12 @@ def _class_name_pascal(words: str) -> str:
     number = words[: len(words) - len(rest)]
     if not number:
         return to_pascal_case(words)
-    value = int(number.lstrip("0") or "0")
-    spelled = numeric_class_name(value) if value <= 9999 else "Undefined"
+    # Bounded before `int()`: past four significant digits the number is above
+    # 9,999 whatever it is, and Python refuses to convert a string of more than
+    # 4,300 digits, where Rust's `u16` parse simply fails into `undefined`.
+    significant = number.lstrip("0") or "0"
+    value = int(significant) if len(significant) <= 4 else None
+    spelled = numeric_class_name(value) if value is not None and value <= 9999 else "Undefined"
     return to_pascal_case(f"{spelled} {rest}")
 
 
