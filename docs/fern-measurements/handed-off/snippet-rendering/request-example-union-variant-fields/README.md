@@ -21,3 +21,5 @@ Without a request example, the certified pair builds `PanelReading_Sensors` from
 ## What holds it
 
 `crates/crozier-e2e/tests/e2e/handed_off_snippet_rendering.rs` runs the real `crozier` binary over `openapi.yml` and compares its whole tree with `fern-expected/`, every catalogued departure held to its `tests/fixtures/departures-ledger.tsv` lines (`handed_off_snippet_rendering_measurements_match_fern`) and in literals mode against `fern-expected/` with `expected-literals/` laid over it (`handed_off_snippet_rendering_literals_overlays_match_fern`). `src/emit.rs`'s `a_union_member_is_built_from_its_components_schema_example` holds the import line and each field's lines; `snippet_departures_and_repairs_hold_only_their_lines` fails the `Window.HOURLY` placeholder crozier wrote before.
+
+The supplemental [`unusable-list/`](unusable-list/) measurement holds recovery from an invalid list item: the pair keeps valid siblings and synthesizes only that item. Its fresh complete tree and literals overlay are held by the same real-CLI comparison tier.

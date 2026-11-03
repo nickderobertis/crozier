@@ -1172,6 +1172,12 @@ docs/fern-measurements/handed-off/snippet-rendering/request-example-union-varian
 docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/unusable-list/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected	reference.md	90	bracket-query-parameter-call-keyword
 docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected	reference.md	159	bracket-query-parameter-call-keyword
 docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected	src/fern/berths/client.py	53	non-string-client-header-example

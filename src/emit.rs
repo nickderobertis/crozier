@@ -8833,7 +8833,6 @@ impl Example {
 }
 
 /// Threads the type table and the imports/datetime a worked example accumulates.
-#[derive(Clone)]
 struct ExampleCtx<'a> {
     /// The endpoint's package, whose inline declarations take precedence over
     /// identically named declarations owned by another endpoint package.
@@ -10068,17 +10067,13 @@ impl<'a> ExampleCtx<'a> {
             let Some(items) = value.as_array() else {
                 return self.value(t, Slot::Named(wire));
             };
-            // Commit imports only once every item can be rendered. A later
-            // invalid item must not leave constructors from discarded items.
-            let mut candidate = self.clone();
             let mut built = Vec::with_capacity(items.len());
             for item in items {
-                match build(&mut candidate, item) {
+                match build(self, item) {
                     Some(example) => built.push(example),
-                    None => return self.value(t, Slot::Named(wire)),
+                    None => built.push(self.value(item_type, Slot::Named(wire))),
                 }
             }
-            *self = candidate;
             if self.documentation {
                 Example::ReferenceList(built)
             } else {
@@ -20831,7 +20826,7 @@ mod snippet_rendering_tests {
     }
 
     #[test]
-    fn a_discarded_union_list_does_not_leave_its_members_imported() {
+    fn an_invalid_union_list_item_is_synthesized_without_discarding_valid_items() {
         let mut ir = ir("request-example-union-variant-fields");
         let object = ir
             .types
@@ -20852,10 +20847,9 @@ mod snippet_rendering_tests {
             Some(r#"[{"target":"vent","operator":"above","levels":["high"]},42]"#.into());
         let reference = file(&ir, "reference.md");
         assert_contains(&reference, "SensorReadingAlertsItem_Bench(");
-        assert!(
-            !reference.contains("SensorReadingAlertsItem_Vent"),
-            "{reference}"
-        );
+        assert_contains(&reference, "SensorReadingAlertsItem_Vent(");
+        assert_contains(&reference, "operator=AlertOperator.ABOVE,");
+        assert_contains(&reference, "operator=AlertOperator.BELOW,");
     }
 
     #[test]

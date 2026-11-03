@@ -921,6 +921,13 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     let mut add = |golden: String, compared: departures_ledger::ComparedGolden| {
         inventory.goldens.insert(golden, compared);
     };
+    add(
+        format!(
+            "{}/request-example-union-variant-fields/unusable-list/fern-expected",
+            handed_off_snippet_rendering::AREA_DIR
+        ),
+        departures_ledger::ComparedGolden::default(),
+    );
     for corpus in registered_diff_corpora() {
         let golden = format!("tests/fixtures/{}/expected", corpus.api);
         if root.join(&golden).is_dir() {

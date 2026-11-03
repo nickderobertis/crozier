@@ -42,6 +42,7 @@ const CAUSES: &[&str] = &[
 const LITERALS: &[&str] = &[
     "example-inline-union-member-constructor",
     "request-example-union-variant-fields",
+    "request-example-union-variant-fields/unusable-list",
 ];
 
 /// The causes whose verdict rests on behaviour, each keeping the `runtime.txt`
@@ -155,13 +156,7 @@ fn unusable_sourced_union_examples_recover_to_synthesized_calls() {
                 serde_json::json!({"kind": "unknown-season", "phase": "late"}),
             ],
         ),
-        (
-            "alerts",
-            vec![
-                serde_json::json!({"target": "vent"}),
-                serde_json::json!([{"target": "vent", "operator": "above", "levels": ["high"]}, 42]),
-            ],
-        ),
+        ("alerts", vec![serde_json::json!({"target": "vent"})]),
     ] {
         let mut baseline = document.clone();
         baseline["components"]["schemas"]["SensorReading"]["example"]
@@ -185,6 +180,20 @@ fn unusable_sourced_union_examples_recover_to_synthesized_calls() {
             }
         }
     }
+}
+
+/// A bad list item is synthesized independently; earlier valid items survive.
+#[test]
+fn an_invalid_sourced_union_list_item_matches_the_certified_tree() {
+    let dir = cause_dir("request-example-union-variant-fields").join("unusable-list");
+    let failures = tree_failures(
+        "unusable sourced union list item",
+        &dir.join("openapi.yml"),
+        &[],
+        &format!("{AREA_DIR}/request-example-union-variant-fields/unusable-list/fern-expected"),
+        &dir.join("fern-expected"),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
 /// The certified pair's and crozier's text of `rel` for a cause.
