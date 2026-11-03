@@ -34,6 +34,9 @@
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/tests/support/departures_ledger.rs",
+        "{workspaceRoot}/crates/crozier-e2e/departures-ledger.sh",
+        "{workspaceRoot}/tools/fern-goldens/weekly.py",
         "pythonTooling"
       ],
       "outputs": [

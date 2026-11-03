@@ -197,6 +197,11 @@ jobs:
           tool: cargo-nextest
       - uses: astral-sh/setup-uv@v8.3.2
 
+      # The resources before each setup step, so a runner that dies in one leaves
+      # a log naming the step and what it had left (decide logs its own).
+      - name: Free disk and memory before bootstrap
+        run: python3 tools/fern-goldens/weekly.py resources --before bootstrap
+
       # Nx included: `just fixtures-diff`, crozier's per-corpus comparison, runs
       # through it.
       - name: Bootstrap
@@ -207,10 +212,16 @@ jobs:
           name: fern-goldens-bundle
           path: .local/fern-goldens-weekly/bundle
 
+      - name: Free disk and memory before apply
+        run: python3 tools/fern-goldens/weekly.py resources --before apply
+
       # The tree the pull request would carry: the regenerated references, the
       # candidate pair in metadata.json and every statement of it restated.
       - name: Lay the regenerated references over this checkout
         run: python3 tools/fern-goldens/weekly.py apply --bundle .local/fern-goldens-weekly/bundle
+
+      - name: Free disk and memory before build
+        run: python3 tools/fern-goldens/weekly.py resources --before build
 
       - name: Build crozier from that tree
         run: just nx run crozier:build

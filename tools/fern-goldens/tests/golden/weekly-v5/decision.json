@@ -1,0 +1,88 @@
+{
+  "schema_version": 5,
+  "outcome": "diff",
+  "complete": true,
+  "pair": {
+    "cli": "2.0.0",
+    "generator": "3.0.0"
+  },
+  "bundle": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "failing": {
+    "corpus": [
+      {
+        "item": "a",
+        "report": "=== a ===",
+        "ledger_drift": [
+          "stale: tests/fixtures/a/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-name-version-headers"
+        ],
+        "files_compared": false
+      }
+    ]
+  },
+  "unfetchable": [],
+  "cannot_run": [],
+  "gates": [
+    {
+      "command": "crozier compare",
+      "family": "refusals",
+      "item": "heap-exhausted",
+      "verdict": "pass",
+      "exit": 1,
+      "report": "reports/r.txt"
+    },
+    {
+      "command": "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
+      "family": "corpus",
+      "item": "a",
+      "verdict": "reject",
+      "exit": 0,
+      "report": "reports/a.txt"
+    }
+  ],
+  "title": "test(fern-goldens): regenerate at Fern CLI 2.0.0 / fern-python-sdk 3.0.0",
+  "refusals_changed": [
+    {
+      "item": "heap-exhausted",
+      "detail": "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more time or memory"
+    }
+  ],
+  "unchecked": [
+    {
+      "family": "measurements",
+      "item": "parameter-literals/gone",
+      "status": "failed",
+      "detail": "fern-references: measurements parameter-literals/gone: its document docs/openapi-surface/handwritten/gone/openapi.yml does not exist",
+      "log": "logs/measurements/parameter-literals__gone.log"
+    },
+    {
+      "family": "corpus",
+      "item": "b",
+      "status": "not-generated",
+      "detail": "shard 1 uploaded no result; its job failed or was cancelled before uploading",
+      "log": ""
+    }
+  ],
+  "ledger": {
+    "schema_version": 5,
+    "outcome": "regenerated",
+    "detail": "departures-ledger: wrote it (2 rows)",
+    "changes": [
+      {
+        "path": "tests/fixtures/departures-ledger.tsv",
+        "added": [
+          "tests/fixtures/a/expected\tsrc/fern/core/client_wrapper.py\t46\tsdk-name-version-headers"
+        ],
+        "removed": [
+          "tests/fixtures/a/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-name-version-headers"
+        ]
+      }
+    ]
+  },
+  "text_diffs_omitted": "The weekly run compares each corpus summary-only (`CROZIER_DIFF_SUMMARY_ONLY=1`): a corpus report names its differing files and tags each regression, without their text diffs. `just fixtures-diff <corpus>` prints them on a checkout of this branch.",
+  "known_reproduced": [
+    {
+      "family": "corpus",
+      "item": "calorieninjas.com"
+    }
+  ]
+}

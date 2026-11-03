@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Climate Desk
+  version: 1.0.0
+paths:
+  /greenhouses/{houseId}/reading:
+    get:
+      operationId: getCurrentReading
+      summary: Read the current climate reading
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The latest reading, or null before the first one
+          content:
+            application/json:
+              schema:
+                nullable: true
+                oneOf:
+                  - $ref: '#/components/schemas/ClimateReading'
+  /greenhouses:
+    post:
+      operationId: createGreenhouse
+      summary: Register a greenhouse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              nullable: true
+              oneOf:
+                - $ref: '#/components/schemas/GreenhouseCreate'
+      responses:
+        '204':
+          description: Registered
+    put:
+      operationId: replaceGreenhouse
+      summary: Replace a greenhouse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              nullable: true
+              oneOf:
+                - $ref: '#/components/schemas/GreenhouseCreate'
+      responses:
+        '204':
+          description: Replaced
+  /vents:
+    post:
+      operationId: openVent
+      summary: Open a vent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              nullable: true
+              oneOf:
+                - $ref: '#/components/schemas/VentCommand'
+      responses:
+        '200':
+          description: The vent state
+          content:
+            application/json:
+              schema:
+                nullable: true
+                oneOf:
+                  - $ref: '#/components/schemas/VentState'
+components:
+  schemas:
+    ClimateReading:
+      type: object
+      properties:
+        celsius:
+          type: number
+        humidity:
+          type: integer
+    GreenhouseCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        panes:
+          type: integer
+    VentCommand:
+      type: object
+      properties:
+        ventId:
+          type: string
+        angle:
+          type: integer
+    VentState:
+      type: object
+      properties:
+        open:
+          type: boolean

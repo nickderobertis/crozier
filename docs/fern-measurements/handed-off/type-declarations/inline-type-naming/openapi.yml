@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Sign Language Captioner
+  version: 1.0.0
+paths:
+  /v1/caption:
+    post:
+      operationId: captions.v1.media.caption
+      summary: Caption a recording
+      tags:
+        - Captions
+      x-fern-sdk-group-name:
+        - captions
+        - media
+      x-fern-sdk-method-name: caption
+      parameters:
+        - name: dialect
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - bsl
+              - asl
+        - name: speed
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+              - type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            x-fern-sdk-method-name: captionUrl
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+          application/octet-stream:
+            x-fern-sdk-method-name: captionFile
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: The captions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lines:
+                    type: array
+                    items:
+                      type: string
+                  status:
+                    type: string
+                    enum:
+                      - done
+                      - queued
