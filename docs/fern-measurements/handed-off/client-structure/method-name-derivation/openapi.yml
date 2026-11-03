@@ -1,0 +1,129 @@
+openapi: 3.0.3
+info:
+  title: Signal Tower
+  version: 1.0.0
+  description: A radio tower's control API, written to measure how method names derive from operationIds, tags and summaries.
+servers:
+  - url: https://tower.example.net
+paths:
+  /ping:
+    get:
+      operationId: PingPing
+      tags: [ping]
+      responses:
+        '200':
+          description: Pong.
+          content:
+            application/json:
+              schema:
+                type: string
+  /ping/deep:
+    get:
+      operationId: pingDeep
+      tags: [ping]
+      responses:
+        '200':
+          description: Deep pong.
+          content:
+            application/json:
+              schema:
+                type: string
+  /app/info:
+    get:
+      operationId: appInfo
+      tags: [app]
+      responses:
+        '200':
+          description: Application details.
+          content:
+            application/json:
+              schema:
+                type: string
+  /app/version:
+    get:
+      operationId: appVersion
+      tags: [app]
+      responses:
+        '200':
+          description: Application version.
+          content:
+            application/json:
+              schema:
+                type: string
+  /relay/info:
+    get:
+      operationId: relayGateway-info
+      tags: [Relay]
+      responses:
+        '200':
+          description: Relay gateway details.
+          content:
+            application/json:
+              schema:
+                type: string
+  /relay/status:
+    get:
+      operationId: relay-currentStatus
+      tags: [Relay]
+      responses:
+        '200':
+          description: Relay status.
+          content:
+            application/json:
+              schema:
+                type: string
+  /relay-gateway/pricing:
+    get:
+      operationId: relayGateway-bandPricing
+      tags: [RelayGateway]
+      responses:
+        '200':
+          description: Band pricing.
+          content:
+            application/json:
+              schema:
+                type: string
+  /relay-gateway/all:
+    get:
+      operationId: relayGateway-all
+      tags: [RelayGateway]
+      responses:
+        '200':
+          description: Every gateway.
+          content:
+            application/json:
+              schema:
+                type: string
+  /robots.txt:
+    get:
+      summary: Serve robots.txt
+      tags: [Assets]
+      responses:
+        '200':
+          description: The robots file.
+          content:
+            application/json:
+              schema:
+                type: string
+  /badges:
+    get:
+      summary: List badges, e.g. a page of them
+      tags: [Assets]
+      responses:
+        '200':
+          description: A page of badges.
+          content:
+            application/json:
+              schema:
+                type: string
+  /lookup:
+    get:
+      operationId: Lookup__
+      tags: [Lookup]
+      responses:
+        '200':
+          description: A lookup.
+          content:
+            application/json:
+              schema:
+                type: string

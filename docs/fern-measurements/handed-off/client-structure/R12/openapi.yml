@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: Snippet Index
+  version: 1.0.0
+  description: A code-snippet search index, written to measure an operation whose body names an ignored component.
+servers:
+  - url: https://snippets.example.dev
+paths:
+  /snippets/{space}:
+    post:
+      operationId: create_snippet
+      tags: [Snippets]
+      parameters:
+        - name: space
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnippetInput'
+      responses:
+        '200':
+          description: The stored snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippet'
+  /snippets/{space}/batch:
+    post:
+      operationId: create_snippets
+      tags: [Snippets]
+      parameters:
+        - name: space
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SnippetInput'
+      responses:
+        '200':
+          description: The stored snippets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Snippet'
+  /snippets/{space}/{snippetId}:
+    get:
+      operationId: get_snippet
+      tags: [Snippets]
+      parameters:
+        - name: space
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: snippetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippet'
+components:
+  schemas:
+    SnippetInput:
+      type: object
+      required: [source]
+      x-fern-ignore: true
+      properties:
+        source:
+          type: string
+        language:
+          type: string
+    Snippet:
+      type: object
+      required: [id, source]
+      properties:
+        id:
+          type: string
+        source:
+          type: string

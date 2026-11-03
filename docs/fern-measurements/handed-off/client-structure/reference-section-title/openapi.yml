@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Paper Trail
+  version: 1.0.0
+  description: A registry of filed papers, written to measure the reference section title of a declared multi-word tag spelt by a snake_case operationId prefix.
+servers:
+  - url: https://papers.example.org
+tags:
+  - name: Draft Filings
+    description: Filings not yet submitted.
+paths:
+  /draft-filings:
+    get:
+      operationId: draft_filings_list
+      tags: [Draft Filings]
+      responses:
+        '200':
+          description: Draft filings.
+          content:
+            application/json:
+              schema:
+                type: string
+  /draft-filings/{filingId}:
+    get:
+      operationId: draft_filings_read
+      tags: [Draft Filings]
+      parameters:
+        - name: filingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One draft filing.
+          content:
+            application/json:
+              schema:
+                type: string
+  /archive:
+    get:
+      operationId: archive_list
+      tags: [archive]
+      responses:
+        '200':
+          description: Archived filings.
+          content:
+            application/json:
+              schema:
+                type: string

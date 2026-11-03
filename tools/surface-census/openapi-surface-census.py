@@ -3811,10 +3811,12 @@ def _collapse_field_digit_boundaries(name: str) -> str:
 
 def _field_snake_case(wire_name: str) -> str:
     """`naming::field_snake_case`: whitespace chunks fold independently."""
-    chunks = (
+    chunks = [
         _collapse_field_digit_boundaries(to_snake_case(_fold_non_identifier(chunk))) for chunk in wire_name.split()
-    )
-    return "_".join(chunk for chunk in chunks if chunk)
+    ]
+    # A chunk that folds to nothing keeps its separator, unless no word precedes it.
+    first = next((index for index, chunk in enumerate(chunks) if chunk), len(chunks))
+    return "_".join(chunks[first:])
 
 
 def is_reserved(name: str) -> bool:
@@ -4195,16 +4197,16 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "01aaa4f73183c559",
+    "endpoint_method_name": "dffd1341d0b7e6d4",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "dotted_tag_group_method": "4f8b8852f85ba4ee",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "6064a84e8bc4a73f",
-    "method_from_hyphenated_tag_id": "4eb571e881d67d51",
-    "operation_id_tag_prefix": "6b9d3e0baac71cd4",
-    "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
+    "method_from_groupless_id": "9705da23999b970f",
+    "tag_location": "64147a5ed95cff9e",
+    "camel_join": "26c8731a5875e8e3",
+    "id_spells_tag": "ff9848048b239c23",
     "fastapi_endpoint_name": "00ebd39bf3393e58",
     "method_from_grouped_id": "9a11a75c28c3f3a0",
     "group_prefix_is_tag": "78ed5d765ae5f67f",
@@ -4317,35 +4319,53 @@ def _fastapi_endpoint_name(text: str, url: str, method: str) -> str | None:
     return None
 
 
+def _camel_join(words: list[str]) -> str:
+    """`camel_join`: lowercase words joined camelCase."""
+    return "".join(word if index == 0 else word[:1].upper() + word[1:] for index, word in enumerate(words))
+
+
+@dataclass(frozen=True)
+class _RootLocation:
+    """`TagLocation::Root`: the id's words are the tag's, a root-client method."""
+
+
+@dataclass(frozen=True)
+class _WholeLocation:
+    """`TagLocation::Whole`: under the tag, the whole id the method."""
+
+
+@dataclass(frozen=True)
+class _StrippedLocation:
+    """`TagLocation::Stripped`: the tag's words lead the id's."""
+
+    group: str
+    method: str
+
+
+_TagLocation = _RootLocation | _WholeLocation | _StrippedLocation
+
+
+def _tag_location(tag: str, text: str) -> _TagLocation:
+    """`tag_location`: where Fern places an operation from its tag and id words."""
+    tag_words, id_words = _fern_location_tokens(tag), _fern_location_tokens(text)
+    if not tag_words or not id_words:
+        return _WholeLocation()
+    if tag_words == id_words:
+        return _RootLocation()
+    if len(id_words) > len(tag_words) and _starts_with(id_words, tag_words):
+        return _StrippedLocation(_camel_join(tag_words), _camel_join(id_words[len(tag_words) :]))
+    return _WholeLocation()
+
+
 def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
-    snake = to_snake_case(text)
-    tag_snake = to_snake_case(tag) if tag is not None else ""
-    suffix = None
-    if tag is not None:
-        split = _byte_split(text, len(tag.encode("utf-8")))
-        if split is not None:
-            prefix, rest = split
-            if rest and _matches_tag_spelling(prefix, tag) and rest[0] in _ASCII_UPPER:
-                suffix = rest
-    acronym = False
-    if tag is not None:
-        data, head = text.encode("utf-8"), len(tag.encode("utf-8"))
-        split = _byte_split(text, head)
-        acronym = (
-            len(data) > head
-            and split is not None
-            and _ascii_lower(split[0]) == _ascii_lower(tag)
-            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1 :], strict=False))
-        )
-    if not tag_snake or acronym or (suffix is not None and _ascii_lower(suffix) == "info"):
-        method = snake
-    elif suffix is not None:
-        method = to_snake_case(suffix)
-    elif "-" in text and tag is not None and not _starts_with(_fern_location_tokens(text), _fern_location_tokens(tag)):
-        # A hyphenated id leads with its tag only when its words are the tag's.
-        method = snake
-    else:
-        method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
+    """`method_from_groupless_id`: the words after the tag's, the tag's own, or the whole id."""
+    match (tag, _tag_location(tag, text) if tag is not None else _WholeLocation()):
+        case (_, _StrippedLocation(method=stripped)):
+            method = to_snake_case(stripped)
+        case (str(spelled), _RootLocation()):
+            method = to_snake_case(spelled)
+        case _:
+            method = to_snake_case(text)
     ident, prefixed = _sanitized(method)
     return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
@@ -4729,6 +4749,8 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
                 return _sanitized(to_snake_case(inner))
     if not text:
         return None  # the summary or route fallback names this method, not the id
+    if tag is not None and _tag_location(tag, text) == _RootLocation():
+        return _groupless_method(text, tag)
     dotted = _dotted_tag_group_method(text, tag)
     if dotted is not None:
         return _sanitized(_ascii_lower(dotted))
@@ -4758,9 +4780,6 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
             group, _, rest = text.rpartition("_")
             return _sanitized(to_snake_case(text) if "_" in group else rest.lower())
         return _sanitized(to_snake_case(text))
-    hyphenated = _hyphenated_tag_method(text, tag)
-    if hyphenated is not None:
-        return hyphenated
     return _groupless_method(text, tag)
 
 
@@ -4774,15 +4793,6 @@ def _dotted_tag_group_method(text: str, tag: str | None) -> str | None:
     if not dot or tag is None or not (alphanumeric(group) and alphanumeric(method)):
         return None
     return method if _fern_location_tokens(tag) == [_ascii_lower(group)] else None
-
-
-def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | None:
-    """`method_from_hyphenated_tag_id`: `<tag>-<method>`, the method lowercased."""
-    prefix, _, method = text.partition("-")
-    if tag is None or not method or "-" in method or not _matches_tag_spelling(prefix, tag):
-        return None
-    ident, prefixed = _sanitized(_ascii_lower(method))
-    return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
 
 def normalized_path(template: str) -> str:

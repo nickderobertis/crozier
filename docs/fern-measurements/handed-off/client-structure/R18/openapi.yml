@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Order Relay
+  version: 1.0.0
+  description: A marketplace order relay, written to measure required framing headers declared as parameters.
+servers:
+  - url: https://relay.example.com
+paths:
+  /orders:
+    post:
+      operationId: placeOrder
+      tags: [Orders]
+      parameters:
+        - name: content-length
+          in: header
+          required: true
+          schema:
+            type: integer
+        - name: x-forwarded-for
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-channel
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku]
+              properties:
+                sku:
+                  type: string
+      responses:
+        '200':
+          description: The placed order.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
