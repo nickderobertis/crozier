@@ -582,3 +582,46 @@ fn a_query_clash_on_a_reused_body_keeps_the_renamed_keyword() {
         );
     }
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// `repeated-query-body-example-keyword`, executed: the certified pair's
+/// README worked call does not compile (the query keyword is passed twice),
+/// while crozier's compiles and, run against its own generated SDK, sends the
+/// query `bench` and the body's `bench` once each. A tree without the package
+/// is refused with exit 2.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_a_reused_body_s_worked_call_runs_with_the_renamed_keyword() {
+    let case = "reused-body-keyword-example";
+    let python = super::runtime_python_env().expect("SDK runtime environment");
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/reused_body_keyword_wire.py");
+    let run = |tree: &Path| {
+        std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(tree)
+            .output()
+            .expect("run the worked-call journey")
+    };
+    let (temp, out) = matching(case, "python-enums");
+    let missing = run(&temp.path().join("absent"));
+    assert_eq!(missing.status.code(), Some(2), "{missing:?}");
+    let certified = run(&repo_root()
+        .join(CLIENT_STRUCTURE_DIR)
+        .join(case)
+        .join(PYTHON_ENUMS_TREE));
+    assert_eq!(certified.status.code(), Some(1), "{certified:?}");
+    assert!(
+        String::from_utf8_lossy(&certified.stderr)
+            .contains("SyntaxError: keyword argument repeated: bench"),
+        "{certified:?}"
+    );
+    let crozier = run(&out);
+    assert!(crozier.status.success(), "{crozier:?}");
+    assert_eq!(
+        String::from_utf8_lossy(&crozier.stdout),
+        "POST https://desk.greenhouse.test/questions?bench=bench {\"bench\":\"bench\",\"asked_by\":\"asked_by\"}\n"
+    );
+}
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

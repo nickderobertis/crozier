@@ -50,7 +50,13 @@ literals tree is committed.
 pair's `README.md` snippet fails to compile (`SyntaxError: keyword argument
 repeated: bench`), as both FAI trees' `reference.md` snippets do for `domain`;
 crozier's compiles and sends `POST …/questions?bench=bench` with body
-`{"bench":"bench","asked_by":"asked_by"}`, each keyword passed once.
+`{"bench":"bench","asked_by":"asked_by"}`, each keyword passed once. The
+`sdk_env_a_reused_body_s_worked_call_runs_with_the_renamed_keyword` journey in
+`crates/crozier-e2e/tests/e2e/client_structure.rs` repeats that run on every
+`sdk-env` pass through
+[`reused_body_keyword_wire.py`](../../../../../crates/crozier-e2e/tests/e2e/reused_body_keyword_wire.py):
+the certified tree's call must fail to compile, and crozier's freshly generated
+SDK must send exactly that request.
 
 **Comparison on the finished tree.** crozier's output byte-matches
 `fern-expected/` with `repeated-query-body-example-keyword` applied to
