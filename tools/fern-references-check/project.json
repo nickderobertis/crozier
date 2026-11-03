@@ -1,0 +1,117 @@
+{
+  "name": "fern-references-check",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-references-check/tests/inventory_check_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/fern-references-check/test/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/fern-goldens/fern-references.py",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-sources.tsv",
+        "{workspaceRoot}/tests/fixtures/flat-goldens.txt",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/**/*",
+        "{workspaceRoot}/tests/fixtures/*/openapi.yml",
+        "{workspaceRoot}/tests/fixtures/*/known-fern-failure.json",
+        "{workspaceRoot}/tests/fixtures/*/expected/.fern/metadata.json",
+        "{workspaceRoot}/tests/fixtures/*/expected-flat/.fern/metadata.json",
+        "{workspaceRoot}/tests/fixtures/*/expected-*/.crozier-overlay.json",
+        "{workspaceRoot}/docs/fern-measurements/*",
+        "{workspaceRoot}/docs/fern-measurements/*/*",
+        "{workspaceRoot}/docs/fern-measurements/parameter-literals/*",
+        "{workspaceRoot}/docs/fern-measurements/**/openapi.yml",
+        "{workspaceRoot}/docs/fern-measurements/**/*.openapi.*",
+        "{workspaceRoot}/docs/fern-measurements/**/*.fern.log",
+        "{workspaceRoot}/docs/fern-measurements/**/evidence.toml",
+        "{workspaceRoot}/docs/fern-measurements/**/evidence.md",
+        "{workspaceRoot}/docs/fern-measurements/**/fern-expected/.fern/metadata.json",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/*/evidence.toml",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/*/openapi.yml",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/*/fern-expected/.fern/metadata.json",
+        "{workspaceRoot}/docs/openapi-surface/probes/*.yml",
+        "{workspaceRoot}/docs/openapi-surface/probe-expected/MANIFEST.tsv",
+        "{workspaceRoot}/docs/openapi-surface/probe-expected/*/.fern/metadata.json",
+        "{workspaceRoot}/docs/openapi-surface/authored-probes/*/openapi.yml",
+        "{workspaceRoot}/docs/openapi-surface/authored-probes/*/fern.log",
+        "{workspaceRoot}/docs/openapi-surface/fern-refusals/findings/*",
+        "{workspaceRoot}/docs/fern-refusals/*.tsv",
+        "{workspaceRoot}/docs/fern-refusals/*/probe.yml",
+        "{workspaceRoot}/docs/fern-refusals/*/evidence/*",
+        "{workspaceRoot}/docs/departures/evidence/*/fern-reference.json",
+        "{workspaceRoot}/docs/departures/evidence/*/openapi.yml",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/fern-references-check/test"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs fern-references-check"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/fern-references-check"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/fern-references-check"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/fern-references-check"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/fern-references-check"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

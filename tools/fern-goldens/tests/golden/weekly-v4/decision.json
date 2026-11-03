@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "outcome": "diff",
   "complete": true,
   "pair": {
@@ -25,6 +25,22 @@
     {
       "item": "heap-exhausted",
       "detail": "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: JavaScript heap out of memory`, at Fern CLI 1.0.0 / fern-python-sdk 1.0.0; now: unsettled: `fern check` and `fern generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more time or memory"
+    }
+  ],
+  "unchecked": [
+    {
+      "family": "measurements",
+      "item": "parameter-literals/gone",
+      "status": "failed",
+      "detail": "fern-references: measurements parameter-literals/gone: its document docs/openapi-surface/handwritten/gone/openapi.yml does not exist",
+      "log": "logs/measurements/parameter-literals__gone.log"
+    },
+    {
+      "family": "corpus",
+      "item": "b",
+      "status": "not-generated",
+      "detail": "shard 1 uploaded no result; its job failed or was cancelled before uploading",
+      "log": ""
     }
   ]
 }

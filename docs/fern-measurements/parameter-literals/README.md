@@ -1,8 +1,11 @@
 # Certified literals setting for parameter proofs
 
-These ten inputs are the independently authored documents under
-`docs/openapi-surface/handwritten/`. Their complete Python-enum trees and
-pins are recorded there. Each was also generated unedited by CLI 5.67.1 with
+These nine inputs are independently authored documents. Seven live under
+`docs/openapi-surface/handwritten/`. `observatory-client-headers` and
+`warehouse-header-token` were retired as hand-written proofs once corpus row
+4405 (`loonfs`) covered their shape, and now live under
+[`../parameter-lowering/`](../parameter-lowering/README.md). Each input's
+complete Python-enum tree and pins are recorded in its own directory. Each was also generated unedited by CLI 5.67.1 with
 `fernapi/fern-python-sdk` 5.20.0, `enum_type` unset (literals), package `fern`,
 project `default_package_name`, client `FernApi`, extra fields `allow`, retries 2,
 all audiences, packaged preview, CI invocation and GitHub metadata.
