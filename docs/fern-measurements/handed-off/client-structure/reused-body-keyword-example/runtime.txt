@@ -58,3 +58,5 @@ llmlint: ignore-block[boundary_inputs_validated] This is the verbatim script the
         exec(code, {"__name__": "snippet"})
         for request in seen:
             print(request.method, str(request.url), request.content.decode())
+
+llmlint: ignore-end[boundary_inputs_validated]
