@@ -724,23 +724,22 @@ class Store(TypedDict):
     functions: dict[str, FunctionRecord]
 
 
-TOP_LEVEL = (
-    "schema",
-    "commit",
-    "rustc",
-    "llvm",
-    "full_at",
-    "steps_since_full",
-    "measured_at",
-    "tests",
-    "fixtures",
-    "functions",
-)
+# The schema-1 keys, in the order the contract lists them: the model's own fields.
+TOP_LEVEL = tuple(Store.__annotations__)
 
 
 def _valid_regions(value: Any) -> bool:
+    """Token-relative regions: four whole numbers each, the start not after the end.
+
+    Whether a token index lies inside its function is known only against a tree,
+    so `Tree.decode` refuses one that does not.
+    """
     return isinstance(value, list) and all(
-        isinstance(r, list) and len(r) == 4 and all(type(n) is int and n >= 0 for n in r) for r in value
+        isinstance(r, list)
+        and len(r) == 4
+        and all(type(n) is int and n >= 0 for n in r)
+        and (r[0], r[1]) <= (r[2], r[3])
+        for r in value
     )
 
 
@@ -768,7 +767,7 @@ def validate(store: Any, where: str) -> Store:
     """`store` if it is a schema-1 store, else a `StoreError` naming what is wrong."""
     if not isinstance(store, dict):
         raise StoreError(f"{where} is not a JSON object")
-    if store.get("schema") != SCHEMA:
+    if type(store.get("schema")) is not int or store["schema"] != SCHEMA:
         raise StoreError(f"{where} is schema {store.get('schema')!r}; this reader reads schema {SCHEMA} only")
     if set(store) != set(TOP_LEVEL):
         raise StoreError(f"{where} carries the keys {sorted(store)}, not exactly {list(TOP_LEVEL)}")

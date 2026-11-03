@@ -256,6 +256,8 @@ def test_the_store_round_trips_byte_stably_and_refuses_any_other_schema(tmp_path
         (_one_function(store, start=9, end=3), "start <= end"),
         (_one_function(store, file="src/other.rs"), "`<file>::<path>`"),
         (_one_function(store, regions=[[0, -1, 0, 1]]), "token-relative regions"),
+        (_one_function(store, regions=[[2, 0, 1, 3]]), "token-relative regions"),
+        ({**store, "schema": True}, "schema True"),
     ):
         with gzip.open(path, "wt", encoding="utf-8") as handle:
             json.dump(broken, handle)

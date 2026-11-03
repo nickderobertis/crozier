@@ -52,7 +52,6 @@ HERE = Path(__file__).resolve().parent
 REGIONS = Path("docs") / "openapi-surface"
 SITES = REGIONS / "golden-reach-sites.tsv"
 COVERAGE = Path("docs") / "openapi-surface-coverage.md"
-EOL = 1 << 30
 
 
 def _load(name: str, file: str) -> Any:
@@ -70,6 +69,8 @@ def _load(name: str, file: str) -> Any:
 
 REACH = _load("census_repin_golden_reach", "golden-reach.py")
 RS = REACH.RS
+# A site that runs to the end of its line, as golden-reach.py's `Site` marks one.
+EOL = REACH.Site._field_defaults["end_col"]
 BASES = _load("reach_base", "reach_base.py")
 
 
