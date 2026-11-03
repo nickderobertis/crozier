@@ -125,6 +125,7 @@ def local_server() -> Iterator[tuple[str, list[Sent]]]:
 with local_server() as (base_url, sent):
     client = sdk.FernApi(base_url=base_url)
     for method in METHODS:
+        # llmlint: ignore[async_typed_clients_at_boundaries] This journey proves the generated SDK's own synchronous client, the one its documented examples construct and call; the SDK under test, not this script, owns the HTTP boundary.
         assert getattr(client.patterns, method)(pattern_id="twill-4", request=b"string") is None
 assert [request.content_type for request in sent] == ["application/json"] * len(METHODS), sent
 print(json.dumps({"examples": examples, "sent": [dataclasses.asdict(request) for request in sent]}, sort_keys=True))

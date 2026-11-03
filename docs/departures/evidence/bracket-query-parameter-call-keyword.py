@@ -110,6 +110,7 @@ with local_server() as (base_url, queries):
         assert isinstance(values, list)
         extra = {"zone": arguments["zone"]} if "zone" in arguments else {}
         call = getattr(sdk.FernApi(base_url=base_url, **HEADERS).berths, method)
+        # llmlint: ignore[async_typed_clients_at_boundaries] This journey proves the generated SDK's own synchronous client, the one its documented examples construct and call; the SDK under test, not this script, owns the HTTP boundary.
         call(**extra, **{wire.removesuffix("[]"): values})
         assert [pair for pair in queries[-1] if pair[0] == wire] == [(wire, value) for value in values], queries
 

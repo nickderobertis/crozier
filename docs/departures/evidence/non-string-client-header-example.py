@@ -111,5 +111,6 @@ for where, doc in examples.items():
 # The documented construction, sent: the header values it puts on the wire.
 documented = construction(examples["FernApi"] or "", "FernApi")
 with local_server() as (base_url, received):
+    # llmlint: ignore[async_typed_clients_at_boundaries] This journey proves the generated SDK's own synchronous client, the one its documented examples construct and call; the SDK under test, not this script, owns the HTTP boundary.
     sdk.FernApi(base_url=base_url, **documented).berths.list_berths(zone="north", codes=["C-100"])
 print(json.dumps({"constructions": verdicts, "sent_headers": received}, sort_keys=True))
