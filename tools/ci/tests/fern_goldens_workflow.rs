@@ -214,6 +214,23 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     assert_eq!(text(build_step, "run"), "just nx run crozier:build");
     let (decision, _) = named_step(decide_steps, "Decide with crozier's own comparison");
     assert!(bootstrap < apply && apply < build && build < decision);
+    // Each setup step is preceded by the runner's free disk and memory, so a
+    // runner that dies in one leaves a log naming it (decide logs its own).
+    for (step, at) in [("bootstrap", bootstrap), ("apply", apply), ("build", build)] {
+        let (before, before_step) =
+            named_step(decide_steps, &format!("Free disk and memory before {step}"));
+        assert_eq!(
+            text(before_step, "run"),
+            format!("python3 tools/fern-goldens/weekly.py resources --before {step}")
+        );
+        assert!(
+            before < at
+                && !decide_steps[before + 1..at]
+                    .iter()
+                    .any(|s| s.get("run").is_some()),
+            "the resource line for {step} runs right before it"
+        );
+    }
 
     // Only the complete run publishes, with the PAT whose pull requests trigger
     // crozier's required checks.

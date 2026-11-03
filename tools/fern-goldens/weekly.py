@@ -28,7 +28,12 @@ job of its own, so every decision lives here where the tests drive it:
   decide    crozier's own comparison over that tree, through the gates
             `decision-gates.tsv` names, of every item that generated: match,
             diff (which an item that failed or was not generated always is), or
-            red when a comparison cannot run
+            red when a comparison cannot run; it writes a line as each
+            comparison starts and ends (elapsed time, verdict) and the free disk
+            and available memory at every boundary, so a runner that dies
+            mid-step leaves a log naming the comparison it was in
+  resources the free disk and available memory, before a setup step of the
+            decision job, so a death there names the step and what was left
   publish   the one pull request on `fern-goldens/update`, reconciled with what
             the remote already holds: a diff stays open for a person; a match
             records the pair in `tests/fixtures/fern-pair-checks.tsv` and is
@@ -38,7 +43,7 @@ job of its own, so every decision lives here where the tests drive it:
             naming each, so a broken input is published for a person and still
             never passes as a green week
 
-Each phase prints one line and appends its Markdown to `--summary` (the step
+Each phase prints one line (`decide` also its progress) and appends its Markdown to `--summary` (the step
 summary). Every artifact one phase hands the next is a typed record, validated
 when it is read. Exit status: 0 when the phase finished (a diff is a finished
 decision), 1 when it found a failure (each named on stderr and in the summary),
@@ -796,6 +801,36 @@ def run(
     return result
 
 
+def resources(base: Path) -> str:
+    """What the machine has left, as a step log line states it: the free disk of
+    the filesystem `base` is on and the memory the kernel reports available
+    (`MemAvailable`; a platform without `/proc/meminfo` says so)."""
+    try:
+        disk = f"{shutil.disk_usage(base).free / 2**30:.1f} GiB"
+    except OSError as error:
+        disk = f"unknown ({error.strerror})"
+    memory = "unknown (no /proc/meminfo)"
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            name, _, value = line.partition(":")
+            if name == "MemAvailable" and value.split()[0].isdigit():
+                memory = f"{int(value.split()[0]) / 2**20:.1f} GiB"
+    except OSError:
+        pass
+    return f"disk free {disk} on {base}, memory available {memory}"
+
+
+def progress(line: str) -> None:
+    """One line of a long phase's progress, written through at once: a runner
+    that dies mid-phase leaves its log saying how far the phase got."""
+    print(f"fern-goldens-weekly: {line}", flush=True)
+
+
+def resources_phase(args: argparse.Namespace) -> int:
+    progress(f"before {args.before}: {resources(root())}")
+    return 0
+
+
 def git(base: Path, *args: str, check: bool = True) -> str:
     return run(["git", "-C", str(base), *args], base, check=check).stdout.strip()
 
@@ -1103,7 +1138,7 @@ def resolve(args: argparse.Namespace) -> int:
     scope = "the whole reference inventory" if complete else f"the diagnostic subset `{items}`"
     line = reason or f"Checking {pair.label()} over {scope} (certified: {current.label()})."
     summarize(args.summary, ["## Fern goldens: pair", "", line])
-    print(f"fern-goldens-weekly: {line}")
+    print(f"fern-goldens-weekly: {line}", flush=True)
     return 0
 
 
@@ -2005,6 +2040,7 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
     undecided = sorted(set(items) - {family for gate in table for family in gate.families})
     if undecided:
         raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
+    runs: list[tuple[Gate, list[str], str | None]] = []
     for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
@@ -2013,16 +2049,21 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        for family in decided:
-            for entry in items[family]:
-                result = run_gate(base, gate, entry.item)
-                record_gate(decision, reports, gate, family, entry.item, result)
-                if result.verdict == Verdict.REJECT:
-                    decision.failing.setdefault(family, []).append(FailingItem(entry.item, result.report.strip()))
-    for gate, named in shared.values():
-        result = run_gate(base, gate, None)
-        record_gate(decision, reports, gate, ",".join(named), None, result)
-        if result.verdict == Verdict.REJECT:
+        runs += [(gate, [family], entry.item) for family in decided for entry in items[family]]
+    runs += [(gate, named, None) for gate, named in shared.values()]
+    progress(f"decide: {len(runs)} comparison(s) to run; {resources(base)}")
+    for number, (gate, named, item) in enumerate(runs, 1):
+        label = f"comparison {number}/{len(runs)} ({','.join(named)}{f' `{item}`' if item else ''})"
+        progress(f"{label} started: `{gate.command}`; {resources(base)}")
+        started = time.monotonic()
+        result = run_gate(base, gate, item)
+        progress(f"{label} ended: {result.verdict.value} in {time.monotonic() - started:.1f}s; {resources(base)}")
+        record_gate(decision, reports, gate, ",".join(named), item, result)
+        if result.verdict != Verdict.REJECT:
+            continue
+        if item is not None:
+            decision.failing.setdefault(named[0], []).append(FailingItem(item, result.report.strip()))
+        else:
             attribute(decision, gate, named, items, result.report)
     return decision
 
@@ -2367,6 +2408,7 @@ PHASES: dict[str, Callable[[argparse.Namespace], int]] = {
     "assemble": assemble,
     "apply": apply,
     "decide": decide,
+    "resources": resources_phase,
     "publish": publish,
     "conclude": conclude,
 }
@@ -2401,6 +2443,8 @@ def main(argv: list[str] | None = None) -> int:
     phase = commands.add_parser("decide", help="crozier's comparison over the applied tree")
     phase.add_argument("--bundle", required=True)
     phase.add_argument("--output", required=True)
+    phase = commands.add_parser("resources", help="the runner's free disk and available memory, before a step")
+    phase.add_argument("--before", required=True, help="the step about to run")
     phase = commands.add_parser("publish", help="open, update or finish the one pull request")
     phase.add_argument("--bundle", required=True)
     phase.add_argument("--decision", required=True)

@@ -21,10 +21,12 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 import unittest.mock
 from collections.abc import Mapping
@@ -800,7 +802,7 @@ class WeeklyRunTests(unittest.TestCase):
             self.clone(), "assemble", "--plan", str(plan), "--shards", str(artifacts), "--output", str(bundle), **env
         )
         state.assemble = assembled
-        if assembled.returncode != 0:
+        if assembled.returncode != 0 or stop_after == "assemble":
             return state
         decider = self.clone()
         applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
@@ -1504,6 +1506,73 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("**cannot run**", self.summary())
         self.assertIsNone(state.publish)
         self.assert_untouched()
+
+    def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
+        """A runner that dies mid-step leaves only what the step already wrote:
+        the decision writes each comparison's start and end (its elapsed time and
+        verdict) and the free disk and available memory at every boundary as it
+        runs, so the log of a decision killed inside a comparison names it."""
+        sentinel = self.scratch / "hanging-comparison-started"
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        hang = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
+        gates.write_text(
+            "".join(
+                line.split("\t", 3)[0] + "\titem\texit:0/3\t" + hang + "\n"
+                if line.startswith("handwritten\t")
+                else line + "\n"
+                for line in GATES.splitlines()
+            ),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        resource = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
+        # The decision job's line before each setup step: the step it is about to run and what is left.
+        before = self.phase(decider, "resources", "--before", "apply")
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {resource}\n$")
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        log = self.scratch / "decide.log"
+        with log.open("w", encoding="utf-8") as written:
+            decide = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(decider / "tools/fern-goldens/weekly.py"),
+                    *("decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision")),
+                ],
+                cwd=decider,
+                env=self.environment(decider, HANG_SENTINEL=str(sentinel)),
+                stdout=written,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+            self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
+            for _ in range(600):
+                if sentinel.exists() or decide.poll() is not None:
+                    break
+                time.sleep(0.1)
+            self.assertTrue(sentinel.exists(), log.read_text(encoding="utf-8"))
+            # What the runner's shutdown does to the step: SIGTERM, exit 143.
+            decide.terminate()
+            self.assertEqual(-signal.SIGTERM, decide.wait(timeout=30))
+            os.killpg(decide.pid, signal.SIGKILL)
+        text = log.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        self.assertTrue(lines, "the killed decision's log is empty: its progress never reached the step log")
+        self.assertRegex(lines[0], rf"^fern-goldens-weekly: decide: 8 comparison\(s\) to run; {resource}$")
+        ended = [line for line in lines if " ended: " in line]
+        self.assertEqual(2, len(ended), text)
+        for line in ended:
+            self.assertRegex(line, rf"comparison [12]/8 \(corpus `(alpha|beta)`\) ended: pass in [0-9.]+s; {resource}$")
+        self.assertRegex(
+            lines[-1],
+            rf"^fern-goldens-weekly: comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(hang)}`; {resource}$",
+            "the last line names the comparison the runner died in and the resources at its start",
+        )
+        self.assertFalse((state.artifacts / "decision/decision.json").exists(), "a killed decision writes none")
 
     def test_a_corpus_comparison_that_could_not_be_processed_is_red_and_publishes_nothing(self) -> None:
         """The corpus gate reads `report_fixture_diffs`' report; one that says it
