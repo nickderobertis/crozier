@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Seed Bank
+  version: 1.0.0
+paths:
+  /packets:
+    get:
+      operationId: listPackets
+      responses:
+        '200':
+          description: The packets on the shelf.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Packet'
+  /packets/{packetId}:
+    put:
+      operationId: replacePacket
+      parameters:
+        - name: packetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/PacketBody'
+      responses:
+        '200':
+          description: The packet as stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packet'
+        '400':
+          $ref: '#/$defs/BadPacket'
+components:
+  schemas:
+    Packet:
+      type: object
+      required: [variety]
+      properties:
+        variety:
+          type: string
+        grams:
+          type: integer
+  requestBodies:
+    PacketBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Packet'
+$defs:
+  BadPacket:
+    description: The packet was rejected.

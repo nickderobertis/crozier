@@ -2373,6 +2373,17 @@ class DiagnosticExtraction(unittest.TestCase):
         )
         self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
 
+    def test_the_importers_type_error_over_a_null_node_is_its_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: Failed to parse openapi document Kiln Monitor",
+                "[api]: Cannot read properties of null (reading 'schema') ",
+                "       TypeError: Cannot read properties of null (reading 'schema')",
+                "All checks passed",
+            ]
+        )
+        self.assertEqual(["Cannot read properties of null (reading 'schema')"], self.module.diagnostics(log))
+
     def test_a_missing_info_type_error_is_more_specific_than_the_parse_failure(self) -> None:
         # The certified pair's own log over the missing-info-object probe:
         # `info` absent or null fails its read of `info.version`.
@@ -2386,15 +2397,6 @@ class DiagnosticExtraction(unittest.TestCase):
                 ]
             )
             self.assertEqual([f"Cannot read properties of {value} (reading 'version')"], self.module.diagnostics(log))
-        # Another property read off null is not that class's phrase, and the
-        # bare parse failure stays the only message, as before.
-        other = "\n".join(
-            [
-                "[api]: python-sdk Failed to parse openapi document Doors",
-                "[api]: python-sdk Cannot read properties of null (reading 'schema') ",
-            ]
-        )
-        self.assertEqual(["Failed to parse openapi document Doors"], self.module.diagnostics(other))
 
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
@@ -2417,11 +2419,15 @@ class ProbeRecording(unittest.TestCase):
     committed logs leaves the probe logs `probe` rewrites byte-identical.
     """
 
-    NAME = "paginated-nullable-response"
-
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_generators_response_object_refusal(self) -> None:
-        self.assert_probe_recorded(self.NAME, generate_exit=1)
+        self.assert_probe_recorded("paginated-nullable-response", generate_exit=1)
+
+    @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+    def test_probe_records_the_importers_null_node_false_success(self) -> None:
+        # The importer's `Cannot read properties of null (…)` TypeError, under an
+        # exit 0 over a document it never parsed, is `null-media-type`'s phrase.
+        self.assert_probe_recorded("null-media-type", generate_exit=0)
 
     @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
     def test_probe_records_the_missing_info_false_success(self) -> None:
