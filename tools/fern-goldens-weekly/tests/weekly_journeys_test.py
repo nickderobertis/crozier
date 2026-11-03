@@ -1734,6 +1734,11 @@ class WeeklyRunTests(unittest.TestCase):
         limit(2.0)
         seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
         self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", "the limit less what the group cannot reclaim")
+        # A malformed statistic counts nothing reclaimable: 2 - 1.75.
+        (cgroup / "memory.stat").write_text("anon 1\ninactive_file lots\n", encoding="utf-8")
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.2 GiB\n$", seen.stderr)
+        limit(2.0)
         # A tighter enclosing group is what is left.
         for name, amount in (("memory.max", 2**30), ("memory.current", 2**30 - 2**27), ("memory.stat", "anon 1")):
             (cgroup.parent / name).write_text(f"{amount}\n", encoding="utf-8")

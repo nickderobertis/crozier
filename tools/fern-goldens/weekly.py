@@ -952,7 +952,17 @@ def cgroup_available(directory: Path) -> int | None:
             continue
         if not limit.isdigit():
             continue
-        reclaimable = next((int(line.split()[1]) for line in stat if line.startswith("inactive_file ")), 0)
+        # Only a well-formed `inactive_file <bytes>` line counts as reclaimable;
+        # anything else counts nothing, which can only understate what is left.
+        fields = [line.split() for line in stat]
+        reclaimable = next(
+            (
+                int(cells[1])
+                for cells in fields
+                if len(cells) == 2 and cells[0] == "inactive_file" and cells[1].isdigit()
+            ),
+            0,
+        )
         left = max(0, int(limit) - (current - reclaimable))
         tightest = left if tightest is None else min(tightest, left)
     return tightest
