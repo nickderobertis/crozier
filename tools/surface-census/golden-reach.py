@@ -62,7 +62,7 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
 
 if TYPE_CHECKING:
-    from reach_store import Store
+    from reach_store import Entry, Inputs, Store
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -644,7 +644,7 @@ def instrumented_build(repo_root: Path) -> tuple[Path, Path]:
     return _instrumented_binaries(repo_root)
 
 
-def golden_population(repo_root: Path) -> dict[str, Any]:
+def golden_population(repo_root: Path) -> dict[str, Inputs]:
     """Every golden test the e2e suite registers -> its inputs (fixture directory, source names)."""
     census = _census_module()
     registrations = census.golden_registrations(repo_root / census.GOLDEN_REGISTRY)
@@ -764,8 +764,8 @@ def measure_step(
         functions = table
         for key, record in functions.items():
             record["regions"] = base["functions"][key]["regions"]
-    tests: dict[str, Any] = {}
-    fixture_entries: dict[str, Any] = {}
+    tests: dict[str, Entry] = {}
+    fixture_entries: dict[str, Entry] = {}
     if carry:
         assert base is not None
         for name, entry in base["tests"].items():
@@ -833,7 +833,7 @@ def measure_step(
         for name in sorted(run_fixtures):
             spec, audiences = fixture_base / name / "openapi.yml", fixtures[name]
             _universe, hit = handwritten.scoped_run(spec, audiences, crozier, profdata, llvm_cov, repo_root, tools)
-            entry = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
+            entry: Entry = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
             if audiences:
                 _universe, control = handwritten.scoped_run(spec, (), crozier, profdata, llvm_cov, repo_root, tools)
                 entry["control"] = RS.entry_regions(tree, functions, control)

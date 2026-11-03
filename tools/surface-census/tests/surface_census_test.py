@@ -3097,7 +3097,8 @@ class RecipeWiringTests(unittest.TestCase):
             "uv run --locked --all-packages pytest --cov --cov-report= "
             f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
             "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
-            "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py",
+            "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py "
+            "tools/surface-census/tests/repin_merge_test.py",
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])

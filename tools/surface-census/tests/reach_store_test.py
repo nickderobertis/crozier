@@ -22,7 +22,10 @@ import textwrap
 import time
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import IO, TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from reach_store import Tree
 
 import pytest
 
@@ -117,7 +120,7 @@ LIB = textwrap.dedent(
 )
 
 
-def tree_of(source: str, path: str = "src/lib.rs") -> Any:
+def tree_of(source: str, path: str = "src/lib.rs") -> Tree:
     return RS.read_tree(Path("."), {path: source.encode()})
 
 
@@ -183,7 +186,9 @@ def _text(source: str, region: tuple[int, int, int, int]) -> str:
 def test_a_region_maps_exactly_onto_its_code_through_comments_whitespace_and_reflow() -> None:
     regions = [_span_of(LIB, "{ x * 2 }"), _span_of(LIB, "x > 1"), _span_of(LIB, 'shown.join(",")')]
     before = tree_of(LIB)
-    encoded = [before.encode("src/lib.rs", region) for region in regions]
+    placed = [before.encode("src/lib.rs", region) for region in regions]
+    assert all(position is not None for position in placed), "every region lies in a function"
+    encoded = [position for position in placed if position is not None]
     moved = LIB.replace(
         "pub fn untouched(x: u8) -> u8 {\n    if x > 1 { x * 2 } else { x }\n}",
         "// A comment above the function.\n\n/// And a doc comment.\npub fn untouched(\n    x: u8,\n) -> u8 {\n"
@@ -207,7 +212,7 @@ def test_a_token_change_changes_the_digest_and_a_comment_does_not() -> None:
     assert tree_of(LIB.replace("x * 2", "x * 3")).functions["src/lib.rs::untouched"].digest != base
 
 
-def _store(tree: Any, commit: str, tests: dict[str, list[str]], fixtures: dict[str, list[str]], **top: Any) -> dict:
+def _store(tree: Tree, commit: str, tests: dict[str, list[str]], fixtures: dict[str, list[str]], **top: Any) -> dict:
     functions = tree.table()
     for value in functions.values():
         value["regions"] = [[0, 0, 0, 1]]
@@ -538,15 +543,35 @@ def test_twenty_steps_is_still_inside_the_bound(repo: Path) -> None:
     assert step(repo, {}, base_of(repo, steps_since_full=19)).full is None
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="the holder takes the lock with fcntl")
-def test_the_instrumented_lock_says_it_waits_and_enters_only_once_released(tmp_path: Path) -> None:
+def _hold(handle: IO[str]) -> None:
+    """Take the host lock as another measurement would: fcntl on POSIX, a byte lock on Windows."""
+    if sys.platform == "win32":
+        import msvcrt
+
+        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        return
     import fcntl
 
+    fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+
+
+def _release(handle: IO[str]) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        return
+    import fcntl
+
+    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def test_the_instrumented_lock_says_it_waits_and_enters_only_once_released(tmp_path: Path) -> None:
     env = dict(os.environ, XDG_CACHE_HOME=str(tmp_path))
     lock = tmp_path / "crozier" / "instrumented-measurement.lock"
     lock.parent.mkdir(parents=True)
     with lock.open("a+") as held:
-        fcntl.flock(held.fileno(), fcntl.LOCK_EX)
+        _hold(held)
         child = subprocess.Popen(
             [
                 sys.executable,
@@ -566,7 +591,7 @@ def test_the_instrumented_lock_says_it_waits_and_enters_only_once_released(tmp_p
         assert "probe: waiting for the instrumented-measurement lock" in waiting
         time.sleep(0.5)
         assert child.poll() is None, "it entered while another process held the lock"
-        fcntl.flock(held.fileno(), fcntl.LOCK_UN)
+        _release(held)
     out, err = child.communicate(timeout=30)
     assert child.returncode == 0, err
     assert out == "inside\n", "re-entering in the same process takes the lock it holds, never a second wait"

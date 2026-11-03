@@ -90,6 +90,8 @@ MAX_STEPS = 20
 REPIN = "just census-repin"
 SHA = re.compile(r"[0-9a-f]{40}")
 DIGEST = re.compile(rf"[0-9a-f]{{{DIGEST_HEX}}}")
+# A golden test or hand-written fixture name: it becomes a file name, so no path in it.
+NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")
 
 
 class StoreError(ValueError):
@@ -801,7 +803,9 @@ def validate(store: Any, where: str) -> Store:
         )
     for name in ("tests", "fixtures"):
         entries = store[name]
-        if not isinstance(entries, dict) or not all(_valid_entry(e, functions) for e in entries.values()):
+        if not isinstance(entries, dict) or not all(NAME.fullmatch(key) for key in entries):
+            raise StoreError(f"{where}'s `{name}` names an entry that is not a plain test or fixture name")
+        if not all(_valid_entry(e, functions) for e in entries.values()):
             raise StoreError(f"{where}'s `{name}` holds an entry that is not a commit and executed-region indices")
     return store
 

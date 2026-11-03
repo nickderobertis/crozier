@@ -42,7 +42,10 @@ import tempfile
 import tomllib
 from collections.abc import Mapping
 from pathlib import Path
-from typing import IO, Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
+from typing import IO, TYPE_CHECKING, Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
+
+if TYPE_CHECKING:
+    from reach_store import Store, Tree
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -1279,7 +1282,7 @@ GateLine = tuple[str, str, str, str, int, int]
 
 
 def ledger_rows(
-    repo_root: Path, base: Path, store: dict[str, Any], tree: Any, partial: bool = False
+    repo_root: Path, base: Path, store: Store, tree: Tree, partial: bool = False
 ) -> tuple[list[ReachLine], list[GateLine]]:
     """`handwritten-reach.tsv` and `handwritten-config-gates.tsv` rows, from the store's fixture entries.
 
@@ -1294,18 +1297,19 @@ def ledger_rows(
     universe = store_module.positions(tree, store["functions"])
     decoded: dict[tuple[str, str], dict] = {}
 
-    def hits(name: str, part: str) -> dict:
+    def hits(name: str, part: Literal["regions", "control"]) -> dict:
         if (name, part) not in decoded:
             entry = store["fixtures"].get(name)
-            if entry is None or part not in entry:
+            executed = None if entry is None else entry["regions"] if part == "regions" else entry.get("control")
+            if executed is None:
                 raise SystemExit(
                     f"handwritten-reach: {name} has no {'control ' if part == 'control' else ''}measurement in the "
                     f"store; run `{store_module.REPIN}`"
                 )
-            decoded[(name, part)] = store_module.positions(tree, store["functions"], entry[part])
+            decoded[(name, part)] = store_module.positions(tree, store["functions"], executed)
         return decoded[(name, part)]
 
-    def reached(name: str, part: str, arm: str) -> tuple[int, int]:
+    def reached(name: str, part: Literal["regions", "control"], arm: str) -> tuple[int, int]:
         site = reach.resolve_site(arm, repo_root)
         regions = {r for r in universe.get(site.file, set()) if site.holds(r)}
         return len(regions & hits(name, part).get(site.file, set())), len(regions)
@@ -1338,7 +1342,7 @@ def write_ledgers(rows: list[ReachLine], gate_rows: list[GateLine], ledger: Path
         )
 
 
-def report(repo_root: Path, store: dict[str, Any], partial: bool = False) -> tuple[int, int]:
+def report(repo_root: Path, store: Store, partial: bool = False) -> tuple[int, int]:
     """Write both committed ledgers from `store` for the tree at `repo_root`; return their row counts."""
     reach = golden_reach()
     tree = reach.RS.read_tree(repo_root)

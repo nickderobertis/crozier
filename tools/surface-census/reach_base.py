@@ -303,9 +303,11 @@ def find(root: Path, *, include_head: bool = True) -> Choice:
     try:
         listed = json.loads(body)["artifacts"]
     except (ValueError, KeyError, TypeError):
+        listed = None
+    if not isinstance(listed, list):
         return fallback("the artifact list was not JSON with an `artifacts` array")
     published: dict[str, Artifact] = {}
-    for record in listed if isinstance(listed, list) else []:
+    for record in listed:
         artifact = Artifact.parse(record)
         if artifact is not None and not artifact.expired:
             published.setdefault(artifact.commit, artifact)
