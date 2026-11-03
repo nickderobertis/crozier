@@ -21,6 +21,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import ModuleType
 
 os.environ["PYTHONUTF8"] = "1"
 
@@ -511,6 +512,8 @@ class FernReferencesTests(unittest.TestCase):
 
     def test_each_overlay_kind_runs_the_overlay_script_with_its_setting_and_the_cli(self) -> None:
         self.install_delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        self.write("tests/fixtures/alpha/openapi.yml", "openapi: 3.0.3\n")
+        self.write("tests/fixtures/alpha/expected/src/x.py", "X = 1\n")
         self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
         self.write(
             "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
@@ -544,7 +547,9 @@ class FernReferencesTests(unittest.TestCase):
     def test_a_refusal_class_and_a_finding_run_fern_refusals_one_generation_at_a_time(self) -> None:
         self.install_delegates("tools/fern-refusals/fern-refusals.py")
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
-        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\neta\tgenerates\n")
+        self.write("docs/fern-refusals/zeta/probe.yml", "openapi: 3.0.3\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\tprobe\neta\tgenerates\tdocs/eta.yml\n")
+        self.write("docs/eta.yml", "openapi: 3.0.3\n")
 
         result = self.run_tool("generate", "refusals")
 
@@ -693,6 +698,7 @@ class FernReferencesTests(unittest.TestCase):
         self.write("tests/fixtures/museum/expected/src/x.py", "X = 1\n")
         self.write("tests/fixtures/broken/known-fern-failure.json", "{}\n")
         self.write("tests/fixtures/delta/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/delta/openapi.yml", "openapi: 3.0.3\n")
         self.write("tests/fixtures/delta-flat-spec/expected-flat/__init__.py", "")
         self.write("tests/fixtures/flat-goldens.txt", "delta-flat-spec|delta\n")
 
@@ -760,8 +766,7 @@ class FernReferencesTests(unittest.TestCase):
         for rows, reason in (
             ("a/b\tdocs/x.yml\tliterals\tpackaged\tfern-expected\n", "its overlay 'fern-expected'"),
             ("a/b\tdocs/x.yml\tliterals\tpackaged\texpected:../outside\n", "its overlay 'expected:../outside'"),
-            ("a/b\tdocs/missing.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
-            ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
+            ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no path of this repository"),
             ("a/b\tdocs/x.yml\tliterals\tpackaged\t-\na/b\tdocs/x.yml\tliterals\tflat\t-\n", "unique"),
         ):
             with self.subTest(rows=rows):
@@ -936,6 +941,40 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("client_class_name: FernApi", generators)
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
+
+    def test_a_parameter_literals_claim_retired_to_parameter_lowering_is_re_measured_from_there(self) -> None:
+        """A claim whose hand-written proof moved into a parameter-lowering case
+        (as observatory-client-headers did) reads that case's document and
+        python-enums tree, and records the literals tree's digest."""
+        case = self.root / "docs/fern-measurements/parameter-lowering/retired"
+        self.write("docs/fern-measurements/parameter-lowering/retired/openapi.yml", "openapi: 3.0.3\nx-retired: 1\n")
+        tree = {"src/fern/client.py": "CLIENT = 1\n", "src/fern/literal.py": "LITERAL = 1\n"}
+        for rel, text in {**tree, "src/fern/core/enum.py": "ENUM = 1\n", ".fern/metadata.json": "{}"}.items():
+            self.write(f"docs/fern-measurements/parameter-lowering/retired/fern-expected/{rel}", text)
+        self.write("docs/fern-measurements/parameter-literals/certified-trees.json", json.dumps({"retired": "0" * 64}))
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.assertFalse((self.root / "docs/openapi-surface/handwritten/retired").exists())
+        clean = self.run_tool("check", "measurements")
+        self.assertEqual(0, clean.returncode, clean.stderr)
+        self.assertNotIn("parameter-literals/retired", clean.stderr)
+
+        result = self.run_tool("generate", "measurements", "parameter-literals/retired")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(1, len(self.calls()), "one Fern generation, over the parameter-lowering document")
+        literals = self.root / "docs/fern-measurements/parameter-literals"
+        digests = json.loads((literals / "certified-trees.json").read_text(encoding="utf-8"))
+        self.assertNotEqual("0" * 64, digests["retired"])
+        metadata = json.loads((literals / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual((metadata["cliVersion"], metadata["generatorVersion"]), (CLI, SDK))
+
+        # With neither home holding its document, check and generate both name
+        # the hand-written path, before Fern starts.
+        (case / "openapi.yml").unlink()
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(1, checked.returncode)
+        self.assertIn("docs/openapi-surface/handwritten/retired/openapi.yml does not exist", checked.stderr)
+        self.assertEqual(1, len(self.calls()), "Fern ran only for the regeneration")
 
     def test_a_parameter_literals_case_with_its_own_metadata_refreshes_that_file_alone(self) -> None:
         self.handwritten("own")
@@ -1208,6 +1247,392 @@ class FernReferencesTests(unittest.TestCase):
         log = (self.root / "docs/fern-refusals/zeta/evidence/rerun.pinned-fern.log").read_text(encoding="utf-8")
         self.assertTrue(log.startswith(f"Fern CLI {CLI}, python-sdk {SDK}\ncheck exit: 0\n"))
         self.assertEqual((self.root / "docs/fern-refusals/zeta/evidence/orphan.pinned-fern.log").read_text(), "old\n")
+
+
+# The parts of the real tree `fern-references.py check` reads. A golden tree is
+# read only for its existence and its `.fern/metadata.json` or overlay manifest,
+# so a copy carries just those of it.
+INVENTORY = (
+    "assets/scaffolding/metadata.json",
+    "tests/fixtures",
+    "docs/fern-measurements",
+    "docs/openapi-surface/handwritten",
+    "docs/openapi-surface/probes",
+    "docs/openapi-surface/probe-expected",
+    "docs/openapi-surface/authored-probes",
+    "docs/openapi-surface/fern-refusals/findings",
+    "docs/fern-refusals",
+    "docs/departures/evidence",
+)
+GOLDEN_TREES = {
+    "expected",
+    "expected-flat",
+    "expected-literals",
+    "expected-default-max-retries",
+    "fern-expected",
+    "fern-reference",
+}
+TREE_MARKERS = (".fern/metadata.json", ".crozier-overlay.json")
+
+# Loaded by every Python the check starts: a socket connection is recorded and
+# ends the run.
+GUARD = r"""
+import os, socket
+
+def _refuse(*args, **kwargs):
+    with open(os.environ["CHECK_NETWORK"], "a", encoding="utf-8") as handle:
+        handle.write(f"connect {args[1:] or kwargs}\n")
+    raise SystemExit("inventory check guard: a network connection was attempted")
+
+socket.socket.connect = _refuse
+socket.socket.connect_ex = _refuse
+socket.create_connection = _refuse
+"""
+RECORDING_TOOL = '#!/bin/sh\necho "$(basename "$0") $*" >> "$CHECK_TOOL_CALLS"\nexit 97\n'
+
+
+def copy_inventory(destination: Path) -> None:
+    """The inventory files of the real tree, each golden tree as its directory
+    and marker files."""
+    for relative in INVENTORY:
+        source = REPO / relative
+        if source.is_file():
+            (destination / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination / relative)
+            continue
+        for directory, names, files in os.walk(source):
+            here = Path(directory)
+            target = destination / here.relative_to(REPO)
+            target.mkdir(parents=True, exist_ok=True)
+            is_tree = here.name in GOLDEN_TREES or here.parent.name == "probe-expected"
+            if is_tree:
+                for marker in TREE_MARKERS:
+                    if (here / marker).is_file():
+                        (target / marker).parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(here / marker, target / marker)
+                names.clear()
+                continue
+            for name in files:
+                shutil.copy2(here / name, target / name)
+
+
+def load_tool(root: Path) -> ModuleType:
+    """`fern-references.py` over `root`, to name the items a broken copy breaks."""
+    previous = os.environ.get("CROZIER_FERN_REFERENCES_ROOT")
+    os.environ["CROZIER_FERN_REFERENCES_ROOT"] = str(root)
+    try:
+        spec = importlib.util.spec_from_file_location("fern_references_inventory", TOOL)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        # Its dataclasses resolve their module through sys.modules as they are made.
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        if previous is None:
+            del os.environ["CROZIER_FERN_REFERENCES_ROOT"]
+        else:
+            os.environ["CROZIER_FERN_REFERENCES_ROOT"] = previous
+
+
+@unittest.skipIf(os.name == "nt", "the stand-in tools are POSIX executables")
+class InventoryCheckTests(unittest.TestCase):
+    """`fern-references.py check` driven as a subprocess over a copy of the real
+    inventory: the copy as committed passes, and each broken copy, one input of
+    one kind moved away or made unrestatable, fails naming its item. Every run
+    has a recording `fern` and `docker` first on PATH and a `sitecustomize`
+    refusing socket connections, and asserts neither was reached."""
+
+    root: Path
+    guard: Path
+    module: ModuleType
+    scratch: tempfile.TemporaryDirectory[str]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.scratch = tempfile.TemporaryDirectory(prefix="fern-references-inventory-")
+        # Resolved, as the tool resolves its root: macOS's temporary directory
+        # is a symbolic link (/var -> /private/var), so an unresolved root never
+        # contains the paths the tool reports.
+        cls.root = Path(cls.scratch.name).resolve() / "repo"
+        copy_inventory(cls.root)
+        cls.guard = Path(cls.scratch.name) / "guard"
+        (cls.guard / "site").mkdir(parents=True)
+        (cls.guard / "site/sitecustomize.py").write_text(GUARD, encoding="utf-8")
+        (cls.guard / "bin").mkdir()
+        for tool in ("fern", "docker"):
+            (cls.guard / "bin" / tool).write_text(RECORDING_TOOL, encoding="utf-8")
+            (cls.guard / "bin" / tool).chmod(0o755)
+        cls.module = load_tool(cls.root)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.scratch.cleanup()
+
+    def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
+        calls, network = self.guard / "tool-calls.log", self.guard / "network.log"
+        result = subprocess.run(
+            [sys.executable, str(TOOL), *args],
+            env={
+                **os.environ,
+                "PATH": f"{self.guard / 'bin'}{os.pathsep}{os.environ['PATH']}",
+                "PYTHONPATH": str(self.guard / "site"),
+                "CROZIER_FERN_REFERENCES_ROOT": str(self.root),
+                "CHECK_TOOL_CALLS": str(calls),
+                "CHECK_NETWORK": str(network),
+            },
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertFalse(calls.exists(), calls.read_text(encoding="utf-8") if calls.exists() else "")
+        self.assertFalse(network.exists(), network.read_text(encoding="utf-8") if network.exists() else "")
+        return result
+
+    def broken(self, path: Path, change: str | None = None) -> None:
+        """Break one input of the copy for this test: move it away, or rewrite
+        it as `change` says; the copy is restored once the test ends."""
+        self.asides = getattr(self, "asides", 0) + 1
+        aside = Path(self.scratch.name) / "aside" / self.id() / str(self.asides)
+        aside.parent.mkdir(parents=True, exist_ok=True)
+        if path.is_dir():
+            path.rename(aside)
+            self.addCleanup(aside.rename, path)
+            return
+        shutil.copy2(path, aside)
+        self.addCleanup(shutil.copy2, aside, path)
+        if change is None:
+            path.unlink()
+        else:
+            path.write_text(change, encoding="utf-8")
+
+    def assert_names(self, family: str, item: str, reason: str) -> str:
+        result = self.run_tool("check")
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("", result.stdout, "every diagnostic goes to stderr")
+        lines = [line for line in result.stderr.splitlines() if line.startswith(f"{family} {item}: ")]
+        self.assertEqual(1, len(lines), result.stderr)
+        self.assertIn(reason, lines[0])
+        self.assertIn("broken item(s)", result.stderr)
+        return lines[0]
+
+    def case_with_own_document(self) -> str:
+        cases = self.module.cases()
+        documents = [row.document for row in cases.values()]
+        return next(
+            name
+            for name, row in cases.items()
+            if row.document.is_relative_to(self.root / "docs/fern-measurements")
+            and documents.count(row.document) == 1
+            and row.overlay is None
+        )
+
+    def test_the_copy_as_committed_has_no_broken_item(self) -> None:
+        result = self.run_tool("check")
+        self.assertEqual((0, ""), (result.returncode, result.stdout), result.stderr)
+        self.assertNotIn("broken item", result.stderr)
+        named = self.run_tool("check", "measurements", "refusals")
+        self.assertEqual((0, ""), (named.returncode, named.stdout), named.stderr)
+
+    def test_a_cases_row_whose_document_is_gone(self) -> None:
+        case = self.case_with_own_document()
+        self.broken(self.module.cases()[case].document)
+        self.assert_names("measurements", case, "does not exist")
+
+    def test_a_cases_row_whose_overlay_base_tree_moved(self) -> None:
+        case, row = next(
+            (name, row)
+            for name, row in self.module.cases().items()
+            if row.overlay is not None and row.overlay.base is not None
+        )
+        self.broken(row.overlay.base)
+        self.assert_names("measurements", case, "its overlay base tree")
+
+    def test_a_parameter_literals_claim_whose_hand_written_document_is_gone(self) -> None:
+        case = next(
+            name
+            for name in self.module.parameter_literal_cases()
+            if (self.root / "docs/openapi-surface/handwritten" / name / "openapi.yml").is_file()
+        )
+        self.broken(self.root / "docs/openapi-surface/handwritten" / case / "openapi.yml")
+        self.assert_names("measurements", f"parameter-literals/{case}", "certified-trees.json names it")
+
+    def test_a_hand_written_fixture_whose_document_is_gone(self) -> None:
+        name = self.module.list_handwritten()[0]
+        self.broken(self.root / "docs/openapi-surface/handwritten" / name / "openapi.yml")
+        self.assert_names("handwritten", name, f"docs/openapi-surface/handwritten/{name}/openapi.yml does not exist")
+
+    def test_a_refusal_log_whose_document_is_gone(self) -> None:
+        item, logged = next(iter(self.module.refusal_logs().items()))
+        self.broken(logged.document)
+        self.assert_names("measurements", item, "is beside its log")
+
+    def test_a_pinned_run_whose_probe_is_gone(self) -> None:
+        case, record = next(iter(self.module.pinned_runs().items()))
+        self.broken(self.module.pinned_run(record).probe)
+        self.assert_names("measurements", case, "must be an object whose `probe` names a file")
+
+    def test_a_probe_whose_document_is_gone(self) -> None:
+        documents = {row.document for row in self.module.cases().values()}
+        probe = next(
+            name
+            for name in self.module.list_probes()
+            if self.root / "docs/openapi-surface/probes" / f"{name}.yml" not in documents
+        )
+        self.broken(self.root / "docs/openapi-surface/probes" / f"{probe}.yml")
+        self.assert_names("probes", probe, "MANIFEST.tsv names it")
+
+    def test_an_authored_probe_whose_document_is_gone(self) -> None:
+        case = self.module.list_authored()[0]
+        self.broken(self.root / "docs/openapi-surface/authored-probes" / case / "openapi.yml")
+        self.assert_names("authored-probes", case, "its document")
+
+    def test_a_refusal_class_whose_registered_probe_is_gone(self) -> None:
+        name = self.module.registry_column(self.module.REGISTRY / "classes.tsv", "class")[0]
+        self.broken(self.root / "docs/fern-refusals" / name / "probe.yml")
+        self.assert_names("refusals", name, "classes.tsv names the class")
+
+    def test_a_finding_whose_registered_probe_is_gone(self) -> None:
+        name = self.module.registry_column(self.module.REGISTRY / "findings.tsv", "finding")[0]
+        self.broken(self.module.finding_probe(name))
+        self.assert_names("refusals", f"findings/{name}", "findings.tsv names it")
+
+    def test_a_departure_whose_document_is_gone(self) -> None:
+        case = self.module.list_departure_evidence()[0]
+        self.broken(self.root / "docs/departures/evidence" / case / "openapi.yml")
+        self.assert_names("departure-evidence", case, "its document")
+
+    def test_a_corpus_row_whose_committed_specification_is_gone(self) -> None:
+        rows, sources = self.module.corpus_rows(), self.module.corpus_sources()
+        fixture = next(fixture for fixture in self.module.list_corpus() if sources.get(rows.get(fixture, "")))
+        self.broken(self.root / sources[rows[fixture]][0])
+        self.assert_names("corpus", fixture, "its committed specification")
+
+    def test_an_evidence_toml_with_no_single_restatable_pair_line(self) -> None:
+        name = self.module.list_handwritten()[0]
+        evidence = self.root / "docs/openapi-surface/handwritten" / name / "evidence.toml"
+        text = evidence.read_text(encoding="utf-8")
+        self.broken(evidence, re.sub(r'(?m)^fern_python_sdk_version = "[^"]*"\n', "", text))
+        self.assert_names("handwritten", name, "has no single `fern_python_sdk_version` line to restate")
+
+    def note_case(self, digest: bool) -> tuple[str, Path]:
+        for name in self.module.cases():
+            note = self.root / "docs/fern-measurements" / name / "evidence.md"
+            if note.is_file() and (not digest or "Canonical tree SHA-256" in note.read_text(encoding="utf-8")):
+                return name, note
+        raise AssertionError("the inventory has no measurement evidence note")
+
+    def test_an_evidence_note_stating_no_restatable_pair(self) -> None:
+        name, note = self.note_case(digest=False)
+        # The pair stated across a line break, as gauge-public-fields once did.
+        wrapped = re.sub(r"(fernapi/fern-python-sdk`?:?) ", "\\1\n", note.read_text(encoding="utf-8"))
+        self.broken(note, wrapped)
+        self.assert_names("measurements", name, "states no Fern CLI and fern-python-sdk version to restate")
+
+    def test_an_evidence_note_naming_a_malformed_digest(self) -> None:
+        name, note = self.note_case(digest=True)
+        malformed = re.sub(r"(Canonical tree SHA-256: `)[0-9a-f]{64}", "\\1abc123", note.read_text(encoding="utf-8"))
+        self.broken(note, malformed)
+        self.assert_names("measurements", name, "is no 64-digit digest")
+
+    def test_an_evidence_toml_naming_a_malformed_digest(self) -> None:
+        name = self.module.list_handwritten()[0]
+        evidence = self.root / "docs/openapi-surface/handwritten" / name / "evidence.toml"
+        text = evidence.read_text(encoding="utf-8")
+        self.broken(evidence, re.sub(r'(?m)^digest = "[0-9a-f]{64}"$', 'digest = "abc123"', text))
+        self.assert_names("handwritten", name, "`digest` 'abc123' is no 64-digit digest")
+
+    def test_an_evidence_toml_naming_a_malformed_version(self) -> None:
+        name = self.module.list_handwritten()[0]
+        evidence = self.root / "docs/openapi-surface/handwritten" / name / "evidence.toml"
+        text = evidence.read_text(encoding="utf-8")
+        self.broken(evidence, re.sub(r'(?m)^fern_cli_version = "[^"]*"$', 'fern_cli_version = "5.163"', text))
+        self.assert_names("handwritten", name, "`fern_cli_version` '5.163' is no release version")
+
+    def test_an_evidence_note_naming_a_malformed_version(self) -> None:
+        name, note = self.note_case(digest=False)
+        malformed = re.sub(
+            r"(fernapi/fern-python-sdk`?:? [0-9]+\.[0-9]+\.[0-9]+)", "\\1x", note.read_text(encoding="utf-8")
+        )
+        self.broken(note, malformed)
+        self.assert_names("measurements", name, "which is no release version")
+
+    def break_document(self, fixture: str) -> None:
+        """Move away every document `vendored_spec` could read for `fixture`."""
+        while (document := self.module.vendored_spec(fixture)).is_file():
+            self.broken(document)
+
+    def test_a_committed_corpus_row_with_no_registered_source(self) -> None:
+        rows, committed = self.module.corpus_rows(), self.module.committed_rows()
+        fixture = next(fixture for fixture in self.module.list_corpus() if rows.get(fixture) in committed)
+        registry = self.root / self.module.CORPUS_SOURCES
+        text = registry.read_text(encoding="utf-8")
+        kept = "".join(line for line in text.splitlines(keepends=True) if not line.startswith(f"{rows[fixture]}\t"))
+        self.broken(registry, kept)
+        self.assert_names("corpus", fixture, "records no file of it")
+
+    def test_a_corpus_row_whose_flat_golden_document_is_gone(self) -> None:
+        rows, flats = self.module.corpus_rows(), self.module.flat_goldens()
+        fixture = next(fixture for fixture in self.module.list_corpus() if fixture in rows and fixture not in flats)
+        spec = next(spec for flat, spec in flats.items() if spec != flat)
+        listing = self.root / self.module.FIXTURES / "flat-goldens.txt"
+        self.broken(listing, listing.read_text(encoding="utf-8") + f"{fixture}|{spec}\n")
+        self.break_document(spec)
+        self.assert_names("corpus", fixture, "the document its flat golden is generated from")
+
+    def test_a_vendored_packaged_fixture_whose_document_is_gone(self) -> None:
+        fixtures, rows = self.root / self.module.FIXTURES, self.module.corpus_rows()
+        fixture = next(f for f in self.module.list_corpus() if f not in rows and (fixtures / f / "expected").is_dir())
+        self.broken(fixtures / fixture / "openapi.yml")
+        self.assert_names("corpus", fixture, "its document")
+
+    def test_a_flat_fixture_outside_the_corpus_whose_document_is_gone(self) -> None:
+        fixtures, rows, flats = self.root / self.module.FIXTURES, self.module.corpus_rows(), self.module.flat_goldens()
+        fixture = next(
+            f
+            for f in self.module.list_corpus()
+            if f not in rows and f in flats and not (fixtures / f / "expected").is_dir()
+        )
+        self.break_document(flats[fixture])
+        self.assert_names("corpus", fixture, "the document its flat golden is generated from")
+
+    def recorded_overlay(self) -> str:
+        return next(item for item in self.module.list_overlays() if item.endswith("/expected-default-max-retries"))
+
+    def test_an_overlay_whose_manifest_is_no_json(self) -> None:
+        item = self.recorded_overlay()
+        self.broken(self.root / self.module.FIXTURES / item / self.module.OVERLAY_MANIFEST, "{")
+        self.assert_names("overlays", item, "cannot read")
+
+    def test_an_overlay_whose_base_golden_is_gone(self) -> None:
+        item = self.recorded_overlay()
+        self.broken(self.root / self.module.FIXTURES / item.partition("/")[0] / "expected")
+        self.assert_names("overlays", item, "the golden it is reduced against")
+
+    def test_an_overlay_outside_the_corpus_whose_document_is_gone(self) -> None:
+        rows = self.module.corpus_rows()
+        item = next(item for item in self.module.list_overlays() if item.partition("/")[0] not in rows)
+        self.break_document(item.partition("/")[0])
+        self.assert_names("overlays", item, "its document")
+
+    def test_a_family_whose_listing_fails_is_named_and_the_later_families_still_checked(self) -> None:
+        classes = self.root / self.module.REGISTRY / "classes.tsv"
+        text = classes.read_text(encoding="utf-8")
+        self.broken(classes, text.replace("class\t", "kind\t", 1))
+        case = self.module.list_departure_evidence()[0]
+        self.broken(self.root / "docs/departures/evidence" / case / "openapi.yml")
+        self.assert_names("refusals", "(its listing)", "has no `class` column")
+        self.assert_names("departure-evidence", case, "its document")
+
+    def test_generate_refuses_a_broken_item_with_the_line_check_prints_before_fern_starts(self) -> None:
+        case = self.case_with_own_document()
+        self.broken(self.module.cases()[case].document)
+        line = self.assert_names("measurements", case, "does not exist")
+        refused = self.run_tool("generate", "measurements", case)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn(f"fern-references: {line}\n", refused.stderr)
+        self.assertIn("0 regenerated, 1 failed", refused.stdout)
 
 
 if __name__ == "__main__":
