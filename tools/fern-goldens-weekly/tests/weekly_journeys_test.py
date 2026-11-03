@@ -1552,12 +1552,14 @@ class WeeklyRunTests(unittest.TestCase):
         # One at a time, the runner dies with the hanging comparison the log's
         # last line; several at once, it dies once every other one has ended.
         # A reserve no machine has keeps several allowed comparisons to one at a time.
-        for jobs, reserve, others in ((1, "6", 2), (2, "6", 7), (4, "1048576", 2)):
+        # By default one per CPU decide may use: pinned to one, one at a time.
+        for jobs, reserve, others in ((1, "6", 2), (2, "6", 7), (4, "1048576", 2), (0, "6", 2)):
             with self.subTest(jobs=jobs, reserve=reserve):
                 sentinel.unlink(missing_ok=True)
                 text = self.killed_decision(
                     decider, bundle, state.artifacts / "decision", sentinel, (jobs, reserve), others
                 )
+                jobs = jobs or 1
                 lines = text.splitlines()
                 self.assertTrue(lines, "the killed decision's log is empty: its progress never reached the step log")
                 self.assertRegex(
@@ -1646,6 +1648,8 @@ class WeeklyRunTests(unittest.TestCase):
                 stdout=written,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,
+                # The default sizes itself to the CPUs it may use: pinned to one here.
+                preexec_fn=(lambda: os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})) if not jobs else None,
             )
             self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
             for _ in range(1200):
@@ -1902,6 +1906,23 @@ class WeeklyRunTests(unittest.TestCase):
         state = self.run_workflow()
         self.assertEqual("diff", state.outcome(), self.summary())
         self.assertEqual(1, state.gate_commands().count(compare_all), "the shared command ran once")
+        # By default as many item comparisons at once as the CPUs decide may
+        # use; each family's runs alone, after every item comparison.
+        progress = state.ran("decide").stdout.splitlines()
+        self.assertIn(f"up to {len(os.sched_getaffinity(0))} item comparison(s) at once", progress[0])
+        events = [
+            (match.group(1), match.group(2) is not None, match.group(3))
+            for match in (
+                re.match(r"fern-goldens-weekly: comparison ([0-9]+)/[0-9]+ \(.*?( `.*`)?\) (started|ended): ", line)
+                for line in progress
+            )
+            if match
+        ]
+        families = [index for index, (_, per_item, moment) in enumerate(events) if not per_item and moment == "started"]
+        self.assertEqual(2, len(families), progress)
+        self.assertTrue(all(per_item for _, per_item, _ in events[: families[0]]), progress)
+        for index in families:
+            self.assertEqual((events[index][0], False, "ended"), events[index + 1], "a family's comparison runs alone")
         self.assertEqual({"corpus": ["alpha"], "refusals": ["(the gate's report names no item)"]}, state.failing())
         runs = state.recorded()["gates"]
         assert isinstance(runs, list)

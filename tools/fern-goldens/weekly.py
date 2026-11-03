@@ -844,6 +844,7 @@ def progress(line: str) -> None:
         sys.stdout.flush()
 
 
+# llmlint: ignore[changed_behavior_has_e2e] The cpu_count branch is the platform without sched_getaffinity (macOS, Windows), where no journey runs (the weekly workflow is ubuntu-latest's); the journeys drive the affinity branch by pinning `decide` to one CPU and to the test's own set.
 def cpus() -> int:
     """The CPUs this process may run on: the runner's, or a container's set."""
     if hasattr(os, "sched_getaffinity"):
@@ -2041,18 +2042,16 @@ def known_change_report(base: Path, entry: ItemResult) -> str:
 
 @dataclass(frozen=True)
 class Comparison:
-    """One run of a gate the decision makes: the `number`th of `total`, over the
-    families it decides and, for a per-item gate, the item."""
+    """One run of a gate the decision makes: over the families it decides and,
+    for a per-item gate, the item."""
 
-    number: int
-    total: int
     gate: Gate
     families: tuple[str, ...]
     item: str | None
 
-    def label(self) -> str:
+    def label(self, number: int, total: int) -> str:
         item = f" `{self.item}`" if self.item else ""
-        return f"comparison {self.number}/{self.total} ({','.join(self.families)}{item})"
+        return f"comparison {number}/{total} ({','.join(self.families)}{item})"
 
 
 class Admission:
@@ -2116,7 +2115,7 @@ def decide_bundle(
     undecided = sorted(set(items) - {family for gate in table for family in gate.families})
     if undecided:
         raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
-    planned: list[tuple[Gate, tuple[str, ...], str | None]] = []
+    runs: list[Comparison] = []
     for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
@@ -2125,20 +2124,20 @@ def decide_bundle(
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        planned += [(gate, (family,), entry.item) for family in decided for entry in items[family]]
-    planned += [(gate, tuple(named), None) for gate, named in shared.values()]
-    runs = [Comparison(number, len(planned), *run) for number, run in enumerate(planned, 1)]
-    per_item = [run for run in runs if run.item is not None]
+        runs += [Comparison(gate, (family,), entry.item) for family in decided for entry in items[family]]
+    per_item = len(runs)
+    runs += [Comparison(gate, tuple(named), None) for gate, named in shared.values()]
     progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
     admission = Admission(reserve)
 
-    def timed(run: Comparison) -> GateResult:
-        with admission.slot(run.number):
-            progress(f"{run.label()} started: `{run.gate.command}`; {resources(base)}")
+    def timed(number: int, run: Comparison) -> GateResult:
+        label = run.label(number, len(runs))
+        with admission.slot(number):
+            progress(f"{label} started: `{run.gate.command}`; {resources(base)}")
             started = time.monotonic()
             result = run_gate(base, run.gate, run.item)
             elapsed = time.monotonic() - started
-            progress(f"{run.label()} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
+            progress(f"{label} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
         return result
 
     # Each item's comparison is one process on one core (the corpus reporter
@@ -2146,8 +2145,8 @@ def decide_bundle(
     # suite across every core, so those run one at a time after them. Results
     # are recorded in the planned order, whatever order they finish in.
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-        results = list(pool.map(timed, per_item))
-    results += [timed(run) for run in runs[len(per_item) :]]
+        results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item]))
+    results += [timed(number, run) for number, run in enumerate(runs[per_item:], per_item + 1)]
     for run, result in zip(runs, results, strict=True):
         record_gate(decision, reports, run.gate, ",".join(run.families), run.item, result)
         if result.verdict != Verdict.REJECT:
