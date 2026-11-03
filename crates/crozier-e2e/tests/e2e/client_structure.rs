@@ -6,9 +6,9 @@
 //! Every journey runs the real binary on the measurement document, compares
 //! the SDK it writes with the committed `fern-expected/` tree (and the
 //! `expected-literals/` tree where the enum mode changes the result) apart from
-//! the departures the ledger records, asserts the lines the cause decides, and
-//! then puts back what crozier wrote before the repair to show the comparison
-//! names it.
+//! the departures the ledger records, and asserts the lines the cause decides.
+//! Where a repair or a departure moved crozier's output, the journey also puts
+//! back a line that differs to show the comparison names it.
 
 use std::path::{Path, PathBuf};
 
