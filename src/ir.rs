@@ -6290,6 +6290,11 @@ pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
 /// `Sequence`); an error with no body takes Fern's `typing.Any`.
 fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     let schema = error_body_schema(resp);
+    // A body discriminated by a mapping Fern cannot resolve is its unknown
+    // type (see [`unresolvable_mapped_error_body`]).
+    if schema.is_some_and(unresolvable_mapped_error_body) {
+        return TypeRef::Primitive(Prim::Any);
+    }
     // A `oneOf`/`anyOf` body is Fern's `{Class}Body` union alias, and a one-member
     // one is that member: Zulip's single `502` answers two bouncer errors and its
     // class is typed `BadGatewayErrorBody`, while its `429` answers
@@ -6410,6 +6415,9 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 else {
                     continue;
                 };
+                if unresolvable_mapped_error_body(schema) {
+                    continue;
+                }
                 let name = format!("{class}Body");
                 // Fern converts every declaration of a status under the one name
                 // `{Class}Body`, so the last one wins, and the variant models an
@@ -8302,8 +8310,15 @@ impl InlineHoister<'_> {
             // `matchAuthorById` responds `oneOf: [author, authorUpdated]` and
             // `authorUpdated` is a `nullable: true` boolean, so its golden's alias
             // is `Union[Author, Optional[AuthorUpdated]]`.
+            // A target admitting null through a `type: null` member is no
+            // different: the `union-modelling/nullable-reference-member`
+            // measurement's `since` is `Union[Optional[Moment], str]`.
             let named = TypeRef::Named(ref_to_class(reference));
-            return if variant.nullable == Some(true) {
+            return if variant.nullable == Some(true)
+                || self
+                    .schemas
+                    .is_some_and(|schemas| referenced_schema_accepts_none(variant, schemas))
+            {
                 optional_type_ref(named)
             } else {
                 named
@@ -8431,13 +8446,29 @@ impl InlineHoister<'_> {
                 if let Some(union) = discriminated {
                     return union;
                 }
-                let nested = members
+                let hoisted = self.out.len();
+                let nested: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
                     .map(|(nested_index, member)| {
                         self.hoist_union_variant(&name, nested_index, member, members)
                     })
                     .collect();
+                // Alternatives that all convert to one primitive are that
+                // primitive, with nothing hoisted, as `Builder::composed_variant`
+                // reads them: the `union-modelling/identical-primitive-members`
+                // measurement's `label` body property offers a string or an
+                // `anyOf` of two string formats, and Fern's argument is `str`.
+                if let Some(only) = collapsed_union(members, &dedupe_union_members(nested.clone()))
+                    .filter(|only| {
+                        !variant.multi_type_union
+                            && members.iter().all(is_plain_scalar)
+                            && !matches!(only, TypeRef::Named(_))
+                    })
+                {
+                    self.out.truncate(hoisted);
+                    return only;
+                }
                 self.out.push(TypeDecl::Alias(AliasType {
                     constraints: None,
                     reach_refs: Vec::new(),
@@ -8875,12 +8906,24 @@ impl InlineHoister<'_> {
                 if all_boolean {
                     return TypeRef::Primitive(Prim::Bool);
                 }
+                let hoisted = self.out.len();
                 let variants: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
                     .map(|(index, member)| self.hoist_union_variant(&name, index, member, &members))
                     .collect();
                 let variants = dedupe_union_members(variants);
+                // Two or more alternatives that all convert to one primitive are
+                // that primitive (see the nested composition in
+                // `hoist_union_variant`).
+                if let Some(only) = collapsed_union(&members, &variants).filter(|only| {
+                    members.len() > 1
+                        && members.iter().all(|member| member.items.is_none())
+                        && !matches!(only, TypeRef::Named(_))
+                }) {
+                    self.out.truncate(hoisted);
+                    return only;
+                }
                 self.out.push(TypeDecl::Alias(AliasType {
                     constraints: None,
                     reach_refs: Vec::new(),
@@ -9081,6 +9124,15 @@ impl InlineHoister<'_> {
                 type_ref
             }
         };
+        if let Some(values) = merged_singleton_enum_values(members) {
+            let mut merged = non_null[0].clone();
+            merged.enum_values = None;
+            merged.const_value = None;
+            merged.description = None;
+            self.out
+                .push(TypeDecl::Enum(build_enum(&merged, &name, values, None)));
+            return wrap(TypeRef::Named(name));
+        }
         if non_null.len() == 1 {
             if let Some(values) = string_enum_values(non_null[0]) {
                 self.out
@@ -9120,6 +9172,16 @@ impl InlineHoister<'_> {
                     .is_some_and(inline_multi_member_union)
             {
                 return wrap(self.hoist_param_enum(request_ctx, param, non_null[0]));
+            }
+            // …and so does a sole array member whose element is an inline string
+            // enum: the `R13` measurement's `channels` is `anyOf: [array of
+            // enum [portal, chat], null]`, and Fern declares
+            // `ToggleAssistantRequestChannelsItem`.
+            if let Some(array) = self.hoist_array_item_enum(
+                &request_parameter_type_name(request_ctx, param),
+                non_null[0],
+            ) {
+                return wrap(array);
             }
             return wrap(self.schemas.map_or_else(
                 || base_type_ref(non_null[0]),
@@ -9200,6 +9262,26 @@ impl InlineHoister<'_> {
                     continue;
                 }
             }
+            // A member naming a component that admits null is that component
+            // made optional in its own slot, as in a component union: the
+            // `union-modelling/nullable-reference-member` measurement's `since`
+            // is `Union[Optional[Moment], str]`.
+            if member.reference.is_some()
+                && self
+                    .schemas
+                    .is_some_and(|schemas| referenced_schema_accepts_none(member, schemas))
+            {
+                variants.push(optional_type_ref(base_type_ref(member)));
+                continue;
+            }
+            // A scalar member's own `nullable: true` stays on it, as in an inline
+            // union (`hoist_union_variant`): the
+            // `query-anyof-date-time-or-array-named` measurement's `shipped_at`
+            // alias opens `Union[Optional[datetime], …]`.
+            if is_plain_scalar(member) && member.nullable == Some(true) {
+                variants.push(optional_type_ref(base_type_ref(member)));
+                continue;
+            }
             variants.push(base_type_ref(member));
         }
         let mut variants = dedupe_union_members(variants);
@@ -9207,7 +9289,21 @@ impl InlineHoister<'_> {
         // union at all, and Fern hoists nothing for it: Flowdapt's
         // `identifier` path parameter is
         // `anyOf: [{type: string}, {type: string, format: uuid}]` and
-        // its golden types the argument `str`.
+        // its golden types the argument `str`. A member's own `nullable`
+        // does not set it apart: Deepgram's `bit_rate` offers three nullable
+        // numbers and Fern types it `Optional[float]`.
+        let bare: Vec<TypeRef> = dedupe_union_members(
+            variants
+                .iter()
+                .map(|variant| match variant {
+                    TypeRef::Optional(inner) => (**inner).clone(),
+                    other => other.clone(),
+                })
+                .collect(),
+        );
+        if variants.len() > 1 && bare.len() == 1 {
+            variants = bare;
+        }
         if variants.len() == 1 {
             return wrap(variants.pop().expect("length checked above"));
         }
@@ -10570,7 +10666,9 @@ fn parameter_union_is_global(
     schema: &Schema,
     members: &[Schema],
 ) -> bool {
-    if parameter.location != Some(ParameterLocation::Query) || string_enum_values(schema).is_some()
+    if parameter.location != Some(ParameterLocation::Query)
+        || string_enum_values(schema).is_some()
+        || merged_singleton_enum_values(members).is_some()
     {
         return false;
     }
@@ -10617,6 +10715,25 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
     let [first, second] = non_null.as_slice() else {
         return None;
     };
+    // Two arrays of one element type are that array, read the same way: the
+    // `query-oneof-of-arrays` measurement's `corners` is `oneOf` a two- and a
+    // three-object array, and Fern types the argument
+    // `Optional[Union[Dict[str, Any], Sequence[Dict[str, Any]]]]`.
+    if kind(first) == Some("array") && kind(second) == Some("array") {
+        let (Some(left), Some(right)) = (first.items.as_deref(), second.items.as_deref()) else {
+            return None;
+        };
+        let plain = |item: &Schema| {
+            item.reference.is_none()
+                && string_enum_values(item).is_none()
+                && item.one_of.is_none()
+                && item.any_of.is_none()
+                && item.all_of.is_none()
+                && item.properties.is_empty()
+        };
+        return (plain(left) && plain(right) && base_type_ref(left) == base_type_ref(right))
+            .then_some(*second);
+    }
     let (array, scalar) = match (kind(first), kind(second)) {
         (Some("array"), Some(other)) if other != "array" => (first, second),
         (Some(other), Some("array")) if other != "array" => (second, first),
@@ -10628,6 +10745,14 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
     // (`…StreamModesZero` beside `…StreamModesOneItem`) rather than the
     // one-or-many shorthand.
     if string_enum_values(scalar).is_some() || string_enum_values(item).is_some() {
+        return None;
+    }
+    // …and neither is a member written `nullable: true`: the
+    // `query-anyof-date-time-or-array-named` measurement's `shipped_at` is
+    // `anyOf: [nullable date-time, array of nullable date-time]`, and Fern names
+    // it `ListParcelsRequestShippedAt = Union[Optional[datetime],
+    // List[Optional[datetime]]]`.
+    if scalar.nullable == Some(true) || item.nullable == Some(true) {
         return None;
     }
     (base_type_ref(item) == base_type_ref(scalar)).then_some(*array)
@@ -11787,30 +11912,27 @@ fn last_composed_variant(mut schema: &Schema) -> &Schema {
     schema
 }
 
-/// Infer the selector used by generation and by name-refusal validation.
+/// Infer the selector used by generation and by name-refusal validation. The
+/// same selector decides which referenced models lose their tag (see
+/// [`inferred_strip_discriminant_property`]): the `union-modelling/
+/// singleton-enum-tags` measurement's `CrewMember` and `Contractor` drop the
+/// `kind` the `Author` union reads off them, while braintrust's
+/// `TopicAutomationConfig`, a member only of property-level `config` unions,
+/// still declares `event_type` (its golden is unchanged by this reading).
 pub(crate) fn inferred_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
-) -> Option<String> {
-    inferred_discriminant_property_with(schema, schemas, true)
-}
-
-/// [`inferred_discriminant_property`], with `enum_tag` saying whether a member
-/// tagging itself with a required one-member `enum` counts even when the union
-/// also references components. Building the union reads that spelling (see the
-/// comment below); *stripping* the tag from the referenced model does not, because
-/// Fern keeps it — braintrust's `TopicAutomationConfig` is a member of the
-/// `event_type` union its `CreateProjectAutomation.config` forms, and its
-/// standalone model still declares `event_type`.
-fn inferred_discriminant_property_with(
-    schema: &Schema,
-    schemas: &IndexMap<String, Schema>,
-    enum_tag: bool,
 ) -> Option<String> {
     if schema.discriminated() == Some(false) {
         return None;
     }
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+    // A tag needs a sibling to tell apart: the `inline-union-hoisting`
+    // measurement's lone `oneOf: [$ref ChiselTool]` element leaves `ChiselTool`
+    // its `kind` field.
+    if variants.len() < 2 {
+        return None;
+    }
     let references_components = variants.iter().any(|variant| variant.reference.is_some());
     let only_references = variants.iter().all(|variant| variant.reference.is_some());
     let resolved: Vec<&Schema> = variants
@@ -11828,8 +11950,19 @@ fn inferred_discriminant_property_with(
     first.properties.keys().find_map(|property| {
         let values: Option<Vec<String>> = resolved
             .iter()
-            .map(|variant| {
+            .zip(variants.iter())
+            .map(|(variant, written)| {
+                // A tag written as a `$ref` to a one-member enum component is
+                // that enum: the `union-modelling/singleton-enum-tags`
+                // measurement's `Shipment` members tag `mode` with
+                // `$ref ModeRoad`, `$ref ModeRail`, …, and Fern's `Shipment` is
+                // the `mode`-discriminated union (Nussknacker's `NodeData`).
                 let field = variant.properties.get(property)?;
+                let field = field
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                    .unwrap_or(field);
                 // A union member's one-member `enum` tags it only when the tag
                 // declares `type: string`: Fern discriminates the hand-written
                 // `nested-array-discriminated-unions` fixture's `Pet` over typed
@@ -11837,27 +11970,40 @@ fn inferred_discriminant_property_with(
                 // whose members write a bare `enum: [dialect]`, an ordinary union.
                 let singleton_enum = !untyped_enum_tag(field)
                     && string_enum_values(field).is_some_and(|values| values.len() == 1);
-                // A member that spells its tag as a required one-member `enum`
+                // A member that spells its tag as a one-member `enum`
                 // discriminates whether or not the union also references
                 // components: braintrust's `CreateProjectAutomation.config` mixes
                 // four inline objects with a `$ref` whose target tags itself the
                 // same way on `event_type`, and Fern reads the discriminator off
                 // all five. A `const` tag is deliberately not enough here — the
                 // `$ref`-only shapes below are what that spelling reaches.
-                let tagged_by_enum = variant.required.contains(property)
+                // An inline member need not require it: the
+                // `union-modelling/singleton-enum-tags` measurement's `Author`
+                // mixes two `$ref`s requiring their one-member `kind` enum with
+                // two inline members that leave it unrequired, and Fern's
+                // `Author` is the `kind`-discriminated union of all four.
+                let tagged_by_enum = (variant.required.contains(property)
+                    || written.reference.is_none())
                     && singleton_enum
                     && field
                         .enum_values
                         .as_ref()
                         .is_some_and(|values| values.len() == 1);
-                if references_components && !(enum_tag && tagged_by_enum) {
+                if references_components && !tagged_by_enum {
                     // Members that are all `$ref`s, each tagging the property with
                     // one string (a one-member `enum` or a `const`) that `required`
                     // leaves out, discriminate whatever the property's name: that
                     // is FastAPI's `Literal["x"] = "x"`, and the Qontract API's
                     // task-result actions tag `action_type` so (corpus row 311).
-                    let unrequired_tag =
-                        only_references && singleton_enum && !variant.required.contains(property);
+                    // A bare `const` (no `type: string`) is no such tag: the
+                    // `const-tag-variants-undiscriminated` measurement's
+                    // `Vessel` references `Sailboat` and `Barge`, each fixing
+                    // an unrequired `hull` with a bare `const`, and Fern's
+                    // `Vessel` is the plain `Union[Sailboat, Barge]`.
+                    let unrequired_tag = only_references
+                        && singleton_enum
+                        && !untyped_const_tag(field)
+                        && !variant.required.contains(property);
                     let supported = unrequired_tag
                         || match property.as_str() {
                             "type" => {
@@ -11917,7 +12063,7 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
 /// Notion API's `movePageParentRequest` members tag `type` with a bare
 /// `const: page_id`, `database_id` and `workspace`, and Fern's tree is the plain
 /// `typing.Union` of three models. It is read only where no member is a `$ref`;
-/// the `$ref`-only spellings in [`inferred_discriminant_property_with`] keep
+/// the `$ref`-only spellings in [`inferred_discriminant_property`] keep
 /// their own rules.
 fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
@@ -11947,7 +12093,7 @@ fn inferred_union_discriminant_property(
                     .any(|required| required == "type")
                     .then(|| variant.properties.get("type"))
                     .flatten()
-                    // The `anyOf` rule of `inferred_discriminant_property_with`:
+                    // The `anyOf` rule of `inferred_discriminant_property`:
                     // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
                     .filter(|tag| {
                         !(untyped_enum_tag(tag) || (inline_only && untyped_const_tag(tag)))
@@ -11965,10 +12111,18 @@ fn inferred_strip_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
-    if schema.discriminated() == Some(false) {
+    // A lone member is no union to strip a tag for, as
+    // [`inferred_discriminant_property`] reads it.
+    if schema.discriminated() == Some(false)
+        || schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|variants| variants.len() < 2)
+    {
         return None;
     }
-    inferred_discriminant_property_with(schema, schemas, false).or_else(|| {
+    inferred_discriminant_property(schema, schemas).or_else(|| {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         let targets: Option<Vec<(&str, &Schema)>> = variants
             .iter()
@@ -12156,6 +12310,12 @@ fn collect_standalone_references(
 /// reads it: a written `discriminator` under a `oneOf`, or a tag the members'
 /// own properties imply.
 fn strips_members(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    // A lone unmapped `$ref` is that reference, a plain use: the
+    // `inline-union-hoisting` measurement's `ChiselTool` keeps its `kind` though
+    // `Toolbox.sets` discriminates it beside another member.
+    if lone_unmapped_reference(schema).is_some() {
+        return false;
+    }
     schema.discriminator.as_ref().is_some_and(|discriminator| {
         !discriminator.property_name.is_empty()
             && (schema.one_of.is_some() || schema.any_of.is_none())
@@ -12197,7 +12357,20 @@ pub(crate) fn document_discriminant_strips(
                 }
             }
             for response in operation.responses.values() {
-                for media in response.content.values() {
+                // An event-stream body beside a JSON one is never read: the
+                // operation answers the JSON body, and the event models keep
+                // their tags. The OpenResponses document's `POST /responses`
+                // answers `ResponseResource` beside a `text/event-stream` union of
+                // 24 events, and every event model in Fern's tree still declares
+                // its `type` enum.
+                let json_beside = response
+                    .content
+                    .keys()
+                    .any(|media_type| is_json_like_media_type(media_type));
+                for (media_type, media) in &response.content {
+                    if json_beside && media_type.eq_ignore_ascii_case("text/event-stream") {
+                        continue;
+                    }
                     if let Some(schema) = media.schema.as_ref() {
                         collect_discriminant_strips(
                             schema,
@@ -12270,7 +12443,16 @@ fn collect_discriminant_strips(
         .discriminator
         .as_ref()
         .filter(|_| schema.one_of.is_some() || schema.any_of.is_none());
+    // A lone member under a `discriminator` mapping nothing is no union to
+    // strip a tag for (see `Builder::discriminated_union`).
+    let lone = schema
+        .one_of
+        .as_ref()
+        .or(schema.any_of.as_ref())
+        .is_some_and(|variants| variants.len() < 2)
+        && discriminator.is_some_and(|discriminator| discriminator.mapping.is_empty());
     let property = discriminator
+        .filter(|_| !lone)
         .map(|disc| disc.property_name.clone())
         .filter(|property| !property.is_empty())
         .or_else(|| inferred_strip_discriminant_property(schema, schemas));
@@ -12366,6 +12548,13 @@ fn collect_discriminant_strips(
         }
     }
 
+    // A map's value union consumes its members' tags as any other does: the
+    // `union-modelling/singleton-enum-tags` measurement's `Barge`, a member
+    // only of `ShipmentsByPort`'s value union, has no `mode` in Fern's tree.
+    let map_value = match &schema.additional_properties {
+        Some(AdditionalProperties::Schema(value)) => Some(value.as_ref()),
+        _ => None,
+    };
     for child in schema
         .properties
         .values()
@@ -12373,6 +12562,7 @@ fn collect_discriminant_strips(
         .chain(schema.one_of.iter().flatten())
         .chain(schema.any_of.iter().flatten())
         .chain(schema.all_of.iter().flatten())
+        .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
     }
@@ -12415,6 +12605,22 @@ pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
                 .values()
                 .any(|target| !target.contains('/'))
         })
+}
+
+/// Whether an error body is a union whose mapping Fern cannot resolve: a bare
+/// name ([`bare_name_mapped_union`]), or a local pointer outside
+/// `#/components/schemas/`, which outstack/enveloper's inline `400` maps
+/// (`#/Components/schemas/syntax-error`). Fern types that body as unknown
+/// (`docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`);
+/// only the error-body form is measured, so only the error path reads it.
+fn unresolvable_mapped_error_body(schema: &Schema) -> bool {
+    bare_name_mapped_union(schema)
+        || (is_inheritance_union_base(schema) || schema.one_of.is_some())
+            && schema.discriminator.as_ref().is_some_and(|discriminator| {
+                discriminator.mapping.values().any(|target| {
+                    target.starts_with('#') && !target.starts_with("#/components/schemas/")
+                })
+            })
 }
 
 /// Collect a discriminated-union member's fields (the referenced model's
@@ -13078,6 +13284,41 @@ impl Builder<'_> {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
+        // A 3.1 `$ref` written beside a `oneOf`/`anyOf` is that reference: Fern
+        // reads no sibling composition, and the
+        // `pattern-properties-only-oneof-member` measurement's `CollectorNote`
+        // and `CollectorAny` are both `= CollectorRef`.
+        if let Some(reference) = schema
+            .reference
+            .as_deref()
+            .filter(|_| schema.one_of.is_some() || schema.any_of.is_some())
+        {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Named(ref_to_class(reference)),
+                docstring,
+            );
+            return;
+        }
+        // A one-member union whose member declares no type and no properties
+        // but only `patternProperties` beside `additionalProperties: false` is
+        // Fern's unknown type, documented by nothing: the same measurement's
+        // `LabelTranslations` is `typing.Any` without its description.
+        if let Some([only]) = schema.one_of.as_deref().or(schema.any_of.as_deref()) {
+            if only.reference.is_none()
+                && only.ty.is_none()
+                && only.properties.is_empty()
+                && only.pattern_properties.is_some()
+                && matches!(
+                    only.additional_properties,
+                    Some(AdditionalProperties::Bool(false))
+                )
+            {
+                self.push_alias(name, module, TypeRef::Primitive(Prim::Any), None);
+                return;
+            }
+        }
         // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
         // set of per-variant wrapper models plus a union alias.
         if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
@@ -13225,12 +13466,18 @@ impl Builder<'_> {
                     (false, _) if !schema_accepts_none(schema, self.schemas) => {
                         TypeRef::Union(members)
                     }
-                    (false, _) if variants.iter().all(is_plain_scalar) => {
-                        // A 3.0 `nullable: true` beside two or more plain
-                        // scalars is not read onto the alias: the hand-written
+                    (false, _)
+                        if variants.iter().all(is_plain_scalar)
+                            || schema.nullable == Some(true) =>
+                    {
+                        // A 3.0 `nullable: true` beside two or more members is
+                        // not read onto the alias: the hand-written
                         // `pharmacy-nullable-scalar-unions` fixture's `Dose` is
                         // `{nullable: true, oneOf: [integer, string]}` and Fern's
-                        // alias is `typing.Union[int, str]`.
+                        // alias is `typing.Union[int, str]`, and a `$ref` member
+                        // is no different (the `nullable-anyof-ref-member-optional`
+                        // measurement's `{nullable: true, anyOf: [string, $ref
+                        // Swatch]}` is `typing.Union[str, Swatch]`).
                         TypeRef::Union(members)
                     }
                     (false, _) => optional_type_ref(TypeRef::Union(members)),
@@ -13257,6 +13504,28 @@ impl Builder<'_> {
         // with the open `extra="allow"` config rather than `Entry = DocumentMeta`.
         if is_map(schema) && schema.all_of.is_none() {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                // A value that is an `allOf` of one `$ref` and nothing else is that
+                // reference, made optional where its target admits null, with no
+                // value model of its own: the `map-value-union-hoisting`
+                // measurement's `DepthsByStation` is `Dict[str, Depth]` and
+                // `BuoysByStation` `Dict[str, Optional[Buoy]]`.
+                if let Some(member) = sole_reference_all_of(value) {
+                    let named = TypeRef::Named(ref_to_class(
+                        member.reference.as_deref().expect("a reference member"),
+                    ));
+                    let element = if referenced_schema_accepts_none(member, self.schemas) {
+                        optional_type_ref(named)
+                    } else {
+                        named
+                    };
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(element)),
+                        docstring,
+                    );
+                    return;
+                }
                 if is_inline_struct(value) {
                     let value_name = format!("{name}Value");
                     self.add_object(
@@ -13314,6 +13583,31 @@ impl Builder<'_> {
                 }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");
+                    // Members that each tag themselves are a discriminated union at
+                    // a component map's value as at a property's: the
+                    // `union-modelling/singleton-enum-tags` measurement's
+                    // `ShipmentsByPort` values are `oneOf` the `$ref`ed shipments,
+                    // and Fern declares `ShipmentsByPortValue_Road`… (Nussknacker's
+                    // `Map_TypingResultInJson`).
+                    let value_module = naming::module_name(&value_name);
+                    if let Some(decl) = self.discriminated_union(
+                        &value_name,
+                        &value_module,
+                        value,
+                        clean_doc(value.description.as_deref()),
+                    ) {
+                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                        self.push_alias(
+                            name,
+                            module,
+                            TypeRef::Dict(
+                                Box::new(TypeRef::Primitive(Prim::Str)),
+                                Box::new(TypeRef::Named(value_name)),
+                            ),
+                            docstring,
+                        );
+                        return;
+                    }
                     let members: Vec<TypeRef> = variants
                         .iter()
                         .enumerate()
@@ -13529,8 +13823,26 @@ impl Builder<'_> {
                 // own: Milvus's `vector` is an array of `anyOf: [integer,
                 // string]`, and Fern declares `VectorItem = Union[int, str]` and
                 // `Vector = List[VectorItem]`.
+                // Members that declare properties but no `type` are objects all
+                // the same, even when they would render alike: the `R8`
+                // measurement's `LinkPatch` element is `{type: object, oneOf:
+                // [{properties: …}, {properties: …}]}`, and Fern declares
+                // `LinkPatchItem = Union[LinkPatchItemZero, LinkPatchItemOne]`.
+                let untyped_object_members = items
+                    .one_of
+                    .as_ref()
+                    .or(items.any_of.as_ref())
+                    .is_some_and(|members| {
+                        members.len() > 1
+                            && members.iter().all(|member| {
+                                member.reference.is_none()
+                                    && member.ty.is_none()
+                                    && !member.properties.is_empty()
+                            })
+                    });
                 if items.reference.is_none()
-                    && union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                    && (union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                        || untyped_object_members)
                 {
                     self.add_named(&item_name, items);
                     self.push_alias(
@@ -13623,11 +13935,24 @@ impl Builder<'_> {
             return Some(sequence_of(array, TypeRef::Named(name)));
         }
         if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
-            let variants = members
+            let hoisted = self.types.len();
+            let variants: Vec<TypeRef> = members
                 .iter()
                 .enumerate()
                 .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
                 .collect();
+            // Alternatives that all convert to one type are that type, as in
+            // [`Self::composed_variant`]: the `union-modelling/
+            // identical-primitive-members` measurement's `corners` element is
+            // `oneOf: [string, string]`, and Fern's field is
+            // `List[List[str]]` with nothing hoisted. Members collapsing to one
+            // model keep that model's named element.
+            if let Some(only) = collapsed_union(members, &dedupe_union_members(variants.clone()))
+                .filter(|only| !matches!(only, TypeRef::Named(_)))
+            {
+                self.types.truncate(hoisted);
+                return Some(sequence_of(array, only));
+            }
             self.push_alias(
                 &name,
                 module,
@@ -13635,6 +13960,30 @@ impl Builder<'_> {
                 clean_doc(items.description.as_deref()),
             );
             return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        // A map leaf whose values are inline objects names that value model
+        // `{ctx}ItemValue`: the `map-value-union-hoisting` measurement's
+        // `TideGrid` is a list of lists of such maps, and Fern declares
+        // `TideGridItemItemValue` (and the `…ValueTrend` beneath it).
+        if is_map(items) {
+            if let Some(AdditionalProperties::Schema(value)) = &items.additional_properties {
+                if value.reference.is_none() && is_inline_struct(value) {
+                    let value_name = format!("{name}Value");
+                    self.add_object(
+                        &value_name,
+                        naming::module_name(&value_name),
+                        value,
+                        clean_doc(value.description.as_deref()),
+                    );
+                    return Some(sequence_of(
+                        array,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        ),
+                    ));
+                }
+            }
         }
         None
     }
@@ -13747,9 +14096,24 @@ impl Builder<'_> {
                 .keys()
                 .any(|field| !parent_properties.insert(field))
         });
-        let cyclic_parent = raw_bases
-            .iter()
-            .any(|base| schema_reaches_type(base, name, schemas));
+        // A model hoisted out of its own base, where that base recurses
+        // through it, is flattened too: the `R8` measurement's
+        // `Section.subsections` element is `allOf: [{id, …}, $ref Section]`, and
+        // Fern's `SectionSubsectionsItem` restates `Section`'s fields rather
+        // than extending it.
+        let self_recursive_item =
+            base_refs
+                .iter()
+                .zip(&raw_bases)
+                .any(|((base_class, _), base)| {
+                    name.starts_with(base_class.as_str())
+                        && name != base_class
+                        && schema_reaches_type(base, base_class, schemas)
+                });
+        let cyclic_parent = self_recursive_item
+            || raw_bases
+                .iter()
+                .any(|base| schema_reaches_type(base, name, schemas));
         let flatten_all = nullable_annotation || overlapping_parents || cyclic_parent;
         let collides = flatten_all
             || base_refs.iter().any(|(_, base)| {
@@ -13775,6 +14139,18 @@ impl Builder<'_> {
                 continue;
             }
             if member.reference.is_none() {
+                // Beside an open, property-less object the union lends its
+                // branches' properties whether or not they are tagged, each
+                // property as the FIRST branch declaring it writes it: the
+                // `allof-oneof-inline-member-consts` measurement's four
+                // `Handover…` components are each `allOf: [{properties: {},
+                // additionalProperties: {}}, oneOf|anyOf: [pickup, delivery]]`,
+                // and every one is Fern's model of optional fields with
+                // pickup's `mode` enum and `region` description.
+                if let Some(merged) = open_base_branch_properties(schema, index) {
+                    self.collect_fields(name, &merged, &[], &mut fields);
+                    continue;
+                }
                 // An inline `allOf` member that is itself a union lends its
                 // branches' properties, or none when it is discriminated.
                 match branch_union_properties(member, schemas) {
@@ -14041,7 +14417,10 @@ impl Builder<'_> {
             reach_refs: base_refs
                 .iter()
                 .zip(&raw_bases)
-                .filter(|(_, base)| schema_reaches_type(base, name, schemas))
+                .filter(|((base_name, _), base)| {
+                    schema_reaches_type(base, name, schemas)
+                        || self_recursive_item && name.starts_with(base_name.as_str())
+                })
                 .map(|((base_name, _), _)| base_name.clone())
                 .collect(),
             name: name.to_string(),
@@ -14315,6 +14694,23 @@ impl Builder<'_> {
         if variants.len() == 1 && is_inline_object(&variants[0]) {
             return None;
         }
+        // …nor is a lone `$ref` under no `discriminator` or one mapping
+        // nothing: the `inline-union-hoisting` measurement's `Toolbox.tools`
+        // items are `oneOf: [$ref ChiselTool]`, `ChiselTool` tagging itself
+        // `kind: [chisel]`, and Fern's field is `List[ChiselTool]`; its `Kit`
+        // writes `discriminator: {propertyName: kind}` beside the lone `$ref` and
+        // Fern's `Kit` is `= ChiselTool`. A mapping still makes the lone member a
+        // variant: loonfs' `ObjectTransferAccess` maps `presigned_url` to its one
+        // `$ref`, and its golden is `ObjectTransferAccess_PresignedUrl`.
+        if variants.len() == 1
+            && variants[0].reference.is_some()
+            && schema
+                .discriminator
+                .as_ref()
+                .is_none_or(|discriminator| discriminator.mapping.is_empty())
+        {
+            return None;
+        }
         let property_name = schema
             .discriminator
             .as_ref()
@@ -14342,6 +14738,14 @@ impl Builder<'_> {
                 let value = last_composed_variant(target)
                     .properties
                     .get(&property_name)
+                    .map(|tag| {
+                        // A `$ref`'d one-member enum tag is read through its
+                        // reference (see `inferred_discriminant_property`).
+                        tag.reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
+                            .unwrap_or(tag)
+                    })
                     .and_then(discriminant_value)?;
                 // A variant the loader copied from a reference naming `properties`
                 // is declared under that reference, tag and all, as Fern converts
@@ -14854,6 +15258,13 @@ impl Builder<'_> {
         if let Some(inner) = sole_inline_all_of_element(target) {
             return self.use_site_copy(ctx, inner, None);
         }
+        // A target that is a lone unmapped `$ref` is that reference, copied as
+        // nothing: the `inline-union-hoisting` measurement's `Toolbox.spare`
+        // annotates `Kit`, Fern's `= ChiselTool`, and the field is
+        // `Optional[ChiselTool]`.
+        if let Some(reference) = lone_unmapped_reference(target) {
+            return TypeRef::Named(ref_to_class(reference));
+        }
         // The copy documents itself with the annotation that named it, and keeps the
         // target's own description when the annotation carried none — an element
         // annotated only with an XML name (`SignerList.items`) still documents
@@ -15077,7 +15488,8 @@ impl Builder<'_> {
                         let nullable = members.iter().any(|member| {
                             member.ty.as_ref().and_then(TypeField::primary) == Some("null")
                         });
-                        let variants = members
+                        let hoisted = self.types.len();
+                        let variants: Vec<TypeRef> = members
                             .iter()
                             .enumerate()
                             .filter(|(_, member)| {
@@ -15087,10 +15499,35 @@ impl Builder<'_> {
                                 self.variant_ref(&value_name, index, member, members)
                             })
                             .collect();
+                        let variants = dedupe_union_members(variants);
+                        // A value whose alternatives all convert to one primitive is
+                        // that primitive, as an element union's is: runZero's
+                        // `ImportAsset.customAttributes` maps to `anyOf: [string]`,
+                        // and Fern's field is `Dict[str, str]` (the
+                        // `union-modelling/identical-primitive-members` measurement's
+                        // `Survey.notes` the same).
+                        let non_null: Vec<Schema> = members
+                            .iter()
+                            .filter(|member| !is_null_variant(member))
+                            .cloned()
+                            .collect();
+                        if let Some(only) = collapsed_union(&non_null, &variants)
+                            .filter(|only| !matches!(only, TypeRef::Named(_)))
+                        {
+                            self.types.truncate(hoisted);
+                            return TypeRef::Dict(
+                                Box::new(TypeRef::Primitive(Prim::Str)),
+                                Box::new(if nullable {
+                                    optional_type_ref(only)
+                                } else {
+                                    only
+                                }),
+                            );
+                        }
                         self.push_alias(
                             &value_name,
                             naming::module_name(&value_name),
-                            TypeRef::Union(dedupe_union_members(variants)),
+                            TypeRef::Union(variants),
                             clean_doc(value.description.as_deref()),
                         );
                         let named = TypeRef::Named(value_name);
@@ -15316,13 +15753,26 @@ impl Builder<'_> {
                                 );
                             }
                             let name = format!("{owner}{}ItemItem", naming::class_name(prop));
-                            let variants = members
+                            let hoisted = self.types.len();
+                            let variants: Vec<TypeRef> = members
                                 .iter()
                                 .enumerate()
                                 .map(|(index, variant)| {
                                     self.variant_ref(&name, index, variant, members)
                                 })
                                 .collect();
+                            // Alternatives that all convert to one type are that
+                            // type, with nothing hoisted: the `union-modelling/
+                            // identical-primitive-members` measurement's
+                            // `corners` element is `oneOf: [string, string]`,
+                            // and Fern's field is `List[List[str]]`.
+                            if let Some(only) =
+                                collapsed_union(members, &dedupe_union_members(variants.clone()))
+                                    .filter(|only| !matches!(only, TypeRef::Named(_)))
+                            {
+                                self.types.truncate(hoisted);
+                                return sequence_of(prop_schema, sequence_of(items, only));
+                            }
                             self.push_alias(
                                 &name,
                                 naming::module_name(&name),
@@ -15546,6 +15996,32 @@ impl Builder<'_> {
                         return TypeRef::Named(name);
                     }
                 }
+                // A written `discriminator` over `$ref`s it cannot tell apart
+                // leaves an ordinary union, named for the property rather than
+                // spelled inline: the `R9` measurement's `Shift.assignment`
+                // names four components under `discriminator: {propertyName:
+                // role}`, each allowing two roles, and Fern declares
+                // `ShiftAssignment = Union[…]`.
+                if prop_schema.discriminator.is_some()
+                    && prop_schema.one_of.is_some()
+                    && members.len() > 1
+                    && members.iter().all(|member| member.reference.is_some())
+                    && !untagged_inline_discriminator(prop_schema)
+                {
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let variants = members
+                        .iter()
+                        .enumerate()
+                        .map(|(index, member)| self.variant_ref(&name, index, member, members))
+                        .collect();
+                    self.push_alias(
+                        &name,
+                        naming::module_name(&name),
+                        TypeRef::Union(dedupe_union_members(variants)),
+                        clean_doc(prop_schema.description.as_deref()),
+                    );
+                    return TypeRef::Named(name);
+                }
                 if prop_schema.discriminator.is_none()
                     || prop_schema.one_of.is_none()
                     || untagged_inline_discriminator(prop_schema)
@@ -15559,6 +16035,35 @@ impl Builder<'_> {
                     if non_null.len() == 1 && non_null.len() != members.len() {
                         let name = format!("{owner}{}", naming::class_name(prop));
                         let module = naming::module_name(&name);
+                        // An annotated `$ref` to a map beside `null` is that map,
+                        // as the bare annotated `$ref` is, with no model hoisted
+                        // under the property's name: the `inline-union-hoisting`
+                        // measurement's `Toolbox.labels` is `anyOf: [allOf: [$ref
+                        // LabelMap, {description}], null]`, and Fern's field is
+                        // `Optional[Dict[str, Optional[str]]]`, the `null` reaching
+                        // the values as it does on any nullable map.
+                        if let Some(target) = described_all_of_ref(non_null[0])
+                            .and_then(|(reference, _)| {
+                                resolve_ref_from_schemas(self.schemas, reference)
+                            })
+                            .filter(|target| is_map(target))
+                        {
+                            return nullable_map_value_type_ref(target);
+                        }
+                        // Any other annotated `$ref` beside `null` is the use-site
+                        // copy the bare annotated `$ref` is, not a model extending
+                        // its target: the
+                        // `union-modelling/annotated-reference-beside-null`
+                        // measurement's `Batch.totals` restates `Totals`' fields
+                        // in `BatchTotals` (crozier extended `Totals`), and the
+                        // OpenResponses document's nullable annotated enum
+                        // `FunctionCallItemParam.status` is Fern's enum copy
+                        // `FunctionCallItemParamStatus`, not a model.
+                        if described_all_of_ref(non_null[0]).is_some() {
+                            if let Some(copy) = self.annotated_ref_type(&name, non_null[0]) {
+                                return copy;
+                            }
+                        }
                         if let Some(mut decl) =
                             self.discriminated_union(&name, &module, non_null[0], None)
                         {
@@ -15856,6 +16361,18 @@ impl Builder<'_> {
                                             TypeRef::List(Box::new(optional_type_ref(element))),
                                         );
                                     }
+                                    // A lone unmapped `$ref` element is that
+                                    // reference (see `lone_unmapped_reference`).
+                                    if let Some(reference) =
+                                        m.items.as_deref().and_then(lone_unmapped_reference)
+                                    {
+                                        return nullable_member(
+                                            m,
+                                            TypeRef::List(Box::new(TypeRef::Named(ref_to_class(
+                                                reference,
+                                            )))),
+                                        );
+                                    }
                                     let item_name = format!("{name}{}Item", ordinal_word(index));
                                     if let Some(decl) = self.discriminated_union(
                                         &item_name,
@@ -15915,7 +16432,15 @@ impl Builder<'_> {
                             };
                             // A `$ref`'s sibling `nullable` is not read: Cradl's
                             // `{$ref: groundTruthList, nullable: true}` member is
-                            // the bare `GroundTruthList` in Fern's union.
+                            // the bare `GroundTruthList` in Fern's union. A target
+                            // that itself admits null is: the `union-modelling/
+                            // nullable-reference-member` measurement's
+                            // `startedAt` is `Union[Optional[Moment], int]`.
+                            if m.reference.is_some()
+                                && referenced_schema_accepts_none(m, self.schemas)
+                            {
+                                return optional_type_ref(ty);
+                            }
                             nullable_member(m, ty)
                         })
                         .collect();
@@ -15964,8 +16489,24 @@ impl Builder<'_> {
             self.types.truncate(hoisted);
             return type_ref;
         }
-        if let Some(reference) = &variant.reference {
+        // A member that is an `allOf` of one `$ref` and declares nothing else is
+        // that reference: the `union-modelling/sole-reference-all-of-member`
+        // measurement's `Probe` offers `allOf: [$ref Thermometer]` beside a bare
+        // `$ref`, and Fern's alias names `Thermometer` (Hookdeck's
+        // `SourceTypeConfig` and `VerificationConfig`).
+        if let Some(reference) = sole_reference_all_of_member(variant) {
             return TypeRef::Named(ref_to_class(reference));
+        }
+        if let Some(reference) = &variant.reference {
+            let named = TypeRef::Named(ref_to_class(reference));
+            // A member naming a component that admits null is that component
+            // made optional, in the member's own slot (see
+            // `docs/fern-measurements/handed-off/union-modelling/`).
+            return if referenced_schema_accepts_none(variant, self.schemas) {
+                optional_type_ref(named)
+            } else {
+                named
+            };
         }
         if let Some(values) = string_enum_values(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
@@ -16012,6 +16553,13 @@ impl Builder<'_> {
                     return sequence_of(variant, member);
                 }
                 if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
+                    // A lone unmapped `$ref` element is that reference: the
+                    // `inline-union-hoisting` measurement's `Toolbox.racks`
+                    // member offers `items: {oneOf: [$ref ChiselTool]}`, and
+                    // Fern's alias holds `List[ChiselTool]`.
+                    if let Some(reference) = lone_unmapped_reference(item) {
+                        return sequence_of(variant, TypeRef::Named(ref_to_class(reference)));
+                    }
                     if let Some(decl) = self.discriminated_union(
                         &item_name,
                         &item_module,
@@ -16171,8 +16719,13 @@ impl Builder<'_> {
         // A scalar member's own 3.0 `nullable: true` stays on that member: the
         // hand-written `thermostat-nullable-member` fixture's `Setpoint` is
         // `oneOf: [{type: number, nullable: true}, {type: boolean}]`, and Fern's
-        // alias is `typing.Union[typing.Optional[float], bool]`.
-        if is_plain_scalar(variant) && variant.nullable == Some(true) {
+        // alias is `typing.Union[typing.Optional[float], bool]`. An array member's
+        // does too: the `union-modelling/nullable-array-member` measurement's
+        // `Tag` ends `{type: array, items: {type: string}, nullable: true}`, and
+        // Fern's alias closes `typing.Optional[typing.List[str]]`.
+        let nullable_array = variant.nullable == Some(true)
+            && variant.ty.as_ref().and_then(TypeField::primary) == Some("array");
+        if (is_plain_scalar(variant) || nullable_array) && variant.nullable == Some(true) {
             return optional_type_ref(member);
         }
         member
@@ -17180,6 +17733,45 @@ fn branch_union_properties(
         }
     }
     (!merged.properties.is_empty()).then(|| BranchUnion::Merged(Box::new(merged)))
+}
+
+/// The union member at `index` of an `allOf` whose only other member is an
+/// open object declaring no properties, as one object of its branches'
+/// properties, each written as the first branch declaring it writes it.
+fn open_base_branch_properties(schema: &Schema, index: usize) -> Option<Schema> {
+    let [first, second] = schema.all_of.as_deref()? else {
+        return None;
+    };
+    let (base, union) = match index {
+        1 => (first, second),
+        _ => return None,
+    };
+    let open_base = base.reference.is_none()
+        && base.one_of.is_none()
+        && base.any_of.is_none()
+        && base.all_of.is_none()
+        && base.properties.is_empty()
+        && is_object_type(base)
+        && matches!(
+            base.additional_properties,
+            Some(AdditionalProperties::Schema(_) | AdditionalProperties::Bool(true))
+        );
+    if !open_base || union.reference.is_some() || !schema.properties.is_empty() {
+        return None;
+    }
+    let branches = union.one_of.as_ref().or(union.any_of.as_ref())?;
+    let mut merged = Schema::default();
+    for branch in branches {
+        if branch.reference.is_some() {
+            return None;
+        }
+        for (prop, prop_schema) in &branch.properties {
+            if !prop_schema.negative_only() && !merged.properties.contains_key(prop) {
+                merged.properties.insert(prop.clone(), prop_schema.clone());
+            }
+        }
+    }
+    (!merged.properties.is_empty()).then_some(merged)
 }
 
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
@@ -18694,6 +19286,80 @@ fn nullable_member(member: &Schema, ty: TypeRef) -> TypeRef {
     } else {
         ty
     }
+}
+
+/// The `$ref` a one-member `oneOf`/`anyOf` names when no `discriminator`
+/// mapping makes that member a variant: Fern reads such a composition as the
+/// reference itself (see `Builder::discriminated_union`).
+fn lone_unmapped_reference(schema: &Schema) -> Option<&str> {
+    let [only] = schema.one_of.as_deref().or(schema.any_of.as_deref())? else {
+        return None;
+    };
+    let unmapped = schema
+        .discriminator
+        .as_ref()
+        .is_none_or(|discriminator| discriminator.mapping.is_empty());
+    only.reference.as_deref().filter(|_| unmapped)
+}
+
+/// The values of a composition whose every non-`null` member is an inline
+/// one-value string enum, deduplicated in document order: Fern reads such a
+/// parameter as one enum of them. Deepgram's `SpeakV1Container` offers `none`,
+/// then `wav` three times, then `ogg`, and Fern's `GenerateAudioRequestContainer`
+/// is the enum `NONE`, `WAV`, `OGG` (the `union-modelling/singleton-enum-members`
+/// measurement's `finish` the same over three members).
+fn merged_singleton_enum_values(members: &[Schema]) -> Option<Vec<String>> {
+    let mut values: Vec<String> = Vec::new();
+    let mut seen = 0;
+    for member in members.iter().filter(|member| !is_null_variant(member)) {
+        // A bare `const` member stays a member of its own: the
+        // `parameter-lowering/query-union-placement` measurement's
+        // `oneOf: [{const: kilograms}, {const: pounds}]` is Fern's union of
+        // `…UnitZero` and `…UnitOne`.
+        if member.reference.is_some() || member.enum_values.is_none() || untyped_enum_tag(member) {
+            return None;
+        }
+        let [value] = string_enum_values(member)?.try_into().ok()?;
+        seen += 1;
+        if !values.contains(&value) {
+            values.push(value);
+        }
+    }
+    (seen > 1).then_some(values)
+}
+
+/// The one `$ref` member of an `allOf` that writes nothing else, neither
+/// beside the composition nor in another member.
+fn sole_reference_all_of(schema: &Schema) -> Option<&Schema> {
+    let [member] = schema.all_of.as_deref()? else {
+        return None;
+    };
+    let bare = Schema {
+        all_of: None,
+        description: None,
+        title: None,
+        ..schema.clone()
+    };
+    (member.reference.is_some() && bare == Schema::default()).then_some(member)
+}
+
+/// The `$ref` of a union member written as an `allOf` of that one reference
+/// and no shape of its own (annotations and extensions aside).
+fn sole_reference_all_of_member(member: &Schema) -> Option<&str> {
+    let [only] = member.all_of.as_deref()? else {
+        return None;
+    };
+    let shapeless = member.reference.is_none()
+        && member.ty.is_none()
+        && member.properties.is_empty()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.items.is_none()
+        && member.additional_properties.is_none()
+        && member.enum_values.is_none()
+        && member.const_value.is_none()
+        && member.nullable.is_none();
+    only.reference.as_deref().filter(|_| shapeless)
 }
 
 /// Whether a lowered field type is Fern's unknown, bare or optional.
@@ -21994,6 +22660,81 @@ mod tests {
             serde_json::json!({}),
             serde_json::json!({})
         )));
+        // A local pointer outside `#/components/schemas/` is no schema Fern can
+        // reach either (outstack/enveloper's `#/Components/schemas/…`). Only an
+        // error body reads that, the one form measured; a reference to another
+        // document is left to the resolver.
+        let elsewhere = serde_json::json!({ "apple": "#/Components/schemas/apple" });
+        let elsewhere = union(serde_json::json!({}), elsewhere);
+        assert!(!super::bare_name_mapped_union(&elsewhere));
+        assert!(super::unresolvable_mapped_error_body(&elsewhere));
+        let bare = union(serde_json::json!({}), serde_json::json!({ "pear": "Pear" }));
+        assert!(super::unresolvable_mapped_error_body(&bare));
+        let external = serde_json::json!({ "apple": "fruit.yml#/Apple" });
+        assert!(!super::unresolvable_mapped_error_body(&union(
+            serde_json::json!({}),
+            external
+        )));
+        assert!(!super::unresolvable_mapped_error_body(&union(
+            serde_json::json!({}),
+            serde_json::json!({ "apple": "#/components/schemas/Apple" })
+        )));
+    }
+
+    /// An inline error body discriminated by a mapping Fern cannot resolve is
+    /// typed unknown and hoists no `{Class}Body` model.
+    #[test]
+    fn an_inline_error_body_mapped_to_no_schema_is_unknown_and_not_hoisted() {
+        let refused = serde_json::json!({
+            "description": "Refused",
+            "content": { "application/problem+json": { "schema": {
+                "type": "object",
+                "discriminator": {
+                    "propertyName": "title",
+                    "mapping": { "Overweight": "#/Components/schemas/overweight" }
+                },
+                "properties": { "title": { "type": "string" } }
+            } } }
+        });
+        let response: crate::openapi::Response =
+            serde_json::from_value(refused.clone()).expect("response deserializes");
+        assert_eq!(
+            super::error_body_type(&response, "BadRequestError"),
+            TypeRef::Primitive(Prim::Any)
+        );
+        let directory = tempfile::tempdir().expect("temporary spec");
+        let spec = directory.path().join("openapi.json");
+        std::fs::write(
+            &spec,
+            serde_json::json!({
+                "openapi": "3.0.3",
+                "info": { "title": "Postroom", "version": "1" },
+                "paths": { "/parcels": { "post": {
+                    "operationId": "sendParcel",
+                    "responses": { "400": refused, "202": { "description": "Accepted" } }
+                } } }
+            })
+            .to_string(),
+        )
+        .expect("spec");
+        let doc = crate::openapi::load(&spec).expect("document loads");
+        let config = crate::config::GenerateConfig::new(
+            spec.clone(),
+            directory.path().join("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Postroom",
+        )
+        .expect("config");
+        let ir = super::build(&doc, &config);
+        assert!(
+            !ir.types
+                .iter()
+                .any(|decl| decl.name() == "BadRequestErrorBody"),
+            "no body model is hoisted"
+        );
     }
 
     #[test]
@@ -30892,6 +31633,454 @@ mod emission_parity_tests {
             }
         }
         assert!(super::empty_root_security_credentials(&own).is_empty());
+    }
+}
+
+/// The union-modelling repairs, each driven on the from-scratch measurement
+/// document that isolates it
+/// (`docs/fern-measurements/handed-off/union-modelling/`).
+#[cfg(test)]
+mod union_modelling_tests {
+    use super::{build, Field, Prim, TypeDecl, TypeRef};
+
+    fn measured(case: &str) -> super::Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/union-modelling")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        build(&doc, &config)
+    }
+
+    fn decl<'a>(ir: &'a super::Ir, name: &str) -> Option<&'a TypeDecl> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .find(|decl| decl.name() == name)
+    }
+
+    fn alias<'a>(ir: &'a super::Ir, name: &str) -> &'a TypeRef {
+        match decl(ir, name) {
+            Some(TypeDecl::Alias(alias)) => &alias.target,
+            other => panic!("{name} is no alias: {other:?}"),
+        }
+    }
+
+    fn field<'a>(ir: &'a super::Ir, class: &str, wire: &str) -> &'a Field {
+        let Some(TypeDecl::Object(object)) = decl(ir, class) else {
+            panic!("{class} is no model");
+        };
+        object
+            .fields
+            .iter()
+            .find(|field| field.wire_name == wire)
+            .unwrap_or_else(|| panic!("{class}.{wire} is a field"))
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn optional(inner: TypeRef) -> TypeRef {
+        TypeRef::Optional(Box::new(inner))
+    }
+
+    fn query<'a>(ir: &'a super::Ir, wire: &str) -> &'a TypeRef {
+        &ir.endpoints
+            .iter()
+            .flat_map(|endpoint| &endpoint.query_params)
+            .find(|param| param.wire_name == wire)
+            .unwrap_or_else(|| panic!("{wire} is a query parameter"))
+            .type_ref
+    }
+
+    /// `Builder::add_named_shape`'s union alias and `Builder::variant_ref`.
+    #[test]
+    fn nullable_unions_keep_members_and_nullable_targets_are_optional() {
+        let ir = measured("nullable-anyof-ref-member-optional");
+        assert_eq!(
+            alias(&ir, "SwatchOrName"),
+            &TypeRef::Union(vec![TypeRef::Primitive(Prim::Str), named("Swatch")])
+        );
+        assert_eq!(
+            alias(&ir, "SwatchOrCount"),
+            &TypeRef::Union(vec![named("Swatch"), TypeRef::Primitive(Prim::Int)])
+        );
+        assert_eq!(
+            alias(&ir, "GlazeOrSwatch"),
+            &TypeRef::Union(vec![optional(named("Glaze")), named("Swatch")])
+        );
+    }
+
+    /// `InlineHoister::hoist_param_composition` and the property union in
+    /// `Builder::field_type_ref`.
+    #[test]
+    fn a_member_naming_a_null_admitting_target_is_optional_in_its_slot() {
+        let ir = measured("union-modelling/nullable-reference-member");
+        assert_eq!(
+            alias(&ir, "ListRecordingsRequestSince"),
+            &TypeRef::Union(vec![
+                optional(named("Moment")),
+                TypeRef::Primitive(Prim::Str)
+            ])
+        );
+        assert_eq!(
+            alias(&ir, "RecordingStartedAt"),
+            &TypeRef::Union(vec![
+                optional(named("Moment")),
+                TypeRef::Primitive(Prim::Int)
+            ])
+        );
+    }
+
+    /// `Builder::field_type_ref`'s nested element union and
+    /// `Builder::nested_array_element`.
+    #[test]
+    fn alike_primitive_element_members_are_that_primitive() {
+        let ir = measured("union-modelling/identical-primitive-members");
+        assert!(decl(&ir, "SurveyCornersItemItem").is_none());
+        let corners = &field(&ir, "Survey", "corners").type_ref;
+        assert!(
+            format!("{corners:?}").contains("Primitive(Str)")
+                && !format!("{corners:?}").contains("Named"),
+            "{corners:?}"
+        );
+    }
+
+    /// `openapi::normalize_multi_type_schemas`.
+    #[test]
+    fn a_multi_type_list_lends_its_additional_properties_to_the_object_member() {
+        let ir = measured("union-modelling/multi-type-open-object");
+        let details = alias(&ir, "BatchReceiptDetails");
+        assert!(
+            matches!(details, TypeRef::Union(members)
+                if matches!(members.first(), Some(TypeRef::Dict(..)))
+                    && matches!(members.get(1), Some(TypeRef::List(..)))),
+            "{details:?}"
+        );
+        assert!(decl(&ir, "UnprocessableEntityErrorBodyContext").is_some());
+    }
+
+    /// `inferred_discriminant_property` and the tags it strips.
+    #[test]
+    fn one_member_enum_tags_discriminate_required_or_not() {
+        let ir = measured("union-modelling/singleton-enum-tags");
+        let Some(TypeDecl::DiscriminatedUnion(author)) = decl(&ir, "Author") else {
+            panic!("Author is a discriminated union");
+        };
+        assert_eq!(author.discriminant_property, "kind");
+        let classes: Vec<&str> = author
+            .members
+            .iter()
+            .map(|member| member.class_name.as_str())
+            .collect();
+        assert_eq!(
+            classes,
+            [
+                "Author_Crew",
+                "Author_Contractor",
+                "Author_Autopilot",
+                "Author_Harbour"
+            ]
+        );
+        let Some(TypeDecl::Object(crew)) = decl(&ir, "CrewMember") else {
+            panic!("CrewMember is a model");
+        };
+        assert!(crew.fields.iter().all(|field| field.wire_name != "kind"));
+    }
+
+    /// `inferred_discriminant_property` over bare `const` tags.
+    #[test]
+    fn bare_const_tags_on_references_do_not_discriminate() {
+        let ir = measured("const-tag-variants-undiscriminated");
+        assert_eq!(
+            alias(&ir, "Vessel"),
+            &TypeRef::Union(vec![named("Sailboat"), named("Barge")])
+        );
+        assert_eq!(
+            field(&ir, "Sailboat", "hull").type_ref,
+            named("SailboatHull")
+        );
+    }
+
+    /// `Builder::add_named_shape`'s reference-beside-union and pattern-only arms.
+    #[test]
+    fn a_sibling_reference_and_a_pattern_only_member_lower_as_fern_reads_them() {
+        let ir = measured("pattern-properties-only-oneof-member");
+        assert_eq!(
+            alias(&ir, "LabelTranslations"),
+            &TypeRef::Primitive(Prim::Any)
+        );
+        let Some(TypeDecl::Alias(labels)) = decl(&ir, "LabelTranslations") else {
+            unreachable!()
+        };
+        assert_eq!(labels.docstring, None);
+        assert_eq!(alias(&ir, "CollectorNote"), &named("CollectorRef"));
+        assert_eq!(alias(&ir, "CollectorAny"), &named("CollectorRef"));
+    }
+
+    /// The component map arm, `sole_reference_all_of` and
+    /// `Builder::nested_array_element`'s map leaf.
+    #[test]
+    fn map_values_are_the_referenced_type_and_nested_map_leaves_name_their_value() {
+        let ir = measured("map-value-union-hoisting");
+        let dict = |value| TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(value));
+        assert_eq!(alias(&ir, "DepthsByStation"), &dict(named("Depth")));
+        assert_eq!(alias(&ir, "BuoysByStation"), &dict(optional(named("Buoy"))));
+        assert!(decl(&ir, "DepthsByStationValue").is_none());
+        assert!(matches!(
+            decl(&ir, "TideGridItemItemValue"),
+            Some(TypeDecl::Object(_))
+        ));
+        assert!(format!("{:?}", alias(&ir, "TideGrid")).contains("TideGridItemItemValue"));
+    }
+
+    /// `open_base_branch_properties`.
+    #[test]
+    fn an_open_base_union_lends_each_property_as_its_first_branch_writes_it() {
+        let ir = measured("allof-oneof-inline-member-consts");
+        for model in [
+            "HandoverOneOfConst",
+            "HandoverAnyOfConst",
+            "HandoverOneOfEnum",
+            "HandoverAnyOfEnum",
+        ] {
+            let region = field(&ir, model, "region");
+            assert_eq!(
+                region.docstring.as_deref(),
+                Some("Collection region, chosen at pickup."),
+                "{model}"
+            );
+            assert!(field(&ir, model, "courier").optional, "{model}");
+            let Some(TypeDecl::Enum(mode)) = decl(&ir, &format!("{model}Mode")) else {
+                panic!("{model}Mode is an enum");
+            };
+            assert!(format!("{:?}", mode.members).contains("pickup"), "{model}");
+            assert!(
+                !format!("{:?}", mode.members).contains("delivery"),
+                "{model}"
+            );
+        }
+    }
+
+    /// `one_or_many_query_schema`'s two-array and nullable-member arms, and the
+    /// nullable scalar member in `InlineHoister::hoist_param_composition`.
+    #[test]
+    fn query_compositions_read_as_one_or_many_or_name_their_union() {
+        let ir = measured("query-oneof-of-arrays");
+        assert!(matches!(query(&ir, "corners"), TypeRef::List(_)));
+        let ir = measured("query-anyof-date-time-or-array-named");
+        assert_eq!(
+            query(&ir, "shipped_at"),
+            &named("ListParcelsRequestShippedAt")
+        );
+        let shipped = alias(&ir, "ListParcelsRequestShippedAt");
+        assert!(
+            matches!(shipped, TypeRef::Union(members)
+                if members.first() == Some(&optional(TypeRef::Primitive(Prim::Datetime)))),
+            "{shipped:?}"
+        );
+    }
+
+    /// `InlineHoister::hoist_param_composition`'s lone array of an inline enum.
+    #[test]
+    fn a_nullable_query_array_of_an_inline_enum_names_its_item_enum() {
+        let ir = measured("R13");
+        assert!(matches!(
+            decl(&ir, "ToggleAssistantRequestChannelsItem"),
+            Some(TypeDecl::Enum(_))
+        ));
+        assert!(
+            format!("{:?}", query(&ir, "channels")).contains("ToggleAssistantRequestChannelsItem")
+        );
+    }
+
+    /// `Builder::field_type_ref`'s undecidable `discriminator` arm.
+    #[test]
+    fn an_undecidable_discriminator_over_references_names_the_union() {
+        let ir = measured("R9");
+        assert_eq!(
+            alias(&ir, "ShiftAssignment"),
+            &TypeRef::Union(vec![named("Cover"), named("Training"), named("Leave")])
+        );
+        assert_eq!(
+            field(&ir, "Shift", "assignment").type_ref,
+            named("ShiftAssignment")
+        );
+    }
+
+    /// The component array arm over type-less object members.
+    #[test]
+    fn items_over_type_less_object_members_are_a_union_of_models() {
+        let ir = measured("R8");
+        assert_eq!(
+            alias(&ir, "LinkPatchItem"),
+            &TypeRef::Union(vec![named("LinkPatchItemZero"), named("LinkPatchItemOne")])
+        );
+        assert!(matches!(
+            decl(&ir, "LinkPatchItemZeroOp"),
+            Some(TypeDecl::Enum(_))
+        ));
+    }
+
+    /// `Builder::discriminated_union`'s lone-reference arm and the nullable
+    /// annotated map in `Builder::field_type_ref`.
+    #[test]
+    fn a_lone_reference_element_and_an_annotated_nullable_map_hoist_nothing() {
+        let ir = measured("inline-union-hoisting");
+        assert_eq!(
+            field(&ir, "Toolbox", "tools").type_ref,
+            TypeRef::List(Box::new(named("ChiselTool")))
+        );
+        assert_eq!(
+            field(&ir, "Toolbox", "labels").type_ref,
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(optional(TypeRef::Primitive(Prim::Str)))
+            )
+        );
+        assert!(decl(&ir, "ToolboxToolsItem").is_none());
+        assert!(decl(&ir, "ToolboxLabels").is_none());
+        let Some(TypeDecl::Object(chisel)) = decl(&ir, "ChiselTool") else {
+            panic!("ChiselTool is a model");
+        };
+        assert!(chisel.fields.iter().any(|field| field.wire_name == "kind"));
+    }
+
+    /// `document_discriminant_strips`: an event-stream union beside a JSON body
+    /// strips no tag.
+    #[test]
+    fn an_event_stream_union_beside_json_strips_no_tag() {
+        let ir = measured("union-modelling/event-stream-beside-json");
+        assert_eq!(
+            field(&ir, "FiringStartedEvent", "type").type_ref,
+            named("FiringStartedEventType")
+        );
+    }
+
+    /// `Builder::field_type_ref`'s annotated `$ref` beside `null`.
+    #[test]
+    fn an_annotated_reference_beside_null_is_a_use_site_copy() {
+        let ir = measured("union-modelling/annotated-reference-beside-null");
+        let Some(TypeDecl::Object(totals)) = decl(&ir, "BatchTotals") else {
+            panic!("BatchTotals is a model");
+        };
+        assert!(totals.bases.is_empty(), "{:?}", totals.bases);
+        assert!(totals
+            .fields
+            .iter()
+            .any(|field| field.wire_name == "bottles"));
+        assert_eq!(field(&ir, "Batch", "status").type_ref, named("BatchStatus"));
+    }
+
+    /// `merged_singleton_enum_values` and the nullable-blind collapse in
+    /// `InlineHoister::hoist_param_composition`.
+    #[test]
+    fn one_value_enum_members_merge_and_nullable_alike_members_collapse() {
+        let ir = measured("union-modelling/singleton-enum-members");
+        let Some(TypeDecl::Enum(finish)) = decl(&ir, "OrderPrintRequestFinish") else {
+            panic!("OrderPrintRequestFinish is an enum");
+        };
+        let members = format!("{:?}", finish.members);
+        for value in ["value: \"none\"", "value: \"matte\"", "value: \"gloss\""] {
+            assert_eq!(members.matches(value).count(), 1, "{value}: {members}");
+        }
+        assert_eq!(query(&ir, "dpi"), &TypeRef::Primitive(Prim::Float));
+        assert!(decl(&ir, "OrderPrintRequestDpi").is_none());
+    }
+
+    /// `lone_unmapped_reference` across `Builder::use_site_copy`,
+    /// `Builder::variant_ref`'s arrays and `strips_members`.
+    #[test]
+    fn lone_unmapped_references_are_the_reference_everywhere() {
+        let ir = measured("inline-union-hoisting");
+        assert_eq!(alias(&ir, "Kit"), &named("ChiselTool"));
+        assert_eq!(field(&ir, "Toolbox", "spare").type_ref, named("ChiselTool"));
+        assert!(format!("{:?}", alias(&ir, "ToolboxRacks")).contains("List(Named(\"ChiselTool\"))"));
+        let Some(TypeDecl::Object(chisel)) = decl(&ir, "ChiselTool") else {
+            panic!("ChiselTool is a model");
+        };
+        assert!(chisel.fields.iter().any(|field| field.wire_name == "kind"));
+    }
+
+    /// `inferred_discriminant_property` and `Builder::discriminated_union`
+    /// reading a `$ref`'d one-member enum tag.
+    #[test]
+    fn referenced_one_member_enum_tags_discriminate() {
+        let ir = measured("union-modelling/singleton-enum-tags");
+        let Some(TypeDecl::DiscriminatedUnion(shipment)) = decl(&ir, "Shipment") else {
+            panic!("Shipment is a discriminated union");
+        };
+        assert_eq!(shipment.discriminant_property, "mode");
+        let tags: Vec<&str> = shipment
+            .members
+            .iter()
+            .map(|member| member.discriminant.as_str())
+            .collect();
+        assert_eq!(tags, ["road", "rail", "sea"]);
+        assert!(matches!(
+            decl(&ir, "ShipmentsByPortValue"),
+            Some(TypeDecl::DiscriminatedUnion(_))
+        ));
+        let Some(TypeDecl::Object(barge)) = decl(&ir, "Barge") else {
+            panic!("Barge is a model");
+        };
+        assert!(barge.fields.iter().all(|field| field.wire_name != "mode"));
+    }
+
+    /// The inline hoister's collapse of alike primitive alternatives and the
+    /// map value's in `Builder::field_type_ref`.
+    #[test]
+    fn alike_primitive_body_and_map_value_alternatives_are_that_primitive() {
+        let ir = measured("union-modelling/identical-primitive-members");
+        assert_eq!(
+            field(&ir, "Survey", "notes").type_ref,
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Str))
+            )
+        );
+        assert!(decl(&ir, "CreateSurveyRequestLabel").is_none());
+        assert!(decl(&ir, "SurveyNotesValue").is_none());
+    }
+
+    /// `sole_reference_all_of_member` in `Builder::variant_ref`.
+    #[test]
+    fn a_sole_reference_all_of_member_is_the_reference() {
+        let ir = measured("union-modelling/sole-reference-all-of-member");
+        assert_eq!(
+            alias(&ir, "Probe"),
+            &TypeRef::Union(vec![
+                named("Thermometer"),
+                named("Hygrometer"),
+                named("Anemometer")
+            ])
+        );
+        assert!(decl(&ir, "ProbeZero").is_none());
+    }
+
+    /// `Builder::variant_ref`'s nullable array member.
+    #[test]
+    fn a_nullable_array_member_is_optional_in_its_slot() {
+        let ir = measured("union-modelling/nullable-array-member");
+        assert_eq!(
+            alias(&ir, "Tag"),
+            &TypeRef::Union(vec![
+                optional(TypeRef::Primitive(Prim::Str)),
+                optional(TypeRef::Primitive(Prim::Int)),
+                optional(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))),
+            ])
+        );
     }
 }
 

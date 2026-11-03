@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Seed library
+  version: "1.0"
+paths:
+  /packets/{packetId}:
+    get:
+      operationId: getPacket
+      parameters:
+        - name: packetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The seed packet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Packet"
+components:
+  schemas:
+    Tag:
+      title: Tag
+      oneOf:
+        - type: string
+          nullable: true
+        - type: integer
+          nullable: true
+        - type: array
+          items:
+            type: string
+          nullable: true
+    Packet:
+      type: object
+      properties:
+        variety:
+          type: string
+        labels:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Tag"

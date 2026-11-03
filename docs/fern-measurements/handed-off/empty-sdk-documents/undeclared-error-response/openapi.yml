@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Ferry Timetable
+  version: 1.0.0
+paths:
+  /sailings:
+    get:
+      operationId: listSailings
+      parameters:
+        - name: port
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The day's sailings from the port.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sailing'
+        '400':
+          $ref: '#/components/responses/BAD_PORT'
+components:
+  schemas:
+    Sailing:
+      type: object
+      required: [departs]
+      properties:
+        departs:
+          type: string
+          format: date-time
+        vessel:
+          type: string

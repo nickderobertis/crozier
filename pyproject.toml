@@ -64,6 +64,7 @@ members = [
     "tools/fern-goldens",
     "tools/fern-goldens-git",
     "tools/fern-goldens-weekly",
+    "tools/fern-references-check",
     "tools/fern-refusals",
     "tools/fern-refusals-strict",
     "tools/llmlint",
@@ -200,6 +201,7 @@ omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
 "fern-goldens" = ["tools/fern-goldens/", "*/tools/fern-goldens/"]
 "fern-goldens-git" = ["tools/fern-goldens-git/", "*/tools/fern-goldens-git/"]
 "fern-goldens-weekly" = ["tools/fern-goldens-weekly/", "*/tools/fern-goldens-weekly/"]
+"fern-references-check" = ["tools/fern-references-check/", "*/tools/fern-references-check/"]
 "fern-refusals" = ["tools/fern-refusals/", "*/tools/fern-refusals/"]
 "fern-refusals-strict" = ["tools/fern-refusals-strict/", "*/tools/fern-refusals-strict/"]
 "llmlint" = ["tools/llmlint/", "*/tools/llmlint/"]

@@ -74,6 +74,7 @@
         "{workspaceRoot}/tools/corpus-licensing/**/*",
         "{workspaceRoot}/tools/fern-goldens/**/*",
         "{workspaceRoot}/tools/fern-goldens-weekly/**/*",
+        "{workspaceRoot}/tools/fern-references-check/**/*",
         "{workspaceRoot}/tools/fern-refusals/**/*",
         "{workspaceRoot}/tools/fern-refusals-strict/**/*",
         "{workspaceRoot}/tools/github-action/**/*",
