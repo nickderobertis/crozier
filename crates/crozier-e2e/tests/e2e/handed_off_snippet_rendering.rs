@@ -134,6 +134,59 @@ fn handed_off_snippet_rendering_literals_overlays_match_fern() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
+/// Unusable nested examples recover to the same worked call as an absent
+/// example, through the real CLI and all three documentation writers.
+#[test]
+fn unusable_sourced_union_examples_recover_to_synthesized_calls() {
+    let text = std::fs::read_to_string(
+        cause_dir("request-example-union-variant-fields").join("openapi.yml"),
+    )
+    .expect("measurement document");
+    let mut document: serde_json::Value = serde_saphyr::from_str(&text).expect("measurement YAML");
+    document["components"]["schemas"]["SensorReading"]["required"] =
+        serde_json::json!(["source", "season", "alerts"]);
+    let scratch = tempfile::tempdir().expect("example variants");
+    for (field, invalid_values) in [
+        (
+            "season",
+            vec![
+                serde_json::json!("unusable-season"),
+                serde_json::json!({"phase": "late"}),
+                serde_json::json!({"kind": "unknown-season", "phase": "late"}),
+            ],
+        ),
+        (
+            "alerts",
+            vec![
+                serde_json::json!({"target": "vent"}),
+                serde_json::json!([{"target": "vent", "operator": "above", "levels": ["high"]}, 42]),
+            ],
+        ),
+    ] {
+        let mut baseline = document.clone();
+        baseline["components"]["schemas"]["SensorReading"]["example"]
+            .as_object_mut()
+            .expect("source object example")
+            .remove(field);
+        let spec = scratch.path().join("openapi.json");
+        std::fs::write(&spec, baseline.to_string()).expect("write absent-example document");
+        let expected = generate(&spec, &[]).expect("generate absent-example SDK");
+        for invalid in invalid_values {
+            let mut variant = baseline.clone();
+            variant["components"]["schemas"]["SensorReading"]["example"][field] = invalid.clone();
+            std::fs::write(&spec, variant.to_string()).expect("write unusable-example document");
+            let actual = generate(&spec, &[]).expect("recover from unusable example");
+            for relative in ["README.md", "reference.md", "src/fern/boards/client.py"] {
+                let expected = std::fs::read_to_string(expected.path().join(relative))
+                    .expect("synthesized worked call");
+                let actual = std::fs::read_to_string(actual.path().join(relative))
+                    .expect("recovered worked call");
+                assert_eq!(actual, expected, "{relative}: {field}={invalid}");
+            }
+        }
+    }
+}
+
 /// The certified pair's and crozier's text of `rel` for a cause.
 fn file_texts(cause: &str, rel: &str) -> (String, String) {
     let dir = cause_dir(cause);
