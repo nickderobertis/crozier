@@ -75,6 +75,49 @@ paths:
       responses:
         '204':
           description: Registered
+  /stations:
+    post:
+      operationId: registerStation
+      summary: Register a station
+      tags:
+        - Stations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                mount:
+                  x-fern-type-name: StationMount
+                  type: object
+                  properties:
+                    heightMeters:
+                      type: number
+                survey:
+                  readOnly: true
+                  type: object
+                  properties:
+                    site:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                    mount:
+                      x-fern-type-name: StationMount
+                      type: object
+                      properties:
+                        heightMeters:
+                          type: number
+      responses:
+        '204':
+          description: Registered
   /sensors/{sensorId}/note:
     post:
       operationId: Sensors_addNote

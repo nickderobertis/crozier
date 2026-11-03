@@ -12,6 +12,7 @@ if typing.TYPE_CHECKING:
     from .archive.client import ArchiveClient, AsyncArchiveClient
     from .keys.client import AsyncKeysClient, KeysClient
     from .sensors.client import AsyncSensorsClient, SensorsClient
+    from .stations.client import AsyncStationsClient, StationsClient
 
 
 class FernApi:
@@ -87,6 +88,7 @@ class FernApi:
         )
         self._archive: typing.Optional[ArchiveClient] = None
         self._sensors: typing.Optional[SensorsClient] = None
+        self._stations: typing.Optional[StationsClient] = None
         self._keys: typing.Optional[KeysClient] = None
 
     @property
@@ -104,6 +106,14 @@ class FernApi:
 
             self._sensors = SensorsClient(client_wrapper=self._client_wrapper)
         return self._sensors
+
+    @property
+    def stations(self):
+        if self._stations is None:
+            from .stations.client import StationsClient
+
+            self._stations = StationsClient(client_wrapper=self._client_wrapper)
+        return self._stations
 
     @property
     def keys(self):
@@ -203,6 +213,7 @@ class AsyncFernApi:
         )
         self._archive: typing.Optional[AsyncArchiveClient] = None
         self._sensors: typing.Optional[AsyncSensorsClient] = None
+        self._stations: typing.Optional[AsyncStationsClient] = None
         self._keys: typing.Optional[AsyncKeysClient] = None
 
     @property
@@ -220,6 +231,14 @@ class AsyncFernApi:
 
             self._sensors = AsyncSensorsClient(client_wrapper=self._client_wrapper)
         return self._sensors
+
+    @property
+    def stations(self):
+        if self._stations is None:
+            from .stations.client import AsyncStationsClient
+
+            self._stations = AsyncStationsClient(client_wrapper=self._client_wrapper)
+        return self._stations
 
     @property
     def keys(self):

@@ -8,9 +8,10 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import CreateKeyRequest, KeyMode
     from .errors import NotFoundError
-    from . import archive, keys, sensors
+    from . import archive, keys, sensors, stations
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
+    from .stations import StationMount
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
@@ -20,10 +21,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "KeyMode": ".types",
     "NotFoundError": ".errors",
+    "StationMount": ".stations",
     "__version__": ".version",
     "archive": ".archive",
     "keys": ".keys",
     "sensors": ".sensors",
+    "stations": ".stations",
 }
 
 
@@ -56,8 +59,10 @@ __all__ = [
     "FernApi",
     "KeyMode",
     "NotFoundError",
+    "StationMount",
     "__version__",
     "archive",
     "keys",
     "sensors",
+    "stations",
 ]

@@ -180,6 +180,72 @@ client.sensors.addnote(
 </dl>
 </details>
 
+## Stations
+<details><summary><code>client.stations.<a href="src/fern/stations/client.py">register_station</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.stations.register_station(
+    name="name",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**mount:** `typing.Optional[StationMount]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Keys
 <details><summary><code>client.keys.<a href="src/fern/keys/client.py">create_key</a>(...) -> KeyMode</code></summary>
 <dl>
