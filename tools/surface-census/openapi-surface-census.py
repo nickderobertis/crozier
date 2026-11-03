@@ -3978,6 +3978,7 @@ NAMING_PORT_DIGESTS = {
     "split_words": "225b4ae99e3ce99a",
     "to_snake_case": "3c9366b3588a08c6",
     "class_name": "45a755959a66dc41",
+    "spelled_leading_number": "3ca496ba58796f20",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
     "is_reserved_method": "6c7d2d1e00b4d9a6",
 }

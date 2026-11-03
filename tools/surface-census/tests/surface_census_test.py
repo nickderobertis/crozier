@@ -15612,6 +15612,33 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's parameter port of src/ir.rs's {name}",
                 )
 
+    def table_cases(self, function: str, minimum: int) -> list[tuple[str, str]]:
+        """The `(wire, expected)` rows of every `for (key, class) in [...]` table
+        whose loop body asserts `function(key)` against them, as `src/naming.rs`
+        pins whole families of cases (`class_name`'s spelled leading numbers)."""
+        source = self.NAMING.read_text(encoding="utf-8")
+        found = []
+        for table, body in re.findall(r"for \(\w+, \w+\) in \[(.*?)\] \{(.*?)\}", source, re.S):
+            if not re.search(rf"assert_eq!\(\s*{function}\(", body):
+                continue
+            found += [
+                (self.unescape(wire), self.unescape(expected))
+                for wire, expected in re.findall(r'\(\s*"((?:[^"\\]|\\.)*)",\s*"((?:[^"\\]|\\.)*)"\s*\)', table)
+            ]
+        self.assertGreater(len(found), minimum, f"src/naming.rs no longer pins a table of {function} cases")
+        return found
+
+    def test_the_port_spells_a_whole_leading_number_as_crozier_does(self) -> None:
+        """`naming::class_name`'s table of digit-leading names, through the port.
+
+        A whole leading number is spelled, leading zeros are dropped (`007Agent`
+        is `SevenAgent`), and past 9,999 the speller writes `Undefined`; the
+        literal-assertion reader above sees none of these rows.
+        """
+        for wire, expected in self.table_cases("class_name", minimum=10):
+            with self.subTest(wire=wire):
+                self.assertEqual(expected, census.class_name(wire))
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -17328,8 +17355,9 @@ class ShapePredicateSelectorControls(unittest.TestCase):
     def test_same_primitive_union_counts_a_component_and_not_its_near_misses(self) -> None:
         """A component composition of one primitive, and nothing beside it.
 
-        The positive writes two pattern strings and three plain integers; the
-        decoys write a `null` alternative, mixed primitives, `integer` beside
+        The positive writes two pattern strings, three plain integers, and an
+        integer beside a `uint64` or `uint32` number; the decoys write a `null`
+        alternative, mixed primitives, a `float` number beside `integer`, `integer` beside
         `format: int64`, a lone alternative, a composition beside a `type`, and
         the positive's composition inline as a property, where it is no class.
         """
@@ -17342,6 +17370,8 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                     "oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "maximum": 9}]
                 },
                 "Weight": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                # `number_prim` reads `format: uint32` on a number as an integer too.
+                "Count": {"oneOf": [{"type": "number", "format": "uint32"}, {"type": "integer"}]},
                 "Settings": {
                     "oneOf": [{"type": "string", "format": "json-string"}, {"type": "string", "format": "json-string"}]
                 },
@@ -17361,6 +17391,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "decoys": {
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
                 "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+                "Fraction": {"oneOf": [{"type": "number", "format": "float"}, {"type": "integer"}]},
                 "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
@@ -17392,7 +17423,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 6}, rows(completed))
+        self.assertEqual({(selector, "positive"): 7}, rows(completed))
 
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.
