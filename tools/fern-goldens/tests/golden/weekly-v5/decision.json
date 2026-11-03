@@ -69,5 +69,11 @@
         ]
       }
     ]
-  }
+  },
+  "known_reproduced": [
+    {
+      "family": "corpus",
+      "item": "calorieninjas.com"
+    }
+  ]
 }

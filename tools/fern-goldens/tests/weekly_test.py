@@ -906,6 +906,7 @@ def contract_artifacts() -> dict[str, dict[str, object]]:
     decision.ledger = weekly.LedgerChange(
         ledger, (weekly.LedgerRows("tests/fixtures/departures-ledger.tsv", (row.format(46),), (row.format(45),)),)
     )
+    decision.known_reproduced.append(weekly.KnownReproduced("corpus", "calorieninjas.com"))
     return {
         "plan.json": plan.to_json(),
         "result.json": shard.to_json(),

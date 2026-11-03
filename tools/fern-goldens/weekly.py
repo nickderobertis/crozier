@@ -697,6 +697,18 @@ class KnownFailureChange:
 
 
 @dataclass(frozen=True)
+class KnownReproduced:
+    """A registered known upstream Fern failure the candidate reproduced
+    exactly: no golden, so no item's comparison; named so no item vanishes."""
+
+    family: str
+    item: str
+
+    def line(self) -> str:
+        return f"{self.family} `{self.item}`: known Fern failure reproduced"
+
+
+@dataclass(frozen=True)
 class RefusalChange:
     """A refusal class whose probe the candidate pair no longer refuses as its
     committed record says: how, the recorded refusal, and Fern's outcome now."""
@@ -774,6 +786,7 @@ class Decision:
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
     ledger: LedgerChange | None = None
+    known_reproduced: list[KnownReproduced] = field(default_factory=list)
 
     @property
     def outcome(self) -> Outcome:
@@ -805,6 +818,8 @@ class Decision:
             **({"unchecked": [entry.to_json() for entry in self.unchecked]} if self.unchecked else {}),
             # Optional: a ledger the candidate leaves as main's carries none.
             **({"ledger": self.ledger.to_json()} if self.ledger else {}),
+            # Optional: most weeks reproduce no registered Fern failure.
+            **({"known_reproduced": [vars(entry) for entry in self.known_reproduced]} if self.known_reproduced else {}),
         }
 
 
@@ -2356,6 +2371,8 @@ def decide_bundle(
             )
         if entry.status == Status.REFUSAL_CHANGED:
             decision.refusals_changed.append(RefusalChange(entry.item, entry.detail))
+        if entry.status == Status.KNOWN:
+            decision.known_reproduced.append(KnownReproduced(entry.family, entry.item))
     reports.mkdir(parents=True, exist_ok=True)
     # A command several family rows name runs once, and its report is split over
     # every family those rows name.
@@ -2373,7 +2390,14 @@ def decide_bundle(
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        runs += [Comparison(gate, (family,), entry.item) for family in decided for entry in items[family]]
+        # A known upstream Fern failure reproduced exactly has no golden for an
+        # item's comparison to read; the family gate decides its registration.
+        runs += [
+            Comparison(gate, (family,), entry.item)
+            for family in decided
+            for entry in items[family]
+            if entry.status != Status.KNOWN
+        ]
     per_item = len(runs)
     runs += [Comparison(gate, tuple(named), None) for gate, named in shared.values()]
     progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
@@ -2508,6 +2532,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
                     report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
                 lines += [f"- {entry.summary()}", "", "<details><summary>report</summary>", "", fenced(report), ""]
                 lines += ["</details>", ""]
+    if decision.known_reproduced:
+        lines += ["## Known upstream Fern failures reproduced", ""]
+        lines += [
+            "Fern failed on each exactly as its registration records, so there is no golden for an item's "
+            "comparison; crozier's suite holds the registration.",
+            "",
+        ]
+        lines += [f"- {entry.line()}" for entry in decision.known_reproduced]
+        lines += [""]
     if decision.ledger:
         lines += ["## Departures ledger", "", *ledger_lines(decision.ledger), ""]
         for rows in decision.ledger.changes:
@@ -2587,6 +2620,7 @@ def decide(args: argparse.Namespace) -> int:
             *(f"- differs: {line}" for line in failing),
             *(f"- departures ledger: {line}" for line in ledger_lines(decision.ledger)),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
+            *(f"- {entry.line()}" for entry in decision.known_reproduced),
             *(f"- refusal changed: `{change.item}`: {change.detail}" for change in decision.refusals_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],

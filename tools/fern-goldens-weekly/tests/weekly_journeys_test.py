@@ -2281,15 +2281,53 @@ class WeeklyRunTests(unittest.TestCase):
         decides and publishes the rest, and the row keeps no golden."""
         manifest = self.register_known_failure(CANDIDATE.generator)
         self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
+        # The corpus reporter, as `report_fixture_diffs` behaves: a corpus with
+        # no golden matches no corpus, and it panics.
+        reporter = self.seed / "stand-in-fixtures-report"
+        write_executable(
+            reporter,
+            r"""
+            #!/usr/bin/env python3
+            import pathlib, sys
+
+            root, corpus = sys.argv[1:]
+            if not (pathlib.Path(root) / "tests/fixtures" / corpus / "expected").is_dir():
+                print(f"CROZIER_DIFF_CORPUS={corpus!r} matched no corpus (or its spec is unfetched)", file=sys.stderr)
+                sys.exit(101)
+            print(f"=== {corpus} ===\n  no differences.")
+            print("0 comparison generation failure(s) across the reported corpora.")
+            print("0 comparison processing failure(s) across the reported corpora.")
+            print("\n0 differing file(s) across the reported corpora.")
+            """,
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                "corpus\titem\tfixtures-report\t{root}/stand-in-fixtures-report {root} {item}"
+                if line.startswith("corpus\t")
+                else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.git(self.seed, "add", "-A")
+        self.git(self.seed, "commit", "-qm", "the corpus reporter")
+        self.git(self.seed, "push", "-q", str(self.remote), "HEAD:refs/heads/main")
         state = self.run_workflow()
         self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
         self.assertEqual("known-upstream-failure", self.statuses(state)["gamma"])
         self.assertIn("corpus `gamma`: known-upstream-failure", self.summary())
         self.assertEqual("match", state.outcome(), self.summary())
+        self.assertNotIn(("corpus", "gamma"), state.gated(), "a reproduced known failure has no golden to compare")
+        self.assertIn(("corpus", "alpha"), state.gated())
+        self.assertEqual([{"family": "corpus", "item": "gamma"}], state.recorded()["known_reproduced"])
+        self.assertIn("- corpus `gamma`: known Fern failure reproduced", self.summary())
         self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
         (pull,) = self.pulls()
         self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
         self.assertIn("| corpus | 3 |", pull["body"])
+        self.assertIn("- corpus `gamma`: known Fern failure reproduced", pull["body"])
         self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in self.published_tree()))
 
     def test_a_known_failure_reproduced_at_a_candidate_version_is_carried_to_it_and_adopted(self) -> None:

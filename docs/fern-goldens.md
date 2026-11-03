@@ -437,8 +437,11 @@ phases.
    The decision is recorded in the planned order whatever order the comparisons
    finish in.
 
-   An item that failed or was not generated goes through no gate; every other
-   item is decided. A comparison that cannot run is a failure, never a pass. The
+   An item that failed or was not generated goes through no gate, nor does a
+   corpus item that reproduced its registered known upstream Fern failure
+   exactly (it has no golden; the suite holds its registration, and the
+   decision and the pull request name it as a known Fern failure reproduced);
+   every other item is decided. A comparison that cannot run is a failure, never a pass. The
    `fern-goldens-decision` artifact holds the decision and every gate's report.
 6. **Publish** (`publish` job, a run over the whole inventory only), under
    `RELEASE_PLZ_TOKEN` — the PAT `release-plz.yml` uses, since a pull request
