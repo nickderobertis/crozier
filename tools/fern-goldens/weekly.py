@@ -809,18 +809,60 @@ def run(
     return result
 
 
-# llmlint: ignore[changed_behavior_has_e2e] The None branch is the platform without /proc/meminfo (macOS, Windows); the weekly workflow runs on ubuntu-latest and its journeys skip off Linux-like hosts, so no journey host lacks the file. The journeys drive the Linux branch through `resources` and `decide`, and accept either spelling in their resource pattern.
+CGROUP_ENV = "CROZIER_FERN_WEEKLY_CGROUP"
+
+
+def cgroup_available(directory: Path) -> int | None:
+    """What a cgroup v2 memory limit leaves this process: for its cgroup and
+    each enclosing one that sets `memory.max`, the limit less what the group
+    holds that it cannot reclaim (`memory.current` less `inactive_file`); the
+    tightest of them, or None where no enclosing group sets a limit. A runner
+    VM sets none, so its machine's memory is what is left; a container held to
+    a runner's size sets one, which `/proc/meminfo` there does not show."""
+    tightest: int | None = None
+    for group in (directory, *directory.parents):
+        try:
+            limit = (group / "memory.max").read_text(encoding="utf-8").strip()
+            current = int((group / "memory.current").read_text(encoding="utf-8").strip())
+            stat = (group / "memory.stat").read_text(encoding="utf-8").splitlines()
+        except (OSError, ValueError):
+            continue
+        if not limit.isdigit():
+            continue
+        reclaimable = next((int(line.split()[1]) for line in stat if line.startswith("inactive_file ")), 0)
+        left = max(0, int(limit) - (current - reclaimable))
+        tightest = left if tightest is None else min(tightest, left)
+    return tightest
+
+
+def own_cgroup() -> Path:
+    """This process's cgroup v2 directory (`CROZIER_FERN_WEEKLY_CGROUP` names
+    another), from `/proc/self/cgroup`'s unified `0::` line."""
+    if os.environ.get(CGROUP_ENV):
+        return Path(os.environ[CGROUP_ENV])
+    try:
+        lines = Path("/proc/self/cgroup").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    relative = next((line[3:] for line in lines if line.startswith("0::")), "/")
+    return Path("/sys/fs/cgroup") / relative.lstrip("/")
+
+
+# llmlint: ignore[changed_behavior_has_e2e] Only the platform without /proc/meminfo (macOS, Windows) reaches the None return; the weekly workflow runs on ubuntu-latest and its journeys skip off Linux-like hosts, so no journey host lacks the file. The journeys drive the meminfo and cgroup-limit branches through `resources` and `decide`, and accept either spelling in their resource pattern.
 def memory_available() -> int | None:
-    """The bytes the kernel reports available (`MemAvailable`), or None on a
-    platform without `/proc/meminfo`."""
+    """The bytes this process can still use: the kernel's `MemAvailable`,
+    held to any cgroup limit around it; None on a platform reporting neither."""
+    machine: int | None = None
     try:
         for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
             name, _, value = line.partition(":")
             if name == "MemAvailable" and value.split() and value.split()[0].isdigit():
-                return int(value.split()[0]) * 1024
+                machine = int(value.split()[0]) * 1024
     except OSError:
-        return None
-    return None
+        pass
+    limited = cgroup_available(own_cgroup())
+    known = [amount for amount in (machine, limited) if amount is not None]
+    return min(known) if known else None
 
 
 def resources(base: Path) -> str:
@@ -2066,10 +2108,13 @@ class Admission:
         self.changed = threading.Condition()
 
     @contextlib.contextmanager
-    def slot(self, number: int) -> Generator[None]:
+    def slot(self, number: int, started: Callable[[], None]) -> Generator[None]:
+        """Wait for the `number`th comparison's turn and room for it, then
+        announce it (`started`) before the next one may start."""
         with self.changed:
             while self.turn != number or (self.running and (memory_available() or self.reserve) < self.reserve):
                 self.changed.wait(timeout=2.0)
+            started()
             self.running += 1
             self.turn += 1
             self.changed.notify_all()
@@ -2132,8 +2177,7 @@ def decide_bundle(
 
     def timed(number: int, run: Comparison) -> GateResult:
         label = run.label(number, len(runs))
-        with admission.slot(number):
-            progress(f"{label} started: `{run.gate.command}`; {resources(base)}")
+        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
             started = time.monotonic()
             result = run_gate(base, run.gate, run.item)
             elapsed = time.monotonic() - started

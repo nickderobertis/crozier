@@ -29,7 +29,7 @@ import textwrap
 import time
 import unittest
 import unittest.mock
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypedDict
@@ -61,6 +61,10 @@ CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "d
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
 TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
+# A comparison that never ends, touching $HANG_SENTINEL as it starts, and the
+# free disk and memory every progress line of `decide` states.
+HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
+RESOURCE = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
 
 
 class RuffDiagnostic(TypedDict):
@@ -1510,17 +1514,14 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(state.publish)
         self.assert_untouched()
 
-    def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
-        """A runner that dies mid-step leaves only what the step already wrote:
-        the decision writes each comparison's start and end (its elapsed time and
-        verdict) and the free disk and available memory at every boundary as it
-        runs, so the log of a decision killed inside a comparison names it."""
-        sentinel = self.scratch / "hanging-comparison-started"
+    def hanging_decision(self) -> tuple[Path, Path, Journey, Path]:
+        """A decision job's checkout with the bundle applied, its hand-written
+        item's comparison (3 of 8) one that never ends: the checkout, the
+        bundle, the run so far and the file that comparison touches as it starts."""
         gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
-        hang = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
         gates.write_text(
             "".join(
-                line.split("\t", 3)[0] + "\titem\texit:0/3\t" + hang + "\n"
+                line.split("\t", 3)[0] + "\titem\texit:0/3\t" + HANG + "\n"
                 if line.startswith("handwritten\t")
                 else line + "\n"
                 for line in GATES.splitlines()
@@ -1532,12 +1533,66 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
         decider = self.clone()
         bundle = state.artifacts / "bundle"
-        resource = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
+        before = self.phase(decider, "resources", "--before", "apply")
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {RESOURCE}\n$")
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        return decider, bundle, state, self.scratch / "hanging-comparison-started"
+
+    def test_a_cgroup_memory_limit_holds_comparisons_back_until_memory_is_released(self) -> None:
+        """Inside a container held to a runner's size, `/proc/meminfo` shows the
+        host; the cgroup's limit is what is left. Its memory, not the host's, is
+        what decide reports and what it starts another comparison against, and
+        comparisons held back start once the group has room again."""
+        decider, bundle, state, sentinel = self.hanging_decision()
+        cgroup = self.scratch / "cgroup/job"
+        cgroup.mkdir(parents=True)
+
+        def limit(gib: float) -> None:
+            (cgroup / "memory.max").write_text(f"{int(gib * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.current").write_text(f"{int(1.75 * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.stat").write_text(f"anon {2**30}\ninactive_file {2**29}\n", encoding="utf-8")
+
+        limit(2.0)
+        seen = self.phase(decider, "resources", "--before", "build", CROZIER_FERN_WEEKLY_CGROUP=str(cgroup))
+        self.assertRegex(seen.stdout, r"memory available 0\.8 GiB\n$", "the limit less what the group cannot reclaim")
+        text = self.killed_decision(
+            decider,
+            bundle,
+            state.artifacts / "decision",
+            sentinel,
+            (2, "1"),
+            2,
+            env={"CROZIER_FERN_WEEKLY_CGROUP": str(cgroup)},
+            release=(lambda: limit(64.0), 7),
+        )
+        lines = text.splitlines()
+        hanging = next(index for index, line in enumerate(lines) if "comparison 3/8" in line and " started: " in line)
+        self.assertIn("memory available 0.8 GiB", lines[hanging])
+        self.assertEqual(
+            ["1 started", "1 ended", "2 started", "2 ended", "3 started"],
+            [
+                " ".join(re.findall(r"comparison ([0-9])/8 .*\) (started|ended)", line)[0])
+                for line in lines[1 : hanging + 1]
+            ],
+            "held to one at a time while the group had less than the reserve",
+        )
+        after = [re.findall(r"comparison ([0-9])/8 .*\) (started|ended)", line)[0] for line in lines[hanging + 1 :]]
+        self.assertEqual({"4", "5", "6", "7", "8"}, {number for number, moment in after if moment == "ended"}, text)
+        self.assertNotIn(("3", "ended"), after, "the rest started beside the running one once the group had room")
+        self.assertIn("memory available 62.", text)
+
+    def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
+        """A runner that dies mid-step leaves only what the step already wrote:
+        the decision writes each comparison's start and end (its elapsed time and
+        verdict) and the free disk and available memory at every boundary as it
+        runs, so the log of a decision killed inside a comparison names it."""
+        decider, bundle, state, sentinel = self.hanging_decision()
+        resource = RESOURCE
         # The decision job's line before each setup step: the step it is about to run and what is left.
         before = self.phase(decider, "resources", "--before", "apply")
         self.assertEqual(0, before.returncode, before.stderr)
         self.assertRegex(before.stdout, rf"^fern-goldens-weekly: before apply: {resource}\n$")
-        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
         refused = self.phase(
             decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), "--jobs", "-1"
         )
@@ -1548,7 +1603,7 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(1, refused.returncode)
         self.assertIn("--reserve-gib -1.0: name the GiB to keep available, 0 or more", refused.stderr)
-        hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(hang)}`; {resource}"
+        hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(HANG)}`; {resource}"
         # One at a time, the runner dies with the hanging comparison the log's
         # last line; several at once, it dies once every other one has ended.
         # A reserve no machine has keeps several allowed comparisons to one at a time.
@@ -1628,11 +1683,21 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual("success", state.status())
 
     def killed_decision(
-        self, root: Path, bundle: Path, output: Path, sentinel: Path, limits: tuple[int, str], others: int
+        self,
+        root: Path,
+        bundle: Path,
+        output: Path,
+        sentinel: Path,
+        limits: tuple[int, str],
+        others: int,
+        *,
+        env: Mapping[str, str] | None = None,
+        release: tuple[Callable[[], None], int] | None = None,
     ) -> str:
         """A decision terminated as the runner's shutdown terminates its step
         (SIGTERM, exit 143) once its hanging comparison has started and the
-        `others` it can finish have ended; what its step log then holds."""
+        `others` it can finish have ended (after `release`'s action, its count
+        too); what its step log then holds."""
         jobs, reserve = limits
         log = self.scratch / f"decide-{jobs}-{reserve}.log"
         with log.open("w", encoding="utf-8") as written:
@@ -1644,7 +1709,7 @@ class WeeklyRunTests(unittest.TestCase):
                     *("--jobs", str(jobs), "--reserve-gib", reserve),
                 ],
                 cwd=root,
-                env=self.environment(root, HANG_SENTINEL=str(sentinel)),
+                env=self.environment(root, HANG_SENTINEL=str(sentinel), **(env or {})),
                 stdout=written,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,
@@ -1652,12 +1717,19 @@ class WeeklyRunTests(unittest.TestCase):
                 preexec_fn=(lambda: os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})) if not jobs else None,
             )
             self.addCleanup(lambda: decide.poll() is None and os.killpg(decide.pid, signal.SIGKILL))
-            for _ in range(1200):
-                ended = log.read_text(encoding="utf-8").count(" ended: ")
-                if (sentinel.exists() and ended >= others) or decide.poll() is not None:
-                    break
-                time.sleep(0.1)
-            self.assertTrue(sentinel.exists(), log.read_text(encoding="utf-8"))
+            stages = [(None, others)] if release is None else [(None, others), release]
+            for action, count in stages:
+                if action is not None:
+                    # Settled before the release: nothing more starts while held.
+                    time.sleep(3)
+                    self.assertEqual(others, log.read_text(encoding="utf-8").count(" ended: "))
+                    action()
+                for _ in range(1200):
+                    ended = log.read_text(encoding="utf-8").count(" ended: ")
+                    if (sentinel.exists() and ended >= count) or decide.poll() is not None:
+                        break
+                    time.sleep(0.1)
+                self.assertTrue(sentinel.exists(), log.read_text(encoding="utf-8"))
             decide.terminate()
             self.assertEqual(-signal.SIGTERM, decide.wait(timeout=30))
             os.killpg(decide.pid, signal.SIGKILL)
