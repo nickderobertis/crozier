@@ -52,6 +52,8 @@ class GitHub(BaseHTTPRequestHandler):
     """GitHub's REST artifact API for one repository, as the guard and the lookup call it."""
 
     artifacts: ClassVar[dict[str, bytes]] = {}
+    expired: ClassVar[set[str]] = set()
+    extra: ClassVar[list[object]] = []
     mode: ClassVar[str] = "ok"
     used: ClassVar[int] = 0
     calls: ClassVar[Counter[str]] = Counter()
@@ -81,10 +83,14 @@ class GitHub(BaseHTTPRequestHandler):
             if self.mode == "missing":
                 self._send(404, b'{"message": "Not Found"}')
                 return
-            listed = [
-                {"id": index, "name": f"golden-reach-base-{sha}", "expired": False}
+            if self.mode == "not-an-array":
+                self._send(200, b'{"artifacts": {"id": 1}}')
+                return
+            listed: list[object] = [
+                {"id": index, "name": f"golden-reach-base-{sha}", "expired": sha in self.expired}
                 for index, sha in enumerate(sorted(self.artifacts), start=1)
             ]
+            listed += self.extra
             self._send(200, json.dumps({"total_count": len(listed), "artifacts": listed}).encode())
             return
         prefix = f"/repos/{SLUG}/actions/artifacts/"
@@ -100,7 +106,7 @@ class GitHub(BaseHTTPRequestHandler):
 
 @pytest.fixture
 def github() -> Iterator[str]:
-    GitHub.artifacts, GitHub.mode, GitHub.used = {}, "ok", 0
+    GitHub.artifacts, GitHub.mode, GitHub.used, GitHub.expired, GitHub.extra = {}, "ok", 0, set(), []
     GitHub.calls = Counter()
     server = ThreadingHTTPServer(("127.0.0.1", 0), GitHub)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -341,3 +347,30 @@ def test_a_refused_cached_base_is_skipped_for_the_next_one_down(
     assert f"refused the cached base {nearest}" in run.stdout and reason in run.stdout
     assert f"census-repin: base {c1} (cache):" in run.stdout
     assert GitHub.calls == Counter()
+
+
+def test_an_artifact_list_that_is_not_an_array_falls_back_with_its_reason(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path
+) -> None:
+    root, (c1, _c2, _c3, _c4) = history
+    cache = tmp_path / "cache"
+    cached(cache, c1)
+    GitHub.mode = "not-an-array"
+    run = lookup(root, cache, github)
+    assert "the artifact list was not JSON with an `artifacts` array" in run.stdout
+    assert f"census-repin: base {c1} (cache):" in run.stdout
+
+
+def test_an_expired_or_malformed_artifact_record_is_passed_over_for_the_next_ancestor(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path
+) -> None:
+    root, (_c1, c2, c3, _c4) = history
+    GitHub.artifacts = {sha: artifact(store(sha), tmp_path) for sha in (c2, c3)}
+    GitHub.expired = {c3}
+    GitHub.extra = [
+        "not a record",
+        {"name": "golden-reach-base-not-a-sha", "id": 9},
+        {"name": f"golden-reach-base-{c3}", "id": "9"},
+    ]
+    run = lookup(root, tmp_path / "cache", github)
+    assert f"census-repin: base {c2} (artifact): downloaded golden-reach-base-{c2}" in run.stdout

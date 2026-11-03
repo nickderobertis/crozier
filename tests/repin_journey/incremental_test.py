@@ -508,6 +508,24 @@ def test_handwritten_reach_re_runs_every_fixture_into_the_store_and_carries_the_
     assert RS.load(clone.cached(clone.head()))["commit"] == clone.head(), "the step is the next one's base"
 
 
+def test_a_derived_output_whose_generator_fails_is_reported_and_a_retry_recovers(clone: Clone) -> None:
+    """The step is measured and saved before the tables are restated, so a retry after the repair carries it."""
+    clone.checkout(STATE.branch(), STATE.c0)
+    index = (clone.root / "docs" / "openapi-surface" / "scenario-proof-index.tsv").read_text(encoding="utf-8")
+    golden = next(line.split("\t")[4].split(";")[0] for line in index.splitlines()[1:] if "\treal\t" in line)
+    metadata = f"{golden}/.fern/metadata.json"
+    good = (clone.root / metadata).read_text(encoding="utf-8")
+    broken = clone.commit("a golden's metadata broken", {metadata: (good, "{ not json")})
+    failed = clone.repin(check=False)
+    assert failed.returncode != 0
+    assert "regenerating scenario-proof-index.tsv failed" in failed.stderr and "metadata is not JSON" in failed.stderr
+    assert clone.store()["commit"] == broken and clone.cached(broken).is_file(), "the measurement stands"
+    clone.commit("the metadata repaired", {metadata: ("{ not json", good)})
+    retried = clone.repin()
+    assert f"the cached base at {broken[:12]}" in retried.stderr
+    assert_step(clone, broken, set(), dict.fromkeys(TESTS, STATE.c0) | {FIXTURE: STATE.c0})
+
+
 def files_quoting(clone: Clone, spec: str) -> set[str]:
     found = subprocess.run(["git", "grep", "-l", "-F", spec], cwd=clone.root, capture_output=True, text=True)
     return set(found.stdout.split())
