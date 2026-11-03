@@ -396,14 +396,25 @@ phases.
 5. **Decide** (`decide` job). The bundle is laid over a checkout and every
    statement of the pair restated (`certified_pair.py restate`), so the tree is
    the one the pull request would carry; crozier is built from it, so its own
-   version stamps are the candidate pair's. Every item is then decided by
+   version stamps are the candidate pair's. `apply` then runs the departures
+   ledger recipe (`just departures-ledger`) over that tree. When it succeeds the
+   regenerated ledger is the tree's; it refuses, writing nothing, while any
+   comparison fails (a week Fern and crozier differ), and main's ledger is kept
+   and the refusal recorded. Either way the departures ledger is never a match:
+   rows the regenerated ledger changes from main's, or a refusal, make the run
+   a diff whose pull request carries that ledger and lists each changed row
+   under **Departures ledger**. Every item is then decided by
    crozier's own comparison and nothing else, through the gates
    [`decision-gates.tsv`](../tools/fern-goldens/decision-gates.tsv) names:
    - **per item**: each corpus golden and its flat golden, through `just
      fixtures-diff <fixture>` (`report_fixture_diffs`: the parity engine, the
      departure catalog and the golden's ledger rows). A difference outside the
-     corpus's `unmatched` list, or a crozier generation failure, is a diff; a
-     comparison the reporter could not process is one that could not run;
+     corpus's `unmatched` list, or a crozier generation failure, is a diff; so
+     is a corpus whose departure ledger rows drifted (stale or unrecorded),
+     which the reporter states before it compares that corpus's files, so the
+     decision and the pull request name its rows and say its files were not
+     compared; any other comparison the reporter could not process is one that
+     could not run;
    - **per family**: every other family, through the crozier-e2e suite
      (the tests `just test-e2e` runs, printing only what fails, which hold the overlay, hand-written,
      measurement, probe, authored-probe, departure-evidence and refusal-class

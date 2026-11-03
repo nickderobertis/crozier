@@ -59,6 +59,7 @@ import datetime
 import hashlib
 import importlib.machinery
 import importlib.util
+import itertools
 import json
 import math
 import os
@@ -103,7 +104,19 @@ NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
 BASE = "main"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
+# The repository's recipe that rewrites every departure ledger row over the
+# tree, and the files it writes: `apply` runs it over the laid-down references.
+LEDGER_RECIPE = ("just", "departures-ledger")
+LEDGER_OUTPUTS = (
+    "tests/fixtures/departures-ledger.tsv",
+    "docs/departures/evidence/invalid-example-values/inventory.tsv",
+)
+LEDGER_RECORD = Path(".local/fern-goldens-weekly/ledger.json")
+# Where the decision artifact carries a regenerated ledger the pull request lays.
+LEDGER_CARRIED = "ledger"
+# How many of one file's changed ledger rows the pull request body lists.
+LEDGER_BODY_ROWS = 60
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
 # in `.github/budgets.yaml`, whose test holds the two equal.
@@ -582,10 +595,95 @@ class Bundle:
 
 @dataclass(frozen=True)
 class FailingItem:
-    """An item crozier's comparison rejected, with the comparison's own report."""
+    """An item crozier's comparison rejected, with the comparison's own report.
+    `ledger_drift` names the departure ledger rows the corpus reporter found
+    stale or unrecorded, which stop it before it compares the corpus's files
+    (`files_compared` false)."""
 
     item: str
     report: str
+    ledger_drift: tuple[str, ...] = ()
+    files_compared: bool = True
+
+    def summary(self) -> str:
+        if not self.ledger_drift:
+            return f"`{self.item}`"
+        compared = "" if self.files_compared else "; files not compared"
+        return f"`{self.item}`: ledger drift: {len(self.ledger_drift)} row(s){compared}"
+
+    def to_json(self) -> dict[str, object]:
+        # Optional, and omitted for a plain rejection.
+        drift = {"ledger_drift": list(self.ledger_drift), "files_compared": self.files_compared}
+        return {"item": self.item, "report": self.report, **(drift if self.ledger_drift else {})}
+
+
+class LedgerOutcome(StrEnum):
+    """How the departures ledger recipe ended over the laid-down references."""
+
+    REGENERATED = "regenerated"
+    REFUSED = "refused"
+
+
+@dataclass(frozen=True)
+class LedgerRun:
+    """What `apply` recorded of the ledger recipe: its outcome and its last
+    lines (a refusal's reason)."""
+
+    outcome: LedgerOutcome
+    detail: str
+
+    def to_json(self) -> dict[str, object]:
+        return {"schema_version": SCHEMA_VERSION, "outcome": self.outcome.value, "detail": self.detail}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerRun:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} is no ledger record of this tool's schema; re-run `apply`")
+        outcome = field_of(record, "outcome", str, where)
+        if outcome not in set(LedgerOutcome):
+            raise WeeklyError(f"{where}: outcome {outcome!r} is none of {', '.join(LedgerOutcome)}")
+        return cls(LedgerOutcome(outcome), field_of(record, "detail", str, where))
+
+
+@dataclass(frozen=True)
+class LedgerRows:
+    """One ledger output's rows the tree adds and removes against its base."""
+
+    path: str
+    added: tuple[str, ...]
+    removed: tuple[str, ...]
+
+    def to_json(self) -> dict[str, object]:
+        return {"path": self.path, "added": list(self.added), "removed": list(self.removed)}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerRows:
+        path = safe_path(field_of(record, "path", str, where), where)
+        if path not in LEDGER_OUTPUTS:
+            raise WeeklyError(f"{where}: {path} is no file the ledger recipe writes")
+        return cls(path, tuple(strings_of(record, "added", where)), tuple(strings_of(record, "removed", where)))
+
+
+@dataclass(frozen=True)
+class LedgerChange:
+    """The departures ledger at the candidate pair, when it is not main's: the
+    recipe regenerated it with rows changed, or refused and main's was kept.
+    Either way the run is a difference, never a match."""
+
+    run: LedgerRun
+    changes: tuple[LedgerRows, ...]
+
+    def carried(self) -> tuple[str, ...]:
+        """The regenerated files the pull request carries."""
+        return tuple(rows.path for rows in self.changes) if self.run.outcome == LedgerOutcome.REGENERATED else ()
+
+    def to_json(self) -> dict[str, object]:
+        return {**self.run.to_json(), "changes": [rows.to_json() for rows in self.changes]}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> LedgerChange:
+        changes = tuple(LedgerRows.from_json(entry, where) for entry in field_of(record, "changes", list, where))
+        return cls(LedgerRun.from_json(record, where), changes)
 
 
 @dataclass(frozen=True)
@@ -675,12 +773,13 @@ class Decision:
     unchecked: list[Unchecked] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
+    ledger: LedgerChange | None = None
 
     @property
     def outcome(self) -> Outcome:
         if self.cannot_run:
             return Outcome.FAILURE
-        changed = self.known_changed or self.refusals_changed
+        changed = self.known_changed or self.refusals_changed or self.ledger
         # An item nothing checked is never a match: the pair is not recorded.
         return Outcome.DIFF if self.failing or self.unfetchable or changed or self.unchecked else Outcome.MATCH
 
@@ -694,7 +793,7 @@ class Decision:
             "complete": self.complete,
             "pair": self.pair.to_json(),
             "bundle": self.bundle,
-            "failing": {family: [vars(entry) for entry in entries] for family, entries in self.failing.items()},
+            "failing": {family: [entry.to_json() for entry in entries] for family, entries in self.failing.items()},
             "unfetchable": [vars(entry) for entry in self.unfetchable],
             "cannot_run": self.cannot_run,
             "gates": [{**vars(run_), "verdict": run_.verdict.value} for run_ in self.gates],
@@ -704,6 +803,8 @@ class Decision:
             **({"refusals_changed": [vars(entry) for entry in self.refusals_changed]} if self.refusals_changed else {}),
             # Optional too: a run with every item checked carries none.
             **({"unchecked": [entry.to_json() for entry in self.unchecked]} if self.unchecked else {}),
+            # Optional: a ledger the candidate leaves as main's carries none.
+            **({"ledger": self.ledger.to_json()} if self.ledger else {}),
         }
 
 
@@ -719,6 +820,7 @@ class RecordedDecision:
     known_changed: tuple[KnownFailureChange, ...] = ()
     refusals_changed: tuple[RefusalChange, ...] = ()
     unchecked: tuple[Unchecked, ...] = ()
+    ledger: LedgerChange | None = None
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -754,10 +856,15 @@ class RecordedDecision:
                 field_of(record, "unchecked", list, where) if isinstance(record, dict) and "unchecked" in record else []
             )
         )
-        if (known_changed or refusals_changed or unchecked) and outcome == Outcome.MATCH:
+        ledger = (
+            LedgerChange.from_json(record["ledger"], f"{where} ledger")
+            if isinstance(record, dict) and "ledger" in record
+            else None
+        )
+        if (known_changed or refusals_changed or unchecked or ledger) and outcome == Outcome.MATCH:
             raise WeeklyError(
-                f"{where}: a match changes no known failure or refusal and leaves no item unchecked; "
-                "re-run the decision job"
+                f"{where}: a match changes no known failure, refusal or departure ledger and leaves no item "
+                "unchecked; re-run the decision job"
             )
         return cls(
             Outcome(outcome),
@@ -768,6 +875,7 @@ class RecordedDecision:
             known_changed,
             refusals_changed,
             unchecked,
+            ledger,
         )
 
 
@@ -1918,9 +2026,75 @@ def verify_applied(base: Path, path: Path, bundle: Bundle) -> None:
         raise WeeklyError(f"this checkout declares {certified(base).label()}, not the bundle's {bundle.pair.label()}")
 
 
+def committed_rows(base: Path, path: str) -> list[str]:
+    """A ledger output's rows at the checkout's commit (none where it has no such file)."""
+    shown = run(["git", "-C", str(base), "show", f"HEAD:{path}"], base)
+    return shown.stdout.splitlines()[1:] if shown.returncode == 0 else []
+
+
+def tree_rows(base: Path, path: str) -> list[str]:
+    target = base / path
+    return target.read_text(encoding="utf-8").splitlines()[1:] if target.is_file() else []
+
+
+def regenerate_ledger(base: Path) -> LedgerRun:
+    """The repository's departures ledger recipe over the laid-down references.
+    It refuses, writing nothing, while any comparison fails (a week Fern and
+    crozier differ); main's ledger is then what the tree keeps, and the
+    refusal is what the decision reports."""
+    progress(f"departures ledger: `{' '.join(LEDGER_RECIPE)}` started; {resources(base)}")
+    started = time.monotonic()
+    result = run(LEDGER_RECIPE, base)
+    elapsed = time.monotonic() - started
+    tail = "\n".join(((result.stdout or "") + (result.stderr or "")).strip().splitlines()[-20:])
+    if result.returncode == 0:
+        outcome = LedgerOutcome.REGENERATED
+    else:
+        outcome = LedgerOutcome.REFUSED
+        for path in LEDGER_OUTPUTS:
+            # Main's, byte for byte, whatever a refusing run left.
+            if run(["git", "-C", str(base), "checkout", "HEAD", "--", path], base).returncode != 0:
+                (base / path).unlink(missing_ok=True)
+    progress(f"departures ledger: {outcome.value} in {elapsed:.1f}s; {resources(base)}")
+    ledger = LedgerRun(outcome, tail)
+    (base / LEDGER_RECORD).parent.mkdir(parents=True, exist_ok=True)
+    write_json(base / LEDGER_RECORD, ledger.to_json())
+    return ledger
+
+
+def ledger_change(base: Path) -> LedgerChange | None:
+    """What `apply`'s ledger recipe left against main's: None when it
+    regenerated every output unchanged."""
+    record = base / LEDGER_RECORD
+    if not record.is_file():
+        raise WeeklyError(f"{LEDGER_RECORD} is missing; run `apply` before `decide`")
+    ledger = LedgerRun.from_json(read_json(record, "ledger record"), str(LEDGER_RECORD))
+    changes = []
+    for path in LEDGER_OUTPUTS:
+        before, after = committed_rows(base, path), tree_rows(base, path)
+        if before == after:
+            continue
+        removed, added = list(before), []
+        for row in after:
+            if row in removed:
+                removed.remove(row)
+            else:
+                added.append(row)
+        changes.append(LedgerRows(path, tuple(added), tuple(removed)))
+    if ledger.outcome == LedgerOutcome.REGENERATED and not changes:
+        return None
+    return LedgerChange(ledger, tuple(changes))
+
+
 def apply(args: argparse.Namespace) -> int:
-    bundle = apply_bundle(root(), Path(args.bundle))
-    print(f"fern-goldens-weekly: applied {len(bundle.items)} item(s) at {bundle.pair.label()}")
+    base = root()
+    bundle = apply_bundle(base, Path(args.bundle))
+    ledger = regenerate_ledger(base)
+    kept = "" if ledger.outcome == LedgerOutcome.REGENERATED else " (the recipe refused; main's is kept)"
+    print(
+        f"fern-goldens-weekly: applied {len(bundle.items)} item(s) at {bundle.pair.label()}; "
+        f"departures ledger {ledger.outcome.value}{kept}"
+    )
     return 0
 
 
@@ -1973,6 +2147,9 @@ class GateResult:
     verdict: Verdict
     report: str
     exit: int | None = None
+    # The ledger rows a corpus report names as stale or unrecorded, when that
+    # drift is all it could not process.
+    drift: tuple[str, ...] = ()
 
 
 DIFFS = re.compile(r"(?m)^(\d+) differing file\(s\) across the reported corpora\.$")
@@ -1980,23 +2157,49 @@ GENERATION = re.compile(r"(?m)^(\d+) comparison generation failure\(s\) across t
 PROCESSING = re.compile(r"(?m)^(\d+) comparison processing failure\(s\) across the reported corpora\.$")
 REGRESSION = re.compile(r"(?m)^--- .* \[REGRESSION")
 SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
+PROCESSING_FAILED = "  Comparison processing failed: "
+DRIFT = re.compile(r"^tests/fixtures/departures-ledger\.tsv: `(.+)` is (stale|unrecorded): ")
+
+
+def ledger_drift(output: str, processing: int) -> tuple[str, ...]:
+    """The ledger rows a report's processing failures name, when every one of
+    them is the departure ledger's drift and nothing else: each block from
+    `Comparison processing failed:` to its blank line, each line a stale or
+    unrecorded row. Empty when any failure is anything else."""
+    rows: list[str] = []
+    blocks = 0
+    lines = output.splitlines()
+    for number, line in enumerate(lines):
+        if not line.startswith(PROCESSING_FAILED):
+            continue
+        blocks += 1
+        block = [line.removeprefix(PROCESSING_FAILED)]
+        block += list(itertools.takewhile(bool, lines[number + 1 :]))
+        matched = [DRIFT.match(text) for text in block]
+        if not all(matched):
+            return ()
+        rows += [f"{match.group(2)}: {match.group(1)}" for match in matched if match]
+    return tuple(rows) if blocks == processing and rows else ()
 
 
 # llmlint: ignore[changed_behavior_has_e2e] `report_fixture_diffs` is crozier-e2e's ignored reporter over a committed corpus golden, so driving it needs the whole fixture tree and the e2e build; tools/fern-goldens/tests/weekly_test.py drives this reader over the reporter's own report shapes, and tools/fern-goldens-git/tests/fern_goldens_git_test.py holds those shapes to the strings the reporter prints.
-def read_report(code: int, output: str) -> Verdict:
+def read_report(code: int, output: str) -> tuple[Verdict, tuple[str, ...]]:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in
-    `unmatched` or a Crozier generation failure is a rejection; a comparison it
-    could not process (a processing failure), a setup failure or a report
-    without its summaries is a comparison that could not run, which is never a
-    decision, so it fails the run and nothing is published."""
+    `unmatched` or a Crozier generation failure is a rejection; so is a corpus
+    whose departure ledger rows drifted (returned with those rows), which the
+    reporter states before it compares the corpus's files. A comparison it
+    could not otherwise process, a setup failure or a report without its
+    summaries is a comparison that could not run, which is never a decision, so
+    it fails the run and nothing is published."""
     summaries = [pattern.search(output) for pattern in (DIFFS, GENERATION, PROCESSING)]
     if code != 0 or any(match is None for match in summaries) or SETUP.search(output):
-        return Verdict.CANNOT_RUN
+        return Verdict.CANNOT_RUN, ()
     _diffs, generation, processing = (int(match.group(1)) for match in summaries if match is not None)
     if processing:
-        return Verdict.CANNOT_RUN
-    return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS
+        drift = ledger_drift(output, processing)
+        return (Verdict.REJECT, drift) if drift else (Verdict.CANNOT_RUN, ())
+    return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS, ()
 
 
 def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
@@ -2011,7 +2214,8 @@ def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
             return GateResult(Verdict.CANNOT_RUN, str(error))
     output = (result.stdout or "") + (result.stderr or "")
     if gate.verdict == "fixtures-report":
-        return GateResult(read_report(result.returncode, output), output, result.returncode)
+        verdict, drift = read_report(result.returncode, output)
+        return GateResult(verdict, output, result.returncode, drift)
     if result.returncode in gate.passes:
         return GateResult(Verdict.PASS, output, result.returncode)
     if result.returncode in gate.rejects:
@@ -2135,7 +2339,7 @@ def decide_bundle(
     jobs: int = 1,
     reserve: float = COMPARISON_RESERVE_GIB * 2**30,
 ) -> Decision:
-    decision = Decision(bundle.pair, bundle.complete, digest)
+    decision = Decision(bundle.pair, bundle.complete, digest, ledger=ledger_change(base))
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
         match entry.status:
@@ -2196,10 +2400,31 @@ def decide_bundle(
         if result.verdict != Verdict.REJECT:
             continue
         if run.item is not None:
-            decision.failing.setdefault(run.families[0], []).append(FailingItem(run.item, result.report.strip()))
+            failing = FailingItem(run.item, result.report.strip(), result.drift, files_compared=not result.drift)
+            decision.failing.setdefault(run.families[0], []).append(failing)
         else:
             attribute(decision, run.gate, list(run.families), items, result.report)
     return decision
+
+
+def ledger_headline(ledger: LedgerChange) -> str:
+    rows = sum(len(change.added) + len(change.removed) for change in ledger.changes)
+    if ledger.run.outcome == LedgerOutcome.REGENERATED:
+        return f"regenerated with {rows} row(s) changed"
+    return "recipe refused, so main's ledger is kept"
+
+
+def ledger_lines(ledger: LedgerChange | None) -> list[str]:
+    """The decision's departures ledger, line by line, for the summary and the
+    pull request body: never a match."""
+    if ledger is None:
+        return []
+    lines = [ledger_headline(ledger)]
+    if ledger.run.outcome == LedgerOutcome.REFUSED:
+        last = ledger.run.detail.strip().splitlines()[-1:] or ["(no output)"]
+        lines.append(f"`{' '.join(LEDGER_RECIPE)}` refused: {last[0]}")
+    lines += [f"{rows.path}: {len(rows.added)} row(s) added, {len(rows.removed)} removed" for rows in ledger.changes]
+    return lines
 
 
 def fenced(text: str) -> str:
@@ -2246,6 +2471,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.refusals_changed
             else ""
         )
+        ledger = f", and the departures ledger {ledger_headline(decision.ledger)}" if decision.ledger else ""
         unchecked = (
             f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran), "
             "so the run that opened this concluded failure"
@@ -2253,7 +2479,8 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             else ""
         )
         lines.append(
-            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}{unchecked}. "
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}{refusals}{ledger}"
+            f"{unchecked}. "
             "This carries the regenerated references and the new pair; crozier's checks on it show what crozier "
             "must change. It is not auto-merged."
         )
@@ -2279,8 +2506,17 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
                 report = entry.report
                 if len(report) > limit:
                     report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
-                lines += [f"- `{entry.item}`", "", "<details><summary>report</summary>", "", fenced(report), ""]
+                lines += [f"- {entry.summary()}", "", "<details><summary>report</summary>", "", fenced(report), ""]
                 lines += ["</details>", ""]
+    if decision.ledger:
+        lines += ["## Departures ledger", "", *ledger_lines(decision.ledger), ""]
+        for rows in decision.ledger.changes:
+            listed = [f"+ {row}" for row in rows.added] + [f"- {row}" for row in rows.removed]
+            more = len(listed) - LEDGER_BODY_ROWS
+            shown = listed[:LEDGER_BODY_ROWS] + (
+                [f"… {more} more (the decision artifact lists them all)"] if more > 0 else []
+            )
+            lines += [f"<details><summary>{rows.path}</summary>", "", fenced("\n".join(shown)), "", "</details>", ""]
     if decision.known_changed:
         lines += ["## Known upstream Fern failures that changed", ""]
         for change in decision.known_changed:
@@ -2332,9 +2568,13 @@ def decide(args: argparse.Namespace) -> int:
         args.jobs or cpus(),
         args.reserve_gib * 2**30,
     )
+    for path in decision.ledger.carried() if decision.ledger else ():
+        carried = output / LEDGER_CARRIED / path
+        carried.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(base / path, carried)
     write_json(output / "decision.json", decision.to_json())
     (output / "body.md").write_text(body(decision, bundle, current), encoding="utf-8", newline="\n")
-    failing = [f"{family} `{entry.item}`" for family, entries in decision.failing.items() for entry in entries]
+    failing = [f"{family} {entry.summary()}" for family, entries in decision.failing.items() for entry in entries]
     summarize(
         args.summary,
         [
@@ -2345,6 +2585,7 @@ def decide(args: argparse.Namespace) -> int:
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- **not checked**: {entry.line()}" for entry in decision.unchecked),
             *(f"- differs: {line}" for line in failing),
+            *(f"- departures ledger: {line}" for line in ledger_lines(decision.ledger)),
             *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
             *(f"- refusal changed: `{change.item}`: {change.detail}" for change in decision.refusals_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
@@ -2366,9 +2607,17 @@ def mark(steps: list[Step], name: str, outcome: str) -> None:
     print(f"fern-goldens-weekly: publish: {name}: {outcome}")
 
 
-def commit_tree(base: Path, bundle_path: Path, decision: RecordedDecision, checked_on: str) -> None:
-    """The one commit the pull request carries, on the planned base."""
+def commit_tree(
+    base: Path, bundle_path: Path, decision: RecordedDecision, checked_on: str, decision_path: Path
+) -> None:
+    """The one commit the pull request carries, on the planned base, with the
+    departures ledger the decision regenerated."""
     apply_bundle(base, bundle_path)
+    for path in decision.ledger.carried() if decision.ledger else ():
+        carried = decision_path / LEDGER_CARRIED / path
+        if not carried.is_file():
+            raise WeeklyError(f"the decision carries no {LEDGER_CARRIED}/{path}; re-run the decision job")
+        shutil.copy2(carried, inside(base, path, "the decision's ledger"))
     if decision.outcome == Outcome.MATCH:
         path = base / CHECKS
         rows = read_tsv(path, CHECKS_HEADER) if path.is_file() else []
@@ -2478,7 +2727,7 @@ def publish(args: argparse.Namespace) -> int:
             datetime.date.fromisoformat(checked_on)
         except ValueError as error:
             raise WeeklyError(f"--checked-on {checked_on!r} is no YYYY-MM-DD date") from error
-        commit_tree(base, Path(args.bundle), decision, checked_on)
+        commit_tree(base, Path(args.bundle), decision, checked_on, Path(args.decision))
         mark(steps, "commit", git(base, "rev-parse", "--short=12", "HEAD"))
         push(base, steps)
         # Every write reads the remote first: a branch already holding this tree,

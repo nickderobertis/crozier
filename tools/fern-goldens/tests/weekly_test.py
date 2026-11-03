@@ -424,9 +424,41 @@ class ReportTests(unittest.TestCase):
             ),
             ("no summaries", 0, "=== anchore.io ===\n", "cannot-run"),
             ("a crashed reporter", 101, self.report("  no differences.\n"), "cannot-run"),
+            (
+                "ledger drift beside another processing failure",
+                0,
+                self.report(f"{self.DRIFT}\n=== b ===\n  Comparison processing failed: ledger\n\n", p=2),
+                "cannot-run",
+            ),
         ):
             with self.subTest(name):
-                self.assertEqual(verdict, weekly.read_report(code, output))
+                self.assertEqual((verdict, ()), weekly.read_report(code, output))
+
+    # The departure ledger's drift, as `report_fixture_diffs` prints it: one
+    # processing failure whose lines are each a stale or unrecorded row.
+    DRIFT = (
+        "  Comparison processing failed: tests/fixtures/departures-ledger.tsv: "
+        "`tests/fixtures/anchore.io/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-identity-header-prefix` "
+        "is stale: the comparison no longer applies that departure there — if that is intended, regenerate the "
+        "ledger with `just departures-ledger`; otherwise fix the generator\n"
+        "tests/fixtures/departures-ledger.tsv: "
+        "`tests/fixtures/anchore.io/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-name-version-headers` "
+        "is unrecorded: the comparison applies that departure, but the ledger has no such row — if the departure "
+        "is intended, regenerate the ledger with `just departures-ledger`; otherwise fix the generator\n"
+    )
+
+    def test_ledger_drift_alone_is_a_difference_naming_its_rows(self) -> None:
+        """A corpus whose departure ledger rows drifted is a rejection naming
+        each row, never a comparison that could not run."""
+        verdict, rows = weekly.read_report(0, self.report(self.DRIFT, p=1))
+        self.assertEqual(weekly.Verdict.REJECT, verdict)
+        self.assertEqual(
+            (
+                "stale: tests/fixtures/anchore.io/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-identity-header-prefix",
+                "unrecorded: tests/fixtures/anchore.io/expected\tsrc/fern/core/client_wrapper.py\t45\tsdk-name-version-headers",
+            ),
+            rows,
+        )
 
 
 class GateTableTests(unittest.TestCase):
@@ -797,18 +829,20 @@ class TimingTableTests(unittest.TestCase):
                 self.assertIn(message, str(raised.exception))
 
 
-# The artifacts each weekly phase writes, byte for byte, at SCHEMA_VERSION 3: a
+# The artifacts each weekly phase writes, byte for byte, at SCHEMA_VERSION 5: a
 # change to what they emit must move this golden (and, when an old reader would
 # misread it, the version) in the same change. Regenerate with
 # CROZIER_UPDATE_WEEKLY_GOLDEN=1 after a deliberate contract change.
-CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v4"
+CONTRACT_GOLDEN = REPO / "tools/fern-goldens/tests/golden/weekly-v5"
 
 
 def contract_artifacts() -> dict[str, dict[str, object]]:
     """One of each artifact, as the phases build them: a plan, a shard result
     carrying an `ok`, a `refusal-changed` and a `failed` item, a bundle carrying
     those and a `not-generated` item of a shard that uploaded nothing, and a
-    diff decision with a populated `refusals_changed` and `unchecked`."""
+    diff decision with a populated `refusals_changed`, `unchecked`, `ledger`
+    and a failing item whose departure ledger rows drifted, and the ledger
+    record `apply` writes."""
     pair = weekly.Pair("2.0.0", "3.0.0")
     # Literal budget and estimate, so a retuned budget or overhead moves the
     # planner's tests, not this contract.
@@ -864,16 +898,25 @@ def contract_artifacts() -> dict[str, dict[str, object]]:
     decision.gates.append(
         weekly.GateRun("crozier compare", "refusals", "heap-exhausted", weekly.Verdict.PASS, 1, "reports/r.txt")
     )
+    row = "tests/fixtures/a/expected\tsrc/fern/core/client_wrapper.py\t{}\tsdk-name-version-headers"
+    decision.failing["corpus"] = [
+        weekly.FailingItem("a", "=== a ===", (f"stale: {row.format(45)}",), files_compared=False)
+    ]
+    ledger = weekly.LedgerRun(weekly.LedgerOutcome.REGENERATED, "departures-ledger: wrote it (2 rows)")
+    decision.ledger = weekly.LedgerChange(
+        ledger, (weekly.LedgerRows("tests/fixtures/departures-ledger.tsv", (row.format(46),), (row.format(45),)),)
+    )
     return {
         "plan.json": plan.to_json(),
         "result.json": shard.to_json(),
         "bundle.json": bundle.to_json(),
         "decision.json": decision.to_json(),
+        "ledger.json": ledger.to_json(),
     }
 
 
 class ContractGoldenTests(unittest.TestCase):
-    """What the phases write is the committed version-4 contract, and the
+    """What the phases write is the committed version-5 contract, and the
     phases that read it accept the golden as written."""
 
     def test_each_artifact_serializes_to_the_committed_golden(self) -> None:
@@ -908,6 +951,11 @@ class ContractGoldenTests(unittest.TestCase):
         self.assertEqual(golden("bundle.json"), bundle.to_json())
         read = weekly.RecordedDecision.from_json(golden("decision.json"), "decision")
         self.assertEqual(weekly.Outcome.DIFF, read.outcome)
+        assert read.ledger is not None
+        self.assertEqual(("tests/fixtures/departures-ledger.tsv",), read.ledger.carried())
+        self.assertEqual(golden("decision.json")["ledger"], read.ledger.to_json())
+        ledger = weekly.LedgerRun.from_json(golden("ledger.json"), "ledger")
+        self.assertEqual(golden("ledger.json"), ledger.to_json())
         self.assertEqual((weekly.RefusalChange("heap-exhausted", bundle.items[1].detail),), read.refusals_changed)
         self.assertEqual(
             [("measurements", "failed"), ("corpus", "not-generated")],
@@ -987,7 +1035,33 @@ class DecisionRecordTests(unittest.TestCase):
         for message, mutate in (
             ("`refusals_changed` must be list", lambda r: r.update(refusals_changed={})),
             ("`detail` must be str", lambda r: r["refusals_changed"][0].pop("detail")),
-            ("a match changes no known failure or refusal", lambda r: r.update(outcome="match")),
+            ("a match changes no known failure, refusal", lambda r: r.update(outcome="match")),
+        ):
+            broken = json.loads(json.dumps(record))
+            mutate(broken)
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.RecordedDecision.from_json(broken, "decision")
+            self.assertIn(message, str(raised.exception))
+
+    def test_a_departures_ledger_change_is_omitted_when_none_and_never_a_match(self) -> None:
+        pair = weekly.Pair("5.170.0", "5.42.0")
+        empty = weekly.Decision(pair, True, "digest")
+        self.assertNotIn("ledger", empty.to_json())
+        self.assertIsNone(weekly.RecordedDecision.from_json(empty.to_json(), "decision").ledger)
+        refused = weekly.LedgerRun(weekly.LedgerOutcome.REFUSED, "departures-ledger: a comparison failed")
+        populated = weekly.Decision(pair, True, "digest", ledger=weekly.LedgerChange(refused, ()))
+        record = json.loads(json.dumps(populated.to_json()))
+        read = weekly.RecordedDecision.from_json(record, "decision")
+        self.assertEqual(weekly.Outcome.DIFF, read.outcome, "a refused recipe is never a match")
+        assert read.ledger is not None
+        self.assertEqual((), read.ledger.carried(), "a refused recipe carries no regenerated ledger")
+        for message, mutate in (
+            ("is none of regenerated, refused", lambda r: r["ledger"].update(outcome="skipped")),
+            (
+                "is no file the ledger recipe writes",
+                lambda r: r["ledger"].update(changes=[{"path": "README.md", "added": [], "removed": []}]),
+            ),
+            ("a match changes no known failure, refusal or departure ledger", lambda r: r.update(outcome="match")),
         ):
             broken = json.loads(json.dumps(record))
             mutate(broken)

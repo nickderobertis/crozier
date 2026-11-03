@@ -61,6 +61,9 @@ CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "d
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
 TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
+# The departures ledger the seed commits: one row, of the corpus fixture alpha.
+LEDGER_HEADER = "golden\tfile\tline\tdeparture"
+LEDGER_ROW = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{line}\tsdk-name-version-headers"
 # A comparison that never ends, touching $HANG_SENTINEL as it starts, and the
 # free disk and memory every progress line of `decide` states.
 HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
@@ -330,13 +333,27 @@ sys.exit(2)
 
 JUST = r"""
 #!/usr/bin/env python3
-import os, pathlib, subprocess, sys
+import json, os, pathlib, subprocess, sys
 
 args = sys.argv[1:]
-if "fetch-corpus" not in args:
-    print(f"just stand-in: only fetch-corpus, not {args}", file=sys.stderr)
-    sys.exit(2)
 root = pathlib.Path(os.environ["CROZIER_FERN_WEEKLY_ROOT"])
+# crozier-e2e's ledger recipe, which needs the whole fixture tree and its
+# build: by default every row as committed; LEDGER_ROWS the rows it finds;
+# LEDGER_REFUSE a comparison failing while it records, so it writes nothing.
+if args == ["departures-ledger"]:
+    if os.environ.get("LEDGER_REFUSE"):
+        print("departures-ledger: a comparison failed while recording (above)", file=sys.stderr)
+        print("departures-ledger: fix it, then rerun just departures-ledger", file=sys.stderr)
+        sys.exit(1)
+    ledger = root / "tests/fixtures/departures-ledger.tsv"
+    header, *rows = ledger.read_text(encoding="utf-8").splitlines()
+    rows = json.loads(os.environ["LEDGER_ROWS"]) if os.environ.get("LEDGER_ROWS") else rows
+    ledger.write_text("\n".join([header, *rows]) + "\n", encoding="utf-8")
+    print(f"departures-ledger: wrote tests/fixtures/departures-ledger.tsv ({len(rows)} rows)")
+    sys.exit(0)
+if "fetch-corpus" not in args:
+    print(f"just stand-in: only fetch-corpus and departures-ledger, not {args}", file=sys.stderr)
+    sys.exit(2)
 result = subprocess.run(
     [root / "tools" / "corpus" / "fetch-corpus.sh", *args[args.index("fetch-corpus") + 1 :]],
     cwd=root, text=True, capture_output=True, check=False,
@@ -384,6 +401,7 @@ class Journey:
     plan: Completed | None = None
     shards: list[Completed] = field(default_factory=list)
     assemble: Completed | None = None
+    apply: Completed | None = None
     decide: Completed | None = None
     decision: dict[str, object] | None = None
     publish: Completed | None = None
@@ -550,6 +568,9 @@ class WeeklyRunTests(unittest.TestCase):
         )
         (fixtures / "flat-goldens.txt").write_text("# fixture|spec\n", encoding="utf-8")
         (fixtures / "fern-generator-config.txt").write_text("# fixture|audiences|…\n", encoding="utf-8")
+        (fixtures / "departures-ledger.tsv").write_text(
+            f"{LEDGER_HEADER}\n{LEDGER_ROW.format(line=3)}\n", encoding="utf-8"
+        )
         (fixtures / "fern-pair-checks.tsv").write_text(
             "fern_cli_version\tfern_python_sdk_version\tchecked_on\toutcome\n", encoding="utf-8"
         )
@@ -812,6 +833,7 @@ class WeeklyRunTests(unittest.TestCase):
             return state
         decider = self.clone()
         applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
+        state.apply = applied
         self.assertEqual(0, applied.returncode, applied.stderr)
         decision = artifacts / "decision"
         jobs = ("--jobs", decide_jobs) if decide_jobs else ()
@@ -997,6 +1019,129 @@ class WeeklyRunTests(unittest.TestCase):
             self.remote_file(branch, "tests/fixtures/fern-pair-checks.tsv"),
             "a diff records no checked pair",
         )
+
+    def test_a_departures_ledger_regenerated_with_changed_rows_is_a_diff_carrying_it(self) -> None:
+        """`apply` regenerates the departures ledger over the laid-down
+        references with the repository's recipe; rows it changes from main's
+        make the run a diff, never a match, and the pull request carries the
+        regenerated ledger and names each changed row."""
+        self.publish_seed()
+        moved = LEDGER_ROW.format(line=4)
+        state = self.run_workflow(LEDGER_ROWS=json.dumps([moved]))
+        self.assertRegex(
+            state.ran("apply").stdout,
+            r"departures ledger: `just departures-ledger` started; .*\n.*departures ledger: regenerated in [0-9.]+s; "
+            r".*\n.*applied 8 item\(s\) at .*; departures ledger regenerated\n$",
+        )
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual({}, state.failing(), "every comparison passes: only the ledger differs")
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        self.assertEqual("regenerated", ledger["outcome"])
+        self.assertEqual(
+            [
+                {
+                    "path": "tests/fixtures/departures-ledger.tsv",
+                    "added": [moved],
+                    "removed": [LEDGER_ROW.format(line=3)],
+                }
+            ],
+            ledger["changes"],
+        )
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"], "a changed ledger is never auto-merged")
+        self.assertIn("the departures ledger regenerated with 2 row(s) changed", pull["body"])
+        section = pull["body"].split("## Departures ledger", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn("tests/fixtures/departures-ledger.tsv: 1 row(s) added, 1 removed", section)
+        self.assertIn(f"+ {moved}", section)
+        self.assertIn(f"- {LEDGER_ROW.format(line=3)}", section)
+        self.assertEqual(
+            f"{LEDGER_HEADER}\n{moved}",
+            self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
+            "the pull request carries the regenerated ledger",
+        )
+        self.assertIn("- departures ledger: regenerated with 2 row(s) changed", self.summary())
+        self.assertEqual("success", state.status())
+
+    def test_a_refused_ledger_recipe_keeps_mains_ledger_and_drift_is_a_diff_naming_corpora_not_compared(
+        self,
+    ) -> None:
+        """The recipe refuses while any comparison fails, so main's ledger is
+        kept and the refusal recorded; the corpus reporter then names that
+        ledger's drifted rows, which stop it before it compares the corpus's
+        files: a difference naming the rows and that the files were not
+        compared, never a comparison that could not run."""
+        reporter = self.seed / "stand-in-fixtures-report"
+        write_executable(
+            reporter,
+            r"""
+            #!/usr/bin/env python3
+            import sys
+
+            corpus = sys.argv[1]
+            drift = corpus == "alpha"
+            row = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{}\tsdk-name-version-headers"
+            print(f"=== {corpus} ===")
+            if drift:
+                print(
+                    "  Comparison processing failed: tests/fixtures/departures-ledger.tsv: "
+                    f"`{row.format(3)}` is stale: the comparison no longer applies that departure there"
+                )
+                print(
+                    f"tests/fixtures/departures-ledger.tsv: `{row.format(4)}` is unrecorded: the comparison applies "
+                    "that departure, but the ledger has no such row"
+                )
+                print()
+            else:
+                print("  no differences.")
+            print("0 comparison generation failure(s) across the reported corpora.")
+            print(f"{int(drift)} comparison processing failure(s) across the reported corpora.")
+            print("\n0 differing file(s) across the reported corpora.")
+            """,
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                "corpus\titem\tfixtures-report\t{root}/stand-in-fixtures-report {item}"
+                if line.startswith("corpus\t")
+                else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(LEDGER_REFUSE="1")
+        self.assertIn("departures ledger refused (the recipe refused; main's is kept)", state.ran("apply").stdout)
+        decided = state.ran("decide")
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual({"corpus": ["alpha"]}, state.failing())
+        failing = state.recorded()["failing"]
+        assert isinstance(failing, dict)
+        (alpha,) = failing["corpus"]
+        self.assertFalse(alpha["files_compared"])
+        self.assertEqual(
+            [f"stale: {LEDGER_ROW.format(line=3)}", f"unrecorded: {LEDGER_ROW.format(line=4)}"], alpha["ledger_drift"]
+        )
+        ledger = state.recorded()["ledger"]
+        assert isinstance(ledger, dict)
+        self.assertEqual(("refused", []), (ledger["outcome"], ledger["changes"]))
+        self.assertIn("a comparison failed while recording", ledger["detail"])
+        self.assertIn("- differs: corpus `alpha`: ledger drift: 2 row(s); files not compared", self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("- `alpha`: ledger drift: 2 row(s); files not compared", pull["body"])
+        self.assertIn("recipe refused, so main's ledger is kept", pull["body"])
+        self.assertIn("`just departures-ledger` refused: departures-ledger: fix it, then rerun", pull["body"])
+        self.assertEqual(
+            self.remote_file("main", "tests/fixtures/departures-ledger.tsv"),
+            self.remote_file("fern-goldens/update", "tests/fixtures/departures-ledger.tsv"),
+            "main's ledger is what the pull request keeps",
+        )
+        self.assertEqual("success", state.status())
 
     def test_a_refusal_class_crozier_does_not_refuse_is_a_diff(self) -> None:
         """A regenerated refusal record says Fern refuses a document crozier

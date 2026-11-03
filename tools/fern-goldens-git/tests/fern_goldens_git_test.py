@@ -2860,6 +2860,12 @@ class ReporterContractTests(unittest.TestCase):
         ):
             self.assertIn(printed, source)
         self.assertIn("differing file(s) across the reported corpora", source)
+        # The ledger drift the decision reads as a difference, never as a
+        # comparison that could not run: each row's line, as the ledger prints it.
+        ledger = (REPO / "tests/support/departures_ledger.rs").read_text(encoding="utf-8")
+        self.assertIn('pub const LEDGER: &str = "tests/fixtures/departures-ledger.tsv";', ledger)
+        self.assertIn('"{LEDGER}: `{}` is stale: ', ledger)
+        self.assertIn('"{LEDGER}: `{}` is unrecorded: ', ledger)
 
 
 if __name__ == "__main__":

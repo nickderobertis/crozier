@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "index": 0,
   "pair": {
     "cli": "2.0.0",

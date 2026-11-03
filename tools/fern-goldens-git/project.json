@@ -34,6 +34,7 @@
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/tests/support/departures_ledger.rs",
         "pythonTooling"
       ],
       "outputs": [
