@@ -745,6 +745,16 @@ docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-c
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/type-declarations/R19/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/type-declarations/R19/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/type-declarations/R19/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Allotment Ledger
+  version: 1.0.0
+paths:
+  /plots/{plotId}/handovers:
+    post:
+      operationId: handOverPlot
+      parameters:
+        - name: plotId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenant]
+              properties:
+                tenant:
+                  type: string
+                  description: The tenant taking the plot over.
+                  x-ledgerProperty:
+                    names_resource:
+                      $ref: '#/components/schemas/Tenant'
+      responses:
+        '200':
+          description: The handover.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+components:
+  schemas:
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          x-ledgerProperty:
+            names_resource:
+              $ref: '#/components/schemas/Tenant'
+        name:
+          type: string

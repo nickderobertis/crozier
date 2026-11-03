@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Kiln Monitor
+  version: 1.0.0
+paths:
+  /kiln/temperature:
+    get:
+      operationId: getTemperature
+      responses:
+        '200':
+          description: The kiln's temperature in degrees Celsius.
+          content:
+            application/json:
+              schema:
+                type: number
+  /kiln/snapshot:
+    get:
+      operationId: getSnapshot
+      summary: A picture of the kiln's spy hole.
+      responses:
+        '200':
+          $ref: '#/components/responses/Snapshot'
+components:
+  responses:
+    Snapshot:
+      description: The picture.
+      content:
+        image/png:
