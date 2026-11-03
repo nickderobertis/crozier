@@ -3476,8 +3476,8 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-uri-template` | `schemas` | `openlinksw-osdb` |
 | `variant-nullable-value-optional-default-none` | `schemas` | `andreychh-coopera` |
 | `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |
-| `anyof-array-variant-inline-const-item` | `schemas` | `canonical-test-observer` |
 | `request-body-string-map` | `bodies-media` | `confluent-kafka-connect` |
+| `anyof-array-variant-inline-const-item` | `schemas` | `canonical-test-observer` |
 | `union-of-two-enum-refs-alias` | `schemas` | `chrome-webstatus-backend` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
