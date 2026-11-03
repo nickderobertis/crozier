@@ -47,7 +47,7 @@ def handle(_transport: httpx.HTTPTransport, request: httpx.Request) -> httpx.Res
     return httpx.Response(200, json={"ticket_id": "t-1"})
 
 
-# llmlint: ignore[e2e_not_mocked] Only the network boundary is replaced: the README's call builds the SDK's client through its public constructor and the emitted package runs unmodified; this stands in for the external server's socket and answers with its response.
+# llmlint: ignore[e2e_not_mocked, tests_mirror_real_usage] The README's call is run verbatim, so its `FernApi()` builds the SDK's client through the public constructor against the declared `https://desk.greenhouse.test`; pointing it at a local server would edit the call under test, so only the socket boundary is replaced, standing in for that external server's response.
 httpx.HTTPTransport.handle_request = handle  # type: ignore[method-assign]
 # Running the generated README's own worked call is what this journey proves.
 exec(code, {"__name__": "worked_call"})  # noqa: S102
