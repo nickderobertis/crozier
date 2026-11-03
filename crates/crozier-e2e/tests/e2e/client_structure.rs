@@ -618,9 +618,15 @@ fn sdk_env_a_reused_body_s_worked_call_runs_with_the_renamed_keyword() {
     );
     let crozier = run(&out);
     assert!(crozier.status.success(), "{crozier:?}");
+    // Compared line by line, so Windows' `\r\n` print ending reads the same
+    // as `\n`: the program prints exactly this one request line.
     assert_eq!(
-        String::from_utf8_lossy(&crozier.stdout),
-        "POST https://desk.greenhouse.test/questions?bench=bench {\"bench\":\"bench\",\"asked_by\":\"asked_by\"}\n"
+        String::from_utf8_lossy(&crozier.stdout)
+            .lines()
+            .collect::<Vec<_>>(),
+        [
+            "POST https://desk.greenhouse.test/questions?bench=bench {\"bench\":\"bench\",\"asked_by\":\"asked_by\"}"
+        ]
     );
 }
 
