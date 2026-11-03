@@ -62,6 +62,8 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from reach_store import Entry, Inputs, Store
 
 REPO = Path(__file__).resolve().parents[2]
@@ -377,6 +379,30 @@ def _split_sites(cell: str) -> list[str]:
 _SITE = re.compile(r"^(?P<file>src/[a-z_]+\.rs)::(?P<item>[A-Za-z_][A-Za-z0-9_:]*)(?:\[(?P<arm>[^\]]+)\])?$")
 
 
+# Item end lines by file content: the verb resolves hundreds of sites over the
+# same few files, and bounding an item rescans the file from it, so each
+# (content, line) is bounded once per process. A handful of contents at a time.
+_ITEM_ENDS: dict[tuple[str, ...], dict[int, int | None]] = {}
+_ITEM_ENDS_KEPT = 64
+
+
+def _item_ends(lines: list[str]) -> Callable[[int], int | None]:
+    """`fixtures-coverage-report.py`'s `_item_end_line(lines, index - 1)` for this content, memoized."""
+    key = tuple(lines)
+    ends = _ITEM_ENDS.get(key)
+    if ends is None:
+        if len(_ITEM_ENDS) >= _ITEM_ENDS_KEPT:
+            _ITEM_ENDS.clear()
+        ends = _ITEM_ENDS[key] = {}
+
+    def end(index: int) -> int | None:
+        if index not in ends:
+            ends[index] = REPORT._item_end_line(lines, index - 1)
+        return ends[index]
+
+    return end
+
+
 def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
     """Inclusive 1-indexed spans of every `fn` named by `item` (`name` or `Type::name`)."""
     owner, _, name = item.rpartition("::")
@@ -385,11 +411,12 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
         r"^(?:impl(?:<[^>]*>)?\s+(?:[A-Za-z_][A-Za-z0-9_<>, ]*\s+for\s+)?(?P<type>[A-Za-z_][A-Za-z0-9_]*))"
     )
     spans = []
+    item_end = _item_ends(lines)
     current_impl: tuple[str, int] | None = None
     for index, line in enumerate(lines):
         header = impl.match(line)
         if header:
-            end = REPORT._item_end_line(lines, index - 1)
+            end = item_end(index)
             current_impl = (header.group("type"), end or index + 1)
         if current_impl and index + 1 > current_impl[1]:
             current_impl = None
@@ -400,7 +427,7 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
         if not owner and current_impl is not None and line.startswith(" "):
             # A bare name means a free function; methods are named `Type::name`.
             continue
-        end = REPORT._item_end_line(lines, index - 1)
+        end = item_end(index)
         if end is None:
             fail(
                 f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name} (`{REPIN}` re-anchors one whose code only moved)"
