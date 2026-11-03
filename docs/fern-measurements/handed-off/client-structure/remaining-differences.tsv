@@ -1,31 +1,19 @@
 document	file	side	root_cause	source
 boruta	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 boruta	src/fern/assets/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-crystalshards	src/fern/shards/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-resemble	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-resemble	src/fern/custom_pronunciations/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 skyvern-docs	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
 skyvern-fern	reference.md	differs	R6	docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md
 valtown	src/fern/types/membership_role.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-whatsapp	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-whatsapp	src/fern/group/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-zalando	reference.md	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-zalando	src/fern/o_auth2token/client.py	differs	example-value-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 whatwatt-clean	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 whatwatt-clean	src/fern/maintenance/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 whatwatt-bundle	reference.md	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 whatwatt-bundle	src/fern/maintenance/client.py	differs	example-presence	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-konfig	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-konfig	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	reference.md	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/launched_workflow_model_creator.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/workflow_async_launch_success_response_workflow_urls.py	differs	description-source	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-ironclad-jentic	src/fern/webhooks/client.py	differs	example-enum-member	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 ironclad-jentic	src/fern/types/workflows_create_comment_request.py	crozier only	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	reference.md	differs	inline-type-naming	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 deepgram-bundle	src/fern/__init__.py	differs	type-placement	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
@@ -164,9 +152,7 @@ tianji	src/fern/page/types/page_get_page_info_response_zero.py	crozier only	resp
 tianji	src/fern/page/types/page_get_page_info_response_zero_static.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/page/types/page_get_page_info_response_zero_status.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 tianji	src/fern/page/types/page_get_page_info_response_zero_status_monitor_list_item.py	crozier only	response-type-resolution	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	reference.md	differs	example-matching-union-variant	docs/openapi-surface/witness-search-fixture-only-schemas/README.md
 nussknacker	src/fern/migrations/raw_client.py	differs	request-content-type-header	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
-nussknacker	src/fern/nodes/client.py	differs	example-matching-union-variant	docs/openapi-surface/witness-search-fixture-only-schemas/README.md
 osf	README.md	differs	snippet-rendering	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 osf	reference.md	differs	snippet-rendering	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
 osf	src/fern/__init__.py	differs	orphan-type-emission	docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md
