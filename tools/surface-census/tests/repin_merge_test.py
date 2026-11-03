@@ -111,6 +111,11 @@ def test_a_scenario_index_conflict_resolves_only_in_the_cells_its_writer_restate
     [
         ("inside a generated section", "| 1 | `a` |", True),
         ("on the authored line after it", "Authored prose after.", False),
+        (
+            "across its end marker into authored prose",
+            "| 1 | `a` |\n<!-- END GENERATED ARM TABLE -->\n\nAuthored prose after.",
+            False,
+        ),
     ],
 )
 def test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections(
@@ -129,4 +134,5 @@ def test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections(
         return
     with pytest.raises(SystemExit) as refused:
         VERB.resolve_merge(root)
-    assert f"{COVERAGE}:" in str(refused.value) and "Authored prose after." in str(refused.value)
+    assert f"{COVERAGE}:" in str(refused.value) and "is not derived content" in str(refused.value)
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0, "the merge is left open"

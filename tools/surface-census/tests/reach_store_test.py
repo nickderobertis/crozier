@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from reach_store import Tree
+    from reach_store import Plan, Tree
 
 import pytest
 
@@ -380,7 +380,9 @@ def base_of(root: Path, **top: Any) -> dict:
     )
 
 
-def step(root: Path, edits: Mapping[str, str | None], base: dict | None = None, **plan: Any) -> Any:
+def step(
+    root: Path, edits: Mapping[str, str | None], base: dict | None = None, versions: tuple[str, str] = VERSIONS
+) -> Plan:
     base = base or base_of(root)
     for path, text in edits.items():
         if text is None:
@@ -390,7 +392,7 @@ def step(root: Path, edits: Mapping[str, str | None], base: dict | None = None, 
             (root / path).write_text(text, encoding="utf-8")
     git(root, "add", "-A")
     git(root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "step")
-    return RS.plan(root, base, RS.read_tree(root), TESTS, {"fx"}, CONSTANTS, plan.get("versions", VERSIONS))
+    return RS.plan(root, base, RS.read_tree(root), TESTS, {"fx"}, CONSTANTS, versions)
 
 
 def edit(root: Path, path: str, old: str, new: str) -> dict[str, str]:

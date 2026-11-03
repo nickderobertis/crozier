@@ -478,6 +478,18 @@ def test_measure_tests_re_runs_the_named_tests_into_the_store_and_carries_the_re
     assert refused.returncode != 0 and "not allowed with argument --tests" in refused.stderr
 
 
+def test_handwritten_reach_re_runs_every_fixture_into_the_store_and_carries_the_golden_tests(clone: Clone) -> None:
+    clone.checkout(STATE.branch(), STATE.c0)
+    clone.commit("a note", {"CHANGELOG.md": ("", "\n<!-- handwritten-reach -->\n")})
+    RS.save(RS.load(clone.cached(STATE.c0)), clone.root / ".local" / "golden-reach" / "store.json.gz")
+    run = clone.run("just", "handwritten-reach")
+    assert "handwritten-reach: measured" in run.stdout
+    store = clone.store()
+    assert {name: entry["commit"] for name, entry in store["tests"].items()} == dict.fromkeys(TESTS, STATE.c0)
+    assert len(store["fixtures"]) > 1 and all(e["commit"] == clone.head() for e in store["fixtures"].values())
+    assert RS.load(clone.cached(clone.head()))["commit"] == clone.head(), "the step is the next one's base"
+
+
 def files_quoting(clone: Clone, spec: str) -> set[str]:
     found = subprocess.run(["git", "grep", "-l", "-F", spec], cwd=clone.root, capture_output=True, text=True)
     return set(found.stdout.split())

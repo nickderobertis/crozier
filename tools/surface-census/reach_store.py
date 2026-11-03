@@ -333,12 +333,16 @@ def _type_name(tokens: list[Token], lo: int, hi: int) -> str:
     depth, name = 0, ""
     for index in range(lo, hi):
         text = tokens[index].text
-        if text == "<":
-            depth += 1
-        elif text == ">" and not (index and tokens[index - 1].text == "-"):
-            depth -= 1
-        elif depth == 0 and _IDENT.fullmatch(text) and text not in {"dyn", "mut", "const", "for", "where", "impl"}:
-            name = text
+        match text:
+            case "<":
+                depth += 1
+            # The `>` of a `->` closes nothing.
+            case ">" if not (index and tokens[index - 1].text == "-"):
+                depth -= 1
+            case "dyn" | "mut" | "const" | "for" | "where" | "impl":
+                pass
+            case _ if depth == 0 and _IDENT.fullmatch(text):
+                name = text
     return name.removeprefix("r#") or "_"
 
 
@@ -545,7 +549,10 @@ class Function:
             self._starts = [self.file.tokens[k].start for k in self.indices]
         if not 0 <= position[0] < len(self._starts):
             raise StoreError(f"{self.key}: token index {position[0]} is outside its {len(self._starts)} tokens")
-        return self._starts[position[0]] + position[1]
+        offset = self._starts[position[0]] + position[1]
+        if offset > len(self.file.source):
+            raise StoreError(f"{self.key}: offset {position} lands past the end of {self.file.path}")
+        return offset
 
 
 @dataclass

@@ -131,3 +131,52 @@ def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_i
     assert index.read_text(encoding="utf-8") == (REPO / "docs/openapi-surface/scenario-proof-index.tsv").read_text(
         encoding="utf-8"
     ), "the repaired catalogs restate the committed index"
+
+
+def _measured(root: Path, out: Path) -> Any:
+    """A store of the tree at `root` (its functions' universe left empty), left where `measure` leaves one."""
+    reach = _load("repin_messages_golden_reach", REPO / "tools/surface-census/golden-reach.py")
+    store_module = reach.RS
+    tree = store_module.read_tree(root)
+    commit = "a" * 40
+    store = {
+        "schema": store_module.SCHEMA,
+        "commit": commit,
+        "rustc": "1.96.0 abc",
+        "llvm": "22.1.2",
+        "full_at": commit,
+        "steps_since_full": 0,
+        "measured_at": store_module.now_iso(),
+        "tests": {},
+        "fixtures": {},
+        "functions": tree.table(),
+    }
+    store_module.save(store, out / reach.STORE_FILE)
+    return reach
+
+
+def test_a_report_over_a_tree_its_measurement_predates_names_the_verb_and_succeeds_once_repinned(
+    tmp_path: Path,
+) -> None:
+    root, out = tmp_path / "repo", tmp_path / "out"
+    (root / "src").mkdir(parents=True)
+    (root / "src" / "lib.rs").write_text("pub fn a() -> u8 {\n    1\n}\n", encoding="utf-8")
+    reach = _measured(root, out)
+    reach.stale_measurement(out, root)  # the store's functions are this tree's
+    (root / "src" / "lib.rs").write_text("pub fn a() -> u8 {\n    2\n}\n", encoding="utf-8")
+    try:
+        reach.stale_measurement(out, root)
+    except SystemExit as refused:
+        message = str(refused)
+    else:
+        raise AssertionError("a store of another tree was accepted")
+    assert "1 function(s) of this tree differ from it (src/lib.rs::a)" in message and f"run `{VERB}`" in message
+    _measured(root, out)  # what a repin leaves: a store of this tree
+    reach.stale_measurement(out, root)
+
+
+def test_a_corrupt_checkout_store_is_reported_and_ignored_rather_than_stepped_from(tmp_path: Path, capsys: Any) -> None:
+    reach = _load("repin_messages_golden_reach", REPO / "tools/surface-census/golden-reach.py")
+    (tmp_path / reach.STORE_FILE).write_bytes(b"not gzip")
+    assert reach.local_store(tmp_path) is None, "a measurement never steps from a store it cannot read"
+    assert "ignoring" in capsys.readouterr().err

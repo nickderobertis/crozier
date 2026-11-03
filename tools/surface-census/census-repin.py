@@ -94,10 +94,13 @@ SCENARIO_INDEX = (REGIONS / "scenario-proof-index.tsv").as_posix()
 
 
 class Hunk(NamedTuple):
+    """One conflicted hunk: its `<<<<<<<` and `>>>>>>>` lines (1-indexed) and each side's lines."""
+
     path: str
     line: int
     ours: list[str]
     theirs: list[str]
+    last: int = 0
 
 
 def conflict_hunks(text: str, path: str) -> list[Hunk]:
@@ -122,7 +125,7 @@ def conflict_hunks(text: str, path: str) -> list[Hunk]:
                 case _, "theirs":
                     theirs.append(line)
             index += 1
-        hunks.append(Hunk(path, start, ours, theirs))
+        hunks.append(Hunk(path, start, ours, theirs, index + 1))
         index += 1
     return hunks
 
@@ -178,7 +181,9 @@ def derived_hunk(hunk: Hunk, text: str) -> bool:
     if hunk.path == SCENARIO_INDEX:
         return _scenario_rows_derived(hunk.ours, hunk.theirs)
     if hunk.path == COVERAGE.as_posix():
-        return any(lo < hunk.line < hi for lo, hi in _generated_sections(text))
+        # Wholly inside one generated section, its markers outside the hunk on both sides.
+        marked = any("<!-- BEGIN GENERATED" in line or "<!-- END GENERATED" in line for line in hunk.ours + hunk.theirs)
+        return not marked and any(lo < hunk.line and hunk.last < hi for lo, hi in _generated_sections(text))
     if hunk.path.startswith(REGIONS.as_posix() + "/") and hunk.path.count("/") == 2 and hunk.path.endswith(".md"):
         return _region_row_derived(hunk.ours, hunk.theirs)
     return False

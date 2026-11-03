@@ -1951,11 +1951,17 @@ def provenance_line(out: Path, commit: str, tests: int) -> str:
         recorded = json.loads((out / "provenance.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return line
-    if not isinstance(recorded, dict) or not isinstance(recorded.get("run"), int):
+    if not isinstance(recorded, dict) or "run" not in recorded:
         return line
-    base = recorded.get("base")
-    origin = f"base {base[:12]}" if isinstance(base, str) and not recorded.get("full") else "base none (full)"
-    return f"{line}; {origin}: {recorded['run']} run at {commit[:12]}, {recorded.get('carried', 0)} carried"
+    run, carried, base, full = (recorded.get(name) for name in ("run", "carried", "base", "full"))
+    if (
+        not all(type(count) is int and count >= 0 for count in (run, carried))
+        or not (base is None or (isinstance(base, str) and RS.SHA.fullmatch(base)))
+        or not (full is None or isinstance(full, str))
+    ):
+        fail(f"{out / 'provenance.json'} does not record a step's counts, base and reason; run `{REPIN}`")
+    origin = f"base {base[:12]}" if base and not full else "base none (full)"
+    return f"{line}; {origin}: {run} run at {commit[:12]}, {carried} carried"
 
 
 def measured_commit(out: Path) -> str:
