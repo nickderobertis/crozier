@@ -559,7 +559,7 @@ def regenerate(root: Path, store: Store, out: Path, scoped: bool = False) -> lis
 
 INPUTS = re.compile(
     r"(src/|templates/|assets/|crates/|tests/fixtures/|tools/corpus/|\.cargo/|Cargo\.(toml|lock)$|"
-    r"rust-toolchain|build\.rs$|docs/openapi-surface/handwritten/[^/]+/openapi\.yml$)"
+    r"rust-toolchain|build\.rs$|docs/openapi-surface/handwritten/[^/]+/(openapi\.yml|evidence\.toml)$)"
 )
 
 

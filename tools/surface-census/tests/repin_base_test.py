@@ -317,3 +317,27 @@ def test_a_failed_download_falls_back_to_the_nearest_cached_base(
     assert reason.format(c3=c3) in run.stdout
     assert f"census-repin: base {c1} (cache):" in run.stdout and f"using the cached base at {c1[:12]}" in run.stdout
     assert not (cache / c3).exists()
+
+
+@pytest.mark.parametrize(
+    ("case", "reason"),
+    [("not gzip", "is not a gzip-compressed JSON store"), ("another commit", "it records commit")],
+    ids=["a corrupt cached base", "a cached base recording another commit"],
+)
+def test_a_refused_cached_base_is_skipped_for_the_next_one_down(
+    history: tuple[Path, list[str]], github: str, tmp_path: Path, case: str, reason: str
+) -> None:
+    root, (c1, c2, c3, _c4) = history
+    cache = tmp_path / "cache"
+    cached(cache, c1)
+    nearest = cache / c3 / "base.json.gz"
+    nearest.parent.mkdir(parents=True)
+    if case == "not gzip":
+        nearest.write_text("not a store", encoding="utf-8")
+    else:
+        RS.save(store(c2), nearest)
+    git(root, "update-ref", "refs/remotes/origin/main", c1)  # no nearer ancestor CI published: no request
+    run = lookup(root, cache, github)
+    assert f"refused the cached base {nearest}" in run.stdout and reason in run.stdout
+    assert f"census-repin: base {c1} (cache):" in run.stdout
+    assert GitHub.calls == Counter()

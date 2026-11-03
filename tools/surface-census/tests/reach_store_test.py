@@ -289,6 +289,7 @@ E2E = textwrap.dedent(
 
     fn assert_corpus_matches(c: &Corpus) {
         let compared = fixture_dir(c.api);
+        let _settings = include_str!("data/golden-settings.json");
         assert!(compared.exists());
     }
 
@@ -340,6 +341,13 @@ def repo(tmp_path: Path) -> Path:
         "tests/fixtures/corpus-sources/alpha/openapi.yaml": "openapi: 3.0.0\n",
         "docs/openapi-surface/handwritten/fx/openapi.yml": "openapi: 3.0.0\n",
         "docs/openapi-surface/handwritten/fx/fern-expected/x.py": "x = 1\n",
+        "crates/crozier-e2e/tests/data/golden-settings.json": "{}\n",
+        "crates/crozier-e2e/tests/data/unrelated.json": "{}\n",
+        "tests/fixtures/corpus-sources.tsv": (
+            "# corpus_name\tpath\tsource_url\tsha256\n"
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.yaml\thttps://example.test/a\taaaa\n"
+            "beta\ttests/fixtures/corpus-sources/beta/openapi.yaml\thttps://example.test/b\tbbbb\n"
+        ),
     }
     for path, text in files.items():
         (root / path).parent.mkdir(parents=True, exist_ok=True)
@@ -460,6 +468,23 @@ RERUN_CASES = [
         set(),
     ),
     ("CHANGELOG.md alone", "CHANGELOG.md", "# Changelog", "# Changelog\n\n## 0.0.2", set(), set()),
+    ("its corpus-sources.tsv row", "tests/fixtures/corpus-sources.tsv", "\taaaa", "\taaab", {"alpha"}, set()),
+    (
+        "a substantive Corpus literal change",
+        "crates/crozier-e2e/tests/e2e.rs",
+        'api: "beta",',
+        'api: "beta",\n    name: "b",',
+        {"beta"},
+        set(),
+    ),
+    (
+        "a suite data file nothing reachable names",
+        "crates/crozier-e2e/tests/data/unrelated.json",
+        "{}",
+        '{"a": 1}',
+        set(),
+        set(),
+    ),
 ]
 
 
@@ -504,6 +529,16 @@ FULL_CASES = [
         "the golden tests reach it",
     ),
     ("the toolchain file", {"rust-toolchain.toml": (None, '[toolchain]\nchannel = "1.97.0"\n')}, "rust-toolchain.toml"),
+    (
+        "a suite data file a reachable helper names",
+        {"crates/crozier-e2e/tests/data/golden-settings.json": ("{}", '{"a": 1}')},
+        "code the golden tests reach names it",
+    ),
+    (
+        "a row-keyed table new since the base",
+        {"tests/fixtures/corpus-remote-ref-pins.tsv": (None, "alpha\tpin\n")},
+        "is new since the base",
+    ),
 ]
 
 
@@ -635,3 +670,13 @@ def test_a_region_ending_at_a_token_boundary_encodes_the_same_whatever_follows_i
 
 def _line_col(source: str, offset: int) -> tuple[int, int]:
     return source.count("\n", 0, offset) + 1, offset - (source.rfind("\n", 0, offset) + 1) + 1
+
+
+def test_a_function_only_a_fixtures_control_run_executed_re_runs_that_fixture(repo: Path) -> None:
+    """A fixture declaring a setting is measured twice; a change its control run alone reached re-runs it."""
+    base = base_of(repo)
+    base["fixtures"]["fx"]["control"] = {"src/lib.rs::untouched": [0]}
+    base["tests"] = {name: entry for name, entry in base["tests"].items() if name != "beta_matches_fern_output"}
+    plan = step(repo, edit(repo, "src/lib.rs", "x * 2", "x * 3"), base)
+    assert (plan.full, set(plan.fixtures)) == (None, {"fx"})
+    assert plan.reasons["fixture fx"] == "it executed changed src/lib.rs::untouched"

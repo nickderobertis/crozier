@@ -738,12 +738,16 @@ def measure_step(
     population = golden_population(repo_root)
     if select_tests is not None:
         population = {name: inputs for name, inputs in population.items() if select_tests.search(name)}
+        if not population:
+            fail(f"--tests {select_tests.pattern!r} matches no golden test the e2e suite registers; measure nothing")
     fixture_base = handwritten_dir or repo_root / "docs" / "openapi-surface" / "handwritten"
     # `plan_fixtures=False` measures the golden tests alone: a tree whose hand-written
     # evidence does not plan (an older commit's) still measures its golden tests.
     fixtures = handwritten.measured_fixtures(repo_root, fixture_base) if plan_fixtures else {}
     if select_fixtures is not None:
         fixtures = {name: audiences for name, audiences in fixtures.items() if select_fixtures.search(name)}
+        if not fixtures:
+            fail(f"--fixtures {select_fixtures.pattern!r} matches no measured hand-written fixture; measure nothing")
     if base is None:
         plan = RS.Plan(full_reason or "no base", frozenset(population), frozenset(fixtures), (), {})
     else:
