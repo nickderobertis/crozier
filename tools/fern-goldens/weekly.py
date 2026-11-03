@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import contextlib
 import datetime
 import hashlib
 import importlib.machinery
@@ -69,7 +70,7 @@ import sys
 import tempfile
 import threading
 import time
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Generator, Iterable, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
@@ -808,6 +809,7 @@ def run(
     return result
 
 
+# llmlint: ignore[changed_behavior_has_e2e] The None branch is the platform without /proc/meminfo (macOS, Windows); the weekly workflow runs on ubuntu-latest and its journeys skip off Linux-like hosts, so no journey host lacks the file. The journeys drive the Linux branch through `resources` and `decide`, and accept either spelling in their resource pattern.
 def memory_available() -> int | None:
     """The bytes the kernel reports available (`MemAvailable`), or None on a
     platform without `/proc/meminfo`."""
@@ -824,10 +826,7 @@ def memory_available() -> int | None:
 def resources(base: Path) -> str:
     """What the machine has left, as a step log line states it: the free disk of
     the filesystem `base` is on and the memory the kernel reports available."""
-    try:
-        disk = f"{shutil.disk_usage(base).free / 2**30:.1f} GiB"
-    except OSError as error:
-        disk = f"unknown ({error.strerror})"
+    disk = f"{shutil.disk_usage(base).free / 2**30:.1f} GiB"
     available = memory_available()
     memory = "unknown (no /proc/meminfo)" if available is None else f"{available / 2**30:.1f} GiB"
     return f"disk free {disk} on {base}, memory available {memory}"
@@ -2040,6 +2039,49 @@ def known_change_report(base: Path, entry: ItemResult) -> str:
     return f"{registration} removed; the generated reference ({len(written)} file(s)):\n" + "\n".join(written)
 
 
+@dataclass(frozen=True)
+class Comparison:
+    """One run of a gate the decision makes: the `number`th of `total`, over the
+    families it decides and, for a per-item gate, the item."""
+
+    number: int
+    total: int
+    gate: Gate
+    families: tuple[str, ...]
+    item: str | None
+
+    def label(self) -> str:
+        item = f" `{self.item}`" if self.item else ""
+        return f"comparison {self.number}/{self.total} ({','.join(self.families)}{item})"
+
+
+class Admission:
+    """When a comparison may start: in the planned order, and beside a running
+    one only while `reserve` bytes of memory are still available (one always
+    runs; a platform that reports no memory never waits on it)."""
+
+    def __init__(self, reserve: float) -> None:
+        self.reserve = reserve
+        self.running = 0
+        self.turn = 1
+        self.changed = threading.Condition()
+
+    @contextlib.contextmanager
+    def slot(self, number: int) -> Generator[None]:
+        with self.changed:
+            while self.turn != number or (self.running and (memory_available() or self.reserve) < self.reserve):
+                self.changed.wait(timeout=2.0)
+            self.running += 1
+            self.turn += 1
+            self.changed.notify_all()
+        try:
+            yield
+        finally:
+            with self.changed:
+                self.running -= 1
+                self.changed.notify_all()
+
+
 def decide_bundle(
     base: Path,
     bundle: Bundle,
@@ -2074,7 +2116,7 @@ def decide_bundle(
     undecided = sorted(set(items) - {family for gate in table for family in gate.families})
     if undecided:
         raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
-    per_item: list[tuple[Gate, list[str], str | None]] = []
+    planned: list[tuple[Gate, tuple[str, ...], str | None]] = []
     for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
@@ -2083,35 +2125,20 @@ def decide_bundle(
             _first, named = shared.setdefault(gate.command, (gate, []))
             named.extend(family for family in decided if family not in named)
             continue
-        per_item += [(gate, [family], entry.item) for family in decided for entry in items[family]]
-    runs = per_item + [(gate, named, None) for gate, named in shared.values()]
+        planned += [(gate, (family,), entry.item) for family in decided for entry in items[family]]
+    planned += [(gate, tuple(named), None) for gate, named in shared.values()]
+    runs = [Comparison(number, len(planned), *run) for number, run in enumerate(planned, 1)]
+    per_item = [run for run in runs if run.item is not None]
     progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
+    admission = Admission(reserve)
 
-    # How many comparisons are running, and the next one allowed to start.
-    running, turn = [0], [1]
-    admission = threading.Condition()
-
-    def timed(number: int, run: tuple[Gate, list[str], str | None]) -> GateResult:
-        gate, named, item = run
-        label = f"comparison {number}/{len(runs)} ({','.join(named)}{f' `{item}`' if item else ''})"
-        with admission:
-            # In the planned order; one comparison always runs, and another
-            # starts only while the memory the largest measured one grows to is
-            # still available.
-            while turn[0] != number or (running[0] and (memory_available() or reserve) < reserve):
-                admission.wait(timeout=2.0)
-            running[0] += 1
-            turn[0] += 1
-            admission.notify_all()
-        try:
-            progress(f"{label} started: `{gate.command}`; {resources(base)}")
+    def timed(run: Comparison) -> GateResult:
+        with admission.slot(run.number):
+            progress(f"{run.label()} started: `{run.gate.command}`; {resources(base)}")
             started = time.monotonic()
-            result = run_gate(base, gate, item)
-            progress(f"{label} ended: {result.verdict.value} in {time.monotonic() - started:.1f}s; {resources(base)}")
-        finally:
-            with admission:
-                running[0] -= 1
-                admission.notify_all()
+            result = run_gate(base, run.gate, run.item)
+            elapsed = time.monotonic() - started
+            progress(f"{run.label()} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
         return result
 
     # Each item's comparison is one process on one core (the corpus reporter
@@ -2119,16 +2146,16 @@ def decide_bundle(
     # suite across every core, so those run one at a time after them. Results
     # are recorded in the planned order, whatever order they finish in.
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-        results = list(pool.map(timed, range(1, len(per_item) + 1), per_item))
-    results += [timed(number, run) for number, run in enumerate(runs[len(per_item) :], len(per_item) + 1)]
-    for (gate, named, item), result in zip(runs, results, strict=True):
-        record_gate(decision, reports, gate, ",".join(named), item, result)
+        results = list(pool.map(timed, per_item))
+    results += [timed(run) for run in runs[len(per_item) :]]
+    for run, result in zip(runs, results, strict=True):
+        record_gate(decision, reports, run.gate, ",".join(run.families), run.item, result)
         if result.verdict != Verdict.REJECT:
             continue
-        if item is not None:
-            decision.failing.setdefault(named[0], []).append(FailingItem(item, result.report.strip()))
+        if run.item is not None:
+            decision.failing.setdefault(run.families[0], []).append(FailingItem(run.item, result.report.strip()))
         else:
-            attribute(decision, gate, named, items, result.report)
+            attribute(decision, run.gate, list(run.families), items, result.report)
     return decision
 
 

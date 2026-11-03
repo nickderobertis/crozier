@@ -722,7 +722,9 @@ class WeeklyRunTests(unittest.TestCase):
         path = self.scratch / "summary.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
-    def run_workflow(self, items: str = "", *, stop_after: str = "", lose: str = "", **env: str) -> Journey:
+    def run_workflow(
+        self, items: str = "", *, stop_after: str = "", lose: str = "", decide_jobs: str = "", **env: str
+    ) -> Journey:
         """The workflow's jobs in order, each in its own checkout, stopping
         where a job's failure stops the workflow as its `needs` and `if` do: a
         red assembly or decision skips every phase after it, and the conclusion
@@ -808,7 +810,8 @@ class WeeklyRunTests(unittest.TestCase):
         applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
         self.assertEqual(0, applied.returncode, applied.stderr)
         decision = artifacts / "decision"
-        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), **env)
+        jobs = ("--jobs", decide_jobs) if decide_jobs else ()
+        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), *jobs, **env)
         state.decide = decided
         state.decision = (
             json.loads((decision / "decision.json").read_text(encoding="utf-8"))
@@ -1540,11 +1543,16 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(1, refused.returncode)
         self.assertIn("--jobs -1: name how many comparisons run at once", refused.stderr)
+        refused = self.phase(
+            decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), "--reserve-gib", "-1"
+        )
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("--reserve-gib -1.0: name the GiB to keep available, 0 or more", refused.stderr)
         hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(hang)}`; {resource}"
         # One at a time, the runner dies with the hanging comparison the log's
         # last line; several at once, it dies once every other one has ended.
         # A reserve no machine has keeps several allowed comparisons to one at a time.
-        for jobs, reserve, others in ((1, "6", 2), (4, "6", 7), (4, "1048576", 2)):
+        for jobs, reserve, others in ((1, "6", 2), (2, "6", 7), (4, "1048576", 2)):
             with self.subTest(jobs=jobs, reserve=reserve):
                 sentinel.unlink(missing_ok=True)
                 text = self.killed_decision(
@@ -1567,11 +1575,55 @@ class WeeklyRunTests(unittest.TestCase):
                 self.assertEqual(
                     1, sum(bool(re.fullmatch(rf"fern-goldens-weekly: {hanging}", line)) for line in lines), text
                 )
-                if jobs == 1:
+                # Started in the planned order, never more at once than allowed:
+                # two at once when two may run, else one at a time.
+                events = [
+                    re.match(r"fern-goldens-weekly: comparison ([0-9])/8 .*\) (started|ended): ", line)
+                    for line in lines
+                ]
+                starts = [int(event.group(1)) for event in events if event and event.group(2) == "started"]
+                self.assertEqual(sorted(starts), starts, text)
+                flight, widest = set(), 0
+                for event in filter(None, events):
+                    (flight.add if event.group(2) == "started" else flight.discard)(event.group(1))
+                    widest = max(widest, len(flight))
+                self.assertEqual(1 if others == 2 else jobs, widest, text)
+                if others == 2:
                     self.assertRegex(
                         lines[-1], rf"^fern-goldens-weekly: {hanging}$", "the last line names where it died"
                     )
                 self.assertFalse((state.artifacts / "decision/decision.json").exists(), "a killed decision writes none")
+
+    def test_comparisons_finishing_out_of_order_are_recorded_in_the_planned_order(self) -> None:
+        """Comparisons run side by side finish in any order; the decision and its
+        reports list them in the planned order."""
+        slow = 'sh -c \'sleep 3; exec "$0" "$@"\' '
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            gates.read_text(encoding="utf-8").replace(
+                "exit:0/3\t{root}/target/release/crozier compare {root}/tests/fixtures/",
+                "exit:0/3\t" + slow + "{root}/target/release/crozier compare {root}/tests/fixtures/",
+            ),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow(decide_jobs="4")
+        decided = state.ran("decide")
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("match", state.outcome(), self.summary())
+        ended = re.findall(r"comparison ([0-9])/8 \(.*\) ended: pass", decided.stdout)
+        self.assertEqual(["1", "2"], sorted(ended[-2:]), "the slowed corpus comparisons finish last")
+        runs = state.recorded()["gates"]
+        assert isinstance(runs, list)
+        self.assertEqual(
+            [("corpus", "alpha"), ("corpus", "beta"), ("handwritten", "lantern")],
+            [(run["family"], run["item"]) for run in runs[:3]],
+        )
+        self.assertEqual(
+            ["0000-corpus-alpha.log", "0001-corpus-beta.log", "0002-handwritten-lantern.log"],
+            [run["report"] for run in runs[:3]],
+        )
+        self.assertEqual("success", state.status())
 
     def killed_decision(
         self, root: Path, bundle: Path, output: Path, sentinel: Path, limits: tuple[int, str], others: int
