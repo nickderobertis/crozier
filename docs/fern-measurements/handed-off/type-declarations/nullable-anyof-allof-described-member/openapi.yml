@@ -53,6 +53,12 @@ components:
             - type: integer
               description: How many people eat.
             - type: 'null'
+        garnish:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Garnish'
+                - description: The garnish to plan for.
+            - type: 'null'
     Plan:
       type: object
       properties:
@@ -64,3 +70,70 @@ components:
                 - $ref: '#/components/schemas/Course'
                 - description: The planned course.
             - type: 'null'
+        garnish:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Garnish'
+                - description: The garnish served on top.
+            - type: 'null'
+        pairing:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Pairing'
+                - description: The drink poured alongside.
+            - type: 'null'
+        sides:
+          anyOf:
+            - allOf:
+                - $ref: '#/components/schemas/Side'
+                - description: The side dish, whichever kind.
+            - type: 'null'
+        extras:
+          type: object
+          properties:
+            topping:
+              anyOf:
+                - allOf:
+                    - $ref: '#/components/schemas/Garnish'
+                    - description: The topping added at the table.
+                - type: 'null'
+            note:
+              type: string
+    Herb:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - herb
+        name:
+          type: string
+    Grain:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - grain
+        cups:
+          type: number
+    Garnish:
+      description: Something scattered over the dish.
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - $ref: '#/components/schemas/Herb'
+    Pairing:
+      oneOf:
+        - $ref: '#/components/schemas/Diet'
+    Side:
+      description: A side dish of one kind or another.
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - $ref: '#/components/schemas/Herb'
+        - $ref: '#/components/schemas/Grain'

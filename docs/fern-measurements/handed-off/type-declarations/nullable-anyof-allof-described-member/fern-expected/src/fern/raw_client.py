@@ -12,6 +12,7 @@ from .core.request_options import RequestOptions
 from .core.serialization import convert_and_respect_annotation_metadata
 from .types.create_plan_body_course import CreatePlanBodyCourse
 from .types.create_plan_body_diet import CreatePlanBodyDiet
+from .types.herb import Herb
 from .types.plan import Plan
 from pydantic import ValidationError
 
@@ -29,6 +30,7 @@ class RawFernApi:
         course: typing.Optional[CreatePlanBodyCourse] = OMIT,
         diet: typing.Optional[CreatePlanBodyDiet] = OMIT,
         servings: typing.Optional[int] = OMIT,
+        garnish: typing.Optional[Herb] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Plan]:
         """
@@ -42,6 +44,8 @@ class RawFernApi:
 
         servings : typing.Optional[int]
             How many people eat.
+
+        garnish : typing.Optional[Herb]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -60,6 +64,9 @@ class RawFernApi:
                     object_=diet, annotation=typing.Optional[CreatePlanBodyDiet], direction="write"
                 ),
                 "servings": servings,
+                "garnish": convert_and_respect_annotation_metadata(
+                    object_=garnish, annotation=typing.Optional[Herb], direction="write"
+                ),
             },
             headers={
                 "content-type": "application/json",
@@ -97,6 +104,7 @@ class AsyncRawFernApi:
         course: typing.Optional[CreatePlanBodyCourse] = OMIT,
         diet: typing.Optional[CreatePlanBodyDiet] = OMIT,
         servings: typing.Optional[int] = OMIT,
+        garnish: typing.Optional[Herb] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Plan]:
         """
@@ -110,6 +118,8 @@ class AsyncRawFernApi:
 
         servings : typing.Optional[int]
             How many people eat.
+
+        garnish : typing.Optional[Herb]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -128,6 +138,9 @@ class AsyncRawFernApi:
                     object_=diet, annotation=typing.Optional[CreatePlanBodyDiet], direction="write"
                 ),
                 "servings": servings,
+                "garnish": convert_and_respect_annotation_metadata(
+                    object_=garnish, annotation=typing.Optional[Herb], direction="write"
+                ),
             },
             headers={
                 "content-type": "application/json",

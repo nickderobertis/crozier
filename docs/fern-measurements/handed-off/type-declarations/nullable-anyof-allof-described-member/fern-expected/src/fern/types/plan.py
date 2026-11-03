@@ -6,7 +6,11 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .diet import Diet
+from .herb import Herb
 from .plan_course import PlanCourse
+from .plan_extras import PlanExtras
+from .plan_sides import PlanSides
 
 
 class Plan(UniversalBaseModel):
@@ -17,6 +21,15 @@ class Plan(UniversalBaseModel):
     """
     The planned course.
     """
+
+    garnish: typing.Optional[Herb] = None
+    pairing: typing.Optional[Diet] = None
+    sides: typing.Optional[PlanSides] = pydantic.Field(default=None)
+    """
+    The side dish, whichever kind.
+    """
+
+    extras: typing.Optional[PlanExtras] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

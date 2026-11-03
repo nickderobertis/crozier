@@ -6,7 +6,26 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Course, CreatePlanBodyCourse, CreatePlanBodyDiet, Diet, Plan, PlanCourse
+    from .types import (
+        Course,
+        CreatePlanBodyCourse,
+        CreatePlanBodyDiet,
+        Diet,
+        Garnish,
+        Grain,
+        Herb,
+        HerbKind,
+        Pairing,
+        Plan,
+        PlanCourse,
+        PlanExtras,
+        PlanSides,
+        PlanSides_Grain,
+        PlanSides_Herb,
+        Side,
+        Side_Grain,
+        Side_Herb,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
@@ -19,8 +38,20 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "Diet": ".types",
     "FernApi": ".client",
+    "Garnish": ".types",
+    "Grain": ".types",
+    "Herb": ".types",
+    "HerbKind": ".types",
+    "Pairing": ".types",
     "Plan": ".types",
     "PlanCourse": ".types",
+    "PlanExtras": ".types",
+    "PlanSides": ".types",
+    "PlanSides_Grain": ".types",
+    "PlanSides_Herb": ".types",
+    "Side": ".types",
+    "Side_Grain": ".types",
+    "Side_Herb": ".types",
     "__version__": ".version",
 }
 
@@ -55,7 +86,19 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "Diet",
     "FernApi",
+    "Garnish",
+    "Grain",
+    "Herb",
+    "HerbKind",
+    "Pairing",
     "Plan",
     "PlanCourse",
+    "PlanExtras",
+    "PlanSides",
+    "PlanSides_Grain",
+    "PlanSides_Herb",
+    "Side",
+    "Side_Grain",
+    "Side_Herb",
     "__version__",
 ]

@@ -8789,15 +8789,23 @@ impl InlineHoister<'_> {
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
                 docstring: declared_doc(
-                    rewrapped_alias_description(prop_schema, self.schemas)
-                        .or_else(|| property_description(prop_schema, optional))
-                        .or_else(|| {
-                            self.schemas.and_then(|schemas| {
-                                scalar_narrowed_enum_ref(prop_schema, schemas)
-                                    .and_then(|(_, member)| member.description.as_deref())
-                                    .or_else(|| merged_all_of_ref_description(prop_schema, schemas))
+                    (!self
+                        .schemas
+                        .is_some_and(|schemas| annotates_sole_member_union(prop_schema, schemas)))
+                    .then(|| {
+                        rewrapped_alias_description(prop_schema, self.schemas)
+                            .or_else(|| property_description(prop_schema, optional))
+                            .or_else(|| {
+                                self.schemas.and_then(|schemas| {
+                                    scalar_narrowed_enum_ref(prop_schema, schemas)
+                                        .and_then(|(_, member)| member.description.as_deref())
+                                        .or_else(|| {
+                                            merged_all_of_ref_description(prop_schema, schemas)
+                                        })
+                                })
                             })
-                        }),
+                    })
+                    .flatten(),
                 ),
                 example: resolved_schema_example_literal(prop_schema, self.schemas).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
@@ -19455,6 +19463,26 @@ fn annotated_target<'a>(
         .and_then(|(reference, _)| resolve_ref_from_schemas(schemas?, reference))
 }
 
+/// Whether a property is `anyOf: [allOf: [$ref U, {description}], null]` where
+/// `U` is a one-member `oneOf`/`anyOf`. Fern types the field as that member and
+/// documents nothing, neither the annotation nor `U`'s own description, though
+/// a union of two members keeps the annotation (the
+/// `nullable-anyof-allof-described-member` measurement's `Plan.garnish`,
+/// `Plan.pairing` and `Plan.sides`; OpenResponses'
+/// `ResponseOutputTextAnnotationAddedStreamingEvent.annotation` over its
+/// one-member `Annotation`).
+fn annotates_sole_member_union(prop_schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    sole_non_null_member(prop_schema)
+        .and_then(|member| annotated_target(member, Some(schemas)))
+        .is_some_and(|target| {
+            matches!(
+                target.one_of.as_deref().or(target.any_of.as_deref()),
+                Some([_])
+            ) && target.all_of.is_none()
+                && !target.properties.declared()
+        })
+}
+
 /// A `$ref`, or a `oneOf`/`anyOf` of one `$ref`, whose description sits beside
 /// the reference: Fern drops that description, so as the alternative to `null`
 /// it documents nothing. OpenResponses' `ReasoningParam.effort` is `anyOf:
@@ -19488,6 +19516,11 @@ fn annotation_lost_description<'a>(
     schemas: &'a IndexMap<String, Schema>,
     optional: bool,
 ) -> Option<Option<&'a str>> {
+    // The nullable annotation of a one-member union documents nothing: Fern
+    // converts the union as its member and the annotation goes with it.
+    if annotates_sole_member_union(prop_schema, schemas) {
+        return Some(None);
+    }
     // A required property `allOf` around one inline array, map or scalar is
     // converted as that member, and the description beside the `allOf` is lost
     // with it: Rapidata's identity API documents `capabilities` that way, and
@@ -32203,6 +32236,30 @@ mod handed_off_type_declarations_tests {
             diet.docstring.as_deref(),
             Some("Dietary needs the plan must respect.")
         );
+    }
+
+    #[test]
+    fn an_annotated_one_member_union_beside_null_documents_nothing() {
+        let ir = measured("nullable-anyof-allof-described-member");
+        let plan = object(&ir, "Plan");
+        for wire in ["garnish", "pairing"] {
+            assert_eq!(field(plan, wire).docstring, None, "Plan.{wire}");
+        }
+        assert_eq!(field(plan, "garnish").type_ref, named("Herb"));
+        assert!(field(plan, "garnish").optional);
+        assert_eq!(
+            field(plan, "sides").docstring.as_deref(),
+            Some("The side dish, whichever kind.")
+        );
+        assert_eq!(field(object(&ir, "PlanExtras"), "topping").docstring, None);
+        let Some(RequestBody::Inline(fields)) = &endpoint(&ir, "create_plan").request_body else {
+            panic!("create_plan's body is inlined");
+        };
+        let garnish = fields
+            .iter()
+            .find(|field| field.wire_name == "garnish")
+            .unwrap();
+        assert_eq!(garnish.docstring, None);
     }
 
     #[test]

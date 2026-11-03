@@ -9,6 +9,7 @@ from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.create_plan_body_course import CreatePlanBodyCourse
 from .types.create_plan_body_diet import CreatePlanBodyDiet
+from .types.herb import Herb
 from .types.plan import Plan
 
 
@@ -105,6 +106,7 @@ class FernApi:
         course: typing.Optional[CreatePlanBodyCourse] = OMIT,
         diet: typing.Optional[CreatePlanBodyDiet] = OMIT,
         servings: typing.Optional[int] = OMIT,
+        garnish: typing.Optional[Herb] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Plan:
         """
@@ -118,6 +120,8 @@ class FernApi:
 
         servings : typing.Optional[int]
             How many people eat.
+
+        garnish : typing.Optional[Herb]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -137,7 +141,7 @@ class FernApi:
         client.create_plan()
         """
         _response = self._raw_client.create_plan(
-            course=course, diet=diet, servings=servings, request_options=request_options
+            course=course, diet=diet, servings=servings, garnish=garnish, request_options=request_options
         )
         return _response.data
 
@@ -248,6 +252,7 @@ class AsyncFernApi:
         course: typing.Optional[CreatePlanBodyCourse] = OMIT,
         diet: typing.Optional[CreatePlanBodyDiet] = OMIT,
         servings: typing.Optional[int] = OMIT,
+        garnish: typing.Optional[Herb] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Plan:
         """
@@ -261,6 +266,8 @@ class AsyncFernApi:
 
         servings : typing.Optional[int]
             How many people eat.
+
+        garnish : typing.Optional[Herb]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -288,6 +295,6 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_plan(
-            course=course, diet=diet, servings=servings, request_options=request_options
+            course=course, diet=diet, servings=servings, garnish=garnish, request_options=request_options
         )
         return _response.data

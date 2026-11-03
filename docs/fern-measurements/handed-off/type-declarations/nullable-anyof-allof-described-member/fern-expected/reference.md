@@ -58,6 +58,14 @@ client.create_plan()
 <dl>
 <dd>
 
+**garnish:** `typing.Optional[Herb]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
