@@ -87,8 +87,11 @@ The same capped run on 7797af82c completed every step and wrote its decision.
   - Corpus: all 314 compared, 0 matched. 313 were ledger-drift-only, with their
     files not compared. 1 differed: `swagger-petstore-distribution`'s flat
     golden, with real regressions. 0 could not run.
-  - The family gates rejected 2 and passed 1, with 858 failing items across the
-    families.
+  - The family gates rejected 2 and passed 1, with 544 failing items across the
+    families. With the 314 corpora, the decision lists 858 differing items in
+    all, and none "not checked".
+  - One refusal class changed: `heap-exhausted`'s probe now times out rather
+    than reproducing the recorded heap exhaustion.
   - `calorieninjas.com` was named as a known Fern failure reproduced.
   - 2 corpora were not regenerated because their upstream specs are
     unfetchable: `viskit-studio` and `subsloth`.
