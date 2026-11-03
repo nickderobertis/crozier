@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Harbour Crane Ledger
+  version: 1.0.0
+paths:
+  /cranes/summary:
+    get:
+      operationId: getCraneSummary
+      summary: Read every crane's summary, keyed by crane id
+      responses:
+        '200':
+          description: The summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    berth:
+                      type: string
+                    liftsToday:
+                      type: integer
+                  required:
+                    - berth
+  /cranes/{craneId}:
+    get:
+      operationId: getCrane
+      summary: Read one crane
+      parameters:
+        - name: craneId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The crane
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crane'
+components:
+  schemas:
+    Crane:
+      type: object
+      properties:
+        operators:
+          description: Operators on shift, keyed by badge number.
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+              certified:
+                type: boolean
+        inspections:
+          description: Inspection notes, keyed by date, declared without a type.
+          type: object
+          additionalProperties:
+            properties:
+              inspector:
+                type: string
+              passed:
+                type: boolean
+        tags:
+          type: object
+          additionalProperties:
+            type: object
+        scopes:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+        loadsByHook:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+        counters:
+          type: object
+          additionalProperties:
+            type: integer

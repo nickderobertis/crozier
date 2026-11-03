@@ -1,0 +1,3 @@
+
+
+NightCount = int

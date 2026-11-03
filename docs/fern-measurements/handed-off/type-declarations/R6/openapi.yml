@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Canal Lock Schedule
+  version: 1.0.0
+paths:
+  /locks/{lockId}/passages:
+    get:
+      operationId: listPassages
+      summary: List passages through a lock
+      parameters:
+        - name: lockId
+          in: path
+          required: true
+          description: "\n        The lock to read, by its painted number.\n        (ex. /L7)\n        "
+          schema:
+            type: string
+        - name: direction
+          in: query
+          required: false
+          description: "\nUpstream or downstream."
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Plain description without a leading break.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The passages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Passage'
+    post:
+      operationId: bookPassage
+      summary: Book a passage
+      parameters:
+        - name: lockId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - boatName
+              properties:
+                boatName:
+                  type: string
+                  description: "\n        The boat's registered name.\n        "
+                draught:
+                  type: number
+                  description: "\nDepth below the waterline, in metres."
+      responses:
+        '200':
+          description: The booked passage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passage'
+components:
+  schemas:
+    Passage:
+      type: object
+      properties:
+        boatName:
+          type: string
+          description: "\nThe boat's registered name."
+        hour:
+          type: integer
