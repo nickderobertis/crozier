@@ -4,18 +4,16 @@ Usage: reused_body_keyword_wire.py TREE. TREE is a generated SDK holding
 README.md and src/fern. The README's one synchronous
 `client.questions.file_question(` call is compiled; a call that does not
 compile (a repeated keyword) prints its SyntaxError on stderr and exits 1.
-One that compiles is executed against the generated `fern` package, whose
-client is given an httpx.MockTransport, and each request it sends is printed as
-`METHOD URL BODY`; exit 0. Exit 2 reports invalid CLI arguments or a tree
-without one such call.
+One that compiles is executed, unmodified, against the generated `fern`
+package; only httpx's network transport is replaced, so each request the
+SDK's own client sends is answered locally and printed as `METHOD URL BODY`;
+exit 0. Exit 2 reports invalid CLI arguments or a tree without one such call.
 """
 
 import argparse
-import importlib
 import re
 import sys
 from pathlib import Path
-from typing import Any
 
 import httpx
 
@@ -40,27 +38,17 @@ except SyntaxError as error:
     sys.exit(1)
 
 sys.path.insert(0, str((args.tree / "src").resolve()))
-sdk = importlib.import_module("fern")
 sent: list[httpx.Request] = []
 
 
-def handle(request: httpx.Request) -> httpx.Response:
+def handle(_transport: httpx.HTTPTransport, request: httpx.Request) -> httpx.Response:
+    request.read()
     sent.append(request)
     return httpx.Response(200, json={"ticket_id": "t-1"})
 
 
-real = sdk.FernApi
-
-
-def client(**kwargs: Any) -> Any:
-    # `Any` because this stands in for whatever constructor the generated
-    # package declares: its keyword arguments and client type are the SDK's,
-    # and this journey forwards them unread.
-    # llmlint: ignore[e2e_not_mocked] The emitted SDK and its README call run unmodified; the local transport records the serialized request and supplies only the external server's response, as in the repository's SDK wire tier.
-    return real(httpx_client=httpx.Client(transport=httpx.MockTransport(handle)), **kwargs)
-
-
-sdk.FernApi = client
+# llmlint: ignore[e2e_not_mocked] Only the network boundary is replaced: the README's call builds the SDK's client through its public constructor and the emitted package runs unmodified; this stands in for the external server's socket and answers with its response.
+httpx.HTTPTransport.handle_request = handle  # type: ignore[method-assign]
 # Running the generated README's own worked call is what this journey proves.
 exec(code, {"__name__": "worked_call"})  # noqa: S102
 for request in sent:
