@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Lantern labels
+  version: 1.0.0
+paths:
+  /lanterns/{lanternId}/labels:
+    put:
+      operationId: setLanternLabels
+      tags: [lanterns]
+      parameters:
+        - name: lanternId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              colour: amber
+              range: long
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+      responses:
+        "204":
+          description: Set
+  /lanterns/{lanternId}/notes:
+    post:
+      operationId: addLanternNote
+      tags: [lanterns]
+      parameters:
+        - name: lanternId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              body:
+                text: lens cleaned
+              file: maintenance.log
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "204":
+          description: Added

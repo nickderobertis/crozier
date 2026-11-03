@@ -1,0 +1,145 @@
+openapi: 3.1.0
+info:
+  title: Tide log
+  version: 1.0.0
+paths:
+  /tides:
+    get:
+      operationId: listTides
+      tags: [tides]
+      parameters:
+        - name: since
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          example: 2031-04-02T08:15:00Z
+        - name: until
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: 2031-04-03T08:15:00Z
+        - name: loggedAfter
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 2031-04-01T06:00:00Z
+        - name: recordedOn
+          in: query
+          required: true
+          schema:
+            type: string
+          example: 2031-04-01T06:00:00Z
+        - name: station
+          in: query
+          required: false
+          schema:
+            type: string
+          example: pier-7
+      responses:
+        "200":
+          description: Readings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+  /tides/{gaugeId}:
+    get:
+      operationId: getGauge
+      tags: [tides]
+      parameters:
+        - name: gaugeId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: gauge-12
+        - name: asOf
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: 2031-05-01T00:00:00Z
+      responses:
+        "200":
+          description: The gauge
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  level:
+                    type: number
+  /tides/{gaugeId}/readings:
+    post:
+      operationId: logReading
+      tags: [tides]
+      description: >-
+        A body whose schema-level example gives date-time properties unquoted
+        YAML timestamps, beside the sentinel instant the pair also drops.
+      parameters:
+        - name: gaugeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TideReading"
+      responses:
+        "204":
+          description: Logged
+  /tides/{gaugeId}/readings/batch:
+    post:
+      operationId: logReadings
+      tags: [tides]
+      description: The same schema posted as an array body.
+      parameters:
+        - name: gaugeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TideReading"
+      responses:
+        "204":
+          description: Logged
+components:
+  schemas:
+    TideReading:
+      type: object
+      required: [level, highWaterAt]
+      example:
+        level: 3.4
+        highWaterAt: 2031-04-02T08:15:00Z
+        lowWaterAt: 2031-04-02T14:27:00Z
+        calibratedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        level:
+          type: number
+        highWaterAt:
+          type: string
+          format: date-time
+        lowWaterAt:
+          type: string
+          format: date-time
+        calibratedAt:
+          type: string
+          format: date-time
