@@ -1,6 +1,6 @@
 # Reference
 ## Observatories
-<details><summary><code>client.observatories.<a href="src/fern/observatories/client.py">register_observatory</a>(...) -> Observatory</code></summary>
+<details><summary><code>client.observatories.<a href="src/fern/observatories/client.py#L30-L66">register_observatory</a>(...) -> Observatory</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.observatories.register_observatory(
 </details>
 
 ## Telescopes
-<details><summary><code>client.telescopes.<a href="src/fern/telescopes/client.py">get_telescope</a>(...) -> Telescope</code></summary>
+<details><summary><code>client.telescopes.<a href="src/fern/telescopes/client.py#L26-L52">get_telescope</a>(...) -> Telescope</code></summary>
 <dl>
 <dd>
 

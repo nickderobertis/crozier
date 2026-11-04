@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">submit_application</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L138">submit_application</a>(...)</code></summary>
 <dl>
 <dd>
 

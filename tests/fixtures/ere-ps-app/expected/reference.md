@@ -1,6 +1,6 @@
 # Reference
 ## CardResource
-<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py">post_card_change_pin</a>(...) -> ChangePinResponse</code></summary>
+<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py#L32-L66">post_card_change_pin</a>(...) -> ChangePinResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.card_resource.post_card_change_pin()
 </dl>
 </details>
 
-<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py">get_card_pin_status</a>(...) -> GetPinStatusResponse</code></summary>
+<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py#L68-L102">get_card_pin_status</a>(...) -> GetPinStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.card_resource.get_card_pin_status()
 </dl>
 </details>
 
-<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py">post_card_unblock_pin</a>() -> UnblockPinResponse</code></summary>
+<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py#L104-L126">post_card_unblock_pin</a>() -> UnblockPinResponse</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.card_resource.post_card_unblock_pin()
 </dl>
 </details>
 
-<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py">post_card_verify_pin</a>() -> VerifyPinResponse</code></summary>
+<details><summary><code>client.card_resource.<a href="src/fern/card_resource/client.py#L128-L150">post_card_verify_pin</a>() -> VerifyPinResponse</code></summary>
 <dl>
 <dd>
 
@@ -221,7 +221,7 @@ client.card_resource.post_card_verify_pin()
 </details>
 
 ## UserConfigurationsResource
-<details><summary><code>client.user_configurations_resource.<a href="src/fern/user_configurations_resource/client.py">get_config</a>()</code></summary>
+<details><summary><code>client.user_configurations_resource.<a href="src/fern/user_configurations_resource/client.py#L28-L49">get_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -268,7 +268,7 @@ client.user_configurations_resource.get_config()
 </dl>
 </details>
 
-<details><summary><code>client.user_configurations_resource.<a href="src/fern/user_configurations_resource/client.py">put_config</a>(...)</code></summary>
+<details><summary><code>client.user_configurations_resource.<a href="src/fern/user_configurations_resource/client.py#L51-L150">put_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -460,7 +460,7 @@ client.user_configurations_resource.put_config()
 </details>
 
 ## DocumentResource
-<details><summary><code>client.document_resource.<a href="src/fern/document_resource/client.py">post_document_bundles</a>()</code></summary>
+<details><summary><code>client.document_resource.<a href="src/fern/document_resource/client.py#L25-L46">post_document_bundles</a>()</code></summary>
 <dl>
 <dd>
 
@@ -508,7 +508,7 @@ client.document_resource.post_document_bundles()
 </details>
 
 ## XsltResource
-<details><summary><code>client.xslt_resource.<a href="src/fern/xslt_resource/client.py">post_kbv_transform</a>()</code></summary>
+<details><summary><code>client.xslt_resource.<a href="src/fern/xslt_resource/client.py#L25-L46">post_kbv_transform</a>()</code></summary>
 <dl>
 <dd>
 
@@ -556,7 +556,7 @@ client.xslt_resource.post_kbv_transform()
 </details>
 
 ## PharmacyResource
-<details><summary><code>client.pharmacy_resource.<a href="src/fern/pharmacy_resource/client.py">get_pharmacy_accept</a>(...) -> Bundle</code></summary>
+<details><summary><code>client.pharmacy_resource.<a href="src/fern/pharmacy_resource/client.py#L26-L52">get_pharmacy_accept</a>(...) -> Bundle</code></summary>
 <dl>
 <dd>
 
@@ -611,7 +611,7 @@ client.pharmacy_resource.get_pharmacy_accept()
 </dl>
 </details>
 
-<details><summary><code>client.pharmacy_resource.<a href="src/fern/pharmacy_resource/client.py">get_pharmacy_task</a>(...) -> Bundle</code></summary>
+<details><summary><code>client.pharmacy_resource.<a href="src/fern/pharmacy_resource/client.py#L54-L88">get_pharmacy_task</a>(...) -> Bundle</code></summary>
 <dl>
 <dd>
 
@@ -675,7 +675,7 @@ client.pharmacy_resource.get_pharmacy_task()
 </details>
 
 ## PreviewResource
-<details><summary><code>client.preview_resource.<a href="src/fern/preview_resource/client.py">post_preview_generate</a>() -> str</code></summary>
+<details><summary><code>client.preview_resource.<a href="src/fern/preview_resource/client.py#L25-L47">post_preview_generate</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.preview_resource.post_preview_generate()
 </details>
 
 ## StatusResource
-<details><summary><code>client.status_resource.<a href="src/fern/status_resource/client.py">get_status</a>()</code></summary>
+<details><summary><code>client.status_resource.<a href="src/fern/status_resource/client.py#L25-L46">get_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -771,7 +771,7 @@ client.status_resource.get_status()
 </details>
 
 ## PrescriptionBundleValidatorResource
-<details><summary><code>client.prescription_bundle_validator_resource.<a href="src/fern/prescription_bundle_validator_resource/client.py">post_validate</a>(...)</code></summary>
+<details><summary><code>client.prescription_bundle_validator_resource.<a href="src/fern/prescription_bundle_validator_resource/client.py#L29-L56">post_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -831,7 +831,7 @@ client.prescription_bundle_validator_resource.post_validate(
 </details>
 
 ## ERezeptWorkflowResource
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_abort</a>(...)</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L30-L63">post_workflow_abort</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -894,7 +894,7 @@ client.e_rezept_workflow_resource.post_workflow_abort()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_batch_sign</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L65-L86">post_workflow_batch_sign</a>()</code></summary>
 <dl>
 <dd>
 
@@ -941,7 +941,7 @@ client.e_rezept_workflow_resource.post_workflow_batch_sign()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">get_workflow_cards</a>() -> GetCardsResponse</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L88-L110">get_workflow_cards</a>() -> GetCardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -988,7 +988,7 @@ client.e_rezept_workflow_resource.get_workflow_cards()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_comfortsignature_activate</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L112-L135">post_workflow_comfortsignature_activate</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1035,7 +1035,7 @@ client.e_rezept_workflow_resource.post_workflow_comfortsignature_activate()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_comfortsignature_deactivate</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L137-L160">post_workflow_comfortsignature_deactivate</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1082,7 +1082,7 @@ client.e_rezept_workflow_resource.post_workflow_comfortsignature_deactivate()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">get_workflow_comfortsignature_user_id</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L162-L183">get_workflow_comfortsignature_user_id</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1129,7 +1129,7 @@ client.e_rezept_workflow_resource.get_workflow_comfortsignature_user_id()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_comfortsignature_user_id</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L185-L208">post_workflow_comfortsignature_user_id</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1176,7 +1176,7 @@ client.e_rezept_workflow_resource.post_workflow_comfortsignature_user_id()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">get_workflow_idp_token</a>() -> str</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L210-L232">get_workflow_idp_token</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.e_rezept_workflow_resource.get_workflow_idp_token()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_sign</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L234-L255">post_workflow_sign</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1270,7 +1270,7 @@ client.e_rezept_workflow_resource.post_workflow_sign()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">get_workflow_signature_mode</a>() -> GetSignatureModeResponseEvent</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L257-L281">get_workflow_signature_mode</a>() -> GetSignatureModeResponseEvent</code></summary>
 <dl>
 <dd>
 
@@ -1317,7 +1317,7 @@ client.e_rezept_workflow_resource.get_workflow_signature_mode()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_task</a>(...)</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L283-L308">post_workflow_task</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1372,7 +1372,7 @@ client.e_rezept_workflow_resource.post_workflow_task()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_test_prescription</a>()</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L310-L331">post_workflow_test_prescription</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1419,7 +1419,7 @@ client.e_rezept_workflow_resource.post_workflow_test_prescription()
 </dl>
 </details>
 
-<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py">post_workflow_update</a>(...)</code></summary>
+<details><summary><code>client.e_rezept_workflow_resource.<a href="src/fern/e_rezept_workflow_resource/client.py#L333-L369">post_workflow_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1491,7 +1491,7 @@ client.e_rezept_workflow_resource.post_workflow_update()
 </details>
 
 ## XmlPrescriptionResource
-<details><summary><code>client.xml_prescription_resource.<a href="src/fern/xml_prescription_resource/client.py">post_xml_prescription</a>()</code></summary>
+<details><summary><code>client.xml_prescription_resource.<a href="src/fern/xml_prescription_resource/client.py#L25-L46">post_xml_prescription</a>()</code></summary>
 <dl>
 <dd>
 

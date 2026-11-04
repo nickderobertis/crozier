@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "9e31dcf52ea6f5600de5cf6332bb90ba5577ecc30467994c9c882886e798b507"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "e62cd57b1f93f91ac42c534339ea4da53b13911118e278ea13842402d7c77e1d"
 
 [[covers]]
 key = "webhook-inline-json-body-named"

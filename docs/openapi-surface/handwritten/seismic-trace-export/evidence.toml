@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "3de54dd9b8d102f6ca22fb210f0565c35a7c6a39d808af769c608d7eafb00dde"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "94635d5a5f077151113357da0bb6bcae940a3442c42fe68b5e9d2c66b278c85d"
 
 [[covers]]
 key = "binary-download-with-body-has-no-example"

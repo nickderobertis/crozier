@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "1ed9f1091e484b84fc851df58674b08908d12a165bdf5913c55cd4c4411f1c07"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "138a1b17d26901a0781aa2a9ce6f5d1e949463696dd7b8e9fd008297ff004ac0"
 
 [[covers]]
 key = "readme-streaming-snippet-omits-type-import"

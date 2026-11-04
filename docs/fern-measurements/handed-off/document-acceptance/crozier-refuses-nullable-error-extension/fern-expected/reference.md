@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_export</a>(...) -> ExportResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L128">get_export</a>(...) -> ExportResponse</code></summary>
 <dl>
 <dd>
 

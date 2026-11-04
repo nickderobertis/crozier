@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_chain_id</a>() -> ChainIdResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L115-L141">get_chain_id</a>() -> ChainIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.get_chain_id()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_block_information</a>(...) -> Block</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L143-L184">get_block_information</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -143,7 +143,7 @@ client.get_block_information(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_block_receipts</a>(...) -> BlockReceiptsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L186-L222">get_block_receipts</a>(...) -> BlockReceiptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.get_block_receipts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_raw_transaction</a>(...) -> SendRawTxResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L224-L254">send_raw_transaction</a>(...) -> SendRawTxResponse</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.send_raw_transaction()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_new_filter</a>(...) -> NewFilterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L256-L296">create_new_filter</a>(...) -> NewFilterResponse</code></summary>
 <dl>
 <dd>
 
@@ -374,7 +374,7 @@ client.create_new_filter()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">uninstall_a_filter</a>(...) -> UninstallFilterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L298-L331">uninstall_a_filter</a>(...) -> UninstallFilterResponse</code></summary>
 <dl>
 <dd>
 
@@ -448,7 +448,7 @@ client.uninstall_a_filter(
 </details>
 
 ## Verifiable
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">get_account_information</a>(...) -> AccountResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L42-L99">get_account_information</a>(...) -> AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.verifiable.get_account_information(
 </dl>
 </details>
 
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">get_transaction_receipt</a>(...) -> TransactionReceiptResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L101-L137">get_transaction_receipt</a>(...) -> TransactionReceiptResponse</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.verifiable.get_transaction_receipt(
 </dl>
 </details>
 
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">get_logs</a>(...) -> LogsResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L139-L218">get_logs</a>(...) -> LogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -759,7 +759,7 @@ client.verifiable.get_logs()
 </dl>
 </details>
 
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">get_filter_logs</a>(...) -> FilterLogsResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L220-L260">get_filter_logs</a>(...) -> FilterLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -839,7 +839,7 @@ client.verifiable.get_filter_logs(
 </dl>
 </details>
 
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">get_filter_changes</a>(...) -> FilterChangesResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L262-L303">get_filter_changes</a>(...) -> FilterChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -920,7 +920,7 @@ client.verifiable.get_filter_changes(
 </dl>
 </details>
 
-<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py">create_extended_access_list</a>(...) -> ExtendedAccessListResponse</code></summary>
+<details><summary><code>client.verifiable.<a href="src/fern/verifiable/client.py#L305-L354">create_extended_access_list</a>(...) -> ExtendedAccessListResponse</code></summary>
 <dl>
 <dd>
 

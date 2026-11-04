@@ -1,6 +1,6 @@
 # Reference
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create</a>(...) -> Subscription</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L29-L55">create</a>(...) -> Subscription</code></summary>
 <dl>
 <dd>
 

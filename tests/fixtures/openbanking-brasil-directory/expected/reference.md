@@ -1,6 +1,6 @@
 # Reference
 ## Organisations
-<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py">get_all_organisations_that_the_logged_in_user_is_authorised_to_retrieve_from_trusted_services</a>(...) -> OrganisationsPage</code></summary>
+<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py#L29-L91">get_all_organisations_that_the_logged_in_user_is_authorised_to_retrieve_from_trusted_services</a>(...) -> OrganisationsPage</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.organisations.get_all_organisations_that_the_logged_in_user_is_authorised
 </dl>
 </details>
 
-<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py">get_the_given_organisations_details</a>(...) -> OrganisationWithTnc</code></summary>
+<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py#L93-L128">get_the_given_organisations_details</a>(...) -> OrganisationWithTnc</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.organisations.get_the_given_organisations_details(
 </dl>
 </details>
 
-<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py">get_all_tn_c_data_of_the_given_organisation</a>(...) -> OrgTermsAndConditionsPage</code></summary>
+<details><summary><code>client.organisations.<a href="src/fern/organisations/client.py#L130-L180">get_all_tn_c_data_of_the_given_organisation</a>(...) -> OrgTermsAndConditionsPage</code></summary>
 <dl>
 <dd>
 
@@ -240,7 +240,7 @@ client.organisations.get_all_tn_c_data_of_the_given_organisation(
 </details>
 
 ## AuthorisationServers
-<details><summary><code>client.authorisation_servers.<a href="src/fern/authorisation_servers/client.py">get_all_authorisation_servers_for_the_given_organisation</a>(...) -> AuthorisationServers</code></summary>
+<details><summary><code>client.authorisation_servers.<a href="src/fern/authorisation_servers/client.py#L29-L79">get_all_authorisation_servers_for_the_given_organisation</a>(...) -> AuthorisationServers</code></summary>
 <dl>
 <dd>
 
@@ -323,7 +323,7 @@ client.authorisation_servers.get_all_authorisation_servers_for_the_given_organis
 </dl>
 </details>
 
-<details><summary><code>client.authorisation_servers.<a href="src/fern/authorisation_servers/client.py">get_an_authorisation_server_by_id</a>(...) -> AuthorisationServer</code></summary>
+<details><summary><code>client.authorisation_servers.<a href="src/fern/authorisation_servers/client.py#L81-L124">get_an_authorisation_server_by_id</a>(...) -> AuthorisationServer</code></summary>
 <dl>
 <dd>
 
@@ -392,7 +392,7 @@ client.authorisation_servers.get_an_authorisation_server_by_id(
 </details>
 
 ## AuthorisationServersApiResources
-<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py">get_all_api_resources_for_the_given_authorisation_server</a>(...) -> ApiResources</code></summary>
+<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py#L30-L85">get_all_api_resources_for_the_given_authorisation_server</a>(...) -> ApiResources</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.authorisation_servers_api_resources.get_all_api_resources_for_the_given_a
 </dl>
 </details>
 
-<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py">get_an_authorisation_server_api_resource_by_id</a>(...) -> ApiResource</code></summary>
+<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py#L87-L135">get_an_authorisation_server_api_resource_by_id</a>(...) -> ApiResource</code></summary>
 <dl>
 <dd>
 
@@ -561,7 +561,7 @@ client.authorisation_servers_api_resources.get_an_authorisation_server_api_resou
 </dl>
 </details>
 
-<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py">get_an_authorisation_server_api_resource_by_id_and_returns_the_latest_family_status</a>(...) -> ApiResources</code></summary>
+<details><summary><code>client.authorisation_servers_api_resources.<a href="src/fern/authorisation_servers_api_resources/client.py#L137-L182">get_an_authorisation_server_api_resource_by_id_and_returns_the_latest_family_status</a>(...) -> ApiResources</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.authorisation_servers_api_resources.get_an_authorisation_server_api_resou
 </details>
 
 ## AuthorisationServersApiDiscoveryEndpoints
-<details><summary><code>client.authorisation_servers_api_discovery_endpoints.<a href="src/fern/authorisation_servers_api_discovery_endpoints/client.py">get_all_api_discovery_endpoints_for_the_given_authorisation_server_and_api_version</a>(...) -> ApiDiscoveryEndpoints</code></summary>
+<details><summary><code>client.authorisation_servers_api_discovery_endpoints.<a href="src/fern/authorisation_servers_api_discovery_endpoints/client.py#L34-L100">get_all_api_discovery_endpoints_for_the_given_authorisation_server_and_api_version</a>(...) -> ApiDiscoveryEndpoints</code></summary>
 <dl>
 <dd>
 
@@ -731,7 +731,7 @@ client.authorisation_servers_api_discovery_endpoints.get_all_api_discovery_endpo
 </dl>
 </details>
 
-<details><summary><code>client.authorisation_servers_api_discovery_endpoints.<a href="src/fern/authorisation_servers_api_discovery_endpoints/client.py">get_an_authorisation_server_api_discovery_endpoint_by_id</a>(...) -> ApiDiscoveryEndpoint</code></summary>
+<details><summary><code>client.authorisation_servers_api_discovery_endpoints.<a href="src/fern/authorisation_servers_api_discovery_endpoints/client.py#L102-L159">get_an_authorisation_server_api_discovery_endpoint_by_id</a>(...) -> ApiDiscoveryEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.authorisation_servers_api_discovery_endpoints.get_an_authorisation_server
 </details>
 
 ## AuthorisationServerCertifications
-<details><summary><code>client.authorisation_server_certifications.<a href="src/fern/authorisation_server_certifications/client.py">get_all_certifications_for_given_authorisation_server</a>(...) -> AuthorisationServerCertifications</code></summary>
+<details><summary><code>client.authorisation_server_certifications.<a href="src/fern/authorisation_server_certifications/client.py#L30-L73">get_all_certifications_for_given_authorisation_server</a>(...) -> AuthorisationServerCertifications</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.authorisation_server_certifications.get_all_certifications_for_given_auth
 </dl>
 </details>
 
-<details><summary><code>client.authorisation_server_certifications.<a href="src/fern/authorisation_server_certifications/client.py">get_a_certification_by_id</a>(...) -> AuthorisationServerCertification</code></summary>
+<details><summary><code>client.authorisation_server_certifications.<a href="src/fern/authorisation_server_certifications/client.py#L75-L126">get_a_certification_by_id</a>(...) -> AuthorisationServerCertification</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +964,7 @@ client.authorisation_server_certifications.get_a_certification_by_id(
 </details>
 
 ## OrganisationAuthorityClaims
-<details><summary><code>client.organisation_authority_claims.<a href="src/fern/organisation_authority_claims/client.py">get_the_authority_claims_for_the_given_organisation</a>(...) -> OrganisationAuthorityClaims</code></summary>
+<details><summary><code>client.organisation_authority_claims.<a href="src/fern/organisation_authority_claims/client.py#L29-L64">get_the_authority_claims_for_the_given_organisation</a>(...) -> OrganisationAuthorityClaims</code></summary>
 <dl>
 <dd>
 
@@ -1023,7 +1023,7 @@ client.organisation_authority_claims.get_the_authority_claims_for_the_given_orga
 </dl>
 </details>
 
-<details><summary><code>client.organisation_authority_claims.<a href="src/fern/organisation_authority_claims/client.py">get_an_authority_claim_by_id</a>(...) -> OrganisationAuthorityClaim</code></summary>
+<details><summary><code>client.organisation_authority_claims.<a href="src/fern/organisation_authority_claims/client.py#L66-L109">get_an_authority_claim_by_id</a>(...) -> OrganisationAuthorityClaim</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.organisation_authority_claims.get_an_authority_claim_by_id(
 </details>
 
 ## OrganisationAuthorityClaimsAuthorisations
-<details><summary><code>client.organisation_authority_claims_authorisations.<a href="src/fern/organisation_authority_claims_authorisations/client.py">get_an_authority_claims_authorisations</a>(...) -> OrganisationAuthorityClaimAuthorisations</code></summary>
+<details><summary><code>client.organisation_authority_claims_authorisations.<a href="src/fern/organisation_authority_claims_authorisations/client.py#L33-L76">get_an_authority_claims_authorisations</a>(...) -> OrganisationAuthorityClaimAuthorisations</code></summary>
 <dl>
 <dd>
 
@@ -1160,7 +1160,7 @@ client.organisation_authority_claims_authorisations.get_an_authority_claims_auth
 </dl>
 </details>
 
-<details><summary><code>client.organisation_authority_claims_authorisations.<a href="src/fern/organisation_authority_claims_authorisations/client.py">get_a_claim_authorisation</a>(...) -> OrganisationAuthorityClaimAuthorisation</code></summary>
+<details><summary><code>client.organisation_authority_claims_authorisations.<a href="src/fern/organisation_authority_claims_authorisations/client.py#L78-L129">get_a_claim_authorisation</a>(...) -> OrganisationAuthorityClaimAuthorisation</code></summary>
 <dl>
 <dd>
 
@@ -1238,7 +1238,7 @@ client.organisation_authority_claims_authorisations.get_a_claim_authorisation(
 </details>
 
 ## OrganisationAuthorityDomainClaims
-<details><summary><code>client.organisation_authority_domain_claims.<a href="src/fern/organisation_authority_domain_claims/client.py">get_the_authority_domain_claims_for_the_given_organisation</a>(...) -> OrganisationAuthorityDomainClaimsPage</code></summary>
+<details><summary><code>client.organisation_authority_domain_claims.<a href="src/fern/organisation_authority_domain_claims/client.py#L29-L79">get_the_authority_domain_claims_for_the_given_organisation</a>(...) -> OrganisationAuthorityDomainClaimsPage</code></summary>
 <dl>
 <dd>
 
@@ -1321,7 +1321,7 @@ client.organisation_authority_domain_claims.get_the_authority_domain_claims_for_
 </dl>
 </details>
 
-<details><summary><code>client.organisation_authority_domain_claims.<a href="src/fern/organisation_authority_domain_claims/client.py">get_an_authority_domain_claim_by_id</a>(...) -> OrganisationAuthorityDomainClaim</code></summary>
+<details><summary><code>client.organisation_authority_domain_claims.<a href="src/fern/organisation_authority_domain_claims/client.py#L81-L124">get_an_authority_domain_claim_by_id</a>(...) -> OrganisationAuthorityDomainClaim</code></summary>
 <dl>
 <dd>
 
@@ -1390,7 +1390,7 @@ client.organisation_authority_domain_claims.get_an_authority_domain_claim_by_id(
 </details>
 
 ## OrganisationCertificates
-<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py">get_the_certificates_for_the_given_organisation</a>(...) -> CertificatesOrKeys</code></summary>
+<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py#L30-L65">get_the_certificates_for_the_given_organisation</a>(...) -> CertificatesOrKeys</code></summary>
 <dl>
 <dd>
 
@@ -1449,7 +1449,7 @@ client.organisation_certificates.get_the_certificates_for_the_given_organisation
 </dl>
 </details>
 
-<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py">retrieve_a_certificate_with_the_given_certificate_or_key_id</a>(...) -> CertificateOrKey</code></summary>
+<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py#L67-L110">retrieve_a_certificate_with_the_given_certificate_or_key_id</a>(...) -> CertificateOrKey</code></summary>
 <dl>
 <dd>
 
@@ -1517,7 +1517,7 @@ client.organisation_certificates.retrieve_a_certificate_with_the_given_certifica
 </dl>
 </details>
 
-<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py">get_the_certificates_of_the_given_organisation_certificate_type_for_the_given_organisation</a>(...) -> CertificatesOrKeys</code></summary>
+<details><summary><code>client.organisation_certificates.<a href="src/fern/organisation_certificates/client.py#L112-L157">get_the_certificates_of_the_given_organisation_certificate_type_for_the_given_organisation</a>(...) -> CertificatesOrKeys</code></summary>
 <dl>
 <dd>
 
@@ -1586,7 +1586,7 @@ client.organisation_certificates.get_the_certificates_of_the_given_organisation_
 </details>
 
 ## Contacts
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">get_the_contacts_for_the_given_organisation</a>(...) -> ContactsPage</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L29-L79">get_the_contacts_for_the_given_organisation</a>(...) -> ContactsPage</code></summary>
 <dl>
 <dd>
 
@@ -1669,7 +1669,7 @@ client.contacts.get_the_contacts_for_the_given_organisation(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">get_a_contact_by_id</a>(...) -> Contact</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L81-L122">get_a_contact_by_id</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -1738,7 +1738,7 @@ client.contacts.get_a_contact_by_id(
 </details>
 
 ## SoftwareStatementsForAnOrganisation
-<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py">get_all_software_statements_for_the_given_organisation</a>(...) -> SoftwareStatements</code></summary>
+<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py#L36-L71">get_all_software_statements_for_the_given_organisation</a>(...) -> SoftwareStatements</code></summary>
 <dl>
 <dd>
 
@@ -1797,7 +1797,7 @@ client.software_statements_for_an_organisation.get_all_software_statements_for_t
 </dl>
 </details>
 
-<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py">get_a_software_statement</a>(...) -> SoftwareStatement</code></summary>
+<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py#L73-L116">get_a_software_statement</a>(...) -> SoftwareStatement</code></summary>
 <dl>
 <dd>
 
@@ -1865,7 +1865,7 @@ client.software_statements_for_an_organisation.get_a_software_statement(
 </dl>
 </details>
 
-<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py">update_a_software_statement_by_id</a>(...) -> SoftwareStatement</code></summary>
+<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py#L118-L241">update_a_software_statement_by_id</a>(...) -> SoftwareStatement</code></summary>
 <dl>
 <dd>
 
@@ -2060,7 +2060,7 @@ client.software_statements_for_an_organisation.update_a_software_statement_by_id
 </dl>
 </details>
 
-<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py">unlock_a_software_statement</a>(...) -> SoftwareStatement</code></summary>
+<details><summary><code>client.software_statements_for_an_organisation.<a href="src/fern/software_statements_for_an_organisation/client.py#L243-L290">unlock_a_software_statement</a>(...) -> SoftwareStatement</code></summary>
 <dl>
 <dd>
 
@@ -2137,7 +2137,7 @@ client.software_statements_for_an_organisation.unlock_a_software_statement(
 </details>
 
 ## SoftwareStatementAssertions
-<details><summary><code>client.software_statement_assertions.<a href="src/fern/software_statement_assertions/client.py">get_a_software_statement_assertion_for_the_given_software_statement_id</a>(...) -> SoftwareStatementAssertion</code></summary>
+<details><summary><code>client.software_statement_assertions.<a href="src/fern/software_statement_assertions/client.py#L28-L71">get_a_software_statement_assertion_for_the_given_software_statement_id</a>(...) -> SoftwareStatementAssertion</code></summary>
 <dl>
 <dd>
 
@@ -2206,7 +2206,7 @@ client.software_statement_assertions.get_a_software_statement_assertion_for_the_
 </details>
 
 ## SoftwareStatementAuthorityClaims
-<details><summary><code>client.software_statement_authority_claims.<a href="src/fern/software_statement_authority_claims/client.py">get_the_authority_claims_for_the_given_software_statement</a>(...) -> SoftwareAuthorityClaims</code></summary>
+<details><summary><code>client.software_statement_authority_claims.<a href="src/fern/software_statement_authority_claims/client.py#L30-L73">get_the_authority_claims_for_the_given_software_statement</a>(...) -> SoftwareAuthorityClaims</code></summary>
 <dl>
 <dd>
 
@@ -2274,7 +2274,7 @@ client.software_statement_authority_claims.get_the_authority_claims_for_the_give
 </dl>
 </details>
 
-<details><summary><code>client.software_statement_authority_claims.<a href="src/fern/software_statement_authority_claims/client.py">get_an_authority_claim_by_id</a>(...) -> SoftwareAuthorityClaim</code></summary>
+<details><summary><code>client.software_statement_authority_claims.<a href="src/fern/software_statement_authority_claims/client.py#L75-L123">get_an_authority_claim_by_id</a>(...) -> SoftwareAuthorityClaim</code></summary>
 <dl>
 <dd>
 
@@ -2352,7 +2352,7 @@ client.software_statement_authority_claims.get_an_authority_claim_by_id(
 </details>
 
 ## SoftwareStatementCertificates
-<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py">get_certificates_for_the_given_software_statement</a>(...) -> CertificatesOrKeys</code></summary>
+<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py#L35-L78">get_certificates_for_the_given_software_statement</a>(...) -> CertificatesOrKeys</code></summary>
 <dl>
 <dd>
 
@@ -2420,7 +2420,7 @@ client.software_statement_certificates.get_certificates_for_the_given_software_s
 </dl>
 </details>
 
-<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py">get_the_certificate_of_the_given_type_and_id_for_the_given_software_statement</a>(...) -> CertificateOrKey</code></summary>
+<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py#L80-L137">get_the_certificate_of_the_given_type_and_id_for_the_given_software_statement</a>(...) -> CertificateOrKey</code></summary>
 <dl>
 <dd>
 
@@ -2506,7 +2506,7 @@ client.software_statement_certificates.get_the_certificate_of_the_given_type_and
 </dl>
 </details>
 
-<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py">update_a_software_statement_certificate_with_the_given_certificate_or_key_id_eg_revoke_reason</a>(...)</code></summary>
+<details><summary><code>client.software_statement_certificates.<a href="src/fern/software_statement_certificates/client.py#L139-L205">update_a_software_statement_certificate_with_the_given_certificate_or_key_id_eg_revoke_reason</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2603,7 +2603,7 @@ client.software_statement_certificates.update_a_software_statement_certificate_w
 </details>
 
 ## SoftwareStatementCertifications
-<details><summary><code>client.software_statement_certifications.<a href="src/fern/software_statement_certifications/client.py">get_all_certifications_for_given_software_statement</a>(...) -> SoftwareStatementCertifications</code></summary>
+<details><summary><code>client.software_statement_certifications.<a href="src/fern/software_statement_certifications/client.py#L30-L73">get_all_certifications_for_given_software_statement</a>(...) -> SoftwareStatementCertifications</code></summary>
 <dl>
 <dd>
 
@@ -2671,7 +2671,7 @@ client.software_statement_certifications.get_all_certifications_for_given_softwa
 </dl>
 </details>
 
-<details><summary><code>client.software_statement_certifications.<a href="src/fern/software_statement_certifications/client.py">get_a_certification_by_id</a>(...) -> SoftwareStatementCertification</code></summary>
+<details><summary><code>client.software_statement_certifications.<a href="src/fern/software_statement_certifications/client.py#L75-L123">get_a_certification_by_id</a>(...) -> SoftwareStatementCertification</code></summary>
 <dl>
 <dd>
 
@@ -2749,7 +2749,7 @@ client.software_statement_certifications.get_a_certification_by_id(
 </details>
 
 ## SoftwareStatementMetadata
-<details><summary><code>client.software_statement_metadata.<a href="src/fern/software_statement_metadata/client.py">get_all_metadata_associated_with_a_software_statement</a>(...) -> MetadataListResponse</code></summary>
+<details><summary><code>client.software_statement_metadata.<a href="src/fern/software_statement_metadata/client.py#L28-L75">get_all_metadata_associated_with_a_software_statement</a>(...) -> MetadataListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2826,7 +2826,7 @@ client.software_statement_metadata.get_all_metadata_associated_with_a_software_s
 </details>
 
 ## OrganisationDomainUsers
-<details><summary><code>client.organisation_domain_users.<a href="src/fern/organisation_domain_users/client.py">all_users_for_the_given_authorisation_domain</a>(...) -> AuthorisationDomainUsersPage</code></summary>
+<details><summary><code>client.organisation_domain_users.<a href="src/fern/organisation_domain_users/client.py#L29-L84">all_users_for_the_given_authorisation_domain</a>(...) -> AuthorisationDomainUsersPage</code></summary>
 <dl>
 <dd>
 
@@ -2918,7 +2918,7 @@ client.organisation_domain_users.all_users_for_the_given_authorisation_domain(
 </dl>
 </details>
 
-<details><summary><code>client.organisation_domain_users.<a href="src/fern/organisation_domain_users/client.py">authorisation_domain_user_details</a>(...) -> AuthorisationDomainUsersPage</code></summary>
+<details><summary><code>client.organisation_domain_users.<a href="src/fern/organisation_domain_users/client.py#L86-L152">authorisation_domain_user_details</a>(...) -> AuthorisationDomainUsersPage</code></summary>
 <dl>
 <dd>
 
@@ -3020,7 +3020,7 @@ client.organisation_domain_users.authorisation_domain_user_details(
 </details>
 
 ## ReferencesAuthorisationDomainRole
-<details><summary><code>client.references_authorisation_domain_role.<a href="src/fern/references_authorisation_domain_role/client.py">reference_data_of_all_authorisation_domain_roles</a>(...) -> AuthorisationDomainRolesPage</code></summary>
+<details><summary><code>client.references_authorisation_domain_role.<a href="src/fern/references_authorisation_domain_role/client.py#L28-L72">reference_data_of_all_authorisation_domain_roles</a>(...) -> AuthorisationDomainRolesPage</code></summary>
 <dl>
 <dd>
 
@@ -3093,7 +3093,7 @@ client.references_authorisation_domain_role.reference_data_of_all_authorisation_
 </dl>
 </details>
 
-<details><summary><code>client.references_authorisation_domain_role.<a href="src/fern/references_authorisation_domain_role/client.py">get_an_authorisation_domain_role_by_name</a>(...) -> AuthorisationDomainRole</code></summary>
+<details><summary><code>client.references_authorisation_domain_role.<a href="src/fern/references_authorisation_domain_role/client.py#L74-L112">get_an_authorisation_domain_role_by_name</a>(...) -> AuthorisationDomainRole</code></summary>
 <dl>
 <dd>
 
@@ -3153,7 +3153,7 @@ client.references_authorisation_domain_role.get_an_authorisation_domain_role_by_
 </details>
 
 ## ReferencesAuthorisationDomainRoleMetadata
-<details><summary><code>client.references_authorisation_domain_role_metadata.<a href="src/fern/references_authorisation_domain_role_metadata/client.py">get_metadata_associated_with_an_authorisation_domain_role</a>(...) -> MetadataResponse</code></summary>
+<details><summary><code>client.references_authorisation_domain_role_metadata.<a href="src/fern/references_authorisation_domain_role_metadata/client.py#L31-L74">get_metadata_associated_with_an_authorisation_domain_role</a>(...) -> MetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -3222,7 +3222,7 @@ client.references_authorisation_domain_role_metadata.get_metadata_associated_wit
 </details>
 
 ## ReferencesAuthorisationDomain
-<details><summary><code>client.references_authorisation_domain.<a href="src/fern/references_authorisation_domain/client.py">reference_data_of_all_authorisation_domains</a>(...) -> AuthorisationDomainsPage</code></summary>
+<details><summary><code>client.references_authorisation_domain.<a href="src/fern/references_authorisation_domain/client.py#L28-L72">reference_data_of_all_authorisation_domains</a>(...) -> AuthorisationDomainsPage</code></summary>
 <dl>
 <dd>
 
@@ -3295,7 +3295,7 @@ client.references_authorisation_domain.reference_data_of_all_authorisation_domai
 </dl>
 </details>
 
-<details><summary><code>client.references_authorisation_domain.<a href="src/fern/references_authorisation_domain/client.py">get_an_authorisation_domain_by_name</a>(...) -> AuthorisationDomain</code></summary>
+<details><summary><code>client.references_authorisation_domain.<a href="src/fern/references_authorisation_domain/client.py#L74-L112">get_an_authorisation_domain_by_name</a>(...) -> AuthorisationDomain</code></summary>
 <dl>
 <dd>
 
@@ -3355,7 +3355,7 @@ client.references_authorisation_domain.get_an_authorisation_domain_by_name(
 </details>
 
 ## ReferencesAuthority
-<details><summary><code>client.references_authority.<a href="src/fern/references_authority/client.py">reference_data_of_all_authorities</a>(...) -> Authorities</code></summary>
+<details><summary><code>client.references_authority.<a href="src/fern/references_authority/client.py#L28-L72">reference_data_of_all_authorities</a>(...) -> Authorities</code></summary>
 <dl>
 <dd>
 
@@ -3428,7 +3428,7 @@ client.references_authority.reference_data_of_all_authorities()
 </dl>
 </details>
 
-<details><summary><code>client.references_authority.<a href="src/fern/references_authority/client.py">get_a_reference_authority_by_id</a>(...) -> Authority</code></summary>
+<details><summary><code>client.references_authority.<a href="src/fern/references_authority/client.py#L74-L107">get_a_reference_authority_by_id</a>(...) -> Authority</code></summary>
 <dl>
 <dd>
 
@@ -3488,7 +3488,7 @@ client.references_authority.get_a_reference_authority_by_id(
 </details>
 
 ## ReferencesAuthorityAuthorisationDomain
-<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py">reference_data_of_all_authorisation_domains_for_an_authority_id</a>(...) -> AuthorityAuthorisationDomainsPage</code></summary>
+<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py#L32-L82">reference_data_of_all_authorisation_domains_for_an_authority_id</a>(...) -> AuthorityAuthorisationDomainsPage</code></summary>
 <dl>
 <dd>
 
@@ -3571,7 +3571,7 @@ client.references_authority_authorisation_domain.reference_data_of_all_authorisa
 </dl>
 </details>
 
-<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py">get_an_authority_authorisation_domain_by_id</a>(...) -> AuthorityAuthorisationDomain</code></summary>
+<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py#L84-L127">get_an_authority_authorisation_domain_by_id</a>(...) -> AuthorityAuthorisationDomain</code></summary>
 <dl>
 <dd>
 
@@ -3639,7 +3639,7 @@ client.references_authority_authorisation_domain.get_an_authority_authorisation_
 </dl>
 </details>
 
-<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py">mappings_of_authorities_with_authorisation_domains</a>(...) -> AuthorityAuthorisationDomainsPage</code></summary>
+<details><summary><code>client.references_authority_authorisation_domain.<a href="src/fern/references_authority_authorisation_domain/client.py#L129-L173">mappings_of_authorities_with_authorisation_domains</a>(...) -> AuthorityAuthorisationDomainsPage</code></summary>
 <dl>
 <dd>
 
@@ -3713,7 +3713,7 @@ client.references_authority_authorisation_domain.mappings_of_authorities_with_au
 </details>
 
 ## ReferencesTermsAndConditions
-<details><summary><code>client.references_terms_and_conditions.<a href="src/fern/references_terms_and_conditions/client.py">all_terms_and_conditions</a>(...) -> TermsAndConditionsPage</code></summary>
+<details><summary><code>client.references_terms_and_conditions.<a href="src/fern/references_terms_and_conditions/client.py#L26-L70">all_terms_and_conditions</a>(...) -> TermsAndConditionsPage</code></summary>
 <dl>
 <dd>
 

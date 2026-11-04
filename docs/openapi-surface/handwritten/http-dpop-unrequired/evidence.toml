@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "ec0be52e466cd25274a969438541b680df36440e31fc482e0ecf0fda1c4176ad"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "d176720987a512729b2b36c9cde021493c9aaa88ca69aff044d76d7151aa6615"
 
 [[covers]]
 key = "http-dpop"

@@ -1,6 +1,6 @@
 # Reference
 ## Config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_config</a>() -> Config</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L26-L49">get_config</a>() -> Config</code></summary>
 <dl>
 <dd>
 
@@ -51,7 +51,7 @@ client.config.get_config()
 </details>
 
 ## Connection
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connections</a>(...) -> ConnectionCollection</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L31-L75">get_connections</a>(...) -> ConnectionCollection</code></summary>
 <dl>
 <dd>
 
@@ -130,7 +130,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">post_connection</a>(...) -> Connection</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L77-L151">post_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -188,7 +188,7 @@ client.connection.post_connection()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">test_connection</a>(...) -> ConnectionTest</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L153-L231">test_connection</a>(...) -> ConnectionTest</code></summary>
 <dl>
 <dd>
 
@@ -262,7 +262,7 @@ client.connection.test_connection()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...) -> Connection</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L233-L263">get_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -322,7 +322,7 @@ client.connection.get_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">delete_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L265-L292">delete_connection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -382,7 +382,7 @@ client.connection.delete_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">patch_connection</a>(...) -> Connection</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L294-L381">patch_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +462,7 @@ A comma-separated list of fully qualified names of fields.
 </details>
 
 ## DAG
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_source</a>(...) -> GetDagSourceResponse</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L39-L73">get_dag_source</a>(...) -> GetDagSourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -540,7 +540,7 @@ extensibility, because the format of encrypted data may change.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dags</a>(...) -> DagCollection</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L75-L144">get_dags</a>(...) -> DagCollection</code></summary>
 <dl>
 <dd>
 
@@ -666,7 +666,7 @@ Only filter active DAGs.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dags</a>(...) -> DagCollection</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L146-L380">patch_dags</a>(...) -> DagCollection</code></summary>
 <dl>
 <dd>
 
@@ -802,7 +802,7 @@ Only filter active DAGs.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag</a>(...) -> Dag</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L382-L413">get_dag</a>(...) -> Dag</code></summary>
 <dl>
 <dd>
 
@@ -877,7 +877,7 @@ client.dag.get_dag(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">delete_dag</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L415-L447">delete_dag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -954,7 +954,7 @@ client.dag.delete_dag(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dag</a>(...) -> Dag</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L449-L655">patch_dag</a>(...) -> Dag</code></summary>
 <dl>
 <dd>
 
@@ -1034,7 +1034,7 @@ A comma-separated list of fully qualified names of fields.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_clear_task_instances</a>(...) -> TaskInstanceReferenceCollection</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L657-L768">post_clear_task_instances</a>(...) -> TaskInstanceReferenceCollection</code></summary>
 <dl>
 <dd>
 
@@ -1227,7 +1227,7 @@ A list of task ids to clear.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_details</a>(...) -> DagDetail</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L770-L800">get_dag_details</a>(...) -> DagDetail</code></summary>
 <dl>
 <dd>
 
@@ -1301,7 +1301,7 @@ client.dag.get_dag_details(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_tasks</a>(...) -> TaskCollection</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L802-L842">get_tasks</a>(...) -> TaskCollection</code></summary>
 <dl>
 <dd>
 
@@ -1374,7 +1374,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_task</a>(...) -> Task</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L844-L876">get_task</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -1443,7 +1443,7 @@ client.dag.get_task(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_set_task_instances_state</a>(...) -> TaskInstanceReferenceCollection</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py#L878-L964">post_set_task_instances_state</a>(...) -> TaskInstanceReferenceCollection</code></summary>
 <dl>
 <dd>
 
@@ -1597,7 +1597,7 @@ planned to be affected, but won't be modified in any way.
 </details>
 
 ## DagWarning
-<details><summary><code>client.dag_warning.<a href="src/fern/dag_warning/client.py">get_dag_warnings</a>(...) -> DagWarningCollection</code></summary>
+<details><summary><code>client.dag_warning.<a href="src/fern/dag_warning/client.py#L26-L83">get_dag_warnings</a>(...) -> DagWarningCollection</code></summary>
 <dl>
 <dd>
 
@@ -1693,7 +1693,7 @@ Prefix a field name with `-` to reverse the sort order.
 </details>
 
 ## DAGRun
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs</a>(...) -> DagRunCollection</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L35-L138">get_dag_runs</a>(...) -> DagRunCollection</code></summary>
 <dl>
 <dd>
 
@@ -1876,7 +1876,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">post_dag_run</a>(...) -> DagRun</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L140-L268">post_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -1944,7 +1944,7 @@ client.dag_run.post_dag_run(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_run</a>(...) -> DagRun</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L270-L304">get_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2013,7 +2013,7 @@ client.dag_run.get_dag_run(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">delete_dag_run</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L306-L339">delete_dag_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2082,7 +2082,7 @@ client.dag_run.delete_dag_run(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">update_dag_run_state</a>(...) -> DagRun</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L341-L389">update_dag_run_state</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.dag_run.update_dag_run_state(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">clear_dag_run</a>(...) -> DagRun</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L391-L438">clear_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2271,7 +2271,7 @@ planned to be cleaned, but not modified in any way.
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">set_dag_run_note</a>(...) -> DagRun</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L440-L486">set_dag_run_note</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2364,7 +2364,7 @@ client.dag_run.set_dag_run_note(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_upstream_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L488-L526">get_upstream_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -2449,7 +2449,7 @@ client.dag_run.get_upstream_dataset_events(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs_batch</a>(...) -> DagRunCollection</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py#L528-L631">get_dag_runs_batch</a>(...) -> DagRunCollection</code></summary>
 <dl>
 <dd>
 
@@ -2637,7 +2637,7 @@ The value can be repeated to retrieve multiple matching values (OR condition).
 </details>
 
 ## TaskInstance
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L36-L161">get_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -2856,7 +2856,7 @@ This can be combined with duration_gte parameter to receive only the selected ra
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instance</a>(...) -> TaskInstance</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L163-L201">get_task_instance</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -2934,7 +2934,7 @@ client.task_instance.get_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_task_instance</a>(...) -> TaskInstanceReference</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L203-L260">patch_task_instance</a>(...) -> TaskInstanceReference</code></summary>
 <dl>
 <dd>
 
@@ -3035,7 +3035,7 @@ client.task_instance.patch_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_extra_links</a>(...) -> ExtraLinkCollection</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L262-L302">get_extra_links</a>(...) -> ExtraLinkCollection</code></summary>
 <dl>
 <dd>
 
@@ -3127,7 +3127,7 @@ client.task_instance.get_extra_links(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L304-L445">get_mapped_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -3370,7 +3370,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_log</a>(...) -> GetLogResponse</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L447-L520">get_log</a>(...) -> GetLogResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ If passed, it will specify the location from which the download should be contin
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_task_instance_note</a>(...) -> TaskInstance</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L522-L576">set_task_instance_note</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -3604,7 +3604,7 @@ client.task_instance.set_task_instance_note(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instance</a>(...) -> TaskInstance</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L578-L632">get_mapped_task_instance</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -3707,7 +3707,7 @@ client.task_instance.get_mapped_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_mapped_task_instance</a>(...) -> TaskInstanceReference</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L634-L702">patch_mapped_task_instance</a>(...) -> TaskInstanceReference</code></summary>
 <dl>
 <dd>
 
@@ -3817,7 +3817,7 @@ client.task_instance.patch_mapped_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_mapped_task_instance_note</a>(...) -> TaskInstance</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L704-L763">set_mapped_task_instance_note</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -3929,7 +3929,7 @@ client.task_instance.set_mapped_task_instance_note(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances_batch</a>(...) -> TaskInstanceCollection</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py#L765-L874">get_task_instances_batch</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -4126,7 +4126,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 </details>
 
 ## XCom
-<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entries</a>(...) -> XComCollection</code></summary>
+<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py#L27-L82">get_xcom_entries</a>(...) -> XComCollection</code></summary>
 <dl>
 <dd>
 
@@ -4234,7 +4234,7 @@ client.x_com.get_xcom_entries(
 </dl>
 </details>
 
-<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entry</a>(...) -> XCom</code></summary>
+<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py#L84-L146">get_xcom_entry</a>(...) -> XCom</code></summary>
 <dl>
 <dd>
 
@@ -4340,7 +4340,7 @@ This parameter is not meaningful when using the default XCom backend.
 </details>
 
 ## Dataset
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_datasets</a>(...) -> DatasetCollection</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L28-L76">get_datasets</a>(...) -> DatasetCollection</code></summary>
 <dl>
 <dd>
 
@@ -4427,7 +4427,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L78-L152">get_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -4560,7 +4560,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L154-L184">get_dataset</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -4635,7 +4635,7 @@ client.dataset.get_dataset(
 </details>
 
 ## EventLog
-<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_logs</a>(...) -> EventLogCollection</code></summary>
+<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py#L27-L73">get_event_logs</a>(...) -> EventLogCollection</code></summary>
 <dl>
 <dd>
 
@@ -4728,7 +4728,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_log</a>(...) -> EventLog</code></summary>
+<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py#L75-L103">get_event_log</a>(...) -> EventLog</code></summary>
 <dl>
 <dd>
 
@@ -4789,7 +4789,7 @@ client.event_log.get_event_log(
 </details>
 
 ## Monitoring
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_health</a>() -> HealthInfo</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py#L27-L53">get_health</a>() -> HealthInfo</code></summary>
 <dl>
 <dd>
 
@@ -4854,7 +4854,7 @@ client.monitoring.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_version</a>() -> VersionInfo</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py#L55-L78">get_version</a>() -> VersionInfo</code></summary>
 <dl>
 <dd>
 
@@ -4905,7 +4905,7 @@ client.monitoring.get_version()
 </details>
 
 ## ImportError
-<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_errors</a>(...) -> ImportErrorCollection</code></summary>
+<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py#L27-L71">get_import_errors</a>(...) -> ImportErrorCollection</code></summary>
 <dl>
 <dd>
 
@@ -4984,7 +4984,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_error</a>(...) -> ImportError</code></summary>
+<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py#L73-L103">get_import_error</a>(...) -> ImportError</code></summary>
 <dl>
 <dd>
 
@@ -5045,7 +5045,7 @@ client.import_error.get_import_error(
 </details>
 
 ## Permission
-<details><summary><code>client.permission.<a href="src/fern/permission/client.py">get_permissions</a>(...) -> ActionCollection</code></summary>
+<details><summary><code>client.permission.<a href="src/fern/permission/client.py#L26-L65">get_permissions</a>(...) -> ActionCollection</code></summary>
 <dl>
 <dd>
 
@@ -5128,7 +5128,7 @@ client.permission.get_permissions()
 </details>
 
 ## Plugin
-<details><summary><code>client.plugin.<a href="src/fern/plugin/client.py">get_plugins</a>(...) -> PluginCollection</code></summary>
+<details><summary><code>client.plugin.<a href="src/fern/plugin/client.py#L26-L65">get_plugins</a>(...) -> PluginCollection</code></summary>
 <dl>
 <dd>
 
@@ -5211,7 +5211,7 @@ client.plugin.get_plugins()
 </details>
 
 ## Pool
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pools</a>(...) -> PoolCollection</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L30-L74">get_pools</a>(...) -> PoolCollection</code></summary>
 <dl>
 <dd>
 
@@ -5290,7 +5290,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">post_pool</a>(...) -> Pool</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L76-L142">post_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -5348,7 +5348,7 @@ client.pool.post_pool()
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pool</a>(...) -> Pool</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L144-L172">get_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -5408,7 +5408,7 @@ client.pool.get_pool(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">delete_pool</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L174-L201">delete_pool</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5468,7 +5468,7 @@ client.pool.delete_pool(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">patch_pool</a>(...) -> Pool</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L203-L282">patch_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -5548,7 +5548,7 @@ A comma-separated list of fully qualified names of fields.
 </details>
 
 ## Provider
-<details><summary><code>client.provider.<a href="src/fern/provider/client.py">get_providers</a>() -> GetProvidersResponse</code></summary>
+<details><summary><code>client.provider.<a href="src/fern/provider/client.py#L26-L53">get_providers</a>() -> GetProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5615,7 +5615,7 @@ client.provider.get_providers()
 </details>
 
 ## Role
-<details><summary><code>client.role.<a href="src/fern/role/client.py">get_roles</a>(...) -> RoleCollection</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py#L31-L79">get_roles</a>(...) -> RoleCollection</code></summary>
 <dl>
 <dd>
 
@@ -5710,7 +5710,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">post_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py#L81-L121">post_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -5784,7 +5784,7 @@ client.role.post_role()
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">get_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py#L123-L155">get_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -5860,7 +5860,7 @@ client.role.get_role(
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">delete_role</a>(...)</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py#L157-L188">delete_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5936,7 +5936,7 @@ client.role.delete_role(
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">patch_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py#L190-L243">patch_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -6032,7 +6032,7 @@ A comma-separated list of fully qualified names of fields.
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_users</a>(...) -> UserCollection</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L33-L81">get_users</a>(...) -> UserCollection</code></summary>
 <dl>
 <dd>
 
@@ -6127,7 +6127,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">post_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L83-L185">post_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -6201,7 +6201,7 @@ client.user.post_user()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user</a>(...) -> UserCollectionItem</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L187-L221">get_user</a>(...) -> UserCollectionItem</code></summary>
 <dl>
 <dd>
 
@@ -6281,7 +6281,7 @@ The username of the user.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">delete_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L223-L256">delete_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6361,7 +6361,7 @@ The username of the user.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">patch_user</a>(...) -> Role</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L258-L375">patch_user</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -6461,7 +6461,7 @@ A comma-separated list of fully qualified names of fields.
 </details>
 
 ## Variable
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variables</a>(...) -> VariableCollection</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py#L30-L76">get_variables</a>(...) -> VariableCollection</code></summary>
 <dl>
 <dd>
 
@@ -6554,7 +6554,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">post_variables</a>(...) -> Variable</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py#L78-L119">post_variables</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 
@@ -6612,7 +6612,7 @@ client.variable.post_variables()
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variable</a>(...) -> Variable</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py#L121-L151">get_variable</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 
@@ -6686,7 +6686,7 @@ client.variable.get_variable(
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">delete_variable</a>(...)</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py#L153-L180">delete_variable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6746,7 +6746,7 @@ client.variable.delete_variable(
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">patch_variable</a>(...) -> Variable</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py#L182-L241">patch_variable</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 

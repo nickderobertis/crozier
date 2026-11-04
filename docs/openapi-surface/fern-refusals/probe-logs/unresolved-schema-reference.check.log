@@ -4,3 +4,5 @@ Warnings for generators.yml:
 [api]: Unexpected error: Failed to resolve schema reference: custom_attributes 
        CliError: Unexpected error: Failed to resolve schema reference: custom_attributes
 All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

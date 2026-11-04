@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">order_print</a>(...) -> OrderPrintResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L131">order_print</a>(...) -> OrderPrintResponse</code></summary>
 <dl>
 <dd>
 

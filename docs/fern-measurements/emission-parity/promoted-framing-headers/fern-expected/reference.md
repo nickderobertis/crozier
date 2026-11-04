@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_signals</a>() -> typing.List[Signal]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L132">list_signals</a>() -> typing.List[Signal]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.list_signals()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">raise_signal</a>(...) -> Signal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L134-L162">raise_signal</a>(...) -> Signal</code></summary>
 <dl>
 <dd>
 

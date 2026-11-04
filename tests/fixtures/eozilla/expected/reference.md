@@ -1,6 +1,6 @@
 # Reference
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_capabilities</a>() -> Capabilities</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L26-L58">get_capabilities</a>() -> Capabilities</code></summary>
 <dl>
 <dd>
 
@@ -69,7 +69,7 @@ client.capabilities.get_capabilities()
 </details>
 
 ## ConformanceDeclaration
-<details><summary><code>client.conformance_declaration.<a href="src/fern/conformance_declaration/client.py">get_conformance</a>() -> ConformanceDeclaration</code></summary>
+<details><summary><code>client.conformance_declaration.<a href="src/fern/conformance_declaration/client.py#L26-L65">get_conformance</a>() -> ConformanceDeclaration</code></summary>
 <dl>
 <dd>
 
@@ -145,7 +145,7 @@ client.conformance_declaration.get_conformance()
 </details>
 
 ## ProcessList
-<details><summary><code>client.process_list.<a href="src/fern/process_list/client.py">get_processes</a>() -> ProcessList</code></summary>
+<details><summary><code>client.process_list.<a href="src/fern/process_list/client.py#L26-L50">get_processes</a>() -> ProcessList</code></summary>
 <dl>
 <dd>
 
@@ -210,7 +210,7 @@ client.process_list.get_processes()
 </details>
 
 ## ProcessDescription
-<details><summary><code>client.process_description.<a href="src/fern/process_description/client.py">get_process</a>(...) -> ProcessDescription</code></summary>
+<details><summary><code>client.process_description.<a href="src/fern/process_description/client.py#L26-L58">get_process</a>(...) -> ProcessDescription</code></summary>
 <dl>
 <dd>
 
@@ -287,7 +287,7 @@ client.process_description.get_process(
 </details>
 
 ## ProcessRequest
-<details><summary><code>client.process_request.<a href="src/fern/process_request/client.py">execute_process</a>(...) -> JobInfo</code></summary>
+<details><summary><code>client.process_request.<a href="src/fern/process_request/client.py#L32-L84">execute_process</a>(...) -> JobInfo</code></summary>
 <dl>
 <dd>
 
@@ -394,7 +394,7 @@ client.process_request.execute_process(
 </details>
 
 ## JobList
-<details><summary><code>client.job_list.<a href="src/fern/job_list/client.py">get_jobs</a>() -> JobList</code></summary>
+<details><summary><code>client.job_list.<a href="src/fern/job_list/client.py#L26-L50">get_jobs</a>() -> JobList</code></summary>
 <dl>
 <dd>
 
@@ -459,7 +459,7 @@ client.job_list.get_jobs()
 </details>
 
 ## JobStatus
-<details><summary><code>client.job_status.<a href="src/fern/job_status/client.py">get_job</a>(...) -> JobInfo</code></summary>
+<details><summary><code>client.job_status.<a href="src/fern/job_status/client.py#L26-L55">get_job</a>(...) -> JobInfo</code></summary>
 <dl>
 <dd>
 
@@ -534,7 +534,7 @@ client.job_status.get_job(
 </details>
 
 ## Dismiss
-<details><summary><code>client.dismiss.<a href="src/fern/dismiss/client.py">job</a>(...) -> JobInfo</code></summary>
+<details><summary><code>client.dismiss.<a href="src/fern/dismiss/client.py#L26-L55">job</a>(...) -> JobInfo</code></summary>
 <dl>
 <dd>
 
@@ -609,7 +609,7 @@ client.dismiss.job(
 </details>
 
 ## JobResults
-<details><summary><code>client.job_results.<a href="src/fern/job_results/client.py">get_job_results</a>(...) -> JobResults</code></summary>
+<details><summary><code>client.job_results.<a href="src/fern/job_results/client.py#L26-L55">get_job_results</a>(...) -> JobResults</code></summary>
 <dl>
 <dd>
 

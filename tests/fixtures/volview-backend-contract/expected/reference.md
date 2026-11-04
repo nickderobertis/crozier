@@ -1,6 +1,6 @@
 # Reference
 ## context
-<details><summary><code>client.context.<a href="src/fern/context/client.py">list_tasks</a>() -> typing.List[TaskSummary]</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L36-L56">list_tasks</a>() -> typing.List[TaskSummary]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.context.list_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">get_task_spec</a>(...) -> TaskSpec</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L58-L83">get_task_spec</a>(...) -> TaskSpec</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.context.get_task_spec(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">run_task</a>(...) -> JobRef</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L85-L119">run_task</a>(...) -> JobRef</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.context.run_task(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">list_job_history</a>(...) -> JobHistoryPage</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L121-L152">list_job_history</a>(...) -> JobHistoryPage</code></summary>
 <dl>
 <dd>
 
@@ -237,7 +237,7 @@ client.context.list_job_history()
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">stage_input</a>(...) -> StageResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L154-L198">stage_input</a>(...) -> StageResponse</code></summary>
 <dl>
 <dd>
 
@@ -313,7 +313,7 @@ client.context.stage_input(
 </details>
 
 ## job
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_job_history_detail</a>(...) -> JobHistoryDetail</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L28-L55">get_job_history_detail</a>(...) -> JobHistoryDetail</code></summary>
 <dl>
 <dd>
 
@@ -371,7 +371,7 @@ client.job.get_job_history_detail(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_job</a>(...) -> NeutralJobStatus</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L57-L82">get_job</a>(...) -> NeutralJobStatus</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.job.get_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">delete_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L84-L110">delete_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -501,7 +501,7 @@ client.job.delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_job_results</a>(...) -> JobResults</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L112-L137">get_job_results</a>(...) -> JobResults</code></summary>
 <dl>
 <dd>
 
@@ -559,7 +559,7 @@ client.job.get_job_results(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">cancel_job</a>(...) -> NeutralJobStatus</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L139-L164">cancel_job</a>(...) -> NeutralJobStatus</code></summary>
 <dl>
 <dd>
 

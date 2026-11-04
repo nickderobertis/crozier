@@ -1,6 +1,6 @@
 # Reference
 ## Patterns
-<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py">weave_pattern</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py#L29-L65">weave_pattern</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.patterns.weave_pattern(
 </dl>
 </details>
 
-<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py">get_pattern</a>(...) -> WovenPattern</code></summary>
+<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py#L67-L91">get_pattern</a>(...) -> WovenPattern</code></summary>
 <dl>
 <dd>
 

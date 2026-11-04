@@ -1,6 +1,6 @@
 # Reference
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">streammessages</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L25-L50">streammessages</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

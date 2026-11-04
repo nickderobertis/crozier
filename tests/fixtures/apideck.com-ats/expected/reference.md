@@ -107,7 +107,7 @@ client.applicants.all_(
 </dl>
 </details>
 
-<details><summary><code>client.applicants.<a href="src/fern/applicants/client.py">add</a>(...) -> CreateApplicantResponse</code></summary>
+<details><summary><code>client.applicants.<a href="src/fern/applicants/client.py#L112-L330">add</a>(...) -> CreateApplicantResponse</code></summary>
 <dl>
 <dd>
 
@@ -188,7 +188,7 @@ client.applicants.add()
 </dl>
 </details>
 
-<details><summary><code>client.applicants.<a href="src/fern/applicants/client.py">one</a>(...) -> GetApplicantResponse</code></summary>
+<details><summary><code>client.applicants.<a href="src/fern/applicants/client.py#L332-L378">one</a>(...) -> GetApplicantResponse</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ client.jobs.all_(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">one</a>(...) -> GetJobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L80-L126">one</a>(...) -> GetJobResponse</code></summary>
 <dl>
 <dd>
 

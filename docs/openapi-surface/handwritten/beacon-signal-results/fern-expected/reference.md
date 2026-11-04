@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">classify_signal</a>() -> typing.Optional[ClassifySignalResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L126">classify_signal</a>() -> typing.Optional[ClassifySignalResponse]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.classify_signal()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">summarize_signal</a>() -> typing.Optional[SummarizeSignalResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L152">summarize_signal</a>() -> typing.Optional[SummarizeSignalResponse]</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.summarize_signal()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_relay</a>(...) -> RelayTarget</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L187">update_relay</a>(...) -> RelayTarget</code></summary>
 <dl>
 <dd>
 

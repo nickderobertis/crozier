@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">terravibes_root_get</a>() -> Message</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L115-L137">terravibes_root_get</a>() -> Message</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.terravibes_root_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">terravibes_metrics_system_metrics_get</a>() -> MetricsDict</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L139-L163">terravibes_metrics_system_metrics_get</a>() -> MetricsDict</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.terravibes_metrics_system_metrics_get()
 </details>
 
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">terravibes_list_workflows</a>() -> typing.Any</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L30-L52">terravibes_list_workflows</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.workflows.terravibes_list_workflows()
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">terravibes_describe_workflow</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L54-L92">terravibes_describe_workflow</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -266,7 +266,7 @@ client.workflows.terravibes_describe_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">terravibes_create_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L94-L169">terravibes_create_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -376,7 +376,7 @@ client.workflows.terravibes_create_run(
 </details>
 
 ## Runs
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">terravibes_list_runs</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L25-L69">terravibes_list_runs</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -470,7 +470,7 @@ client.runs.terravibes_list_runs()
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">terravibes_describe_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L71-L100">terravibes_describe_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -542,7 +542,7 @@ client.runs.terravibes_describe_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">terravibes_delete_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L102-L134">terravibes_delete_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -617,7 +617,7 @@ client.runs.terravibes_delete_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">terravibes_cancel_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L136-L165">terravibes_cancel_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -689,7 +689,7 @@ client.runs.terravibes_cancel_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">terravibes_resubmit_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L167-L196">terravibes_resubmit_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

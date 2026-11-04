@@ -13,7 +13,7 @@ except ImportError:
     class DefaultAioHttpClient(httpx.AsyncClient):
         def __init__(self, **kwargs: typing.Any) -> None:
             raise RuntimeError(
-                "To use the aiohttp client, install the aiohttp extra: pip install default_package_name[aiohttp]"
+                "To use the aiohttp client, install the aiohttp extra: pip install default-package-name[aiohttp]"
             )
 
 else:

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "34c3a4c427902f3c933613cbe9860aa4456d766f39d99a3e8fb54df0c2618e18"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "b6020d8ead4fdb04e63898753041492c223b4c091a56250e0e3a455ad98ce324"
 
 [[covers]]
 key = "property-sole-anyof-empty-object-member"

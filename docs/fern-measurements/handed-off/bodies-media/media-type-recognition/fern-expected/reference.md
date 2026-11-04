@@ -1,6 +1,6 @@
 # Reference
 ## Deposits
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">record_deposit</a>(...) -> Deposit</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L29-L58">record_deposit</a>(...) -> Deposit</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.deposits.record_deposit(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">record_germination</a>(...)</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L60-L93">record_germination</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.deposits.record_germination(
 </details>
 
 ## Vaults
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">get_vault</a>(...) -> Vault</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L26-L50">get_vault</a>(...) -> Vault</code></summary>
 <dl>
 <dd>
 

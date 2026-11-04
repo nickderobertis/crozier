@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">health_check</a>() -> GetApiHealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L48">health_check</a>() -> GetApiHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.health.health_check()
 </details>
 
 ## Catalogue
-<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py">get_articles</a>(...) -> GetApiCatalogueResponse</code></summary>
+<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py#L32-L69">get_articles</a>(...) -> GetApiCatalogueResponse</code></summary>
 <dl>
 <dd>
 
@@ -144,7 +144,7 @@ client.catalogue.get_articles(
 </dl>
 </details>
 
-<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py">create_an_article</a>(...) -> PostApiCatalogueResponse</code></summary>
+<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py#L71-L127">create_an_article</a>(...) -> PostApiCatalogueResponse</code></summary>
 <dl>
 <dd>
 
@@ -214,7 +214,7 @@ client.catalogue.create_an_article()
 </dl>
 </details>
 
-<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py">update_article_quantities</a>(...) -> PutApiCatalogueQuantityResponse</code></summary>
+<details><summary><code>client.catalogue.<a href="src/fern/catalogue/client.py#L129-L163">update_article_quantities</a>(...) -> PutApiCatalogueQuantityResponse</code></summary>
 <dl>
 <dd>
 

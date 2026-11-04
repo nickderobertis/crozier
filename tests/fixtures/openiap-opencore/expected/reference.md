@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">me</a>() -> typing.List[User]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L120-L144">me</a>() -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.me()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L146-L181">get_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -142,7 +142,7 @@ client.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_user</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L183-L228">create_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_user</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L230-L259">get_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -277,7 +277,7 @@ client.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_user</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L261-L286">delete_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_openrpaworkflows</a>(...) -> typing.List[Workflow]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L288-L322">get_openrpaworkflows</a>(...) -> typing.List[Workflow]</code></summary>
 <dl>
 <dd>
 
@@ -401,7 +401,7 @@ client.get_openrpaworkflows()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_open_rpa_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L324-L383">create_open_rpa_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -465,7 +465,7 @@ client.create_open_rpa_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_open_rpa_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L385-L411">get_open_rpa_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -524,7 +524,7 @@ client.get_open_rpa_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_open_rpa_workflow</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L413-L438">delete_open_rpa_workflow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -583,7 +583,7 @@ client.delete_open_rpa_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_collections</a>(...) -> typing.List[Collection]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L440-L466">get_collections</a>(...) -> typing.List[Collection]</code></summary>
 <dl>
 <dd>
 
@@ -640,7 +640,7 @@ client.get_collections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L468-L507">create_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -715,7 +715,7 @@ client.create_collection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L509-L537">get_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -774,7 +774,7 @@ client.get_collection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">drop_collection</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L539-L564">drop_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.drop_collection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_indexes</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L566-L594">get_indexes</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -892,7 +892,7 @@ client.get_indexes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_index</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L596-L639">create_index</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -978,7 +978,7 @@ client.create_index(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">drop_index</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L641-L671">drop_index</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1046,7 +1046,7 @@ client.drop_index(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">query</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L673-L736">query</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1162,7 +1162,7 @@ client.query(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">count</a>(...) -> float</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L738-L778">count</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -1238,7 +1238,7 @@ client.count(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">distinct</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L780-L824">distinct</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1323,7 @@ client.distinct(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">aggregate</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L826-L869">aggregate</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1407,7 +1407,7 @@ client.aggregate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_open_rpa_workflow</a>(...) -> IRecordOfAny</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L871-L915">run_open_rpa_workflow</a>(...) -> IRecordOfAny</code></summary>
 <dl>
 <dd>
 
@@ -1492,7 +1492,7 @@ client.run_open_rpa_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">queue_message</a>(...) -> IRecordOfAny</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L917-L951">queue_message</a>(...) -> IRecordOfAny</code></summary>
 <dl>
 <dd>
 

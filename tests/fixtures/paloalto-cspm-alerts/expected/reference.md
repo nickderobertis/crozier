@@ -1,6 +1,6 @@
 # Reference
 ## Alerts
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alert_filter_and_options</a>() -> AlertFilterSuggestion</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L60-L86">get_alert_filter_and_options</a>() -> AlertFilterSuggestion</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.alerts.get_alert_filter_and_options()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alert_filter_options</a>(...) -> ParsedTableFilter</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L88-L128">get_alert_filter_options</a>(...) -> ParsedTableFilter</code></summary>
 <dl>
 <dd>
 
@@ -144,7 +144,7 @@ client.alerts.get_alert_filter_options(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alerts</a>(...) -> typing.List[AlertModel]</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L130-L327">get_alerts</a>(...) -> typing.List[AlertModel]</code></summary>
 <dl>
 <dd>
 
@@ -454,7 +454,7 @@ client.alerts.get_alerts(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">post_alerts</a>(...) -> typing.List[AlertModel]</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L329-L463">post_alerts</a>(...) -> typing.List[AlertModel]</code></summary>
 <dl>
 <dd>
 
@@ -577,7 +577,7 @@ client.alerts.post_alerts()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alerts_v2</a>(...) -> PagedResultsAlertModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L465-L673">get_alerts_v2</a>(...) -> PagedResultsAlertModel</code></summary>
 <dl>
 <dd>
 
@@ -904,7 +904,7 @@ client.alerts.get_alerts_v2(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">post_alerts_v2</a>(...) -> PagedResultsAlertModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L675-L812">post_alerts_v2</a>(...) -> PagedResultsAlertModel</code></summary>
 <dl>
 <dd>
 
@@ -1030,7 +1030,7 @@ client.alerts.post_alerts_v2()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alerts_grouped</a>(...) -> typing.List[AlertModel]</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L814-L961">get_alerts_grouped</a>(...) -> typing.List[AlertModel]</code></summary>
 <dl>
 <dd>
 
@@ -1273,7 +1273,7 @@ client.alerts.get_alerts_grouped()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">post_alerts_grouped</a>(...) -> typing.List[AlertModel]</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L963-L1065">post_alerts_grouped</a>(...) -> typing.List[AlertModel]</code></summary>
 <dl>
 <dd>
 
@@ -1364,7 +1364,7 @@ client.alerts.post_alerts_grouped()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alert</a>(...) -> AlertModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1067-L1127">get_alert</a>(...) -> AlertModel</code></summary>
 <dl>
 <dd>
 
@@ -1467,7 +1467,7 @@ client.alerts.get_alert(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">dismiss_alerts</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1129-L1185">dismiss_alerts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1540,7 +1540,7 @@ client.alerts.dismiss_alerts(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">is_dismissal_note_required</a>() -> RequireDismissalNoteConfigModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1187-L1213">is_dismissal_note_required</a>() -> RequireDismissalNoteConfigModel</code></summary>
 <dl>
 <dd>
 
@@ -1603,7 +1603,7 @@ client.alerts.is_dismissal_note_required()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">set_dismissal_note_required</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1215-L1248">set_dismissal_note_required</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1674,7 +1674,7 @@ client.alerts.set_dismissal_note_required()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">reopen_alerts</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1250-L1306">reopen_alerts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1747,7 +1747,7 @@ client.alerts.reopen_alerts(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alert_count</a>(...) -> CountModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1308-L1347">get_alert_count</a>(...) -> CountModel</code></summary>
 <dl>
 <dd>
 
@@ -1827,7 +1827,7 @@ client.alerts.get_alert_count(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">submit_job_for_listing_alerts</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1349-L1462">submit_job_for_listing_alerts</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -1926,7 +1926,7 @@ client.alerts.submit_job_for_listing_alerts()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alerts_job_status</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1464-L1492">get_alerts_job_status</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -1999,7 +1999,7 @@ client.alerts.get_alerts_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">download_alerts_list_json</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1494-L1522">download_alerts_list_json</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2072,7 +2072,7 @@ client.alerts.download_alerts_list_json(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">submit_an_alert_csv_download_job</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1524-L1622">submit_an_alert_csv_download_job</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -2159,7 +2159,7 @@ client.alerts.submit_an_alert_csv_download_job()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alert_csv_job_status</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1624-L1652">get_alert_csv_job_status</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -2232,7 +2232,7 @@ client.alerts.get_alert_csv_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">download_alert_csv</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1654-L1682">download_alert_csv</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2305,7 +2305,7 @@ client.alerts.download_alert_csv(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">submit_a_job_for_listing_alerts_grouped_by_policy</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1684-L1797">submit_a_job_for_listing_alerts_grouped_by_policy</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -2404,7 +2404,7 @@ client.alerts.submit_a_job_for_listing_alerts_grouped_by_policy()
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_async_policy_alert_job_status</a>(...) -> AsyncJob</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1799-L1830">get_async_policy_alert_job_status</a>(...) -> AsyncJob</code></summary>
 <dl>
 <dd>
 
@@ -2477,7 +2477,7 @@ client.alerts.get_async_policy_alert_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">download_policy_alerts_json</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1832-L1860">download_policy_alerts_json</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2550,7 +2550,7 @@ client.alerts.download_policy_alerts_json(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">get_alerts_remediation</a>(...) -> RemediationCliModel</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1862-L1915">get_alerts_remediation</a>(...) -> RemediationCliModel</code></summary>
 <dl>
 <dd>
 
@@ -2647,7 +2647,7 @@ client.alerts.get_alerts_remediation(
 </dl>
 </details>
 
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">perform_remediation_for_alert</a>(...)</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L1917-L1955">perform_remediation_for_alert</a>(...)</code></summary>
 <dl>
 <dd>
 

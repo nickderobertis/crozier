@@ -1,6 +1,6 @@
 # Reference
 ## Environments
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1get_a_branch_config</a>(...) -> BranchDetailResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L47-L78">v1get_a_branch_config</a>(...) -> BranchDetailResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.environments.v1get_a_branch_config(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1delete_a_branch</a>(...) -> BranchDeleteResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L80-L118">v1delete_a_branch</a>(...) -> BranchDeleteResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.environments.v1delete_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1update_a_branch_config</a>(...) -> BranchResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L120-L192">v1update_a_branch_config</a>(...) -> BranchResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.environments.v1update_a_branch_config(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1push_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L194-L234">v1push_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -370,7 +370,7 @@ client.environments.v1push_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1merge_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L236-L276">v1merge_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -452,7 +452,7 @@ client.environments.v1merge_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1reset_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L278-L318">v1reset_a_branch</a>(...) -> BranchUpdateResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -534,7 +534,7 @@ client.environments.v1reset_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1restore_a_branch</a>(...) -> BranchRestoreResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L320-L351">v1restore_a_branch</a>(...) -> BranchRestoreResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -607,7 +607,7 @@ client.environments.v1restore_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1diff_a_branch</a>(...) -> str</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L353-L401">v1diff_a_branch</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -703,7 +703,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1list_action_runs</a>(...) -> ListActionRunResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L403-L447">v1list_action_runs</a>(...) -> ListActionRunResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -794,7 +794,7 @@ client.environments.v1list_action_runs(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1count_action_runs</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L449-L479">v1count_action_runs</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -867,7 +867,7 @@ client.environments.v1count_action_runs(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1get_action_run</a>(...) -> ActionRunResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L481-L516">v1get_action_run</a>(...) -> ActionRunResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -949,7 +949,7 @@ client.environments.v1get_action_run(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1update_action_run_status</a>(...) -> UpdateRunStatusResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L518-L600">v1update_action_run_status</a>(...) -> UpdateRunStatusResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.environments.v1update_action_run_status(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1get_action_run_logs</a>(...) -> str</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L602-L637">v1get_action_run_logs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.environments.v1get_action_run_logs(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1list_all_branches</a>(...) -> typing.List[BranchResponseOutput]</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L639-L670">v1list_all_branches</a>(...) -> typing.List[BranchResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1247,7 +1247,7 @@ client.environments.v1list_all_branches(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1create_a_branch</a>(...) -> BranchResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L672-L761">v1create_a_branch</a>(...) -> BranchResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -1413,7 +1413,7 @@ client.environments.v1create_a_branch(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1disable_preview_branching</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L763-L791">v1disable_preview_branching</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1486,7 +1486,7 @@ client.environments.v1disable_preview_branching(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">v1get_a_branch</a>(...) -> BranchResponseOutput</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L793-L827">v1get_a_branch</a>(...) -> BranchResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -1569,7 +1569,7 @@ client.environments.v1get_a_branch(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1list_all_projects</a>() -> typing.List[V1ProjectWithDatabaseResponseOutput]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L61-L87">v1list_all_projects</a>() -> typing.List[V1ProjectWithDatabaseResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1632,7 +1632,7 @@ client.projects.v1list_all_projects()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1create_a_project</a>(...) -> V1ProjectResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L89-L184">v1create_a_project</a>(...) -> V1ProjectResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -1789,7 +1789,7 @@ client.projects.v1create_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_available_regions</a>(...) -> RegionsInfoOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L186-L231">v1get_available_regions</a>(...) -> RegionsInfoOutput</code></summary>
 <dl>
 <dd>
 
@@ -1864,7 +1864,7 @@ client.projects.v1get_available_regions(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1list_all_network_bans</a>(...) -> NetworkBanResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L233-L262">v1list_all_network_bans</a>(...) -> NetworkBanResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -1923,7 +1923,7 @@ client.projects.v1list_all_network_bans(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1list_all_network_bans_enriched</a>(...) -> NetworkBanResponseEnrichedOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L264-L293">v1list_all_network_bans_enriched</a>(...) -> NetworkBanResponseEnrichedOutput</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1982,7 @@ client.projects.v1list_all_network_bans_enriched(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1delete_network_bans</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L295-L345">v1delete_network_bans</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2069,7 +2069,7 @@ client.projects.v1delete_network_bans(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_network_restrictions</a>(...) -> NetworkRestrictionsResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L347-L376">v1get_network_restrictions</a>(...) -> NetworkRestrictionsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2128,7 +2128,7 @@ client.projects.v1get_network_restrictions(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1patch_network_restrictions</a>(...) -> NetworkRestrictionsV2ResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L378-L429">v1patch_network_restrictions</a>(...) -> NetworkRestrictionsV2ResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2214,7 +2214,7 @@ client.projects.v1patch_network_restrictions(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1update_network_restrictions</a>(...) -> NetworkRestrictionsResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L431-L476">v1update_network_restrictions</a>(...) -> NetworkRestrictionsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2295,7 +2295,7 @@ client.projects.v1update_network_restrictions(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_project</a>(...) -> V1ProjectWithDatabaseResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L478-L507">v1get_project</a>(...) -> V1ProjectWithDatabaseResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2354,7 +2354,7 @@ client.projects.v1get_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1delete_a_project</a>(...) -> V1ProjectRefResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L509-L538">v1delete_a_project</a>(...) -> V1ProjectRefResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2413,7 +2413,7 @@ client.projects.v1delete_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1update_a_project</a>(...) -> V1ProjectRefResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L540-L572">v1update_a_project</a>(...) -> V1ProjectRefResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2481,7 +2481,7 @@ client.projects.v1update_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1upgrade_postgres_version</a>(...) -> ProjectUpgradeInitiateResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L574-L618">v1upgrade_postgres_version</a>(...) -> ProjectUpgradeInitiateResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2559,7 +2559,7 @@ client.projects.v1upgrade_postgres_version(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_postgres_upgrade_eligibility</a>(...) -> ProjectUpgradeEligibilityResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L620-L649">v1get_postgres_upgrade_eligibility</a>(...) -> ProjectUpgradeEligibilityResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2618,7 +2618,7 @@ client.projects.v1get_postgres_upgrade_eligibility(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_postgres_upgrade_status</a>(...) -> DatabaseUpgradeStatusResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L651-L689">v1get_postgres_upgrade_status</a>(...) -> DatabaseUpgradeStatusResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2686,7 +2686,7 @@ client.projects.v1get_postgres_upgrade_status(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_services_health</a>(...) -> typing.List[V1ServiceHealthResponseOutput]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L691-L734">v1get_services_health</a>(...) -> typing.List[V1ServiceHealthResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -2763,7 +2763,7 @@ client.projects.v1get_services_health(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1pause_a_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L736-L762">v1pause_a_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2822,7 +2822,7 @@ client.projects.v1pause_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1restart_a_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L764-L790">v1restart_a_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2881,7 +2881,7 @@ client.projects.v1restart_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1list_available_restore_versions</a>(...) -> GetProjectAvailableRestoreVersionsResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L792-L821">v1list_available_restore_versions</a>(...) -> GetProjectAvailableRestoreVersionsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -2940,7 +2940,7 @@ client.projects.v1list_available_restore_versions(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1restore_a_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L823-L849">v1restore_a_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2999,7 +2999,7 @@ client.projects.v1restore_a_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1cancel_a_project_restoration</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L851-L879">v1cancel_a_project_restoration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3058,7 +3058,7 @@ client.projects.v1cancel_a_project_restoration(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_project_claim_token</a>(...) -> ProjectClaimTokenResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L881-L910">v1get_project_claim_token</a>(...) -> ProjectClaimTokenResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3117,7 +3117,7 @@ client.projects.v1get_project_claim_token(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1create_project_claim_token</a>(...) -> CreateProjectClaimTokenResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L912-L941">v1create_project_claim_token</a>(...) -> CreateProjectClaimTokenResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3176,7 +3176,7 @@ client.projects.v1create_project_claim_token(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1delete_project_claim_token</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L943-L971">v1delete_project_claim_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3235,7 +3235,7 @@ client.projects.v1delete_project_claim_token(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_database_disk</a>(...) -> DiskResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L973-L1002">v1get_database_disk</a>(...) -> DiskResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3294,7 +3294,7 @@ client.projects.v1get_database_disk(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1modify_database_disk</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1004-L1045">v1modify_database_disk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3367,7 +3367,7 @@ client.projects.v1modify_database_disk(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_disk_utilization</a>(...) -> DiskUtilMetricsResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1047-L1076">v1get_disk_utilization</a>(...) -> DiskUtilMetricsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3426,7 +3426,7 @@ client.projects.v1get_disk_utilization(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_project_disk_autoscale_config</a>(...) -> DiskAutoscaleConfigOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1078-L1107">v1get_project_disk_autoscale_config</a>(...) -> DiskAutoscaleConfigOutput</code></summary>
 <dl>
 <dd>
 
@@ -3485,7 +3485,7 @@ client.projects.v1get_project_disk_autoscale_config(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">v1get_all_projects_for_organization</a>(...) -> OrganizationProjectsResponseOutput</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1109-L1179">v1get_all_projects_for_organization</a>(...) -> OrganizationProjectsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3609,7 +3609,7 @@ The following values are supported: `ACTIVE_HEALTHY`, `INACTIVE`.
 </details>
 
 ## Organizations
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1list_all_organizations</a>() -> typing.List[OrganizationResponseV1Output]</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L33-L59">v1list_all_organizations</a>() -> typing.List[OrganizationResponseV1Output]</code></summary>
 <dl>
 <dd>
 
@@ -3672,7 +3672,7 @@ client.organizations.v1list_all_organizations()
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1create_an_organization</a>(...) -> OrganizationResponseV1Output</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L61-L89">v1create_an_organization</a>(...) -> OrganizationResponseV1Output</code></summary>
 <dl>
 <dd>
 
@@ -3731,7 +3731,7 @@ client.organizations.v1create_an_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1get_organization_entitlements</a>(...) -> V1ListEntitlementsResponseOutput</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L91-L122">v1get_organization_entitlements</a>(...) -> V1ListEntitlementsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3804,7 +3804,7 @@ client.organizations.v1get_organization_entitlements(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1list_organization_members</a>(...) -> typing.List[V1OrganizationMemberResponseOutput]</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L124-L153">v1list_organization_members</a>(...) -> typing.List[V1OrganizationMemberResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -3863,7 +3863,7 @@ client.organizations.v1list_organization_members(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1get_an_organization</a>(...) -> V1OrganizationSlugResponseOutput</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L155-L184">v1get_an_organization</a>(...) -> V1OrganizationSlugResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3922,7 +3922,7 @@ client.organizations.v1get_an_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1get_organization_project_claim</a>(...) -> OrganizationProjectClaimResponseOutput</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L186-L218">v1get_organization_project_claim</a>(...) -> OrganizationProjectClaimResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -3990,7 +3990,7 @@ client.organizations.v1get_organization_project_claim(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">v1claim_project_for_organization</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L220-L251">v1claim_project_for_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4059,7 +4059,7 @@ client.organizations.v1claim_project_for_organization(
 </details>
 
 ## OAuth
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">v1authorize_user</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L36-L121">v1authorize_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4207,7 +4207,7 @@ client.o_auth.v1authorize_user(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">v1exchange_oauth_token</a>(...) -> OAuthTokenResponseOutput</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L123-L203">v1exchange_oauth_token</a>(...) -> OAuthTokenResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -4286,7 +4286,7 @@ client.o_auth.v1exchange_oauth_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">v1revoke_token</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L205-L248">v1revoke_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4363,7 +4363,7 @@ client.o_auth.v1revoke_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">v1oauth_authorize_project_claim</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L250-L322">v1oauth_authorize_project_claim</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4500,7 +4500,7 @@ client.o_auth.v1oauth_authorize_project_claim(
 </details>
 
 ## Database
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1list_all_snippets</a>(...) -> SnippetListOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L61-L112">v1list_all_snippets</a>(...) -> SnippetListOutput</code></summary>
 <dl>
 <dd>
 
@@ -4591,7 +4591,7 @@ client.database.v1list_all_snippets(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_a_snippet</a>(...) -> SnippetResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L114-L142">v1get_a_snippet</a>(...) -> SnippetResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -4650,7 +4650,7 @@ client.database.v1get_a_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_jit_access_config</a>(...) -> V1GetJitAccessConfigResponse</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L144-L173">v1get_jit_access_config</a>(...) -> V1GetJitAccessConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -4709,7 +4709,7 @@ client.database.v1get_jit_access_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_jit_access_config</a>(...) -> V1UpdateJitAccessConfigResponse</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L175-L209">v1update_jit_access_config</a>(...) -> V1UpdateJitAccessConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -4778,7 +4778,7 @@ client.database.v1update_jit_access_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_ssl_enforcement_config</a>(...) -> SslEnforcementResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L211-L240">v1get_ssl_enforcement_config</a>(...) -> SslEnforcementResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -4837,7 +4837,7 @@ client.database.v1get_ssl_enforcement_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_ssl_enforcement_config</a>(...) -> SslEnforcementResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L242-L284">v1update_ssl_enforcement_config</a>(...) -> SslEnforcementResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -4908,7 +4908,7 @@ client.database.v1update_ssl_enforcement_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1generate_typescript_types</a>(...) -> TypescriptResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L286-L326">v1generate_typescript_types</a>(...) -> TypescriptResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -4990,7 +4990,7 @@ client.database.v1generate_typescript_types(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_readonly_mode_status</a>(...) -> ReadOnlyStatusResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L328-L357">v1get_readonly_mode_status</a>(...) -> ReadOnlyStatusResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -5049,7 +5049,7 @@ client.database.v1get_readonly_mode_status(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1disable_readonly_mode_temporarily</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L359-L387">v1disable_readonly_mode_temporarily</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5108,7 +5108,7 @@ client.database.v1disable_readonly_mode_temporarily(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1setup_a_read_replica</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L389-L429">v1setup_a_read_replica</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5177,7 +5177,7 @@ client.database.v1setup_a_read_replica(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1remove_a_read_replica</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L431-L464">v1remove_a_read_replica</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5245,7 +5245,7 @@ client.database.v1remove_a_read_replica(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1create_login_role</a>(...) -> CreateRoleResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L466-L498">v1create_login_role</a>(...) -> CreateRoleResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -5313,7 +5313,7 @@ client.database.v1create_login_role(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1delete_login_roles</a>(...) -> DeleteRolesResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L500-L529">v1delete_login_roles</a>(...) -> DeleteRolesResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -5372,7 +5372,7 @@ client.database.v1delete_login_roles(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1list_migration_history</a>(...) -> V1ListMigrationsResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L531-L560">v1list_migration_history</a>(...) -> V1ListMigrationsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -5431,7 +5431,7 @@ client.database.v1list_migration_history(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1apply_a_migration</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L562-L616">v1apply_a_migration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5525,7 +5525,7 @@ client.database.v1apply_a_migration(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1upsert_a_migration</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L618-L672">v1upsert_a_migration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5619,7 +5619,7 @@ client.database.v1upsert_a_migration(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1rollback_migrations</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L674-L706">v1rollback_migrations</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5687,7 +5687,7 @@ client.database.v1rollback_migrations(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_a_migration</a>(...) -> V1GetMigrationResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L708-L740">v1get_a_migration</a>(...) -> V1GetMigrationResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -5755,7 +5755,7 @@ client.database.v1get_a_migration(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1patch_a_migration</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L742-L787">v1patch_a_migration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5841,7 +5841,7 @@ client.database.v1patch_a_migration(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1run_a_query</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L789-L833">v1run_a_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5926,7 +5926,7 @@ client.database.v1run_a_query(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1read_only_query</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L835-L877">v1read_only_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6016,7 +6016,7 @@ client.database.v1read_only_query(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1enable_database_webhook</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L879-L905">v1enable_database_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6075,7 +6075,7 @@ client.database.v1enable_database_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_database_metadata</a>(...) -> GetProjectDbMetadataResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L907-L938">v1get_database_metadata</a>(...) -> GetProjectDbMetadataResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6148,7 +6148,7 @@ client.database.v1get_database_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_database_password</a>(...) -> V1UpdatePasswordResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L940-L972">v1update_database_password</a>(...) -> V1UpdatePasswordResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6216,7 +6216,7 @@ client.database.v1update_database_password(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L974-L1005">v1get_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6289,7 +6289,7 @@ client.database.v1get_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1authorize_jit_access</a>(...) -> JitAuthorizeAccessResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1007-L1046">v1authorize_jit_access</a>(...) -> JitAuthorizeAccessResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6380,7 +6380,7 @@ client.database.v1authorize_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1048-L1111">v1update_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6485,7 +6485,7 @@ client.database.v1update_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1list_jit_access</a>(...) -> JitListAccessResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1113-L1144">v1list_jit_access</a>(...) -> JitListAccessResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6558,7 +6558,7 @@ client.database.v1list_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1invite_external_jit_access</a>(...) -> InviteExternalUserJitResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1146-L1209">v1invite_external_jit_access</a>(...) -> InviteExternalUserJitResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6663,7 +6663,7 @@ client.database.v1invite_external_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1accept_invite_external_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1211-L1250">v1accept_invite_external_jit_access</a>(...) -> JitAccessResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -6754,7 +6754,7 @@ client.database.v1accept_invite_external_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1delete_invite_external_jit_access</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1252-L1287">v1delete_invite_external_jit_access</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6836,7 +6836,7 @@ client.database.v1delete_invite_external_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1delete_jit_access</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1289-L1322">v1delete_jit_access</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6918,7 +6918,7 @@ client.database.v1delete_jit_access(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_database_openapi</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1324-L1358">v1get_database_openapi</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6999,7 +6999,7 @@ client.database.v1get_database_openapi(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_project_pgbouncer_config</a>(...) -> V1PgbouncerConfigResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1360-L1389">v1get_project_pgbouncer_config</a>(...) -> V1PgbouncerConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -7058,7 +7058,7 @@ client.database.v1get_project_pgbouncer_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_pooler_config</a>(...) -> typing.List[SupavisorConfigResponseOutput]</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1391-L1420">v1get_pooler_config</a>(...) -> typing.List[SupavisorConfigResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -7117,7 +7117,7 @@ client.database.v1get_pooler_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_pooler_config</a>(...) -> UpdateSupavisorConfigResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1422-L1467">v1update_pooler_config</a>(...) -> UpdateSupavisorConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -7195,7 +7195,7 @@ client.database.v1update_pooler_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_postgres_config</a>(...) -> PostgresConfigResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1469-L1498">v1get_postgres_config</a>(...) -> PostgresConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -7254,7 +7254,7 @@ client.database.v1get_postgres_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_postgres_config</a>(...) -> PostgresConfigResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1500-L1700">v1update_postgres_config</a>(...) -> PostgresConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -7629,7 +7629,7 @@ client.database.v1update_postgres_config(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1list_all_backups</a>(...) -> V1BackupsResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1702-L1731">v1list_all_backups</a>(...) -> V1BackupsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -7688,7 +7688,7 @@ client.database.v1list_all_backups(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1restore_pitr_backup</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1733-L1766">v1restore_pitr_backup</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7756,7 +7756,7 @@ client.database.v1restore_pitr_backup(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_restore_point</a>(...) -> V1RestorePointResponse</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1768-L1799">v1get_restore_point</a>(...) -> V1RestorePointResponse</code></summary>
 <dl>
 <dd>
 
@@ -7823,7 +7823,7 @@ client.database.v1get_restore_point(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1create_restore_point</a>(...) -> V1RestorePointResponse</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1801-L1833">v1create_restore_point</a>(...) -> V1RestorePointResponse</code></summary>
 <dl>
 <dd>
 
@@ -7891,7 +7891,7 @@ client.database.v1create_restore_point(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1restore_physical_backup</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1835-L1866">v1restore_physical_backup</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7959,7 +7959,7 @@ client.database.v1restore_physical_backup(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1get_backup_schedule</a>(...) -> V1BackupScheduleResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1868-L1897">v1get_backup_schedule</a>(...) -> V1BackupScheduleResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8018,7 +8018,7 @@ client.database.v1get_backup_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1update_backup_schedule</a>(...) -> V1BackupScheduleResponseOutput</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1899-L1936">v1update_backup_schedule</a>(...) -> V1BackupScheduleResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8100,7 +8100,7 @@ client.database.v1update_backup_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">v1undo</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L1938-L1967">v1undo</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8169,7 +8169,7 @@ client.database.v1undo(
 </details>
 
 ## Profile
-<details><summary><code>client.profile.<a href="src/fern/profile/client.py">v1get_profile</a>() -> V1ProfileResponseOutput</code></summary>
+<details><summary><code>client.profile.<a href="src/fern/profile/client.py#L26-L48">v1get_profile</a>() -> V1ProfileResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8219,7 +8219,7 @@ client.profile.v1get_profile()
 </details>
 
 ## Secrets
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1get_project_api_keys</a>(...) -> typing.List[ApiKeyResponseOutput]</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L35-L72">v1get_project_api_keys</a>(...) -> typing.List[ApiKeyResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -8293,7 +8293,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1create_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L74-L140">v1create_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8403,7 +8403,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1get_project_legacy_api_keys</a>(...) -> LegacyApiKeysResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L142-L171">v1get_project_legacy_api_keys</a>(...) -> LegacyApiKeysResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8462,7 +8462,7 @@ client.secrets.v1get_project_legacy_api_keys(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1update_project_legacy_api_keys</a>(...) -> LegacyApiKeysResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L173-L212">v1update_project_legacy_api_keys</a>(...) -> LegacyApiKeysResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8536,7 +8536,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1get_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L214-L259">v1get_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8619,7 +8619,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1delete_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L261-L311">v1delete_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8712,7 +8712,7 @@ client.secrets.v1delete_project_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1update_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L313-L377">v1update_project_api_key</a>(...) -> ApiKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8821,7 +8821,7 @@ Falsy values: `false`, `0`, `no`, `off`, `n`, `disabled`
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1get_pgsodium_config</a>(...) -> PgsodiumConfigResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L379-L408">v1get_pgsodium_config</a>(...) -> PgsodiumConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8880,7 +8880,7 @@ client.secrets.v1get_pgsodium_config(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1update_pgsodium_config</a>(...) -> PgsodiumConfigResponseOutput</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L410-L443">v1update_pgsodium_config</a>(...) -> PgsodiumConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -8948,7 +8948,7 @@ client.secrets.v1update_pgsodium_config(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1list_all_secrets</a>(...) -> typing.List[SecretResponseOutput]</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L445-L476">v1list_all_secrets</a>(...) -> typing.List[SecretResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -9021,7 +9021,7 @@ client.secrets.v1list_all_secrets(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1bulk_create_secrets</a>(...)</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L478-L520">v1bulk_create_secrets</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9112,7 +9112,7 @@ client.secrets.v1bulk_create_secrets(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">v1bulk_delete_secrets</a>(...)</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L522-L555">v1bulk_delete_secrets</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9197,7 +9197,7 @@ client.secrets.v1bulk_delete_secrets(
 </details>
 
 ## Domains
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1get_hostname_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L32-L61">v1get_hostname_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9256,7 +9256,7 @@ client.domains.v1get_hostname_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1delete_hostname_config</a>(...)</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L63-L100">v1delete_hostname_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9323,7 +9323,7 @@ client.domains.v1delete_hostname_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1update_hostname_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L102-L136">v1update_hostname_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9391,7 +9391,7 @@ client.domains.v1update_hostname_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1verify_dns_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L138-L167">v1verify_dns_config</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9450,7 +9450,7 @@ client.domains.v1verify_dns_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1activate_custom_hostname</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L169-L198">v1activate_custom_hostname</a>(...) -> UpdateCustomHostnameResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9509,7 +9509,7 @@ client.domains.v1activate_custom_hostname(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1get_vanity_subdomain_config</a>(...) -> VanitySubdomainConfigResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L200-L229">v1get_vanity_subdomain_config</a>(...) -> VanitySubdomainConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9568,7 +9568,7 @@ client.domains.v1get_vanity_subdomain_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1deactivate_vanity_subdomain_config</a>(...)</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L231-L259">v1deactivate_vanity_subdomain_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9627,7 +9627,7 @@ client.domains.v1deactivate_vanity_subdomain_config(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1check_vanity_subdomain_availability</a>(...) -> SubdomainAvailabilityResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L261-L295">v1check_vanity_subdomain_availability</a>(...) -> SubdomainAvailabilityResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9695,7 +9695,7 @@ client.domains.v1check_vanity_subdomain_availability(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">v1activate_vanity_subdomain_config</a>(...) -> ActivateVanitySubdomainResponseOutput</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L297-L331">v1activate_vanity_subdomain_config</a>(...) -> ActivateVanitySubdomainResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9764,7 +9764,7 @@ client.domains.v1activate_vanity_subdomain_config(
 </details>
 
 ## Rest
-<details><summary><code>client.rest.<a href="src/fern/rest/client.py">v1get_postgrest_service_config</a>(...) -> PostgrestConfigWithJwtSecretResponseOutput</code></summary>
+<details><summary><code>client.rest.<a href="src/fern/rest/client.py#L30-L59">v1get_postgrest_service_config</a>(...) -> PostgrestConfigWithJwtSecretResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9823,7 +9823,7 @@ client.rest.v1get_postgrest_service_config(
 </dl>
 </details>
 
-<details><summary><code>client.rest.<a href="src/fern/rest/client.py">v1update_postgrest_service_config</a>(...) -> V1PostgrestConfigResponseOutput</code></summary>
+<details><summary><code>client.rest.<a href="src/fern/rest/client.py#L61-L119">v1update_postgrest_service_config</a>(...) -> V1PostgrestConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9926,7 +9926,7 @@ client.rest.v1update_postgrest_service_config(
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_legacy_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L51-L80">v1get_legacy_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -9985,7 +9985,7 @@ client.auth.v1get_legacy_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1create_legacy_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L82-L111">v1create_legacy_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10044,7 +10044,7 @@ client.auth.v1create_legacy_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_project_signing_keys</a>(...) -> SigningKeysResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L113-L142">v1get_project_signing_keys</a>(...) -> SigningKeysResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10103,7 +10103,7 @@ client.auth.v1get_project_signing_keys(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1create_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L144-L191">v1create_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10189,7 +10189,7 @@ client.auth.v1create_project_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L193-L225">v1get_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10257,7 +10257,7 @@ client.auth.v1get_project_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1remove_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L227-L259">v1remove_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10325,7 +10325,7 @@ client.auth.v1remove_project_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1update_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L261-L305">v1update_project_signing_key</a>(...) -> SigningKeyResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10403,7 +10403,7 @@ client.auth.v1update_project_signing_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_auth_service_config</a>(...) -> AuthConfigResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L307-L336">v1get_auth_service_config</a>(...) -> AuthConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -10462,7 +10462,7 @@ client.auth.v1get_auth_service_config(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1update_auth_service_config</a>(...) -> AuthConfigResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L338-L1320">v1update_auth_service_config</a>(...) -> AuthConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -12404,7 +12404,7 @@ client.auth.v1update_auth_service_config(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1list_project_tpa_integrations</a>(...) -> typing.List[ThirdPartyAuthOutput]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1322-L1351">v1list_project_tpa_integrations</a>(...) -> typing.List[ThirdPartyAuthOutput]</code></summary>
 <dl>
 <dd>
 
@@ -12463,7 +12463,7 @@ client.auth.v1list_project_tpa_integrations(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1create_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1353-L1402">v1create_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
 <dl>
 <dd>
 
@@ -12548,7 +12548,7 @@ client.auth.v1create_project_tpa_integration(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1404-L1436">v1get_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
 <dl>
 <dd>
 
@@ -12616,7 +12616,7 @@ client.auth.v1get_project_tpa_integration(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1delete_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1438-L1470">v1delete_project_tpa_integration</a>(...) -> ThirdPartyAuthOutput</code></summary>
 <dl>
 <dd>
 
@@ -12684,7 +12684,7 @@ client.auth.v1delete_project_tpa_integration(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1list_all_sso_provider</a>(...) -> ListProvidersResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1472-L1501">v1list_all_sso_provider</a>(...) -> ListProvidersResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -12743,7 +12743,7 @@ client.auth.v1list_all_sso_provider(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1create_a_sso_provider</a>(...) -> CreateProviderResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1503-L1585">v1create_a_sso_provider</a>(...) -> CreateProviderResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -12869,7 +12869,7 @@ client.auth.v1create_a_sso_provider(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1get_a_sso_provider</a>(...) -> GetProviderResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1587-L1619">v1get_a_sso_provider</a>(...) -> GetProviderResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -12937,7 +12937,7 @@ client.auth.v1get_a_sso_provider(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1update_a_sso_provider</a>(...) -> UpdateProviderResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1621-L1683">v1update_a_sso_provider</a>(...) -> UpdateProviderResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13050,7 +13050,7 @@ client.auth.v1update_a_sso_provider(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">v1delete_a_sso_provider</a>(...) -> DeleteProviderResponseOutput</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L1685-L1717">v1delete_a_sso_provider</a>(...) -> DeleteProviderResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13119,7 +13119,7 @@ client.auth.v1delete_a_sso_provider(
 </details>
 
 ## Billing
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">v1list_project_addons</a>(...) -> ListProjectAddonsResponseOutput</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L32-L63">v1list_project_addons</a>(...) -> ListProjectAddonsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13192,7 +13192,7 @@ client.billing.v1list_project_addons(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">v1apply_project_addon</a>(...)</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L65-L113">v1apply_project_addon</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13284,7 +13284,7 @@ client.billing.v1apply_project_addon(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">v1remove_project_addon</a>(...)</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L115-L154">v1remove_project_addon</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13368,7 +13368,7 @@ client.billing.v1remove_project_addon(
 </details>
 
 ## Advisors
-<details><summary><code>client.advisors.<a href="src/fern/advisors/client.py">v1get_performance_advisors</a>(...) -> V1ProjectAdvisorsResponseOutput</code></summary>
+<details><summary><code>client.advisors.<a href="src/fern/advisors/client.py#L27-L58">v1get_performance_advisors</a>(...) -> V1ProjectAdvisorsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13441,7 +13441,7 @@ client.advisors.v1get_performance_advisors(
 </dl>
 </details>
 
-<details><summary><code>client.advisors.<a href="src/fern/advisors/client.py">v1get_security_advisors</a>(...) -> V1ProjectAdvisorsResponseOutput</code></summary>
+<details><summary><code>client.advisors.<a href="src/fern/advisors/client.py#L60-L97">v1get_security_advisors</a>(...) -> V1ProjectAdvisorsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13523,7 +13523,7 @@ client.advisors.v1get_security_advisors(
 </details>
 
 ## Analytics
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1get_project_logs_all</a>(...) -> AnalyticsResponseOutput</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L33-L98">v1get_project_logs_all</a>(...) -> AnalyticsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13630,7 +13630,7 @@ client.analytics.v1get_project_logs_all(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1get_project_logs</a>(...) -> AnalyticsResponseOutput</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L100-L167">v1get_project_logs</a>(...) -> AnalyticsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13739,7 +13739,7 @@ client.analytics.v1get_project_logs(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1get_project_usage_api_count</a>(...) -> V1GetUsageApiCountResponseOutput</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L169-L206">v1get_project_usage_api_count</a>(...) -> V1GetUsageApiCountResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13806,7 +13806,7 @@ client.analytics.v1get_project_usage_api_count(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1get_project_usage_request_count</a>(...) -> V1GetUsageApiRequestsCountResponseOutput</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L208-L237">v1get_project_usage_request_count</a>(...) -> V1GetUsageApiRequestsCountResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13865,7 +13865,7 @@ client.analytics.v1get_project_usage_request_count(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1get_project_function_combined_stats</a>(...) -> AnalyticsResponseOutput</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L239-L283">v1get_project_function_combined_stats</a>(...) -> AnalyticsResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -13943,7 +13943,7 @@ client.analytics.v1get_project_function_combined_stats(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">v1scrape_project_metrics</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L285-L314">v1scrape_project_metrics</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14017,7 +14017,7 @@ client.analytics.v1scrape_project_metrics(
 </details>
 
 ## Edge Functions
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1list_all_functions</a>(...) -> typing.List[FunctionResponseOutput]</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L36-L67">v1list_all_functions</a>(...) -> typing.List[FunctionResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -14090,7 +14090,7 @@ client.edge_functions.v1list_all_functions(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1create_a_function</a>(...) -> FunctionResponseOutput</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L69-L159">v1create_a_function</a>(...) -> FunctionResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14260,7 +14260,7 @@ client.edge_functions.v1create_a_function(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1bulk_update_functions</a>(...) -> BulkUpdateFunctionResponseOutput</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L161-L209">v1bulk_update_functions</a>(...) -> BulkUpdateFunctionResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14352,7 +14352,7 @@ client.edge_functions.v1bulk_update_functions(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1deploy_a_function</a>(...) -> DeployFunctionResponseOutput</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L211-L266">v1deploy_a_function</a>(...) -> DeployFunctionResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14463,7 +14463,7 @@ client.edge_functions.v1deploy_a_function(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1get_a_function</a>(...) -> FunctionSlugResponseOutput</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L268-L303">v1get_a_function</a>(...) -> FunctionSlugResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14545,7 +14545,7 @@ client.edge_functions.v1get_a_function(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1delete_a_function</a>(...)</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L305-L339">v1delete_a_function</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14627,7 +14627,7 @@ client.edge_functions.v1delete_a_function(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1update_a_function</a>(...) -> FunctionSlugResponseOutput</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L341-L432">v1update_a_function</a>(...) -> FunctionSlugResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14797,7 +14797,7 @@ client.edge_functions.v1update_a_function(
 </dl>
 </details>
 
-<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py">v1get_a_function_body</a>(...) -> StreamableFile</code></summary>
+<details><summary><code>client.edge_functions.<a href="src/fern/edge_functions/client.py#L434-L469">v1get_a_function_body</a>(...) -> StreamableFile</code></summary>
 <dl>
 <dd>
 
@@ -14880,7 +14880,7 @@ client.edge_functions.v1get_a_function_body(
 </details>
 
 ## Storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">v1list_all_buckets</a>(...) -> typing.List[V1StorageBucketResponseOutput]</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L32-L61">v1list_all_buckets</a>(...) -> typing.List[V1StorageBucketResponseOutput]</code></summary>
 <dl>
 <dd>
 
@@ -14939,7 +14939,7 @@ client.storage.v1list_all_buckets(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">v1get_storage_config</a>(...) -> StorageConfigResponseOutput</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L63-L92">v1get_storage_config</a>(...) -> StorageConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -14998,7 +14998,7 @@ client.storage.v1get_storage_config(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">v1update_storage_config</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L94-L147">v1update_storage_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15089,7 +15089,7 @@ client.storage.v1update_storage_config(
 </details>
 
 ## Realtime
-<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py">v1get_realtime_config</a>(...) -> RealtimeConfigResponseOutput</code></summary>
+<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py#L29-L58">v1get_realtime_config</a>(...) -> RealtimeConfigResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -15148,7 +15148,7 @@ client.realtime.v1get_realtime_config(
 </dl>
 </details>
 
-<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py">v1update_realtime_config</a>(...)</code></summary>
+<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py#L60-L157">v1update_realtime_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15306,7 +15306,7 @@ client.realtime.v1update_realtime_config(
 </dl>
 </details>
 
-<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py">v1shutdown_realtime</a>(...)</code></summary>
+<details><summary><code>client.realtime.<a href="src/fern/realtime/client.py#L159-L185">v1shutdown_realtime</a>(...)</code></summary>
 <dl>
 <dd>
 

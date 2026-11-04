@@ -1,6 +1,6 @@
 # Reference
 ## Workflowcontroller
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">startworkflow</a>(...)</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L29-L75">startworkflow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.workflowcontroller.startworkflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">deleteversionbyid</a>(...)</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L77-L114">deleteversionbyid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.workflowcontroller.deleteversionbyid(
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">count</a>(...)</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L116-L148">count</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -262,7 +262,7 @@ client.workflowcontroller.count(
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">deletebyid</a>(...)</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L150-L182">deletebyid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -340,7 +340,7 @@ client.workflowcontroller.deletebyid(
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">updatebyid</a>(...)</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L184-L240">updatebyid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -450,7 +450,7 @@ client.workflowcontroller.updatebyid(
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">find</a>(...) -> typing.List[Workflow]</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L242-L275">find</a>(...) -> typing.List[Workflow]</code></summary>
 <dl>
 <dd>
 
@@ -526,7 +526,7 @@ client.workflowcontroller.find()
 </dl>
 </details>
 
-<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py">create</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.workflowcontroller.<a href="src/fern/workflowcontroller/client.py#L277-L332">create</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Harvests
-<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py">record_harvest</a>(...) -> Harvest</code></summary>
+<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py#L33-L83">record_harvest</a>(...) -> Harvest</code></summary>
 <dl>
 <dd>
 

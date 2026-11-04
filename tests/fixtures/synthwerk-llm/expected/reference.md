@@ -1,6 +1,6 @@
 # Reference
 ## conversations
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">llm_create_conversation</a>(...) -> Conversation</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L31-L62">llm_create_conversation</a>(...) -> Conversation</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.conversations.llm_create_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">llm_get_conversation</a>(...) -> Conversation</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L64-L95">llm_get_conversation</a>(...) -> Conversation</code></summary>
 <dl>
 <dd>
 
@@ -145,7 +145,7 @@ client.conversations.llm_get_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">llm_send_message</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L97-L167">llm_send_message</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

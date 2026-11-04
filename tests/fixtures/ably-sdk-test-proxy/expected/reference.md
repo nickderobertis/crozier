@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_faults</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L128">list_faults</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.list_faults()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_fault_simulation</a>(...) -> FaultSimulationDto</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L130-L165">create_fault_simulation</a>(...) -> FaultSimulationDto</code></summary>
 <dl>
 <dd>
 
@@ -139,7 +139,7 @@ client.create_fault_simulation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">enable_fault_simulation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L167-L193">enable_fault_simulation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -211,7 +211,7 @@ client.enable_fault_simulation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">resolve_fault_simulation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L195-L221">resolve_fault_simulation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -283,7 +283,7 @@ client.resolve_fault_simulation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">clean_up_fault_simulation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L223-L249">clean_up_fault_simulation</a>(...)</code></summary>
 <dl>
 <dd>
 

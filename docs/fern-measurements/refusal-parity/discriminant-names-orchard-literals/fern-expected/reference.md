@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_crate</a>(...) -> Crate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L128">get_crate</a>(...) -> Crate</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_crate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">repack_crate</a>(...) -> Crate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L130-L161">repack_crate</a>(...) -> Crate</code></summary>
 <dl>
 <dd>
 
@@ -122,7 +122,7 @@ client.repack_crate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">weigh_crate</a>(...) -> WeighIn</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L163-L202">weigh_crate</a>(...) -> WeighIn</code></summary>
 <dl>
 <dd>
 
@@ -187,7 +187,7 @@ client.weigh_crate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">print_label</a>(...) -> Label</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L204-L230">print_label</a>(...) -> Label</code></summary>
 <dl>
 <dd>
 

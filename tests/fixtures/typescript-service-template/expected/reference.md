@@ -1,6 +1,6 @@
 # Reference
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get</a>(...) -> UsersGetResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L32-L74">get</a>(...) -> UsersGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -80,7 +80,7 @@ client.users.get()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L76-L108">post</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -139,7 +139,7 @@ client.users.post(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">patch</a>(...) -> UsersPatchResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L110-L151">patch</a>(...) -> UsersPatchResponse</code></summary>
 <dl>
 <dd>
 

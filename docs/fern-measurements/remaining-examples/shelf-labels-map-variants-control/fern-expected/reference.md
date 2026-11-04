@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">put_labels</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L126">put_labels</a>(...)</code></summary>
 <dl>
 <dd>
 

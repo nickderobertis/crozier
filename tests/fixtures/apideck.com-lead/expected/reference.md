@@ -115,7 +115,7 @@ client.leads.all_(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">add</a>(...) -> CreateLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L110-L256">add</a>(...) -> CreateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.leads.add(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">one</a>(...) -> GetLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L258-L304">one</a>(...) -> GetLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.leads.one(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">delete</a>(...) -> DeleteLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L306-L343">delete</a>(...) -> DeleteLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -374,7 +374,7 @@ client.leads.delete(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">update</a>(...) -> UpdateLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L345-L497">update</a>(...) -> UpdateLeadResponse</code></summary>
 <dl>
 <dd>
 

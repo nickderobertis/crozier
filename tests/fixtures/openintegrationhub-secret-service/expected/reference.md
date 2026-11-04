@@ -1,6 +1,6 @@
 # Reference
 ## Auth clients
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">get_clients</a>(...) -> GetClientsResponse</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L34-L72">get_clients</a>(...) -> GetClientsResponse</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.auth_clients.get_clients()
 </dl>
 </details>
 
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">create_client</a>(...) -> CreateClientResponse</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L74-L123">create_client</a>(...) -> CreateClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.auth_clients.create_client(
 </dl>
 </details>
 
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">get_client_by_id</a>(...) -> GetClientByIdResponse</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L125-L156">get_client_by_id</a>(...) -> GetClientByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -239,7 +239,7 @@ client.auth_clients.get_client_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">delete_client</a>(...)</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L158-L186">delete_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -312,7 +312,7 @@ client.auth_clients.delete_client(
 </dl>
 </details>
 
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">update_client</a>(...) -> UpdateClientResponse</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L188-L241">update_client</a>(...) -> UpdateClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.auth_clients.update_client(
 </dl>
 </details>
 
-<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py">start_platform_auth_flow</a>(...) -> StartPlatformAuthFlowResponse</code></summary>
+<details><summary><code>client.auth_clients.<a href="src/fern/auth_clients/client.py#L243-L288">start_platform_auth_flow</a>(...) -> StartPlatformAuthFlowResponse</code></summary>
 <dl>
 <dd>
 
@@ -506,7 +506,7 @@ client.auth_clients.start_platform_auth_flow(
 </details>
 
 ## Callback
-<details><summary><code>client.callback.<a href="src/fern/callback/client.py">platform_auth_flow</a>(...)</code></summary>
+<details><summary><code>client.callback.<a href="src/fern/callback/client.py#L25-L60">platform_auth_flow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -586,7 +586,7 @@ client.callback.platform_auth_flow()
 </details>
 
 ## Secrets
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">get_secrets</a>(...) -> GetSecretsResponse</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L36-L74">get_secrets</a>(...) -> GetSecretsResponse</code></summary>
 <dl>
 <dd>
 
@@ -665,7 +665,7 @@ client.secrets.get_secrets()
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">create_secret</a>(...) -> CreateSecretResponse</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L76-L153">create_secret</a>(...) -> CreateSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -745,7 +745,7 @@ client.secrets.create_secret(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">get_secret_by_id</a>(...) -> GetSecretByIdResponse</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L155-L186">get_secret_by_id</a>(...) -> GetSecretByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.secrets.get_secret_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">delete_secret</a>(...)</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L188-L216">delete_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -891,7 +891,7 @@ client.secrets.delete_secret(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">update_secret</a>(...) -> UpdateSecretResponse</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L218-L301">update_secret</a>(...) -> UpdateSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -981,7 +981,7 @@ client.secrets.update_secret(
 </details>
 
 ## Misc
-<details><summary><code>client.misc.<a href="src/fern/misc/client.py">perform_healthcheck</a>()</code></summary>
+<details><summary><code>client.misc.<a href="src/fern/misc/client.py#L25-L48">perform_healthcheck</a>()</code></summary>
 <dl>
 <dd>
 

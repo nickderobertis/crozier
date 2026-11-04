@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "f298576c7b4509586523a29187b877825e8fc363a09c08fc40d4a508e470ce8b"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "52560f3950d2f4b14c950239c26a7a62dc8f24f67896b33e7b6c1106e4d1c421"
 
 [[covers]]
 key = "operation-servers-named"

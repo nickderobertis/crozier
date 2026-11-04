@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">queue_observation</a>(...) -> Target</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L129">queue_observation</a>(...) -> Target</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.queue_observation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_instrument</a>(...) -> Instrument</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L131-L159">get_instrument</a>(...) -> Instrument</code></summary>
 <dl>
 <dd>
 

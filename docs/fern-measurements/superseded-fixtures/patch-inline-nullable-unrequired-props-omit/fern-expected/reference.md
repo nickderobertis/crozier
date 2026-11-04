@@ -1,6 +1,6 @@
 # Reference
 ## Pipes
-<details><summary><code>client.pipes.<a href="src/fern/pipes/client.py">tune_pipe</a>(...)</code></summary>
+<details><summary><code>client.pipes.<a href="src/fern/pipes/client.py#L28-L64">tune_pipe</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -4,3 +4,5 @@ Warnings for generators.yml:
 [api]: Cannot read properties of null (reading 'version') 
        TypeError: Cannot read properties of null (reading 'version')
 All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

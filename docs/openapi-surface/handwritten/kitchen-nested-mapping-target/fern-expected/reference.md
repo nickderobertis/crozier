@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">fire_ticket</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L125">fire_ticket</a>(...)</code></summary>
 <dl>
 <dd>
 

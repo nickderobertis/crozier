@@ -1,6 +1,6 @@
 # Reference
 ## Archive
-<details><summary><code>client.archive.<a href="src/fern/archive/client.py">get_archive_path</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.archive.<a href="src/fern/archive/client.py#L25-L53">get_archive_path</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.archive.get_archive_path(
 </details>
 
 ## Sensors
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">register_sensor</a>(...)</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L28-L53">register_sensor</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.sensors.register_sensor(
 </dl>
 </details>
 
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">addnote</a>(...)</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L55-L88">addnote</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -181,7 +181,7 @@ client.sensors.addnote(
 </details>
 
 ## Stations
-<details><summary><code>client.stations.<a href="src/fern/stations/client.py">register_station</a>(...)</code></summary>
+<details><summary><code>client.stations.<a href="src/fern/stations/client.py#L29-L62">register_station</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -247,7 +247,7 @@ client.stations.register_station(
 </details>
 
 ## Keys
-<details><summary><code>client.keys.<a href="src/fern/keys/client.py">create_key</a>(...) -> KeyMode</code></summary>
+<details><summary><code>client.keys.<a href="src/fern/keys/client.py#L29-L49">create_key</a>(...) -> KeyMode</code></summary>
 <dl>
 <dd>
 

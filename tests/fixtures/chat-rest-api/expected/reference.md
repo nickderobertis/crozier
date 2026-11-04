@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_a_new_user</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L153">register_a_new_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.register_a_new_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_text_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L155-L183">create_a_text_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.create_a_text_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_a_file_message</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L185-L209">upload_a_file_message</a>()</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.upload_a_file_message()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_of_messages</a>(...) -> GetMessageListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L211-L248">get_list_of_messages</a>(...) -> GetMessageListResponse</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.get_list_of_messages()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_message_content</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L250-L280">get_message_content</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

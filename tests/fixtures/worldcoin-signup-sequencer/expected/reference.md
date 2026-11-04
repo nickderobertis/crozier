@@ -1,6 +1,6 @@
 # Reference
 ## Identities
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">add_new_identity_to_the_queue</a>(...)</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L29-L63">add_new_identity_to_the_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.identities.add_new_identity_to_the_queue(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">add_identity_removal_to_the_queue</a>(...)</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L65-L94">add_identity_removal_to_the_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.identities.add_identity_removal_to_the_queue(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">get_inclusion_proof_of_identity_by_proof_type</a>(...) -> InclusionProof</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L96-L145">get_inclusion_proof_of_identity_by_proof_type</a>(...) -> InclusionProof</code></summary>
 <dl>
 <dd>
 
@@ -225,7 +225,7 @@ client.identities.get_inclusion_proof_of_identity_by_proof_type(
 </details>
 
 ## SemaphoreProof
-<details><summary><code>client.semaphore_proof.<a href="src/fern/semaphore_proof/client.py">verify_semaphore_proof</a>(...) -> SemaphoreProofVerificationResult</code></summary>
+<details><summary><code>client.semaphore_proof.<a href="src/fern/semaphore_proof/client.py#L31-L111">verify_semaphore_proof</a>(...) -> SemaphoreProofVerificationResult</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Info
-<details><summary><code>client.info.<a href="src/fern/info/client.py">artifact_formats</a>() -> ArtifactFormats</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L28-L52">artifact_formats</a>() -> ArtifactFormats</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.info.artifact_formats()
 </dl>
 </details>
 
-<details><summary><code>client.info.<a href="src/fern/info/client.py">recent_changes</a>() -> typing.List[ChangeLogItem]</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L54-L78">recent_changes</a>() -> typing.List[ChangeLogItem]</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.info.recent_changes()
 </dl>
 </details>
 
-<details><summary><code>client.info.<a href="src/fern/info/client.py">event_types</a>() -> typing.List[EventType]</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L80-L104">event_types</a>() -> typing.List[EventType]</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.info.event_types()
 </details>
 
 ## Assignment
-<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py">list_assignments</a>(...) -> typing.List[Assignment]</code></summary>
+<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py#L32-L105">list_assignments</a>(...) -> typing.List[Assignment]</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.assignment.list_assignments()
 </dl>
 </details>
 
-<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py">create_a_new_assignment</a>(...) -> Assignment</code></summary>
+<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py#L107-L195">create_a_new_assignment</a>(...) -> Assignment</code></summary>
 <dl>
 <dd>
 
@@ -474,7 +474,7 @@ client.assignment.create_a_new_assignment(
 </dl>
 </details>
 
-<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py">get_a_single_assigment_by_id</a>(...) -> Assignment</code></summary>
+<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py#L197-L226">get_a_single_assigment_by_id</a>(...) -> Assignment</code></summary>
 <dl>
 <dd>
 
@@ -533,7 +533,7 @@ client.assignment.get_a_single_assigment_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py">delete_this_assignment_and_all_of_its_contributions</a>(...)</code></summary>
+<details><summary><code>client.assignment.<a href="src/fern/assignment/client.py#L228-L258">delete_this_assignment_and_all_of_its_contributions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -593,7 +593,7 @@ client.assignment.delete_this_assignment_and_all_of_its_contributions(
 </details>
 
 ## Contribution
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">list_valid_contribution_refinement_types</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L39-L63">list_valid_contribution_refinement_types</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -642,7 +642,7 @@ client.contribution.list_valid_contribution_refinement_types()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">list_contribution_refinement_options</a>(...) -> typing.Dict[str, typing.List[str]]</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L65-L170">list_contribution_refinement_options</a>(...) -> typing.Dict[str, typing.List[str]]</code></summary>
 <dl>
 <dd>
 
@@ -825,7 +825,7 @@ client.contribution.list_contribution_refinement_options()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">list_contributions</a>(...) -> typing.List[Contribution]</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L172-L287">list_contributions</a>(...) -> typing.List[Contribution]</code></summary>
 <dl>
 <dd>
 
@@ -1024,7 +1024,7 @@ client.contribution.list_contributions()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">create_a_new_contribution</a>(...) -> Contribution</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L289-L362">create_a_new_contribution</a>(...) -> Contribution</code></summary>
 <dl>
 <dd>
 
@@ -1081,7 +1081,7 @@ client.contribution.create_a_new_contribution()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">get_a_single_contribution_by_id</a>(...) -> Contribution</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L364-L393">get_a_single_contribution_by_id</a>(...) -> Contribution</code></summary>
 <dl>
 <dd>
 
@@ -1140,7 +1140,7 @@ client.contribution.get_a_single_contribution_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">delete_this_contribution</a>(...) -> Contribution</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L395-L424">delete_this_contribution</a>(...) -> Contribution</code></summary>
 <dl>
 <dd>
 
@@ -1199,7 +1199,7 @@ client.contribution.delete_this_contribution(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">raise_a_flag_against_this_contribution</a>(...) -> Flag</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L426-L477">raise_a_flag_against_this_contribution</a>(...) -> Flag</code></summary>
 <dl>
 <dd>
 
@@ -1280,7 +1280,7 @@ client.contribution.raise_a_flag_against_this_contribution(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">allows_a_user_to_mark_a_contribution_as_liked</a>(...) -> float</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L479-L508">allows_a_user_to_mark_a_contribution_as_liked</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -1339,7 +1339,7 @@ client.contribution.allows_a_user_to_mark_a_contribution_as_liked(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">list_users_who_have_liked_this_contributions</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L510-L541">list_users_who_have_liked_this_contributions</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1412,7 +1412,7 @@ client.contribution.list_users_who_have_liked_this_contributions(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">perform_a_moderation_action_on_this_contribution</a>(...) -> str</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L543-L585">perform_a_moderation_action_on_this_contribution</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1501,7 +1501,7 @@ client.contribution.perform_a_moderation_action_on_this_contribution(
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">export_contributions</a>(...) -> Export</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L587-L707">export_contributions</a>(...) -> Export</code></summary>
 <dl>
 <dd>
 
@@ -1708,7 +1708,7 @@ client.contribution.export_contributions()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">export_contributions_preflight_summary</a>(...) -> ExportSummary</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L709-L804">export_contributions_preflight_summary</a>(...) -> ExportSummary</code></summary>
 <dl>
 <dd>
 
@@ -1875,7 +1875,7 @@ client.contribution.export_contributions_preflight_summary()
 </dl>
 </details>
 
-<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py">get_a_single_export_job_poll_to_follow_export_progress</a>(...) -> Export</code></summary>
+<details><summary><code>client.contribution.<a href="src/fern/contribution/client.py#L806-L837">get_a_single_export_job_poll_to_follow_export_progress</a>(...) -> Export</code></summary>
 <dl>
 <dd>
 
@@ -1935,7 +1935,7 @@ client.contribution.get_a_single_export_job_poll_to_follow_export_progress(
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">list_the_credentials_associated_with_the_authenticated_user</a>() -> typing.List[Credential]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L27-L53">list_the_credentials_associated_with_the_authenticated_user</a>() -> typing.List[Credential]</code></summary>
 <dl>
 <dd>
 
@@ -1984,7 +1984,7 @@ client.auth.list_the_credentials_associated_with_the_authenticated_user()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">scopes</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L55-L79">scopes</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2047,7 +2047,7 @@ client.auth.scopes()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">verify_token_and_return_details_of_the_owning_user</a>() -> Authority</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L81-L105">verify_token_and_return_details_of_the_owning_user</a>() -> Authority</code></summary>
 <dl>
 <dd>
 
@@ -2097,7 +2097,7 @@ client.auth.verify_token_and_return_details_of_the_owning_user()
 </details>
 
 ## Form
-<details><summary><code>client.form.<a href="src/fern/form/client.py">list_form_responses</a>(...) -> typing.List[FormResponse]</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L32-L72">list_form_responses</a>(...) -> typing.List[FormResponse]</code></summary>
 <dl>
 <dd>
 
@@ -2170,7 +2170,7 @@ client.form.list_form_responses()
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">submit_a_response_to_a_form</a>(...) -> FormResponse</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L74-L111">submit_a_response_to_a_form</a>(...) -> FormResponse</code></summary>
 <dl>
 <dd>
 
@@ -2243,7 +2243,7 @@ client.form.submit_a_response_to_a_form()
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">get_a_single_form_response_by_id</a>(...) -> FormResponse</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L113-L142">get_a_single_form_response_by_id</a>(...) -> FormResponse</code></summary>
 <dl>
 <dd>
 
@@ -2302,7 +2302,7 @@ client.form.get_a_single_form_response_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">list_forms</a>(...) -> typing.List[Form]</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L144-L173">list_forms</a>(...) -> typing.List[Form]</code></summary>
 <dl>
 <dd>
 
@@ -2361,7 +2361,7 @@ client.form.list_forms(
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">create_a_form</a>(...) -> Form</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L175-L231">create_a_form</a>(...) -> Form</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2466,7 @@ client.form.create_a_form()
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">get_a_single_form_by_id</a>(...) -> Form</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L233-L260">get_a_single_form_by_id</a>(...) -> Form</code></summary>
 <dl>
 <dd>
 
@@ -2525,7 +2525,7 @@ client.form.get_a_single_form_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.form.<a href="src/fern/form/client.py">delete_this_form_and_all_of_its_responses</a>(...)</code></summary>
+<details><summary><code>client.form.<a href="src/fern/form/client.py#L262-L290">delete_this_form_and_all_of_its_responses</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2585,7 +2585,7 @@ client.form.delete_this_form_and_all_of_its_responses(
 </details>
 
 ## Media
-<details><summary><code>client.media.<a href="src/fern/media/client.py">submit_a_new_media_file</a>(...) -> Media</code></summary>
+<details><summary><code>client.media.<a href="src/fern/media/client.py#L29-L57">submit_a_new_media_file</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -2645,7 +2645,7 @@ client.media.submit_a_new_media_file(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">get_notifications_contributions_id_preview</a>(...) -> NotificationPreview</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L26-L61">get_notifications_contributions_id_preview</a>(...) -> NotificationPreview</code></summary>
 <dl>
 <dd>
 
@@ -2714,7 +2714,7 @@ client.notifications.get_notifications_contributions_id_preview(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">subscription_types</a>() -> typing.List[SubscriptionType]</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L27-L53">subscription_types</a>() -> typing.List[SubscriptionType]</code></summary>
 <dl>
 <dd>
 
@@ -2777,7 +2777,7 @@ client.subscriptions.subscription_types()
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscriptions_for_the_authorised_user</a>() -> typing.List[Subscription]</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L55-L79">list_subscriptions_for_the_authorised_user</a>() -> typing.List[Subscription]</code></summary>
 <dl>
 <dd>
 
@@ -2826,7 +2826,7 @@ client.subscriptions.list_subscriptions_for_the_authorised_user()
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">delete_a_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L81-L107">delete_a_subscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2886,7 +2886,7 @@ client.subscriptions.delete_a_subscription(
 </details>
 
 ## Tag
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">list_tags</a>(...) -> typing.List[Tag]</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L30-L72">list_tags</a>(...) -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -2973,7 +2973,7 @@ client.tag.list_tags()
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">create_a_new_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L74-L116">create_a_new_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -3056,7 +3056,7 @@ client.tag.create_a_new_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">retrieve_a_single_tag_by_id</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L118-L145">retrieve_a_single_tag_by_id</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -3115,7 +3115,7 @@ client.tag.retrieve_a_single_tag_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">list_tag_sets</a>(...) -> typing.List[TagSet]</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L147-L185">list_tag_sets</a>(...) -> typing.List[TagSet]</code></summary>
 <dl>
 <dd>
 
@@ -3194,7 +3194,7 @@ client.tag.list_tag_sets()
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">create_a_new_tag_set</a>(...) -> TagSet</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L187-L220">create_a_new_tag_set</a>(...) -> TagSet</code></summary>
 <dl>
 <dd>
 
@@ -3262,7 +3262,7 @@ client.tag.create_a_new_tag_set(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">retrieve_a_single_tag_set_by_id</a>(...) -> TagSet</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L222-L251">retrieve_a_single_tag_set_by_id</a>(...) -> TagSet</code></summary>
 <dl>
 <dd>
 
@@ -3322,7 +3322,7 @@ client.tag.retrieve_a_single_tag_set_by_id(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">list_users</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L28-L96">list_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -3435,7 +3435,7 @@ client.user.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">retrieve_a_single_user_by_id</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L98-L125">retrieve_a_single_user_by_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -3494,7 +3494,7 @@ client.user.retrieve_a_single_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">retrieve_a_users_linked_profile_by_type</a>(...) -> LinkedProfile</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L127-L160">retrieve_a_users_linked_profile_by_type</a>(...) -> LinkedProfile</code></summary>
 <dl>
 <dd>
 

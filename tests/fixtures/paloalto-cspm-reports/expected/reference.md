@@ -1,6 +1,6 @@
 # Reference
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">list_reports</a>(...) -> typing.List[ReportGenerationConfigApiModel]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L42-L121">list_reports</a>(...) -> typing.List[ReportGenerationConfigApiModel]</code></summary>
 <dl>
 <dd>
 
@@ -139,7 +139,7 @@ client.reports.list_reports()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">save_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L123-L250">save_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
 <dl>
 <dd>
 
@@ -222,7 +222,7 @@ client.reports.save_report(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">save_report_v2</a>(...) -> ReportGenerationConfigApiModel</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L252-L323">save_report_v2</a>(...) -> ReportGenerationConfigApiModel</code></summary>
 <dl>
 <dd>
 
@@ -343,7 +343,7 @@ client.reports.save_report_v2(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_report_types</a>() -> typing.Dict[str, typing.List[str]]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L325-L351">get_report_types</a>() -> typing.Dict[str, typing.List[str]]</code></summary>
 <dl>
 <dd>
 
@@ -406,7 +406,7 @@ client.reports.get_report_types()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_specified_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L353-L384">get_specified_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
 <dl>
 <dd>
 
@@ -479,7 +479,7 @@ client.reports.get_specified_report(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">update_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L386-L514">update_report</a>(...) -> ReportGenerationConfigApiModel</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ client.reports.update_report(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">delete_report</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L516-L544">delete_report</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -639,7 +639,7 @@ client.reports.delete_report(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">download_report</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L546-L574">download_report</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -712,7 +712,7 @@ client.reports.download_report(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_historical_report_by_id</a>(...) -> typing.List[ReportGenerationConfigApiModel]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L576-L607">get_historical_report_by_id</a>(...) -> typing.List[ReportGenerationConfigApiModel]</code></summary>
 <dl>
 <dd>
 
@@ -785,7 +785,7 @@ client.reports.get_historical_report_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_last_scheduled_report_by_id</a>(...) -> ReportGenerationConfigApiModel</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L609-L646">get_last_scheduled_report_by_id</a>(...) -> ReportGenerationConfigApiModel</code></summary>
 <dl>
 <dd>
 
@@ -867,7 +867,7 @@ client.reports.get_last_scheduled_report_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">download_historical_by_id</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L648-L682">download_historical_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -949,7 +949,7 @@ client.reports.download_historical_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_report_filters_and_options</a>() -> ReportFilterSuggestion</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L684-L713">get_report_filters_and_options</a>() -> ReportFilterSuggestion</code></summary>
 <dl>
 <dd>
 
@@ -1015,7 +1015,7 @@ client.reports.get_report_filters_and_options()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_report_posture_filter_options</a>(...) -> ParsedTableFilter</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L715-L760">get_report_posture_filter_options</a>(...) -> ParsedTableFilter</code></summary>
 <dl>
 <dd>
 

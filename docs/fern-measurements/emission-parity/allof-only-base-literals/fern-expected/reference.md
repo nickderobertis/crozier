@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_sensors</a>() -> typing.List[Sensor]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L122">list_sensors</a>() -> typing.List[Sensor]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.list_sensors()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">replace_sensor</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L124-L156">replace_sensor</a>(...)</code></summary>
 <dl>
 <dd>
 

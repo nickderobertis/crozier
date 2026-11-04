@@ -1,6 +1,6 @@
 # Reference
 ## Peals
-<details><summary><code>client.peals.<a href="src/fern/peals/client.py">ring_peal</a>(...)</code></summary>
+<details><summary><code>client.peals.<a href="src/fern/peals/client.py#L29-L54">ring_peal</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "b99b2033f08e57d57ea880deeb6362bd8b981b72defc898b67502a741e3b93bb"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "7794b0546ee63a207c3aed6aa3b55922ed87e1d873705c586fc259040cbbec36"
 
 [[covers]]
 key = "operation-webhook-extension"

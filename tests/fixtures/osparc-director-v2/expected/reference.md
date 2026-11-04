@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">check_service_health_get</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L139">check_service_health_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.check_service_health_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_service_metadata_meta_get</a>() -> BaseMeta</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L141-L161">get_service_metadata_meta_get</a>() -> BaseMeta</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.get_service_metadata_meta_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tasks_task_get</a>() -> typing.List[TaskGet]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L163-L183">list_tasks_task_get</a>() -> typing.List[TaskGet]</code></summary>
 <dl>
 <dd>
 
@@ -143,7 +143,7 @@ client.list_tasks_task_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_task_status_task_task_id_get</a>(...) -> TaskStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L185-L211">get_task_status_task_task_id_get</a>(...) -> TaskStatus</code></summary>
 <dl>
 <dd>
 
@@ -201,7 +201,7 @@ client.get_task_status_task_task_id_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">remove_task_task_task_id_delete</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L213-L238">remove_task_task_task_id_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.remove_task_task_task_id_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_task_result_task_task_id_result_get</a>(...) -> GetTaskResultTaskTaskIdResultGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L240-L266">get_task_result_task_task_id_result_get</a>(...) -> GetTaskResultTaskTaskIdResultGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.get_task_result_task_task_id_result_get(
 </details>
 
 ## Computations
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">create_or_update_or_start_computation</a>(...) -> ComputationGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L34-L123">create_or_update_or_start_computation</a>(...) -> ComputationGet</code></summary>
 <dl>
 <dd>
 
@@ -481,7 +481,7 @@ client.computations.create_or_update_or_start_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">get_computation</a>(...) -> ComputationGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L125-L156">get_computation</a>(...) -> ComputationGet</code></summary>
 <dl>
 <dd>
 
@@ -562,7 +562,7 @@ client.computations.get_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">delete_computation</a>(...)</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L158-L202">delete_computation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -659,7 +659,7 @@ client.computations.delete_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">stop_computation</a>(...) -> ComputationGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L204-L235">stop_computation</a>(...) -> ComputationGet</code></summary>
 <dl>
 <dd>
 
@@ -740,7 +740,7 @@ client.computations.stop_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">get_all_tasks_log_files_v2computations_project_id_tasks_logfile_get</a>(...) -> typing.List[TaskLogFileGet]</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L237-L271">get_all_tasks_log_files_v2computations_project_id_tasks_logfile_get</a>(...) -> typing.List[TaskLogFileGet]</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.computations.get_all_tasks_log_files_v2computations_project_id_tasks_logf
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">get_task_log_file</a>(...) -> TaskLogFileGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L273-L315">get_task_log_file</a>(...) -> TaskLogFileGet</code></summary>
 <dl>
 <dd>
 
@@ -913,7 +913,7 @@ client.computations.get_task_log_file(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">get_batch_tasks_outputs_v2computations_project_id_tasks_outputs_batch_get_post</a>(...) -> TasksOutputs</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L317-L352">get_batch_tasks_outputs_v2computations_project_id_tasks_outputs_batch_get_post</a>(...) -> TasksOutputs</code></summary>
 <dl>
 <dd>
 
@@ -983,7 +983,7 @@ client.computations.get_batch_tasks_outputs_v2computations_project_id_tasks_outp
 </details>
 
 ## DynamicServices
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">list_tracked_dynamic_services</a>(...) -> typing.List[RunningDynamicServiceDetails]</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L35-L67">list_tracked_dynamic_services</a>(...) -> typing.List[RunningDynamicServiceDetails]</code></summary>
 <dl>
 <dd>
 
@@ -1047,7 +1047,7 @@ client.dynamic_services.list_tracked_dynamic_services()
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">create_dynamic_service</a>(...) -> RunningDynamicServiceDetails</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L69-L203">create_dynamic_service</a>(...) -> RunningDynamicServiceDetails</code></summary>
 <dl>
 <dd>
 
@@ -1253,7 +1253,7 @@ client.dynamic_services.create_dynamic_service(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">get_dynamic_sidecar_status</a>(...) -> RunningDynamicServiceDetails</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L205-L231">get_dynamic_sidecar_status</a>(...) -> RunningDynamicServiceDetails</code></summary>
 <dl>
 <dd>
 
@@ -1311,7 +1311,7 @@ client.dynamic_services.get_dynamic_sidecar_status(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">stop_dynamic_service</a>(...)</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L233-L264">stop_dynamic_service</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1377,7 +1377,7 @@ client.dynamic_services.stop_dynamic_service(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">service_retrieve_data_on_ports</a>(...) -> RetrieveDataOutEnveloped</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L266-L302">service_retrieve_data_on_ports</a>(...) -> RetrieveDataOutEnveloped</code></summary>
 <dl>
 <dd>
 
@@ -1446,7 +1446,7 @@ client.dynamic_services.service_retrieve_data_on_ports(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">service_restart_containers</a>(...)</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L304-L329">service_restart_containers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1504,7 +1504,7 @@ client.dynamic_services.service_restart_containers(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">update_projects_networks_v2dynamic_services_projects_project_id_networks_patch</a>(...)</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L331-L358">update_projects_networks_v2dynamic_services_projects_project_id_networks_patch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1562,7 +1562,7 @@ client.dynamic_services.update_projects_networks_v2dynamic_services_projects_pro
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py">get_project_inactivity</a>(...) -> GetProjectInactivityResponse</code></summary>
+<details><summary><code>client.dynamic_services.<a href="src/fern/dynamic_services/client.py#L360-L391">get_project_inactivity</a>(...) -> GetProjectInactivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -1630,7 +1630,7 @@ client.dynamic_services.get_project_inactivity(
 </details>
 
 ## DynamicScheduler
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">update_service_observation</a>(...)</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L29-L59">update_service_observation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1697,7 +1697,7 @@ client.dynamic_scheduler.update_service_observation(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">delete_service_containers</a>(...) -> str</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L61-L87">delete_service_containers</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1755,7 +1755,7 @@ client.dynamic_scheduler.delete_service_containers(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">get_service_state</a>(...) -> SchedulerData</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L89-L115">get_service_state</a>(...) -> SchedulerData</code></summary>
 <dl>
 <dd>
 
@@ -1813,7 +1813,7 @@ client.dynamic_scheduler.get_service_state(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">save_service_state</a>(...) -> str</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L117-L141">save_service_state</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1871,7 +1871,7 @@ client.dynamic_scheduler.save_service_state(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">push_service_outputs</a>(...) -> str</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L143-L167">push_service_outputs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1929,7 +1929,7 @@ client.dynamic_scheduler.push_service_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">delete_service_docker_resources</a>(...) -> str</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L169-L195">delete_service_docker_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1987,7 +1987,7 @@ client.dynamic_scheduler.delete_service_docker_resources(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py">free_reserved_disk_space</a>(...)</code></summary>
+<details><summary><code>client.dynamic_scheduler.<a href="src/fern/dynamic_scheduler/client.py#L197-L222">free_reserved_disk_space</a>(...)</code></summary>
 <dl>
 <dd>
 

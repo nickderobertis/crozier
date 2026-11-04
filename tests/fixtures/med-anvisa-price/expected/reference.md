@@ -1,6 +1,6 @@
 # Reference
 ## Medication
-<details><summary><code>client.medication.<a href="src/fern/medication/client.py">route_for_getting_filtered_medication_requests</a>(...) -> GetMedicationResponse</code></summary>
+<details><summary><code>client.medication.<a href="src/fern/medication/client.py#L27-L61">route_for_getting_filtered_medication_requests</a>(...) -> GetMedicationResponse</code></summary>
 <dl>
 <dd>
 

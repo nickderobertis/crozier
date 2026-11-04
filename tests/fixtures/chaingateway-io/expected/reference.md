@@ -1,6 +1,6 @@
 # Reference
 ## Transaction Requests
-<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py">clear_address</a>(...) -> ClearAddress</code></summary>
+<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py#L31-L81">clear_address</a>(...) -> ClearAddress</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.transaction_requests.clear_address(
 </dl>
 </details>
 
-<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py">send_ethereum</a>(...) -> SendEthereum</code></summary>
+<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py#L83-L138">send_ethereum</a>(...) -> SendEthereum</code></summary>
 <dl>
 <dd>
 
@@ -207,7 +207,7 @@ client.transaction_requests.send_ethereum(
 </dl>
 </details>
 
-<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py">send_token</a>(...) -> SendToken</code></summary>
+<details><summary><code>client.transaction_requests.<a href="src/fern/transaction_requests/client.py#L140-L205">send_token</a>(...) -> SendToken</code></summary>
 <dl>
 <dd>
 
@@ -334,7 +334,7 @@ client.transaction_requests.send_token(
 </details>
 
 ## Address Requests
-<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py">delete_address</a>(...) -> DeleteAddress</code></summary>
+<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py#L34-L79">delete_address</a>(...) -> DeleteAddress</code></summary>
 <dl>
 <dd>
 
@@ -424,7 +424,7 @@ client.address_requests.delete_address(
 </dl>
 </details>
 
-<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py">export_address</a>(...) -> ExportAddress</code></summary>
+<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py#L81-L123">export_address</a>(...) -> ExportAddress</code></summary>
 <dl>
 <dd>
 
@@ -514,7 +514,7 @@ client.address_requests.export_address(
 </dl>
 </details>
 
-<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py">import_address</a>(...) -> ImportAddress</code></summary>
+<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py#L125-L195">import_address</a>(...) -> ImportAddress</code></summary>
 <dl>
 <dd>
 
@@ -633,7 +633,7 @@ client.address_requests.import_address(
 </dl>
 </details>
 
-<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py">list_addresses</a>(...) -> ListAddresses</code></summary>
+<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py#L197-L226">list_addresses</a>(...) -> ListAddresses</code></summary>
 <dl>
 <dd>
 
@@ -705,7 +705,7 @@ client.address_requests.list_addresses(
 </dl>
 </details>
 
-<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py">new_address</a>(...) -> NewAddress</code></summary>
+<details><summary><code>client.address_requests.<a href="src/fern/address_requests/client.py#L228-L262">new_address</a>(...) -> NewAddress</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.address_requests.new_address(
 </details>
 
 ## Info Requests
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_block</a>(...) -> GetBlock</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L36-L70">get_block</a>(...) -> GetBlock</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.info_requests.get_block(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_ethereum_balance</a>(...) -> GetEthereumBalance</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L72-L106">get_ethereum_balance</a>(...) -> GetEthereumBalance</code></summary>
 <dl>
 <dd>
 
@@ -949,7 +949,7 @@ client.info_requests.get_ethereum_balance(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_exchange_rate</a>(...) -> GetExchangeRate</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L108-L142">get_exchange_rate</a>(...) -> GetExchangeRate</code></summary>
 <dl>
 <dd>
 
@@ -1030,7 +1030,7 @@ client.info_requests.get_exchange_rate(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_gas_price</a>(...) -> GetGasPrice</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L144-L173">get_gas_price</a>(...) -> GetGasPrice</code></summary>
 <dl>
 <dd>
 
@@ -1102,7 +1102,7 @@ client.info_requests.get_gas_price(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_last_block_number</a>(...) -> GetLastBlockNumber</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L175-L204">get_last_block_number</a>(...) -> GetLastBlockNumber</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.info_requests.get_last_block_number(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_token</a>(...) -> GetToken</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L206-L240">get_token</a>(...) -> GetToken</code></summary>
 <dl>
 <dd>
 
@@ -1255,7 +1255,7 @@ client.info_requests.get_token(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_token_balance</a>(...) -> GetTokenBalance</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L242-L287">get_token_balance</a>(...) -> GetTokenBalance</code></summary>
 <dl>
 <dd>
 
@@ -1345,7 +1345,7 @@ client.info_requests.get_token_balance(
 </dl>
 </details>
 
-<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py">get_transactions</a>(...) -> GetTransactions</code></summary>
+<details><summary><code>client.info_requests.<a href="src/fern/info_requests/client.py#L289-L323">get_transactions</a>(...) -> GetTransactions</code></summary>
 <dl>
 <dd>
 
@@ -1427,7 +1427,7 @@ client.info_requests.get_transactions(
 </details>
 
 ## Subscription/IPN Requests
-<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py">list_failed_ip_ns</a>(...) -> ListFailedIpNs</code></summary>
+<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py#L33-L62">list_failed_ip_ns</a>(...) -> ListFailedIpNs</code></summary>
 <dl>
 <dd>
 
@@ -1499,7 +1499,7 @@ client.subscription_ipn_requests.list_failed_ip_ns(
 </dl>
 </details>
 
-<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py">list_subscribed_addresses</a>(...) -> ListSubscribedAddresses</code></summary>
+<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py#L64-L95">list_subscribed_addresses</a>(...) -> ListSubscribedAddresses</code></summary>
 <dl>
 <dd>
 
@@ -1571,7 +1571,7 @@ client.subscription_ipn_requests.list_subscribed_addresses(
 </dl>
 </details>
 
-<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py">resend_failed_ipn</a>(...) -> ResendFailedIpn</code></summary>
+<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py#L97-L131">resend_failed_ipn</a>(...) -> ResendFailedIpn</code></summary>
 <dl>
 <dd>
 
@@ -1652,7 +1652,7 @@ client.subscription_ipn_requests.resend_failed_ipn(
 </dl>
 </details>
 
-<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py">subscribe_address</a>(...) -> SubscribeAddress</code></summary>
+<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py#L133-L183">subscribe_address</a>(...) -> SubscribeAddress</code></summary>
 <dl>
 <dd>
 
@@ -1751,7 +1751,7 @@ client.subscription_ipn_requests.subscribe_address(
 </dl>
 </details>
 
-<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py">unsubscribe_address</a>(...) -> UnsubscribeAddress</code></summary>
+<details><summary><code>client.subscription_ipn_requests.<a href="src/fern/subscription_ipn_requests/client.py#L185-L235">unsubscribe_address</a>(...) -> UnsubscribeAddress</code></summary>
 <dl>
 <dd>
 

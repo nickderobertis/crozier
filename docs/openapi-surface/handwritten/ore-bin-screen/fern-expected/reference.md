@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">inspect_bins</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L124">inspect_bins</a>(...)</code></summary>
 <dl>
 <dd>
 

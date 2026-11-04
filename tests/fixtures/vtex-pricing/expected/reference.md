@@ -1,6 +1,6 @@
 # Reference
 ## Pricing Configuration
-<details><summary><code>client.pricing_configuration.<a href="src/fern/pricing_configuration/client.py">get_pricing_config</a>() -> PricingConfiguration</code></summary>
+<details><summary><code>client.pricing_configuration.<a href="src/fern/pricing_configuration/client.py#L27-L79">get_pricing_config</a>() -> PricingConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -91,7 +91,7 @@ client.pricing_configuration.get_pricing_config()
 </dl>
 </details>
 
-<details><summary><code>client.pricing_configuration.<a href="src/fern/pricing_configuration/client.py">get_pricingv2status</a>() -> GetPricingv2StatusResponse</code></summary>
+<details><summary><code>client.pricing_configuration.<a href="src/fern/pricing_configuration/client.py#L81-L117">get_pricingv2status</a>() -> GetPricingv2StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -165,7 +165,7 @@ client.pricing_configuration.get_pricingv2status()
 </details>
 
 ## Price Tables
-<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py">getallpricetablesandrules</a>() -> typing.List[GetallpricetablesandrulesResponseItem]</code></summary>
+<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py#L33-L104">getallpricetablesandrules</a>() -> typing.List[GetallpricetablesandrulesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -273,7 +273,7 @@ client.price_tables.getallpricetablesandrules()
 </dl>
 </details>
 
-<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py">getrulesforapricetable</a>(...) -> GetrulesforapricetableResponse</code></summary>
+<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py#L106-L161">getrulesforapricetable</a>(...) -> GetrulesforapricetableResponse</code></summary>
 <dl>
 <dd>
 
@@ -370,7 +370,7 @@ client.price_tables.getrulesforapricetable(
 </dl>
 </details>
 
-<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py">update_rules_for_a_price_table</a>(...)</code></summary>
+<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py#L163-L260">update_rules_for_a_price_table</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -509,7 +509,7 @@ client.price_tables.update_rules_for_a_price_table(
 </dl>
 </details>
 
-<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py">listpricetables</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.price_tables.<a href="src/fern/price_tables/client.py#L262-L301">listpricetables</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ client.price_tables.listpricetables()
 </details>
 
 ## Prices and Fixed Prices
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">get_price</a>(...) -> Getprice</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L37-L98">get_price</a>(...) -> Getprice</code></summary>
 <dl>
 <dd>
 
@@ -693,7 +693,7 @@ client.prices_and_fixed_prices.get_price(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">create_update_price_or_fixed_price</a>(...)</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L100-L193">create_update_price_or_fixed_price</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -839,7 +839,7 @@ client.prices_and_fixed_prices.create_update_price_or_fixed_price(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">delete_price</a>(...)</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L195-L225">delete_price</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -914,7 +914,7 @@ client.prices_and_fixed_prices.delete_price(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">get_computed_pricebypricetable</a>(...) -> Getcomputedprice</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L227-L302">get_computed_pricebypricetable</a>(...) -> Getcomputedprice</code></summary>
 <dl>
 <dd>
 
@@ -1037,7 +1037,7 @@ client.prices_and_fixed_prices.get_computed_pricebypricetable(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">get_fixed_prices</a>(...) -> typing.List[FixedPrice]</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L304-L370">get_fixed_prices</a>(...) -> typing.List[FixedPrice]</code></summary>
 <dl>
 <dd>
 
@@ -1145,7 +1145,7 @@ client.prices_and_fixed_prices.get_fixed_prices(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">get_fixed_pricesonapricetable</a>(...) -> typing.List[FixedPrice]</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L372-L434">get_fixed_pricesonapricetable</a>(...) -> typing.List[FixedPrice]</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1252,7 @@ client.prices_and_fixed_prices.get_fixed_pricesonapricetable(
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">createorupdatefixedpricesonpricetableortradepolicy</a>(...)</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L436-L507">createorupdatefixedpricesonpricetableortradepolicy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1367,7 +1367,7 @@ client.prices_and_fixed_prices.createorupdatefixedpricesonpricetableortradepolic
 </dl>
 </details>
 
-<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py">deletefixedpricesonapricetableortradepolicy</a>(...)</code></summary>
+<details><summary><code>client.prices_and_fixed_prices.<a href="src/fern/prices_and_fixed_prices/client.py#L509-L547">deletefixedpricesonapricetableortradepolicy</a>(...)</code></summary>
 <dl>
 <dd>
 

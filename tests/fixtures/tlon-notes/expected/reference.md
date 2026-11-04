@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">submit_action</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L122-L168">submit_action</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -88,7 +88,7 @@ client.submit_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_request</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L170-L204">get_request</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -165,7 +165,7 @@ client.get_request(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_notebooks</a>() -> typing.List[NotebookSummary]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L206-L234">list_notebooks</a>() -> typing.List[NotebookSummary]</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.list_notebooks()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_notebook</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L236-L266">create_notebook</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.create_notebook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_notebook</a>(...) -> NotebookSummary</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L268-L301">get_notebook</a>(...) -> NotebookSummary</code></summary>
 <dl>
 <dd>
 
@@ -373,7 +373,7 @@ client.get_notebook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_folders</a>(...) -> typing.List[Folder]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L303-L334">list_folders</a>(...) -> typing.List[Folder]</code></summary>
 <dl>
 <dd>
 
@@ -441,7 +441,7 @@ client.list_folders(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_folder</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L336-L383">create_folder</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -527,7 +527,7 @@ client.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L385-L419">get_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -604,7 +604,7 @@ client.get_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_folder</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L421-L470">update_folder</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -711,7 +711,7 @@ client.update_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_folder</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L472-L516">delete_folder</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -810,7 +810,7 @@ client.delete_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_notes</a>(...) -> typing.List[Note]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L518-L549">list_notes</a>(...) -> typing.List[Note]</code></summary>
 <dl>
 <dd>
 
@@ -878,7 +878,7 @@ client.list_notes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_note</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L551-L601">create_note</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -972,7 +972,7 @@ client.create_note(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_note</a>(...) -> Note</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L603-L637">get_note</a>(...) -> Note</code></summary>
 <dl>
 <dd>
 
@@ -1049,7 +1049,7 @@ client.get_note(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_note</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L639-L717">update_note</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -1185,7 +1185,7 @@ client.update_note(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_note</a>(...) -> Response</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L719-L753">delete_note</a>(...) -> Response</code></summary>
 <dl>
 <dd>
 
@@ -1262,7 +1262,7 @@ client.delete_note(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_note_history</a>(...) -> typing.List[NoteRevision]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L755-L789">get_note_history</a>(...) -> typing.List[NoteRevision]</code></summary>
 <dl>
 <dd>
 
@@ -1339,7 +1339,7 @@ client.get_note_history(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_members</a>(...) -> typing.List[MemberRecord]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L791-L822">list_members</a>(...) -> typing.List[MemberRecord]</code></summary>
 <dl>
 <dd>
 
@@ -1407,7 +1407,7 @@ client.list_members(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_invites</a>() -> typing.List[InviteRecord]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L824-L846">list_invites</a>() -> typing.List[InviteRecord]</code></summary>
 <dl>
 <dd>
 

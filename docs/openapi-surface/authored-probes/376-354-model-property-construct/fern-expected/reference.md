@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_holder</a>() -> Holder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">get_holder</a>() -> Holder</code></summary>
 <dl>
 <dd>
 

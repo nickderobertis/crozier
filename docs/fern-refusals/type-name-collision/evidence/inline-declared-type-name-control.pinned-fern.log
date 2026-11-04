@@ -1,10 +1,14 @@
-Fern CLI 5.163.1, python-sdk 5.41.3
+Fern CLI 5.194.0, python-sdk 5.41.17
 check exit: 0
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 ::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 All checks passed
+[api]: Warnings for generators.yml:
+::warning title=[api]%3A::Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning title=[api]%3A::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 
 generate exit: 0
 Warnings for generators.yml:
@@ -15,7 +19,7 @@ Warnings for generators.yml:
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.17
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Wrote files to <workspace>/preview/fern-python-sdk
 [api]: python-sdk fernapi/fern-python-sdk Finished.

@@ -1,6 +1,6 @@
 # Reference
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">get_version_and_health</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L25-L52">get_version_and_health</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.status.get_version_and_health()
 </details>
 
 ## Execute
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">execute_query</a>(...) -> QueryResult</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L38-L203">execute_query</a>(...) -> QueryResult</code></summary>
 <dl>
 <dd>
 
@@ -244,7 +244,7 @@ client.execute.execute_query(
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">by_name</a>(...) -> QueryResult</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L205-L295">by_name</a>(...) -> QueryResult</code></summary>
 <dl>
 <dd>
 
@@ -412,7 +412,7 @@ client.execute.by_name(
 </details>
 
 ## Manage
-<details><summary><code>client.manage.<a href="src/fern/manage/client.py">list_queries</a>(...) -> QueriesListResponse</code></summary>
+<details><summary><code>client.manage.<a href="src/fern/manage/client.py#L35-L78">list_queries</a>(...) -> QueriesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -502,7 +502,7 @@ client.manage.list_queries(
 </dl>
 </details>
 
-<details><summary><code>client.manage.<a href="src/fern/manage/client.py">post_query</a>(...) -> QueryResponse</code></summary>
+<details><summary><code>client.manage.<a href="src/fern/manage/client.py#L80-L123">post_query</a>(...) -> QueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -593,7 +593,7 @@ client.manage.post_query(
 </dl>
 </details>
 
-<details><summary><code>client.manage.<a href="src/fern/manage/client.py">get_query</a>(...) -> QueryResponse</code></summary>
+<details><summary><code>client.manage.<a href="src/fern/manage/client.py#L125-L155">get_query</a>(...) -> QueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -667,7 +667,7 @@ client.manage.get_query(
 </dl>
 </details>
 
-<details><summary><code>client.manage.<a href="src/fern/manage/client.py">update_query</a>(...) -> QueryResponse</code></summary>
+<details><summary><code>client.manage.<a href="src/fern/manage/client.py#L157-L196">update_query</a>(...) -> QueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -750,7 +750,7 @@ client.manage.update_query(
 </dl>
 </details>
 
-<details><summary><code>client.manage.<a href="src/fern/manage/client.py">remove_query</a>(...) -> DeleteResponse</code></summary>
+<details><summary><code>client.manage.<a href="src/fern/manage/client.py#L198-L230">remove_query</a>(...) -> DeleteResponse</code></summary>
 <dl>
 <dd>
 

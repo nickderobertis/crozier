@@ -1,6 +1,6 @@
 # Reference
 ## Berths
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">set_hull</a>(...)</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L29-L65">set_hull</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.berths.set_hull(
 </details>
 
 ## Permits
-<details><summary><code>client.permits.<a href="src/fern/permits/client.py">issue_permits</a>(...)</code></summary>
+<details><summary><code>client.permits.<a href="src/fern/permits/client.py#L30-L64">issue_permits</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -138,7 +138,7 @@ client.permits.issue_permits(
 </dl>
 </details>
 
-<details><summary><code>client.permits.<a href="src/fern/permits/client.py">revoke_permits</a>(...)</code></summary>
+<details><summary><code>client.permits.<a href="src/fern/permits/client.py#L66-L91">revoke_permits</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -198,7 +198,7 @@ client.permits.revoke_permits(
 </details>
 
 ## Session
-<details><summary><code>client.session.<a href="src/fern/session/client.py">open_session</a>(...)</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L29-L69">open_session</a>(...)</code></summary>
 <dl>
 <dd>
 

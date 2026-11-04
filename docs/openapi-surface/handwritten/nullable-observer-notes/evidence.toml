@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "24a56554b5f4489175db7c19a75489a1a2c0160a06bdb335eb9fd7df1efacedf"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "e801d6c071fa50fc95aa3f1458f3e94412ad304ff80ea7b07500fd8108711800"
 
 [[covers]]
 key = "nullable-anyof-member-description-dropped"

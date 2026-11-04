@@ -1,6 +1,6 @@
 # Reference
 ## Cairns
-<details><summary><code>client.cairns.<a href="src/fern/cairns/client.py">build_cairn</a>(...)</code></summary>
+<details><summary><code>client.cairns.<a href="src/fern/cairns/client.py#L28-L53">build_cairn</a>(...)</code></summary>
 <dl>
 <dd>
 

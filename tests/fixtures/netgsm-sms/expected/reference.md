@@ -1,6 +1,6 @@
 # Reference
 ## BulkSms
-<details><summary><code>client.bulk_sms.<a href="src/fern/bulk_sms/client.py">send_rest_sms</a>(...) -> RestResponse</code></summary>
+<details><summary><code>client.bulk_sms.<a href="src/fern/bulk_sms/client.py#L31-L96">send_rest_sms</a>(...) -> RestResponse</code></summary>
 <dl>
 <dd>
 
@@ -118,7 +118,7 @@ client.bulk_sms.send_rest_sms(
 </dl>
 </details>
 
-<details><summary><code>client.bulk_sms.<a href="src/fern/bulk_sms/client.py">cancel_sms</a>(...) -> CancelResponse</code></summary>
+<details><summary><code>client.bulk_sms.<a href="src/fern/bulk_sms/client.py#L98-L137">cancel_sms</a>(...) -> CancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -201,7 +201,7 @@ client.bulk_sms.cancel_sms(
 </details>
 
 ## Queries
-<details><summary><code>client.queries.<a href="src/fern/queries/client.py">get_sms_headers</a>(...) -> MsgHeaderResponse</code></summary>
+<details><summary><code>client.queries.<a href="src/fern/queries/client.py#L32-L62">get_sms_headers</a>(...) -> MsgHeaderResponse</code></summary>
 <dl>
 <dd>
 
@@ -273,7 +273,7 @@ client.queries.get_sms_headers()
 </dl>
 </details>
 
-<details><summary><code>client.queries.<a href="src/fern/queries/client.py">get_inbox_messages</a>(...) -> SmsInboxResponse</code></summary>
+<details><summary><code>client.queries.<a href="src/fern/queries/client.py#L64-L107">get_inbox_messages</a>(...) -> SmsInboxResponse</code></summary>
 <dl>
 <dd>
 
@@ -361,7 +361,7 @@ client.queries.get_inbox_messages()
 </dl>
 </details>
 
-<details><summary><code>client.queries.<a href="src/fern/queries/client.py">get_sms_report</a>(...) -> ReportResponse</code></summary>
+<details><summary><code>client.queries.<a href="src/fern/queries/client.py#L109-L179">get_sms_report</a>(...) -> ReportResponse</code></summary>
 <dl>
 <dd>
 

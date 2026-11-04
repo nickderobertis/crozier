@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">request_product_account</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L38-L87">request_product_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.auth.request_product_account(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">check_registration_invitation</a>(...) -> EnvelopeInvitationInfo</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L89-L120">check_registration_invitation</a>(...) -> EnvelopeInvitationInfo</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.auth.check_registration_invitation(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">register</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L122-L167">register</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.auth.register(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">unregister_account</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L169-L198">unregister_account</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.auth.unregister_account(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">register_phone</a>(...) -> EnvelopeRegisterPhoneNextPage</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L200-L236">register_phone</a>(...) -> EnvelopeRegisterPhoneNextPage</code></summary>
 <dl>
 <dd>
 
@@ -399,7 +399,7 @@ client.auth.register_phone(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">phone_confirmation</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L238-L280">phone_confirmation</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -489,7 +489,7 @@ client.auth.phone_confirmation(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">login</a>(...) -> EnvelopeLoginNextPage</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L282-L313">login</a>(...) -> EnvelopeLoginNextPage</code></summary>
 <dl>
 <dd>
 
@@ -570,7 +570,7 @@ client.auth.login(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">login2fa</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L315-L346">login2fa</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -651,7 +651,7 @@ client.auth.login2fa(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">resend2fa_code</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L348-L383">resend2fa_code</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -731,7 +731,7 @@ client.auth.resend2fa_code(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">logout</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L385-L411">logout</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -801,7 +801,7 @@ client.auth.logout()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">check_auth</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L413-L434">check_auth</a>()</code></summary>
 <dl>
 <dd>
 
@@ -863,7 +863,7 @@ client.auth.check_auth()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">initiate_reset_password</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L436-L462">initiate_reset_password</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -921,7 +921,7 @@ client.auth.initiate_reset_password(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">complete_reset_password</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L464-L498">complete_reset_password</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -997,7 +997,7 @@ client.auth.complete_reset_password(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">change_password</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L500-L536">change_password</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -1087,7 +1087,7 @@ client.auth.change_password(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">confirmation</a>(...) -> EnvelopeLog</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L538-L564">confirmation</a>(...) -> EnvelopeLog</code></summary>
 <dl>
 <dd>
 
@@ -1159,7 +1159,7 @@ client.auth.confirmation(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_captcha</a>() -> typing.Any</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L566-L586">create_captcha</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1207,7 +1207,7 @@ client.auth.create_captcha()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">list_api_keys</a>(...) -> EnvelopeListApiKeyGet</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L588-L619">list_api_keys</a>(...) -> EnvelopeListApiKeyGet</code></summary>
 <dl>
 <dd>
 
@@ -1277,7 +1277,7 @@ client.auth.list_api_keys()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_api_key</a>(...) -> EnvelopeApiKeyCreateResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L621-L658">create_api_key</a>(...) -> EnvelopeApiKeyCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1357,7 +1357,7 @@ client.auth.create_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_api_key</a>(...) -> EnvelopeApiKeyGet</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L660-L688">get_api_key</a>(...) -> EnvelopeApiKeyGet</code></summary>
 <dl>
 <dd>
 
@@ -1429,7 +1429,7 @@ client.auth.get_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">delete_api_key</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L690-L715">delete_api_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1502,7 +1502,7 @@ client.auth.delete_api_key(
 </details>
 
 ## Conversations
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">list_conversations</a>(...) -> PageConversationRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L36-L88">list_conversations</a>(...) -> PageConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -1600,7 +1600,7 @@ client.conversations.list_conversations(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">create_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L90-L127">create_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -1674,7 +1674,7 @@ client.conversations.create_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L129-L155">get_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -1732,7 +1732,7 @@ client.conversations.get_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">delete_conversation</a>(...)</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L157-L182">delete_conversation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1790,7 +1790,7 @@ client.conversations.delete_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">update_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L184-L236">update_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -1888,7 +1888,7 @@ client.conversations.update_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">list_conversation_messages</a>(...) -> PageConversationMessageRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L238-L275">list_conversation_messages</a>(...) -> PageConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -1962,7 +1962,7 @@ client.conversations.list_conversation_messages(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">create_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L277-L316">create_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -2038,7 +2038,7 @@ client.conversations.create_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L318-L349">get_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -2105,7 +2105,7 @@ client.conversations.get_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">update_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L351-L389">update_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -2180,7 +2180,7 @@ client.conversations.update_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">delete_conversation_message</a>(...)</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L391-L421">delete_conversation_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2247,7 +2247,7 @@ client.conversations.delete_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">trigger_chatbot_processing</a>(...)</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L423-L453">trigger_chatbot_processing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2315,7 +2315,7 @@ client.conversations.trigger_chatbot_processing(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>() -> EnvelopeMyGroupsGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L43-L65">list_groups</a>() -> EnvelopeMyGroupsGet</code></summary>
 <dl>
 <dd>
 
@@ -2377,7 +2377,7 @@ client.groups.list_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> EnvelopeGroupGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L67-L107">create_group</a>(...) -> EnvelopeGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2466,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group</a>(...) -> EnvelopeGroupGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L109-L137">get_group</a>(...) -> EnvelopeGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -2538,7 +2538,7 @@ client.groups.get_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L139-L164">delete_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2610,7 +2610,7 @@ client.groups.delete_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_group</a>(...) -> EnvelopeGroupGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L166-L208">update_group</a>(...) -> EnvelopeGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -2706,7 +2706,7 @@ client.groups.update_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_all_group_users</a>(...) -> EnvelopeListGroupUserGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L210-L238">get_all_group_users</a>(...) -> EnvelopeListGroupUserGet</code></summary>
 <dl>
 <dd>
 
@@ -2778,7 +2778,7 @@ client.groups.get_all_group_users(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">add_group_user</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L240-L282">add_group_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2874,7 +2874,7 @@ client.groups.add_group_user(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_user</a>(...) -> EnvelopeGroupUserGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L284-L315">get_group_user</a>(...) -> EnvelopeGroupUserGet</code></summary>
 <dl>
 <dd>
 
@@ -2955,7 +2955,7 @@ client.groups.get_group_user(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group_user</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L317-L347">delete_group_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3036,7 +3036,7 @@ client.groups.delete_group_user(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_group_user</a>(...) -> EnvelopeGroupUserGet</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L349-L394">update_group_user</a>(...) -> EnvelopeGroupUserGet</code></summary>
 <dl>
 <dd>
 
@@ -3130,7 +3130,7 @@ client.groups.update_group_user(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_classifiers</a>(...) -> EnvelopeDictStrAny</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L396-L428">get_group_classifiers</a>(...) -> EnvelopeDictStrAny</code></summary>
 <dl>
 <dd>
 
@@ -3196,7 +3196,7 @@ client.groups.get_group_classifiers(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_scicrunch_resource</a>(...) -> EnvelopeResearchResource</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L430-L456">get_scicrunch_resource</a>(...) -> EnvelopeResearchResource</code></summary>
 <dl>
 <dd>
 
@@ -3254,7 +3254,7 @@ client.groups.get_scicrunch_resource(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">add_scicrunch_resource</a>(...) -> EnvelopeResearchResource</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L458-L484">add_scicrunch_resource</a>(...) -> EnvelopeResearchResource</code></summary>
 <dl>
 <dd>
 
@@ -3312,7 +3312,7 @@ client.groups.add_scicrunch_resource(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">search_scicrunch_resources</a>(...) -> EnvelopeListResourceHit</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L486-L512">search_scicrunch_resources</a>(...) -> EnvelopeListResourceHit</code></summary>
 <dl>
 <dd>
 
@@ -3371,7 +3371,7 @@ client.groups.search_scicrunch_resources(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>() -> EnvelopeListTagGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L35-L55">list_tags</a>() -> EnvelopeListTagGet</code></summary>
 <dl>
 <dd>
 
@@ -3419,7 +3419,7 @@ client.tags.list_tags()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create_tag</a>(...) -> EnvelopeTagGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L57-L98">create_tag</a>(...) -> EnvelopeTagGet</code></summary>
 <dl>
 <dd>
 
@@ -3502,7 +3502,7 @@ client.tags.create_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">delete_tag</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L100-L123">delete_tag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3560,7 +3560,7 @@ client.tags.delete_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">update_tag</a>(...) -> EnvelopeTagGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L125-L168">update_tag</a>(...) -> EnvelopeTagGet</code></summary>
 <dl>
 <dd>
 
@@ -3650,7 +3650,7 @@ client.tags.update_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tag_groups</a>(...) -> EnvelopeListTagGroupGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L170-L198">list_tag_groups</a>(...) -> EnvelopeListTagGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -3722,7 +3722,7 @@ client.tags.list_tag_groups(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create_tag_group</a>(...) -> EnvelopeTagGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L200-L249">create_tag_group</a>(...) -> EnvelopeTagGet</code></summary>
 <dl>
 <dd>
 
@@ -3814,7 +3814,7 @@ client.tags.create_tag_group(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">replace_tag_group</a>(...) -> EnvelopeListTagGroupGet</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L251-L300">replace_tag_group</a>(...) -> EnvelopeListTagGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.tags.replace_tag_group(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">delete_tag_group</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L302-L332">delete_tag_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3988,7 +3988,7 @@ client.tags.delete_tag_group(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_current_product_price</a>() -> EnvelopeCreditPriceGet</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L36-L58">get_current_product_price</a>() -> EnvelopeCreditPriceGet</code></summary>
 <dl>
 <dd>
 
@@ -4036,7 +4036,7 @@ client.products.get_current_product_price()
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_product</a>(...) -> EnvelopeProductGet</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L60-L88">get_product</a>(...) -> EnvelopeProductGet</code></summary>
 <dl>
 <dd>
 
@@ -4108,7 +4108,7 @@ client.products.get_product(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_current_product_ui</a>() -> EnvelopeProductUiGet</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L90-L112">get_current_product_ui</a>() -> EnvelopeProductUiGet</code></summary>
 <dl>
 <dd>
 
@@ -4156,7 +4156,7 @@ client.products.get_current_product_ui()
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">generate_invitation</a>(...) -> EnvelopeInvitationGenerated</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L114-L154">generate_invitation</a>(...) -> EnvelopeInvitationGenerated</code></summary>
 <dl>
 <dd>
 
@@ -4231,7 +4231,7 @@ client.products.generate_invitation(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_my_profile</a>() -> EnvelopeMyProfileRestGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L64-L84">get_my_profile</a>() -> EnvelopeMyProfileRestGet</code></summary>
 <dl>
 <dd>
 
@@ -4279,7 +4279,7 @@ client.users.get_my_profile()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_my_profile</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L86-L136">update_my_profile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4375,7 +4375,7 @@ client.users.update_my_profile()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">my_phone_register</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L138-L167">my_phone_register</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4447,7 +4447,7 @@ client.users.my_phone_register(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">my_phone_resend</a>() -> typing.Any</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L169-L191">my_phone_resend</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4509,7 +4509,7 @@ client.users.my_phone_resend()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">my_phone_confirm</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L193-L219">my_phone_confirm</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4581,7 +4581,7 @@ client.users.my_phone_confirm(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">set_frontend_preference</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L221-L251">set_frontend_preference</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4648,7 +4648,7 @@ client.users.set_frontend_preference(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_tokens</a>() -> EnvelopeListMyTokenGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L253-L273">list_tokens</a>() -> EnvelopeListMyTokenGet</code></summary>
 <dl>
 <dd>
 
@@ -4696,7 +4696,7 @@ client.users.list_tokens()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_token</a>(...) -> EnvelopeMyTokenGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L275-L315">create_token</a>(...) -> EnvelopeMyTokenGet</code></summary>
 <dl>
 <dd>
 
@@ -4772,7 +4772,7 @@ client.users.create_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_token</a>(...) -> EnvelopeMyTokenGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L317-L341">get_token</a>(...) -> EnvelopeMyTokenGet</code></summary>
 <dl>
 <dd>
 
@@ -4830,7 +4830,7 @@ client.users.get_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_token</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L343-L366">delete_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4888,7 +4888,7 @@ client.users.delete_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_user_notifications</a>() -> EnvelopeListUserNotification</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L368-L390">list_user_notifications</a>() -> EnvelopeListUserNotification</code></summary>
 <dl>
 <dd>
 
@@ -4936,7 +4936,7 @@ client.users.list_user_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user_notification</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L392-L464">create_user_notification</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5064,7 +5064,7 @@ client.users.create_user_notification(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">mark_notification_as_read</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L466-L496">mark_notification_as_read</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5131,7 +5131,7 @@ client.users.mark_notification_as_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_user_permissions</a>() -> EnvelopeListMyPermissionGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L498-L520">list_user_permissions</a>() -> EnvelopeListMyPermissionGet</code></summary>
 <dl>
 <dd>
 
@@ -5179,7 +5179,7 @@ client.users.list_user_permissions()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_user_functions_permissions</a>() -> EnvelopeMyFunctionPermissionsGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L522-L544">list_user_functions_permissions</a>() -> EnvelopeMyFunctionPermissionsGet</code></summary>
 <dl>
 <dd>
 
@@ -5227,7 +5227,7 @@ client.users.list_user_functions_permissions()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">search_users</a>(...) -> EnvelopeListUserGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L546-L581">search_users</a>(...) -> EnvelopeListUserGet</code></summary>
 <dl>
 <dd>
 
@@ -5307,7 +5307,7 @@ client.users.search_users(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_users_accounts</a>(...) -> PageUserAccountGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L583-L636">list_users_accounts</a>(...) -> PageUserAccountGet</code></summary>
 <dl>
 <dd>
 
@@ -5405,7 +5405,7 @@ client.users.list_users_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">approve_user_account</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L638-L681">approve_user_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5487,7 +5487,7 @@ client.users.approve_user_account(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">preview_approval_user_account</a>(...) -> EnvelopeUserAccountPreviewApprovalGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L683-L714">preview_approval_user_account</a>(...) -> EnvelopeUserAccountPreviewApprovalGet</code></summary>
 <dl>
 <dd>
 
@@ -5554,7 +5554,7 @@ client.users.preview_approval_user_account(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">reject_user_account</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L716-L752">reject_user_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5628,7 +5628,7 @@ client.users.reject_user_account(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">preview_rejection_user_account</a>(...) -> EnvelopeUserAccountPreviewRejectionGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L754-L780">preview_rejection_user_account</a>(...) -> EnvelopeUserAccountPreviewRejectionGet</code></summary>
 <dl>
 <dd>
 
@@ -5686,7 +5686,7 @@ client.users.preview_rejection_user_account(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">search_user_accounts</a>(...) -> EnvelopeListUserAccountGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L782-L817">search_user_accounts</a>(...) -> EnvelopeListUserAccountGet</code></summary>
 <dl>
 <dd>
 
@@ -5758,7 +5758,7 @@ client.users.search_user_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">move_user_account</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L819-L853">move_user_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5825,7 +5825,7 @@ client.users.move_user_account(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_products_for_user_accounts</a>() -> EnvelopeListUserAccountProductOptionGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L855-L877">list_products_for_user_accounts</a>() -> EnvelopeListUserAccountProductOptionGet</code></summary>
 <dl>
 <dd>
 
@@ -5873,7 +5873,7 @@ client.users.list_products_for_user_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">pre_register_user_account</a>(...) -> EnvelopeUserAccountGet</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L879-L959">pre_register_user_account</a>(...) -> EnvelopeUserAccountGet</code></summary>
 <dl>
 <dd>
 
@@ -6019,7 +6019,7 @@ client.users.pre_register_user_account(
 </details>
 
 ## Wallets
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">list_wallets</a>() -> EnvelopeListWalletGetWithAvailableCredits</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L45-L67">list_wallets</a>() -> EnvelopeListWalletGetWithAvailableCredits</code></summary>
 <dl>
 <dd>
 
@@ -6067,7 +6067,7 @@ client.wallets.list_wallets()
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">create_wallet</a>(...) -> EnvelopeWalletGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L69-L106">create_wallet</a>(...) -> EnvelopeWalletGet</code></summary>
 <dl>
 <dd>
 
@@ -6141,7 +6141,7 @@ client.wallets.create_wallet(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_default_wallet</a>() -> EnvelopeWalletGetWithAvailableCredits</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L108-L130">get_default_wallet</a>() -> EnvelopeWalletGetWithAvailableCredits</code></summary>
 <dl>
 <dd>
 
@@ -6189,7 +6189,7 @@ client.wallets.get_default_wallet()
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet</a>(...) -> EnvelopeWalletGetWithAvailableCredits</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L132-L158">get_wallet</a>(...) -> EnvelopeWalletGetWithAvailableCredits</code></summary>
 <dl>
 <dd>
 
@@ -6247,7 +6247,7 @@ client.wallets.get_wallet(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">update_wallet</a>(...) -> EnvelopeWalletGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L160-L210">update_wallet</a>(...) -> EnvelopeWalletGet</code></summary>
 <dl>
 <dd>
 
@@ -6340,7 +6340,7 @@ client.wallets.update_wallet(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">create_payment</a>(...) -> EnvelopeWalletPaymentInitiated</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L212-L252">create_payment</a>(...) -> EnvelopeWalletPaymentInitiated</code></summary>
 <dl>
 <dd>
 
@@ -6421,7 +6421,7 @@ client.wallets.create_payment(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">list_all_payments</a>(...) -> PagePaymentTransaction</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L254-L286">list_all_payments</a>(...) -> PagePaymentTransaction</code></summary>
 <dl>
 <dd>
 
@@ -6499,7 +6499,7 @@ client.wallets.list_all_payments()
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_payment_invoice_link</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L288-L316">get_payment_invoice_link</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6566,7 +6566,7 @@ client.wallets.get_payment_invoice_link(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">cancel_payment</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L318-L346">cancel_payment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6633,7 +6633,7 @@ client.wallets.cancel_payment(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">init_creation_of_payment_method</a>(...) -> EnvelopePaymentMethodInitiated</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L348-L374">init_creation_of_payment_method</a>(...) -> EnvelopePaymentMethodInitiated</code></summary>
 <dl>
 <dd>
 
@@ -6691,7 +6691,7 @@ client.wallets.init_creation_of_payment_method(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">cancel_creation_of_payment_method</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L376-L406">cancel_creation_of_payment_method</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6758,7 +6758,7 @@ client.wallets.cancel_creation_of_payment_method(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">list_payments_methods</a>(...) -> EnvelopeListPaymentMethodGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L408-L436">list_payments_methods</a>(...) -> EnvelopeListPaymentMethodGet</code></summary>
 <dl>
 <dd>
 
@@ -6830,7 +6830,7 @@ client.wallets.list_payments_methods(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_payment_method</a>(...) -> EnvelopePaymentMethodGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L438-L467">get_payment_method</a>(...) -> EnvelopePaymentMethodGet</code></summary>
 <dl>
 <dd>
 
@@ -6897,7 +6897,7 @@ client.wallets.get_payment_method(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">delete_payment_method</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L469-L499">delete_payment_method</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6964,7 +6964,7 @@ client.wallets.delete_payment_method(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">pay_with_payment_method</a>(...) -> EnvelopeWalletPaymentInitiated</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L501-L543">pay_with_payment_method</a>(...) -> EnvelopeWalletPaymentInitiated</code></summary>
 <dl>
 <dd>
 
@@ -7040,7 +7040,7 @@ client.wallets.pay_with_payment_method(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_autorecharge</a>(...) -> EnvelopeGetWalletAutoRecharge</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L545-L571">get_wallet_autorecharge</a>(...) -> EnvelopeGetWalletAutoRecharge</code></summary>
 <dl>
 <dd>
 
@@ -7098,7 +7098,7 @@ client.wallets.get_wallet_autorecharge(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">replace_wallet_autorecharge</a>(...) -> EnvelopeGetWalletAutoRecharge</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L573-L624">replace_wallet_autorecharge</a>(...) -> EnvelopeGetWalletAutoRecharge</code></summary>
 <dl>
 <dd>
 
@@ -7192,7 +7192,7 @@ client.wallets.replace_wallet_autorecharge(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">create_wallet_group</a>(...) -> EnvelopeWalletGroupGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L626-L673">create_wallet_group</a>(...) -> EnvelopeWalletGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -7270,7 +7270,7 @@ client.wallets.create_wallet_group(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">update_wallet_group</a>(...) -> EnvelopeWalletGroupGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L675-L722">update_wallet_group</a>(...) -> EnvelopeWalletGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -7348,7 +7348,7 @@ client.wallets.update_wallet_group(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">delete_wallet_group</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L724-L752">delete_wallet_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7415,7 +7415,7 @@ client.wallets.delete_wallet_group(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">list_wallet_groups</a>(...) -> EnvelopeListWalletGroupGet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L754-L780">list_wallet_groups</a>(...) -> EnvelopeListWalletGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -7474,7 +7474,7 @@ client.wallets.list_wallet_groups(
 </details>
 
 ## Tasks
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_activity_status</a>() -> EnvelopeDictUuidActivity</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L26-L48">get_activity_status</a>() -> EnvelopeDictUuidActivity</code></summary>
 <dl>
 <dd>
 
@@ -7523,7 +7523,7 @@ client.tasks.get_activity_status()
 </details>
 
 ## Announcements
-<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py">list_announcements</a>() -> EnvelopeListAnnouncement</code></summary>
+<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py#L26-L48">list_announcements</a>() -> EnvelopeListAnnouncement</code></summary>
 <dl>
 <dd>
 
@@ -7572,7 +7572,7 @@ client.announcements.list_announcements()
 </details>
 
 ## Catalog
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_services_latest</a>(...) -> PageCatalogLatestServiceGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L41-L71">list_services_latest</a>(...) -> PageCatalogLatestServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -7636,7 +7636,7 @@ client.catalog.list_services_latest()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_service</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L73-L102">get_service</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -7703,7 +7703,7 @@ client.catalog.get_service(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_service</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L104-L185">update_service</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -7858,7 +7858,7 @@ client.catalog.update_service(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_service_inputs</a>(...) -> EnvelopeListServiceInputGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L187-L216">list_service_inputs</a>(...) -> EnvelopeListServiceInputGet</code></summary>
 <dl>
 <dd>
 
@@ -7925,7 +7925,7 @@ client.catalog.list_service_inputs(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_service_input</a>(...) -> EnvelopeServiceInputGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L218-L257">get_service_input</a>(...) -> EnvelopeServiceInputGet</code></summary>
 <dl>
 <dd>
 
@@ -8001,7 +8001,7 @@ client.catalog.get_service_input(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_compatible_inputs_given_source_output</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L259-L311">get_compatible_inputs_given_source_output</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
 <dl>
 <dd>
 
@@ -8095,7 +8095,7 @@ client.catalog.get_compatible_inputs_given_source_output(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_service_outputs</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L313-L342">list_service_outputs</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
 <dl>
 <dd>
 
@@ -8162,7 +8162,7 @@ client.catalog.list_service_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_service_output</a>(...) -> EnvelopeListServiceOutputGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L344-L383">get_service_output</a>(...) -> EnvelopeListServiceOutputGet</code></summary>
 <dl>
 <dd>
 
@@ -8238,7 +8238,7 @@ client.catalog.get_service_output(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_compatible_outputs_given_target_input</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L385-L437">get_compatible_outputs_given_target_input</a>(...) -> EnvelopeListAnnotatedStrStringConstraints</code></summary>
 <dl>
 <dd>
 
@@ -8332,7 +8332,7 @@ client.catalog.get_compatible_outputs_given_target_input(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_service_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L439-L470">get_service_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
 <dl>
 <dd>
 
@@ -8399,7 +8399,7 @@ client.catalog.get_service_resources(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_service_pricing_plan</a>(...) -> EnvelopeServicePricingPlanGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L472-L505">get_service_pricing_plan</a>(...) -> EnvelopeServicePricingPlanGet</code></summary>
 <dl>
 <dd>
 
@@ -8480,7 +8480,7 @@ client.catalog.get_service_pricing_plan(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_service_tags</a>(...) -> EnvelopeListTagGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L507-L536">list_service_tags</a>(...) -> EnvelopeListTagGet</code></summary>
 <dl>
 <dd>
 
@@ -8547,7 +8547,7 @@ client.catalog.list_service_tags(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">add_service_tag</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L538-L577">add_service_tag</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -8623,7 +8623,7 @@ client.catalog.add_service_tag(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">remove_service_tag</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L579-L618">remove_service_tag</a>(...) -> EnvelopeCatalogServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -8700,7 +8700,7 @@ client.catalog.remove_service_tag(
 </details>
 
 ## Computations
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">get_computation</a>(...) -> EnvelopeComputationGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L34-L60">get_computation</a>(...) -> EnvelopeComputationGet</code></summary>
 <dl>
 <dd>
 
@@ -8758,7 +8758,7 @@ client.computations.get_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">start_computation</a>(...) -> EnvelopeComputationGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L62-L106">start_computation</a>(...) -> EnvelopeComputationGet</code></summary>
 <dl>
 <dd>
 
@@ -8840,7 +8840,7 @@ client.computations.start_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">stop_computation</a>(...)</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L108-L131">stop_computation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8898,7 +8898,7 @@ client.computations.stop_computation(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">list_computations_latest_iteration</a>(...) -> PageComputationRunRestGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L133-L175">list_computations_latest_iteration</a>(...) -> PageComputationRunRestGet</code></summary>
 <dl>
 <dd>
 
@@ -8978,7 +8978,7 @@ client.computations.list_computations_latest_iteration()
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">list_computation_iterations</a>(...) -> PageComputationRunRestGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L177-L225">list_computation_iterations</a>(...) -> PageComputationRunRestGet</code></summary>
 <dl>
 <dd>
 
@@ -9068,7 +9068,7 @@ client.computations.list_computation_iterations(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">list_computations_latest_iteration_tasks</a>(...) -> PageComputationTaskRestGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L227-L275">list_computations_latest_iteration_tasks</a>(...) -> PageComputationTaskRestGet</code></summary>
 <dl>
 <dd>
 
@@ -9158,7 +9158,7 @@ client.computations.list_computations_latest_iteration_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">list_computation_collection_runs</a>(...) -> PageComputationCollectionRunRestGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L277-L319">list_computation_collection_runs</a>(...) -> PageComputationCollectionRunRestGet</code></summary>
 <dl>
 <dd>
 
@@ -9238,7 +9238,7 @@ client.computations.list_computation_collection_runs()
 </dl>
 </details>
 
-<details><summary><code>client.computations.<a href="src/fern/computations/client.py">list_computation_collection_run_tasks</a>(...) -> PageComputationCollectionRunTaskRestGet</code></summary>
+<details><summary><code>client.computations.<a href="src/fern/computations/client.py#L321-L358">list_computation_collection_run_tasks</a>(...) -> PageComputationCollectionRunTaskRestGet</code></summary>
 <dl>
 <dd>
 
@@ -9313,7 +9313,7 @@ client.computations.list_computation_collection_run_tasks(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">export_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L77-L102">export_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9385,7 +9385,7 @@ client.projects.export_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_projects</a>(...) -> PageProjectListItem</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L104-L170">list_projects</a>(...) -> PageProjectListItem</code></summary>
 <dl>
 <dd>
 
@@ -9513,7 +9513,7 @@ client.projects.list_projects()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L172-L244">create_project</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -9653,7 +9653,7 @@ client.projects.create_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_active_project</a>(...) -> EnvelopeProjectGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L246-L274">get_active_project</a>(...) -> EnvelopeProjectGet</code></summary>
 <dl>
 <dd>
 
@@ -9711,7 +9711,7 @@ client.projects.get_active_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project</a>(...) -> EnvelopeProjectGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L276-L302">get_project</a>(...) -> EnvelopeProjectGet</code></summary>
 <dl>
 <dd>
 
@@ -9769,7 +9769,7 @@ client.projects.get_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L304-L327">delete_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9827,7 +9827,7 @@ client.projects.delete_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">patch_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L329-L396">patch_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9957,7 +9957,7 @@ client.projects.patch_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">clone_project</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L398-L424">clone_project</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -10015,7 +10015,7 @@ client.projects.clone_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_projects_full_search</a>(...) -> PageProjectListItem</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L426-L484">list_projects_full_search</a>(...) -> PageProjectListItem</code></summary>
 <dl>
 <dd>
 
@@ -10127,7 +10127,7 @@ client.projects.list_projects_full_search()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_inactivity</a>(...) -> EnvelopeGetProjectInactivityResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L486-L512">get_project_inactivity</a>(...) -> EnvelopeGetProjectInactivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -10185,7 +10185,7 @@ client.projects.get_project_inactivity(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">share_project</a>(...) -> EnvelopeProjectShareAccepted</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L514-L571">share_project</a>(...) -> EnvelopeProjectShareAccepted</code></summary>
 <dl>
 <dd>
 
@@ -10287,7 +10287,7 @@ client.projects.share_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project_group</a>(...) -> EnvelopeProjectGroupGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L573-L620">create_project_group</a>(...) -> EnvelopeProjectGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -10365,7 +10365,7 @@ client.projects.create_project_group(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">replace_project_group</a>(...) -> EnvelopeProjectGroupGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L622-L669">replace_project_group</a>(...) -> EnvelopeProjectGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -10443,7 +10443,7 @@ client.projects.replace_project_group(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project_group</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L671-L699">delete_project_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10510,7 +10510,7 @@ client.projects.delete_project_group(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_project_groups</a>(...) -> EnvelopeListProjectGroupGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L701-L727">list_project_groups</a>(...) -> EnvelopeListProjectGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -10568,7 +10568,7 @@ client.projects.list_project_groups(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_project_conversations</a>(...) -> PageConversationRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L729-L766">list_project_conversations</a>(...) -> PageConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -10642,7 +10642,7 @@ client.projects.list_project_conversations(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L768-L807">create_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -10718,7 +10718,7 @@ client.projects.create_project_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L809-L840">get_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -10785,7 +10785,7 @@ client.projects.get_project_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L842-L881">update_project_conversation</a>(...) -> EnvelopeConversationRestGet</code></summary>
 <dl>
 <dd>
 
@@ -10861,7 +10861,7 @@ client.projects.update_project_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project_conversation</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L883-L913">delete_project_conversation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10928,7 +10928,7 @@ client.projects.delete_project_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_project_conversation_messages</a>(...) -> PageConversationMessageRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L915-L956">list_project_conversation_messages</a>(...) -> PageConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -11011,7 +11011,7 @@ client.projects.list_project_conversation_messages(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L958-L1001">create_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -11096,7 +11096,7 @@ client.projects.create_project_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1003-L1042">get_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -11172,7 +11172,7 @@ client.projects.get_project_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1044-L1087">update_project_conversation_message</a>(...) -> EnvelopeConversationMessageRestGet</code></summary>
 <dl>
 <dd>
 
@@ -11257,7 +11257,7 @@ client.projects.update_project_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project_conversation_message</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1089-L1127">delete_project_conversation_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11333,7 +11333,7 @@ client.projects.delete_project_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">replace_project_folder</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1129-L1163">replace_project_folder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11414,7 +11414,7 @@ client.projects.replace_project_folder(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_metadata</a>(...) -> EnvelopeProjectMetadataGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1165-L1191">get_project_metadata</a>(...) -> EnvelopeProjectMetadataGet</code></summary>
 <dl>
 <dd>
 
@@ -11472,7 +11472,7 @@ client.projects.get_project_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project_metadata</a>(...) -> EnvelopeProjectMetadataGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1193-L1226">update_project_metadata</a>(...) -> EnvelopeProjectMetadataGet</code></summary>
 <dl>
 <dd>
 
@@ -11541,7 +11541,7 @@ client.projects.update_project_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_node</a>(...) -> EnvelopeNodeCreated</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1228-L1274">create_node</a>(...) -> EnvelopeNodeCreated</code></summary>
 <dl>
 <dd>
 
@@ -11625,7 +11625,7 @@ client.projects.create_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_node</a>(...) -> EnvelopeUnionNodeGetIdleNodeGetUnknownRunningDynamicServiceDetailsNodeGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1276-L1305">get_node</a>(...) -> EnvelopeUnionNodeGetIdleNodeGetUnknownRunningDynamicServiceDetailsNodeGet</code></summary>
 <dl>
 <dd>
 
@@ -11692,7 +11692,7 @@ client.projects.get_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_node</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1307-L1335">delete_node</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11759,7 +11759,7 @@ client.projects.delete_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">patch_project_node</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1337-L1417">patch_project_node</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11914,7 +11914,7 @@ client.projects.patch_project_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">retrieve_node</a>(...) -> EnvelopeNodeRetrieved</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1419-L1457">retrieve_node</a>(...) -> EnvelopeNodeRetrieved</code></summary>
 <dl>
 <dd>
 
@@ -11989,7 +11989,7 @@ client.projects.retrieve_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">start_node</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1459-L1487">start_node</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12056,7 +12056,7 @@ client.projects.start_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">stop_node</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1489-L1518">stop_node</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -12123,7 +12123,7 @@ client.projects.stop_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">restart_node</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1520-L1550">restart_node</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12204,7 +12204,7 @@ client.projects.restart_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_node_outputs</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1552-L1590">update_node_outputs</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12282,7 +12282,7 @@ client.projects.update_node_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_node_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1592-L1621">get_node_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
 <dl>
 <dd>
 
@@ -12349,7 +12349,7 @@ client.projects.get_node_resources(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">replace_node_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1623-L1662">replace_node_resources</a>(...) -> EnvelopeDictAnnotatedStrStringConstraintsImageResources</code></summary>
 <dl>
 <dd>
 
@@ -12427,7 +12427,7 @@ client.projects.replace_node_resources(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_services</a>(...) -> EnvelopeProjectNodeServicesGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1664-L1690">get_project_services</a>(...) -> EnvelopeProjectNodeServicesGet</code></summary>
 <dl>
 <dd>
 
@@ -12485,7 +12485,7 @@ client.projects.get_project_services(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_services_access_for_gid</a>(...) -> EnvelopeProjectGroupAccess</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1692-L1725">get_project_services_access_for_gid</a>(...) -> EnvelopeProjectGroupAccess</code></summary>
 <dl>
 <dd>
 
@@ -12566,7 +12566,7 @@ client.projects.get_project_services_access_for_gid(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_project_nodes_previews</a>(...) -> EnvelopeListProjectNodePreview</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1727-L1755">list_project_nodes_previews</a>(...) -> EnvelopeListProjectNodePreview</code></summary>
 <dl>
 <dd>
 
@@ -12638,7 +12638,7 @@ client.projects.list_project_nodes_previews(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_node_preview</a>(...) -> EnvelopeProjectNodePreview</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1757-L1788">get_project_node_preview</a>(...) -> EnvelopeProjectNodePreview</code></summary>
 <dl>
 <dd>
 
@@ -12719,7 +12719,7 @@ client.projects.get_project_node_preview(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_node_pricing_unit</a>(...) -> EnvelopeUnionPricingUnitGetNoneType</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1790-L1821">get_project_node_pricing_unit</a>(...) -> EnvelopeUnionPricingUnitGetNoneType</code></summary>
 <dl>
 <dd>
 
@@ -12800,7 +12800,7 @@ client.projects.get_project_node_pricing_unit(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">connect_pricing_unit_to_project_node</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1823-L1867">connect_pricing_unit_to_project_node</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12899,7 +12899,7 @@ client.projects.connect_pricing_unit_to_project_node(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_inputs</a>(...) -> EnvelopeDictUuidProjectInputGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1869-L1897">get_project_inputs</a>(...) -> EnvelopeDictUuidProjectInputGet</code></summary>
 <dl>
 <dd>
 
@@ -12971,7 +12971,7 @@ client.projects.get_project_inputs(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project_inputs</a>(...) -> EnvelopeDictUuidProjectInputGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1899-L1934">update_project_inputs</a>(...) -> EnvelopeDictUuidProjectInputGet</code></summary>
 <dl>
 <dd>
 
@@ -13052,7 +13052,7 @@ client.projects.update_project_inputs(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_outputs</a>(...) -> EnvelopeDictUuidProjectOutputGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1936-L1964">get_project_outputs</a>(...) -> EnvelopeDictUuidProjectOutputGet</code></summary>
 <dl>
 <dd>
 
@@ -13124,7 +13124,7 @@ client.projects.get_project_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_project_metadata_ports</a>(...) -> EnvelopeListProjectMetadataPortGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1966-L1994">list_project_metadata_ports</a>(...) -> EnvelopeListProjectMetadataPortGet</code></summary>
 <dl>
 <dd>
 
@@ -13196,7 +13196,7 @@ client.projects.list_project_metadata_ports(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">open_project</a>(...) -> EnvelopeProjectGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1996-L2037">open_project</a>(...) -> EnvelopeProjectGet</code></summary>
 <dl>
 <dd>
 
@@ -13271,7 +13271,7 @@ client.projects.open_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">close_project</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2039-L2067">close_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13338,7 +13338,7 @@ client.projects.close_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_state</a>(...) -> EnvelopeProjectStateOutputSchema</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2069-L2095">get_project_state</a>(...) -> EnvelopeProjectStateOutputSchema</code></summary>
 <dl>
 <dd>
 
@@ -13396,7 +13396,7 @@ client.projects.get_project_state(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">add_project_tag</a>(...) -> EnvelopeProjectGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2097-L2130">add_project_tag</a>(...) -> EnvelopeProjectGet</code></summary>
 <dl>
 <dd>
 
@@ -13479,7 +13479,7 @@ client.projects.add_project_tag(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">remove_project_tag</a>(...) -> EnvelopeProjectGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2132-L2165">remove_project_tag</a>(...) -> EnvelopeProjectGet</code></summary>
 <dl>
 <dd>
 
@@ -13562,7 +13562,7 @@ client.projects.remove_project_tag(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_wallet</a>(...) -> EnvelopeUnionWalletGetNoneType</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2167-L2195">get_project_wallet</a>(...) -> EnvelopeUnionWalletGetNoneType</code></summary>
 <dl>
 <dd>
 
@@ -13634,7 +13634,7 @@ client.projects.get_project_wallet(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">connect_wallet_to_project</a>(...) -> EnvelopeWalletGet</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2197-L2228">connect_wallet_to_project</a>(...) -> EnvelopeWalletGet</code></summary>
 <dl>
 <dd>
 
@@ -13715,7 +13715,7 @@ client.projects.connect_wallet_to_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">pay_project_debt</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2230-L2268">pay_project_debt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13791,7 +13791,7 @@ client.projects.pay_project_debt(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">move_project_to_workspace</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L2270-L2306">move_project_to_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13873,7 +13873,7 @@ client.projects.move_project_to_workspace(
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_folders</a>(...) -> EnvelopeListFolderGet</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L31-L81">list_folders</a>(...) -> EnvelopeListFolderGet</code></summary>
 <dl>
 <dd>
 
@@ -13969,7 +13969,7 @@ client.folders.list_folders()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">create_folder</a>(...) -> EnvelopeFolderGet</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L83-L120">create_folder</a>(...) -> EnvelopeFolderGet</code></summary>
 <dl>
 <dd>
 
@@ -14043,7 +14043,7 @@ client.folders.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_folders_full_search</a>(...) -> EnvelopeListFolderGet</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L122-L163">list_folders_full_search</a>(...) -> EnvelopeListFolderGet</code></summary>
 <dl>
 <dd>
 
@@ -14131,7 +14131,7 @@ client.folders.list_folders_full_search()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_folder</a>(...) -> EnvelopeFolderGet</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L165-L191">get_folder</a>(...) -> EnvelopeFolderGet</code></summary>
 <dl>
 <dd>
 
@@ -14189,7 +14189,7 @@ client.folders.get_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">replace_folder</a>(...) -> EnvelopeFolderGet</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L193-L231">replace_folder</a>(...) -> EnvelopeFolderGet</code></summary>
 <dl>
 <dd>
 
@@ -14264,7 +14264,7 @@ client.folders.replace_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete_folder</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L233-L256">delete_folder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14322,7 +14322,7 @@ client.folders.delete_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">move_folder_to_workspace</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L258-L292">move_folder_to_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14404,7 +14404,7 @@ client.folders.move_folder_to_workspace(
 </details>
 
 ## Functions
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list_functions</a>(...) -> EnvelopeListAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L40-L90">list_functions</a>(...) -> EnvelopeListAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
 <dl>
 <dd>
 
@@ -14500,7 +14500,7 @@ client.functions.list_functions()
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">register_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L92-L128">register_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
 <dl>
 <dd>
 
@@ -14564,7 +14564,7 @@ client.functions.register_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L130-L164">get_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
 <dl>
 <dd>
 
@@ -14630,7 +14630,7 @@ client.functions.get_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">delete_function</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L166-L197">delete_function</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14696,7 +14696,7 @@ client.functions.delete_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">update_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L199-L236">update_function</a>(...) -> EnvelopeAnnotatedUnionRegisteredProjectFunctionGetRegisteredSolverFunctionGetFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorFunctionClass</code></summary>
 <dl>
 <dd>
 
@@ -14770,7 +14770,7 @@ client.functions.update_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_function_groups</a>(...) -> EnvelopeDictNewTypeFunctionGroupAccessRightsGet</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L238-L264">get_function_groups</a>(...) -> EnvelopeDictNewTypeFunctionGroupAccessRightsGet</code></summary>
 <dl>
 <dd>
 
@@ -14828,7 +14828,7 @@ client.functions.get_function_groups(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create_or_update_function_group</a>(...) -> EnvelopeFunctionGroupAccessRightsGet</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L266-L313">create_or_update_function_group</a>(...) -> EnvelopeFunctionGroupAccessRightsGet</code></summary>
 <dl>
 <dd>
 
@@ -14922,7 +14922,7 @@ client.functions.create_or_update_function_group(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">delete_function_group</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L315-L343">delete_function_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14990,7 +14990,7 @@ client.functions.delete_function_group(
 </details>
 
 ## LongRunningTasks
-<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py">get_async_jobs</a>() -> EnvelopeListTaskGet</code></summary>
+<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py#L28-L50">get_async_jobs</a>() -> EnvelopeListTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -15052,7 +15052,7 @@ client.long_running_tasks.get_async_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py">get_async_job_status</a>(...) -> EnvelopeTaskStatus</code></summary>
+<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py#L52-L80">get_async_job_status</a>(...) -> EnvelopeTaskStatus</code></summary>
 <dl>
 <dd>
 
@@ -15124,7 +15124,7 @@ client.long_running_tasks.get_async_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py">cancel_async_job</a>(...)</code></summary>
+<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py#L82-L107">cancel_async_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15196,7 +15196,7 @@ client.long_running_tasks.cancel_async_job(
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py">get_async_job_result</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py#L109-L137">get_async_job_result</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -15268,7 +15268,7 @@ client.long_running_tasks.get_async_job_result(
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py">get_async_job_stream</a>(...) -> EnvelopeTaskStreamResponse</code></summary>
+<details><summary><code>client.long_running_tasks.<a href="src/fern/long_running_tasks/client.py#L139-L173">get_async_job_stream</a>(...) -> EnvelopeTaskStreamResponse</code></summary>
 <dl>
 <dd>
 
@@ -15349,7 +15349,7 @@ client.long_running_tasks.get_async_job_stream(
 </details>
 
 ## LongRunningTasksLegacy
-<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py">list_tasks</a>() -> EnvelopeListTaskGet</code></summary>
+<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py#L27-L49">list_tasks</a>() -> EnvelopeListTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -15411,7 +15411,7 @@ client.long_running_tasks_legacy.list_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py">get_task_status</a>(...) -> EnvelopeTaskStatus</code></summary>
+<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py#L51-L79">get_task_status</a>(...) -> EnvelopeTaskStatus</code></summary>
 <dl>
 <dd>
 
@@ -15483,7 +15483,7 @@ client.long_running_tasks_legacy.get_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py">remove_task</a>(...)</code></summary>
+<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py#L81-L106">remove_task</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15555,7 +15555,7 @@ client.long_running_tasks_legacy.remove_task(
 </dl>
 </details>
 
-<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py">get_task_result</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.long_running_tasks_legacy.<a href="src/fern/long_running_tasks_legacy/client.py#L108-L134">get_task_result</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -15628,7 +15628,7 @@ client.long_running_tasks_legacy.get_task_result(
 </details>
 
 ## Licenses
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">list_licensed_items</a>(...) -> PageLicensedItemRestGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L33-L68">list_licensed_items</a>(...) -> PageLicensedItemRestGet</code></summary>
 <dl>
 <dd>
 
@@ -15700,7 +15700,7 @@ client.licenses.list_licensed_items()
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">purchase_licensed_item</a>(...) -> LicensedItemPurchaseGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L70-L122">purchase_licensed_item</a>(...) -> LicensedItemPurchaseGet</code></summary>
 <dl>
 <dd>
 
@@ -15794,7 +15794,7 @@ client.licenses.purchase_licensed_item(
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">list_wallet_licensed_items_purchases</a>(...) -> PageLicensedItemPurchaseGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L124-L164">list_wallet_licensed_items_purchases</a>(...) -> PageLicensedItemPurchaseGet</code></summary>
 <dl>
 <dd>
 
@@ -15876,7 +15876,7 @@ client.licenses.list_wallet_licensed_items_purchases(
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">get_licensed_item_purchase</a>(...) -> EnvelopeLicensedItemPurchaseGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L166-L194">get_licensed_item_purchase</a>(...) -> EnvelopeLicensedItemPurchaseGet</code></summary>
 <dl>
 <dd>
 
@@ -15934,7 +15934,7 @@ client.licenses.get_licensed_item_purchase(
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">list_licensed_item_checkouts_for_wallet</a>(...) -> PageLicensedItemPurchaseGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L196-L236">list_licensed_item_checkouts_for_wallet</a>(...) -> PageLicensedItemPurchaseGet</code></summary>
 <dl>
 <dd>
 
@@ -16016,7 +16016,7 @@ client.licenses.list_licensed_item_checkouts_for_wallet(
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">get_licensed_item_checkout</a>(...) -> EnvelopeLicensedItemPurchaseGet</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L238-L266">get_licensed_item_checkout</a>(...) -> EnvelopeLicensedItemPurchaseGet</code></summary>
 <dl>
 <dd>
 
@@ -16075,7 +16075,7 @@ client.licenses.get_licensed_item_checkout(
 </details>
 
 ## NihSparc
-<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py">list_latest_services</a>() -> EnvelopeListServiceGet</code></summary>
+<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py#L27-L51">list_latest_services</a>() -> EnvelopeListServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -16137,7 +16137,7 @@ client.nih_sparc.list_latest_services()
 </dl>
 </details>
 
-<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py">list_viewers</a>(...) -> EnvelopeListViewer</code></summary>
+<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py#L53-L83">list_viewers</a>(...) -> EnvelopeListViewer</code></summary>
 <dl>
 <dd>
 
@@ -16211,7 +16211,7 @@ client.nih_sparc.list_viewers()
 </dl>
 </details>
 
-<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py">list_default_viewers</a>(...) -> EnvelopeListViewer</code></summary>
+<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py#L85-L117">list_default_viewers</a>(...) -> EnvelopeListViewer</code></summary>
 <dl>
 <dd>
 
@@ -16287,7 +16287,7 @@ client.nih_sparc.list_default_viewers()
 </dl>
 </details>
 
-<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py">get_redirection_to_viewer</a>(...)</code></summary>
+<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py#L119-L176">get_redirection_to_viewer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16403,7 +16403,7 @@ client.nih_sparc.get_redirection_to_viewer(
 </dl>
 </details>
 
-<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py">get_redirection_to_study_page</a>(...)</code></summary>
+<details><summary><code>client.nih_sparc.<a href="src/fern/nih_sparc/client.py#L178-L205">get_redirection_to_study_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16476,7 +16476,7 @@ client.nih_sparc.get_redirection_to_study_page(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">send_message</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L35-L75">send_message</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -16553,7 +16553,7 @@ client.notifications.send_message(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">preview_template</a>(...) -> EnvelopeTemplatePreviewGet</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L77-L122">preview_template</a>(...) -> EnvelopeTemplatePreviewGet</code></summary>
 <dl>
 <dd>
 
@@ -16646,7 +16646,7 @@ client.notifications.preview_template(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">search_templates</a>(...) -> EnvelopeListTemplateGet</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L124-L161">search_templates</a>(...) -> EnvelopeListTemplateGet</code></summary>
 <dl>
 <dd>
 
@@ -16728,7 +16728,7 @@ client.notifications.search_templates()
 </details>
 
 ## Usage
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">list_resource_usage_services</a>(...) -> PageServiceRunGet</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L30-L78">list_resource_usage_services</a>(...) -> PageServiceRunGet</code></summary>
 <dl>
 <dd>
 
@@ -16830,7 +16830,7 @@ client.usage.list_resource_usage_services()
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">list_osparc_credits_aggregated_usages</a>(...) -> PageOsparcCreditsAggregatedByServiceGet</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L80-L132">list_osparc_credits_aggregated_usages</a>(...) -> PageOsparcCreditsAggregatedByServiceGet</code></summary>
 <dl>
 <dd>
 
@@ -16936,7 +16936,7 @@ client.usage.list_osparc_credits_aggregated_usages(
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">export_resource_usage_services</a>(...)</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L134-L170">export_resource_usage_services</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17023,7 +17023,7 @@ client.usage.export_resource_usage_services()
 </details>
 
 ## PricingPlans
-<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py">get_pricing_plan_unit</a>(...) -> EnvelopePricingUnitGet</code></summary>
+<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py#L28-L59">get_pricing_plan_unit</a>(...) -> EnvelopePricingUnitGet</code></summary>
 <dl>
 <dd>
 
@@ -17090,7 +17090,7 @@ client.pricing_plans.get_pricing_plan_unit(
 </dl>
 </details>
 
-<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py">list_pricing_plans</a>(...) -> PagePricingPlanGet</code></summary>
+<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py#L61-L93">list_pricing_plans</a>(...) -> PagePricingPlanGet</code></summary>
 <dl>
 <dd>
 
@@ -17168,7 +17168,7 @@ client.pricing_plans.list_pricing_plans()
 </dl>
 </details>
 
-<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py">get_pricing_plan</a>(...) -> EnvelopePricingPlanGet</code></summary>
+<details><summary><code>client.pricing_plans.<a href="src/fern/pricing_plans/client.py#L95-L121">get_pricing_plan</a>(...) -> EnvelopePricingPlanGet</code></summary>
 <dl>
 <dd>
 
@@ -17227,7 +17227,7 @@ client.pricing_plans.get_pricing_plan(
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_pricing_plans_for_admin_user</a>(...) -> PagePricingPlanAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L39-L73">list_pricing_plans_for_admin_user</a>(...) -> PagePricingPlanAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17305,7 +17305,7 @@ client.admin.list_pricing_plans_for_admin_user()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">create_pricing_plan</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L75-L122">create_pricing_plan</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17390,7 +17390,7 @@ client.admin.create_pricing_plan(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_pricing_plan_for_admin_user</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L124-L150">get_pricing_plan_for_admin_user</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17448,7 +17448,7 @@ client.admin.get_pricing_plan_for_admin_user(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_pricing_plan</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L152-L199">update_pricing_plan</a>(...) -> EnvelopePricingPlanAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17533,7 +17533,7 @@ client.admin.update_pricing_plan(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L201-L230">get_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17600,7 +17600,7 @@ client.admin.get_pricing_unit(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L232-L299">update_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17719,7 +17719,7 @@ client.admin.update_pricing_unit(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">create_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L301-L369">create_pricing_unit</a>(...) -> EnvelopePricingUnitAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17839,7 +17839,7 @@ client.admin.create_pricing_unit(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_connected_services_to_pricing_plan</a>(...) -> EnvelopeListPricingPlanToServiceAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L371-L399">list_connected_services_to_pricing_plan</a>(...) -> EnvelopeListPricingPlanToServiceAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17897,7 +17897,7 @@ client.admin.list_connected_services_to_pricing_plan(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">connect_service_to_pricing_plan</a>(...) -> EnvelopePricingPlanToServiceAdminGet</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L401-L440">connect_service_to_pricing_plan</a>(...) -> EnvelopePricingPlanToServiceAdminGet</code></summary>
 <dl>
 <dd>
 
@@ -17974,7 +17974,7 @@ client.admin.connect_service_to_pricing_plan(
 </details>
 
 ## StudiesDispatcher
-<details><summary><code>client.studies_dispatcher.<a href="src/fern/studies_dispatcher/client.py">dispatch_study</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.studies_dispatcher.<a href="src/fern/studies_dispatcher/client.py#L26-L54">dispatch_study</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -18047,7 +18047,7 @@ client.studies_dispatcher.dispatch_study(
 </details>
 
 ## Statics
-<details><summary><code>client.statics.<a href="src/fern/statics/client.py">get_cached_frontend_index</a>() -> str</code></summary>
+<details><summary><code>client.statics.<a href="src/fern/statics/client.py#L26-L46">get_cached_frontend_index</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18095,7 +18095,7 @@ client.statics.get_cached_frontend_index()
 </dl>
 </details>
 
-<details><summary><code>client.statics.<a href="src/fern/statics/client.py">static_frontend_data</a>() -> StaticFrontEndDict</code></summary>
+<details><summary><code>client.statics.<a href="src/fern/statics/client.py#L48-L70">static_frontend_data</a>() -> StaticFrontEndDict</code></summary>
 <dl>
 <dd>
 
@@ -18158,7 +18158,7 @@ client.statics.static_frontend_data()
 </details>
 
 ## Storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_storage_locations</a>() -> typing.List[FileLocation]</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L42-L66">list_storage_locations</a>() -> typing.List[FileLocation]</code></summary>
 <dl>
 <dd>
 
@@ -18220,7 +18220,7 @@ client.storage.list_storage_locations()
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_storage_paths</a>(...) -> CursorPageTypeVarCustomizedPathMetaDataGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L68-L110">list_storage_paths</a>(...) -> CursorPageTypeVarCustomizedPathMetaDataGet</code></summary>
 <dl>
 <dd>
 
@@ -18316,7 +18316,7 @@ client.storage.list_storage_paths(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">compute_path_size</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L112-L143">compute_path_size</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -18397,7 +18397,7 @@ client.storage.compute_path_size(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">batch_delete_paths</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L145-L180">batch_delete_paths</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -18480,7 +18480,7 @@ client.storage.batch_delete_paths(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_datasets_metadata</a>(...) -> EnvelopeListDatasetMetaData</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L182-L210">list_datasets_metadata</a>(...) -> EnvelopeListDatasetMetaData</code></summary>
 <dl>
 <dd>
 
@@ -18552,7 +18552,7 @@ client.storage.list_datasets_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_files_metadata</a>(...) -> EnvelopeListDatasetMetaData</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L212-L252">get_files_metadata</a>(...) -> EnvelopeListDatasetMetaData</code></summary>
 <dl>
 <dd>
 
@@ -18640,7 +18640,7 @@ client.storage.get_files_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_dataset_files_metadata</a>(...) -> EnvelopeListFileMetaDataGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L254-L295">list_dataset_files_metadata</a>(...) -> EnvelopeListFileMetaDataGet</code></summary>
 <dl>
 <dd>
 
@@ -18729,7 +18729,7 @@ client.storage.list_dataset_files_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file_metadata</a>(...) -> GetFileMetadataResponse</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L297-L328">get_file_metadata</a>(...) -> GetFileMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -18810,7 +18810,7 @@ client.storage.get_file_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">download_file</a>(...) -> EnvelopePresignedLink</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L330-L370">download_file</a>(...) -> EnvelopePresignedLink</code></summary>
 <dl>
 <dd>
 
@@ -18899,7 +18899,7 @@ client.storage.download_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">upload_file</a>(...) -> UploadFileResponse</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L372-L424">upload_file</a>(...) -> UploadFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -19005,7 +19005,7 @@ client.storage.upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">delete_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L426-L456">delete_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19086,7 +19086,7 @@ client.storage.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">abort_upload_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L458-L489">abort_upload_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19168,7 +19168,7 @@ client.storage.abort_upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">complete_upload_file</a>(...) -> EnvelopeFileUploadCompleteResponse</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L491-L534">complete_upload_file</a>(...) -> EnvelopeFileUploadCompleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -19265,7 +19265,7 @@ client.storage.complete_upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">is_completed_upload_file</a>(...) -> EnvelopeFileUploadCompleteFutureResponse</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L536-L572">is_completed_upload_file</a>(...) -> EnvelopeFileUploadCompleteFutureResponse</code></summary>
 <dl>
 <dd>
 
@@ -19355,7 +19355,7 @@ client.storage.is_completed_upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">export_data</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L574-L605">export_data</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -19438,7 +19438,7 @@ client.storage.export_data(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">search</a>(...) -> EnvelopeTaskGet</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L607-L640">search</a>(...) -> EnvelopeTaskGet</code></summary>
 <dl>
 <dd>
 
@@ -19522,7 +19522,7 @@ client.storage.search(
 </details>
 
 ## Trash
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">empty_trash</a>()</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L25-L44">empty_trash</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19570,7 +19570,7 @@ client.trash.empty_trash()
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">project</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L46-L77">project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19636,7 +19636,7 @@ client.trash.project(
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">untrash_project</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L79-L102">untrash_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19694,7 +19694,7 @@ client.trash.untrash_project(
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">folder</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L104-L135">folder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19760,7 +19760,7 @@ client.trash.folder(
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">untrash_folder</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L137-L160">untrash_folder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19818,7 +19818,7 @@ client.trash.untrash_folder(
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">workspace</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L162-L193">workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19884,7 +19884,7 @@ client.trash.workspace(
 </dl>
 </details>
 
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">untrash_workspace</a>(...)</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L195-L218">untrash_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19943,7 +19943,7 @@ client.trash.untrash_workspace(
 </details>
 
 ## Workspaces
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">list_workspaces</a>(...) -> EnvelopeListWorkspaceGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L33-L71">list_workspaces</a>(...) -> EnvelopeListWorkspaceGet</code></summary>
 <dl>
 <dd>
 
@@ -20023,7 +20023,7 @@ client.workspaces.list_workspaces()
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">create_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L73-L110">create_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
 <dl>
 <dd>
 
@@ -20097,7 +20097,7 @@ client.workspaces.create_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">get_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L112-L138">get_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
 <dl>
 <dd>
 
@@ -20155,7 +20155,7 @@ client.workspaces.get_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">replace_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L140-L181">replace_workspace</a>(...) -> EnvelopeWorkspaceGet</code></summary>
 <dl>
 <dd>
 
@@ -20238,7 +20238,7 @@ client.workspaces.replace_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">delete_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L183-L206">delete_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20296,7 +20296,7 @@ client.workspaces.delete_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">create_workspace_group</a>(...) -> EnvelopeWorkspaceGroupGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L208-L255">create_workspace_group</a>(...) -> EnvelopeWorkspaceGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -20374,7 +20374,7 @@ client.workspaces.create_workspace_group(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">replace_workspace_group</a>(...) -> EnvelopeWorkspaceGroupGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L257-L304">replace_workspace_group</a>(...) -> EnvelopeWorkspaceGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -20452,7 +20452,7 @@ client.workspaces.replace_workspace_group(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">delete_workspace_group</a>(...)</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L306-L334">delete_workspace_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20519,7 +20519,7 @@ client.workspaces.delete_workspace_group(
 </dl>
 </details>
 
-<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py">list_workspace_groups</a>(...) -> EnvelopeListWorkspaceGroupGet</code></summary>
+<details><summary><code>client.workspaces.<a href="src/fern/workspaces/client.py#L336-L362">list_workspace_groups</a>(...) -> EnvelopeListWorkspaceGroupGet</code></summary>
 <dl>
 <dd>
 
@@ -20578,7 +20578,7 @@ client.workspaces.list_workspace_groups(
 </details>
 
 ## Maintenance
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">healthcheck_readiness_probe</a>() -> EnvelopeHealthInfoDict</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L30-L54">healthcheck_readiness_probe</a>() -> EnvelopeHealthInfoDict</code></summary>
 <dl>
 <dd>
 
@@ -20640,7 +20640,7 @@ client.maintenance.healthcheck_readiness_probe()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">healthcheck_liveness_probe</a>() -> EnvelopeDictStrAny</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L56-L80">healthcheck_liveness_probe</a>() -> EnvelopeDictStrAny</code></summary>
 <dl>
 <dd>
 
@@ -20702,7 +20702,7 @@ client.maintenance.healthcheck_liveness_probe()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">get_config</a>() -> EnvelopeDictStrAny</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L82-L104">get_config</a>() -> EnvelopeDictStrAny</code></summary>
 <dl>
 <dd>
 
@@ -20764,7 +20764,7 @@ client.maintenance.get_config()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">get_scheduled_maintenance</a>() -> EnvelopeStr</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L106-L126">get_scheduled_maintenance</a>() -> EnvelopeStr</code></summary>
 <dl>
 <dd>
 
@@ -20812,7 +20812,7 @@ client.maintenance.get_scheduled_maintenance()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">get_app_status</a>() -> EnvelopeAppStatusCheck</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L128-L150">get_app_status</a>() -> EnvelopeAppStatusCheck</code></summary>
 <dl>
 <dd>
 
@@ -20874,7 +20874,7 @@ client.maintenance.get_app_status()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">get_app_diagnostics</a>(...) -> EnvelopeStatusDiagnosticsGet</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L152-L178">get_app_diagnostics</a>(...) -> EnvelopeStatusDiagnosticsGet</code></summary>
 <dl>
 <dd>
 
@@ -20930,7 +20930,7 @@ client.maintenance.get_app_diagnostics()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">get_service_status</a>(...) -> EnvelopeAppStatusCheck</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L180-L206">get_service_status</a>(...) -> EnvelopeAppStatusCheck</code></summary>
 <dl>
 <dd>
 

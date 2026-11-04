@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.17",
+  "corpus_spec_name": "rgb-lightning-node",
+  "corpus_spec_ref": "d4762ac3d1b3ca83f2f7b4f894e8569109dc572a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/d4762ac3d1b3ca83f2f7b4f894e8569109dc572a/openapi.yaml"
+}

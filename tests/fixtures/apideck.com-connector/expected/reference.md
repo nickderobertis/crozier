@@ -88,7 +88,7 @@ client.apis.all_()
 </dl>
 </details>
 
-<details><summary><code>client.apis.<a href="src/fern/apis/client.py">one</a>(...) -> GetApiResponse</code></summary>
+<details><summary><code>client.apis.<a href="src/fern/apis/client.py#L71-L101">one</a>(...) -> GetApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.apis.one(
 </details>
 
 ## API Resources
-<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">one</a>(...) -> GetApiResourceResponse</code></summary>
+<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py#L27-L63">one</a>(...) -> GetApiResourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client.api_resources.one(
 </dl>
 </details>
 
-<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">api_resource_coverage_one</a>(...) -> GetApiResourceCoverageResponse</code></summary>
+<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py#L65-L101">api_resource_coverage_one</a>(...) -> GetApiResourceCoverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -418,7 +418,7 @@ client.connectors.all_()
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">one</a>(...) -> GetConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L71-L101">one</a>(...) -> GetConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.connectors.one(
 </details>
 
 ## Connector Docs
-<details><summary><code>client.connector_docs.<a href="src/fern/connector_docs/client.py">one</a>(...) -> str</code></summary>
+<details><summary><code>client.connector_docs.<a href="src/fern/connector_docs/client.py#L25-L59">one</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -577,7 +577,7 @@ client.connector_docs.one(
 </details>
 
 ## Connector Resources
-<details><summary><code>client.connector_resources.<a href="src/fern/connector_resources/client.py">one</a>(...) -> GetConnectorResourceResponse</code></summary>
+<details><summary><code>client.connector_resources.<a href="src/fern/connector_resources/client.py#L27-L71">one</a>(...) -> GetConnectorResourceResponse</code></summary>
 <dl>
 <dd>
 

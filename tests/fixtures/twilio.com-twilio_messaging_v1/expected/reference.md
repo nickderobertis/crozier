@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">fetch_deactivation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L152-L181">fetch_deactivation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -71,7 +71,7 @@ client.fetch_deactivation()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_domain_cert_v4</a>(...) -> MessagingV1DomainCertV4</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L183-L215">fetch_domain_cert_v4</a>(...) -> MessagingV1DomainCertV4</code></summary>
 <dl>
 <dd>
 
@@ -145,7 +145,7 @@ client.fetch_domain_cert_v4(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_domain_cert_v4</a>(...) -> MessagingV1DomainCertV4</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L217-L255">update_domain_cert_v4</a>(...) -> MessagingV1DomainCertV4</code></summary>
 <dl>
 <dd>
 
@@ -228,7 +228,7 @@ client.update_domain_cert_v4(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_domain_cert_v4</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L257-L288">delete_domain_cert_v4</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -302,7 +302,7 @@ client.delete_domain_cert_v4(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_domain_config</a>(...) -> MessagingV1DomainConfig</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L290-L322">fetch_domain_config</a>(...) -> MessagingV1DomainConfig</code></summary>
 <dl>
 <dd>
 
@@ -376,7 +376,7 @@ client.fetch_domain_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_domain_config</a>(...) -> MessagingV1DomainConfig</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L324-L369">update_domain_config</a>(...) -> MessagingV1DomainConfig</code></summary>
 <dl>
 <dd>
 
@@ -466,7 +466,7 @@ client.update_domain_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_linkshortening_messaging_service</a>(...) -> MessagingV1LinkshorteningMessagingService</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L371-L409">create_linkshortening_messaging_service</a>(...) -> MessagingV1LinkshorteningMessagingService</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.create_linkshortening_messaging_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_linkshortening_messaging_service</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L411-L448">delete_linkshortening_messaging_service</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -632,7 +632,7 @@ client.delete_linkshortening_messaging_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_domain_config_messaging_service</a>(...) -> MessagingV1DomainConfigMessagingService</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L450-L484">fetch_domain_config_messaging_service</a>(...) -> MessagingV1DomainConfigMessagingService</code></summary>
 <dl>
 <dd>
 
@@ -706,7 +706,7 @@ client.fetch_domain_config_messaging_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_service</a>(...) -> ListServiceResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L486-L529">list_service</a>(...) -> ListServiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -794,7 +794,7 @@ client.list_service()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_service</a>(...) -> MessagingV1Service</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L531-L644">create_service</a>(...) -> MessagingV1Service</code></summary>
 <dl>
 <dd>
 
@@ -988,7 +988,7 @@ client.create_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_external_campaign</a>(...) -> MessagingV1ExternalCampaign</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L646-L684">create_external_campaign</a>(...) -> MessagingV1ExternalCampaign</code></summary>
 <dl>
 <dd>
 
@@ -1071,7 +1071,7 @@ client.create_external_campaign(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_usecase</a>() -> MessagingV1Usecase</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L686-L711">fetch_usecase</a>() -> MessagingV1Usecase</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.fetch_usecase()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_us_app_to_person</a>(...) -> ListUsAppToPersonResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L713-L766">list_us_app_to_person</a>(...) -> ListUsAppToPersonResponse</code></summary>
 <dl>
 <dd>
 
@@ -1233,7 +1233,7 @@ client.list_us_app_to_person(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_us_app_to_person</a>(...) -> MessagingV1ServiceUsAppToPerson</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L768-L878">create_us_app_to_person</a>(...) -> MessagingV1ServiceUsAppToPerson</code></summary>
 <dl>
 <dd>
 
@@ -1420,7 +1420,7 @@ client.create_us_app_to_person(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_us_app_to_person_usecase</a>(...) -> MessagingV1ServiceUsAppToPersonUsecase</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L880-L921">fetch_us_app_to_person_usecase</a>(...) -> MessagingV1ServiceUsAppToPersonUsecase</code></summary>
 <dl>
 <dd>
 
@@ -1502,7 +1502,7 @@ client.fetch_us_app_to_person_usecase(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_us_app_to_person</a>(...) -> MessagingV1ServiceUsAppToPerson</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L923-L959">fetch_us_app_to_person</a>(...) -> MessagingV1ServiceUsAppToPerson</code></summary>
 <dl>
 <dd>
 
@@ -1585,7 +1585,7 @@ client.fetch_us_app_to_person(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_us_app_to_person</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L961-L998">delete_us_app_to_person</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1668,7 +1668,7 @@ client.delete_us_app_to_person(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_alpha_sender</a>(...) -> ListAlphaSenderResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1000-L1049">list_alpha_sender</a>(...) -> ListAlphaSenderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1766,7 +1766,7 @@ client.list_alpha_sender(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_alpha_sender</a>(...) -> MessagingV1ServiceAlphaSender</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1051-L1089">create_alpha_sender</a>(...) -> MessagingV1ServiceAlphaSender</code></summary>
 <dl>
 <dd>
 
@@ -1849,7 +1849,7 @@ client.create_alpha_sender(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_alpha_sender</a>(...) -> MessagingV1ServiceAlphaSender</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1091-L1127">fetch_alpha_sender</a>(...) -> MessagingV1ServiceAlphaSender</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.fetch_alpha_sender(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_alpha_sender</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1129-L1164">delete_alpha_sender</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2015,7 +2015,7 @@ client.delete_alpha_sender(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_phone_number</a>(...) -> ListPhoneNumberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1166-L1215">list_phone_number</a>(...) -> ListPhoneNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -2113,7 +2113,7 @@ client.list_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_phone_number</a>(...) -> MessagingV1ServicePhoneNumber</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1217-L1255">create_phone_number</a>(...) -> MessagingV1ServicePhoneNumber</code></summary>
 <dl>
 <dd>
 
@@ -2196,7 +2196,7 @@ client.create_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_phone_number</a>(...) -> MessagingV1ServicePhoneNumber</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1257-L1293">fetch_phone_number</a>(...) -> MessagingV1ServicePhoneNumber</code></summary>
 <dl>
 <dd>
 
@@ -2279,7 +2279,7 @@ client.fetch_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_phone_number</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1295-L1330">delete_phone_number</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2362,7 +2362,7 @@ client.delete_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_short_code</a>(...) -> ListShortCodeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1332-L1381">list_short_code</a>(...) -> ListShortCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2460,7 +2460,7 @@ client.list_short_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_short_code</a>(...) -> MessagingV1ServiceShortCode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1383-L1421">create_short_code</a>(...) -> MessagingV1ServiceShortCode</code></summary>
 <dl>
 <dd>
 
@@ -2543,7 +2543,7 @@ client.create_short_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_short_code</a>(...) -> MessagingV1ServiceShortCode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1423-L1459">fetch_short_code</a>(...) -> MessagingV1ServiceShortCode</code></summary>
 <dl>
 <dd>
 
@@ -2626,7 +2626,7 @@ client.fetch_short_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_short_code</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1461-L1496">delete_short_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2709,7 +2709,7 @@ client.delete_short_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_service</a>(...) -> MessagingV1Service</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1498-L1528">fetch_service</a>(...) -> MessagingV1Service</code></summary>
 <dl>
 <dd>
 
@@ -2783,7 +2783,7 @@ client.fetch_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_service</a>(...) -> MessagingV1Service</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1530-L1648">update_service</a>(...) -> MessagingV1Service</code></summary>
 <dl>
 <dd>
 
@@ -2985,7 +2985,7 @@ client.update_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_service</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1650-L1679">delete_service</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3059,7 +3059,7 @@ client.delete_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tollfree_verification</a>(...) -> ListTollfreeVerificationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1681-L1737">list_tollfree_verification</a>(...) -> ListTollfreeVerificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -3163,7 +3163,7 @@ client.list_tollfree_verification()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1739-L1896">create_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
 <dl>
 <dd>
 
@@ -3426,7 +3426,7 @@ client.create_tollfree_verification(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1898-L1930">fetch_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
 <dl>
 <dd>
 
@@ -3500,7 +3500,7 @@ client.fetch_tollfree_verification(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1932-L2070">update_tollfree_verification</a>(...) -> MessagingV1TollfreeVerification</code></summary>
 <dl>
 <dd>
 
@@ -3734,7 +3734,7 @@ client.update_tollfree_verification(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_brand_registrations</a>(...) -> ListBrandRegistrationsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2072-L2115">list_brand_registrations</a>(...) -> ListBrandRegistrationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3822,7 +3822,7 @@ client.list_brand_registrations()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2117-L2176">create_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
 <dl>
 <dd>
 
@@ -3929,7 +3929,7 @@ client.create_brand_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_brand_registration_otp</a>(...) -> MessagingV1BrandRegistrationsBrandRegistrationOtp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2178-L2212">create_brand_registration_otp</a>(...) -> MessagingV1BrandRegistrationsBrandRegistrationOtp</code></summary>
 <dl>
 <dd>
 
@@ -4003,7 +4003,7 @@ client.create_brand_registration_otp(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_brand_vetting</a>(...) -> ListBrandVettingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2214-L2272">list_brand_vetting</a>(...) -> ListBrandVettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -4109,7 +4109,7 @@ client.list_brand_vetting(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_brand_vetting</a>(...) -> MessagingV1BrandRegistrationsBrandVetting</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2274-L2320">create_brand_vetting</a>(...) -> MessagingV1BrandRegistrationsBrandVetting</code></summary>
 <dl>
 <dd>
 
@@ -4200,7 +4200,7 @@ client.create_brand_vetting(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_brand_vetting</a>(...) -> MessagingV1BrandRegistrationsBrandVetting</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2322-L2358">fetch_brand_vetting</a>(...) -> MessagingV1BrandRegistrationsBrandVetting</code></summary>
 <dl>
 <dd>
 
@@ -4283,7 +4283,7 @@ client.fetch_brand_vetting(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2360-L2392">fetch_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
 <dl>
 <dd>
 
@@ -4357,7 +4357,7 @@ client.fetch_brand_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2394-L2426">update_brand_registrations</a>(...) -> MessagingV1BrandRegistrations</code></summary>
 <dl>
 <dd>
 

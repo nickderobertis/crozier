@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "57210115c8bee666b67e66a62dc6b4bd1bb894a49a75a697ce96969a1da20e24"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "1ac0578996b64f750a1427364f6a2bbdede018c922509902b57c408c8fa11a90"
 
 [[covers]]
 key = "discriminated-variant-date-value-snippet"

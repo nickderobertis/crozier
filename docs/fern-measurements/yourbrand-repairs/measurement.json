@@ -1,12 +1,12 @@
 {
   "check_diagnostic": "All checks passed",
   "check_exit": "0",
-  "check_log_sha256": "e6ea3e2ff7163058f3c93e939775bd6aa7f99ce1610ec91f4c42caf4113c975d",
-  "fern_cli": "5.163.1",
+  "check_log_sha256": "c65c72e4f6ae71a72812e30e0c260982d014c109135fdcb09ab832793663d6e5",
+  "fern_cli": "5.194.0",
   "generate_exit": "0",
-  "generate_log_sha256": "aded26e72cad191e9b1d64874a488add976ffa112580e1fa2a7d7a662a694348",
+  "generate_log_sha256": "18e2ec5cd82edbb38aa9eb08e715c1c8667845f5291876a1fab3287b8de9d896",
   "generate_python_files": 33,
-  "generator": "5.41.3",
+  "generator": "5.41.17",
   "probe": "probe.yaml",
   "sha256": "635dc44c0c79413776d5c1cadb4a1abba963430fb39ca64ff1498022dad4f6cf"
 }

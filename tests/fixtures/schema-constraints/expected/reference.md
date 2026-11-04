@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">createaccount</a>(...) -> Account</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L29-L70">createaccount</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 

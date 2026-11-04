@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">ship_parcel</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L109-L147">ship_parcel</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.ship_parcel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">track_parcel</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L149-L173">track_parcel</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -123,7 +123,7 @@ client.track_parcel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">cancel_parcel</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L175-L198">cancel_parcel</a>(...)</code></summary>
 <dl>
 <dd>
 

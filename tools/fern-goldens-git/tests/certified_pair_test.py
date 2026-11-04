@@ -456,7 +456,7 @@ class CheckTests(unittest.TestCase):
         root = self.tree({})
         for record in (
             '["5.163.1"]',
-            '{"cliVersion": null, "generatorVersion": "5.41.3"}',
+            '{"cliVersion": null, "generatorVersion": "5.41.17"}',
             '{"cliVersion": 5}',
             '{"cliVersion": "5.163.1-rc.1", "generatorVersion": "5.41.3"}',  # certified-pair: stand-in
         ):

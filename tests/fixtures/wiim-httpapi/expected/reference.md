@@ -1,6 +1,6 @@
 # Reference
 ## Generic
-<details><summary><code>client.generic.<a href="src/fern/generic/client.py">command</a>(...) -> str</code></summary>
+<details><summary><code>client.generic.<a href="src/fern/generic/client.py#L25-L63">command</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.generic.command(
 </details>
 
 ## Device information
-<details><summary><code>client.device_information.<a href="src/fern/device_information/client.py">get_status_ex</a>() -> str</code></summary>
+<details><summary><code>client.device_information.<a href="src/fern/device_information/client.py#L25-L51">get_status_ex</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -150,7 +150,7 @@ client.device_information.get_status_ex()
 </dl>
 </details>
 
-<details><summary><code>client.device_information.<a href="src/fern/device_information/client.py">get_debug_info</a>() -> str</code></summary>
+<details><summary><code>client.device_information.<a href="src/fern/device_information/client.py#L53-L79">get_debug_info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ client.device_information.get_debug_info()
 </details>
 
 ## Track metadata
-<details><summary><code>client.track_metadata.<a href="src/fern/track_metadata/client.py">get_meta_info</a>() -> str</code></summary>
+<details><summary><code>client.track_metadata.<a href="src/fern/track_metadata/client.py#L25-L60">get_meta_info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -293,7 +293,7 @@ client.track_metadata.get_meta_info()
 </details>
 
 ## Playback control
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">get_player_status</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L25-L47">get_player_status</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -355,7 +355,7 @@ client.playback_control.get_player_status()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_hex_playlist_url</a>(...)</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L49-L79">set_player_cmd_hex_playlist_url</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -430,7 +430,7 @@ client.playback_control.set_player_cmd_hex_playlist_url(
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_pause</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L81-L103">set_player_cmd_pause</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ client.playback_control.set_player_cmd_pause()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_resume</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L105-L127">set_player_cmd_resume</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -554,7 +554,7 @@ client.playback_control.set_player_cmd_resume()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_one_pause</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L129-L153">set_player_cmd_one_pause</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -618,7 +618,7 @@ client.playback_control.set_player_cmd_one_pause()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_play_url</a>(...) -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L155-L184">set_player_cmd_play_url</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -692,7 +692,7 @@ client.playback_control.set_player_cmd_play_url(
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_playlist_url</a>(...) -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L186-L222">set_player_cmd_playlist_url</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -778,7 +778,7 @@ client.playback_control.set_player_cmd_playlist_url(
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_prev</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L224-L246">set_player_cmd_prev</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -840,7 +840,7 @@ client.playback_control.set_player_cmd_prev()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_next</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L248-L270">set_player_cmd_next</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -902,7 +902,7 @@ client.playback_control.set_player_cmd_next()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_seek_position</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L272-L295">set_player_cmd_seek_position</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -965,7 +965,7 @@ client.playback_control.set_player_cmd_seek_position()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_stop</a>() -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L297-L319">set_player_cmd_stop</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1027,7 +1027,7 @@ client.playback_control.set_player_cmd_stop()
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_vol</a>(...) -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L321-L349">set_player_cmd_vol</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1100,7 +1100,7 @@ client.playback_control.set_player_cmd_vol(
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_mute</a>(...) -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L351-L386">set_player_cmd_mute</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1182,7 +1182,7 @@ Unmute: n=0
 </dl>
 </details>
 
-<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py">set_player_cmd_loopmode</a>(...) -> str</code></summary>
+<details><summary><code>client.playback_control.<a href="src/fern/playback_control/client.py#L388-L430">set_player_cmd_loopmode</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1272,7 +1272,7 @@ client.playback_control.set_player_cmd_loopmode(
 </details>
 
 ## Network
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_static_ip_info</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L25-L49">get_static_ip_info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1336,7 +1336,7 @@ client.network.get_static_ip_info()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_static_ip</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L51-L73">get_static_ip</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1398,7 +1398,7 @@ client.network.get_static_ip()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_get_connect_state</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L75-L114">wlan_get_connect_state</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1477,7 +1477,7 @@ client.network.wlan_get_connect_state()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_wlan_static_ip</a>(...) -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L116-L165">set_wlan_static_ip</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.network.set_wlan_static_ip(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_eth_static_ip</a>(...) -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L167-L216">set_eth_static_ip</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.network.set_eth_static_ip(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_ssid</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L218-L246">set_ssid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1741,7 +1741,7 @@ client.network.set_ssid(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_network</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L248-L282">set_network</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.network.set_network(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_network_prefer_dns</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L284-L305">get_network_prefer_dns</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1888,7 +1888,7 @@ client.network.get_network_prefer_dns()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_wlan_band_config</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L307-L328">get_wlan_band_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1950,7 +1950,7 @@ client.network.get_wlan_band_config()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_wlan_roam_config</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L330-L351">get_wlan_roam_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2012,7 +2012,7 @@ client.network.get_wlan_roam_config()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_ipv6enable</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L353-L374">get_ipv6enable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2074,7 +2074,7 @@ client.network.get_ipv6enable()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_power_wifi_down</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L376-L399">set_power_wifi_down</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2138,7 +2138,7 @@ client.network.set_power_wifi_down()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_connect_hide_ap</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L401-L427">wlan_connect_hide_ap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2210,7 +2210,7 @@ client.network.wlan_connect_hide_ap(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_connect_hide_ap_ex</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L429-L465">wlan_connect_hide_ap_ex</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2300,7 +2300,7 @@ client.network.wlan_connect_hide_ap_ex(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_network</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L467-L488">get_network</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2362,7 +2362,7 @@ client.network.get_network()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_get_ap_list_ex</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L490-L514">wlan_get_ap_list_ex</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2426,7 +2426,7 @@ client.network.wlan_get_ap_list_ex()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_hide_ssid</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L516-L542">set_hide_ssid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2498,7 +2498,7 @@ client.network.set_hide_ssid(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_network_ex_aes</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L544-L576">set_network_ex_aes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2579,7 +2579,7 @@ client.network.set_network_ex_aes(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_wlan_band_config</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L578-L604">set_wlan_band_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2651,7 +2651,7 @@ client.network.set_wlan_band_config(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_wlan_connect_disable</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L606-L632">set_wlan_connect_disable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2723,7 +2723,7 @@ client.network.set_wlan_connect_disable(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_wlan_roam_config</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L634-L660">set_wlan_roam_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2795,7 +2795,7 @@ client.network.set_wlan_roam_config(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_network_prefer_dns</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L662-L688">set_network_prefer_dns</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2867,7 +2867,7 @@ client.network.set_network_prefer_dns(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_get_ap_full_list</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L690-L711">wlan_get_ap_full_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2929,7 +2929,7 @@ client.network.wlan_get_ap_full_list()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wlan_switch_connected_ap</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L713-L745">wlan_switch_connected_ap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3010,7 +3010,7 @@ client.network.wlan_switch_connected_ap(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">set_ipv6enable</a>(...)</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L747-L773">set_ipv6enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3082,7 +3082,7 @@ client.network.set_ipv6enable(
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_wlan_connect_disable_status</a>()</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L775-L796">get_wlan_connect_disable_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -3144,7 +3144,7 @@ client.network.get_wlan_connect_disable_status()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">get_network_health</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L798-L822">get_network_health</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3208,7 +3208,7 @@ client.network.get_network_health()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wpscannel</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L824-L846">wpscannel</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3270,7 +3270,7 @@ client.network.wpscannel()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wpsclientmode</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L848-L870">wpsclientmode</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3332,7 +3332,7 @@ client.network.wpsclientmode()
 </dl>
 </details>
 
-<details><summary><code>client.network.<a href="src/fern/network/client.py">wpsservermode</a>() -> str</code></summary>
+<details><summary><code>client.network.<a href="src/fern/network/client.py#L872-L894">wpsservermode</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3395,7 +3395,7 @@ client.network.wpsservermode()
 </details>
 
 ## Equalizer
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">set_eq_on</a>() -> str</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L28-L50">set_eq_on</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3457,7 +3457,7 @@ client.equalizer.set_eq_on()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">set_eq_off</a>() -> str</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L52-L74">set_eq_off</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3519,7 +3519,7 @@ client.equalizer.set_eq_off()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">get_eq_stat</a>() -> GetEqStatResponse</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L76-L101">get_eq_stat</a>() -> GetEqStatResponse</code></summary>
 <dl>
 <dd>
 
@@ -3584,7 +3584,7 @@ client.equalizer.get_eq_stat()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">get_eq_list</a>() -> str</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L103-L137">get_eq_list</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3658,7 +3658,7 @@ client.equalizer.get_eq_list()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">get_eq_band</a>() -> str</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L139-L165">get_eq_band</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3724,7 +3724,7 @@ client.equalizer.get_eq_band()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">load_eq_by_name</a>(...) -> str</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L167-L202">load_eq_by_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3801,7 +3801,7 @@ client.equalizer.load_eq_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_bass</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L204-L230">eq_set_bass</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3873,7 +3873,7 @@ client.equalizer.eq_set_bass(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_treble</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L232-L258">eq_set_treble</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3945,7 +3945,7 @@ client.equalizer.eq_set_treble(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_enable</a>()</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L260-L281">eq_enable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4007,7 +4007,7 @@ client.equalizer.eq_enable()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_disable</a>()</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L283-L304">eq_disable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4069,7 +4069,7 @@ client.equalizer.eq_disable()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_band</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L306-L363">eq_set_band</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4180,7 +4180,7 @@ client.equalizer.eq_set_band(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_lv2band</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L365-L391">eq_set_lv2band</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4252,7 +4252,7 @@ client.equalizer.eq_set_lv2band(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_lv2source_band</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L393-L419">eq_set_lv2source_band</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4324,7 +4324,7 @@ client.equalizer.eq_set_lv2source_band(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2delete</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L421-L447">eqv2delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4396,7 +4396,7 @@ client.equalizer.eqv2delete(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2rename</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L449-L475">eqv2rename</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4468,7 +4468,7 @@ client.equalizer.eqv2rename(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_change_source_fx</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L477-L503">eq_change_source_fx</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4540,7 +4540,7 @@ client.equalizer.eq_change_source_fx(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_change_fx</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L505-L531">eq_change_fx</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4612,7 +4612,7 @@ client.equalizer.eq_change_fx(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_get_lv2band</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L533-L559">eq_get_lv2band</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4684,7 +4684,7 @@ client.equalizer.eq_get_lv2band(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_get_lv2source_band</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L561-L587">eq_get_lv2source_band</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4756,7 +4756,7 @@ client.equalizer.eq_get_lv2source_band(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_get_lv2source_band_ex</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L589-L615">eq_get_lv2source_band_ex</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4828,7 +4828,7 @@ client.equalizer.eq_get_lv2source_band_ex(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2get_list</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L617-L643">eqv2get_list</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4900,7 +4900,7 @@ client.equalizer.eqv2get_list(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2get_new_list</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L645-L671">eqv2get_new_list</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4972,7 +4972,7 @@ client.equalizer.eqv2get_new_list(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2load</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L673-L699">eqv2load</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5044,7 +5044,7 @@ client.equalizer.eqv2load(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eqv2source_load</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L701-L727">eqv2source_load</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5116,7 +5116,7 @@ client.equalizer.eqv2source_load(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_source_off</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L729-L755">eq_source_off</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5188,7 +5188,7 @@ client.equalizer.eq_source_off(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_set_channel_mode</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L757-L783">eq_set_channel_mode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5260,7 +5260,7 @@ client.equalizer.eq_set_channel_mode(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_source_save</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L785-L811">eq_source_save</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5332,7 +5332,7 @@ client.equalizer.eq_source_save(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_save</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L813-L839">eq_save</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5404,7 +5404,7 @@ client.equalizer.eq_save(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_get_lv2band_ex</a>(...)</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L841-L867">eq_get_lv2band_ex</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5476,7 +5476,7 @@ client.equalizer.eq_get_lv2band_ex(
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_get_source_modes</a>() -> typing.List[EqGetSourceModesResponseItem]</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L869-L893">eq_get_source_modes</a>() -> typing.List[EqGetSourceModesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5538,7 +5538,7 @@ client.equalizer.eq_get_source_modes()
 </dl>
 </details>
 
-<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py">eq_save_custom</a>()</code></summary>
+<details><summary><code>client.equalizer.<a href="src/fern/equalizer/client.py#L895-L916">eq_save_custom</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5601,7 +5601,7 @@ client.equalizer.eq_save_custom()
 </details>
 
 ## Device control
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">reboot_device</a>() -> str</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L26-L51">reboot_device</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -5666,7 +5666,7 @@ client.device_control.reboot_device()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">set_shutdown_timer</a>(...) -> str</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L53-L89">set_shutdown_timer</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5749,7 +5749,7 @@ Shutdown device in sec
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">get_shutdown_timer</a>() -> str</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L91-L115">get_shutdown_timer</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -5813,7 +5813,7 @@ client.device_control.get_shutdown_timer()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">set_led_switch</a>(...) -> str</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L117-L147">set_led_switch</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5888,7 +5888,7 @@ client.device_control.set_led_switch(
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">set_touch_controls</a>(...) -> str</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L149-L179">set_touch_controls</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5963,7 +5963,7 @@ client.device_control.set_touch_controls(
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">button_enable_get</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L181-L202">button_enable_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6025,7 +6025,7 @@ client.device_control.button_enable_get()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">get_firmware_version</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L204-L225">get_firmware_version</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6087,7 +6087,7 @@ client.device_control.get_firmware_version()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">get_device_name_changeable</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L227-L248">get_device_name_changeable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6149,7 +6149,7 @@ client.device_control.get_device_name_changeable()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">restore_to_default</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L250-L273">restore_to_default</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6213,7 +6213,7 @@ client.device_control.restore_to_default()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">set_device_name</a>(...)</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L275-L303">set_device_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6287,7 +6287,7 @@ client.device_control.set_device_name(
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">getsyslog</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L305-L326">getsyslog</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6349,7 +6349,7 @@ client.device_control.getsyslog()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">set_hex_device_name</a>(...)</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L328-L354">set_hex_device_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6421,7 +6421,7 @@ client.device_control.set_hex_device_name(
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">no_send_more_device_event</a>()</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L356-L377">no_send_more_device_event</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6483,7 +6483,7 @@ client.device_control.no_send_more_device_event()
 </dl>
 </details>
 
-<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py">get_hw_error_info</a>() -> GetHwErrorInfoResponse</code></summary>
+<details><summary><code>client.device_control.<a href="src/fern/device_control/client.py#L379-L403">get_hw_error_info</a>() -> GetHwErrorInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -6548,7 +6548,7 @@ client.device_control.get_hw_error_info()
 </details>
 
 ## Alarm clock
-<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py">set_time_sync</a>(...) -> str</code></summary>
+<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py#L25-L63">set_time_sync</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6632,7 +6632,7 @@ client.alarm_clock.set_time_sync(
 </dl>
 </details>
 
-<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py">set_alarm_clock</a>(...) -> str</code></summary>
+<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py#L65-L214">set_alarm_clock</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6849,7 +6849,7 @@ if trigger is 5, day should be 2 bytes ("01"~"31")
 </dl>
 </details>
 
-<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py">get_alarm_clock</a>(...) -> str</code></summary>
+<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py#L216-L253">get_alarm_clock</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6931,7 +6931,7 @@ client.alarm_clock.get_alarm_clock(
 </dl>
 </details>
 
-<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py">stop_alarm_clock</a>() -> str</code></summary>
+<details><summary><code>client.alarm_clock.<a href="src/fern/alarm_clock/client.py#L255-L277">stop_alarm_clock</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -6994,7 +6994,7 @@ client.alarm_clock.stop_alarm_clock()
 </details>
 
 ## Source input switch
-<details><summary><code>client.source_input_switch.<a href="src/fern/source_input_switch/client.py">set_player_cmd_switch_mode</a>(...) -> str</code></summary>
+<details><summary><code>client.source_input_switch.<a href="src/fern/source_input_switch/client.py#L26-L64">set_player_cmd_switch_mode</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7076,7 +7076,7 @@ client.source_input_switch.set_player_cmd_switch_mode(
 </details>
 
 ## Presets
-<details><summary><code>client.presets.<a href="src/fern/presets/client.py">get_mcu_key_short_click</a>(...) -> str</code></summary>
+<details><summary><code>client.presets.<a href="src/fern/presets/client.py#L25-L54">get_mcu_key_short_click</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7150,7 +7150,7 @@ client.presets.get_mcu_key_short_click(
 </dl>
 </details>
 
-<details><summary><code>client.presets.<a href="src/fern/presets/client.py">get_mcu_key_short_click_track</a>(...) -> str</code></summary>
+<details><summary><code>client.presets.<a href="src/fern/presets/client.py#L56-L92">get_mcu_key_short_click_track</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7234,7 +7234,7 @@ client.presets.get_mcu_key_short_click_track(
 </dl>
 </details>
 
-<details><summary><code>client.presets.<a href="src/fern/presets/client.py">get_preset_info</a>() -> str</code></summary>
+<details><summary><code>client.presets.<a href="src/fern/presets/client.py#L94-L165">get_preset_info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7346,7 +7346,7 @@ client.presets.get_preset_info()
 </details>
 
 ## Audio output control
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">get_new_audio_output_hardware_mode</a>() -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L25-L61">get_new_audio_output_hardware_mode</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7422,7 +7422,7 @@ client.audio_output_control.get_new_audio_output_hardware_mode()
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">set_audio_output_hardware_mode</a>(...) -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L63-L98">set_audio_output_hardware_mode</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7504,7 +7504,7 @@ Hardware Interface output mode:
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">get_spdif_out_switch_delay_ms</a>() -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L100-L126">get_spdif_out_switch_delay_ms</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7570,7 +7570,7 @@ client.audio_output_control.get_spdif_out_switch_delay_ms()
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">set_spdif_out_switch_delay_ms</a>(...) -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L128-L162">set_spdif_out_switch_delay_ms</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7647,7 +7647,7 @@ client.audio_output_control.set_spdif_out_switch_delay_ms(
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">get_channel_balance</a>() -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L164-L189">get_channel_balance</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7712,7 +7712,7 @@ client.audio_output_control.get_channel_balance()
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">set_channel_balance</a>(...) -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L191-L221">set_channel_balance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7787,7 +7787,7 @@ client.audio_output_control.set_channel_balance(
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">get_fade_feature</a>() -> str</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L223-L247">get_fade_feature</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7851,7 +7851,7 @@ client.audio_output_control.get_fade_feature()
 </dl>
 </details>
 
-<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py">set_fade_feature</a>(...)</code></summary>
+<details><summary><code>client.audio_output_control.<a href="src/fern/audio_output_control/client.py#L249-L275">set_fade_feature</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7924,7 +7924,7 @@ client.audio_output_control.set_fade_feature(
 </details>
 
 ## Bluetooth
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">start_bt_discovery</a>(...) -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L25-L52">start_bt_discovery</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7996,7 +7996,7 @@ client.bluetooth.start_bt_discovery(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">get_bt_discovery_result</a>() -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L54-L88">get_bt_discovery_result</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -8070,7 +8070,7 @@ client.bluetooth.get_bt_discovery_result()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">clear_bt_discovery_result</a>() -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L90-L112">clear_bt_discovery_result</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -8132,7 +8132,7 @@ client.bluetooth.clear_bt_discovery_result()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">get_bt_history</a>() -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L114-L144">get_bt_history</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -8202,7 +8202,7 @@ client.bluetooth.get_bt_history()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">connect_bt_a2dpsynk</a>(...) -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L146-L181">connect_bt_a2dpsynk</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8280,7 +8280,7 @@ client.bluetooth.connect_bt_a2dpsynk(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">disconnect_bt_a2dpsynk</a>(...) -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L183-L212">disconnect_bt_a2dpsynk</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8352,7 +8352,7 @@ client.bluetooth.disconnect_bt_a2dpsynk(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">get_bt_pair_status</a>() -> str</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L214-L243">get_bt_pair_status</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -8421,7 +8421,7 @@ client.bluetooth.get_bt_pair_status()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">connectbta2dpsource</a>(...)</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L245-L271">connectbta2dpsource</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8493,7 +8493,7 @@ client.bluetooth.connectbta2dpsource(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">delbthistory</a>(...)</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L273-L299">delbthistory</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8565,7 +8565,7 @@ client.bluetooth.delbthistory(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">btdisconnectall</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L301-L322">btdisconnectall</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8627,7 +8627,7 @@ client.bluetooth.btdisconnectall()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">getbt_pair_dev_stat</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L324-L345">getbt_pair_dev_stat</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8689,7 +8689,7 @@ client.bluetooth.getbt_pair_dev_stat()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">getbtstatus</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L347-L368">getbtstatus</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8751,7 +8751,7 @@ client.bluetooth.getbtstatus()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">startbtserver</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L370-L391">startbtserver</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8813,7 +8813,7 @@ client.bluetooth.startbtserver()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">startgetbt_pair_dev_stat</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L393-L414">startgetbt_pair_dev_stat</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8875,7 +8875,7 @@ client.bluetooth.startgetbt_pair_dev_stat()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">stopbtdiscovery</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L416-L437">stopbtdiscovery</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8937,7 +8937,7 @@ client.bluetooth.stopbtdiscovery()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">stopbtserver</a>(...)</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L439-L465">stopbtserver</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9009,7 +9009,7 @@ client.bluetooth.stopbtserver(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">btavkenterpair</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L467-L488">btavkenterpair</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9071,7 +9071,7 @@ client.bluetooth.btavkenterpair()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">blehidpair</a>(...)</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L490-L516">blehidpair</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9143,7 +9143,7 @@ client.bluetooth.blehidpair(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">blehidremoveall</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L518-L539">blehidremoveall</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9205,7 +9205,7 @@ client.bluetooth.blehidremoveall()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">btrecovery</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L541-L562">btrecovery</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9267,7 +9267,7 @@ client.bluetooth.btrecovery()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">get_ble_hid_status</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L564-L585">get_ble_hid_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9329,7 +9329,7 @@ client.bluetooth.get_ble_hid_status()
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">start_ble_scan</a>(...)</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L587-L613">start_ble_scan</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9401,7 +9401,7 @@ client.bluetooth.start_ble_scan(
 </dl>
 </details>
 
-<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py">get_ble_discovery_result</a>()</code></summary>
+<details><summary><code>client.bluetooth.<a href="src/fern/bluetooth/client.py#L615-L636">get_ble_discovery_result</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9464,7 +9464,7 @@ client.bluetooth.get_ble_discovery_result()
 </details>
 
 ## Room correction
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">room_corr_get</a>() -> RoomCorrGetResponse</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L26-L52">room_corr_get</a>() -> RoomCorrGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -9530,7 +9530,7 @@ client.room_correction.room_corr_get()
 </dl>
 </details>
 
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">room_corr_get_mode</a>()</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L54-L77">room_corr_get_mode</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9594,7 +9594,7 @@ client.room_correction.room_corr_get_mode()
 </dl>
 </details>
 
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">room_corr_set</a>(...)</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L79-L105">room_corr_set</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9666,7 +9666,7 @@ client.room_correction.room_corr_set(
 </dl>
 </details>
 
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">room_corr_set_lr</a>(...)</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L107-L135">room_corr_set_lr</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9740,7 +9740,7 @@ client.room_correction.room_corr_set_lr(
 </dl>
 </details>
 
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">room_corr_set_mode</a>(...)</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L137-L163">room_corr_set_mode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9812,7 +9812,7 @@ client.room_correction.room_corr_set_mode(
 </dl>
 </details>
 
-<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py">set_room_correction</a>(...)</code></summary>
+<details><summary><code>client.room_correction.<a href="src/fern/room_correction/client.py#L165-L197">set_room_correction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9894,7 +9894,7 @@ client.room_correction.set_room_correction(
 </details>
 
 ## Alexa
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">enable_beta_id</a>(...)</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L25-L51">enable_beta_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9966,7 +9966,7 @@ client.alexa.enable_beta_id(
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">get_alexa_profile</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L53-L74">get_alexa_profile</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10028,7 +10028,7 @@ client.alexa.get_alexa_profile()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">log_out</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L76-L97">log_out</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10090,7 +10090,7 @@ client.alexa.log_out()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">get_alexa_country</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L99-L120">get_alexa_country</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10152,7 +10152,7 @@ client.alexa.get_alexa_country()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">language_list_get</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L122-L143">language_list_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10214,7 +10214,7 @@ client.alexa.language_list_get()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">get_language</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L145-L166">get_language</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10276,7 +10276,7 @@ client.alexa.get_language()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">set_alexa_country</a>(...)</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L168-L194">set_alexa_country</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10348,7 +10348,7 @@ client.alexa.set_alexa_country(
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">set_language</a>(...)</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L196-L222">set_language</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10420,7 +10420,7 @@ client.alexa.set_language(
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">get_avs_dev_info</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L224-L245">get_avs_dev_info</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10482,7 +10482,7 @@ client.alexa.get_avs_dev_info()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">get_avs_music_hd_enable</a>()</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L247-L268">get_avs_music_hd_enable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10544,7 +10544,7 @@ client.alexa.get_avs_music_hd_enable()
 </dl>
 </details>
 
-<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py">set_avs_music_hd_enable</a>(...)</code></summary>
+<details><summary><code>client.alexa.<a href="src/fern/alexa/client.py#L270-L296">set_avs_music_hd_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10617,7 +10617,7 @@ client.alexa.set_avs_music_hd_enable(
 </details>
 
 ## Amazon music
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">set_amazon_access_token</a>(...)</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L25-L57">set_amazon_access_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10698,7 +10698,7 @@ client.amazon_music.set_amazon_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">enable_amazon_atmos</a>(...)</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L59-L85">enable_amazon_atmos</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10770,7 +10770,7 @@ client.amazon_music.enable_amazon_atmos(
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">enable_amazon_hd</a>(...)</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L87-L113">enable_amazon_hd</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10842,7 +10842,7 @@ client.amazon_music.enable_amazon_hd(
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">get_amazon_hd</a>()</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L115-L136">get_amazon_hd</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10904,7 +10904,7 @@ client.amazon_music.get_amazon_hd()
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">get_amazon_config</a>()</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L138-L159">get_amazon_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10966,7 +10966,7 @@ client.amazon_music.get_amazon_config()
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">set_amazon_music_params</a>(...)</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L161-L202">set_amazon_music_params</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11066,7 +11066,7 @@ client.amazon_music.set_amazon_music_params(
 </dl>
 </details>
 
-<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py">set_prime_token</a>(...)</code></summary>
+<details><summary><code>client.amazon_music.<a href="src/fern/amazon_music/client.py#L204-L244">set_prime_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11166,7 +11166,7 @@ client.amazon_music.set_prime_token(
 </details>
 
 ## Multiroom
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">get_slave_list</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L25-L75">get_slave_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11257,7 +11257,7 @@ client.multiroom.get_slave_list()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_kickout</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L77-L105">slave_kickout</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11331,7 +11331,7 @@ client.multiroom.slave_kickout(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_mask</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L107-L135">slave_mask</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11405,7 +11405,7 @@ client.multiroom.slave_mask(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_un_mask</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L137-L165">slave_un_mask</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11479,7 +11479,7 @@ client.multiroom.slave_un_mask(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_volume</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L167-L199">slave_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11562,7 +11562,7 @@ client.multiroom.slave_volume(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_player_cmd_slave_volume</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L201-L231">set_player_cmd_slave_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11636,7 +11636,7 @@ client.multiroom.set_player_cmd_slave_volume(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_mute</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L233-L265">slave_mute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11719,7 +11719,7 @@ client.multiroom.slave_mute(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_player_cmd_slave_mute</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L267-L290">set_player_cmd_slave_mute</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11783,7 +11783,7 @@ client.multiroom.set_player_cmd_slave_mute()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_player_cmd_slave_unmute</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L292-L315">set_player_cmd_slave_unmute</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11847,7 +11847,7 @@ client.multiroom.set_player_cmd_slave_unmute()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_channel</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L317-L349">slave_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11930,7 +11930,7 @@ client.multiroom.slave_channel(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_player_cmd_slave_channel</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L351-L387">set_player_cmd_slave_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12013,7 +12013,7 @@ client.multiroom.set_player_cmd_slave_channel(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_set_device_name</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L389-L423">slave_set_device_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12096,7 +12096,7 @@ client.multiroom.slave_set_device_name(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">ungroup</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L425-L448">ungroup</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12160,7 +12160,7 @@ client.multiroom.ungroup()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">config_get_realtime_cache_limit</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L450-L473">config_get_realtime_cache_limit</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12224,7 +12224,7 @@ client.multiroom.config_get_realtime_cache_limit()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">config_set_realtime_cache_limit</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L475-L505">config_set_realtime_cache_limit</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12298,7 +12298,7 @@ client.multiroom.config_set_realtime_cache_limit(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">multiroom_slave_start_wps</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L507-L535">multiroom_slave_start_wps</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12372,7 +12372,7 @@ client.multiroom.multiroom_slave_start_wps(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">get_name_group_list</a>() -> str</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L537-L564">get_name_group_list</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -12439,7 +12439,7 @@ client.multiroom.get_name_group_list()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">leave_group</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L566-L587">leave_group</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12501,7 +12501,7 @@ client.multiroom.leave_group()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">join_group</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L589-L619">join_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12582,7 +12582,7 @@ client.multiroom.join_group(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">slave_device_name</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L621-L651">slave_device_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12663,7 +12663,7 @@ client.multiroom.slave_device_name(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">subwoofer_forget</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L653-L679">subwoofer_forget</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12735,7 +12735,7 @@ client.multiroom.subwoofer_forget(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">subwoofer_get_pair_info</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L681-L702">subwoofer_get_pair_info</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12797,7 +12797,7 @@ client.multiroom.subwoofer_get_pair_info()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">config_get_leadtime</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L704-L725">config_get_leadtime</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12859,7 +12859,7 @@ client.multiroom.config_get_leadtime()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">subwoofer_pair</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L727-L753">subwoofer_pair</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12931,7 +12931,7 @@ client.multiroom.subwoofer_pair(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">config_set_leadtime</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L755-L781">config_set_leadtime</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13003,7 +13003,7 @@ client.multiroom.config_set_leadtime(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_mrm_sub_lpf</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L783-L809">set_mrm_sub_lpf</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13075,7 +13075,7 @@ client.multiroom.set_mrm_sub_lpf(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">get_sub_lpf</a>()</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L811-L832">get_sub_lpf</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13137,7 +13137,7 @@ client.multiroom.get_sub_lpf()
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">set_sub_lpf</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L834-L860">set_sub_lpf</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13209,7 +13209,7 @@ client.multiroom.set_sub_lpf(
 </dl>
 </details>
 
-<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py">get_mrm_sub_lpf</a>(...)</code></summary>
+<details><summary><code>client.multiroom.<a href="src/fern/multiroom/client.py#L862-L888">get_mrm_sub_lpf</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13282,7 +13282,7 @@ client.multiroom.get_mrm_sub_lpf(
 </details>
 
 ## Other
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_remote_volume_step</a>() -> GetRemoteVolumeStepResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L44-L70">get_remote_volume_step</a>() -> GetRemoteVolumeStepResponse</code></summary>
 <dl>
 <dd>
 
@@ -13346,7 +13346,7 @@ client.other.get_remote_volume_step()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_remote_volume_step</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L72-L98">set_remote_volume_step</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13418,7 +13418,7 @@ client.other.set_remote_volume_step(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_remote_silence_update_time</a>() -> GetMvRemoteSilenceUpdateTimeResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L100-L126">get_mv_remote_silence_update_time</a>() -> GetMvRemoteSilenceUpdateTimeResponse</code></summary>
 <dl>
 <dd>
 
@@ -13482,7 +13482,7 @@ client.other.get_mv_remote_silence_update_time()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_spdif_out_max_cap</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L128-L149">get_spdif_out_max_cap</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13544,7 +13544,7 @@ client.other.get_spdif_out_max_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_coax_out_max_cap</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L151-L175">get_coax_out_max_cap</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -13608,7 +13608,7 @@ client.other.get_coax_out_max_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_aux_voltage_support_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L177-L198">get_aux_voltage_support_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13670,7 +13670,7 @@ client.other.get_aux_voltage_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_get_speaker_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L200-L221">audio_cast_get_speaker_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13732,7 +13732,7 @@ client.other.audio_cast_get_speaker_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_scan_speaker</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L223-L244">audio_cast_scan_speaker</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13794,7 +13794,7 @@ client.other.audio_cast_scan_speaker()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_speaker_get_transcode_buffer_time</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L246-L269">audio_cast_speaker_get_transcode_buffer_time</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13856,7 +13856,7 @@ client.other.audio_cast_speaker_get_transcode_buffer_time()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_speaker_get_transcode_profile</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L271-L294">audio_cast_speaker_get_transcode_profile</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13918,7 +13918,7 @@ client.other.audio_cast_speaker_get_transcode_profile()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_speaker_set_password</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L296-L328">audio_cast_speaker_set_password</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13999,7 +13999,7 @@ client.other.audio_cast_speaker_set_password(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">audio_cast_speaker_set_volume</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L330-L362">audio_cast_speaker_set_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14080,7 +14080,7 @@ client.other.audio_cast_speaker_set_volume(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_sound_card_mode_support_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L364-L385">get_sound_card_mode_support_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -14142,7 +14142,7 @@ client.other.get_sound_card_mode_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_active_sound_card_output_mode</a>() -> GetActiveSoundCardOutputModeResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L387-L413">get_active_sound_card_output_mode</a>() -> GetActiveSoundCardOutputModeResponse</code></summary>
 <dl>
 <dd>
 
@@ -14206,7 +14206,7 @@ client.other.get_active_sound_card_output_mode()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_light_operation_bright_config</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L415-L453">set_light_operation_bright_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14298,7 +14298,7 @@ client.other.set_light_operation_bright_config(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_remote_update_start_check</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L455-L481">get_mv_remote_update_start_check</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -14364,7 +14364,7 @@ client.other.get_mv_remote_update_start_check()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_remote_update_start</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L483-L511">get_mv_remote_update_start</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -14432,7 +14432,7 @@ client.other.get_mv_remote_update_start()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_remote_update_status</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L513-L547">get_mv_remote_update_status</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -14506,7 +14506,7 @@ client.other.get_mv_remote_update_status()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_rom_burn_precent</a>() -> GetMvRomBurnPrecentResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L549-L582">get_mv_rom_burn_precent</a>() -> GetMvRomBurnPrecentResponse</code></summary>
 <dl>
 <dd>
 
@@ -14577,7 +14577,7 @@ client.other.get_mv_rom_burn_precent()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">easy_link_response_stop</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L584-L605">easy_link_response_stop</a>()</code></summary>
 <dl>
 <dd>
 
@@ -14639,7 +14639,7 @@ client.other.easy_link_response_stop()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">notify_upgrade_type_firmware</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L607-L628">notify_upgrade_type_firmware</a>()</code></summary>
 <dl>
 <dd>
 
@@ -14701,7 +14701,7 @@ client.other.notify_upgrade_type_firmware()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_lmp_filter_capability</a>() -> GetLmpFilterCapabilityResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L630-L656">get_lmp_filter_capability</a>() -> GetLmpFilterCapabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -14765,7 +14765,7 @@ client.other.get_lmp_filter_capability()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_stream_service_config</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L658-L686">get_stream_service_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14837,7 +14837,7 @@ client.other.get_stream_service_config(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_handshake_code</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L688-L714">set_handshake_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14909,7 +14909,7 @@ client.other.set_handshake_code(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">getsyslog_ip</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L716-L742">getsyslog_ip</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14981,7 +14981,7 @@ client.other.getsyslog_ip(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_status_ip</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L744-L770">get_status_ip</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15053,7 +15053,7 @@ client.other.get_status_ip(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_update_server</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L772-L793">get_update_server</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15115,7 +15115,7 @@ client.other.get_update_server()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_weather_info</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L795-L816">get_weather_info</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15177,7 +15177,7 @@ client.other.get_weather_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_access_pin</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L818-L844">set_access_pin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15249,7 +15249,7 @@ client.other.set_access_pin(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_language</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L846-L872">set_language</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15321,7 +15321,7 @@ client.other.set_language(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">auto_play_set</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L874-L895">auto_play_set</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15383,7 +15383,7 @@ client.other.auto_play_set()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_rom_download_status</a>() -> GetMvRomDownloadStatusResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L897-L923">get_mv_rom_download_status</a>() -> GetMvRomDownloadStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -15447,7 +15447,7 @@ client.other.get_mv_rom_download_status()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_rom_download_v2status</a>() -> GetMvRomDownloadV2StatusResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L925-L951">get_mv_rom_download_v2status</a>() -> GetMvRomDownloadV2StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -15511,7 +15511,7 @@ client.other.get_mv_rom_download_v2status()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_hex_group_name</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L953-L979">set_hex_group_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15583,7 +15583,7 @@ client.other.set_hex_group_name(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_mv_remote_silence_ota_time</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L981-L1009">set_mv_remote_silence_ota_time</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15655,7 +15655,7 @@ client.other.set_mv_remote_silence_ota_time(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_mv_remote_silence_update_time</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1011-L1039">set_mv_remote_silence_update_time</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15727,7 +15727,7 @@ client.other.set_mv_remote_silence_update_time(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_timezone</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1041-L1067">set_timezone</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15799,7 +15799,7 @@ client.other.set_timezone(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">check_access_pin</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1069-L1090">check_access_pin</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15861,7 +15861,7 @@ client.other.check_access_pin()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_update_server</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1092-L1118">set_update_server</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15933,7 +15933,7 @@ client.other.set_update_server(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_weather_location</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1120-L1146">set_weather_location</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16005,7 +16005,7 @@ client.other.set_weather_location(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">start_check</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1148-L1169">start_check</a>()</code></summary>
 <dl>
 <dd>
 
@@ -16067,7 +16067,7 @@ client.other.start_check()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">getbatteryval</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1171-L1192">getbatteryval</a>()</code></summary>
 <dl>
 <dd>
 
@@ -16129,7 +16129,7 @@ client.other.getbatteryval()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_asr_status</a>() -> GetAsrStatusResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1194-L1218">get_asr_status</a>() -> GetAsrStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -16193,7 +16193,7 @@ client.other.get_asr_status()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_lp_auth_code</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1220-L1250">get_lp_auth_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16274,7 +16274,7 @@ client.other.get_lp_auth_code(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_token_params</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1252-L1282">set_token_params</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16355,7 +16355,7 @@ client.other.set_token_params(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_prompt</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1284-L1310">talkset_prompt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16427,7 +16427,7 @@ client.other.talkset_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_alarm_pre_wake</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1312-L1338">talkset_alarm_pre_wake</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16499,7 +16499,7 @@ client.other.talkset_alarm_pre_wake(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_alarm_tone</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1340-L1366">talkset_alarm_tone</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16571,7 +16571,7 @@ client.other.talkset_alarm_tone(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_alarm_tone_preview</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1368-L1394">talkset_alarm_tone_preview</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16643,7 +16643,7 @@ client.other.talkset_alarm_tone_preview(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_alarm_volume</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1396-L1422">talkset_alarm_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16715,7 +16715,7 @@ client.other.talkset_alarm_volume(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">talkset_alarmcommon</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1424-L1460">talkset_alarmcommon</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16805,7 +16805,7 @@ client.other.talkset_alarmcommon(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_sync_play_extra_delay</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1462-L1488">set_sync_play_extra_delay</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16877,7 +16877,7 @@ client.other.set_sync_play_extra_delay(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_initial_configuration</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1490-L1516">set_initial_configuration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16949,7 +16949,7 @@ client.other.set_initial_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_ui_config</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1518-L1539">get_ui_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17011,7 +17011,7 @@ client.other.get_ui_config()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_spdif_auto_sense_enable</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1541-L1562">get_spdif_auto_sense_enable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17073,7 +17073,7 @@ client.other.get_spdif_auto_sense_enable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_spdif_in_noise_remove</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1564-L1585">get_spdif_in_noise_remove</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17135,7 +17135,7 @@ client.other.get_spdif_in_noise_remove()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">phono_mode_switch_set</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1587-L1613">phono_mode_switch_set</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17207,7 +17207,7 @@ client.other.phono_mode_switch_set(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_play_mode_volume_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1615-L1641">set_play_mode_volume_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17279,7 +17279,7 @@ client.other.set_play_mode_volume_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_ui_wallpaper_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1643-L1664">get_ui_wallpaper_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17341,7 +17341,7 @@ client.other.get_ui_wallpaper_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_play_mode_volume_value</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1666-L1692">set_play_mode_volume_value</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17413,7 +17413,7 @@ client.other.set_play_mode_volume_value(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_power_mode_time</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1694-L1720">set_power_mode_time</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17485,7 +17485,7 @@ client.other.set_power_mode_time(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_button_volume_step</a>() -> GetButtonVolumeStepResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1722-L1748">get_button_volume_step</a>() -> GetButtonVolumeStepResponse</code></summary>
 <dl>
 <dd>
 
@@ -17549,7 +17549,7 @@ client.other.get_button_volume_step()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_button_volume_step</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1750-L1776">set_button_volume_step</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17621,7 +17621,7 @@ client.other.set_button_volume_step(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_aux_auto_sense_enable</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1778-L1802">get_aux_auto_sense_enable</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -17685,7 +17685,7 @@ client.other.get_aux_auto_sense_enable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_ui_config</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1804-L1830">set_ui_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17757,7 +17757,7 @@ client.other.set_ui_config(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_spdif_auto_sense_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1832-L1858">set_spdif_auto_sense_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17829,7 +17829,7 @@ client.other.set_spdif_auto_sense_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_spdif_in_noise_remove</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1860-L1886">set_spdif_in_noise_remove</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17901,7 +17901,7 @@ client.other.set_spdif_in_noise_remove(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_channel_mode</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1888-L1912">get_channel_mode</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -17965,7 +17965,7 @@ client.other.get_channel_mode()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_auto_sense_enable</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1914-L1938">get_auto_sense_enable</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18029,7 +18029,7 @@ client.other.get_auto_sense_enable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">start_reboot_time</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1940-L1961">start_reboot_time</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18091,7 +18091,7 @@ client.other.start_reboot_time()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">led_switch_get</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1963-L1984">led_switch_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18153,7 +18153,7 @@ client.other.led_switch_get()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mqa_receiver_cap</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L1986-L2010">get_mqa_receiver_cap</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18217,7 +18217,7 @@ client.other.get_mqa_receiver_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">reload_button_get</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2012-L2033">reload_button_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18279,7 +18279,7 @@ client.other.reload_button_get()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_aux_auto_sense_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2035-L2061">set_aux_auto_sense_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18351,7 +18351,7 @@ client.other.set_aux_auto_sense_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_low_priority_prompt_disable</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2063-L2087">get_low_priority_prompt_disable</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18415,7 +18415,7 @@ client.other.get_low_priority_prompt_disable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_soft_mute</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2089-L2110">get_soft_mute</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18477,7 +18477,7 @@ client.other.get_soft_mute()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_line_in_max_cap</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2112-L2136">get_line_in_max_cap</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18541,7 +18541,7 @@ client.other.get_line_in_max_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_aux_in_max_cap</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2138-L2162">get_aux_in_max_cap</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18605,7 +18605,7 @@ client.other.get_aux_in_max_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_uac_out_max_cap</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2164-L2185">get_uac_out_max_cap</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18667,7 +18667,7 @@ client.other.get_uac_out_max_cap()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_hdmi_auto_sense_enable</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2187-L2211">get_hdmi_auto_sense_enable</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -18731,7 +18731,7 @@ client.other.get_hdmi_auto_sense_enable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_channel_mode</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2213-L2239">set_channel_mode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18803,7 +18803,7 @@ client.other.set_channel_mode(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_sync_play_extra_delay</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2241-L2262">get_sync_play_extra_delay</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18865,7 +18865,7 @@ client.other.get_sync_play_extra_delay()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_light_operation_bright_config</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2264-L2285">get_light_operation_bright_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18927,7 +18927,7 @@ client.other.get_light_operation_bright_config()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_ui_wallpaper_list</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2287-L2313">set_ui_wallpaper_list</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18999,7 +18999,7 @@ client.other.set_ui_wallpaper_list(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_main_sub_extra_delay</a>() -> GetMainSubExtraDelayResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2315-L2341">get_main_sub_extra_delay</a>() -> GetMainSubExtraDelayResponse</code></summary>
 <dl>
 <dd>
 
@@ -19063,7 +19063,7 @@ client.other.get_main_sub_extra_delay()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">cast_disable</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2343-L2364">cast_disable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19125,7 +19125,7 @@ client.other.cast_disable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">cast_disable_usage_report</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2366-L2387">cast_disable_usage_report</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19187,7 +19187,7 @@ client.other.cast_disable_usage_report()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_auto_sense_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2389-L2415">set_auto_sense_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19259,7 +19259,7 @@ client.other.set_auto_sense_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">phono_mode_switch_get</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2417-L2438">phono_mode_switch_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19321,7 +19321,7 @@ client.other.phono_mode_switch_get()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_play_mode_volume_enable</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2440-L2461">get_play_mode_volume_enable</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19383,7 +19383,7 @@ client.other.get_play_mode_volume_enable()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_volume_control</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2463-L2489">set_volume_control</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19455,7 +19455,7 @@ client.other.set_volume_control(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_play_mode_volume_value</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2491-L2512">get_play_mode_volume_value</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19517,7 +19517,7 @@ client.other.get_play_mode_volume_value()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_mqa_receiver_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2514-L2540">set_mqa_receiver_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19589,7 +19589,7 @@ client.other.set_mqa_receiver_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_power_mode_time</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2542-L2563">get_power_mode_time</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19651,7 +19651,7 @@ client.other.get_power_mode_time()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_max_volume</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2565-L2591">set_max_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19723,7 +19723,7 @@ client.other.set_max_volume(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">enable_cast</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2593-L2614">enable_cast</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19785,7 +19785,7 @@ client.other.enable_cast()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">reload_button_update</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2616-L2642">reload_button_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19857,7 +19857,7 @@ client.other.reload_button_update(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">enable_cast_usage_report</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2644-L2665">enable_cast_usage_report</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19919,7 +19919,7 @@ client.other.enable_cast_usage_report()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">disable_low_priority_prompt</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2667-L2693">disable_low_priority_prompt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19991,7 +19991,7 @@ client.other.disable_low_priority_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_soft_mute</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2695-L2721">set_soft_mute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20063,7 +20063,7 @@ client.other.set_soft_mute(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_hdmi_auto_sense_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2723-L2749">set_hdmi_auto_sense_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20135,7 +20135,7 @@ client.other.set_hdmi_auto_sense_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_spdif_out_max_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2751-L2777">set_spdif_out_max_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20207,7 +20207,7 @@ client.other.set_spdif_out_max_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_coax_out_max_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2779-L2805">set_coax_out_max_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20279,7 +20279,7 @@ client.other.set_coax_out_max_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_line_in_max_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2807-L2833">set_line_in_max_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20351,7 +20351,7 @@ client.other.set_line_in_max_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_aux_in_max_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2835-L2861">set_aux_in_max_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20423,7 +20423,7 @@ client.other.set_aux_in_max_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_uac_out_max_cap</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2863-L2889">set_uac_out_max_cap</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20495,7 +20495,7 @@ client.other.set_uac_out_max_cap(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">enable_sys_info</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2891-L2917">enable_sys_info</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20567,7 +20567,7 @@ client.other.enable_sys_info(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_airplay_extra_delay</a>() -> GetAirplayExtraDelayResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2919-L2945">get_airplay_extra_delay</a>() -> GetAirplayExtraDelayResponse</code></summary>
 <dl>
 <dd>
 
@@ -20631,7 +20631,7 @@ client.other.get_airplay_extra_delay()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_current_wireless_connect</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2947-L2968">get_current_wireless_connect</a>()</code></summary>
 <dl>
 <dd>
 
@@ -20693,7 +20693,7 @@ client.other.get_current_wireless_connect()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">slave_alert_get</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2970-L2996">slave_alert_get</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20765,7 +20765,7 @@ client.other.slave_alert_get(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">slave_talk_set_alarm_volume</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L2998-L3030">slave_talk_set_alarm_volume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20846,7 +20846,7 @@ client.other.slave_talk_set_alarm_volume(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">squeezelite_auto_connect_enable</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3032-L3060">squeezelite_auto_connect_enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20918,7 +20918,7 @@ client.other.squeezelite_auto_connect_enable(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">squeezelite_connect_server</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3062-L3088">squeezelite_connect_server</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20990,7 +20990,7 @@ client.other.squeezelite_connect_server(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">squeezelite_discover</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3090-L3111">squeezelite_discover</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21052,7 +21052,7 @@ client.other.squeezelite_discover()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">squeezelite_get_state</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3113-L3134">squeezelite_get_state</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21114,7 +21114,7 @@ client.other.squeezelite_get_state()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_setup_router_info</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3136-L3157">get_setup_router_info</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21176,7 +21176,7 @@ client.other.get_setup_router_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_setup_router_info</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3159-L3185">set_setup_router_info</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21248,7 +21248,7 @@ client.other.set_setup_router_info(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">alert_get</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3187-L3208">alert_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21310,7 +21310,7 @@ client.other.alert_get()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">tvs_logout</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3210-L3231">tvs_logout</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21372,7 +21372,7 @@ client.other.tvs_logout()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_tvs_state</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3233-L3254">get_tvs_state</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21434,7 +21434,7 @@ client.other.get_tvs_state()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_tvs_dev_info</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3256-L3277">get_tvs_dev_info</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21496,7 +21496,7 @@ client.other.get_tvs_dev_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tvs_access_token</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3279-L3305">set_tvs_access_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21568,7 +21568,7 @@ client.other.set_tvs_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tvs_debug_mode</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3307-L3333">set_tvs_debug_mode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21640,7 +21640,7 @@ client.other.set_tvs_debug_mode(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tvs_client_id</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3335-L3361">set_tvs_client_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21712,7 +21712,7 @@ client.other.set_tvs_client_id(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">create_routine</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3363-L3389">create_routine</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21784,7 +21784,7 @@ client.other.create_routine(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_all_routines</a>() -> GetAllRoutinesResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3391-L3415">get_all_routines</a>() -> GetAllRoutinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -21848,7 +21848,7 @@ client.other.get_all_routines()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_routine_capability</a>() -> GetRoutineCapabilityResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3417-L3443">get_routine_capability</a>() -> GetRoutineCapabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -21912,7 +21912,7 @@ client.other.get_routine_capability()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_audio_input_capability</a>() -> GetAudioInputCapabilityResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3445-L3471">get_audio_input_capability</a>() -> GetAudioInputCapabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -21976,7 +21976,7 @@ client.other.get_audio_input_capability()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_audio_out_max32bit</a>() -> GetAudioOutMax32BitResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3473-L3499">get_audio_out_max32bit</a>() -> GetAudioOutMax32BitResponse</code></summary>
 <dl>
 <dd>
 
@@ -22040,7 +22040,7 @@ client.other.get_audio_out_max32bit()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_audio_out_max32bit</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3501-L3529">set_audio_out_max32bit</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22114,7 +22114,7 @@ client.other.set_audio_out_max32bit(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_audio_output_vrms</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3531-L3557">get_audio_output_vrms</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22186,7 +22186,7 @@ client.other.get_audio_output_vrms(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_audio_output_vrms_support_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3559-L3580">get_audio_output_vrms_support_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -22248,7 +22248,7 @@ client.other.get_audio_output_vrms_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_audio_output_vrms</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3582-L3608">set_audio_output_vrms</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22320,7 +22320,7 @@ client.other.set_audio_output_vrms(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_cbl_status</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3610-L3631">get_cbl_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -22382,7 +22382,7 @@ client.other.get_cbl_status()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_cec_power_ctrl</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3633-L3657">get_cec_power_ctrl</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -22446,7 +22446,7 @@ client.other.get_cec_power_ctrl()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_cec_power_ctrl</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3659-L3687">set_cec_power_ctrl</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22520,7 +22520,7 @@ client.other.set_cec_power_ctrl(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_cxdish_precent</a>() -> GetCxdishPrecentResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3689-L3715">get_cxdish_precent</a>() -> GetCxdishPrecentResponse</code></summary>
 <dl>
 <dd>
 
@@ -22584,7 +22584,7 @@ client.other.get_cxdish_precent()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_digital_filter_type_support_list</a>() -> GetDigitalFilterTypeSupportListResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3717-L3743">get_digital_filter_type_support_list</a>() -> GetDigitalFilterTypeSupportListResponse</code></summary>
 <dl>
 <dd>
 
@@ -22648,7 +22648,7 @@ client.other.get_digital_filter_type_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_digital_filter_type</a>() -> int</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3745-L3769">get_digital_filter_type</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -22712,7 +22712,7 @@ client.other.get_digital_filter_type()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_digital_filter_type</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3771-L3797">set_digital_filter_type</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22784,7 +22784,7 @@ client.other.set_digital_filter_type(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_output_digital_filter_type</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3799-L3827">get_output_digital_filter_type</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22856,7 +22856,7 @@ client.other.get_output_digital_filter_type(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_output_digital_filter_type_support_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3829-L3852">get_output_digital_filter_type_support_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -22918,7 +22918,7 @@ client.other.get_output_digital_filter_type_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_output_digital_filter_type</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3854-L3882">set_output_digital_filter_type</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22990,7 +22990,7 @@ client.other.set_output_digital_filter_type(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_digital_input_audio_type_support</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3884-L3908">get_digital_input_audio_type_support</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -23054,7 +23054,7 @@ client.other.get_digital_input_audio_type_support()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_output_voltage</a>() -> int</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3910-L3934">get_output_voltage</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -23118,7 +23118,7 @@ client.other.get_output_voltage()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_output_voltage</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3936-L3962">set_output_voltage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23190,7 +23190,7 @@ client.other.set_output_voltage(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_feature_capability</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3964-L3985">get_feature_capability</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23252,7 +23252,7 @@ client.other.get_feature_capability()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_play_mode_gain_config</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L3987-L4008">get_play_mode_gain_config</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23314,7 +23314,7 @@ client.other.get_play_mode_gain_config()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_play_mode_gain_config</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4010-L4036">set_play_mode_gain_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23386,7 +23386,7 @@ client.other.set_play_mode_gain_config(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">mediaserver_scan</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4038-L4059">mediaserver_scan</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23448,7 +23448,7 @@ client.other.mediaserver_scan()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">mediaserver_udiskumount</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4061-L4082">mediaserver_udiskumount</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23510,7 +23510,7 @@ client.other.mediaserver_udiskumount()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_input_mode_support_list</a>()</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4084-L4105">get_input_mode_support_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23572,7 +23572,7 @@ client.other.get_input_mode_support_list()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mode_rename</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4107-L4131">get_mode_rename</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -23636,7 +23636,7 @@ client.other.get_mode_rename()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_mode_rename</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4133-L4159">set_mode_rename</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23708,7 +23708,7 @@ client.other.set_mode_rename(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_music_explicit</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4161-L4189">set_music_explicit</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23782,7 +23782,7 @@ client.other.set_music_explicit(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_mv_remote_update_device_ota_info</a>() -> GetMvRemoteUpdateDeviceOtaInfoResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4191-L4217">get_mv_remote_update_device_ota_info</a>() -> GetMvRemoteUpdateDeviceOtaInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -23846,7 +23846,7 @@ client.other.get_mv_remote_update_device_ota_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tunein_favorite_state</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4219-L4254">set_tunein_favorite_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23930,7 +23930,7 @@ client.other.set_tunein_favorite_state(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tunein_location</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4256-L4296">set_tunein_location</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -24024,7 +24024,7 @@ client.other.set_tunein_location(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">set_tunein_token</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4298-L4357">set_tunein_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -24138,7 +24138,7 @@ client.other.set_tunein_token(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">stream_services_capability</a>() -> StreamServicesCapabilityResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4359-L4385">stream_services_capability</a>() -> StreamServicesCapabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -24202,7 +24202,7 @@ client.other.stream_services_capability()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">tidal_login</a>(...)</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L4387-L4413">tidal_login</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -6,3 +6,5 @@ Warnings for generators.yml:
         issue: Endpoint has duplicate path parameter: account_id.
 
 Found 1 error and 0 warnings in <n> seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

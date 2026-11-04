@@ -1,6 +1,6 @@
 # Reference
 ## Balance
-<details><summary><code>client.balance.<a href="src/fern/balance/client.py">lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
+<details><summary><code>client.balance.<a href="src/fern/balance/client.py#L26-L55">lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.balance.lookup(
 </details>
 
 ## Lookup
-<details><summary><code>client.lookup.<a href="src/fern/lookup/client.py">bin_lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
+<details><summary><code>client.lookup.<a href="src/fern/lookup/client.py#L26-L60">bin_lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_relay</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L125">register_relay</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.register_relay(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_signal</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L152">submit_signal</a>(...)</code></summary>
 <dl>
 <dd>
 

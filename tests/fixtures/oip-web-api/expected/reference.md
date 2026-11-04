@@ -1,6 +1,6 @@
 # Reference
 ## ModuleFederation
-<details><summary><code>client.module_federation.<a href="src/fern/module_federation/client.py">get_manifest_for_client_app</a>() -> typing.Dict[str, ModuleFederationDto]</code></summary>
+<details><summary><code>client.module_federation.<a href="src/fern/module_federation/client.py#L29-L53">get_manifest_for_client_app</a>() -> typing.Dict[str, ModuleFederationDto]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.module_federation.get_manifest_for_client_app()
 </dl>
 </details>
 
-<details><summary><code>client.module_federation.<a href="src/fern/module_federation/client.py">registry_module</a>(...)</code></summary>
+<details><summary><code>client.module_federation.<a href="src/fern/module_federation/client.py#L55-L101">registry_module</a>(...)</code></summary>
 <dl>
 <dd>
 

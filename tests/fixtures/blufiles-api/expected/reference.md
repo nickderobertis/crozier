@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_admin_config</a>() -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L151">get_admin_config</a>() -> Config</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.get_admin_config()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_admin_config</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L153-L224">patch_admin_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.patch_admin_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_admin_usage</a>() -> GetAdminUsageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L226-L252">get_admin_usage</a>() -> GetAdminUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -238,7 +238,7 @@ client.get_admin_usage()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_auth_login</a>(...) -> PostAuthLoginResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L254-L290">post_auth_login</a>(...) -> PostAuthLoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -319,7 +319,7 @@ client.post_auth_login(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_auth_register</a>(...) -> PostAuthRegisterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L292-L328">post_auth_register</a>(...) -> PostAuthRegisterResponse</code></summary>
 <dl>
 <dd>
 
@@ -400,7 +400,7 @@ client.post_auth_register(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_collection_id</a>(...) -> FilteredCollection</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L330-L361">get_collection_id</a>(...) -> FilteredCollection</code></summary>
 <dl>
 <dd>
 
@@ -472,7 +472,7 @@ client.get_collection_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_collection_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L363-L391">delete_collection_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -544,7 +544,7 @@ client.delete_collection_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_collection_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L393-L434">patch_collection_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -632,7 +632,7 @@ client.patch_collection_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_collection</a>() -> typing.List[FilteredCollection]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L436-L463">get_collection</a>() -> typing.List[FilteredCollection]</code></summary>
 <dl>
 <dd>
 
@@ -694,7 +694,7 @@ client.get_collection()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_collection</a>(...) -> FilteredCollection</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L465-L496">post_collection</a>(...) -> FilteredCollection</code></summary>
 <dl>
 <dd>
 
@@ -766,7 +766,7 @@ client.post_collection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_file</a>() -> FilteredFile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L498-L524">post_file</a>() -> FilteredFile</code></summary>
 <dl>
 <dd>
 
@@ -829,7 +829,7 @@ client.post_file()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_folder_id</a>(...) -> FilteredFolder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L526-L555">get_folder_id</a>(...) -> FilteredFolder</code></summary>
 <dl>
 <dd>
 
@@ -901,7 +901,7 @@ client.get_folder_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_folder_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L557-L585">delete_folder_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -973,7 +973,7 @@ client.delete_folder_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_folder_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L587-L628">patch_folder_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1061,7 +1061,7 @@ client.patch_folder_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_folder</a>() -> FilteredFolder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L630-L655">get_folder</a>() -> FilteredFolder</code></summary>
 <dl>
 <dd>
 
@@ -1123,7 +1123,7 @@ client.get_folder()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_folder</a>(...) -> FilteredFolder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L657-L694">post_folder</a>(...) -> FilteredFolder</code></summary>
 <dl>
 <dd>
 
@@ -1203,7 +1203,7 @@ client.post_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me_collections</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L696-L720">delete_me_collections</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1265,7 +1265,7 @@ client.delete_me_collections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me_files</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L722-L746">delete_me_files</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1327,7 +1327,7 @@ client.delete_me_files()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_me</a>() -> GetMeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L748-L773">get_me</a>() -> GetMeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1389,7 +1389,7 @@ client.get_me()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L775-L799">delete_me</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1451,7 +1451,7 @@ client.delete_me()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_me</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L801-L829">patch_me</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1523,7 +1523,7 @@ client.patch_me(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_me_logout</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L831-L855">post_me_logout</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1585,7 +1585,7 @@ client.post_me_logout()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_me_password</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L857-L892">patch_me_password</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1666,7 +1666,7 @@ client.patch_me_password(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me_pastes</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L894-L918">delete_me_pastes</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1728,7 +1728,7 @@ client.delete_me_pastes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me_shares</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L920-L944">delete_me_shares</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1790,7 +1790,7 @@ client.delete_me_shares()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_me_tokens</a>() -> typing.List[FilteredToken]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L946-L971">get_me_tokens</a>() -> typing.List[FilteredToken]</code></summary>
 <dl>
 <dd>
 
@@ -1852,7 +1852,7 @@ client.get_me_tokens()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_me_tokens</a>(...) -> PostMeTokensResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L973-L1004">post_me_tokens</a>(...) -> PostMeTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -1924,7 +1924,7 @@ client.post_me_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_me_tokens</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1006-L1036">delete_me_tokens</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1996,7 +1996,7 @@ client.delete_me_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_me_tokens</a>(...) -> PatchMeTokensResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1038-L1069">patch_me_tokens</a>(...) -> PatchMeTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -2068,7 +2068,7 @@ client.patch_me_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_paste_id</a>(...) -> FilteredPaste</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1071-L1100">get_paste_id</a>(...) -> FilteredPaste</code></summary>
 <dl>
 <dd>
 
@@ -2140,7 +2140,7 @@ client.get_paste_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_paste_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1102-L1130">delete_paste_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2212,7 +2212,7 @@ client.delete_paste_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_paste_id</a>(...) -> FilteredPaste</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1132-L1177">patch_paste_id</a>(...) -> FilteredPaste</code></summary>
 <dl>
 <dd>
 
@@ -2308,7 +2308,7 @@ client.patch_paste_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_paste</a>() -> typing.List[FilteredPaste]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1179-L1204">get_paste</a>() -> typing.List[FilteredPaste]</code></summary>
 <dl>
 <dd>
 
@@ -2370,7 +2370,7 @@ client.get_paste()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_paste</a>(...) -> FilteredPaste</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1206-L1253">post_paste</a>(...) -> FilteredPaste</code></summary>
 <dl>
 <dd>
 
@@ -2468,7 +2468,7 @@ client.post_paste(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_search</a>(...) -> PostSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1255-L1297">post_search</a>(...) -> PostSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2556,7 +2556,7 @@ client.post_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_share</a>() -> typing.List[FilteredShare]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1299-L1324">get_share</a>() -> typing.List[FilteredShare]</code></summary>
 <dl>
 <dd>
 
@@ -2618,7 +2618,7 @@ client.get_share()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_share</a>(...) -> FilteredShare</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1326-L1367">post_share</a>(...) -> FilteredShare</code></summary>
 <dl>
 <dd>
 
@@ -2707,7 +2707,7 @@ client.post_share(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_uploads</a>(...) -> FilteredFileUpload</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1369-L1401">post_uploads</a>(...) -> FilteredFileUpload</code></summary>
 <dl>
 <dd>
 
@@ -2780,7 +2780,7 @@ client.post_uploads(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_usage_largest</a>() -> typing.List[FilteredFile]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1403-L1430">get_usage_largest</a>() -> typing.List[FilteredFile]</code></summary>
 <dl>
 <dd>
 
@@ -2842,7 +2842,7 @@ client.get_usage_largest()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_usage_stats</a>() -> GetUsageStatsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1432-L1458">get_usage_stats</a>() -> GetUsageStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2905,7 +2905,7 @@ client.get_usage_stats()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_admin_users</a>() -> typing.List[FilteredAdminUser]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1460-L1487">get_admin_users</a>() -> typing.List[FilteredAdminUser]</code></summary>
 <dl>
 <dd>
 
@@ -2967,7 +2967,7 @@ client.get_admin_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_admin_users</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1489-L1524">post_admin_users</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3048,7 +3048,7 @@ client.post_admin_users(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_file_id</a>(...) -> FilteredFile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1526-L1555">get_file_id</a>(...) -> FilteredFile</code></summary>
 <dl>
 <dd>
 
@@ -3120,7 +3120,7 @@ client.get_file_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_file_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1557-L1585">delete_file_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3192,7 +3192,7 @@ client.delete_file_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_file_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1587-L1626">patch_file_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3280,7 +3280,7 @@ client.patch_file_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_file_id_raw</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1628-L1661">get_file_id_raw</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3361,7 +3361,7 @@ client.get_file_id_raw(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_share_id</a>(...) -> FilteredShare</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1663-L1692">get_share_id</a>(...) -> FilteredShare</code></summary>
 <dl>
 <dd>
 
@@ -3433,7 +3433,7 @@ client.get_share_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_share_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1694-L1722">delete_share_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3505,7 +3505,7 @@ client.delete_share_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_share_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1724-L1756">patch_share_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3585,7 +3585,7 @@ client.patch_share_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_uploads_id</a>(...) -> FilteredFileUpload</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1758-L1789">post_uploads_id</a>(...) -> FilteredFileUpload</code></summary>
 <dl>
 <dd>
 
@@ -3657,7 +3657,7 @@ client.post_uploads_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_uploads_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1791-L1819">delete_uploads_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3729,7 +3729,7 @@ client.delete_uploads_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_admin_users_id</a>(...) -> FilteredAdminUser</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1821-L1852">get_admin_users_id</a>(...) -> FilteredAdminUser</code></summary>
 <dl>
 <dd>
 
@@ -3801,7 +3801,7 @@ client.get_admin_users_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_admin_users_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1854-L1882">delete_admin_users_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3873,7 +3873,7 @@ client.delete_admin_users_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_admin_users_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1884-L1952">patch_admin_users_id</a>(...)</code></summary>
 <dl>
 <dd>
 

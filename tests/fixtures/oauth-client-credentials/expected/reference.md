@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">gettoken</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L29-L63">gettoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -68,7 +68,7 @@ client.auth.gettoken(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list</a>() -> typing.List[User]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L49">list</a>() -> typing.List[User]</code></summary>
 <dl>
 <dd>
 

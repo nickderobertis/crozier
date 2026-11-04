@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "5e58169c3b206bff99dfd7d2a2970300b333f5dc895a9370c52ae1a1ebe8986c"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "b59cee14d88b2a96ff1f4b065c59359603c70c356a9940f97e655a183c952475"
 
 [[covers]]
 key = "allof-overlapping-ref-parents-flattened"

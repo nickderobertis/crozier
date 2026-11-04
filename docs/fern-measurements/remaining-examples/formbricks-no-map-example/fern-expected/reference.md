@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">me</a>() -> MeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L178">me</a>() -> MeResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.me()
 </details>
 
 ## ClientApiResponse
-<details><summary><code>client.client_api_response.<a href="src/fern/client_api_response/client.py">update_response</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.client_api_response.<a href="src/fern/client_api_response/client.py#L28-L75">update_response</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.client_api_response.update_response(
 </dl>
 </details>
 
-<details><summary><code>client.client_api_response.<a href="src/fern/client_api_response/client.py">create_response</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.client_api_response.<a href="src/fern/client_api_response/client.py#L77-L115">create_response</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.client_api_response.create_response(
 </details>
 
 ## ClientApiDisplay
-<details><summary><code>client.client_api_display.<a href="src/fern/client_api_display/client.py">create_display</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.client_api_display.<a href="src/fern/client_api_display/client.py#L28-L66">create_display</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -329,7 +329,7 @@ client.client_api_display.create_display(
 </details>
 
 ## ClientApiWorkspace
-<details><summary><code>client.client_api_workspace.<a href="src/fern/client_api_workspace/client.py">get_workspace_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.client_api_workspace.<a href="src/fern/client_api_workspace/client.py#L25-L56">get_workspace_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -403,7 +403,7 @@ client.client_api_workspace.get_workspace_state(
 </details>
 
 ## ClientApiUser
-<details><summary><code>client.client_api_user.<a href="src/fern/client_api_user/client.py">create_or_identify_user</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.client_api_user.<a href="src/fern/client_api_user/client.py#L28-L68">create_or_identify_user</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -489,7 +489,7 @@ client.client_api_user.create_or_identify_user(
 </details>
 
 ## ClientApiFileUpload
-<details><summary><code>client.client_api_file_upload.<a href="src/fern/client_api_file_upload/client.py">upload_private_file</a>(...) -> PostClientWorkspaceIdStorageResponse</code></summary>
+<details><summary><code>client.client_api_file_upload.<a href="src/fern/client_api_file_upload/client.py#L29-L80">upload_private_file</a>(...) -> PostClientWorkspaceIdStorageResponse</code></summary>
 <dl>
 <dd>
 
@@ -590,7 +590,7 @@ client.client_api_file_upload.upload_private_file(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check</a>() -> HealthCheckResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">check</a>() -> HealthCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -654,7 +654,7 @@ client.health.check()
 </details>
 
 ## Roles
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">get_roles</a>() -> GetRolesResponse</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L26-L50">get_roles</a>() -> GetRolesResponse</code></summary>
 <dl>
 <dd>
 
@@ -718,7 +718,7 @@ client.roles.get_roles()
 </details>
 
 ## Management API - Responses
-<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py">get_responses</a>(...) -> GetResponsesResponse</code></summary>
+<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py#L42-L115">get_responses</a>(...) -> GetResponsesResponse</code></summary>
 <dl>
 <dd>
 
@@ -853,7 +853,7 @@ client.management_api_responses.get_responses()
 </dl>
 </details>
 
-<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py">create_response</a>(...) -> CreateResponseResponse</code></summary>
+<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py#L117-L215">create_response</a>(...) -> CreateResponseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1026,7 +1026,7 @@ client.management_api_responses.create_response(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py">get_response</a>(...) -> GetResponseResponse</code></summary>
+<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py#L217-L248">get_response</a>(...) -> GetResponseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1099,7 +1099,7 @@ client.management_api_responses.get_response(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py">update_response</a>(...) -> UpdateResponseResponse</code></summary>
+<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py#L250-L311">update_response</a>(...) -> UpdateResponseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.management_api_responses.update_response(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py">delete_response</a>(...) -> DeleteResponseResponse</code></summary>
+<details><summary><code>client.management_api_responses.<a href="src/fern/management_api_responses/client.py#L313-L344">delete_response</a>(...) -> DeleteResponseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1294,7 +1294,7 @@ client.management_api_responses.delete_response(
 </details>
 
 ## Management API - Contacts
-<details><summary><code>client.management_api_contacts.<a href="src/fern/management_api_contacts/client.py">upload_bulk_contacts</a>(...) -> UploadBulkContactsResponse</code></summary>
+<details><summary><code>client.management_api_contacts.<a href="src/fern/management_api_contacts/client.py#L31-L131">upload_bulk_contacts</a>(...) -> UploadBulkContactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1436,7 +1436,7 @@ client.management_api_contacts.upload_bulk_contacts(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_contacts.<a href="src/fern/management_api_contacts/client.py">create_contact</a>(...) -> CreateContactResponse</code></summary>
+<details><summary><code>client.management_api_contacts.<a href="src/fern/management_api_contacts/client.py#L133-L184">create_contact</a>(...) -> CreateContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -1532,7 +1532,7 @@ client.management_api_contacts.create_contact(
 </details>
 
 ## Management API - Contact Attribute Keys
-<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py">get_contact_attribute_keys</a>(...) -> GetContactAttributeKeysResponse</code></summary>
+<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py#L37-L112">get_contact_attribute_keys</a>(...) -> GetContactAttributeKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.management_api_contact_attribute_keys.get_contact_attribute_keys()
 </dl>
 </details>
 
-<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py">create_contact_attribute_key</a>(...) -> CreateContactAttributeKeyResponse</code></summary>
+<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py#L114-L175">create_contact_attribute_key</a>(...) -> CreateContactAttributeKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1776,7 +1776,7 @@ client.management_api_contact_attribute_keys.create_contact_attribute_key(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py">get_contact_attribute_key</a>(...) -> GetContactAttributeKeyResponse</code></summary>
+<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py#L177-L208">get_contact_attribute_key</a>(...) -> GetContactAttributeKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1849,7 +1849,7 @@ client.management_api_contact_attribute_keys.get_contact_attribute_key(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py">update_contact_attribute_key</a>(...) -> UpdateContactAttributeKeyResponse</code></summary>
+<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py#L210-L261">update_contact_attribute_key</a>(...) -> UpdateContactAttributeKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1949,7 +1949,7 @@ client.management_api_contact_attribute_keys.update_contact_attribute_key(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py">delete_contact_attribute_key</a>(...) -> DeleteContactAttributeKeyResponse</code></summary>
+<details><summary><code>client.management_api_contact_attribute_keys.<a href="src/fern/management_api_contact_attribute_keys/client.py#L263-L294">delete_contact_attribute_key</a>(...) -> DeleteContactAttributeKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2023,7 +2023,7 @@ client.management_api_contact_attribute_keys.delete_contact_attribute_key(
 </details>
 
 ## Management API - Surveys - Contact Links
-<details><summary><code>client.management_api_surveys_contact_links.<a href="src/fern/management_api_surveys_contact_links/client.py">get_personalized_survey_link</a>(...) -> GetPersonalizedSurveyLinkResponse</code></summary>
+<details><summary><code>client.management_api_surveys_contact_links.<a href="src/fern/management_api_surveys_contact_links/client.py#L27-L72">get_personalized_survey_link</a>(...) -> GetPersonalizedSurveyLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2113,7 +2113,7 @@ client.management_api_surveys_contact_links.get_personalized_survey_link(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_surveys_contact_links.<a href="src/fern/management_api_surveys_contact_links/client.py">get_contact_links_by_segment</a>(...) -> GetContactLinksBySegmentResponse</code></summary>
+<details><summary><code>client.management_api_surveys_contact_links.<a href="src/fern/management_api_surveys_contact_links/client.py#L74-L137">get_contact_links_by_segment</a>(...) -> GetContactLinksBySegmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2228,7 +2228,7 @@ client.management_api_surveys_contact_links.get_contact_links_by_segment(
 </details>
 
 ## Management API - Webhooks
-<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py">get_webhooks</a>(...) -> GetWebhooksResponse</code></summary>
+<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py#L41-L110">get_webhooks</a>(...) -> GetWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2355,7 +2355,7 @@ client.management_api_webhooks.get_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py">create_webhook</a>(...) -> CreateWebhookResponse</code></summary>
+<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py#L112-L188">create_webhook</a>(...) -> CreateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2486,7 +2486,7 @@ client.management_api_webhooks.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py">get_webhook</a>(...) -> GetWebhookResponse</code></summary>
+<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py#L190-L221">get_webhook</a>(...) -> GetWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2559,7 +2559,7 @@ client.management_api_webhooks.get_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py">update_webhook</a>(...) -> UpdateWebhookResponse</code></summary>
+<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py#L223-L305">update_webhook</a>(...) -> UpdateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2699,7 +2699,7 @@ client.management_api_webhooks.update_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py">delete_webhook</a>(...) -> DeleteWebhookResponse</code></summary>
+<details><summary><code>client.management_api_webhooks.<a href="src/fern/management_api_webhooks/client.py#L307-L338">delete_webhook</a>(...) -> DeleteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2773,7 +2773,7 @@ client.management_api_webhooks.delete_webhook(
 </details>
 
 ## Organizations API - Teams
-<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py">get_teams</a>(...) -> GetTeamsResponse</code></summary>
+<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py#L38-L110">get_teams</a>(...) -> GetTeamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2902,7 +2902,7 @@ client.organizations_api_teams.get_teams(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py">create_team</a>(...) -> CreateTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py#L112-L147">create_team</a>(...) -> CreateTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -2984,7 +2984,7 @@ client.organizations_api_teams.create_team(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py">get_team</a>(...) -> GetTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py#L149-L184">get_team</a>(...) -> GetTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3066,7 +3066,7 @@ client.organizations_api_teams.get_team(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py">update_team</a>(...) -> UpdateTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py#L186-L230">update_team</a>(...) -> UpdateTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3157,7 +3157,7 @@ client.organizations_api_teams.update_team(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py">delete_team</a>(...) -> DeleteTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_teams.<a href="src/fern/organizations_api_teams/client.py#L232-L267">delete_team</a>(...) -> DeleteTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3240,7 +3240,7 @@ client.organizations_api_teams.delete_team(
 </details>
 
 ## Organizations API - Workspace Teams
-<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py">get_workspace_teams</a>(...) -> GetWorkspaceTeamsResponse</code></summary>
+<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py#L38-L124">get_workspace_teams</a>(...) -> GetWorkspaceTeamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3393,7 +3393,7 @@ client.organizations_api_workspace_teams.get_workspace_teams(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py">create_workspace_team</a>(...) -> CreateWorkspaceTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py#L126-L189">create_workspace_team</a>(...) -> CreateWorkspaceTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.organizations_api_workspace_teams.create_workspace_team(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py">update_workspace_team</a>(...) -> UpdateWorkspaceTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py#L191-L254">update_workspace_team</a>(...) -> UpdateWorkspaceTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3609,7 +3609,7 @@ client.organizations_api_workspace_teams.update_workspace_team(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py">delete_workspace_team</a>(...) -> DeleteWorkspaceTeamResponse</code></summary>
+<details><summary><code>client.organizations_api_workspace_teams.<a href="src/fern/organizations_api_workspace_teams/client.py#L256-L308">delete_workspace_team</a>(...) -> DeleteWorkspaceTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -3708,7 +3708,7 @@ client.organizations_api_workspace_teams.delete_workspace_team(
 </details>
 
 ## Organizations API - Users
-<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py">get_users</a>(...) -> GetUsersResponse</code></summary>
+<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py#L37-L117">get_users</a>(...) -> GetUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3853,7 +3853,7 @@ client.organizations_api_users.get_users(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py">create_user</a>(...) -> CreateUserResponse</code></summary>
+<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py#L119-L186">create_user</a>(...) -> CreateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -3970,7 +3970,7 @@ client.organizations_api_users.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py">update_user</a>(...) -> UpdateUserResponse</code></summary>
+<details><summary><code>client.organizations_api_users.<a href="src/fern/organizations_api_users/client.py#L188-L250">update_user</a>(...) -> UpdateUserResponse</code></summary>
 <dl>
 <dd>
 

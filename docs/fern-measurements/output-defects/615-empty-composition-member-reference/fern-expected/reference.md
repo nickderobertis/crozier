@@ -1,6 +1,6 @@
 # Reference
 ## Loads
-<details><summary><code>client.loads.<a href="src/fern/loads/client.py">schedule_load</a>(...) -> Load</code></summary>
+<details><summary><code>client.loads.<a href="src/fern/loads/client.py#L33-L93">schedule_load</a>(...) -> Load</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.loads.schedule_load(
 </dl>
 </details>
 
-<details><summary><code>client.loads.<a href="src/fern/loads/client.py">transfer_load</a>(...) -> Load</code></summary>
+<details><summary><code>client.loads.<a href="src/fern/loads/client.py#L95-L136">transfer_load</a>(...) -> Load</code></summary>
 <dl>
 <dd>
 

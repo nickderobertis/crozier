@@ -1,6 +1,6 @@
 # Reference
 ## Apikeyauth
-<details><summary><code>client.apikeyauth.<a href="src/fern/apikeyauth/client.py">whoami</a>() -> str</code></summary>
+<details><summary><code>client.apikeyauth.<a href="src/fern/apikeyauth/client.py#L25-L48">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.apikeyauth.whoami()
 </details>
 
 ## Basicauth
-<details><summary><code>client.basicauth.<a href="src/fern/basicauth/client.py">whoami</a>() -> str</code></summary>
+<details><summary><code>client.basicauth.<a href="src/fern/basicauth/client.py#L25-L48">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -98,7 +98,7 @@ client.basicauth.whoami()
 </details>
 
 ## Bearerauth
-<details><summary><code>client.bearerauth.<a href="src/fern/bearerauth/client.py">whoami</a>() -> str</code></summary>
+<details><summary><code>client.bearerauth.<a href="src/fern/bearerauth/client.py#L25-L48">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.bearerauth.whoami()
 </details>
 
 ## Oauth
-<details><summary><code>client.oauth.<a href="src/fern/oauth/client.py">gettoken</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.oauth.<a href="src/fern/oauth/client.py#L29-L63">gettoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 

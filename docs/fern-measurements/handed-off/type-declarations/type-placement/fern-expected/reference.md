@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">check_health</a>(...) -> CheckHealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L137">check_health</a>(...) -> CheckHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -55,7 +55,7 @@ client.check_health()
 </details>
 
 ## Parcels
-<details><summary><code>client.parcels.<a href="src/fern/parcels/client.py">list_parcels</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.parcels.<a href="src/fern/parcels/client.py#L28-L72">list_parcels</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -135,7 +135,7 @@ client.parcels.list_parcels()
 </details>
 
 ## Letters
-<details><summary><code>client.letters.<a href="src/fern/letters/client.py">list_letters</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.letters.<a href="src/fern/letters/client.py#L27-L61">list_letters</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.letters.list_letters()
 </details>
 
 ## Depots Sacks
-<details><summary><code>client.depots.sacks.<a href="src/fern/depots/sacks/client.py">list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.depots.sacks.<a href="src/fern/depots/sacks/client.py#L26-L61">list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

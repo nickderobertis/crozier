@@ -1,6 +1,6 @@
 # Reference
 ## NgsiLd
-<details><summary><code>client.ngsi_ld.<a href="src/fern/ngsi_ld/client.py">get_ngsi_ld_v1entities</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.ngsi_ld.<a href="src/fern/ngsi_ld/client.py#L26-L58">get_ngsi_ld_v1entities</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

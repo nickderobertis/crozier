@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_cranes</a>(...) -> CranePage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L136">list_cranes</a>(...) -> CranePage</code></summary>
 <dl>
 <dd>
 

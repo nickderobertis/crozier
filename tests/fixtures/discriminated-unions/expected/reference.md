@@ -1,6 +1,6 @@
 # Reference
 ## Shapes
-<details><summary><code>client.shapes.<a href="src/fern/shapes/client.py">createshape</a>(...) -> Shape</code></summary>
+<details><summary><code>client.shapes.<a href="src/fern/shapes/client.py#L29-L58">createshape</a>(...) -> Shape</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_colonies</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L135">list_colonies</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.list_colonies(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">summarize_colonies</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L137-L164">summarize_colonies</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.summarize_colonies()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_colonies</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L166-L198">search_colonies</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

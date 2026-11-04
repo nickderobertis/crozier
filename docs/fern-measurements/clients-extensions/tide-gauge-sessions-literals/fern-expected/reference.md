@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_tides</a>(...) -> typing.List[Level]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L137">list_tides</a>(...) -> typing.List[Level]</code></summary>
 <dl>
 <dd>
 

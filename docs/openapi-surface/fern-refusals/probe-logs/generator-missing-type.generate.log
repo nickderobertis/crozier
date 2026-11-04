@@ -4,7 +4,7 @@ Warnings for generators.yml:
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.17
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           
@@ -26,7 +26,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 281, in run
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 314, in run
                                               self._generate_client_wrapper(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   context=context,
@@ -36,12 +36,12 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 503, in _generate_client_wrapper
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 536, in _generate_client_wrapper
                                               ).generate(source_file=source_file, project=project)
                                                 ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 206, in generate
+                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 218, in generate
                                               constructor_info = self._get_constructor_info()
-                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 1377, in _get_constructor_info
+                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 1391, in _get_constructor_info
                                               type_hint = self._context.pydantic_generator_context.get_type_hint_for_type_reference(header.value_type)
                                             File "/src/fern_python/generators/context/pydantic_generator_context_impl.py", line 81, in get_type_hint_for_type_reference
                                               return self._type_reference_to_type_hint_converter.get_type_hint_for_type_reference(
@@ -148,10 +148,10 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
                                               ) as project:
                                               ^
-                                            File "/src/fern_python/codegen/project.py", line 444, in __exit__
+                                            File "/src/fern_python/codegen/project.py", line 472, in __exit__
                                               self.finish()
                                               ~~~~~~~~~~~^^
-                                            File "/src/fern_python/codegen/project.py", line 336, in finish
+                                            File "/src/fern_python/codegen/project.py", line 364, in finish
                                               with open(os.path.join(self._project_filepath, "py.typed"), "w") as f:
                                                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                           FileNotFoundError: [Errno 2] No such file or directory: '/fern/output/src/fern/py.typed'

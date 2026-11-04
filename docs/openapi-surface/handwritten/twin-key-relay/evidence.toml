@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "e120938a6da52b69e90ab70bd15ddc74218a294466abc827e26cc0e1ef5b06a3"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "9f33d2616137e883d26ced12c797ea0d68d6814872c12f1041cd914f0f9c8a67"
 
 [[covers]]
 key = "security-schemes-duplicate-api-key-header"

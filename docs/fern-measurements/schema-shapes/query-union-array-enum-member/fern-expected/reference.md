@@ -1,6 +1,6 @@
 # Reference
 ## Signals
-<details><summary><code>client.signals.<a href="src/fern/signals/client.py">inspect_signals</a>(...) -> str</code></summary>
+<details><summary><code>client.signals.<a href="src/fern/signals/client.py#L26-L54">inspect_signals</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Internal
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_integration_connections_refresh_resource</a>(...) -> PostInternalIntegrationConnectionsRefreshResourceResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L102-L143">post_internal_integration_connections_refresh_resource</a>(...) -> PostInternalIntegrationConnectionsRefreshResourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.internal.post_internal_integration_connections_refresh_resource(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_integration_credentials_resolve</a>(...) -> PostInternalIntegrationCredentialsResolveResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L145-L200">post_internal_integration_credentials_resolve</a>(...) -> PostInternalIntegrationCredentialsResolveResponse</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.internal.post_internal_integration_credentials_resolve(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_integration_credentials_resolve_target_secrets</a>(...) -> PostInternalIntegrationCredentialsResolveTargetSecretsResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L202-L243">post_internal_integration_credentials_resolve_target_secrets</a>(...) -> PostInternalIntegrationCredentialsResolveTargetSecretsResponse</code></summary>
 <dl>
 <dd>
 
@@ -236,7 +236,7 @@ client.internal.post_internal_integration_credentials_resolve_target_secrets(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_identity_linking_resolve_principal_credential</a>(...) -> PostInternalIdentityLinkingResolvePrincipalCredentialResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L245-L297">post_internal_identity_linking_resolve_principal_credential</a>(...) -> PostInternalIdentityLinkingResolvePrincipalCredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -327,7 +327,7 @@ client.internal.post_internal_identity_linking_resolve_principal_credential(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_identity_linking_sign_commit_payload</a>(...) -> PostInternalIdentityLinkingSignCommitPayloadResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L299-L383">post_internal_identity_linking_sign_commit_payload</a>(...) -> PostInternalIdentityLinkingSignCommitPayloadResponse</code></summary>
 <dl>
 <dd>
 
@@ -466,7 +466,7 @@ client.internal.post_internal_identity_linking_sign_commit_payload(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_provider_resource_associations_register</a>(...) -> PostInternalProviderResourceAssociationsRegisterResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L385-L434">post_internal_provider_resource_associations_register</a>(...) -> PostInternalProviderResourceAssociationsRegisterResponse</code></summary>
 <dl>
 <dd>
 
@@ -550,7 +550,7 @@ client.internal.post_internal_provider_resource_associations_register(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_schedules_dispatch</a>() -> InternalDispatchSchedulesResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L436-L460">post_internal_schedules_dispatch</a>() -> InternalDispatchSchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -597,7 +597,7 @@ client.internal.post_internal_schedules_dispatch()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_snapshot_jobs_job_id_claim</a>(...) -> PostInternalSnapshotJobsJobIdClaimResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L462-L495">post_internal_snapshot_jobs_job_id_claim</a>(...) -> PostInternalSnapshotJobsJobIdClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -663,7 +663,7 @@ client.internal.post_internal_snapshot_jobs_job_id_claim(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_snapshot_jobs_job_id_succeed</a>(...) -> PostInternalSnapshotJobsJobIdSucceedResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L497-L543">post_internal_snapshot_jobs_job_id_succeed</a>(...) -> PostInternalSnapshotJobsJobIdSucceedResponse</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +742,7 @@ client.internal.post_internal_snapshot_jobs_job_id_succeed(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_snapshot_jobs_job_id_fail</a>(...) -> PostInternalSnapshotJobsJobIdFailResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L545-L594">post_internal_snapshot_jobs_job_id_fail</a>(...) -> PostInternalSnapshotJobsJobIdFailResponse</code></summary>
 <dl>
 <dd>
 
@@ -826,7 +826,7 @@ client.internal.post_internal_snapshot_jobs_job_id_fail(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_compile_plan</a>(...) -> PostInternalSandboxRuntimeCompilePlanResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L596-L659">post_internal_sandbox_runtime_compile_plan</a>(...) -> PostInternalSandboxRuntimeCompilePlanResponse</code></summary>
 <dl>
 <dd>
 
@@ -922,7 +922,7 @@ client.internal.post_internal_sandbox_runtime_compile_plan(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_start_profile_instance</a>(...) -> PostInternalSandboxRuntimeStartProfileInstanceResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L661-L732">post_internal_sandbox_runtime_start_profile_instance</a>(...) -> PostInternalSandboxRuntimeStartProfileInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1035,7 +1035,7 @@ client.internal.post_internal_sandbox_runtime_start_profile_instance(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_get_sandbox_instance</a>(...) -> PostInternalSandboxRuntimeGetSandboxInstanceResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L734-L767">post_internal_sandbox_runtime_get_sandbox_instance</a>(...) -> PostInternalSandboxRuntimeGetSandboxInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1101,7 +1101,7 @@ client.internal.post_internal_sandbox_runtime_get_sandbox_instance(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_resume_sandbox_instance</a>(...) -> PostInternalSandboxRuntimeResumeSandboxInstanceResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L769-L816">post_internal_sandbox_runtime_resume_sandbox_instance</a>(...) -> PostInternalSandboxRuntimeResumeSandboxInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1183,7 +1183,7 @@ client.internal.post_internal_sandbox_runtime_resume_sandbox_instance(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_mint_connection_token</a>(...) -> PostInternalSandboxRuntimeMintConnectionTokenResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L818-L881">post_internal_sandbox_runtime_mint_connection_token</a>(...) -> PostInternalSandboxRuntimeMintConnectionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1297,7 +1297,7 @@ client.internal.post_internal_sandbox_runtime_mint_connection_token(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_resolve_credentials</a>(...) -> PostInternalSandboxRuntimeResolveCredentialsResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L883-L930">post_internal_sandbox_runtime_resolve_credentials</a>(...) -> PostInternalSandboxRuntimeResolveCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1372,7 +1372,7 @@ client.internal.post_internal_sandbox_runtime_resolve_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">post_internal_sandbox_runtime_resolve_designer_runtime_egress_route</a>(...) -> PostInternalSandboxRuntimeResolveDesignerRuntimeEgressRouteResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L932-L1000">post_internal_sandbox_runtime_resolve_designer_runtime_egress_route</a>(...) -> PostInternalSandboxRuntimeResolveDesignerRuntimeEgressRouteResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.17",
+  "corpus_spec_name": "fletch-mcp",
+  "corpus_spec_ref": "4808c3c96272cdb69476728570b2fea1bcae122d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/fletch-now/fletch-mcp/4808c3c96272cdb69476728570b2fea1bcae122d/docs/openapi-2026-09-13.json"
+}

@@ -1,6 +1,6 @@
 # Reference
 ## ArtifactType
-<details><summary><code>client.artifact_type.<a href="src/fern/artifact_type/client.py">list_artifact_types</a>() -> typing.List[ArtifactTypeInfo]</code></summary>
+<details><summary><code>client.artifact_type.<a href="src/fern/artifact_type/client.py#L26-L54">list_artifact_types</a>() -> typing.List[ArtifactTypeInfo]</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.artifact_type.list_artifact_types()
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_config_properties</a>() -> typing.List[ConfigurationProperty]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L33-L61">list_config_properties</a>() -> typing.List[ConfigurationProperty]</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.admin.list_config_properties()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_config_property</a>(...) -> ConfigurationProperty</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L63-L97">get_config_property</a>(...) -> ConfigurationProperty</code></summary>
 <dl>
 <dd>
 
@@ -210,7 +210,7 @@ client.admin.get_config_property(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_config_property</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L99-L135">update_config_property</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -296,7 +296,7 @@ client.admin.update_config_property(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">reset_config_property</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L137-L172">reset_config_property</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.admin.reset_config_property(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">export_data</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L174-L201">export_data</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.admin.export_data()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">import_data</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L203-L224">import_data</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.admin.import_data(...)
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_log_configurations</a>() -> typing.List[NamedLogConfiguration]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L226-L251">list_log_configurations</a>() -> typing.List[NamedLogConfiguration]</code></summary>
 <dl>
 <dd>
 
@@ -570,7 +570,7 @@ client.admin.list_log_configurations()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L253-L282">get_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -642,7 +642,7 @@ client.admin.get_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">set_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L284-L317">set_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.admin.set_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">remove_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L319-L349">remove_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -795,7 +795,7 @@ client.admin.remove_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_role_mappings</a>() -> typing.List[RoleMapping]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L351-L379">list_role_mappings</a>() -> typing.List[RoleMapping]</code></summary>
 <dl>
 <dd>
 
@@ -861,7 +861,7 @@ client.admin.list_role_mappings()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">create_role_mapping</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L381-L428">create_role_mapping</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -940,7 +940,7 @@ client.admin.create_role_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_role_mapping</a>(...) -> RoleMapping</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L430-L464">get_role_mapping</a>(...) -> RoleMapping</code></summary>
 <dl>
 <dd>
 
@@ -1017,7 +1017,7 @@ client.admin.get_role_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_role_mapping</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L466-L502">update_role_mapping</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1103,7 +1103,7 @@ client.admin.update_role_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">delete_role_mapping</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L504-L537">delete_role_mapping</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1181,7 +1181,7 @@ client.admin.delete_role_mapping(
 </details>
 
 ## Global rules
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">list_global_rules</a>() -> typing.List[RuleType]</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L30-L56">list_global_rules</a>() -> typing.List[RuleType]</code></summary>
 <dl>
 <dd>
 
@@ -1247,7 +1247,7 @@ client.global_rules.list_global_rules()
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">create_global_rule</a>(...)</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L58-L98">create_global_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1326,7 +1326,7 @@ client.global_rules.create_global_rule(
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">delete_all_global_rules</a>()</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L100-L125">delete_all_global_rules</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1392,7 +1392,7 @@ client.global_rules.delete_all_global_rules()
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">get_global_rule_config</a>(...) -> Rule</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L127-L162">get_global_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.global_rules.get_global_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">update_global_rule_config</a>(...) -> Rule</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L164-L212">update_global_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.global_rules.update_global_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">delete_global_rule</a>(...)</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py#L214-L248">delete_global_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1639,7 +1639,7 @@ client.global_rules.delete_global_rule(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>(...) -> GroupSearchResults</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L34-L81">list_groups</a>(...) -> GroupSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -1738,7 +1738,7 @@ The field to sort by.  Can be one of:
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> GroupMetaData</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L83-L131">create_group</a>(...) -> GroupMetaData</code></summary>
 <dl>
 <dd>
 
@@ -1836,7 +1836,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_by_id</a>(...) -> GroupMetaData</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L133-L167">get_group_by_id</a>(...) -> GroupMetaData</code></summary>
 <dl>
 <dd>
 
@@ -1913,7 +1913,7 @@ client.groups.get_group_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group_by_id</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L169-L200">delete_group_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1991,7 +1991,7 @@ client.groups.delete_group_by_id(
 </details>
 
 ## Artifacts
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">list_artifacts_in_group</a>(...) -> ArtifactSearchResults</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L45-L98">list_artifacts_in_group</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -2100,7 +2100,7 @@ The field to sort by.  Can be one of:
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">create_artifact</a>(...) -> ArtifactMetaData</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L100-L263">create_artifact</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -2341,7 +2341,7 @@ automatically (starting with version `1`).
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">delete_artifacts_in_group</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L265-L293">delete_artifacts_in_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2413,7 +2413,7 @@ client.artifacts.delete_artifacts_in_group(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_latest_artifact</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L295-L345">get_latest_artifact</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2509,7 +2509,7 @@ client.artifacts.get_latest_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">update_artifact</a>(...) -> ArtifactMetaData</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L347-L441">update_artifact</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -2666,7 +2666,7 @@ provided, the server will extract the name from the artifact content.
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">delete_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L443-L479">delete_artifact</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2751,7 +2751,7 @@ client.artifacts.delete_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">update_artifact_state</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L481-L530">update_artifact_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2848,7 +2848,7 @@ client.artifacts.update_artifact_state(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_hash</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L532-L568">get_content_by_hash</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2927,7 +2927,7 @@ client.artifacts.get_content_by_hash(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_hash</a>(...) -> typing.List[ArtifactReference]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L570-L603">references_by_content_hash</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -3003,7 +3003,7 @@ client.artifacts.references_by_content_hash(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L605-L641">get_content_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3082,7 +3082,7 @@ client.artifacts.get_content_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L643-L676">references_by_content_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -3158,7 +3158,7 @@ client.artifacts.references_by_content_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_global_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L678-L722">get_content_by_global_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3244,7 +3244,7 @@ client.artifacts.get_content_by_global_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_global_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L724-L757">references_by_global_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -3321,7 +3321,7 @@ client.artifacts.references_by_global_id(
 </details>
 
 ## Metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_meta_data</a>(...) -> ArtifactMetaData</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L36-L75">get_artifact_meta_data</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3408,7 +3408,7 @@ client.metadata.get_artifact_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data_by_content</a>(...) -> VersionMetaData</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L77-L133">get_artifact_version_meta_data_by_content</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3515,7 +3515,7 @@ client.metadata.get_artifact_version_meta_data_by_content(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">update_artifact_meta_data</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L135-L203">update_artifact_meta_data</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3620,7 +3620,7 @@ client.metadata.update_artifact_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_owner</a>(...) -> ArtifactOwner</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L205-L243">get_artifact_owner</a>(...) -> ArtifactOwner</code></summary>
 <dl>
 <dd>
 
@@ -3706,7 +3706,7 @@ client.metadata.get_artifact_owner(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">update_artifact_owner</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L245-L292">update_artifact_owner</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3801,7 +3801,7 @@ client.metadata.update_artifact_owner(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data</a>(...) -> VersionMetaData</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L294-L346">get_artifact_version_meta_data</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3899,7 +3899,7 @@ client.metadata.get_artifact_version_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">update_artifact_version_meta_data</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L348-L424">update_artifact_version_meta_data</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4015,7 +4015,7 @@ client.metadata.update_artifact_version_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">delete_artifact_version_meta_data</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L426-L476">delete_artifact_version_meta_data</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4113,7 +4113,7 @@ client.metadata.delete_artifact_version_meta_data(
 </details>
 
 ## Artifact rules
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">list_artifact_rules</a>(...) -> typing.List[RuleType]</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L36-L77">list_artifact_rules</a>(...) -> typing.List[RuleType]</code></summary>
 <dl>
 <dd>
 
@@ -4202,7 +4202,7 @@ client.artifact_rules.list_artifact_rules(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">create_artifact_rule</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L79-L132">create_artifact_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4300,7 +4300,7 @@ client.artifact_rules.create_artifact_rule(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">delete_artifact_rules</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L134-L172">delete_artifact_rules</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4387,7 +4387,7 @@ client.artifact_rules.delete_artifact_rules(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">get_artifact_rule_config</a>(...) -> Rule</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L174-L228">get_artifact_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -4486,7 +4486,7 @@ client.artifact_rules.get_artifact_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">update_artifact_rule_config</a>(...) -> Rule</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L230-L293">update_artifact_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -4596,7 +4596,7 @@ client.artifact_rules.update_artifact_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">delete_artifact_rule</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L295-L348">delete_artifact_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4697,7 +4697,7 @@ client.artifact_rules.delete_artifact_rule(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">test_update_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py#L350-L411">test_update_artifact</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4807,7 +4807,7 @@ client.artifact_rules.test_update_artifact(
 </details>
 
 ## Versions
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">list_artifact_versions</a>(...) -> VersionSearchResults</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L40-L92">list_artifact_versions</a>(...) -> VersionSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -4909,7 +4909,7 @@ client.versions.list_artifact_versions(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">create_artifact_version</a>(...) -> VersionMetaData</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L94-L187">create_artifact_version</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -5065,7 +5065,7 @@ provided, the server will extract the name from the artifact content.
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L189-L246">get_artifact_version</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5172,7 +5172,7 @@ client.versions.get_artifact_version(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version_references</a>(...) -> typing.List[ArtifactReference]</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L248-L301">get_artifact_version_references</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -5271,7 +5271,7 @@ client.versions.get_artifact_version_references(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">update_artifact_version_state</a>(...)</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L303-L357">update_artifact_version_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5378,7 +5378,7 @@ client.versions.update_artifact_version_state(
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts</a>(...) -> ArtifactSearchResults</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L35-L125">artifacts</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -5540,7 +5540,7 @@ and value `bar`.
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts_by_content</a>(...) -> ArtifactSearchResults</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L127-L197">artifacts_by_content</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -5668,7 +5668,7 @@ The field to sort by.  Can be one of:
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_info</a>() -> SystemInfo</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L27-L50">get_system_info</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -5731,7 +5731,7 @@ client.system.get_system_info()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_resource_limits</a>() -> Limits</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L52-L74">get_resource_limits</a>() -> Limits</code></summary>
 <dl>
 <dd>
 
@@ -5794,7 +5794,7 @@ client.system.get_resource_limits()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_current_user_info</a>() -> UserInfo</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L48">get_current_user_info</a>() -> UserInfo</code></summary>
 <dl>
 <dd>
 

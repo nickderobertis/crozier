@@ -1,6 +1,6 @@
 # Reference
 ## Deployment
-<details><summary><code>client.deployment.<a href="src/fern/deployment/client.py">license_status</a>() -> DeploymentLicenseStatusResponse</code></summary>
+<details><summary><code>client.deployment.<a href="src/fern/deployment/client.py#L26-L51">license_status</a>() -> DeploymentLicenseStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.deployment.license_status()
 </details>
 
 ## Doc
-<details><summary><code>client.doc.<a href="src/fern/doc/client.py">head</a>(...) -> DocHead200Response</code></summary>
+<details><summary><code>client.doc.<a href="src/fern/doc/client.py#L47-L83">head</a>(...) -> DocHead200Response</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.doc.head(
 </dl>
 </details>
 
-<details><summary><code>client.doc.<a href="src/fern/doc/client.py">download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.<a href="src/fern/doc/client.py#L85-L127">download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.doc.download(
 </dl>
 </details>
 
-<details><summary><code>client.doc.<a href="src/fern/doc/client.py">manifest</a>(...) -> DocManifest200Response</code></summary>
+<details><summary><code>client.doc.<a href="src/fern/doc/client.py#L129-L171">manifest</a>(...) -> DocManifest200Response</code></summary>
 <dl>
 <dd>
 
@@ -265,7 +265,7 @@ client.doc.manifest(
 </dl>
 </details>
 
-<details><summary><code>client.doc.<a href="src/fern/doc/client.py">render</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.<a href="src/fern/doc/client.py#L173-L222">render</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.doc.render(
 </dl>
 </details>
 
-<details><summary><code>client.doc.<a href="src/fern/doc/client.py">text</a>(...) -> DocText200Response</code></summary>
+<details><summary><code>client.doc.<a href="src/fern/doc/client.py#L224-L271">text</a>(...) -> DocText200Response</code></summary>
 <dl>
 <dd>
 
@@ -448,7 +448,7 @@ client.doc.text(
 </details>
 
 ## Shares
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">exchange</a>(...) -> SharesExchange200Response</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L33-L72">exchange</a>(...) -> SharesExchange200Response</code></summary>
 <dl>
 <dd>
 
@@ -528,7 +528,7 @@ client.shares.exchange(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list</a>(...) -> SharesList200Response</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L74-L117">list</a>(...) -> SharesList200Response</code></summary>
 <dl>
 <dd>
 
@@ -610,7 +610,7 @@ client.shares.list(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">create</a>(...) -> SharesCreate200Response</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L119-L186">create</a>(...) -> SharesCreate200Response</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +742,7 @@ client.shares.create(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">get</a>(...) -> SharesGet200Response</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L188-L220">get</a>(...) -> SharesGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -809,7 +809,7 @@ client.shares.get(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L222-L251">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -876,7 +876,7 @@ client.shares.delete(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">update</a>(...) -> SharesUpdate200Response</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L253-L317">update</a>(...) -> SharesUpdate200Response</code></summary>
 <dl>
 <dd>
 
@@ -992,7 +992,7 @@ client.shares.update(
 </details>
 
 ## Tenants
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">list</a>(...) -> TenantsList200Response</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L32-L65">list</a>(...) -> TenantsList200Response</code></summary>
 <dl>
 <dd>
 
@@ -1056,7 +1056,7 @@ client.tenants.list()
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">create</a>(...) -> TenantsCreate200Response</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L67-L98">create</a>(...) -> TenantsCreate200Response</code></summary>
 <dl>
 <dd>
 
@@ -1122,7 +1122,7 @@ client.tenants.create(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">get</a>(...) -> TenantsGet200Response</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L100-L127">get</a>(...) -> TenantsGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -1180,7 +1180,7 @@ client.tenants.get(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L129-L157">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1252,7 @@ client.tenants.delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">resume</a>(...)</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L159-L185">resume</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1310,7 +1310,7 @@ client.tenants.resume(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">suspend</a>(...)</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L187-L223">suspend</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1390,7 +1390,7 @@ client.tenants.suspend(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">usage</a>(...) -> TenantsUsage200Response</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L225-L262">usage</a>(...) -> TenantsUsage200Response</code></summary>
 <dl>
 <dd>
 
@@ -1471,7 +1471,7 @@ client.tenants.usage(
 </details>
 
 ## Documents
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">list</a>(...) -> DocumentsList200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L42-L85">list</a>(...) -> DocumentsList200Response</code></summary>
 <dl>
 <dd>
 
@@ -1553,7 +1553,7 @@ client.documents.list(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">get</a>(...) -> DocumentsGet200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L87-L119">get</a>(...) -> DocumentsGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -1620,7 +1620,7 @@ client.documents.get(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L121-L150">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1687,7 +1687,7 @@ client.documents.delete(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">commit</a>(...) -> DocumentsCommit200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L152-L187">commit</a>(...) -> DocumentsCommit200Response</code></summary>
 <dl>
 <dd>
 
@@ -1763,7 +1763,7 @@ client.documents.commit(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L189-L221">download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1830,7 +1830,7 @@ client.documents.download(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L223-L255">thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1897,7 +1897,7 @@ client.documents.thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">upload_proxy</a>(...) -> DocumentsUploadProxy200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L257-L294">upload_proxy</a>(...) -> DocumentsUploadProxy200Response</code></summary>
 <dl>
 <dd>
 
@@ -1987,7 +1987,7 @@ client.documents.upload_proxy(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">import_from</a>(...) -> DocumentsImportFrom200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L296-L371">import_from</a>(...) -> DocumentsImportFrom200Response</code></summary>
 <dl>
 <dd>
 
@@ -2119,7 +2119,7 @@ client.documents.import_from(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">init</a>(...) -> DocumentsInit200Response</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L373-L443">init</a>(...) -> DocumentsInit200Response</code></summary>
 <dl>
 <dd>
 
@@ -2244,7 +2244,7 @@ client.documents.init(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">issue</a>(...) -> TokensIssue200Response</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L30-L69">issue</a>(...) -> TokensIssue200Response</code></summary>
 <dl>
 <dd>
 
@@ -2332,7 +2332,7 @@ client.tokens.issue(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">revoke</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L71-L116">revoke</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2430,7 +2430,7 @@ client.tokens.revoke(
 </details>
 
 ## Doc Annotations
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">list_all</a>(...) -> DocAnnotationsListAll200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L38-L82">list_all</a>(...) -> DocAnnotationsListAll200Response</code></summary>
 <dl>
 <dd>
 
@@ -2519,7 +2519,7 @@ client.doc.annotations.list_all(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">list</a>(...) -> DocAnnotationsList200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L84-L131">list</a>(...) -> DocAnnotationsList200Response</code></summary>
 <dl>
 <dd>
 
@@ -2603,7 +2603,7 @@ client.doc.annotations.list(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">create</a>(...) -> DocAnnotationsCreate200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L133-L191">create</a>(...) -> DocAnnotationsCreate200Response</code></summary>
 <dl>
 <dd>
 
@@ -2712,7 +2712,7 @@ client.doc.annotations.create(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">delete</a>(...) -> DocAnnotationsDelete200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L193-L249">delete</a>(...) -> DocAnnotationsDelete200Response</code></summary>
 <dl>
 <dd>
 
@@ -2805,7 +2805,7 @@ client.doc.annotations.delete(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">update</a>(...) -> DocAnnotationsUpdate200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L251-L312">update</a>(...) -> DocAnnotationsUpdate200Response</code></summary>
 <dl>
 <dd>
 
@@ -2909,7 +2909,7 @@ client.doc.annotations.update(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">export_appearance</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L314-L370">export_appearance</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3004,7 +3004,7 @@ client.doc.annotations.export_appearance(
 </dl>
 </details>
 
-<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py">flatten</a>(...) -> DocAnnotationsFlatten200Response</code></summary>
+<details><summary><code>client.doc.annotations.<a href="src/fern/doc/annotations/client.py#L372-L428">flatten</a>(...) -> DocAnnotationsFlatten200Response</code></summary>
 <dl>
 <dd>
 
@@ -3100,7 +3100,7 @@ client.doc.annotations.flatten(
 </details>
 
 ## Doc Forms
-<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py">get</a>(...) -> DocFormsGet200Response</code></summary>
+<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py#L35-L77">get</a>(...) -> DocFormsGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -3175,7 +3175,7 @@ client.doc.forms.get(
 </dl>
 </details>
 
-<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py">export_data</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py#L79-L124">export_data</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3258,7 +3258,7 @@ client.doc.forms.export_data(
 </dl>
 </details>
 
-<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py">import_data</a>(...) -> DocFormsImportData200Response</code></summary>
+<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py#L126-L172">import_data</a>(...) -> DocFormsImportData200Response</code></summary>
 <dl>
 <dd>
 
@@ -3344,7 +3344,7 @@ client.doc.forms.import_data(
 </dl>
 </details>
 
-<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py">reset</a>(...) -> DocFormsReset200Response</code></summary>
+<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py#L174-L220">reset</a>(...) -> DocFormsReset200Response</code></summary>
 <dl>
 <dd>
 
@@ -3428,7 +3428,7 @@ client.doc.forms.reset(
 </dl>
 </details>
 
-<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py">set_value</a>(...) -> DocFormsSetValue200Response</code></summary>
+<details><summary><code>client.doc.forms.<a href="src/fern/doc/forms/client.py#L222-L277">set_value</a>(...) -> DocFormsSetValue200Response</code></summary>
 <dl>
 <dd>
 
@@ -3524,7 +3524,7 @@ client.doc.forms.set_value(
 </details>
 
 ## Doc Metadata
-<details><summary><code>client.doc.metadata.<a href="src/fern/doc/metadata/client.py">get</a>(...) -> DocMetadataGet200Response</code></summary>
+<details><summary><code>client.doc.metadata.<a href="src/fern/doc/metadata/client.py#L26-L68">get</a>(...) -> DocMetadataGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -3600,7 +3600,7 @@ client.doc.metadata.get(
 </details>
 
 ## Doc Pages
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">set_scale</a>(...) -> DocPagesSetScale200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L48-L103">set_scale</a>(...) -> DocPagesSetScale200Response</code></summary>
 <dl>
 <dd>
 
@@ -3693,7 +3693,7 @@ client.doc.pages.set_scale(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">viewports</a>(...) -> DocPagesViewports200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L105-L152">viewports</a>(...) -> DocPagesViewports200Response</code></summary>
 <dl>
 <dd>
 
@@ -3777,7 +3777,7 @@ client.doc.pages.viewports(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">delete</a>(...) -> DocPagesDelete200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L154-L200">delete</a>(...) -> DocPagesDelete200Response</code></summary>
 <dl>
 <dd>
 
@@ -3863,7 +3863,7 @@ client.doc.pages.delete(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">extract</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L202-L250">extract</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3963,7 +3963,7 @@ client.doc.pages.extract(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">flatten</a>(...) -> DocPagesFlatten200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L252-L298">flatten</a>(...) -> DocPagesFlatten200Response</code></summary>
 <dl>
 <dd>
 
@@ -4049,7 +4049,7 @@ client.doc.pages.flatten(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">insert</a>(...) -> DocPagesInsert200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L300-L348">insert</a>(...) -> DocPagesInsert200Response</code></summary>
 <dl>
 <dd>
 
@@ -4147,7 +4147,7 @@ client.doc.pages.insert(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">insert_blank</a>(...) -> DocPagesInsertBlank200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L350-L398">insert_blank</a>(...) -> DocPagesInsertBlank200Response</code></summary>
 <dl>
 <dd>
 
@@ -4247,7 +4247,7 @@ client.doc.pages.insert_blank(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">move</a>(...) -> DocPagesMove200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L400-L446">move</a>(...) -> DocPagesMove200Response</code></summary>
 <dl>
 <dd>
 
@@ -4333,7 +4333,7 @@ client.doc.pages.move(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">set_name</a>(...) -> DocPagesSetName200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L448-L494">set_name</a>(...) -> DocPagesSetName200Response</code></summary>
 <dl>
 <dd>
 
@@ -4419,7 +4419,7 @@ client.doc.pages.set_name(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">remove_name</a>(...) -> DocPagesRemoveName200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L496-L542">remove_name</a>(...) -> DocPagesRemoveName200Response</code></summary>
 <dl>
 <dd>
 
@@ -4505,7 +4505,7 @@ client.doc.pages.remove_name(
 </dl>
 </details>
 
-<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py">rotate</a>(...) -> DocPagesRotate200Response</code></summary>
+<details><summary><code>client.doc.pages.<a href="src/fern/doc/pages/client.py#L544-L590">rotate</a>(...) -> DocPagesRotate200Response</code></summary>
 <dl>
 <dd>
 
@@ -4592,7 +4592,7 @@ client.doc.pages.rotate(
 </details>
 
 ## Doc Redactions
-<details><summary><code>client.doc.redactions.<a href="src/fern/doc/redactions/client.py">apply</a>(...) -> DocRedactionsApply200Response</code></summary>
+<details><summary><code>client.doc.redactions.<a href="src/fern/doc/redactions/client.py#L30-L76">apply</a>(...) -> DocRedactionsApply200Response</code></summary>
 <dl>
 <dd>
 
@@ -4679,7 +4679,7 @@ client.doc.redactions.apply(
 </details>
 
 ## Doc Signatures
-<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py">list</a>(...) -> DocSignaturesList200Response</code></summary>
+<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py#L36-L80">list</a>(...) -> DocSignaturesList200Response</code></summary>
 <dl>
 <dd>
 
@@ -4768,7 +4768,7 @@ client.doc.signatures.list(
 </dl>
 </details>
 
-<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py">abort</a>(...) -> DocSignaturesAbort200Response</code></summary>
+<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py#L82-L128">abort</a>(...) -> DocSignaturesAbort200Response</code></summary>
 <dl>
 <dd>
 
@@ -4852,7 +4852,7 @@ client.doc.signatures.abort(
 </dl>
 </details>
 
-<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py">complete</a>(...) -> DocSignaturesComplete200Response</code></summary>
+<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py#L130-L197">complete</a>(...) -> DocSignaturesComplete200Response</code></summary>
 <dl>
 <dd>
 
@@ -4972,7 +4972,7 @@ client.doc.signatures.complete(
 </dl>
 </details>
 
-<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py">analysis</a>(...) -> DocSignaturesAnalysis200Response</code></summary>
+<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py#L199-L258">analysis</a>(...) -> DocSignaturesAnalysis200Response</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.doc.signatures.analysis(
 </dl>
 </details>
 
-<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py">prepare</a>(...) -> DocSignaturesPrepare200Response</code></summary>
+<details><summary><code>client.doc.signatures.<a href="src/fern/doc/signatures/client.py#L260-L308">prepare</a>(...) -> DocSignaturesPrepare200Response</code></summary>
 <dl>
 <dd>
 
@@ -5184,7 +5184,7 @@ client.doc.signatures.prepare(
 </details>
 
 ## Doc Versions
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">list</a>(...) -> DocVersionsList200Response</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L30-L68">list</a>(...) -> DocVersionsList200Response</code></summary>
 <dl>
 <dd>
 
@@ -5264,7 +5264,7 @@ client.doc.versions.list(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">analysis</a>(...) -> DocVersionsAnalysis200Response</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L70-L137">analysis</a>(...) -> DocVersionsAnalysis200Response</code></summary>
 <dl>
 <dd>
 
@@ -5393,7 +5393,7 @@ client.doc.versions.analysis(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L139-L181">download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5468,7 +5468,7 @@ client.doc.versions.download(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">revision</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L183-L229">revision</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5552,7 +5552,7 @@ client.doc.versions.revision(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">signatures</a>(...) -> DocVersionsSignatures200Response</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L231-L273">signatures</a>(...) -> DocVersionsSignatures200Response</code></summary>
 <dl>
 <dd>
 
@@ -5627,7 +5627,7 @@ client.doc.versions.signatures(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">signature_contents</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L275-L323">signature_contents</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5725,7 +5725,7 @@ client.doc.versions.signature_contents(
 </dl>
 </details>
 
-<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py">signature_digest</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.doc.versions.<a href="src/fern/doc/versions/client.py#L325-L379">signature_digest</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

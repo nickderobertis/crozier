@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "4f4810443ab53ee3f2c303a4715fdc01885923cf0b0337574f9e3cf2fed952d9"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "be2def2080438ff1cd6e6af719f565b9860a73afffe140b379f1dadd54944afc"
 
 [[covers]]
 key = "security-scheme-token-variable-name"

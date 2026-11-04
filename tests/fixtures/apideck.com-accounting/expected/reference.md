@@ -1,6 +1,6 @@
 # Reference
 ## Balance Sheet
-<details><summary><code>client.balance_sheet.<a href="src/fern/balance_sheet/client.py">one</a>(...) -> GetBalanceSheetResponse</code></summary>
+<details><summary><code>client.balance_sheet.<a href="src/fern/balance_sheet/client.py#L28-L73">one</a>(...) -> GetBalanceSheetResponse</code></summary>
 <dl>
 <dd>
 
@@ -205,7 +205,7 @@ client.bills.all_(
 </dl>
 </details>
 
-<details><summary><code>client.bills.<a href="src/fern/bills/client.py">add</a>(...) -> CreateBillResponse</code></summary>
+<details><summary><code>client.bills.<a href="src/fern/bills/client.py#L117-L280">add</a>(...) -> CreateBillResponse</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.bills.add()
 </dl>
 </details>
 
-<details><summary><code>client.bills.<a href="src/fern/bills/client.py">one</a>(...) -> GetBillResponse</code></summary>
+<details><summary><code>client.bills.<a href="src/fern/bills/client.py#L282-L328">one</a>(...) -> GetBillResponse</code></summary>
 <dl>
 <dd>
 
@@ -378,7 +378,7 @@ client.bills.one(
 </dl>
 </details>
 
-<details><summary><code>client.bills.<a href="src/fern/bills/client.py">delete</a>(...) -> DeleteBillResponse</code></summary>
+<details><summary><code>client.bills.<a href="src/fern/bills/client.py#L330-L367">delete</a>(...) -> DeleteBillResponse</code></summary>
 <dl>
 <dd>
 
@@ -461,7 +461,7 @@ client.bills.delete(
 </dl>
 </details>
 
-<details><summary><code>client.bills.<a href="src/fern/bills/client.py">update</a>(...) -> UpdateBillResponse</code></summary>
+<details><summary><code>client.bills.<a href="src/fern/bills/client.py#L369-L539">update</a>(...) -> UpdateBillResponse</code></summary>
 <dl>
 <dd>
 
@@ -553,7 +553,7 @@ client.bills.update(
 </details>
 
 ## Company Info
-<details><summary><code>client.company_info.<a href="src/fern/company_info/client.py">one</a>(...) -> GetCompanyInfoResponse</code></summary>
+<details><summary><code>client.company_info.<a href="src/fern/company_info/client.py#L26-L67">one</a>(...) -> GetCompanyInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -744,7 +744,7 @@ client.credit_notes.all_(
 </dl>
 </details>
 
-<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py">add</a>(...) -> CreateCreditNoteResponse</code></summary>
+<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py#L111-L274">add</a>(...) -> CreateCreditNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -827,7 +827,7 @@ client.credit_notes.add(
 </dl>
 </details>
 
-<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py">one</a>(...) -> GetCreditNoteResponse</code></summary>
+<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py#L276-L322">one</a>(...) -> GetCreditNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -919,7 +919,7 @@ client.credit_notes.one(
 </dl>
 </details>
 
-<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py">delete</a>(...) -> DeleteCreditNoteResponse</code></summary>
+<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py#L324-L361">delete</a>(...) -> DeleteCreditNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1002,7 +1002,7 @@ client.credit_notes.delete(
 </dl>
 </details>
 
-<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py">update</a>(...) -> UpdateCreditNoteResponse</code></summary>
+<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py#L363-L532">update</a>(...) -> UpdateCreditNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1210,7 +1210,7 @@ client.customers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add</a>(...) -> CreateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L126-L286">add</a>(...) -> CreateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.customers.add()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...) -> GetCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L288-L334">one</a>(...) -> GetCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1383,7 +1383,7 @@ client.customers.one(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete</a>(...) -> DeleteCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L336-L373">delete</a>(...) -> DeleteCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1466,7 +1466,7 @@ client.customers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update</a>(...) -> UpdateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L375-L542">update</a>(...) -> UpdateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1673,7 +1673,7 @@ client.invoice_items.all_(
 </dl>
 </details>
 
-<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py">add</a>(...) -> CreateInvoiceItemResponse</code></summary>
+<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py#L115-L255">add</a>(...) -> CreateInvoiceItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -1754,7 +1754,7 @@ client.invoice_items.add()
 </dl>
 </details>
 
-<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py">one</a>(...) -> GetInvoiceItemResponse</code></summary>
+<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py#L257-L303">one</a>(...) -> GetInvoiceItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -1846,7 +1846,7 @@ client.invoice_items.one(
 </dl>
 </details>
 
-<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py">delete</a>(...) -> DeleteTaxRateResponse</code></summary>
+<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py#L305-L342">delete</a>(...) -> DeleteTaxRateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1929,7 +1929,7 @@ client.invoice_items.delete(
 </dl>
 </details>
 
-<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py">update</a>(...) -> UpdateInvoiceItemsResponse</code></summary>
+<details><summary><code>client.invoice_items.<a href="src/fern/invoice_items/client.py#L344-L491">update</a>(...) -> UpdateInvoiceItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2136,7 +2136,7 @@ client.invoices.all_(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">add</a>(...) -> CreateInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L118-L312">add</a>(...) -> CreateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.invoices.add()
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">one</a>(...) -> GetInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L314-L360">one</a>(...) -> GetInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2309,7 +2309,7 @@ client.invoices.one(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">delete</a>(...) -> DeleteInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L362-L399">delete</a>(...) -> DeleteInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2392,7 +2392,7 @@ client.invoices.delete(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">update</a>(...) -> UpdateInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L401-L602">update</a>(...) -> UpdateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2591,7 +2591,7 @@ client.journal_entries.all_(
 </dl>
 </details>
 
-<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py">add</a>(...) -> CreateJournalEntryResponse</code></summary>
+<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py#L106-L201">add</a>(...) -> CreateJournalEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2672,7 +2672,7 @@ client.journal_entries.add()
 </dl>
 </details>
 
-<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py">one</a>(...) -> GetJournalEntryResponse</code></summary>
+<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py#L203-L249">one</a>(...) -> GetJournalEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2764,7 +2764,7 @@ client.journal_entries.one(
 </dl>
 </details>
 
-<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py">delete</a>(...) -> DeleteJournalEntryResponse</code></summary>
+<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py#L251-L288">delete</a>(...) -> DeleteJournalEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2847,7 +2847,7 @@ client.journal_entries.delete(
 </dl>
 </details>
 
-<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py">update</a>(...) -> UpdateJournalEntryResponse</code></summary>
+<details><summary><code>client.journal_entries.<a href="src/fern/journal_entries/client.py#L290-L392">update</a>(...) -> UpdateJournalEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3046,7 +3046,7 @@ client.ledger_accounts.all_(
 </dl>
 </details>
 
-<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py">add</a>(...) -> CreateLedgerAccountResponse</code></summary>
+<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py#L112-L289">add</a>(...) -> CreateLedgerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3127,7 +3127,7 @@ client.ledger_accounts.add()
 </dl>
 </details>
 
-<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py">one</a>(...) -> GetLedgerAccountResponse</code></summary>
+<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py#L291-L337">one</a>(...) -> GetLedgerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3219,7 +3219,7 @@ client.ledger_accounts.one(
 </dl>
 </details>
 
-<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py">delete</a>(...) -> DeleteLedgerAccountResponse</code></summary>
+<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py#L339-L376">delete</a>(...) -> DeleteLedgerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3302,7 +3302,7 @@ client.ledger_accounts.delete(
 </dl>
 </details>
 
-<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py">update</a>(...) -> UpdateLedgerAccountResponse</code></summary>
+<details><summary><code>client.ledger_accounts.<a href="src/fern/ledger_accounts/client.py#L378-L562">update</a>(...) -> UpdateLedgerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.payments.all_(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">add</a>(...) -> CreatePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L111-L274">add</a>(...) -> CreatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3586,7 +3586,7 @@ client.payments.add(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">one</a>(...) -> GetPaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L276-L322">one</a>(...) -> GetPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3678,7 +3678,7 @@ client.payments.one(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">delete</a>(...) -> DeletePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L324-L361">delete</a>(...) -> DeletePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3761,7 +3761,7 @@ client.payments.delete(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">update</a>(...) -> UpdatePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L363-L532">update</a>(...) -> UpdatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3856,7 +3856,7 @@ client.payments.update(
 </details>
 
 ## Profit and Loss
-<details><summary><code>client.profit_and_loss.<a href="src/fern/profit_and_loss/client.py">one</a>(...) -> GetProfitAndLossResponse</code></summary>
+<details><summary><code>client.profit_and_loss.<a href="src/fern/profit_and_loss/client.py#L28-L79">one</a>(...) -> GetProfitAndLossResponse</code></summary>
 <dl>
 <dd>
 
@@ -4071,7 +4071,7 @@ client.suppliers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">add</a>(...) -> CreateSupplierResponse</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L125-L276">add</a>(...) -> CreateSupplierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4152,7 +4152,7 @@ client.suppliers.add()
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">one</a>(...) -> GetSupplierResponse</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L278-L324">one</a>(...) -> GetSupplierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4244,7 +4244,7 @@ client.suppliers.one(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">delete</a>(...) -> DeleteSupplierResponse</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L326-L363">delete</a>(...) -> DeleteSupplierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4327,7 +4327,7 @@ client.suppliers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">update</a>(...) -> UpdateSupplierResponse</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L365-L523">update</a>(...) -> UpdateSupplierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4534,7 +4534,7 @@ client.tax_rates.all_(
 </dl>
 </details>
 
-<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py">add</a>(...) -> CreateTaxRateResponse</code></summary>
+<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py#L109-L231">add</a>(...) -> CreateTaxRateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4615,7 +4615,7 @@ client.tax_rates.add()
 </dl>
 </details>
 
-<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py">one</a>(...) -> GetTaxRateResponse</code></summary>
+<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py#L233-L279">one</a>(...) -> GetTaxRateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4707,7 +4707,7 @@ client.tax_rates.one(
 </dl>
 </details>
 
-<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py">delete</a>(...) -> DeleteTaxRateResponse</code></summary>
+<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py#L281-L318">delete</a>(...) -> DeleteTaxRateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4790,7 +4790,7 @@ client.tax_rates.delete(
 </dl>
 </details>
 
-<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py">update</a>(...) -> UpdateTaxRateResponse</code></summary>
+<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py#L320-L449">update</a>(...) -> UpdateTaxRateResponse</code></summary>
 <dl>
 <dd>
 

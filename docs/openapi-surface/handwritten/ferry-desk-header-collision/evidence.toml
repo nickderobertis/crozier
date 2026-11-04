@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "1c4b36ea070a2c31b9d5768ae9fece76d1f98dfd6c930836dbcee81ae86449e9"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "dfd569ea31e777c3acaaf0a38ca45c83d77c596596b74e3e38a2ac1e44839908"
 
 [[covers]]
 key = "combo-body-property-named-as-header-param"

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_holder</a>() -> Holder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L124">get_holder</a>() -> Holder</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_holder()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_routes</a>(...) -> Route</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L152">list_routes</a>(...) -> Route</code></summary>
 <dl>
 <dd>
 
@@ -101,7 +101,7 @@ client.list_routes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_route</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L186">create_route</a>(...)</code></summary>
 <dl>
 <dd>
 

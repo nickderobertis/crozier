@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "0daece9466a93b5faf53a55ec0cbe3a8dcf1dcf35162d6b7885b6530a9130c67"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "ac032504b34273110194a8d2a2058707af03e7c6d79c35a307d1a8b0c819e68e"
 
 [[covers]]
 key = "response-status-space-suffixed"

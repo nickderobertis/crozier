@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">store_measurement</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L129">store_measurement</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.store_measurement(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">store_inline_measurement</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L131-L159">store_inline_measurement</a>(...)</code></summary>
 <dl>
 <dd>
 

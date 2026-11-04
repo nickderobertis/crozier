@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_answer</a>(...) -> typing.Optional[GetAnswerResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L125">get_answer</a>(...) -> typing.Optional[GetAnswerResponse]</code></summary>
 <dl>
 <dd>
 

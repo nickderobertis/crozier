@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "519bb732523618037d3d9a97e3571bc95322d1e1bbd81750d7f5fdf98ca4eb10"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "0c96b0248c4e0909a2486f893e9e654e17b184a4d9d669d81b9ff8cb9aaa50b2"
 
 [[covers]]
 key = "property-ref-to-nullable-component-annotation"

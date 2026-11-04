@@ -6,3 +6,5 @@ Warnings for generators.yml:
         issue: Tag name "Grünstrom" contains non-ASCII characters: ü. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
 
 Found 1 error and 0 warnings in <n> seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

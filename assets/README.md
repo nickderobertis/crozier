@@ -14,7 +14,7 @@ version.
   [`../licenses/fern-APACHE-2.0.txt`](../licenses/fern-APACHE-2.0.txt); both must
   be retained, and they cover this vendored runtime as redistributed product
   (not only the test fixtures).
-- **Source:** produced by `fernapi/fern-python-sdk:5.41.3` over the managed Corpus
+- **Source:** produced by `fernapi/fern-python-sdk:5.41.17` over the managed Corpus
   fixtures via `tools/fern-goldens/generate-fern-fixture.sh`.
 - **Change made (Apache-2.0 §4(c)):** Python comments are stripped with the same
   string-safe normalizer used for fixtures, except Fern's `# type: ignore`

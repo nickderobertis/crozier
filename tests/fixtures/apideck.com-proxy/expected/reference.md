@@ -1,6 +1,6 @@
 # Reference
 ## Execute
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">get_proxy</a>() -> typing.Any</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L31-L61">get_proxy</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -68,7 +68,7 @@ client.execute.get_proxy()
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">post_proxy</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L63-L101">post_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.execute.post_proxy(
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">put_proxy</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L103-L141">put_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -226,7 +226,7 @@ client.execute.put_proxy(
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">delete_proxy</a>() -> typing.Any</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L143-L173">delete_proxy</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.execute.delete_proxy()
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">patch_proxy</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py#L175-L213">patch_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

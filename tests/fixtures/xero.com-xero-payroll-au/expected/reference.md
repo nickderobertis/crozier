@@ -1,6 +1,6 @@
 # Reference
 ## PayrollAu
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employees</a>(...) -> Employees</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L51-L99">get_employees</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -85,7 +85,7 @@ client.payroll_au.get_employees(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_employee</a>(...) -> Employees</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L101-L136">create_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -151,7 +151,7 @@ client.payroll_au.create_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employee</a>(...) -> Employees</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L138-L166">get_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -211,7 +211,7 @@ client.payroll_au.get_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_employee</a>(...) -> Employees</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L168-L213">update_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.payroll_au.update_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_applications</a>(...) -> LeaveApplications</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L215-L263">get_leave_applications</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ client.payroll_au.get_leave_applications(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_leave_application</a>(...) -> LeaveApplications</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L265-L294">create_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -447,7 +447,7 @@ client.payroll_au.create_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_application</a>(...) -> LeaveApplications</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L296-L326">get_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.payroll_au.get_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_leave_application</a>(...) -> LeaveApplications</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L328-L367">update_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -578,7 +578,7 @@ client.payroll_au.update_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_items</a>(...) -> PayItems</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L369-L417">get_pay_items</a>(...) -> PayItems</code></summary>
 <dl>
 <dd>
 
@@ -663,7 +663,7 @@ client.payroll_au.get_pay_items(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_item</a>(...) -> PayItems</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L419-L464">create_pay_item</a>(...) -> PayItems</code></summary>
 <dl>
 <dd>
 
@@ -721,7 +721,7 @@ client.payroll_au.create_pay_item()
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_runs</a>(...) -> PayRuns</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L466-L514">get_pay_runs</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -806,7 +806,7 @@ client.payroll_au.get_pay_runs(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_run</a>(...) -> PayRuns</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L516-L549">create_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -870,7 +870,7 @@ client.payroll_au.create_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_run</a>(...) -> PayRuns</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L551-L579">get_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -930,7 +930,7 @@ client.payroll_au.get_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_pay_run</a>(...) -> PayRuns</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L581-L624">update_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -1017,7 +1017,7 @@ client.payroll_au.update_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendars</a>(...) -> PayrollCalendars</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L626-L674">get_payroll_calendars</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1102,7 +1102,7 @@ client.payroll_au.get_payroll_calendars(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L676-L705">create_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1164,7 +1164,7 @@ client.payroll_au.create_payroll_calendar(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L707-L737">get_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1224,7 +1224,7 @@ client.payroll_au.get_payroll_calendar(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payslip</a>(...) -> PayslipObject</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L739-L767">get_payslip</a>(...) -> PayslipObject</code></summary>
 <dl>
 <dd>
 
@@ -1284,7 +1284,7 @@ client.payroll_au.get_payslip(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_payslip</a>(...) -> Payslips</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L769-L808">update_payslip</a>(...) -> Payslips</code></summary>
 <dl>
 <dd>
 
@@ -1369,7 +1369,7 @@ client.payroll_au.update_payslip(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_settings</a>() -> SettingsObject</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L810-L833">get_settings</a>() -> SettingsObject</code></summary>
 <dl>
 <dd>
 
@@ -1419,7 +1419,7 @@ client.payroll_au.get_settings()
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund_products</a>(...) -> SuperFundProducts</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L835-L872">get_superfund_products</a>(...) -> SuperFundProducts</code></summary>
 <dl>
 <dd>
 
@@ -1487,7 +1487,7 @@ client.payroll_au.get_superfund_products(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfunds</a>(...) -> SuperFunds</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L874-L922">get_superfunds</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.payroll_au.get_superfunds(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_superfund</a>(...) -> SuperFunds</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L924-L957">create_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1636,7 +1636,7 @@ client.payroll_au.create_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund</a>(...) -> SuperFunds</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L959-L989">get_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1696,7 +1696,7 @@ client.payroll_au.get_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_superfund</a>(...) -> SuperFunds</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L991-L1034">update_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1783,7 +1783,7 @@ client.payroll_au.update_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheets</a>(...) -> Timesheets</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L1036-L1084">get_timesheets</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 
@@ -1868,7 +1868,7 @@ client.payroll_au.get_timesheets(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_timesheet</a>(...) -> Timesheets</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L1086-L1121">create_timesheet</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 
@@ -1934,7 +1934,7 @@ client.payroll_au.create_timesheet(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheet</a>(...) -> TimesheetObject</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L1123-L1153">get_timesheet</a>(...) -> TimesheetObject</code></summary>
 <dl>
 <dd>
 
@@ -1994,7 +1994,7 @@ client.payroll_au.get_timesheet(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_timesheet</a>(...) -> Timesheets</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py#L1155-L1200">update_timesheet</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 

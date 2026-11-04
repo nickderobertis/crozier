@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">deposit_packet</a>(...) -> Packet</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L150">deposit_packet</a>(...) -> Packet</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ Values are free text of at most 64 characters.
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_packet_note</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L152-L189">add_packet_note</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

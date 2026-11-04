@@ -4,3 +4,5 @@ Warnings for generators.yml:
 [api]: Failed to resolve ./components.yaml#/components/securitySchemes/BearerAuth 
        CliError: Failed to resolve ./components.yaml#/components/securitySchemes/BearerAuth
 All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

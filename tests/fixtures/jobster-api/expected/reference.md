@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">register_a_user</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L28-L81">register_a_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.auth.register_a_user(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">log_in_and_receive_a_jwt</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L83-L115">log_in_and_receive_a_jwt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.auth.log_in_and_receive_a_jwt(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">update_the_authenticated_users_profile</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L117-L161">update_the_authenticated_users_profile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -226,7 +226,7 @@ client.auth.update_the_authenticated_users_profile(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_the_authenticated_users_jobs</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L33-L84">list_the_authenticated_users_jobs</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -323,7 +323,7 @@ client.jobs.list_the_authenticated_users_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">create_a_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L86-L138">create_a_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -397,7 +397,7 @@ client.jobs.create_a_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_status_totals_and_monthly_application_counts</a>()</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L140-L163">get_status_totals_and_monthly_application_counts</a>()</code></summary>
 <dl>
 <dd>
 
@@ -446,7 +446,7 @@ client.jobs.get_status_totals_and_monthly_application_counts()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_one_owned_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L165-L190">get_one_owned_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -505,7 +505,7 @@ client.jobs.get_one_owned_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete_one_owned_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L192-L217">delete_one_owned_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -564,7 +564,7 @@ client.jobs.delete_one_owned_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">update_one_owned_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L219-L274">update_one_owned_job</a>(...)</code></summary>
 <dl>
 <dd>
 

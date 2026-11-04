@@ -1,6 +1,6 @@
 # Reference
 ## Harbor
-<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_berth_assignment</a>(...) -> HarborBerthAssignment</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py#L32-L80">create_berth_assignment</a>(...) -> HarborBerthAssignment</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.harbor.create_berth_assignment(
 </dl>
 </details>
 
-<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_voyage</a>(...) -> HarborVoyage</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py#L82-L130">create_voyage</a>(...) -> HarborVoyage</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.harbor.create_voyage(
 </dl>
 </details>
 
-<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_mooring_permit</a>(...) -> HarborEvent</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py#L132-L172">create_mooring_permit</a>(...) -> HarborEvent</code></summary>
 <dl>
 <dd>
 
@@ -240,7 +240,7 @@ client.harbor.create_mooring_permit(
 </dl>
 </details>
 
-<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_log_entry</a>(...)</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py#L174-L214">create_log_entry</a>(...)</code></summary>
 <dl>
 <dd>
 

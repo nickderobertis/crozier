@@ -1,6 +1,6 @@
 # Reference
 ## Trams
-<details><summary><code>client.trams.<a href="src/fern/trams/client.py">list_trams</a>(...)</code></summary>
+<details><summary><code>client.trams.<a href="src/fern/trams/client.py#L27-L66">list_trams</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.trams.list_trams(
 </dl>
 </details>
 
-<details><summary><code>client.trams.<a href="src/fern/trams/client.py">count_idle</a>()</code></summary>
+<details><summary><code>client.trams.<a href="src/fern/trams/client.py#L68-L89">count_idle</a>()</code></summary>
 <dl>
 <dd>
 

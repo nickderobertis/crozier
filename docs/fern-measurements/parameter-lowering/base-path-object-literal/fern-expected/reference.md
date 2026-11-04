@@ -1,6 +1,6 @@
 # Reference
 ## Layers
-<details><summary><code>client.layers.<a href="src/fern/layers/client.py">create_layer</a>(...) -> Layer</code></summary>
+<details><summary><code>client.layers.<a href="src/fern/layers/client.py#L29-L61">create_layer</a>(...) -> Layer</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.layers.create_layer(
 </dl>
 </details>
 
-<details><summary><code>client.layers.<a href="src/fern/layers/client.py">get_layer</a>(...) -> Layer</code></summary>
+<details><summary><code>client.layers.<a href="src/fern/layers/client.py#L63-L87">get_layer</a>(...) -> Layer</code></summary>
 <dl>
 <dd>
 

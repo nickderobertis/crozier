@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_file_filename_and_length</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L164-L193">get_file_filename_and_length</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_file_filename_and_length(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_ai_chat</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L195-L254">post_api_ai_chat</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -167,7 +167,7 @@ client.post_api_ai_chat(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_ai_completion</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L256-L321">post_api_ai_completion</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -283,7 +283,7 @@ client.post_api_ai_completion(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_ai_inline_completion</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L323-L371">post_api_ai_inline_completion</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -366,7 +366,7 @@ client.post_api_ai_inline_completion(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_ai_invoke_tool</a>(...) -> InvokeAiToolResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L373-L417">post_api_ai_invoke_tool</a>(...) -> InvokeAiToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -443,7 +443,7 @@ client.post_api_ai_invoke_tool(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_ai_mcp_refresh</a>(...) -> McpRefreshResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L419-L449">post_api_ai_mcp_refresh</a>(...) -> McpRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.post_api_ai_mcp_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_ai_mcp_status</a>() -> McpStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L451-L473">get_api_ai_mcp_status</a>() -> McpStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -547,7 +547,7 @@ client.get_api_ai_mcp_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_cache_clear</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L475-L505">post_api_cache_clear</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -604,7 +604,7 @@ client.post_api_cache_clear(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_cache_info</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L507-L537">post_api_cache_info</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.post_api_cache_info(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_discover</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L539-L572">post_api_datasources_discover</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -727,7 +727,7 @@ client.post_api_datasources_discover(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_preview_column</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L574-L632">post_api_datasources_preview_column</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.post_api_datasources_preview_column(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_preview_datasource_connection</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L634-L667">post_api_datasources_preview_datasource_connection</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -894,7 +894,7 @@ client.post_api_datasources_preview_datasource_connection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_preview_sql_schema_list</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L669-L722">post_api_datasources_preview_sql_schema_list</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -986,7 +986,7 @@ client.post_api_datasources_preview_sql_schema_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_preview_sql_table</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L724-L787">post_api_datasources_preview_sql_table</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1096,7 +1096,7 @@ client.post_api_datasources_preview_sql_table(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_datasources_preview_sql_table_list</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L789-L847">post_api_datasources_preview_sql_table_list</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1197,7 +1197,7 @@ client.post_api_datasources_preview_sql_table_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_document_transaction</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L849-L894">post_api_document_transaction</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1271,7 +1271,7 @@ client.post_api_document_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_documentation_snippets</a>(...) -> Snippets</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L896-L926">get_api_documentation_snippets</a>(...) -> Snippets</code></summary>
 <dl>
 <dd>
 
@@ -1328,7 +1328,7 @@ client.get_api_documentation_snippets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_environment</a>() -> GetApiEnvironmentResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L928-L952">get_api_environment</a>() -> GetApiEnvironmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1375,7 +1375,7 @@ client.get_api_environment()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_auto_export_html</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L954-L1007">post_api_export_auto_export_html</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1445,7 +1445,7 @@ client.post_api_export_auto_export_html(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_auto_export_ipynb</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1009-L1042">post_api_export_auto_export_ipynb</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1511,7 +1511,7 @@ client.post_api_export_auto_export_ipynb(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_auto_export_markdown</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1044-L1077">post_api_export_auto_export_markdown</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1577,7 +1577,7 @@ client.post_api_export_auto_export_markdown(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_export_availability</a>() -> ExportAvailabilityResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1079-L1103">get_api_export_availability</a>() -> ExportAvailabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -1624,7 +1624,7 @@ client.get_api_export_availability()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_html</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1105-L1158">post_api_export_html</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1695,7 +1695,7 @@ client.post_api_export_html(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_ipynb</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1160-L1207">post_api_export_ipynb</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1777,7 +1777,7 @@ client.post_api_export_ipynb(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_markdown</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1209-L1249">post_api_export_markdown</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1851,7 +1851,7 @@ client.post_api_export_markdown(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_pdf</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1251-L1302">post_api_export_pdf</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1941,7 +1941,7 @@ client.post_api_export_pdf(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_requirements_install</a>(...) -> ExportAvailabilityResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1304-L1341">post_api_export_requirements_install</a>(...) -> ExportAvailabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2007,7 +2007,7 @@ client.post_api_export_requirements_install(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_script</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1343-L1376">post_api_export_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2073,7 +2073,7 @@ client.post_api_export_script(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_export_update_cell_outputs</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1378-L1415">post_api_export_update_cell_outputs</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -2141,7 +2141,7 @@ client.post_api_export_update_cell_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_copy</a>(...) -> FileCopyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1417-L1448">post_api_files_copy</a>(...) -> FileCopyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2207,7 +2207,7 @@ client.post_api_files_copy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_create</a>(...) -> FileCreateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1450-L1494">post_api_files_create</a>(...) -> FileCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2290,7 +2290,7 @@ client.post_api_files_create(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_delete</a>(...) -> FileDeleteResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1496-L1524">post_api_files_delete</a>(...) -> FileDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2347,7 +2347,7 @@ client.post_api_files_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_files_download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1526-L1555">get_api_files_download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2404,7 +2404,7 @@ client.get_api_files_download(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_file_details</a>(...) -> FileDetailsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1557-L1593">post_api_files_file_details</a>(...) -> FileDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2469,7 +2469,7 @@ client.post_api_files_file_details(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_list_files</a>(...) -> FileListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1595-L1621">post_api_files_list_files</a>(...) -> FileListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2524,7 +2524,7 @@ client.post_api_files_list_files()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_move</a>(...) -> FileMoveResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1623-L1654">post_api_files_move</a>(...) -> FileMoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -2590,7 +2590,7 @@ client.post_api_files_move(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_open</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1656-L1692">post_api_files_open</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -2655,7 +2655,7 @@ client.post_api_files_open(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_search</a>(...) -> FileSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1694-L1748">post_api_files_search</a>(...) -> FileSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2752,7 +2752,7 @@ client.post_api_files_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_files_update</a>(...) -> FileUpdateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1750-L1783">post_api_files_update</a>(...) -> FileUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2818,7 +2818,7 @@ client.post_api_files_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_home_recent_files</a>() -> RecentFilesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1785-L1809">post_api_home_recent_files</a>() -> RecentFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2865,7 +2865,7 @@ client.post_api_home_recent_files()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_home_running_notebooks</a>() -> RunningNotebooksResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1811-L1835">post_api_home_running_notebooks</a>() -> RunningNotebooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2912,7 +2912,7 @@ client.post_api_home_running_notebooks()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_home_shutdown_session</a>(...) -> RunningNotebooksResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1837-L1867">post_api_home_shutdown_session</a>(...) -> RunningNotebooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2969,7 +2969,7 @@ client.post_api_home_shutdown_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_home_tutorial_open</a>(...) -> MarimoFile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1869-L1899">post_api_home_tutorial_open</a>(...) -> MarimoFile</code></summary>
 <dl>
 <dd>
 
@@ -3026,7 +3026,7 @@ client.post_api_home_tutorial_open(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_home_workspace_files</a>(...) -> WorkspaceFilesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1901-L1929">post_api_home_workspace_files</a>(...) -> WorkspaceFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3081,7 +3081,7 @@ client.post_api_home_workspace_files()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_code_autocomplete</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1931-L1980">post_api_kernel_code_autocomplete</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3165,7 +3165,7 @@ client.post_api_kernel_code_autocomplete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_copy</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1982-L2023">post_api_kernel_copy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3240,7 +3240,7 @@ client.post_api_kernel_copy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_delete</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2025-L2058">post_api_kernel_delete</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3306,7 +3306,7 @@ client.post_api_kernel_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_focus_cell</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2060-L2093">post_api_kernel_focus_cell</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3372,7 +3372,7 @@ client.post_api_kernel_focus_cell(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_format</a>(...) -> FormatResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2095-L2128">post_api_kernel_format</a>(...) -> FormatResponse</code></summary>
 <dl>
 <dd>
 
@@ -3440,7 +3440,7 @@ client.post_api_kernel_format(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_function_call</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2130-L2184">post_api_kernel_function_call</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3535,7 +3535,7 @@ client.post_api_kernel_function_call(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_install_missing_packages</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2186-L2234">post_api_kernel_install_missing_packages</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3620,7 +3620,7 @@ client.post_api_kernel_install_missing_packages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_instantiate</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2236-L2288">post_api_kernel_instantiate</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3713,7 +3713,7 @@ client.post_api_kernel_instantiate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_interrupt</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2290-L2320">post_api_kernel_interrupt</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3770,7 +3770,7 @@ client.post_api_kernel_interrupt(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_pdb_breakpoints</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2322-L2365">post_api_kernel_pdb_breakpoints</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3848,7 +3848,7 @@ client.post_api_kernel_pdb_breakpoints(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_pdb_pm</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2367-L2407">post_api_kernel_pdb_pm</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3922,7 +3922,7 @@ client.post_api_kernel_pdb_pm(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_read_code</a>(...) -> ReadCodeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2409-L2439">post_api_kernel_read_code</a>(...) -> ReadCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3979,7 +3979,7 @@ client.post_api_kernel_read_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_rename</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2441-L2474">post_api_kernel_rename</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4045,7 +4045,7 @@ client.post_api_kernel_rename(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_restart_session</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2476-L2506">post_api_kernel_restart_session</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4102,7 +4102,7 @@ client.post_api_kernel_restart_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_run</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2508-L2556">post_api_kernel_run</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4189,7 +4189,7 @@ client.post_api_kernel_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_save</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2558-L2625">post_api_kernel_save</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4319,7 +4319,7 @@ client.post_api_kernel_save(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_save_app_config</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2627-L2664">post_api_kernel_save_app_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4387,7 +4387,7 @@ client.post_api_kernel_save_app_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_save_user_config</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2666-L2702">post_api_kernel_save_user_config</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4454,7 +4454,7 @@ client.post_api_kernel_save_user_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_scratchpad_run</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2704-L2759">post_api_kernel_scratchpad_run</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4552,7 +4552,7 @@ client.post_api_kernel_scratchpad_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_set_cell_config</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2761-L2798">post_api_kernel_set_cell_config</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4622,7 +4622,7 @@ client.post_api_kernel_set_cell_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_set_model_value</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2800-L2857">post_api_kernel_set_model_value</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4726,7 +4726,7 @@ client.post_api_kernel_set_model_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_set_ui_element_value</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2859-L2900">post_api_kernel_set_ui_element_value</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4803,7 +4803,7 @@ client.post_api_kernel_set_ui_element_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_shutdown</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2902-L2930">post_api_kernel_shutdown</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4858,7 +4858,7 @@ client.post_api_kernel_shutdown()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_kernel_status</a>(...) -> KernelStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2932-L2962">get_api_kernel_status</a>(...) -> KernelStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -4915,7 +4915,7 @@ client.get_api_kernel_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_stdin</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2964-L2997">post_api_kernel_stdin</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4981,7 +4981,7 @@ client.post_api_kernel_stdin(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_kernel_takeover</a>(...) -> PostApiKernelTakeoverResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2999-L3029">post_api_kernel_takeover</a>(...) -> PostApiKernelTakeoverResponse</code></summary>
 <dl>
 <dd>
 
@@ -5038,7 +5038,7 @@ client.post_api_kernel_takeover(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_lsp_health</a>() -> LspHealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3031-L3053">get_api_lsp_health</a>() -> LspHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.get_api_lsp_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_lsp_restart</a>(...) -> LspRestartResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3055-L3084">post_api_lsp_restart</a>(...) -> LspRestartResponse</code></summary>
 <dl>
 <dd>
 
@@ -5140,7 +5140,7 @@ client.post_api_lsp_restart()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_packages_add</a>(...) -> PackageOperationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3086-L3125">post_api_packages_add</a>(...) -> PackageOperationResponse</code></summary>
 <dl>
 <dd>
 
@@ -5213,7 +5213,7 @@ client.post_api_packages_add(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_packages_list</a>() -> ListPackagesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3127-L3149">get_api_packages_list</a>() -> ListPackagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5260,7 +5260,7 @@ client.get_api_packages_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_packages_remove</a>(...) -> PackageOperationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3151-L3187">post_api_packages_remove</a>(...) -> PackageOperationResponse</code></summary>
 <dl>
 <dd>
 
@@ -5325,7 +5325,7 @@ client.post_api_packages_remove(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_packages_tree</a>() -> DependencyTreeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3189-L3213">get_api_packages_tree</a>() -> DependencyTreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -5372,7 +5372,7 @@ client.get_api_packages_tree()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_secrets_create</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3215-L3269">post_api_secrets_create</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -5465,7 +5465,7 @@ client.post_api_secrets_create(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_secrets_delete</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3271-L3293">post_api_secrets_delete</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -5512,7 +5512,7 @@ client.post_api_secrets_delete()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_secrets_keys</a>(...) -> ListSecretKeysResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3295-L3328">post_api_secrets_keys</a>(...) -> ListSecretKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -5578,7 +5578,7 @@ client.post_api_secrets_keys(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_sql_validate</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3330-L3387">post_api_sql_validate</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -5678,7 +5678,7 @@ client.post_api_sql_validate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_status</a>() -> GetApiStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3389-L3411">get_api_status</a>() -> GetApiStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -5725,7 +5725,7 @@ client.get_api_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_status_connections</a>() -> GetApiStatusConnectionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3413-L3437">get_api_status_connections</a>() -> GetApiStatusConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5772,7 +5772,7 @@ client.get_api_status_connections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_storage_download</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3439-L3492">post_api_storage_download</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -5864,7 +5864,7 @@ client.post_api_storage_download(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_storage_list_entries</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3494-L3551">post_api_storage_list_entries</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -5964,7 +5964,7 @@ client.post_api_storage_list_entries(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_usage</a>() -> GetApiUsageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3553-L3575">get_api_usage</a>() -> GetApiUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6011,7 +6011,7 @@ client.get_api_usage()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_version</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3577-L3599">get_api_version</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -6059,7 +6059,7 @@ client.get_api_version()
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">submit_login_form</a>(...) -> str</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L29-L56">submit_login_form</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6114,7 +6114,7 @@ client.auth.submit_login_form()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_the_auth_token_for_the_current_session</a>() -> GetAuthTokenResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L58-L82">get_the_auth_token_for_the_current_session</a>() -> GetAuthTokenResponse</code></summary>
 <dl>
 <dd>
 

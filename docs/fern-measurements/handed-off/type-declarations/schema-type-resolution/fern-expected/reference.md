@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_oven_status</a>(...) -> OvenStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L103-L129">get_oven_status</a>(...) -> OvenStatus</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_oven_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">replace_oven_status</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L131-L173">replace_oven_status</a>(...)</code></summary>
 <dl>
 <dd>
 

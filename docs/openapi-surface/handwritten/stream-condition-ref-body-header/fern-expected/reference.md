@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">blend_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L131">blend_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.blend_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">blend</a>(...) -> Swatch</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L162">blend</a>(...) -> Swatch</code></summary>
 <dl>
 <dd>
 

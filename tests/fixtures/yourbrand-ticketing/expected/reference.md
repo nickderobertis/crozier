@@ -1,6 +1,6 @@
 # Reference
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">getusers</a>(...) -> PagedResultOfUser</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L31-L79">getusers</a>(...) -> PagedResultOfUser</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.users.getusers()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">createuser</a>(...) -> UserInfo</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L81-L113">createuser</a>(...) -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.users.createuser()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">getuserinfo</a>() -> UserInfo</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L115-L137">getuserinfo</a>() -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.users.getuserinfo()
 </details>
 
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">gettickets</a>(...) -> PagedResultOfTicket</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L37-L97">gettickets</a>(...) -> PagedResultOfTicket</code></summary>
 <dl>
 <dd>
 
@@ -317,7 +317,7 @@ client.tickets.gettickets()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">createticket</a>(...) -> Ticket</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L99-L175">createticket</a>(...) -> Ticket</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +462,7 @@ client.tickets.createticket()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">getticketevents</a>(...) -> PagedResultOfTicketEvent</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L177-L231">getticketevents</a>(...) -> PagedResultOfTicketEvent</code></summary>
 <dl>
 <dd>
 
@@ -561,7 +561,7 @@ client.tickets.getticketevents(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">getticketbyid</a>(...) -> Ticket</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L233-L267">getticketbyid</a>(...) -> Ticket</code></summary>
 <dl>
 <dd>
 
@@ -628,7 +628,7 @@ client.tickets.getticketbyid(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">deleteticket</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L269-L302">deleteticket</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.tickets.deleteticket(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateproject</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L304-L342">updateproject</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +770,7 @@ client.tickets.updateproject(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updatepriority</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L344-L382">updatepriority</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -845,7 +845,7 @@ client.tickets.updatepriority(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateurgency</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L384-L422">updateurgency</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -920,7 +920,7 @@ client.tickets.updateurgency(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateimpact</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L424-L462">updateimpact</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -995,7 +995,7 @@ client.tickets.updateimpact(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updatetitle</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L464-L503">updatetitle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1071,7 +1071,7 @@ client.tickets.updatetitle(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updatetext</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L505-L544">updatetext</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1147,7 +1147,7 @@ client.tickets.updatetext(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updatestatus</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L546-L585">updatestatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.tickets.updatestatus(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateassignee</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L587-L626">updateassignee</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1299,7 +1299,7 @@ client.tickets.updateassignee(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateestimatedtime</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L628-L667">updateestimatedtime</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1375,7 +1375,7 @@ client.tickets.updateestimatedtime(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updatecompletedtime</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L669-L708">updatecompletedtime</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1451,7 +1451,7 @@ client.tickets.updatecompletedtime(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">updateremainingtime</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L710-L749">updateremainingtime</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1527,7 +1527,7 @@ client.tickets.updateremainingtime(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">getticketcomments</a>(...) -> PagedResultOfTicketComment</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L751-L805">getticketcomments</a>(...) -> PagedResultOfTicketComment</code></summary>
 <dl>
 <dd>
 
@@ -1626,7 +1626,7 @@ client.tickets.getticketcomments(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">postticketcomment</a>(...) -> TicketComment</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L807-L846">postticketcomment</a>(...) -> TicketComment</code></summary>
 <dl>
 <dd>
 
@@ -1701,7 +1701,7 @@ client.tickets.postticketcomment(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">getticketcommentbyid</a>(...) -> TicketComment</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L848-L888">getticketcommentbyid</a>(...) -> TicketComment</code></summary>
 <dl>
 <dd>
 
@@ -1778,7 +1778,7 @@ client.tickets.getticketcommentbyid(
 </details>
 
 ## Ticketstatuses
-<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py">getstatuses</a>(...) -> PagedResultOfTicketStatus</code></summary>
+<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py#L31-L83">getstatuses</a>(...) -> PagedResultOfTicketStatus</code></summary>
 <dl>
 <dd>
 
@@ -1875,7 +1875,7 @@ client.ticketstatuses.getstatuses()
 </dl>
 </details>
 
-<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py">createticketstatus</a>(...) -> TicketStatus</code></summary>
+<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py#L85-L129">createticketstatus</a>(...) -> TicketStatus</code></summary>
 <dl>
 <dd>
 
@@ -1956,7 +1956,7 @@ client.ticketstatuses.createticketstatus()
 </dl>
 </details>
 
-<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py">getticketstatusbyid</a>(...) -> TicketStatus</code></summary>
+<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py#L131-L167">getticketstatusbyid</a>(...) -> TicketStatus</code></summary>
 <dl>
 <dd>
 
@@ -2023,7 +2023,7 @@ client.ticketstatuses.getticketstatusbyid(
 </dl>
 </details>
 
-<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py">updateticketstatus</a>(...) -> TicketStatus</code></summary>
+<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py#L169-L219">updateticketstatus</a>(...) -> TicketStatus</code></summary>
 <dl>
 <dd>
 
@@ -2114,7 +2114,7 @@ client.ticketstatuses.updateticketstatus(
 </dl>
 </details>
 
-<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py">deleteticketstatus</a>(...) -> TicketStatus</code></summary>
+<details><summary><code>client.ticketstatuses.<a href="src/fern/ticketstatuses/client.py#L221-L257">deleteticketstatus</a>(...) -> TicketStatus</code></summary>
 <dl>
 <dd>
 
@@ -2182,7 +2182,7 @@ client.ticketstatuses.deleteticketstatus(
 </details>
 
 ## Teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">getteams</a>(...) -> ItemsResultOfTeam</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L32-L84">getteams</a>(...) -> ItemsResultOfTeam</code></summary>
 <dl>
 <dd>
 
@@ -2279,7 +2279,7 @@ client.teams.getteams()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">createteam</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L86-L123">createteam</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -2352,7 +2352,7 @@ client.teams.createteam()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">getteam</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L125-L159">getteam</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -2419,7 +2419,7 @@ client.teams.getteam(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">updateteam</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L161-L203">updateteam</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -2502,7 +2502,7 @@ client.teams.updateteam(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">deleteteam</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L205-L238">deleteteam</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2569,7 +2569,7 @@ client.teams.deleteteam(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">addmember</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L240-L278">addmember</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2644,7 +2644,7 @@ client.teams.addmember(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">removemember</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L280-L319">removemember</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2720,7 +2720,7 @@ client.teams.removemember(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">getmemberships</a>(...) -> ItemsResultOfTeamMembership</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L321-L379">getmemberships</a>(...) -> ItemsResultOfTeamMembership</code></summary>
 <dl>
 <dd>
 
@@ -2828,7 +2828,7 @@ client.teams.getmemberships(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">getprojects</a>(...) -> ItemsResultOfProject</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L34-L90">getprojects</a>(...) -> ItemsResultOfProject</code></summary>
 <dl>
 <dd>
 
@@ -2933,7 +2933,7 @@ client.projects.getprojects()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">createproject</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L92-L136">createproject</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -3014,7 +3014,7 @@ client.projects.createproject()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">getproject</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L138-L172">getproject</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -3081,7 +3081,7 @@ client.projects.getproject(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">updateproject</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L174-L224">updateproject</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -3172,7 +3172,7 @@ client.projects.updateproject(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">deleteproject</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L226-L259">deleteproject</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3239,7 +3239,7 @@ client.projects.deleteproject(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">getprojectmemberships</a>(...) -> ItemsResultOfProjectMembership</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L261-L315">getprojectmemberships</a>(...) -> ItemsResultOfProjectMembership</code></summary>
 <dl>
 <dd>
 
@@ -3338,7 +3338,7 @@ client.projects.getprojectmemberships(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">createprojectmembership</a>(...) -> ProjectMembership</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L317-L367">createprojectmembership</a>(...) -> ProjectMembership</code></summary>
 <dl>
 <dd>
 
@@ -3429,7 +3429,7 @@ client.projects.createprojectmembership(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">getprojectmembership</a>(...) -> ProjectMembership</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L369-L409">getprojectmembership</a>(...) -> ProjectMembership</code></summary>
 <dl>
 <dd>
 
@@ -3505,7 +3505,7 @@ client.projects.getprojectmembership(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">updateprojectmembership</a>(...) -> ProjectMembership</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L411-L457">updateprojectmembership</a>(...) -> ProjectMembership</code></summary>
 <dl>
 <dd>
 
@@ -3597,7 +3597,7 @@ client.projects.updateprojectmembership(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">deleteprojectmembership</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L459-L498">deleteprojectmembership</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3674,7 +3674,7 @@ client.projects.deleteprojectmembership(
 </details>
 
 ## Projectgroups
-<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py">getprojectgroups</a>(...) -> ItemsResultOfProjectGroup</code></summary>
+<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py#L31-L87">getprojectgroups</a>(...) -> ItemsResultOfProjectGroup</code></summary>
 <dl>
 <dd>
 
@@ -3779,7 +3779,7 @@ client.projectgroups.getprojectgroups()
 </dl>
 </details>
 
-<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py">createprojectgroup</a>(...) -> ProjectGroup</code></summary>
+<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py#L89-L126">createprojectgroup</a>(...) -> ProjectGroup</code></summary>
 <dl>
 <dd>
 
@@ -3852,7 +3852,7 @@ client.projectgroups.createprojectgroup()
 </dl>
 </details>
 
-<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py">getprojectgroup</a>(...) -> ProjectGroup</code></summary>
+<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py#L128-L164">getprojectgroup</a>(...) -> ProjectGroup</code></summary>
 <dl>
 <dd>
 
@@ -3919,7 +3919,7 @@ client.projectgroups.getprojectgroup(
 </dl>
 </details>
 
-<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py">updateprojectgroup</a>(...) -> ProjectGroup</code></summary>
+<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py#L166-L208">updateprojectgroup</a>(...) -> ProjectGroup</code></summary>
 <dl>
 <dd>
 
@@ -4002,7 +4002,7 @@ client.projectgroups.updateprojectgroup(
 </dl>
 </details>
 
-<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py">deleteprojectgroup</a>(...)</code></summary>
+<details><summary><code>client.projectgroups.<a href="src/fern/projectgroups/client.py#L210-L245">deleteprojectgroup</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4070,7 +4070,7 @@ client.projectgroups.deleteprojectgroup(
 </details>
 
 ## Organizations
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">getorganizations</a>(...) -> PagedResultOfOrganization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L31-L79">getorganizations</a>(...) -> PagedResultOfOrganization</code></summary>
 <dl>
 <dd>
 
@@ -4159,7 +4159,7 @@ client.organizations.getorganizations()
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">createorganization</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L81-L113">createorganization</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 

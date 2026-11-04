@@ -1,6 +1,6 @@
 # Reference
 ## auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_code</a>(...) -> CodeDelivery</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L32-L60">create_code</a>(...) -> CodeDelivery</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.auth.create_code(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_session</a>(...) -> Pass</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L62-L95">create_session</a>(...) -> Pass</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.auth.create_session(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">delete_session</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L97-L122">delete_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.auth.delete_session()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">refresh_session</a>(...) -> Pass</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L124-L152">refresh_session</a>(...) -> Pass</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.auth.refresh_session(
 </details>
 
 ## users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_me</a>() -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L30-L54">get_me</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.users.get_me()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_introduction</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L56-L86">create_introduction</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -431,7 +431,7 @@ client.users.create_introduction(
 </details>
 
 ## teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_team</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L31-L59">create_team</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -504,7 +504,7 @@ client.teams.create_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get_team</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L61-L90">get_team</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -577,7 +577,7 @@ client.teams.get_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list_my_teams</a>() -> TeamList</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L92-L116">list_my_teams</a>() -> TeamList</code></summary>
 <dl>
 <dd>
 
@@ -641,7 +641,7 @@ client.teams.list_my_teams()
 </details>
 
 ## invite-links
-<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py">list_invite_links</a>(...) -> InviteLinkList</code></summary>
+<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py#L33-L71">list_invite_links</a>(...) -> InviteLinkList</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.invite_links.list_invite_links(
 </dl>
 </details>
 
-<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py">create_invite_link</a>(...) -> InviteLink</code></summary>
+<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py#L73-L110">create_invite_link</a>(...) -> InviteLink</code></summary>
 <dl>
 <dd>
 
@@ -803,7 +803,7 @@ client.invite_links.create_invite_link(
 </dl>
 </details>
 
-<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py">revoke_invite_link</a>(...)</code></summary>
+<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py#L112-L140">revoke_invite_link</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -876,7 +876,7 @@ client.invite_links.revoke_invite_link(
 </dl>
 </details>
 
-<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py">accept_invite_link</a>(...) -> Team</code></summary>
+<details><summary><code>client.invite_links.<a href="src/fern/invite_links/client.py#L142-L171">accept_invite_link</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 

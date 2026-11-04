@@ -1,6 +1,6 @@
 # Reference
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_session_turns</a>(...) -> SessionTurnPageResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L34-L73">list_session_turns</a>(...) -> SessionTurnPageResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.sessions.list_session_turns(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_sessions</a>(...) -> SessionListResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L75-L116">list_sessions</a>(...) -> SessionListResponse</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.sessions.list_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_session</a>(...) -> SessionDetailResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L118-L155">create_session</a>(...) -> SessionDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.sessions.create_session()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get_session</a>(...) -> SessionDetailResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L157-L185">get_session</a>(...) -> SessionDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -287,7 +287,7 @@ client.sessions.get_session(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">update_session</a>(...) -> SessionDetailResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L187-L238">update_session</a>(...) -> SessionDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -384,7 +384,7 @@ client.sessions.update_session(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get_session_task</a>(...) -> SessionTaskResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L240-L268">get_session_task</a>(...) -> SessionTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -442,7 +442,7 @@ client.sessions.get_session_task(
 </details>
 
 ## Turns
-<details><summary><code>client.turns.<a href="src/fern/turns/client.py">create_turn</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.turns.<a href="src/fern/turns/client.py#L29-L85">create_turn</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -548,7 +548,7 @@ client.turns.create_turn(
 </details>
 
 ## Traces
-<details><summary><code>client.traces.<a href="src/fern/traces/client.py">submit_trace_feedback</a>(...) -> TraceFeedbackResponse</code></summary>
+<details><summary><code>client.traces.<a href="src/fern/traces/client.py#L29-L75">submit_trace_feedback</a>(...) -> TraceFeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -646,7 +646,7 @@ client.traces.submit_trace_feedback(
 </details>
 
 ## Attachments
-<details><summary><code>client.attachments.<a href="src/fern/attachments/client.py">create_attachment</a>(...) -> AttachmentResponse</code></summary>
+<details><summary><code>client.attachments.<a href="src/fern/attachments/client.py#L30-L57">create_attachment</a>(...) -> AttachmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -703,7 +703,7 @@ client.attachments.create_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.attachments.<a href="src/fern/attachments/client.py">get_attachment</a>(...) -> AttachmentResponse</code></summary>
+<details><summary><code>client.attachments.<a href="src/fern/attachments/client.py#L59-L87">get_attachment</a>(...) -> AttachmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -761,7 +761,7 @@ client.attachments.get_attachment(
 </details>
 
 ## Artifacts
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_artifact</a>(...) -> ArtifactResponse</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L26-L54">get_artifact</a>(...) -> ArtifactResponse</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.artifacts.get_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">download_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L56-L81">download_artifact</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -876,7 +876,7 @@ client.artifacts.download_artifact(
 </details>
 
 ## Skills
-<details><summary><code>client.skills.<a href="src/fern/skills/client.py">list_skills</a>(...) -> typing.List[SkillCardResponse]</code></summary>
+<details><summary><code>client.skills.<a href="src/fern/skills/client.py#L26-L53">list_skills</a>(...) -> typing.List[SkillCardResponse]</code></summary>
 <dl>
 <dd>
 
@@ -931,7 +931,7 @@ client.skills.list_skills()
 </dl>
 </details>
 
-<details><summary><code>client.skills.<a href="src/fern/skills/client.py">get_skill</a>(...) -> SkillCardResponse</code></summary>
+<details><summary><code>client.skills.<a href="src/fern/skills/client.py#L55-L81">get_skill</a>(...) -> SkillCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -989,7 +989,7 @@ client.skills.get_skill(
 </details>
 
 ## Runs
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">request_run_cancellation</a>(...) -> CancellationResponse</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L26-L56">request_run_cancellation</a>(...) -> CancellationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1061,7 +1061,7 @@ client.runs.request_run_cancellation(
 </details>
 
 ## Settings
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">get_settings_policy</a>() -> SettingsPolicyResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L30-L52">get_settings_policy</a>() -> SettingsPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1108,7 +1108,7 @@ client.settings.get_settings_policy()
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">update_settings_policy</a>(...) -> SettingsPolicyResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L54-L86">update_settings_policy</a>(...) -> SettingsPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1170,7 +1170,7 @@ client.settings.update_settings_policy(
 </details>
 
 ## WorkspaceFiles
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">list_workspace_files_api</a>(...) -> WorkspaceFileListResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L32-L70">list_workspace_files_api</a>(...) -> WorkspaceFileListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1241,7 +1241,7 @@ client.workspace_files.list_workspace_files_api()
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">stat_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L72-L100">stat_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1298,7 +1298,7 @@ client.workspace_files.stat_workspace_file_api(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">read_workspace_file_api</a>(...) -> WorkspaceFileReadResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L102-L141">read_workspace_file_api</a>(...) -> WorkspaceFileReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1371,7 +1371,7 @@ client.workspace_files.read_workspace_file_api(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">write_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L143-L191">write_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1454,7 +1454,7 @@ client.workspace_files.write_workspace_file_api(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">delete_workspace_file_api</a>(...) -> WorkspaceFileDeleteResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L193-L229">delete_workspace_file_api</a>(...) -> WorkspaceFileDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1519,7 +1519,7 @@ client.workspace_files.delete_workspace_file_api(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">patch_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L231-L275">patch_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1602,7 +1602,7 @@ client.workspace_files.patch_workspace_file_api(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py">append_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
+<details><summary><code>client.workspace_files.<a href="src/fern/workspace_files/client.py#L277-L317">append_workspace_file_api</a>(...) -> WorkspaceFileEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1677,7 +1677,7 @@ client.workspace_files.append_workspace_file_api(
 </details>
 
 ## Volume
-<details><summary><code>client.volume.<a href="src/fern/volume/client.py">list_volume_tree_api</a>(...) -> VolumeTreeResponse</code></summary>
+<details><summary><code>client.volume.<a href="src/fern/volume/client.py#L26-L63">list_volume_tree_api</a>(...) -> VolumeTreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1749,7 +1749,7 @@ client.volume.list_volume_tree_api()
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> HealthLivenessResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L27-L51">get_health</a>() -> HealthLivenessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1810,7 +1810,7 @@ client.health.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_readiness</a>() -> HealthReadinessResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L53-L77">get_readiness</a>() -> HealthReadinessResponse</code></summary>
 <dl>
 <dd>
 

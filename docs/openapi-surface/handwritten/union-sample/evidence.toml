@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "94ff27c8d6f148cf3dabf7f90ed5d5b846e5d4766a5eeefec1638313144d1bfb"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "c9563d62361886e9b2b94d67e4649b35fba3363d50aba5fc484aa11d198b7a99"
 
 [[covers]]
 key = "allof-extends-oneof-object-refused"

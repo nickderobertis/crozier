@@ -1,4 +1,4 @@
-Fern CLI 5.163.1, python-sdk 5.41.3
+Fern CLI 5.194.0, python-sdk 5.41.17
 check exit: 1
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
@@ -15,6 +15,10 @@ Warnings for generators.yml:
         22 |       Each one keeps its own sc ...
         23 |       properties:
 ::error title=[api]%3A::Failed to parse openapi/openapi.yml: unexpected end of the document within a double quoted scalar%0A  at line 21, column 1%0A%0A 18 |     Beacon:%0A 19 |       type: object%0A 20 |       description: "A light on  ...%0A 21 | ---%0A------^%0A 22 |       Each one keeps its own sc ...%0A 23 |       properties:
+[api]: Warnings for generators.yml:
+::warning title=[api]%3A::Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning title=[api]%3A::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 
 generate exit: 1
 Warnings for generators.yml:

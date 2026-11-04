@@ -1,6 +1,6 @@
 # Reference
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_events_v3events_get_page</a>(...) -> CollectionResponseExternalUnifiedEvent</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L27-L114">get_events_v3events_get_page</a>(...) -> CollectionResponseExternalUnifiedEvent</code></summary>
 <dl>
 <dd>
 

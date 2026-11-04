@@ -1,6 +1,6 @@
 # Reference
 ## Entries
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">list_entries</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L29-L69">list_entries</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## OnChain
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">get_a_bitcoin_address</a>() -> AddressResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L34-L58">get_a_bitcoin_address</a>() -> AddressResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.on_chain.get_a_bitcoin_address()
 </dl>
 </details>
 
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">get_the_btc_balance</a>(...) -> BtcBalanceResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L60-L90">get_the_btc_balance</a>(...) -> BtcBalanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.on_chain.get_the_btc_balance(
 </dl>
 </details>
 
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">get_fee_estimation</a>(...) -> EstimateFeeResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L92-L122">get_fee_estimation</a>(...) -> EstimateFeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -209,7 +209,7 @@ client.on_chain.get_fee_estimation(
 </dl>
 </details>
 
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L124-L154">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.on_chain.list_transactions(
 </dl>
 </details>
 
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">list_unspents</a>(...) -> ListUnspentsResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L156-L191">list_unspents</a>(...) -> ListUnspentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -364,7 +364,7 @@ client.on_chain.list_unspents(
 </dl>
 </details>
 
-<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py">send_btc</a>(...) -> SendBtcResponse</code></summary>
+<details><summary><code>client.on_chain.<a href="src/fern/on_chain/client.py#L193-L240">send_btc</a>(...) -> SendBtcResponse</code></summary>
 <dl>
 <dd>
 
@@ -465,7 +465,7 @@ client.on_chain.send_btc(
 </details>
 
 ## Rgb
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">get_the_balance_of_an_asset</a>(...) -> AssetBalanceResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L55-L85">get_the_balance_of_an_asset</a>(...) -> AssetBalanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -538,7 +538,7 @@ client.rgb.get_the_balance_of_an_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">get_the_metadata_of_an_asset</a>(...) -> AssetMetadataResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L87-L117">get_the_metadata_of_an_asset</a>(...) -> AssetMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -611,7 +611,7 @@ client.rgb.get_the_metadata_of_an_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">create_utx_os</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L119-L168">create_utx_os</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -718,7 +718,7 @@ client.rgb.create_utx_os(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">decode_an_rgb_invoice</a>(...) -> DecodeRgbInvoiceResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L170-L200">decode_an_rgb_invoice</a>(...) -> DecodeRgbInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -791,7 +791,7 @@ client.rgb.decode_an_rgb_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">fail_rgb_transfers</a>(...) -> FailTransfersResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L202-L247">fail_rgb_transfers</a>(...) -> FailTransfersResponse</code></summary>
 <dl>
 <dd>
 
@@ -881,7 +881,7 @@ client.rgb.fail_rgb_transfers(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">get_an_asset_media</a>(...) -> GetAssetMediaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L249-L279">get_an_asset_media</a>(...) -> GetAssetMediaResponse</code></summary>
 <dl>
 <dd>
 
@@ -954,7 +954,7 @@ client.rgb.get_an_asset_media(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">get_a_send_consignment</a>(...) -> GetConsignmentResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L281-L316">get_a_send_consignment</a>(...) -> GetConsignmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1036,7 +1036,7 @@ client.rgb.get_a_send_consignment(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">inflate_rgb_assets</a>(...) -> InflateResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L318-L369">inflate_rgb_assets</a>(...) -> InflateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1139,7 +1139,7 @@ client.rgb.inflate_rgb_assets(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">issue_an_rgb_cfa_asset</a>(...) -> IssueAssetCfaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L371-L425">issue_an_rgb_cfa_asset</a>(...) -> IssueAssetCfaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1249,7 +1249,7 @@ client.rgb.issue_an_rgb_cfa_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">issue_an_rgb_ifa_asset</a>(...) -> IssueAssetIfaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L427-L487">issue_an_rgb_ifa_asset</a>(...) -> IssueAssetIfaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1372,7 +1372,7 @@ client.rgb.issue_an_rgb_ifa_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">issue_an_rgb_nia_asset</a>(...) -> IssueAssetNiaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L489-L536">issue_an_rgb_nia_asset</a>(...) -> IssueAssetNiaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1475,7 +1475,7 @@ client.rgb.issue_an_rgb_nia_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">issue_an_rgb_uda_asset</a>(...) -> IssueAssetUdaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L538-L600">issue_an_rgb_uda_asset</a>(...) -> IssueAssetUdaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1594,7 +1594,7 @@ client.rgb.issue_an_rgb_uda_asset(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">list_assets</a>(...) -> ListAssetsResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L602-L642">list_assets</a>(...) -> ListAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1672,7 +1672,7 @@ client.rgb.list_assets(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">list_transfers</a>(...) -> ListTransfersResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L644-L682">list_transfers</a>(...) -> ListTransfersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1753,7 +1753,7 @@ client.rgb.list_transfers(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">post_an_asset_media</a>(...) -> PostAssetMediaResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L684-L713">post_an_asset_media</a>(...) -> PostAssetMediaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.rgb.post_an_asset_media(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">provide_an_out_of_band_ack</a>(...) -> ProvideOutOfBandAckResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L715-L747">provide_an_out_of_band_ack</a>(...) -> ProvideOutOfBandAckResponse</code></summary>
 <dl>
 <dd>
 
@@ -1899,7 +1899,7 @@ client.rgb.provide_an_out_of_band_ack(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">provide_an_out_of_band_consignment</a>(...) -> ProvideOutOfBandConsignmentResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L749-L787">provide_an_out_of_band_consignment</a>(...) -> ProvideOutOfBandConsignmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1981,7 +1981,7 @@ client.rgb.provide_an_out_of_band_consignment(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">refresh_transfers</a>(...) -> RefreshResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L789-L836">refresh_transfers</a>(...) -> RefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -2076,7 +2076,7 @@ client.rgb.refresh_transfers(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">get_an_rgb_invoice</a>(...) -> RgbInvoiceResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L838-L897">get_an_rgb_invoice</a>(...) -> RgbInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2194,7 +2194,7 @@ client.rgb.get_an_rgb_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">send_rgb_assets</a>(...) -> SendRgbResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L899-L981">send_rgb_assets</a>(...) -> SendRgbResponse</code></summary>
 <dl>
 <dd>
 
@@ -2335,7 +2335,7 @@ client.rgb.send_rgb_assets(
 </dl>
 </details>
 
-<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py">sync_the_rgb_wallet</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.rgb.<a href="src/fern/rgb/client.py#L983-L1016">sync_the_rgb_wallet</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2412,7 +2412,7 @@ client.rgb.sync_the_rgb_wallet(
 </details>
 
 ## Other
-<details><summary><code>client.other.<a href="src/fern/other/client.py">backup_the_node</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L35-L70">backup_the_node</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2494,7 +2494,7 @@ client.other.backup_the_node(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">change_the_password</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L72-L107">change_the_password</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2576,7 +2576,7 @@ client.other.change_the_password(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">check_an_indexer_url</a>(...) -> CheckIndexerUrlResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L109-L139">check_an_indexer_url</a>(...) -> CheckIndexerUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -2649,7 +2649,7 @@ client.other.check_an_indexer_url(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">check_a_proxy_endpoint</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L141-L173">check_a_proxy_endpoint</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2722,7 +2722,7 @@ client.other.check_a_proxy_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">init_the_node</a>(...) -> InitResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L175-L213">init_the_node</a>(...) -> InitResponse</code></summary>
 <dl>
 <dd>
 
@@ -2803,7 +2803,7 @@ client.other.init_the_node(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">lock_the_node</a>() -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L215-L239">lock_the_node</a>() -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2866,7 +2866,7 @@ client.other.lock_the_node()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_network_info</a>() -> NetworkInfoResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L241-L265">get_network_info</a>() -> NetworkInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -2929,7 +2929,7 @@ client.other.get_network_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_node_info</a>() -> NodeInfoResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L267-L291">get_node_info</a>() -> NodeInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -2992,7 +2992,7 @@ client.other.get_node_info()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">restore_the_node</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L293-L328">restore_the_node</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3074,7 +3074,7 @@ client.other.restore_the_node(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">revoke_a_token</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L330-L358">revoke_a_token</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3147,7 +3147,7 @@ client.other.revoke_a_token(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">send_an_onion_message</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L360-L405">send_an_onion_message</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3240,7 +3240,7 @@ client.other.send_an_onion_message(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">shutdown_the_node</a>() -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L407-L431">shutdown_the_node</a>() -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3303,7 +3303,7 @@ client.other.shutdown_the_node()
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">sign_a_message</a>(...) -> SignMessageResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L433-L463">sign_a_message</a>(...) -> SignMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3376,7 +3376,7 @@ client.other.sign_a_message(
 </dl>
 </details>
 
-<details><summary><code>client.other.<a href="src/fern/other/client.py">unlock_the_node</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L465-L527">unlock_the_node</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3494,7 +3494,7 @@ client.other.unlock_the_node(
 </details>
 
 ## Channels
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">close_a_channel</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L32-L70">close_a_channel</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3585,7 +3585,7 @@ client.channels.close_a_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_a_channels_id</a>(...) -> GetChannelIdResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L72-L104">get_a_channels_id</a>(...) -> GetChannelIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3658,7 +3658,7 @@ client.channels.get_a_channels_id(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">list_channels</a>() -> ListChannelsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L106-L130">list_channels</a>() -> ListChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3721,7 +3721,7 @@ client.channels.list_channels()
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">open_a_channel</a>(...) -> OpenChannelResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L132-L212">open_a_channel</a>(...) -> OpenChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -3879,7 +3879,7 @@ client.channels.open_a_channel(
 </details>
 
 ## Peers
-<details><summary><code>client.peers.<a href="src/fern/peers/client.py">connect_to_a_peer</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.peers.<a href="src/fern/peers/client.py#L30-L62">connect_to_a_peer</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3952,7 +3952,7 @@ client.peers.connect_to_a_peer(
 </dl>
 </details>
 
-<details><summary><code>client.peers.<a href="src/fern/peers/client.py">disconnect_from_a_peer</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.peers.<a href="src/fern/peers/client.py#L64-L94">disconnect_from_a_peer</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4025,7 +4025,7 @@ client.peers.disconnect_from_a_peer(
 </dl>
 </details>
 
-<details><summary><code>client.peers.<a href="src/fern/peers/client.py">list_peers</a>() -> ListPeersResponse</code></summary>
+<details><summary><code>client.peers.<a href="src/fern/peers/client.py#L96-L120">list_peers</a>() -> ListPeersResponse</code></summary>
 <dl>
 <dd>
 
@@ -4089,7 +4089,7 @@ client.peers.list_peers()
 </details>
 
 ## Invoices
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">decode_a_ln_invoice</a>(...) -> DecodeLnInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L31-L61">decode_a_ln_invoice</a>(...) -> DecodeLnInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4162,7 +4162,7 @@ client.invoices.decode_a_ln_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">get_an_invoice_status</a>(...) -> InvoiceStatusResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L63-L93">get_an_invoice_status</a>(...) -> InvoiceStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -4235,7 +4235,7 @@ client.invoices.get_an_invoice_status(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">get_a_ln_invoice</a>(...) -> LnInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L95-L151">get_a_ln_invoice</a>(...) -> LnInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4349,7 +4349,7 @@ client.invoices.get_a_ln_invoice(
 </details>
 
 ## Swaps
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">decode_a_swapstring</a>(...) -> DecodeSwapstringResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L33-L63">decode_a_swapstring</a>(...) -> DecodeSwapstringResponse</code></summary>
 <dl>
 <dd>
 
@@ -4422,7 +4422,7 @@ client.swaps.decode_a_swapstring(
 </dl>
 </details>
 
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">get_a_swap</a>(...) -> GetSwapResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L65-L98">get_a_swap</a>(...) -> GetSwapResponse</code></summary>
 <dl>
 <dd>
 
@@ -4504,7 +4504,7 @@ client.swaps.get_a_swap(
 </dl>
 </details>
 
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">list_swaps</a>() -> ListSwapsResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L100-L124">list_swaps</a>() -> ListSwapsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4567,7 +4567,7 @@ client.swaps.list_swaps()
 </dl>
 </details>
 
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">execute_a_maker_swap</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L126-L172">execute_a_maker_swap</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4658,7 +4658,7 @@ client.swaps.execute_a_maker_swap(
 </dl>
 </details>
 
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">init_a_maker_swap</a>(...) -> MakerInitResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L174-L228">init_a_maker_swap</a>(...) -> MakerInitResponse</code></summary>
 <dl>
 <dd>
 
@@ -4765,7 +4765,7 @@ client.swaps.init_a_maker_swap(
 </dl>
 </details>
 
-<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py">accept_a_swap</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.swaps.<a href="src/fern/swaps/client.py#L230-L260">accept_a_swap</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4839,7 +4839,7 @@ client.swaps.accept_a_swap(
 </details>
 
 ## Payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_a_payment</a>(...) -> GetPaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L32-L62">get_a_payment</a>(...) -> GetPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4912,7 +4912,7 @@ client.payments.get_a_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">send_to_a_peer_spontaneously</a>(...) -> KeysendResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L64-L113">send_to_a_peer_spontaneously</a>(...) -> KeysendResponse</code></summary>
 <dl>
 <dd>
 
@@ -5010,7 +5010,7 @@ client.payments.send_to_a_peer_spontaneously(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">list_payments</a>() -> ListPaymentsResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L115-L139">list_payments</a>() -> ListPaymentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5073,7 +5073,7 @@ client.payments.list_payments()
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">send_a_payment</a>(...) -> SendPaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L141-L189">send_a_payment</a>(...) -> SendPaymentResponse</code></summary>
 <dl>
 <dd>
 
