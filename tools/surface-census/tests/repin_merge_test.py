@@ -247,12 +247,13 @@ def test_an_incomplete_conflict_is_refused_before_any_rewrite(tmp_path: Path, da
     root = conflicted(tmp_path, LEDGER, ledger("a" * 40, "1/2"), ledger("b" * 40, "0/2"), ledger("c" * 40, "2/2"))
     path = root / LEDGER
     text = path.read_text(encoding="utf-8")
-    if damage == "missing separator":
-        text = text.replace("=======\n", "", 1)
-    elif damage == "missing closer":
-        text = "\n".join(line for line in text.splitlines() if not line.startswith(">>>>>>> ")) + "\n"
-    else:
-        text = text.replace("<<<<<<< HEAD\n", "<<<<<<< HEAD\n<<<<<<< nested\n", 1)
+    match damage:
+        case "missing separator":
+            text = text.replace("=======\n", "", 1)
+        case "missing closer":
+            text = "\n".join(line for line in text.splitlines() if not line.startswith(">>>>>>> ")) + "\n"
+        case "nested opener":
+            text = text.replace("<<<<<<< HEAD\n", "<<<<<<< HEAD\n<<<<<<< nested\n", 1)
     path.write_text(text, encoding="utf-8")
     head = git(root, "rev-parse", "HEAD").stdout
     with pytest.raises(SystemExit) as refused:

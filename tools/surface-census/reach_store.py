@@ -686,23 +686,24 @@ def _formatting_commas(tokens: list[Token]) -> list[bool]:
                 protected[index] = True
 
     for index, token in enumerate(tokens):
-        if token.text == "#":
-            start = index + 1
-            if start < len(tokens) and tokens[start].text == "!":
-                start += 1
-            if start < len(tokens) and tokens[start].text == "[":
-                protect(start)
-        elif token.text == "!" and index and index + 1 in pairs:
-            previous = tokens[index - 1].text
-            raw = index >= 3 and [t.text for t in tokens[index - 3 : index - 1]] == ["r", "#"]
-            if _IDENT.fullmatch(previous) and (previous not in _GROUP_BEFORE_PAREN or raw):
-                protect(index + 1)
-        elif token.text == "macro_rules" and index + 1 < len(tokens) and tokens[index + 1].text == "!":
-            # The name can be a raw identifier (`r#name`), too.
-            for start in range(index + 2, min(index + 6, len(tokens))):
-                if start in pairs:
+        match token.text:
+            case "#":
+                start = index + 1
+                if start < len(tokens) and tokens[start].text == "!":
+                    start += 1
+                if start < len(tokens) and tokens[start].text == "[":
                     protect(start)
-                    break
+            case "!" if index and index + 1 in pairs:
+                previous = tokens[index - 1].text
+                raw = index >= 3 and [t.text for t in tokens[index - 3 : index - 1]] == ["r", "#"]
+                if _IDENT.fullmatch(previous) and (previous not in _GROUP_BEFORE_PAREN or raw):
+                    protect(index + 1)
+            case "macro_rules" if index + 1 < len(tokens) and tokens[index + 1].text == "!":
+                # The name can be a raw identifier (`r#name`), too.
+                for start in range(index + 2, min(index + 6, len(tokens))):
+                    if start in pairs:
+                        protect(start)
+                        break
 
     def multiple_tuple_elements(start: int, end: int) -> bool:
         top, index = [], start + 1

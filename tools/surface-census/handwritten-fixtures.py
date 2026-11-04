@@ -1277,13 +1277,20 @@ def measured_fixtures(repo_root: Path, base: Path) -> dict[str, tuple[str, ...]]
     return {name: tuple(declared[name].audiences) for name in sorted(names)}
 
 
-ReachLine = tuple[str, str, str, int, int]
-GateLine = tuple[str, str, str, str, int, int]
+class GateRow(NamedTuple):
+    """One configuration-gate row for a fixture measured with or without its setting."""
+
+    fixture: str
+    key: str
+    site: str
+    setting: str
+    regions_executed: int
+    regions: int
 
 
 def ledger_rows(
     repo_root: Path, base: Path, store: Store, tree: Tree, partial: bool = False
-) -> tuple[list[ReachLine], list[GateLine]]:
+) -> tuple[list[ReachRow], list[GateRow]]:
     """`handwritten-reach.tsv` and `handwritten-config-gates.tsv` rows, from the store's fixture entries.
 
     A `partial` store (a measurement scoped to some fixtures) yields rows for its fixtures alone.
@@ -1314,27 +1321,40 @@ def ledger_rows(
         regions = {r for r in universe.get(site.file, set()) if site.holds(r)}
         return len(regions & hits(name, part).get(site.file, set())), len(regions)
 
-    rows: list[ReachLine] = []
-    gate_rows: list[GateLine] = []
+    rows: list[ReachRow] = []
+    gate_rows: list[GateRow] = []
     for name, cover in planned:
         # `planned` holds the arm-level covers alone.
         assert cover.arm is not None
-        rows.append((name, cover.key, cover.arm, *reached(name, "regions", cover.arm)))
+        executed, total = reached(name, "regions", cover.arm)
+        rows.append(ReachRow(fixture=name, key=cover.key, site=cover.arm, regions_executed=executed, regions=total))
         if declared[name].audiences:
             # A fixture declaring a setting is measured without it too: the control
             # half of the configuration gate its covers' records rest on.
             gate_rows.append(
-                (name, cover.key, cover.arm, setting_of(declared[name]), *reached(name, "regions", cover.arm))
+                GateRow(
+                    fixture=name,
+                    key=cover.key,
+                    site=cover.arm,
+                    setting=setting_of(declared[name]),
+                    regions_executed=executed,
+                    regions=total,
+                )
             )
-            gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(name, "control", cover.arm)))
+            control, total = reached(name, "control", cover.arm)
+            gate_rows.append(
+                GateRow(
+                    fixture=name, key=cover.key, site=cover.arm, setting=UNSET, regions_executed=control, regions=total
+                )
+            )
     for row in interactions:
-        rows.append((*row, *reached(row.fixture, "regions", row.site)))
-    rows.sort(key=lambda row: row[:3])
-    gate_rows.sort(key=lambda row: row[:4])
+        rows.append(ReachRow(*row, *reached(row.fixture, "regions", row.site)))
+    rows.sort(key=lambda row: (row.fixture, row.key, row.site))
+    gate_rows.sort(key=lambda row: (row.fixture, row.key, row.site, row.setting))
     return rows, gate_rows
 
 
-def write_ledgers(rows: list[ReachLine], gate_rows: list[GateLine], ledger: Path, gates: Path) -> None:
+def write_ledgers(rows: list[ReachRow], gate_rows: list[GateRow], ledger: Path, gates: Path) -> None:
     for path, header, lines in ((ledger, REACH_HEADER, rows), (gates, GATE_HEADER, gate_rows)):
         path.write_text(
             "\n".join(["\t".join(header)] + ["\t".join(map(str, row)) for row in lines]) + "\n",
@@ -1377,8 +1397,8 @@ def measure(args: argparse.Namespace) -> int:
             )
     planned, interactions, _declared = fixture_plan(repo_root, base)
     fixtures = measured_fixtures(repo_root, base)
-    rows: list[ReachLine] = []
-    gate_rows: list[GateLine] = []
+    rows: list[ReachRow] = []
+    gate_rows: list[GateRow] = []
     if fixtures:
         with reach.RS.instrumented_lock("handwritten-reach"):
             step = reach.measure_step(

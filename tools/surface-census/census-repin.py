@@ -500,12 +500,13 @@ def reanchor_all(root: Path, base_commit: str | None) -> dict[str, str]:
             anchor = reanchor(spec, root, commit)
             if anchor.replacement is not None:
                 break
-        if anchor is None:
-            refused.append(f"`{spec}`: {problem}; there is no base tree to follow it from")
-        elif anchor.replacement is None:
-            refused.append(f"`{spec}`: {anchor.problem}")
-        else:
-            moves[spec] = anchor.replacement
+        match anchor:
+            case None:
+                refused.append(f"`{spec}`: {problem}; there is no base tree to follow it from")
+            case Anchor(replacement=None, problem=reason):
+                refused.append(f"`{spec}`: {reason}")
+            case Anchor(replacement=str() as replacement):
+                moves[spec] = replacement
     if refused:
         refuse(f"{len(refused)} site(s) cannot be re-anchored, so nothing was rewritten:\n  " + "\n  ".join(refused))
     return moves
