@@ -1,0 +1,59 @@
+sha256: 978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206
+result: refused-by-ruling
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 4
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206
+
+differing files:
+
+certified exit: 1
+certified diagnostic: [error] Multiple request properties resolve to the same generated name book after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+default refusal: request-property-camelcase-collision (exit 1)
+default command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/default --package-name fern --project-name default_package_name
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/openapi.yml: request-property-camelcase-collision: GET /books/{id}/reviews parameters "book" and "book[]" normalize to the same identifier; give them distinct names
+fern-strict refusal: request-property-camelcase-collision (exit 1)
+fern-strict command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/fern-strict --package-name fern --project-name default_package_name --fern-strict
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/openapi.yml: request-property-camelcase-collision: GET /books/{id}/reviews parameters "book" and "book[]" normalize to the same identifier; give them distinct names (fern-strict: Fern refuses this document)
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml python: reference command finished in 0.01s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml python: could_not_check (the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty)
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/crozier.yml
+  python: could_not_check
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/978fbacd3483f78d34c90ff71bdc8429223ef8409e531b4960cb0c78dec31206/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty
+    timing: reference 0.01s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 0 mismatched, 1 could not check
+Timing totals: no generator ran both sides
+Result: no mismatch, but 1 could not be checked (exit 4)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> MIT
+--- LICENSE (first 30 non-blank lines) ---
+Copyright (c) 2014 Kévin Dunglas
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+outcome: passed: no info.license, LICENSE at the pinned commit reads as MIT, which the corpus rule admits

@@ -1,0 +1,172 @@
+sha256: 5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9
+result: differs
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 3
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9
+
+differing files:
+- reference.md
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml python: reference command finished in 0.13s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml python: crozier generation finished in 5.80s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml python: mismatched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/crozier.yml
+  python: mismatched (layout packaged, 264 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (1):
+      reference.md
+    intended departures applied (101):
+      reference.md:168 schema-rejected-name-example
+      reference.md:301 schema-rejected-name-example
+      reference.md:302 schema-rejected-name-example
+      reference.md:1119 unquoted-timestamp-parameter-example
+      reference.md:1128 unquoted-timestamp-parameter-example
+      reference.md:1303 unquoted-timestamp-parameter-example
+      reference.md:1312 unquoted-timestamp-parameter-example
+      reference.md:1398 unquoted-timestamp-parameter-example
+      reference.md:1408 unquoted-timestamp-parameter-example
+      reference.md:1506 unquoted-timestamp-parameter-example
+      reference.md:1516 unquoted-timestamp-parameter-example
+      reference.md:4810 schema-rejected-name-example
+      reference.md:4888 schema-rejected-name-example
+      reference.md:4971 schema-rejected-name-example
+      reference.md:5046 schema-rejected-name-example
+      reference.md:5128 schema-rejected-name-example
+      reference.md:5343 schema-rejected-name-example
+      reference.md:5687 schema-rejected-name-example
+      reference.md:6558 schema-rejected-name-example
+      reference.md:6658 schema-rejected-name-example
+      reference.md:6739 schema-rejected-name-example
+      reference.md:7392 schema-rejected-name-example
+      reference.md:7601 schema-rejected-name-example
+      reference.md:7683 schema-rejected-name-example
+      reference.md:7756 schema-rejected-name-example
+      src/fern/__init__.py:186 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/entity_audit/client.py:95 schema-rejected-name-example
+      src/fern/entity_audit/client.py:145 schema-rejected-name-example
+      src/fern/entity_audit/client.py:146 schema-rejected-name-example
+      src/fern/entity_audit/client.py:240 schema-rejected-name-example
+      src/fern/entity_audit/client.py:298 schema-rejected-name-example
+      src/fern/entity_audit/client.py:299 schema-rejected-name-example
+      src/fern/entity_management/client.py:246 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:247 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:255 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:256 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:257 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:346 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:347 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:355 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:356 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:357 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:417 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:418 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:427 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:428 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:429 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:485 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:486 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:495 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:496 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:497 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1285 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1297 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1298 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1299 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1400 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1412 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1413 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1414 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1478 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1491 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1492 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1493 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1553 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1566 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1567 unquoted-timestamp-parameter-example
+      src/fern/entity_management/client.py:1568 unquoted-timestamp-parameter-example
+      src/fern/o_auth_oidc_providers/client.py:162 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:207 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:239 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:281 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:467 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:520 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:562 schema-rejected-name-example
+      src/fern/o_auth_oidc_providers/client.py:612 schema-rejected-name-example
+      src/fern/search/client.py:195 schema-rejected-name-example
+      src/fern/search/client.py:237 schema-rejected-name-example
+      src/fern/search/client.py:278 schema-rejected-name-example
+      src/fern/search/client.py:562 schema-rejected-name-example
+      src/fern/search/client.py:612 schema-rejected-name-example
+      src/fern/search/client.py:661 schema-rejected-name-example
+      src/fern/sql_schema/client.py:385 schema-rejected-name-example
+      src/fern/sql_schema/client.py:479 schema-rejected-name-example
+      src/fern/sql_schema/client.py:511 schema-rejected-name-example
+      src/fern/sql_schema/client.py:542 schema-rejected-name-example
+      src/fern/sql_schema/client.py:950 schema-rejected-name-example
+      src/fern/sql_schema/client.py:1068 schema-rejected-name-example
+      src/fern/sql_schema/client.py:1112 schema-rejected-name-example
+      src/fern/sql_schema/client.py:1151 schema-rejected-name-example
+      src/fern/stream_data/client.py:65 schema-rejected-name-example
+      src/fern/stream_data/client.py:208 schema-rejected-name-example
+      src/fern/stream_data/client.py:383 schema-rejected-name-example
+      src/fern/stream_data/client.py:598 schema-rejected-name-example
+      src/fern/stream_data/client.py:765 schema-rejected-name-example
+      src/fern/stream_data/client.py:984 schema-rejected-name-example
+    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_1763840-82_comparisons-final_5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9_crozier.yml-python.diff
+    timing: reference 0.13s, crozier 5.80s, speed-up 0.02x, saved -5.67s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.13s, crozier 5.80s, speed-up 0.02x, saved -5.67s
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> Apache-2.0
+--- LICENSE (first 30 non-blank lines) ---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+   1. Definitions.
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+      "Derivative Works" shall mean any work, whether in Source or Object
+outcome: passed: no info.license, LICENSE at the pinned commit reads as Apache-2.0, which the corpus rule admits

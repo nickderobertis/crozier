@@ -1,0 +1,42 @@
+sha256: 29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2
+result: byte-matches
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 0
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2
+
+differing files:
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml python: reference command finished in 0.07s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml python: crozier generation finished in 4.01s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml python: matched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/crozier.yml
+  python: matched (layout packaged, 172 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (7):
+      reference.md:133 stream-reference-return-type
+      src/fern/__init__.py:32 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:41 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:42 sdk-identity-header-prefix
+    timing: reference 0.07s, crozier 4.01s, speed-up 0.02x, saved -3.94s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.07s, crozier 4.01s, speed-up 0.02x, saved -3.94s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: 'MIT / https://opensource.org/licenses/MIT' -> MIT
+licence file (none) -> None
+outcome: passed: info.license 'MIT / https://opensource.org/licenses/MIT' reads as MIT, which the corpus rule admits

@@ -1,0 +1,72 @@
+sha256: 117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5
+result: byte-matches
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 0
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5
+
+differing files:
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml python: reference command finished in 0.18s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml python: crozier generation finished in 4.89s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml python: matched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/crozier.yml
+  python: matched (layout packaged, 181 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/117c4acb2687f08da9f15bc02367f0d8dc144bbdbec5ab3fe933b4065f8b01f5/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.18s, crozier 4.89s, speed-up 0.04x, saved -4.71s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.18s, crozier 4.89s, speed-up 0.04x, saved -4.71s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> AGPL
+--- LICENSE (first 30 non-blank lines) ---
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+                            Preamble
+  The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+cooperation with the community in the case of network server software.
+  The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+our General Public Licenses are intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+  Developers that use our General Public Licenses protect your rights
+with two steps: (1) assert copyright on the software, and (2) offer
+you this License which gives you legal permission to copy, distribute
+and/or modify the software.
+  A secondary benefit of defending all users' freedom is that
+improvements made in alternate versions of the program, if they
+receive widespread use, become available for other developers to
+incorporate.  Many developers of free software are heartened and
+encouraged by the resulting cooperation.  However, in the case of
+software used on network servers, this result may fail to come about.
+outcome: passed: no info.license, LICENSE at the pinned commit reads as AGPL, which the corpus rule admits

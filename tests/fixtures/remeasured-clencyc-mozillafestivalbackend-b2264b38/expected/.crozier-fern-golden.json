@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "remeasured-clencyc-mozillafestivalbackend-b2264b38",
+  "corpus_spec_ref": "e70f0150f414d216743311be79d005d900ab81f1",
+  "corpus_spec_url": "https://raw.githubusercontent.com/clencyc/MozillaFestivalBackend/e70f0150f414d216743311be79d005d900ab81f1/openapi.yaml"
+}

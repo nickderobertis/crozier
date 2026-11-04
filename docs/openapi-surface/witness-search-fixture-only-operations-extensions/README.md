@@ -318,6 +318,27 @@ differing lines.
 
 ## Handed-off differences
 
+### Present document statuses
+
+The repair-node comparisons below are historical. The finished-tree remeasurement
+is the [document index](../../fern-measurements/handed-off/documents.tsv):
+
+- `be5e37894ab0582a6f6498609754319fcccdbbb140e7a055902d74534616fd8f` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `AMRC-FactoryPlus/documentation:static/spec/cluster-manager.yaml@cfb2f488ff2f4b29c90235b12e9f8ed497772b59`.
+- `7edd79beb9c490240ae09a653602cc5260ab66a422751d889ca7d63705b1552c` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `APIs-guru/openapi-directory:APIs/keyserv.solutions/1.4.5/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`.
+- `468bf5eff16a3ec71979ee470a4e80f233c8f6ce67e93e118457fbe8e8efab91` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `APIs-guru/openapi-directory:APIs/openaq.local/2.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`.
+- `d8d536ea8daca766a98ec0db6599041cfdcc449b71f689df9046b88b9796a79d` — `differs`; [present status](../../fern-measurements/handed-off/documents.tsv) for `APIs-guru/openapi-directory:APIs/unicourt.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`.
+- `748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743` — `registered`; [present status](../../fern-measurements/handed-off/documents.tsv) for `APIs-guru/openapi-directory:APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`.
+- `ee5e2a219e2f0911107a11eab0d98405e91f2b6d8fddf0f0d5730f445421a952` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `darwin-studios/darwin-cli:openapi.json@0ae98a805869b7acabd737365c193b0afcbd0d7e`.
+- `5aa6dbf5778778503f76e63dea7f13313434d0d883f25a93792190fba0a6f621` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `fern-api/docs:fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62`.
+- `74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `fern-api/docs:fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2`.
+- `2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87` — `differs`; [present status](../../fern-measurements/handed-off/documents.tsv) for `jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@c72e13e0f80e71997209aba985eff6ef34869cd7`.
+- `b5dacb83849e3ef5b20249f712ed19ac60838e5052ce0a4de3b6c69aed29bd8c` — `refused-by-ruling`; [present status](../../fern-measurements/handed-off/documents.tsv) for `linux-automation/tacd:openapi.yaml@df3958c92643f7e0b06ef1830b9bc2a5e55ab24a`.
+- `adbf311837cc8d83ef91b6c826c003e0fa25b437abebe8f902180600109443b9` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `nextcloud/client-sdks:go/api/openapi.yaml@02bc7281ee36fe8862a61e94e12c91381c5866bf`.
+- `c5da87bb95be6352daf5b5bda7b163916541e29123b94feb32e778f6367ad80a` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `rd-alliance/metadata-catalog-v2:openapi.yaml@833c55f1ad8b6a19b77e8fc4f1d16133b8e5d624`.
+- `b1d4ab063c88dcadac6c303e5c7c6bf4fa90b823ba6b408c6437a712cc97c58f` — `registration-incomplete`; [present status](../../fern-measurements/handed-off/documents.tsv) for `sumup/sumup-openapi:openapi.yaml@c359e2f1291fa81bb533298c5958ab95f0ba11c4`.
+- `5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c` — `could-not-check`; [present status](../../fern-measurements/handed-off/documents.tsv) for `vickz84259/lolesports-api-docs:openapi.yaml@74027a7950c7e4629d3cab01ddd3990457a9956d`.
+
+
 Every admissible declarer the certified pair generates from, where crozier's output differs, is handed off here at the manager's direction, not repaired in this record: a separate plan repairs each root cause, so crozier's output for these documents is unchanged by this record. The vtex Marketplace-Protocol differences were handed to the run's `vtex-output-parity` node, which repaired them and registered the document as corpus row 3479 (`vtex-marketplace-protocol`); its row below records what this search measured before that repair. Each document's files and first differing line pair are measured by `crozier compare` at this record's head against the certified pair's tree (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3); [`handed-off.tsv`](handed-off.tsv) lists every file each one touches.
 
 ### Root causes

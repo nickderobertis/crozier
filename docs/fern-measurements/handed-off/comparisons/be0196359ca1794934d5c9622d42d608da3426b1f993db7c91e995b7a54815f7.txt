@@ -1,0 +1,76 @@
+sha256: be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7
+result: refused-by-ruling
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 3
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7
+
+differing files:
+
+certified exit: 0
+certified diagnostic: [api]: Failed to parse openapi document API Setu
+default refusal: unresolved-reference (exit 1)
+default command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/default --package-name fern --project-name default_package_name
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json: unresolved-reference: paths//users/login/post/responses/400: #/components/responses/BAD_REQUEST
+fern-strict refusal: unresolved-reference (exit 1)
+fern-strict command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/fern-strict --package-name fern --project-name default_package_name --fern-strict
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json: unresolved-reference: paths//users/login/post/responses/400: #/components/responses/BAD_REQUEST (fern-strict refusal)
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml python: reference command finished in 0.02s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml python: crozier generation failed in 2.68s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml python: mismatched (crozier could not generate: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json: unresolved-reference: paths//users/login/post/responses/400: #/components/responses/BAD_REQUEST)
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/crozier.yml
+  python: mismatched
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: crozier could not generate: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/be0196359ca1794934d5c9622d42d608da3426b1f993db7c91e995b7a54815f7/openapi.json: unresolved-reference: paths//users/login/post/responses/400: #/components/responses/BAD_REQUEST
+    timing: reference 0.02s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals: no generator ran both sides
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 200
+licence file LICENSE.md -> CC0
+--- LICENSE.md (first 30 non-blank lines) ---
+Creative Commons Legal Code
+CC0 1.0 Universal
+    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
+    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
+    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
+    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
+    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+    HEREUNDER.
+Statement of Purpose
+The laws of most jurisdictions throughout the world automatically confer
+exclusive Copyright and Related Rights (defined below) upon the creator
+and subsequent owner(s) (each and all, an "owner") of an original work of
+authorship and/or a database (each, a "Work").
+Certain owners wish to permanently relinquish those rights to a Work for
+the purpose of contributing to a commons of creative, cultural and
+scientific works ("Commons") that the public can reliably and without fear
+of later claims of infringement build upon, modify, incorporate in other
+works, reuse and redistribute as freely as possible in any form whatsoever
+and for any purposes, including without limitation commercial purposes.
+These owners may contribute to the Commons to promote the ideal of a free
+culture and the further production of creative, cultural and scientific
+works, or to gain reputation or greater distribution for their Work in
+part through the use and efforts of others.
+For these and/or other purposes and motivations, and without any
+expectation of additional consideration or compensation, the person
+associating CC0 with a Work (the "Affirmer"), to the extent that he or she
+is an owner of Copyright and Related Rights in the Work, voluntarily
+elects to apply CC0 to the Work and publicly distribute the Work under its
+outcome: passed: no info.license, LICENSE.md at the pinned commit reads as CC0, which the corpus rule admits

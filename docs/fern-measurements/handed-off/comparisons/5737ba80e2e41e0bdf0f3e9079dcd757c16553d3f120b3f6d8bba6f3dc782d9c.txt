@@ -1,0 +1,490 @@
+sha256: 5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c
+result: could-not-check
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 3
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c
+
+differing files:
+- README.md
+- reference.md
+- src/fern/__init__.py
+- src/fern/client.py
+- src/fern/core/client_wrapper.py
+- src/fern/core/http_client.py
+- src/fern/errors/__init__.py
+- src/fern/errors/not_found_error.py
+- src/fern/events/__init__.py
+- src/fern/events/client.py
+- src/fern/events/raw_client.py
+- src/fern/events/types/__init__.py
+- src/fern/events/types/extended_event_match.py
+- src/fern/events/types/extended_event_match_teams_item.py
+- src/fern/events/types/get_completed_events_response.py
+- src/fern/events/types/get_completed_events_response_data.py
+- src/fern/events/types/get_completed_events_response_data_schedule.py
+- src/fern/events/types/get_completed_events_response_data_schedule_events_item.py
+- src/fern/events/types/get_completed_events_response_data_schedule_events_item_match.py
+- src/fern/events/types/get_completed_events_response_data_schedule_events_item_match_type.py
+- src/fern/events/types/get_event_details_response.py
+- src/fern/events/types/get_event_details_response_data.py
+- src/fern/events/types/get_event_details_response_data_event.py
+- src/fern/events/types/get_event_details_response_data_event_match.py
+- src/fern/events/types/get_event_details_response_data_event_match_teams_item.py
+- src/fern/events/types/get_games_response.py
+- src/fern/events/types/get_games_response_data.py
+- src/fern/events/types/get_live_response.py
+- src/fern/events/types/get_live_response_data.py
+- src/fern/events/types/get_live_response_data_schedule.py
+- src/fern/events/types/get_live_response_data_schedule_events_item.py
+- src/fern/events/types/get_live_response_data_schedule_events_item_match.py
+- src/fern/events/types/get_live_response_data_schedule_events_item_match_teams_item.py
+- src/fern/events/types/get_live_response_data_schedule_events_item_match_teams_item_result.py
+- src/fern/events/types/get_schedule_response.py
+- src/fern/events/types/get_schedule_response_data.py
+- src/fern/events/types/get_schedule_response_data_schedule.py
+- src/fern/events/types/get_schedule_response_data_schedule_events_item.py
+- src/fern/events/types/get_schedule_response_data_schedule_events_item_match.py
+- src/fern/events/types/get_schedule_response_data_schedule_events_item_match_teams_item.py
+- src/fern/events/types/get_schedule_response_data_schedule_events_item_match_teams_item_result.py
+- src/fern/events/types/get_schedule_response_data_schedule_pages.py
+- src/fern/highlander/__init__.py
+- src/fern/highlander/client.py
+- src/fern/highlander/raw_client.py
+- src/fern/highlander/types/__init__.py
+- src/fern/highlander/types/leagues_response.py
+- src/fern/highlander/types/nav_items_response.py
+- src/fern/highlander/types/players_response.py
+- src/fern/highlander/types/players_response_player_stats_histories_item.py
+- src/fern/highlander/types/players_response_player_stats_summaries_item.py
+- src/fern/highlander/types/players_response_player_stats_summaries_item_mostplayedchampions_item.py
+- src/fern/highlander/types/players_response_players_item.py
+- src/fern/highlander/types/players_response_players_item_photo_information.py
+- src/fern/highlander/types/schedule_items_response.py
+- src/fern/highlander/types/teams_response.py
+- src/fern/highlander/types/teams_response_players_item.py
+- src/fern/highlander/types/teams_response_team_roster_stats_item.py
+- src/fern/highlander/types/teams_response_team_stats_histories_item.py
+- src/fern/highlander/types/teams_response_team_stats_summaries_item.py
+- src/fern/highlander/types/teams_response_team_stats_summaries_item_average_damage_by_position.py
+- src/fern/highlander/types/videos_response.py
+- src/fern/leagues/__init__.py
+- src/fern/leagues/client.py
+- src/fern/leagues/raw_client.py
+- src/fern/leagues/types/__init__.py
+- src/fern/leagues/types/get_leagues_response.py
+- src/fern/leagues/types/get_leagues_response_data.py
+- src/fern/leagues/types/get_leagues_response_data_leagues_item.py
+- src/fern/leagues/types/get_standings_response.py
+- src/fern/leagues/types/get_standings_response_data.py
+- src/fern/leagues/types/get_standings_response_data_standings_item.py
+- src/fern/leagues/types/get_tournaments_for_league_response.py
+- src/fern/leagues/types/get_tournaments_for_league_response_data.py
+- src/fern/leagues/types/get_tournaments_for_league_response_data_leagues_item.py
+- src/fern/match_details/__init__.py
+- src/fern/match_details/client.py
+- src/fern/match_details/raw_client.py
+- src/fern/match_details/types/__init__.py
+- src/fern/match_details/types/get_details_response.py
+- src/fern/teams/__init__.py
+- src/fern/teams/client.py
+- src/fern/teams/raw_client.py
+- src/fern/teams/types/__init__.py
+- src/fern/teams/types/get_teams_response.py
+- src/fern/teams/types/get_teams_response_data.py
+- src/fern/types/__init__.py
+- src/fern/types/abilities.py
+- src/fern/types/base_event.py
+- src/fern/types/base_frame.py
+- src/fern/types/base_league.py
+- src/fern/types/base_match.py
+- src/fern/types/base_participant_stats.py
+- src/fern/types/base_schedule_item.py
+- src/fern/types/base_strategy.py
+- src/fern/types/bracket_type.py
+- src/fern/types/bracket_type_identifier.py
+- src/fern/types/bracket_type_options.py
+- src/fern/types/brackets.py
+- src/fern/types/brackets_value.py
+- src/fern/types/brackets_value_input_item.py
+- src/fern/types/brackets_value_state.py
+- src/fern/types/breakpoints.py
+- src/fern/types/breakpoints_value.py
+- src/fern/types/breakpoints_value_generator.py
+- src/fern/types/breakpoints_value_generator_identifier.py
+- src/fern/types/breakpoints_value_input_item.py
+- src/fern/types/custom_team.py
+- src/fern/types/custom_team_side.py
+- src/fern/types/details_frame.py
+- src/fern/types/event_schedule_item.py
+- src/fern/types/event_type.py
+- src/fern/types/extended_event.py
+- src/fern/types/extended_game.py
+- src/fern/types/extended_league.py
+- src/fern/types/extended_participant_stats.py
+- src/fern/types/extended_team.py
+- src/fern/types/extended_vod.py
+- src/fern/types/extended_vod_provider.py
+- src/fern/types/foreign_ids.py
+- src/fern/types/game.py
+- src/fern/types/game_id.py
+- src/fern/types/game_metadata.py
+- src/fern/types/game_mode.py
+- src/fern/types/game_mode_identifier.py
+- src/fern/types/game_mode_map_name.py
+- src/fern/types/highlander_game.py
+- src/fern/types/highlander_game_input_item.py
+- src/fern/types/highlander_game_state.py
+- src/fern/types/highlander_league.py
+- src/fern/types/highlander_match.py
+- src/fern/types/highlander_match_input_item.py
+- src/fern/types/highlander_match_state.py
+- src/fern/types/highlander_player.py
+- src/fern/types/highlander_player_champions_item.py
+- src/fern/types/highlander_player_foreign_ids.py
+- src/fern/types/highlander_players.py
+- src/fern/types/highlander_record.py
+- src/fern/types/highlander_records.py
+- src/fern/types/highlander_result.py
+- src/fern/types/highlander_team.py
+- src/fern/types/highlander_teams.py
+- src/fern/types/highlander_tournament.py
+- src/fern/types/highlander_tournament_rosters_value.py
+- src/fern/types/highlander_tournament_rosters_value_state.py
+- src/fern/types/highlander_tournaments.py
+- src/fern/types/home_league.py
+- src/fern/types/locale.py
+- src/fern/types/match_schedule_item.py
+- src/fern/types/match_type.py
+- src/fern/types/match_type_identifier.py
+- src/fern/types/match_type_options.py
+- src/fern/types/nav_item.py
+- src/fern/types/nav_item_parent_nav_item.py
+- src/fern/types/not_found_error_body.py
+- src/fern/types/not_found_error_body_error.py
+- src/fern/types/outcome.py
+- src/fern/types/page_token.py
+- src/fern/types/participant_id.py
+- src/fern/types/participant_metadata.py
+- src/fern/types/participant_metadata_extended.py
+- src/fern/types/participant_metadata_role.py
+- src/fern/types/participant_stats.py
+- src/fern/types/perk_metadata.py
+- src/fern/types/player.py
+- src/fern/types/ranking.py
+- src/fern/types/ranking_teams_item.py
+- src/fern/types/record.py
+- src/fern/types/result.py
+- src/fern/types/role.py
+- src/fern/types/role_origin.py
+- src/fern/types/role_region.py
+- src/fern/types/role_summoner_name.py
+- src/fern/types/roles.py
+- src/fern/types/rostering_strategy.py
+- src/fern/types/rostering_strategy_identifier.py
+- src/fern/types/schedule_item.py
+- src/fern/types/scores.py
+- src/fern/types/scoring.py
+- src/fern/types/scoring_identifier.py
+- src/fern/types/scoring_options.py
+- src/fern/types/section.py
+- src/fern/types/section_matches_item.py
+- src/fern/types/section_matches_item_teams_item.py
+- src/fern/types/section_matches_item_teams_item_result.py
+- src/fern/types/simple_event.py
+- src/fern/types/simple_event_match.py
+- src/fern/types/simple_event_match_teams_item.py
+- src/fern/types/simple_game.py
+- src/fern/types/simple_league.py
+- src/fern/types/simple_match.py
+- src/fern/types/simple_roster.py
+- src/fern/types/stage.py
+- src/fern/types/stage_type.py
+- src/fern/types/standings.py
+- src/fern/types/standings_source.py
+- src/fern/types/state.py
+- src/fern/types/strategy.py
+- src/fern/types/strategy_type.py
+- src/fern/types/tags.py
+- src/fern/types/team.py
+- src/fern/types/team_id.py
+- src/fern/types/team_metadata.py
+- src/fern/types/team_metadata_participant_metadata_item.py
+- src/fern/types/team_slug.py
+- src/fern/types/team_stats.py
+- src/fern/types/team_stats_dragons_item.py
+- src/fern/types/teams.py
+- src/fern/types/tournament.py
+- src/fern/types/video.py
+- src/fern/types/vod.py
+- src/fern/types/window.py
+- src/fern/types/window_frame.py
+- src/fern/types/window_frame_game_state.py
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml python: reference command finished in 0.02s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml python: crozier generation finished in 4.01s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml python: mismatched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/crozier.yml
+  python: mismatched (layout packaged, 243 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (6):
+      README.md
+      reference.md
+      src/fern/__init__.py
+      src/fern/client.py
+      src/fern/core/client_wrapper.py
+      src/fern/core/http_client.py
+    only in crozier (208):
+      src/fern/errors/__init__.py
+      src/fern/errors/not_found_error.py
+      src/fern/events/__init__.py
+      src/fern/events/client.py
+      src/fern/events/raw_client.py
+      src/fern/events/types/__init__.py
+      src/fern/events/types/extended_event_match.py
+      src/fern/events/types/extended_event_match_teams_item.py
+      src/fern/events/types/get_completed_events_response.py
+      src/fern/events/types/get_completed_events_response_data.py
+      src/fern/events/types/get_completed_events_response_data_schedule.py
+      src/fern/events/types/get_completed_events_response_data_schedule_events_item.py
+      src/fern/events/types/get_completed_events_response_data_schedule_events_item_match.py
+      src/fern/events/types/get_completed_events_response_data_schedule_events_item_match_type.py
+      src/fern/events/types/get_event_details_response.py
+      src/fern/events/types/get_event_details_response_data.py
+      src/fern/events/types/get_event_details_response_data_event.py
+      src/fern/events/types/get_event_details_response_data_event_match.py
+      src/fern/events/types/get_event_details_response_data_event_match_teams_item.py
+      src/fern/events/types/get_games_response.py
+      src/fern/events/types/get_games_response_data.py
+      src/fern/events/types/get_live_response.py
+      src/fern/events/types/get_live_response_data.py
+      src/fern/events/types/get_live_response_data_schedule.py
+      src/fern/events/types/get_live_response_data_schedule_events_item.py
+      src/fern/events/types/get_live_response_data_schedule_events_item_match.py
+      src/fern/events/types/get_live_response_data_schedule_events_item_match_teams_item.py
+      src/fern/events/types/get_live_response_data_schedule_events_item_match_teams_item_result.py
+      src/fern/events/types/get_schedule_response.py
+      src/fern/events/types/get_schedule_response_data.py
+      src/fern/events/types/get_schedule_response_data_schedule.py
+      src/fern/events/types/get_schedule_response_data_schedule_events_item.py
+      src/fern/events/types/get_schedule_response_data_schedule_events_item_match.py
+      src/fern/events/types/get_schedule_response_data_schedule_events_item_match_teams_item.py
+      src/fern/events/types/get_schedule_response_data_schedule_events_item_match_teams_item_result.py
+      src/fern/events/types/get_schedule_response_data_schedule_pages.py
+      src/fern/highlander/__init__.py
+      src/fern/highlander/client.py
+      src/fern/highlander/raw_client.py
+      src/fern/highlander/types/__init__.py
+      src/fern/highlander/types/leagues_response.py
+      src/fern/highlander/types/nav_items_response.py
+      src/fern/highlander/types/players_response.py
+      src/fern/highlander/types/players_response_player_stats_histories_item.py
+      src/fern/highlander/types/players_response_player_stats_summaries_item.py
+      src/fern/highlander/types/players_response_player_stats_summaries_item_mostplayedchampions_item.py
+      src/fern/highlander/types/players_response_players_item.py
+      src/fern/highlander/types/players_response_players_item_photo_information.py
+      src/fern/highlander/types/schedule_items_response.py
+      src/fern/highlander/types/teams_response.py
+      src/fern/highlander/types/teams_response_players_item.py
+      src/fern/highlander/types/teams_response_team_roster_stats_item.py
+      src/fern/highlander/types/teams_response_team_stats_histories_item.py
+      src/fern/highlander/types/teams_response_team_stats_summaries_item.py
+      src/fern/highlander/types/teams_response_team_stats_summaries_item_average_damage_by_position.py
+      src/fern/highlander/types/videos_response.py
+      src/fern/leagues/__init__.py
+      src/fern/leagues/client.py
+      src/fern/leagues/raw_client.py
+      src/fern/leagues/types/__init__.py
+      src/fern/leagues/types/get_leagues_response.py
+      src/fern/leagues/types/get_leagues_response_data.py
+      src/fern/leagues/types/get_leagues_response_data_leagues_item.py
+      src/fern/leagues/types/get_standings_response.py
+      src/fern/leagues/types/get_standings_response_data.py
+      src/fern/leagues/types/get_standings_response_data_standings_item.py
+      src/fern/leagues/types/get_tournaments_for_league_response.py
+      src/fern/leagues/types/get_tournaments_for_league_response_data.py
+      src/fern/leagues/types/get_tournaments_for_league_response_data_leagues_item.py
+      src/fern/match_details/__init__.py
+      src/fern/match_details/client.py
+      src/fern/match_details/raw_client.py
+      src/fern/match_details/types/__init__.py
+      src/fern/match_details/types/get_details_response.py
+      src/fern/teams/__init__.py
+      src/fern/teams/client.py
+      src/fern/teams/raw_client.py
+      src/fern/teams/types/__init__.py
+      src/fern/teams/types/get_teams_response.py
+      src/fern/teams/types/get_teams_response_data.py
+      src/fern/types/__init__.py
+      src/fern/types/abilities.py
+      src/fern/types/base_event.py
+      src/fern/types/base_frame.py
+      src/fern/types/base_league.py
+      src/fern/types/base_match.py
+      src/fern/types/base_participant_stats.py
+      src/fern/types/base_schedule_item.py
+      src/fern/types/base_strategy.py
+      src/fern/types/bracket_type.py
+      src/fern/types/bracket_type_identifier.py
+      src/fern/types/bracket_type_options.py
+      src/fern/types/brackets.py
+      src/fern/types/brackets_value.py
+      src/fern/types/brackets_value_input_item.py
+      src/fern/types/brackets_value_state.py
+      src/fern/types/breakpoints.py
+      src/fern/types/breakpoints_value.py
+      src/fern/types/breakpoints_value_generator.py
+      src/fern/types/breakpoints_value_generator_identifier.py
+      src/fern/types/breakpoints_value_input_item.py
+      src/fern/types/custom_team.py
+      src/fern/types/custom_team_side.py
+      src/fern/types/details_frame.py
+      src/fern/types/event_schedule_item.py
+      src/fern/types/event_type.py
+      src/fern/types/extended_event.py
+      src/fern/types/extended_game.py
+      src/fern/types/extended_league.py
+      src/fern/types/extended_participant_stats.py
+      src/fern/types/extended_team.py
+      src/fern/types/extended_vod.py
+      src/fern/types/extended_vod_provider.py
+      src/fern/types/foreign_ids.py
+      src/fern/types/game.py
+      src/fern/types/game_id.py
+      src/fern/types/game_metadata.py
+      src/fern/types/game_mode.py
+      src/fern/types/game_mode_identifier.py
+      src/fern/types/game_mode_map_name.py
+      src/fern/types/highlander_game.py
+      src/fern/types/highlander_game_input_item.py
+      src/fern/types/highlander_game_state.py
+      src/fern/types/highlander_league.py
+      src/fern/types/highlander_match.py
+      src/fern/types/highlander_match_input_item.py
+      src/fern/types/highlander_match_state.py
+      src/fern/types/highlander_player.py
+      src/fern/types/highlander_player_champions_item.py
+      src/fern/types/highlander_player_foreign_ids.py
+      src/fern/types/highlander_players.py
+      src/fern/types/highlander_record.py
+      src/fern/types/highlander_records.py
+      src/fern/types/highlander_result.py
+      src/fern/types/highlander_team.py
+      src/fern/types/highlander_teams.py
+      src/fern/types/highlander_tournament.py
+      src/fern/types/highlander_tournament_rosters_value.py
+      src/fern/types/highlander_tournament_rosters_value_state.py
+      src/fern/types/highlander_tournaments.py
+      src/fern/types/home_league.py
+      src/fern/types/locale.py
+      src/fern/types/match_schedule_item.py
+      src/fern/types/match_type.py
+      src/fern/types/match_type_identifier.py
+      src/fern/types/match_type_options.py
+      src/fern/types/nav_item.py
+      src/fern/types/nav_item_parent_nav_item.py
+      src/fern/types/not_found_error_body.py
+      src/fern/types/not_found_error_body_error.py
+      src/fern/types/outcome.py
+      src/fern/types/page_token.py
+      src/fern/types/participant_id.py
+      src/fern/types/participant_metadata.py
+      src/fern/types/participant_metadata_extended.py
+      src/fern/types/participant_metadata_role.py
+      src/fern/types/participant_stats.py
+      src/fern/types/perk_metadata.py
+      src/fern/types/player.py
+      src/fern/types/ranking.py
+      src/fern/types/ranking_teams_item.py
+      src/fern/types/record.py
+      src/fern/types/result.py
+      src/fern/types/role.py
+      src/fern/types/role_origin.py
+      src/fern/types/role_region.py
+      src/fern/types/role_summoner_name.py
+      src/fern/types/roles.py
+      src/fern/types/rostering_strategy.py
+      src/fern/types/rostering_strategy_identifier.py
+      src/fern/types/schedule_item.py
+      src/fern/types/scores.py
+      src/fern/types/scoring.py
+      src/fern/types/scoring_identifier.py
+      src/fern/types/scoring_options.py
+      src/fern/types/section.py
+      src/fern/types/section_matches_item.py
+      src/fern/types/section_matches_item_teams_item.py
+      src/fern/types/section_matches_item_teams_item_result.py
+      src/fern/types/simple_event.py
+      src/fern/types/simple_event_match.py
+      src/fern/types/simple_event_match_teams_item.py
+      src/fern/types/simple_game.py
+      src/fern/types/simple_league.py
+      src/fern/types/simple_match.py
+      src/fern/types/simple_roster.py
+      src/fern/types/stage.py
+      src/fern/types/stage_type.py
+      src/fern/types/standings.py
+      src/fern/types/standings_source.py
+      src/fern/types/state.py
+      src/fern/types/strategy.py
+      src/fern/types/strategy_type.py
+      src/fern/types/tags.py
+      src/fern/types/team.py
+      src/fern/types/team_id.py
+      src/fern/types/team_metadata.py
+      src/fern/types/team_metadata_participant_metadata_item.py
+      src/fern/types/team_slug.py
+      src/fern/types/team_stats.py
+      src/fern/types/team_stats_dragons_item.py
+      src/fern/types/teams.py
+      src/fern/types/tournament.py
+      src/fern/types/video.py
+      src/fern/types/vod.py
+      src/fern/types/window.py
+      src/fern/types/window_frame.py
+      src/fern/types/window_frame_game_state.py
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_1763840-82_comparisons-final_5737ba80e2e41e0bdf0f3e9079dcd757c16553d3f120b3f6d8bba6f3dc782d9c_crozier.yml-python.diff
+    timing: reference 0.02s, crozier 4.01s, speed-up 0.00x, saved -4.00s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.02s, crozier 4.01s, speed-up 0.00x, saved -4.00s
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> MIT
+--- LICENSE (first 30 non-blank lines) ---
+MIT License
+Copyright (c) 2019 Victor Otieno
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+outcome: passed: no info.license, LICENSE at the pinned commit reads as MIT, which the corpus rule admits

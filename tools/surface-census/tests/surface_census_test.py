@@ -43,7 +43,9 @@ import unicodedata
 import unittest
 from collections import Counter
 from collections.abc import Callable, Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from dataclasses import fields as dataclass_fields
+from enum import StrEnum
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
 from typing import Any, ClassVar, NamedTuple, Protocol
@@ -22026,35 +22028,128 @@ class OutputInsensitiveTests(unittest.TestCase):
         self.assertIn("also claimed proven", result.stderr)
 
 
-TRIAGE_COLUMNS = ("source", "root_cause", "verdict", "measurement", "departure", "note")
-DOCUMENT_COLUMNS = ("document", "sha256", "source", "root_causes", "status", "corpus_row", "note")
+class HandedOffVerdict(StrEnum):
+    REPAIRED = "parity-gap-repaired"
+    MATCHING = "already-matching"
+    DEFECT = "fern-defect-departed"
+    USER_RULING = "user-ruling"
+    DEFAULT = "default-matched"
+    REFUSAL = "refusal-kept"
+
+
+class HandedOffRuling(StrEnum):
+    EMPTY_SDK = "empty-sdk-refused"
+    FALSY_EXAMPLE = "falsy-property-example"
+    TIMESTAMP = "yaml-timestamp-parameter-example"
+    MINIMAL_CALL = "minimal-worked-call"
+    EXAMPLES = "declared-examples-array"
+    INLINE_UNION = "inline-union-types"
+    IMPORT_ORDER = "init-import-order"
+    COMBINATION = "exhausted-combination-fallback"
+
+
+@dataclass(frozen=True)
+class AppliedHandedOffRuling:
+    ruling: HandedOffRuling
+
+
+@dataclass(frozen=True)
+class HandedOffTriageRecord:
+    source: str
+    root_cause: str
+    verdict: HandedOffVerdict | AppliedHandedOffRuling
+    measurement: str
+    departure: str
+    note: str
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> HandedOffTriageRecord:
+        raw = row["verdict"]
+        try:
+            verdict = (
+                AppliedHandedOffRuling(HandedOffRuling(raw.split(":", 1)[1]))
+                if raw.startswith("ruling-applied:")
+                else HandedOffVerdict(raw)
+            )
+        except ValueError:
+            raise AssertionError(f"{row['root_cause']}: invalid verdict {raw}") from None
+        return cls(
+            source=row["source"],
+            root_cause=row["root_cause"],
+            verdict=verdict,
+            measurement=row["measurement"],
+            departure=row["departure"],
+            note=row["note"],
+        )
+
+
+class HandedOffStatus(StrEnum):
+    REGISTERED = "registered"
+    INADMISSIBLE = "byte-matches-not-admissible"
+    REFUSED = "refused-by-ruling"
+    NOT_COMPARED = "not-compared"
+    DIFFERS = "differs"
+    COULD_NOT_CHECK = "could-not-check"
+    INCOMPLETE = "registration-incomplete"
+
+
+@dataclass(frozen=True)
+class HandedOffHash:
+    value: str
+
+    def __post_init__(self) -> None:
+        assert re.fullmatch(r"[0-9a-f]{64}", self.value), f"invalid document hash: {self.value}"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True)
+class HandedOffDocumentRecord:
+    document: str
+    sha256: HandedOffHash
+    source: str
+    root_causes: str
+    status: HandedOffStatus
+    corpus_row: str
+    note: str
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> HandedOffDocumentRecord:
+        try:
+            status = HandedOffStatus(row["status"])
+        except ValueError:
+            raise AssertionError(f"{row['sha256']}: invalid status {row['status']}") from None
+        return cls(
+            document=row["document"],
+            sha256=HandedOffHash(row["sha256"]),
+            source=row["source"],
+            root_causes=row["root_causes"],
+            status=status,
+            corpus_row=row["corpus_row"],
+            note=row["note"],
+        )
+
+
+TRIAGE_COLUMNS = tuple(field.name for field in dataclass_fields(HandedOffTriageRecord))
+DOCUMENT_COLUMNS = tuple(field.name for field in dataclass_fields(HandedOffDocumentRecord))
 HANDED_OFF_SOURCES = tuple(
     f"docs/openapi-surface/witness-search-fixture-only-{area}/README.md"
     for area in ("bodies-paths", "operations-extensions", "schemas")
 )
-TRIAGE_VERDICTS = {
-    "parity-gap-repaired",
-    "already-matching",
-    "fern-defect-departed",
-    "user-ruling",
-    "default-matched",
-    "refusal-kept",
-}
-RULING_IDS = {
-    "empty-sdk-refused",
-    "falsy-property-example",
-    "yaml-timestamp-parameter-example",
-    "minimal-worked-call",
-    "declared-examples-array",
-    "inline-union-types",
-    "init-import-order",
-    "exhausted-combination-fallback",
-}
+TRIAGE_VERDICTS = {member.value for member in HandedOffVerdict}
 
 
 def reconcile_handed_off(root: pathlib.Path) -> None:
     """Read the source records and on-disk evidence, refusing triage drift."""
     directory = root / "docs/fern-measurements/handed-off"
+    readme = (directory / "README.md").read_text(encoding="utf-8")
+    columns = readme.split("in order:", 1)[1].split(".", 1)[0]
+    assert tuple(re.findall(r"`([^`]+)`", columns)) == TRIAGE_COLUMNS, "README triage columns drift"
+    verdicts = readme.split("The closed verdict set is", 1)[1].split(". A ", 1)[0]
+    assert set(re.findall(r"`([^`]+)`", verdicts)) == TRIAGE_VERDICTS | {"ruling-applied:<ruling id>"}, (
+        "README triage verdicts drift"
+    )
     causes: dict[str, str] = {}
     for source in HANDED_OFF_SOURCES:
         text = (root / source).read_text(encoding="utf-8")
@@ -22067,56 +22162,85 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 causes[name] = source
     seen: dict[str, pathlib.Path] = {}
     for path in sorted(directory.glob("*.tsv")):
-        if path.name == "documents.tsv":
+        if path.name in {"documents.tsv", "residuals.tsv"}:
             continue
         with path.open(encoding="utf-8", newline="") as stream:
             reader = csv.DictReader(stream, delimiter="\t")
             assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path}: triage header"
-            for row in reader:
-                name = row["root_cause"]
+            for raw in reader:
+                row = HandedOffTriageRecord.parse(raw)
+                name = row.root_cause
                 assert name not in seen, f"{name}: rows in {seen.get(name)} and {path}"
                 seen[name] = path
                 if name in causes:
-                    assert row["source"] == causes[name], f"{name}: wrong source record"
+                    assert row.source == causes[name], f"{name}: wrong source record"
                 else:
                     assert path.name == "remeasure.tsv", f"{name}: unknown cause outside remeasure.tsv"
-                    assert row["source"] == "docs/fern-measurements/handed-off/documents.tsv", (
-                        f"{name}: remeasure source"
-                    )
-                verdict = row["verdict"]
-                assert verdict in TRIAGE_VERDICTS or (
-                    verdict.startswith("ruling-applied:") and verdict.split(":", 1)[1] in RULING_IDS
-                ), f"{name}: invalid verdict {verdict}"
+                    assert row.source == "docs/fern-measurements/handed-off/documents.tsv", f"{name}: remeasure source"
+
     assert not causes.keys() - seen.keys(), f"missing causes: {sorted(causes.keys() - seen.keys())}"
     with (directory / "documents.tsv").open(encoding="utf-8", newline="") as stream:
         reader = csv.DictReader(stream, delimiter="\t")
         assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
-        documents = list(reader)
+        documents = [HandedOffDocumentRecord.parse(row) for row in reader]
+    residuals: dict[str, set[str]] = {}
+    residual_path = directory / "residuals.tsv"
+    if residual_path.is_file():
+        with residual_path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            assert tuple(reader.fieldnames or ()) == ("sha256", "file", "root_cause", "area", "note"), "residual header"
+            for row in reader:
+                assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
+                residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
     hashes: set[str] = set()
     registered = set()
     for row in documents:
-        sha = row["sha256"]
-        assert re.fullmatch(r"[0-9a-f]{64}", sha), f"invalid document hash: {sha}"
+        sha = str(row.sha256)
         assert sha not in hashes, f"duplicate document: {sha}"
         hashes.add(sha)
-        status = row["status"]
-        assert status in {"registered", "byte-matches-not-admissible", "refused-by-ruling", "not-compared"}, (
-            f"{sha}: invalid status {status}"
-        )
+        status = row.status
         evidence = directory / "comparisons" / f"{sha}.txt"
         assert evidence.is_file(), f"{sha}: missing comparison record"
         text = evidence.read_text(encoding="utf-8")
         assert f"sha256: {sha}\n" in text, f"{sha}: comparison hash disagrees"
-        expected = "byte-matches" if status in {"registered", "byte-matches-not-admissible"} else status
+        expected = (
+            "byte-matches"
+            if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}
+            else status
+        )
         assert f"result: {expected}\n" in text, f"{sha}: comparison result disagrees"
         assert "command: " in text, f"{sha}: missing comparison command"
-        if status == "registered":
-            assert row["corpus_row"] not in {"", "-"}, f"{sha}: missing corpus row"
-            registered.add(f"- `{row['document']}` | `{sha}` | {row['corpus_row']}")
-        elif status == "byte-matches-not-admissible":
-            assert "rule:" in row["note"] and '"' in row["note"], f"{sha}: missing inadmissibility evidence"
-        elif status == "not-compared":
-            assert "valid-OpenAPI" in row["note"] and "empty" in row["note"], f"{sha}: unexplained comparison exception"
+        differing = {
+            line.removeprefix("- ")
+            for line in text.split("differing files:\n", 1)[-1].split("\n\n", 1)[0].splitlines()
+            if line.startswith("- ")
+        }
+        if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}:
+            assert not differing, f"{sha}: byte-match lists differing files"
+        if status == HandedOffStatus.DIFFERS:
+            assert differing == residuals.get(sha), f"{sha}: residual file list disagrees"
+        match status:
+            case HandedOffStatus.REGISTERED:
+                assert row.corpus_row not in {"", "-"}, f"{sha}: missing corpus row"
+                registered.add(f"- `{row.document}` | `{sha}` | {row.corpus_row}")
+            case HandedOffStatus.INADMISSIBLE:
+                assert "rule:" in row.note and '"' in row.note, f"{sha}: missing inadmissibility evidence"
+            case HandedOffStatus.NOT_COMPARED:
+                assert "valid-OpenAPI" in row.note and "empty" in row.note, f"{sha}: unexplained comparison exception"
+            case HandedOffStatus.REFUSED:
+                assert "default refusal: " in text and "fern-strict refusal: " in text, f"{sha}: missing refusal modes"
+                assert "certified exit: " in text and "certified diagnostic: " in text, (
+                    f"{sha}: missing certified refusal"
+                )
+            case HandedOffStatus.DIFFERS:
+                assert sha in residuals, f"{sha}: differing document has no residual record"
+            case HandedOffStatus.INCOMPLETE:
+                assert residuals.get(sha) == {"expected-literals/"}, f"{sha}: missing literals residual"
+                assert "literals" in row.note, f"{sha}: missing registration reason"
+            case HandedOffStatus.COULD_NOT_CHECK:
+                assert row.note.strip(), f"{sha}: missing could-not-check reason"
+
+    assert residuals.keys() <= hashes, "residual for an unmeasured document"
     for source in HANDED_OFF_SOURCES:
         section = (
             (root / source).read_text(encoding="utf-8").split("## Handed-off differences\n", 1)[1].split("\n## ", 1)[0]
@@ -22152,18 +22276,30 @@ class HandedOffReconciliationTests(unittest.TestCase):
                 encoding="utf-8",
             )
         self.rows = [
-            dict(
-                zip(
-                    TRIAGE_COLUMNS,
-                    (source, f"cause-{index}", "already-matching", f"measurement/{index}/", "-", "Measured match"),
-                    strict=True,
+            asdict(
+                HandedOffTriageRecord(
+                    source=source,
+                    root_cause=f"cause-{index}",
+                    verdict=HandedOffVerdict.MATCHING,
+                    measurement=f"measurement/{index}/",
+                    departure="-",
+                    note="Measured match",
                 )
             )
             for index, source in enumerate(HANDED_OFF_SOURCES)
         ]
         self.write_rows(self.directory / "sample.tsv", TRIAGE_COLUMNS, self.rows)
         self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [])
-        (self.directory / "README.md").write_text("## Newly admitted documents\n", encoding="utf-8")
+        self.readme_prefix = (
+            "Each area has columns in order: "
+            + ", ".join(f"`{column}`" for column in TRIAGE_COLUMNS)
+            + ".\nThe closed verdict set is "
+            + ", ".join(f"`{verdict}`" for verdict in sorted(TRIAGE_VERDICTS))
+            + ", `ruling-applied:<ruling id>`. A verdict is decided.\n\n"
+        )
+        (self.directory / "README.md").write_text(
+            self.readme_prefix + "## Newly admitted documents\n", encoding="utf-8"
+        )
 
     @staticmethod
     def write_rows(path: pathlib.Path, columns: tuple[str, ...], rows: list[dict[str, str]]) -> None:
@@ -22197,21 +22333,17 @@ class HandedOffReconciliationTests(unittest.TestCase):
 
     def test_document_evidence_and_admitted_index_agree(self) -> None:
         sha = "a" * 64
-        row = dict(
-            zip(
-                DOCUMENT_COLUMNS,
-                (
-                    "publisher/api:openapi.yml@" + "b" * 40,
-                    sha,
-                    HANDED_OFF_SOURCES[0],
-                    "cause-0",
-                    "registered",
-                    "5050 (sample)",
-                    "Measured",
-                ),
-                strict=True,
-            )
+        document = HandedOffDocumentRecord(
+            document="publisher/api:openapi.yml@" + "b" * 40,
+            sha256=HandedOffHash(sha),
+            source=HANDED_OFF_SOURCES[0],
+            root_causes="cause-0",
+            status=HandedOffStatus.REGISTERED,
+            corpus_row="5050 (sample)",
+            note="Measured",
         )
+        row = {key: str(value) for key, value in asdict(document).items()}
+        row["sha256"] = str(document.sha256)
         self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
         with self.assertRaisesRegex(AssertionError, "missing comparison record"):
             reconcile_handed_off(self.root)
@@ -22228,7 +22360,9 @@ class HandedOffReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "Newly admitted documents"):
             reconcile_handed_off(self.root)
         (self.directory / "README.md").write_text(
-            f"## Newly admitted documents\n\n- `{row['document']}` | `{sha}` | {row['corpus_row']}\n", encoding="utf-8"
+            self.readme_prefix
+            + f"## Newly admitted documents\n\n- `{row['document']}` | `{sha}` | {row['corpus_row']}\n",
+            encoding="utf-8",
         )
         reconcile_handed_off(self.root)
         evidence.write_text(
@@ -22236,3 +22370,27 @@ class HandedOffReconciliationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(AssertionError, "hash disagrees"):
             reconcile_handed_off(self.root)
+
+
+class HandedOffRepositoryRecordTests(unittest.TestCase):
+    def test_committed_handed_off_records_reconcile(self) -> None:
+        reconcile_handed_off(REPO)
+
+    def test_removing_a_committed_cause_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            directory = root / "docs/fern-measurements/handed-off"
+            directory.mkdir(parents=True)
+            for source in HANDED_OFF_SOURCES:
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(REPO / source, path)
+            for path in (REPO / "docs/fern-measurements/handed-off").glob("*.tsv"):
+                shutil.copyfile(path, directory / path.name)
+            shutil.copyfile(REPO / "docs/fern-measurements/handed-off/README.md", directory / "README.md")
+            path = directory / "bodies-media.tsv"
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            removed = lines.pop(1).split("\t")[1]
+            path.write_text("".join(lines), encoding="utf-8")
+            with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
+                reconcile_handed_off(root)

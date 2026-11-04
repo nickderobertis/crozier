@@ -190,3 +190,9 @@ default_package_name`, as the certified pair names them.
 Non-table causes originally recorded by this area are reconciled in
 [`../remeasure.tsv`](../remeasure.tsv); their measurement directories remain
 here, preserving the original evidence paths.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

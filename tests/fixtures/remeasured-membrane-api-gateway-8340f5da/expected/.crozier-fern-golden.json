@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "remeasured-membrane-api-gateway-8340f5da",
+  "corpus_spec_ref": "c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/membrane/api-gateway/c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c/core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml"
+}

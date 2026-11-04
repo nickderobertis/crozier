@@ -76,7 +76,7 @@ source's docstrings likewise call `client.submit_application()` (lines 133 and
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 python docs/departures/evidence/multipart-object-required-file-example.py \
-  docs/openapi-surface/handwritten/poster-upload/fern-expected/src \
+  docs/fern-measurements/superseded-fixtures/poster-upload/fern-expected/src \
   plain --examples invalid --wire
 ```
 

@@ -55,3 +55,9 @@ Re-comparing on the merged tree surfaced two worked-example values the earlier c
 ## Open in this area
 
 None. Every worked-example value the comparisons show is matched, held by a catalogued departure, blocked only by another cause in the same file, or a synthesized placeholder following a named type or signature difference.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

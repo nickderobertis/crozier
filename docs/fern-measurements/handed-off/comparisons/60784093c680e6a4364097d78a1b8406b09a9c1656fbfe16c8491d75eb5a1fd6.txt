@@ -1,0 +1,41 @@
+sha256: 60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6
+result: refused-by-ruling
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 4
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6
+
+differing files:
+
+certified exit: 1
+certified diagnostic: [error] Enum name Hello世界 for value Hello 世界 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+default refusal: enum-value-unnameable (exit 1)
+default command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/default --package-name fern --project-name default_package_name
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/openapi.yml: enum-value-unnameable: #/components/schemas/SpecialEnum enum value "🚀"; declare a usable name with x-crozier-enum
+fern-strict refusal: enum-value-unnameable (exit 1)
+fern-strict command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/fern-strict --package-name fern --project-name default_package_name --fern-strict
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/openapi.yml: enum-value-unnameable: #/components/schemas/SpecialEnum enum value "🚀"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml python: reference command finished in 0.01s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml python: could_not_check (the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty)
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/crozier.yml
+  python: could_not_check
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/60784093c680e6a4364097d78a1b8406b09a9c1656fbfe16c8491d75eb5a1fd6/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty
+    timing: reference 0.01s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 0 mismatched, 1 could not check
+Timing totals: no generator ran both sides
+Result: no mismatch, but 1 could not be checked (exit 4)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+licence file (none) -> None
+outcome: failed: grants nothing — no info.license and no licence file at the pinned commit

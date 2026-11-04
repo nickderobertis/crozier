@@ -1,0 +1,164 @@
+sha256: 62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e
+result: differs
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 3
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e
+
+differing files:
+- reference.md
+- src/fern/__init__.py
+- src/fern/events/__init__.py
+- src/fern/events/types/__init__.py
+- src/fern/events/types/get_events_request_cli_id.py
+- src/fern/events/types/get_events_request_cli_id_all.py
+- src/fern/issues/client.py
+- src/fern/requests/__init__.py
+- src/fern/requests/types/__init__.py
+- src/fern/requests/types/get_request_events_request_cli_id.py
+- src/fern/requests/types/get_request_events_request_cli_id_all.py
+- src/fern/types/__init__.py
+- src/fern/types/destination_config_cli_auth_empty.py
+- src/fern/types/destination_config_http_auth_empty.py
+- src/fern/types/destination_config_mock_api_auth_empty.py
+- src/fern/types/event_attempt_body.py
+- src/fern/types/filter_rule_property.py
+- src/fern/types/filter_rule_property_boolean.py
+- src/fern/types/filter_rule_property_json.py
+- src/fern/types/filter_rule_property_number.py
+- src/fern/types/filter_rule_property_string.py
+- src/fern/types/get_events_request_body.py
+- src/fern/types/get_events_request_body_one.py
+- src/fern/types/get_events_request_headers.py
+- src/fern/types/get_events_request_headers_one.py
+- src/fern/types/get_events_request_parsed_query.py
+- src/fern/types/get_events_request_parsed_query_one.py
+- src/fern/types/get_request_events_request_body.py
+- src/fern/types/get_request_events_request_body_one.py
+- src/fern/types/get_request_events_request_headers.py
+- src/fern/types/get_request_events_request_headers_one.py
+- src/fern/types/get_request_events_request_parsed_query.py
+- src/fern/types/get_request_events_request_parsed_query_one.py
+- src/fern/types/get_requests_request_body.py
+- src/fern/types/get_requests_request_body_one.py
+- src/fern/types/get_requests_request_headers.py
+- src/fern/types/get_requests_request_headers_one.py
+- src/fern/types/get_requests_request_parsed_query.py
+- src/fern/types/get_requests_request_parsed_query_one.py
+- src/fern/types/get_transformation_executions_request_log_level.py
+- src/fern/types/source_config_http_auth_empty.py
+- src/fern/types/source_config_webhook_auth_empty.py
+- src/fern/types/transformation_executor_output_request_query.py
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml python: reference command finished in 0.64s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml python: crozier generation finished in 25.39s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml python: mismatched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/crozier.yml
+  python: mismatched (layout packaged, 1242 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (28):
+      reference.md
+      src/fern/__init__.py
+      src/fern/events/__init__.py
+      src/fern/events/types/__init__.py
+      src/fern/events/types/get_events_request_cli_id.py
+      src/fern/issues/client.py
+      src/fern/requests/__init__.py
+      src/fern/requests/types/__init__.py
+      src/fern/requests/types/get_request_events_request_cli_id.py
+      src/fern/types/__init__.py
+      src/fern/types/destination_config_cli_auth_empty.py
+      src/fern/types/destination_config_http_auth_empty.py
+      src/fern/types/destination_config_mock_api_auth_empty.py
+      src/fern/types/event_attempt_body.py
+      src/fern/types/filter_rule_property.py
+      src/fern/types/get_events_request_body.py
+      src/fern/types/get_events_request_headers.py
+      src/fern/types/get_events_request_parsed_query.py
+      src/fern/types/get_request_events_request_body.py
+      src/fern/types/get_request_events_request_headers.py
+      src/fern/types/get_request_events_request_parsed_query.py
+      src/fern/types/get_requests_request_body.py
+      src/fern/types/get_requests_request_headers.py
+      src/fern/types/get_requests_request_parsed_query.py
+      src/fern/types/get_transformation_executions_request_log_level.py
+      src/fern/types/source_config_http_auth_empty.py
+      src/fern/types/source_config_webhook_auth_empty.py
+      src/fern/types/transformation_executor_output_request_query.py
+    only in reference (11):
+      src/fern/events/types/get_events_request_cli_id_all.py
+      src/fern/requests/types/get_request_events_request_cli_id_all.py
+      src/fern/types/get_events_request_body_one.py
+      src/fern/types/get_events_request_headers_one.py
+      src/fern/types/get_events_request_parsed_query_one.py
+      src/fern/types/get_request_events_request_body_one.py
+      src/fern/types/get_request_events_request_headers_one.py
+      src/fern/types/get_request_events_request_parsed_query_one.py
+      src/fern/types/get_requests_request_body_one.py
+      src/fern/types/get_requests_request_headers_one.py
+      src/fern/types/get_requests_request_parsed_query_one.py
+    only in crozier (4):
+      src/fern/types/filter_rule_property_boolean.py
+      src/fern/types/filter_rule_property_json.py
+      src/fern/types/filter_rule_property_number.py
+      src/fern/types/filter_rule_property_string.py
+    intended departures applied (6):
+      src/fern/__init__.py:1012 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_1763840-82_comparisons-final_62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e_crozier.yml-python.diff
+    timing: reference 0.64s, crozier 25.39s, speed-up 0.03x, saved -24.74s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.64s, crozier 25.39s, speed-up 0.03x, saved -24.74s
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 200
+licence file LICENSE.md -> CC0
+--- LICENSE.md (first 30 non-blank lines) ---
+Creative Commons Legal Code
+CC0 1.0 Universal
+    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
+    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
+    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
+    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
+    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+    HEREUNDER.
+Statement of Purpose
+The laws of most jurisdictions throughout the world automatically confer
+exclusive Copyright and Related Rights (defined below) upon the creator
+and subsequent owner(s) (each and all, an "owner") of an original work of
+authorship and/or a database (each, a "Work").
+Certain owners wish to permanently relinquish those rights to a Work for
+the purpose of contributing to a commons of creative, cultural and
+scientific works ("Commons") that the public can reliably and without fear
+of later claims of infringement build upon, modify, incorporate in other
+works, reuse and redistribute as freely as possible in any form whatsoever
+and for any purposes, including without limitation commercial purposes.
+These owners may contribute to the Commons to promote the ideal of a free
+culture and the further production of creative, cultural and scientific
+works, or to gain reputation or greater distribution for their Work in
+part through the use and efforts of others.
+For these and/or other purposes and motivations, and without any
+expectation of additional consideration or compensation, the person
+associating CC0 with a Work (the "Affirmer"), to the extent that he or she
+is an owner of Copyright and Related Rights in the Work, voluntarily
+elects to apply CC0 to the Work and publicly distribute the Work under its
+outcome: passed: no info.license, LICENSE.md at the pinned commit reads as CC0, which the corpus rule admits

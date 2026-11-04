@@ -1,0 +1,111 @@
+sha256: 244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1
+result: byte-matches
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/diffs
+crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+compare exit: 0
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1
+
+differing files:
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command finished in 0.03s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation finished in 1.64s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: matched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
+  python: matched (layout packaged, 100 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (44):
+      reference.md:359 schema-rejected-name-example
+      reference.md:417 schema-rejected-name-example
+      reference.md:609 schema-rejected-name-example
+      reference.md:782 schema-rejected-name-example
+      reference.md:897 schema-rejected-name-example
+      reference.md:1004 schema-rejected-name-example
+      reference.md:1112 schema-rejected-name-example
+      reference.md:1113 schema-rejected-name-example
+      reference.md:1213 schema-rejected-name-example
+      reference.md:1271 schema-rejected-name-example
+      reference.md:1329 schema-rejected-name-example
+      reference.md:1436 schema-rejected-name-example
+      reference.md:1503 schema-rejected-name-example
+      src/fern/clusters/client.py:113 schema-rejected-name-example
+      src/fern/clusters/client.py:244 schema-rejected-name-example
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/deployments/client.py:83 schema-rejected-name-example
+      src/fern/deployments/client.py:112 schema-rejected-name-example
+      src/fern/deployments/client.py:201 schema-rejected-name-example
+      src/fern/deployments/client.py:242 schema-rejected-name-example
+      src/fern/instances/client.py:102 schema-rejected-name-example
+      src/fern/instances/client.py:103 schema-rejected-name-example
+      src/fern/instances/client.py:144 schema-rejected-name-example
+      src/fern/instances/client.py:175 schema-rejected-name-example
+      src/fern/instances/client.py:203 schema-rejected-name-example
+      src/fern/instances/client.py:310 schema-rejected-name-example
+      src/fern/instances/client.py:311 schema-rejected-name-example
+      src/fern/instances/client.py:360 schema-rejected-name-example
+      src/fern/instances/client.py:399 schema-rejected-name-example
+      src/fern/instances/client.py:437 schema-rejected-name-example
+      src/fern/keys/client.py:113 schema-rejected-name-example
+      src/fern/keys/client.py:241 schema-rejected-name-example
+      src/fern/models/client.py:74 schema-rejected-name-example
+      src/fern/models/client.py:157 schema-rejected-name-example
+      src/fern/users/client.py:119 schema-rejected-name-example
+      src/fern/users/client.py:152 schema-rejected-name-example
+      src/fern/users/client.py:286 schema-rejected-name-example
+      src/fern/users/client.py:327 schema-rejected-name-example
+      src/fern/workers/client.py:77 schema-rejected-name-example
+      src/fern/workers/client.py:163 schema-rejected-name-example
+    timing: reference 0.03s, crozier 1.64s, speed-up 0.02x, saved -1.61s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.03s, crozier 1.64s, speed-up 0.02x, saved -1.61s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> Apache-2.0
+--- LICENSE (first 30 non-blank lines) ---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+   1. Definitions.
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+      "Derivative Works" shall mean any work, whether in Source or Object
+outcome: passed: no info.license, LICENSE at the pinned commit reads as Apache-2.0, which the corpus rule admits
