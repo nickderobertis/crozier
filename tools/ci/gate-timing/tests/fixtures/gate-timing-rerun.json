@@ -1,0 +1,146 @@
+[
+  {
+    "run": {
+      "id": 41288057298,
+      "name": "Visual docs",
+      "head_branch": "nick/625/fixture-witnesses-schemas",
+      "head_sha": "02bb5d31b340c286ebb3d6f42014f1cdad2b6ce5",
+      "path": ".github/workflows/visual-docs.yml",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "failure",
+      "pull_requests": [],
+      "created_at": "2026-11-01T09:15:07Z",
+      "run_attempt": 1
+    },
+    "jobs": [
+      {
+        "id": 124793324781,
+        "run_id": 41288057298,
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-01T09:15:08Z",
+        "started_at": "2026-11-01T09:15:10Z",
+        "completed_at": "2026-11-01T09:16:21Z",
+        "name": "visual-docs / arches"
+      },
+      {
+        "id": 124793325850,
+        "run_id": 41288057298,
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-01T09:15:08Z",
+        "started_at": "2026-11-01T09:15:08Z",
+        "completed_at": "2026-11-01T09:15:08Z",
+        "name": "visual-docs / prune-history"
+      },
+      {
+        "id": 124793325991,
+        "run_id": 41288057298,
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-01T09:15:08Z",
+        "started_at": "2026-11-01T09:15:08Z",
+        "completed_at": "2026-11-01T09:15:08Z",
+        "name": "visual-docs / cleanup-preview"
+      },
+      {
+        "id": 124793607761,
+        "run_id": 41288057298,
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-01T09:16:22Z",
+        "started_at": "2026-11-01T09:16:24Z",
+        "completed_at": "2026-11-01T09:21:01Z",
+        "name": "visual-docs / capture (x86_64)"
+      },
+      {
+        "id": 124794601546,
+        "run_id": 41288057298,
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-01T09:21:02Z",
+        "started_at": "2026-11-01T09:21:04Z",
+        "completed_at": "2026-11-01T09:59:36Z",
+        "name": "visual-docs / report (x86_64)"
+      }
+    ]
+  },
+  {
+    "run": {
+      "id": 41288057298,
+      "name": "Visual docs",
+      "head_branch": "nick/625/fixture-witnesses-schemas",
+      "head_sha": "02bb5d31b340c286ebb3d6f42014f1cdad2b6ce5",
+      "path": ".github/workflows/visual-docs.yml",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "pull_requests": [],
+      "created_at": "2026-11-01T09:04:05Z",
+      "run_attempt": 2
+    },
+    "jobs": [
+      {
+        "id": 124803426341,
+        "run_id": 41288057298,
+        "run_attempt": 2,
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-01T09:04:05Z",
+        "started_at": "2026-11-01T09:04:07Z",
+        "completed_at": "2026-11-01T09:05:17Z",
+        "name": "visual-docs / report (x86_64)"
+      },
+      {
+        "id": 124803426505,
+        "run_id": 41288057298,
+        "run_attempt": 2,
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-01T09:04:05Z",
+        "started_at": "2026-11-01T09:04:05Z",
+        "completed_at": "2026-11-01T09:15:08Z",
+        "name": "visual-docs / prune-history"
+      },
+      {
+        "id": 124803426896,
+        "run_id": 41288057298,
+        "run_attempt": 2,
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-01T09:04:06Z",
+        "started_at": "2026-11-01T09:15:10Z",
+        "completed_at": "2026-11-01T09:16:21Z",
+        "name": "visual-docs / arches"
+      },
+      {
+        "id": 124803450482,
+        "run_id": 41288057298,
+        "run_attempt": 2,
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-01T09:04:12Z",
+        "started_at": "2026-11-01T09:04:12Z",
+        "completed_at": "2026-11-01T09:15:08Z",
+        "name": "visual-docs / cleanup-preview"
+      },
+      {
+        "id": 124803455158,
+        "run_id": 41288057298,
+        "run_attempt": 2,
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-01T09:04:14Z",
+        "started_at": "2026-11-01T09:16:24Z",
+        "completed_at": "2026-11-01T09:21:01Z",
+        "name": "visual-docs / capture (x86_64)"
+      }
+    ]
+  }
+]

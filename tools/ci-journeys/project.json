@@ -66,8 +66,12 @@
         "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*",
         "{workspaceRoot}/src/yaml.rs",
         "{workspaceRoot}/.github/macos-policy.mjs",
-        "{workspaceRoot}/.github/require-ci-results.mjs"
+        "{workspaceRoot}/.github/require-ci-results.mjs",
+        "^production"
       ]
     }
-  }
+  },
+  "implicitDependencies": [
+    "gate-timing"
+  ]
 }
