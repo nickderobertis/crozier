@@ -22087,7 +22087,6 @@ class HandedOffStatus(StrEnum):
     REGISTERED = "registered"
     INADMISSIBLE = "byte-matches-not-admissible"
     REFUSED = "refused-by-ruling"
-    NOT_COMPARED = "not-compared"
     DIFFERS = "differs"
     COULD_NOT_CHECK = "could-not-check"
     INCOMPLETE = "registration-incomplete"
@@ -22248,8 +22247,6 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 registered.add(f"- `{row.document}` | `{sha}` | {row.corpus_row}")
             case HandedOffStatus.INADMISSIBLE:
                 assert "rule:" in row.note and '"' in row.note, f"{sha}: missing inadmissibility evidence"
-            case HandedOffStatus.NOT_COMPARED:
-                assert "valid-OpenAPI" in row.note and "empty" in row.note, f"{sha}: unexplained comparison exception"
             case HandedOffStatus.REFUSED:
                 default = re.search(r"^default refusal: ([a-z][a-z0-9-]+) \(exit ([1-9][0-9]*)\)$", text, re.MULTILINE)
                 strict = re.search(
@@ -22433,6 +22430,18 @@ class HandedOffReconciliationTests(unittest.TestCase):
                 path.write_text(original, encoding="utf-8")
         reconcile_handed_off(self.root)
 
+        self.write_rows(
+            self.directory / "documents.tsv",
+            DOCUMENT_COLUMNS,
+            [{**row, "status": "not-compared", "note": "valid-OpenAPI exception against empty SDK"}],
+        )
+        evidence.write_text(valid.replace("result: byte-matches", "result: not-compared"), encoding="utf-8")
+        (self.directory / "README.md").write_text(
+            self.readme_prefix + "## Newly admitted documents\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(AssertionError, "invalid status not-compared"):
+            reconcile_handed_off(self.root)
+
     def test_refusals_require_matching_nonzero_modes_and_a_decided_class(self) -> None:
         sha = "a" * 64
         document = HandedOffDocumentRecord(
@@ -22495,7 +22504,7 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             "registered": counts[HandedOffStatus.REGISTERED],
             "decided": counts[HandedOffStatus.REFUSED] + counts[HandedOffStatus.INADMISSIBLE],
             "listed residuals": counts[HandedOffStatus.DIFFERS] + counts[HandedOffStatus.INCOMPLETE],
-            "could-not-check": counts[HandedOffStatus.COULD_NOT_CHECK] + counts[HandedOffStatus.NOT_COMPARED],
+            "could-not-check": counts[HandedOffStatus.COULD_NOT_CHECK],
         }
         self.assertEqual(sum(totals.values()), len(documents))
         readme = (directory / "README.md").read_text(encoding="utf-8")
