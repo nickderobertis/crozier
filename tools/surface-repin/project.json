@@ -19,7 +19,11 @@
       "parallelism": false,
       "inputs": [
         "default",
-        "{workspaceRoot}/src/**/*.rs",
+        "{workspaceRoot}/src/document_refusals/type_not_defined.rs",
+        "{workspaceRoot}/src/emit.rs",
+        "{workspaceRoot}/src/ir.rs",
+        "{workspaceRoot}/src/naming.rs",
+        "{workspaceRoot}/src/openapi.rs",
         "{workspaceRoot}/tools/surface-census/*",
         "{workspaceRoot}/tools/witness-search/*.py",
         "{workspaceRoot}/tools/corpus/*.py",
