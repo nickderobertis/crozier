@@ -1021,6 +1021,11 @@
     "tests/fixtures/ably-sdk-test-proxy/expected": {},
     "tests/fixtures/adyen-acs-notification/expected": {},
     "tests/fixtures/adyen-capital/expected": {},
+    "tests/fixtures/adyen-capital/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/adyen-managed-risk-notification/expected": {},
     "tests/fixtures/adyen-report-notification/expected": {},
     "tests/fixtures/agco-ats/expected": {},
@@ -1104,6 +1109,11 @@
     },
     "tests/fixtures/bracketed-property-names/expected": {},
     "tests/fixtures/braintrust-dev/expected": {},
+    "tests/fixtures/braintrust-dev/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/breizhsport-catalogue/expected": {},
     "tests/fixtures/buildrelay/expected": {},
     "tests/fixtures/bungie.net/expected": {},
@@ -1264,6 +1274,11 @@
       ]
     },
     "tests/fixtures/hasura-metadata/expected": {},
+    "tests/fixtures/hasura-metadata/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/helios-verifiable-api/expected": {},
     "tests/fixtures/helixdb-http-api/expected": {},
     "tests/fixtures/hse/expected": {},
