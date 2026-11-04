@@ -1884,6 +1884,33 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
         self.assertTrue(regions, f"{spec} spans no counter region")
         return bool(regions & {tuple(r) for r in hit.get(site.file, [])})
 
+    def test_referenced_query_string_enum_has_an_exclusive_region(self) -> None:
+        reach = _module("golden_reach_query_enum", "golden-reach.py")
+        handwritten = _module("handwritten_query_enum", "handwritten-fixtures.py")
+        branch = r"src/ir.rs::build_endpoint[if string_enum_values\(referenced_query_schema\)\.is_some\(\) \{]"
+        # Resolve before building, so a removed or pooled branch fails directly.
+        reach.resolve_site(branch)
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        cases = (
+            ("both", craft_query("Rig"), True),
+            ("query alone", craft_query("Tag"), False),
+            ("referenced enum alone", craft_header("Rig"), False),
+            (
+                "inline query enum",
+                craft_query("Rig").replace(
+                    '            $ref: "#/components/schemas/Rig"\n',
+                    "            type: string\n            enum: [glider, balloon]\n",
+                ),
+                False,
+            ),
+        )
+        for label, paths, expected in cases:
+            with self.subTest(document=label), tempfile.TemporaryDirectory() as temporary:
+                _package, universe, hit = self.generate(
+                    Path(temporary), operation_document(paths, "  schemas:\n" + EXAMPLED_CRAFT), reach, crozier
+                )
+                self.assertEqual(expected, self.ran(reach, branch, universe, hit))
+
     def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
         reach = _module("golden_reach_outcomes", "golden-reach.py")
         handwritten = _module("handwritten_fixtures_outcomes", "handwritten-fixtures.py")

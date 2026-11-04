@@ -253,6 +253,40 @@ class CooccurrenceAudit(NamedTuple):
     handlers: str
     why_no_branch: str
 
+    @property
+    def proof_class(self) -> str | None:
+        """The declared proof class; unclassified historical rows have none."""
+        return cooccurrence_proof(self.why_no_branch)[0]
+
+    @property
+    def search_record(self) -> str | None:
+        """The bounded-search record required by an open or hand-written proof."""
+        return cooccurrence_proof(self.why_no_branch)[1]
+
+
+def cooccurrence_proof(cell: str) -> tuple[str | None, str | None]:
+    """Read the shared class/search prefix without changing the audit's columns.
+
+    Historical unclassified cells return no class; the finished-state gate must
+    reject them rather than infer a proof from co-occurrence alone.
+    """
+    if not cell.startswith("class:"):
+        return None, None
+    match = re.fullmatch(r"class:(interaction|independent|handwritten|open)(?: search:([^\s;]+))?; (\S.*)", cell)
+    if match is None:
+        raise ValueError("expected `class:<interaction|independent|handwritten|open>[ search:<path>]; <reason>`")
+    kind, search, _reason = match.groups()
+    if (kind in {"handwritten", "open"}) != (search is not None):
+        raise ValueError("only `handwritten` and `open` require `search:<repository-relative path>`")
+    if search is not None and (
+        search.startswith("/")
+        or "\\" in search
+        or ":" in search
+        or any(p in {"", ".", ".."} for p in search.split("/"))
+    ):
+        raise ValueError("search record must be a repository-relative path without traversal")
+    return kind, search
+
 
 # The file's header is the model's fields, so the two cannot drift apart.
 COOCCURRENCE_COLUMNS = CooccurrenceAudit._fields
@@ -286,6 +320,11 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
             handler_specs(cells[3])
         except ValueError as error:
             failures.append(f"{cells[0]}: {path.name}'s handlers cell {error}")
+            continue
+        try:
+            cooccurrence_proof(cells[4])
+        except ValueError as error:
+            failures.append(f"{cells[0]}: {path.name}'s why_no_branch cell {error}")
             continue
         rows[cells[0]] = CooccurrenceAudit(*cells)
     if keys != sorted(keys):

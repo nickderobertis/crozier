@@ -12725,6 +12725,50 @@ class BoundedFeatureSearch(NamedTuple):
     reason: str
 
 
+class CombinationClassReaderTests(unittest.TestCase):
+    def read(self, reason: str) -> tuple[dict, list[str]]:
+        reach = load_script("tools/surface-census/golden-reach.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "combination-cooccurrence.tsv"
+            path.write_text(
+                "\t".join(reach.COOCCURRENCE_COLUMNS)
+                + "\ncombo-sample\tpublisher\t/paths\tfirst: src/ir.rs::build ; second: src/emit.rs::generate\t"
+                + reason
+                + "\n",
+                encoding="utf-8",
+            )
+            return reach.read_cooccurrence(path)
+
+    def test_classes_round_trip_through_the_unchanged_audit_columns(self) -> None:
+        for kind in ("interaction", "independent", "handwritten", "open"):
+            search = "docs/openapi-surface/search/README.md" if kind in {"handwritten", "open"} else None
+            prefix = f"class:{kind}" + (f" search:{search}" if search else "")
+            with self.subTest(kind=kind):
+                rows, failures = self.read(prefix + "; A measured reason.")
+                self.assertEqual([], failures)
+                self.assertEqual(kind, rows["combo-sample"].proof_class)
+                self.assertEqual(search, rows["combo-sample"].search_record)
+                self.assertEqual(5, len(rows["combo-sample"]))
+
+    def test_invalid_classes_and_search_paths_are_refused_by_the_reader(self) -> None:
+        for prefix in (
+            "class:gap",
+            "class:open",
+            "class:handwritten",
+            "class:interaction search:docs/search.md",
+            "class:independent search:docs/search.md",
+            "class:open search:/tmp/search.md",
+            "class:open search:docs/../search.md",
+            "class:open search:C:\\search.md",
+            "class:open search:docs//search.md",
+        ):
+            with self.subTest(prefix=prefix):
+                rows, failures = self.read(prefix + "; A measured reason.")
+                self.assertEqual({}, rows)
+                self.assertEqual(1, len(failures))
+                self.assertIn("why_no_branch", failures[0])
+
+
 class HandwrittenReachReaderContractTests(unittest.TestCase):
     def test_the_typed_adapter_tracks_the_authoritative_readers_fields(self) -> None:
         gate = load_script("tools/surface-census/handwritten-fixtures.py")
