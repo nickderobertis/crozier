@@ -4170,7 +4170,7 @@ class CooccurrenceProofClassTests(unittest.TestCase):
                     rows, failures = self.read_reason(path, reason)
                     self.assertEqual([], failures)
                     self.assertEqual(proof_class, rows["combo-dispatch"].proof_class)
-                    self.assertIsInstance(rows["combo-dispatch"].proof_class, golden_reach.ProofClass)
+                    self.assertIsInstance(rows["combo-dispatch"].proof_class, golden_reach.CombinationProofClass)
                     self.assertEqual(search, rows["combo-dispatch"].search_record)
                     self.assertEqual(reason, rows["combo-dispatch"].why_no_branch)
                     self.assertEqual(5, len(path.read_text().splitlines()[0].split("\t")))
@@ -4186,6 +4186,10 @@ class CooccurrenceProofClassTests(unittest.TestCase):
                 "class:independent search:docs/search.md; reason",
                 "class:open search:/absolute.md; reason",
                 "class:open search:../outside.md; reason",
+                "class:open search:docs//search.md; reason",
+                "class:open search:docs/search/; reason",
+                "class:open search:./docs/search.md; reason",
+                "class:open search:docs/./search.md; reason",
                 r"class:open search:C:\outside.md; reason",
                 r"class:open search:docs\search.md; reason",
                 "class:interaction; ",

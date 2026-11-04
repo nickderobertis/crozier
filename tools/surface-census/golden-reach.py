@@ -58,8 +58,8 @@ import tempfile
 import tomllib
 from collections import Counter, defaultdict
 from enum import StrEnum
-from pathlib import Path, PurePosixPath
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+from pathlib import Path
+from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, TypeAlias
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -242,14 +242,26 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
 
 
 COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
-COOCCURRENCE_PROOF = re.compile(r"class:(interaction|independent|handwritten|open)(?: search:([^\s;]+))?; (\S.*)")
 
 
-class ProofClass(StrEnum):
+class CombinationProofClass(StrEnum):
     INTERACTION = "interaction"
     INDEPENDENT = "independent"
     HANDWRITTEN = "handwritten"
     OPEN = "open"
+
+
+class UnsearchedCombinationProof(NamedTuple):
+    proof_class: Literal[CombinationProofClass.INTERACTION, CombinationProofClass.INDEPENDENT]
+    search_record: None = None
+
+
+class SearchedCombinationProof(NamedTuple):
+    proof_class: Literal[CombinationProofClass.HANDWRITTEN, CombinationProofClass.OPEN]
+    search_record: str
+
+
+CombinationProof: TypeAlias = UnsearchedCombinationProof | SearchedCombinationProof
 
 
 class CooccurrenceAudit(NamedTuple):
@@ -261,39 +273,48 @@ class CooccurrenceAudit(NamedTuple):
     handlers: str
     why_no_branch: str
 
-    def _proof(self) -> tuple[ProofClass | None, str | None]:
-        """Read the class prefix; legacy prose remains unclassified for the census gate."""
-        if not self.why_no_branch.startswith("class:"):
-            return None, None
-        match = COOCCURRENCE_PROOF.fullmatch(self.why_no_branch)
-        if match:
-            proof_class, search, _reason = match.groups()
-            needs_search = proof_class in ("handwritten", "open")
-            if needs_search == bool(search) and (
-                search is None
-                or (
-                    not PurePosixPath(search).is_absolute()
-                    and ".." not in PurePosixPath(search).parts
-                    and "\\" not in search
-                    and ":" not in search
-                )
-            ):
-                return ProofClass(proof_class), search
-        raise ValueError(
-            "why_no_branch must begin `class:<interaction|independent|handwritten|open>`; "
-            "handwritten and open require ` search:<repository-relative path>`, "
-            "then every class requires `; <reason>`"
-        )
-
     @property
-    def proof_class(self) -> ProofClass | None:
-        """The declared proof class, or None for an audit not yet classified."""
-        return self._proof()[0]
+    def proof_class(self) -> CombinationProofClass | None:
+        """The declared proof class; unclassified historical rows have none."""
+        proof = cooccurrence_proof(self.why_no_branch)
+        return proof.proof_class if proof is not None else None
 
     @property
     def search_record(self) -> str | None:
-        """The bounded-search record required for a hand-written or open proof."""
-        return self._proof()[1]
+        """The bounded-search record required by an open or hand-written proof."""
+        proof = cooccurrence_proof(self.why_no_branch)
+        return proof.search_record if proof is not None else None
+
+
+def cooccurrence_proof(cell: str) -> CombinationProof | None:
+    """Read the shared class/search prefix without changing the audit's columns.
+
+    Historical unclassified cells return no class; the finished-state gate must
+    reject them rather than infer a proof from co-occurrence alone.
+    """
+    if not cell.startswith("class:"):
+        return None
+    classes = "|".join(re.escape(kind.value) for kind in CombinationProofClass)
+    match = re.fullmatch(rf"class:({classes})(?: search:([^\s;]+))?; (\S.*)", cell)
+    if match is None:
+        raise ValueError("expected `class:<interaction|independent|handwritten|open>[ search:<path>]; <reason>`")
+    kind, search, _reason = match.groups()
+    if (kind in {"handwritten", "open"}) != (search is not None):
+        raise ValueError("only `handwritten` and `open` require `search:<repository-relative path>`")
+    if search is not None and (
+        search.startswith("/")
+        or "\\" in search
+        or ":" in search
+        or any(p in {"", ".", ".."} for p in search.split("/"))
+    ):
+        raise ValueError("search record must be a repository-relative path without traversal")
+    if search is not None:
+        if kind == CombinationProofClass.HANDWRITTEN:
+            return SearchedCombinationProof(CombinationProofClass.HANDWRITTEN, search)
+        return SearchedCombinationProof(CombinationProofClass.OPEN, search)
+    if kind == CombinationProofClass.INTERACTION:
+        return UnsearchedCombinationProof(CombinationProofClass.INTERACTION)
+    return UnsearchedCombinationProof(CombinationProofClass.INDEPENDENT)
 
 
 # The file's header is the model's fields, so the two cannot drift apart.
@@ -331,7 +352,7 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
             continue
         row = CooccurrenceAudit(*cells)
         try:
-            row._proof()
+            cooccurrence_proof(row.why_no_branch)
         except ValueError as error:
             failures.append(f"{cells[0]}: {path.name}'s {error}")
             continue
