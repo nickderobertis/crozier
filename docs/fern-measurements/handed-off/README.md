@@ -78,6 +78,17 @@ behavior. Prior area reports describe their own repair-node measurements;
 
 ## Coverage measurement provenance
 
+The missing-overlay registration batch supersedes the historical measurement
+below with a fresh full golden-only run at `5d35553914adf9923d647acddf37ab3af76b8f72`:
+391 tests passed, with zero carried exports. This includes the 72 new
+both-mode corpus gates. Tilecast’s normal instrumented replay passed in
+974.31 seconds (about 16 minutes 14 seconds, from test-process creation,
+polled once per second). The census now includes 391 sources: 31 original
+and 360 corpus sources. Registration identifiers use the short
+`LITERALS_<owner>_<sha8>` form so rustfmt keeps the helper calls discoverable
+by the existing census parser. The subsequent `151b139da` commit adds only
+four lint-annotation comment lines and does not change the measured behavior.
+
 The golden-only measurement first ran all 319 tests at `29df35b9c`: 317
 passed, and AMRC and OpenIAP found departure-ledger pin drift. After the
 existing ledger writer regenerated those pins, the two failed tests were
