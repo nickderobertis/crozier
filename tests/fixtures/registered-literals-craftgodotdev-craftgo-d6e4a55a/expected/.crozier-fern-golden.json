@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-craftgodotdev-craftgo-d6e4a55a",
+  "corpus_spec_ref": "0986f22a522528dba13ab2bd1cb3735ebf43dcc3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/craftgodotdev/craftgo/0986f22a522528dba13ab2bd1cb3735ebf43dcc3/example/ecommerce/docs/openapi.yaml"
+}

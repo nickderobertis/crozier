@@ -1,0 +1,40 @@
+
+
+import typing
+
+PaymentStatusReason = typing.Union[
+    typing.Literal[
+        "OTHER",
+        "APPROVED",
+        "EXCEEDED_BUDGET_LIMIT",
+        "BUDGET_EXPIRED",
+        "NO_BUDGET",
+        "BUDGET_NOT_YET_STARTED",
+        "BUDGET_CATEGORY_RESTRICTION",
+        "BUDGET_MERCHANT_RESTRICTION",
+        "SUSPECTED_FRAUD",
+        "EXCEEDED_GLOBAL_LIMIT",
+        "EXCEEDED_USER_LIMIT",
+        "EXCEEDED_CARD_LIMIT",
+        "INVALID_EXPIRATION_DATE",
+        "CARD_NOT_ACTIVE",
+        "INVALID_CARD_CREDENTIALS",
+        "INVALID_BILLING_ADDRESS",
+        "CARD_SUSPENDED",
+        "CARD_TERMINATED",
+        "CARD_EXPIRED",
+        "MCC_BLOCKED",
+        "USER_SUSPENDED",
+        "INVALID_PIN",
+        "INVALID_CVV",
+        "EXCEEDED_PIN_ATTEMPTS",
+        "INSIDE_SANCTIONED_COUNTRY",
+        "SOFT_EXPIRATION",
+        "TRANSFERRED_CARD_NEW_MERCHANT",
+        "EXCEEDED_ANCESTOR_BUDGET_LIMIT",
+        "EXCEEDED_BUDGET_TRANSACTION_LIMIT",
+        "TOS_BLOCKED",
+        "COMPLIANCE_BLOCKED",
+    ],
+    typing.Any,
+]

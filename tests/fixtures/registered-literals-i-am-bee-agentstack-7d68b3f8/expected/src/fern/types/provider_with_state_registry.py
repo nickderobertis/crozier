@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .file_system_registry_location import FileSystemRegistryLocation
+from .github_registry_location import GithubRegistryLocation
+from .network_registry_location import NetworkRegistryLocation
+
+ProviderWithStateRegistry = typing.Union[GithubRegistryLocation, NetworkRegistryLocation, FileSystemRegistryLocation]

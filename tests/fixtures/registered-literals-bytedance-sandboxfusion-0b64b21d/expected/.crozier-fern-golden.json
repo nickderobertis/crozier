@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-bytedance-sandboxfusion-0b64b21d",
+  "corpus_spec_ref": "469de0845cb7d665bc68044d541aa3aa28c5b30a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/bytedance/SandboxFusion/469de0845cb7d665bc68044d541aa3aa28c5b30a/docs/src/openapi.json"
+}

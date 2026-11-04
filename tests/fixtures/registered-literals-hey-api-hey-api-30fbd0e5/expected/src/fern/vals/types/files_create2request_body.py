@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .files_create2request_body_one import FilesCreate2RequestBodyOne
+from .files_create2request_body_zero import FilesCreate2RequestBodyZero
+
+FilesCreate2RequestBody = typing.Union[FilesCreate2RequestBodyZero, FilesCreate2RequestBodyOne]

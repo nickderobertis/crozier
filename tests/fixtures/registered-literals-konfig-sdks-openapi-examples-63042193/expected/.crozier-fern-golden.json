@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-konfig-sdks-openapi-examples-63042193",
+  "corpus_spec_ref": "161ab49c45e45825ca3832945c59a3ba904321ba",
+  "corpus_spec_url": "https://raw.githubusercontent.com/konfig-sdks/openapi-examples/161ab49c45e45825ca3832945c59a3ba904321ba/circleci/openapi.yaml"
+}

@@ -1,0 +1,36 @@
+
+
+import typing
+
+EntryMode = typing.Union[
+    typing.Literal[
+        "BOLETO",
+        "SOFORT",
+        "IDEAL",
+        "BANCONTACT",
+        "EPS",
+        "MYBANK",
+        "SATISPAY",
+        "BLIK",
+        "P24",
+        "GIROPAY",
+        "PIX",
+        "QR_CODE_PIX",
+        "APPLE_PAY",
+        "GOOGLE_PAY",
+        "PAYPAL",
+        "TWINT",
+        "NONE",
+        "CHIP",
+        "MANUAL_ENTRY",
+        "CUSTOMER_ENTRY",
+        "MAGSTRIPE_FALLBACK",
+        "MAGSTRIPE",
+        "DIRECT_DEBIT",
+        "CONTACTLESS",
+        "MOTO",
+        "CONTACTLESS_MAGSTRIPE",
+        "N/A",
+    ],
+    typing.Any,
+]

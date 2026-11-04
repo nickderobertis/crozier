@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .provisioning_api_groups_get_group_users_details200response_ocs_data_users_value_one_of import (
+    ProvisioningApiGroupsGetGroupUsersDetails200ResponseOcsDataUsersValueOneOf,
+)
+from .provisioning_api_user_details import ProvisioningApiUserDetails
+
+ProvisioningApiGroupsGetGroupUsersDetails200ResponseOcsDataUsersValue = typing.Union[
+    ProvisioningApiUserDetails, ProvisioningApiGroupsGetGroupUsersDetails200ResponseOcsDataUsersValueOneOf
+]

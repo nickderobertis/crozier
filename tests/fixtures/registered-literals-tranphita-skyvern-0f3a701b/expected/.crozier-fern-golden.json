@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-tranphita-skyvern-0f3a701b",
+  "corpus_spec_ref": "efe6ae1c2088ed6aa1c09268e786fef4136070be",
+  "corpus_spec_url": "https://raw.githubusercontent.com/tranphita/skyvern/efe6ae1c2088ed6aa1c09268e786fef4136070be/fern/openapi/skyvern_openapi.json"
+}

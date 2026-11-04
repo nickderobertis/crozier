@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .workflow_async_in_progress_response import WorkflowAsyncInProgressResponse
+from .workflow_async_launch_failed_response import WorkflowAsyncLaunchFailedResponse
+from .workflow_async_launch_success_response import WorkflowAsyncLaunchSuccessResponse
+
+WorkflowsGetAsyncJobStatusResponse = typing.Union[
+    WorkflowAsyncLaunchSuccessResponse, WorkflowAsyncLaunchFailedResponse, WorkflowAsyncInProgressResponse
+]

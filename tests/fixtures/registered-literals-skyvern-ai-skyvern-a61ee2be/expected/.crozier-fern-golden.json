@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-skyvern-ai-skyvern-a61ee2be",
+  "corpus_spec_ref": "b325eb10b04ffd7004b9cc843031fdb6a8ebf442",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Skyvern-AI/skyvern/b325eb10b04ffd7004b9cc843031fdb6a8ebf442/fern/openapi/skyvern_openapi.json"
+}

@@ -1,0 +1,39 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class GetWebsiteStatusResponse(UniversalBaseModel):
+    job_id: str
+    status: str = pydantic.Field()
+    """
+    Job status: PENDING, PROCESSING, COMPLETED, or FAILED
+    """
+
+    base_url: str
+    pages_indexed: int = pydantic.Field()
+    """
+    Number of pages successfully indexed
+    """
+
+    pages_failed: int = pydantic.Field()
+    """
+    Number of pages that failed to index
+    """
+
+    error: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Error message if the job failed
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

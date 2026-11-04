@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-opengeospatial-t17-api-d166-ffbd86a7",
+  "corpus_spec_ref": "b4328b9cb3775eb01f3a46b33b73597f33cff8af",
+  "corpus_spec_url": "https://raw.githubusercontent.com/opengeospatial/T17-API-D166/b4328b9cb3775eb01f3a46b33b73597f33cff8af/features/api/openapi.yaml"
+}

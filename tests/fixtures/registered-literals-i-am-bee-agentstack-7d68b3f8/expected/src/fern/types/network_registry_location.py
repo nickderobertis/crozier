@@ -1,0 +1,3 @@
+
+
+NetworkRegistryLocation = str

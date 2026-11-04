@@ -1,0 +1,3 @@
+
+
+AzureLocation = int

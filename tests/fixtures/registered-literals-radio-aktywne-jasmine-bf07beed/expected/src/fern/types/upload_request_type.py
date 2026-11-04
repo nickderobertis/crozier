@@ -1,0 +1,3 @@
+
+
+UploadRequestType = str

@@ -1,0 +1,7 @@
+
+
+import typing
+
+GameGetByIdResponseReviewsItemGraphicsSettings = typing.Union[
+    typing.Literal["ULTRA", "HIGH", "MEDIUM", "LOW"], typing.Any
+]

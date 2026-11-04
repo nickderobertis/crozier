@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-radio-aktywne-jasmine-bf07beed",
+  "corpus_spec_ref": "9e8b7f6b965bff0ad7765a2d6db8a623bfd6660f",
+  "corpus_spec_url": "https://raw.githubusercontent.com/radio-aktywne/jasmine/9e8b7f6b965bff0ad7765a2d6db8a623bfd6660f/openapi/numbat.yaml"
+}

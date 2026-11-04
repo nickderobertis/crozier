@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-landing-ai-ade-cli-d11fa644",
+  "corpus_spec_ref": "d1995ffef4e63a2a1c2774d9add93368889353c5",
+  "corpus_spec_url": "https://raw.githubusercontent.com/landing-ai/ade-cli/d1995ffef4e63a2a1c2774d9add93368889353c5/openapi.json"
+}

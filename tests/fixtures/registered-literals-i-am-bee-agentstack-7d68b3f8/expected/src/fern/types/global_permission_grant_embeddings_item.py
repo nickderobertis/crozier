@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .global_permission_grant_embeddings_item_zero import GlobalPermissionGrantEmbeddingsItemZero
+
+GlobalPermissionGrantEmbeddingsItem = typing.Union[GlobalPermissionGrantEmbeddingsItemZero, str]

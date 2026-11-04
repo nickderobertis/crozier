@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-nextcloud-client-sdks-adbf3118",
+  "corpus_spec_ref": "02bc7281ee36fe8862a61e94e12c91381c5866bf",
+  "corpus_spec_url": "https://raw.githubusercontent.com/nextcloud/client-sdks/02bc7281ee36fe8862a61e94e12c91381c5866bf/go/api/openapi.yaml"
+}

@@ -1,0 +1,31 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .custom_llm_provider import CustomLlmProvider
+
+
+class CustomLlmConfig(UniversalBaseModel):
+    display_name: str
+    provider: CustomLlmProvider
+    model_name: str
+    api_base: typing.Optional[str] = None
+    api_key: typing.Optional[str] = None
+    api_version: typing.Optional[str] = None
+    supports_vision: typing.Optional[bool] = None
+    add_assistant_prefix: typing.Optional[bool] = None
+    max_completion_tokens: typing.Optional[int] = None
+    temperature: typing.Optional[float] = None
+    reasoning_effort: typing.Optional[str] = None
+    extra_parameters: typing.Optional[typing.Dict[str, typing.Any]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

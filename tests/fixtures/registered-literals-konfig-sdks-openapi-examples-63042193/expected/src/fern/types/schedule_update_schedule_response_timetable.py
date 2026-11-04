@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .schedule_update_schedule_response_timetable_one import ScheduleUpdateScheduleResponseTimetableOne
+from .schedule_update_schedule_response_timetable_zero import ScheduleUpdateScheduleResponseTimetableZero
+
+ScheduleUpdateScheduleResponseTimetable = typing.Union[
+    ScheduleUpdateScheduleResponseTimetableZero, ScheduleUpdateScheduleResponseTimetableOne
+]

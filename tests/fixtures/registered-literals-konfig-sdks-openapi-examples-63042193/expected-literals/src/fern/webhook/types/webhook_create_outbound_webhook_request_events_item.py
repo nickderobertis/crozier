@@ -1,0 +1,7 @@
+
+
+import typing
+
+WebhookCreateOutboundWebhookRequestEventsItem = typing.Union[
+    typing.Literal["workflow-completed", "job-completed"], typing.Any
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-debezium-debezium-platform-043f3a5f",
+  "corpus_spec_ref": "20fd16bf12ac02e750bb770fc4b986afdf824507",
+  "corpus_spec_url": "https://raw.githubusercontent.com/debezium/debezium-platform/20fd16bf12ac02e750bb770fc4b986afdf824507/openapi/openapi.yaml"
+}

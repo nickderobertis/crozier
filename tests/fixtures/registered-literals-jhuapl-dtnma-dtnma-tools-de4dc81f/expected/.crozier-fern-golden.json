@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-jhuapl-dtnma-dtnma-tools-de4dc81f",
+  "corpus_spec_ref": "598da6c6793998ea1d845ec32f1e4107c0c4930a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/JHUAPL-DTNMA/dtnma-tools/598da6c6793998ea1d845ec32f1e4107c0c4930a/src/refdm/openapi.json"
+}

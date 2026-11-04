@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-webr0m-teldrive-nodejs-bb74a9e2",
+  "corpus_spec_ref": "22d9b87d2955d3c9c2ce712b5a9d2aad1f94dd14",
+  "corpus_spec_url": "https://raw.githubusercontent.com/webr0m/teldrive-nodejs/22d9b87d2955d3c9c2ce712b5a9d2aad1f94dd14/openapi/teldrive.openapi.yaml"
+}

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242",
+  "corpus_spec_ref": "d500f36378dd914f8a516604a08525f737e8ddff",
+  "corpus_spec_url": "https://raw.githubusercontent.com/zalando-incubator/agentic-identity-broker/d500f36378dd914f8a516604a08525f737e8ddff/api/enduser/openapi.yaml"
+}

@@ -1,0 +1,3 @@
+
+
+SafeUrl = str

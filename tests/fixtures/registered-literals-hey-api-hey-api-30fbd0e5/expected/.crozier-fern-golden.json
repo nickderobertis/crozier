@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-hey-api-hey-api-30fbd0e5",
+  "corpus_spec_ref": "9d56b7e1aa05434a34d6e1dbb35b786d8f69dc4e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/hey-api/hey-api/9d56b7e1aa05434a34d6e1dbb35b786d8f69dc4e/specs/openapi/val-town.json"
+}

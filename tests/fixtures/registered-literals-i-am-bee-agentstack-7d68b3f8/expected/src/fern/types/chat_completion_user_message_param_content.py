@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .chat_completion_user_message_param_content_one_item import ChatCompletionUserMessageParamContentOneItem
+
+ChatCompletionUserMessageParamContent = typing.Union[str, typing.List[ChatCompletionUserMessageParamContentOneItem]]

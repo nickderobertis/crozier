@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-msgbyte-tianji-1843a239",
+  "corpus_spec_ref": "20124bb953eae609b8b5c003cae48633af3e4207",
+  "corpus_spec_url": "https://raw.githubusercontent.com/msgbyte/tianji/20124bb953eae609b8b5c003cae48633af3e4207/website/static/openapi.json"
+}

@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .bad_request_error_record_attachment_id_not_found import BadRequestErrorRecordAttachmentIdNotFound
+from .bad_request_error_record_id_not_found import BadRequestErrorRecordIdNotFound
+
+NotFoundErrorBody = typing.Union[BadRequestErrorRecordIdNotFound, BadRequestErrorRecordAttachmentIdNotFound]

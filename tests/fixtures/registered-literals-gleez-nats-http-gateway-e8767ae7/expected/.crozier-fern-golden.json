@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-gleez-nats-http-gateway-e8767ae7",
+  "corpus_spec_ref": "cfc5b22883fe4deb88933f9e39d04128a53b6156",
+  "corpus_spec_url": "https://raw.githubusercontent.com/gleez/nats-http-gateway/cfc5b22883fe4deb88933f9e39d04128a53b6156/openapi.json"
+}

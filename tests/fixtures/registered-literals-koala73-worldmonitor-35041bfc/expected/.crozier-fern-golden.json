@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-koala73-worldmonitor-35041bfc",
+  "corpus_spec_ref": "90dc23a3fd7c9497f85449a7ff7f6fb81d51d137",
+  "corpus_spec_url": "https://raw.githubusercontent.com/koala73/worldmonitor/90dc23a3fd7c9497f85449a7ff7f6fb81d51d137/docs/api/ScorecardService.openapi.yaml"
+}

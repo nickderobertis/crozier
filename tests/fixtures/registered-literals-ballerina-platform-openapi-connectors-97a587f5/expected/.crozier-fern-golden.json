@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-ballerina-platform-openapi-connectors-97a587f5",
+  "corpus_spec_ref": "7c3840c93e80c711a8b317f94339b3cb08c1521c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ballerina-platform/openapi-connectors/7c3840c93e80c711a8b317f94339b3cb08c1521c/openapi/azure.openai.finetunes/openapi.yaml"
+}

@@ -1,0 +1,39 @@
+
+
+import typing
+
+HistoryItemType = typing.Union[
+    typing.Literal[
+        "CREATED",
+        "DESTROYED",
+        "RECYCLED",
+        "SHIPMENT_PREPARED",
+        "STORED",
+        "RETRIEVED_FROM_STORAGE",
+        "PACKAGED",
+        "DISPATCHED",
+        "RECEIVED",
+        "DELIVERY_REFUSED",
+        "REPROCESSING_STARTED",
+        "REPROCESSING_STEP_STARTED",
+        "REPROCESSING_STEP_CANCELLED",
+        "REPROCESSING_STEP_FINISHED",
+        "REPROCESSING_CANCELLED",
+        "REPROCESSING_FINISHED",
+        "DISASSEMBLED",
+        "MAINTENANCE_STARTED",
+        "MAINTENANCE_STEP_STARTED",
+        "MAINTENANCE_STEP_CANCELLED",
+        "MAINTENANCE_STEP_FINISHED",
+        "MAINTENANCE_CANCELLED",
+        "MAINTENANCE_FINISHED",
+        "PRODUCTION_STARTED",
+        "PRODUCTION_CANCELLED",
+        "PRODUCTION_FINISHED",
+        "PRODUCTION_STEP_STARTED",
+        "PRODUCTION_STEP_CANCELLED",
+        "PRODUCTION_STEP_FINISHED",
+        "QUALITY_CHECK_PERFORMED",
+    ],
+    typing.Any,
+]

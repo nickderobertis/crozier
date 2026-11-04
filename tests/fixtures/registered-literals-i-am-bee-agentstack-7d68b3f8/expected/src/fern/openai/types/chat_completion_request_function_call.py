@@ -1,0 +1,10 @@
+
+
+import typing
+
+from ...types.chat_completion_function_call_option_param import ChatCompletionFunctionCallOptionParam
+from .chat_completion_request_function_call_zero import ChatCompletionRequestFunctionCallZero
+
+ChatCompletionRequestFunctionCall = typing.Union[
+    ChatCompletionRequestFunctionCallZero, ChatCompletionFunctionCallOptionParam
+]

@@ -1,0 +1,3 @@
+
+
+CurrencyCode = str

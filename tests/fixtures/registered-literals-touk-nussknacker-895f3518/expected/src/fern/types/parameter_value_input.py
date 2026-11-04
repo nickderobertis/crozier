@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .value_input_with_dict_editor import ValueInputWithDictEditor
+from .value_input_with_fixed_values_provided import ValueInputWithFixedValuesProvided
+
+ParameterValueInput = typing.Union[ValueInputWithDictEditor, ValueInputWithFixedValuesProvided]

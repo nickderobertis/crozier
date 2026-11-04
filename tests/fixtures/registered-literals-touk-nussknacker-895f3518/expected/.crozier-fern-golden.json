@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-touk-nussknacker-895f3518",
+  "corpus_spec_ref": "2e8d32682f659b11fbb223ad189c1e77d5fafd7c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/TouK/nussknacker/2e8d32682f659b11fbb223ad189c1e77d5fafd7c/docs-internal/api/nu-designer-openapi.yaml"
+}

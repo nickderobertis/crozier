@@ -1,0 +1,33 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .metadata import Metadata
+
+
+class ConfigMap(UniversalBaseModel):
+    """
+    ConfigMap holds configuration data to consume.
+    """
+
+    api_version: typing_extensions.Annotated[str, FieldMetadata(alias="apiVersion"), pydantic.Field(alias="apiVersion")]
+    data: typing.Optional[typing.Dict[str, str]] = pydantic.Field(default=None)
+    """
+    String key-value configuration entries consumed by Halo or plugins.
+    """
+
+    kind: str
+    metadata: Metadata
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

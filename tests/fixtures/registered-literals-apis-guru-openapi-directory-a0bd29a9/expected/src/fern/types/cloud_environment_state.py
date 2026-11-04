@@ -1,0 +1,3 @@
+
+
+CloudEnvironmentState = int

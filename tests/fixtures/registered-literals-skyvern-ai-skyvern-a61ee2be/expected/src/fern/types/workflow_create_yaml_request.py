@@ -1,0 +1,54 @@
+
+
+from __future__ import annotations
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+from .workflow_create_yaml_request_proxy_location import WorkflowCreateYamlRequestProxyLocation
+from .workflow_definition_yaml import WorkflowDefinitionYaml
+from .workflow_status import WorkflowStatus
+
+
+class WorkflowCreateYamlRequest(UniversalBaseModel):
+    title: str
+    description: typing.Optional[str] = None
+    proxy_location: typing.Optional[WorkflowCreateYamlRequestProxyLocation] = None
+    webhook_callback_url: typing.Optional[str] = None
+    totp_verification_url: typing.Optional[str] = None
+    totp_identifier: typing.Optional[str] = None
+    persist_browser_session: typing.Optional[bool] = None
+    pin_saved_session_ip: typing.Optional[bool] = None
+    browser_profile_id: typing.Optional[str] = None
+    browser_profile_key: typing.Optional[str] = None
+    model: typing.Optional[typing.Dict[str, typing.Any]] = None
+    workflow_definition: WorkflowDefinitionYaml
+    is_saved_task: typing.Optional[bool] = None
+    max_screenshot_scrolls: typing.Optional[int] = None
+    max_elapsed_time_minutes: typing.Optional[int] = None
+    extra_http_headers: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None
+    cdp_connect_headers: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None
+    status: typing.Optional[WorkflowStatus] = None
+    run_with: typing.Optional[str] = None
+    ai_fallback: typing.Optional[bool] = None
+    cache_key: typing.Optional[str] = None
+    adaptive_caching: typing.Optional[bool] = None
+    enable_self_healing: typing.Optional[bool] = None
+    code_version: typing.Optional[int] = None
+    generate_script_on_terminal: typing.Optional[bool] = None
+    run_sequentially: typing.Optional[bool] = None
+    sequential_key: typing.Optional[str] = None
+    folder_id: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+update_forward_refs(WorkflowCreateYamlRequest)

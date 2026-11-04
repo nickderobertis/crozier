@@ -1531,6 +1531,438 @@
     "tests/fixtures/recursive-types/expected": {},
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},
     "tests/fixtures/redocly.com-museum/expected": {},
+    "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected": {},
+    "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-468bf5ef/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-468bf5ef/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-ballerina-platform-openapi-connectors-97a587f5/expected": {},
+    "tests/fixtures/registered-literals-ballerina-platform-openapi-connectors-97a587f5/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-bytedance-sandboxfusion-0b64b21d/expected": {},
+    "tests/fixtures/registered-literals-bytedance-sandboxfusion-0b64b21d/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-codosseum-org-backend-9fa232be/expected": {},
+    "tests/fixtures/registered-literals-codosseum-org-backend-9fa232be/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-confluentinc-schema-registry-sdk-go-aa65c204/expected": {},
+    "tests/fixtures/registered-literals-confluentinc-schema-registry-sdk-go-aa65c204/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected": {},
+    "tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-craftgodotdev-craftgo-d6e4a55a/expected": {},
+    "tests/fixtures/registered-literals-craftgodotdev-craftgo-d6e4a55a/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-cryptotyson-n8n-skyvern-117c4acb/expected": {},
+    "tests/fixtures/registered-literals-cryptotyson-n8n-skyvern-117c4acb/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-darwin-studios-darwin-cli-ee5e2a21/expected": {},
+    "tests/fixtures/registered-literals-darwin-studios-darwin-cli-ee5e2a21/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected": {},
+    "tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-fern-api-docs-5aa6dbf5/expected": {},
+    "tests/fixtures/registered-literals-fern-api-docs-5aa6dbf5/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-fern-api-docs-74ff1c45/expected": {},
+    "tests/fixtures/registered-literals-fern-api-docs-74ff1c45/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-gbyo-tilecast-832b9080/expected": {},
+    "tests/fixtures/registered-literals-gbyo-tilecast-832b9080/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected": {},
+    "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-gleez-nats-http-gateway-e8767ae7/expected": {},
+    "tests/fixtures/registered-literals-gleez-nats-http-gateway-e8767ae7/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-gravitlauncher-launcher-e883f698/expected": {},
+    "tests/fixtures/registered-literals-gravitlauncher-launcher-e883f698/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-halo-dev-halo-6e341cac/expected": {},
+    "tests/fixtures/registered-literals-halo-dev-halo-6e341cac/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-halo-dev-halo-7e48a553/expected": {},
+    "tests/fixtures/registered-literals-halo-dev-halo-7e48a553/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-hardonian-reach-f36ad5db/expected": {},
+    "tests/fixtures/registered-literals-hardonian-reach-f36ad5db/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected": {},
+    "tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-i-am-bee-agentstack-7d68b3f8/expected": {},
+    "tests/fixtures/registered-literals-i-am-bee-agentstack-7d68b3f8/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected": {},
+    "tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected": {},
+    "tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-jhuapl-dtnma-dtnma-tools-de4dc81f/expected": {},
+    "tests/fixtures/registered-literals-jhuapl-dtnma-dtnma-tools-de4dc81f/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-koala73-worldmonitor-35041bfc/expected": {},
+    "tests/fixtures/registered-literals-koala73-worldmonitor-35041bfc/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-konfig-dev-konfig-1115ef92/expected": {},
+    "tests/fixtures/registered-literals-konfig-dev-konfig-1115ef92/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected": {},
+    "tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected": {},
+    "tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-landing-ai-ade-cli-d11fa644/expected": {},
+    "tests/fixtures/registered-literals-landing-ai-ade-cli-d11fa644/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-malach-it-boruta-server-26683af5/expected": {},
+    "tests/fixtures/registered-literals-malach-it-boruta-server-26683af5/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-marcelo-earth-generative-manim-8e1e6b29/expected": {},
+    "tests/fixtures/registered-literals-marcelo-earth-generative-manim-8e1e6b29/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a/expected": {},
+    "tests/fixtures/registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected": {},
+    "tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-neilthomas89440-crypto-inferna-next-24442375/expected": {},
+    "tests/fixtures/registered-literals-neilthomas89440-crypto-inferna-next-24442375/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected": {},
+    "tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected": {},
+    "tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected": {},
+    "tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-3d039741/expected": {},
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-3d039741/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-83482829/expected": {},
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-83482829/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-98d94419/expected": {},
+    "tests/fixtures/registered-literals-openapitools-openapi-generator-98d94419/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openbanking-brasil-areadesenvolvedor-7fb4ca57/expected": {},
+    "tests/fixtures/registered-literals-openbanking-brasil-areadesenvolvedor-7fb4ca57/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-opengeospatial-t17-api-d166-ffbd86a7/expected": {},
+    "tests/fixtures/registered-literals-opengeospatial-t17-api-d166-ffbd86a7/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openresponses-openresponses-d598753c/expected": {},
+    "tests/fixtures/registered-literals-openresponses-openresponses-d598753c/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-openresponses-openresponses-ee8c96e1/expected": {},
+    "tests/fixtures/registered-literals-openresponses-openresponses-ee8c96e1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-radio-aktywne-jasmine-bf07beed/expected": {},
+    "tests/fixtures/registered-literals-radio-aktywne-jasmine-bf07beed/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-radio-aktywne-magnolia-f02e99f9/expected": {},
+    "tests/fixtures/registered-literals-radio-aktywne-magnolia-f02e99f9/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb/expected": {},
+    "tests/fixtures/registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected": {},
+    "tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected": {},
+    "tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-skyvern-ai-skyvern-7989ab3e/expected": {},
+    "tests/fixtures/registered-literals-skyvern-ai-skyvern-7989ab3e/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-skyvern-ai-skyvern-a61ee2be/expected": {},
+    "tests/fixtures/registered-literals-skyvern-ai-skyvern-a61ee2be/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-stripe-sync-engine-0fb02347/expected": {},
+    "tests/fixtures/registered-literals-stripe-sync-engine-0fb02347/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-stripe-sync-engine-7f4c6ed5/expected": {},
+    "tests/fixtures/registered-literals-stripe-sync-engine-7f4c6ed5/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected": {},
+    "tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-teunmooij-payload-tools-7296685e/expected": {},
+    "tests/fixtures/registered-literals-teunmooij-payload-tools-7296685e/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-teunmooij-payload-tools-ecbf9ccc/expected": {},
+    "tests/fixtures/registered-literals-teunmooij-payload-tools-ecbf9ccc/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-touk-nussknacker-895f3518/expected": {},
+    "tests/fixtures/registered-literals-touk-nussknacker-895f3518/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected": {},
+    "tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected": {},
+    "tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-truefoundry-trueforge-09fcb1c2/expected": {},
+    "tests/fixtures/registered-literals-truefoundry-trueforge-09fcb1c2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-truefoundry-trueforge-e259dee6/expected": {},
+    "tests/fixtures/registered-literals-truefoundry-trueforge-e259dee6/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected": {},
+    "tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected": {},
+    "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected": {},
+    "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected": {},
+    "tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected": {},
     "tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected-literals": {
       "excluded": [

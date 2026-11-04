@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-teunmooij-payload-tools-ecbf9ccc",
+  "corpus_spec_ref": "7a7a33b28f99cda2862a6bd1e7dc61fd5ffacb59",
+  "corpus_spec_url": "https://raw.githubusercontent.com/teunmooij/payload-tools/7a7a33b28f99cda2862a6bd1e7dc61fd5ffacb59/packages/openapi/test/integration/basic.expected.json"
+}

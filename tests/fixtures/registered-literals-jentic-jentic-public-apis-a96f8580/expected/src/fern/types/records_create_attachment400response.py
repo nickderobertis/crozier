@@ -1,0 +1,23 @@
+
+
+import typing
+
+from .bad_request_error_record_attachment_already_exists import BadRequestErrorRecordAttachmentAlreadyExists
+from .bad_request_error_record_attachment_extension import BadRequestErrorRecordAttachmentExtension
+from .bad_request_error_record_attachment_missing_form_data_part import (
+    BadRequestErrorRecordAttachmentMissingFormDataPart,
+)
+from .bad_request_error_record_attachment_unknown_attachment_key import (
+    BadRequestErrorRecordAttachmentUnknownAttachmentKey,
+)
+from .bad_request_error_record_attachment_unknown_content_type import BadRequestErrorRecordAttachmentUnknownContentType
+from .bad_request_error_record_not_found import BadRequestErrorRecordNotFound
+
+RecordsCreateAttachment400Response = typing.Union[
+    BadRequestErrorRecordNotFound,
+    BadRequestErrorRecordAttachmentExtension,
+    BadRequestErrorRecordAttachmentAlreadyExists,
+    BadRequestErrorRecordAttachmentUnknownAttachmentKey,
+    BadRequestErrorRecordAttachmentUnknownContentType,
+    BadRequestErrorRecordAttachmentMissingFormDataPart,
+]

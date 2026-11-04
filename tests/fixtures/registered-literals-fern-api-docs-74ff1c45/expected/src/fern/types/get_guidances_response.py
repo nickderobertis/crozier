@@ -1,0 +1,29 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .guidance import Guidance
+from .pagination_response import PaginationResponse
+
+
+class GetGuidancesResponse(UniversalBaseModel):
+    guidances: typing.List[Guidance] = pydantic.Field()
+    """
+    List of guidance documents for the domain
+    """
+
+    pagination: PaginationResponse = pydantic.Field()
+    """
+    Pagination information for the guidance document list
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

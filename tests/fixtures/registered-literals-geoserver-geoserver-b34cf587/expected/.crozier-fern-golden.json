@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-geoserver-geoserver-b34cf587",
+  "corpus_spec_ref": "e5096dda80eea70d21167f01b08e543019852a7e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/geoserver/geoserver/e5096dda80eea70d21167f01b08e543019852a7e/src/extension/ogcapi/ogcapi-features/src/main/resources/org/geoserver/ogcapi/v1/features/openapi.yaml"
+}

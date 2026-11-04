@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .credit_card_credential_response import CreditCardCredentialResponse
+from .password_credential_response import PasswordCredentialResponse
+
+CredentialResponseCredential = typing.Union[PasswordCredentialResponse, CreditCardCredentialResponse]

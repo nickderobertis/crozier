@@ -1,0 +1,29 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .channel_health import ChannelHealth
+
+
+class ChannelSummary(UniversalBaseModel):
+    id: int
+    name: str
+    selected: bool
+    health: ChannelHealth
+    created_at: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
+    ]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,47 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .extraction_block_yaml_data_schema import ExtractionBlockYamlDataSchema
+from .run_engine import RunEngine
+
+
+class ExtractionBlockYaml(UniversalBaseModel):
+    label: str = pydantic.Field()
+    """
+    Author-facing identifier; must be unique per workflow.
+    """
+
+    next_block_label: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Optional pointer to the label of the next block. When omitted, it will default to sequential order. See [[s-4bnl]].
+    """
+
+    continue_on_failure: typing.Optional[bool] = None
+    model: typing.Optional[typing.Dict[str, typing.Any]] = None
+    ignore_workflow_system_prompt: typing.Optional[bool] = None
+    next_loop_on_failure: typing.Optional[bool] = None
+    data_extraction_goal: str
+    url: typing.Optional[str] = None
+    title: typing.Optional[str] = None
+    engine: typing.Optional[RunEngine] = None
+    data_schema: typing.Optional[ExtractionBlockYamlDataSchema] = None
+    max_retries: typing.Optional[int] = None
+    max_steps_per_run: typing.Optional[int] = None
+    parameter_keys: typing.Optional[typing.List[str]] = None
+    disable_cache: typing.Optional[bool] = None
+    export_enabled: typing.Optional[bool] = None
+    export_data_schema: typing.Optional[typing.Dict[str, typing.Any]] = None
+    export_file_name: typing.Optional[str] = None
+    export_records: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

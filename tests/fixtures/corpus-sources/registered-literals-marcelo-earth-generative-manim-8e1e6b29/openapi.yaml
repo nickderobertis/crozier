@@ -1,0 +1,457 @@
+openapi: 3.0.1
+info:
+  title: Generative Manim API
+  description: API for generating Manim code, converting it to video, and handling chat-based code generation.
+  version: 2.0.0
+  license:
+    name: Apache License, Version 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the API and which LLM provider API keys are configured.
+      operationId: health
+      responses:
+        "200":
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /v1/health:
+    get:
+      summary: Health check (versioned)
+      description: Alias for /health.
+      operationId: healthV1
+      responses:
+        "200":
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /v1/models:
+    get:
+      summary: List available models
+      description: Returns all supported engines with their available model IDs, defaults, and whether the corresponding API key is configured.
+      operationId: listModels
+      responses:
+        "200":
+          description: List of engines and their models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelsResponse"
+
+  /v1/code/generation:
+    post:
+      summary: Generate Manim code
+      description: Generates Manim Python code from a natural-language prompt using the specified LLM engine.
+      operationId: generateCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeGenerationRequest"
+            examples:
+              openai:
+                summary: OpenAI engine
+                value:
+                  prompt: Draw a blue circle and animate its creation.
+                  engine: openai
+                  model: gpt-4o
+              anthropic:
+                summary: Anthropic engine
+                value:
+                  prompt: Draw a spinning square.
+                  engine: anthropic
+                  model: claude-sonnet-4-6
+              gemini:
+                summary: Gemini engine
+                value:
+                  prompt: Animate a Fourier series approximation.
+                  engine: gemini
+                  model: gemini-2.5-flash
+      responses:
+        "200":
+          description: Successfully generated Manim code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodeGenerationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/chat/generation:
+    post:
+      summary: Chat-based Manim code generation
+      description: Streams Manim code and explanations through a multi-turn conversation. Supports OpenAI, Anthropic, Gemini, Featherless, and LiteLLM engines.
+      operationId: chatGeneration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatGenerationRequest"
+            examples:
+              openai:
+                summary: OpenAI streaming chat
+                value:
+                  messages:
+                    - role: user
+                      content: Create a sine wave animation
+                  engine: openai
+                  model: gpt-4o
+              anthropic:
+                summary: Anthropic streaming chat
+                value:
+                  messages:
+                    - role: user
+                      content: Draw a rotating 3D cube
+                  engine: anthropic
+                  model: claude-sonnet-4-6
+      responses:
+        "200":
+          description: Streaming response with generated content
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Chunked text stream. When isForPlatform is true, each chunk is a JSON object with a "type" field.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/video/rendering:
+    post:
+      summary: Render Manim code to video
+      description: Executes Manim Python code and returns a rendered MP4 video URL. Supports streaming progress updates.
+      operationId: renderVideo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoRenderingRequest"
+            examples:
+              basic:
+                summary: Non-streaming render
+                value:
+                  code: "from manim import *\nclass GenScene(Scene):\n    def construct(self):\n        self.play(Create(Circle()))"
+                  file_class: GenScene
+                  aspect_ratio: "16:9"
+              streaming:
+                summary: Streaming render with progress
+                value:
+                  code: "from manim import *\nclass GenScene(Scene):\n    def construct(self):\n        self.play(Create(Circle()))"
+                  file_class: GenScene
+                  stream: true
+      responses:
+        "200":
+          description: Successfully rendered video (non-streaming mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoRenderingResponse"
+        "207":
+          description: Streaming progress updates (streaming mode). Each line is a JSON object.
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/RenderProgress"
+                  - $ref: "#/components/schemas/RenderComplete"
+                  - $ref: "#/components/schemas/RenderError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/video/generation:
+    post:
+      summary: Generate video from prompt
+      description: Generates Manim code from a prompt, then renders it to a video in one request.
+      operationId: generateVideo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoGenerationRequest"
+            examples:
+              basic:
+                summary: Generate a video
+                value:
+                  prompt: Animate a bouncing ball with gravity.
+                  engine: openai
+                  aspect_ratio: "16:9"
+      responses:
+        "200":
+          description: Successfully generated and rendered video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoRenderingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "408":
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, providers, configured_providers, total_providers]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded]
+          description: healthy if at least one provider key is configured, degraded otherwise.
+        providers:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              configured:
+                type: boolean
+              env_var:
+                type: string
+        configured_providers:
+          type: integer
+        total_providers:
+          type: integer
+
+    CodeGenerationRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+          description: Natural-language description of the animation to generate.
+          example: Draw a blue circle and animate its creation.
+        engine:
+          type: string
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
+          default: openai
+          description: LLM provider to use.
+        model:
+          type: string
+          description: Model ID for the chosen engine. Defaults to the engine's recommended model if omitted.
+          example: gpt-4o
+
+    CodeGenerationResponse:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: Generated Manim Python code.
+
+    ModelsResponse:
+      type: object
+      required: [engines]
+      properties:
+        engines:
+          type: array
+          items:
+            type: object
+            required: [engine, configured, default, models]
+            properties:
+              engine:
+                type: string
+                enum: [openai, anthropic, gemini, featherless, litellm, moonshot]
+              configured:
+                type: boolean
+                description: True if the corresponding API key environment variable is set.
+              default:
+                type: string
+                description: Default model ID used when no model is specified.
+              models:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    description:
+                      type: string
+              note:
+                type: string
+                description: Optional extra context (e.g. for LiteLLM's open model string format).
+
+    ChatGenerationRequest:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          description: Conversation history.
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        engine:
+          type: string
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
+          default: openai
+        model:
+          type: string
+          description: Model ID override. Defaults to the engine's recommended model.
+        globalPrompt:
+          type: string
+          description: Additional system-level instruction injected at the beginning.
+        userId:
+          type: string
+        projectTitle:
+          type: string
+        scenes:
+          type: array
+          items:
+            type: object
+        selectedScenes:
+          type: array
+          items:
+            type: string
+        isForPlatform:
+          type: boolean
+          default: false
+          description: When true, the response uses the Vercel AI data stream format with Transfer-Encoding chunked.
+
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  text:
+                    type: string
+
+    VideoRenderingRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: Manim Python code to render.
+        file_class:
+          type: string
+          description: Name of the Manim Scene subclass to render. Defaults to GenScene.
+          default: GenScene
+        user_id:
+          type: string
+          description: User identifier used in the output file name.
+        project_name:
+          type: string
+        iteration:
+          type: integer
+        aspect_ratio:
+          type: string
+          enum: ["16:9", "9:16", "1:1"]
+          default: "16:9"
+        stream:
+          type: boolean
+          default: false
+          description: If true, returns a 207 streaming response with per-animation progress.
+
+    VideoRenderingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        video_url:
+          type: string
+          format: uri
+          description: URL of the rendered MP4.
+
+    VideoGenerationRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          description: Natural-language description of the animation to generate and render.
+        engine:
+          type: string
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
+          default: openai
+        model:
+          type: string
+        aspect_ratio:
+          type: string
+          enum: ["16:9", "9:16", "1:1"]
+          default: "16:9"
+        user_id:
+          type: string
+        project_name:
+          type: string
+        iteration:
+          type: integer
+
+    RenderProgress:
+      type: object
+      properties:
+        animationIndex:
+          type: integer
+        percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    RenderComplete:
+      type: object
+      properties:
+        video_url:
+          type: string
+          format: uri
+
+    RenderError:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request body or parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
