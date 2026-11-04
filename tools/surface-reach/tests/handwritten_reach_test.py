@@ -24,13 +24,15 @@ import csv
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
-from typing import IO, NamedTuple, Protocol
+from typing import IO, Literal, NamedTuple, Protocol
 
 REPO = Path(__file__).resolve().parents[3]
 # The certified Fern pair, from its one declaration: the pair a fixture's evidence names.
@@ -1845,6 +1847,142 @@ OUTCOMES = (
 )
 
 
+class ReachedRegion(NamedTuple):
+    file: str
+    start_line: int
+    start_column: int
+    end_line: int
+    end_column: int
+
+
+@dataclass(frozen=True)
+class ControlRegionCounts:
+    first: int
+    second: int
+    both: int
+
+
+@dataclass(frozen=True)
+class RegionUnionReport:
+    schema_version: Literal[1]
+    key: str
+    handlers: tuple[str, ...]
+    counts: ControlRegionCounts
+    both_only: tuple[ReachedRegion, ...]
+    singles_only: tuple[ReachedRegion, ...]
+
+    @classmethod
+    def read(cls, path: Path, handler_pattern: str) -> RegionUnionReport:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict) or set(raw) != {field.name for field in fields(cls)}:
+            raise ValueError(f"{path}: expected the version-1 region report fields")
+        if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
+            raise ValueError(f"{path}: expected schema_version = 1")
+        key = raw["key"]
+        if not isinstance(key, str) or key != path.parent.name or not key.startswith("combo-"):
+            raise ValueError(f"{path}: report key must name its combination directory")
+
+        def number(value: object) -> int:
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"{path}: region coordinates and counts must be non-negative integers")
+            return value
+
+        handlers = raw["handlers"]
+        if not isinstance(handlers, list) or not handlers:
+            raise ValueError(f"{path}: handlers must be a nonempty list")
+        parsed_handlers: list[str] = []
+        for handler in handlers:
+            if not isinstance(handler, str) or re.fullmatch(handler_pattern, handler) is None:
+                raise ValueError(f"{path}: invalid handler {handler!r}")
+            parsed_handlers.append(handler)
+        if len(set(parsed_handlers)) != len(parsed_handlers):
+            raise ValueError(f"{path}: duplicate handlers")
+        counts = raw["counts"]
+        if not isinstance(counts, dict) or set(counts) != {field.name for field in fields(ControlRegionCounts)}:
+            raise ValueError(f"{path}: counts must name first, second and both")
+
+        def regions(value: object) -> tuple[ReachedRegion, ...]:
+            if not isinstance(value, list):
+                raise ValueError(f"{path}: regions must be a list")
+            parsed = []
+            for region in value:
+                if not isinstance(region, list) or len(region) != len(ReachedRegion._fields):
+                    raise ValueError(f"{path}: a region needs its source file and four coordinates")
+                file, start_line, start_column, end_line, end_column = region
+                if (
+                    not isinstance(file, str)
+                    or not file.startswith("src/")
+                    or not file.endswith(".rs")
+                    or any(part in {"", ".", ".."} for part in file.split("/"))
+                    or "\\" in file
+                    or ":" in file
+                ):
+                    raise ValueError(f"{path}: region file must be a repository-relative Rust source")
+                parsed.append(
+                    ReachedRegion(file, number(start_line), number(start_column), number(end_line), number(end_column))
+                )
+            if parsed != sorted(set(parsed)):
+                raise ValueError(f"{path}: regions must be sorted and unique")
+            return tuple(parsed)
+
+        return cls(
+            1,
+            key,
+            tuple(parsed_handlers),
+            ControlRegionCounts(number(counts["first"]), number(counts["second"]), number(counts["both"])),
+            regions(raw["both_only"]),
+            regions(raw["singles_only"]),
+        )
+
+
+class RegionUnionReportTest(unittest.TestCase):
+    def test_typed_reports_round_trip_every_committed_report_without_changing_its_schema(self) -> None:
+        reports = sorted(
+            (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
+        )
+        self.assertEqual(10, len(reports))
+        pattern = golden_reach().HANDLER_SPEC
+        for path in reports:
+            with self.subTest(report=path.parent.name):
+                report = RegionUnionReport.read(path, pattern)
+                self.assertEqual(path.read_text(encoding="utf-8"), json.dumps(asdict(report), indent=2) + "\n")
+
+    def test_report_fields_are_validated_before_replay_and_recover_after_repair(self) -> None:
+        source = next(
+            (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
+        )
+        pattern = golden_reach().HANDLER_SPEC
+        original = source.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / source.parent.name / source.name
+            path.parent.mkdir()
+            path.write_text(original, encoding="utf-8")
+            self.assertEqual(source.parent.name, RegionUnionReport.read(path, pattern).key)
+            variants = []
+            raw = json.loads(original)
+            raw["schema_version"] = 2
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["counts"]["first"] = True
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["counts"]["extra"] = 0
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["both_only"] = [["src/ir.rs", 1]]
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["handlers"] = ["not-a-handler"]
+            variants.append(raw)
+            for broken in variants:
+                with self.subTest(record=broken):
+                    path.write_text(json.dumps(broken), encoding="utf-8")
+                    with self.assertRaises(ValueError):
+                        RegionUnionReport.read(path, pattern)
+            path.write_text(original, encoding="utf-8")
+            self.assertEqual(source.parent.name, RegionUnionReport.read(path, pattern).key)
+
+
 class CooccurrenceOutcomeTest(unittest.TestCase):
     """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
 
@@ -1941,18 +2079,20 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
     def test_open_control_union_reports_replay_against_the_real_generator(self) -> None:
         reach = golden_reach()
         handwritten = _module("handwritten_open_unions", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
         controls = REPO / "docs/openapi-surface/witness-search-operation-combinations/controls"
-        reports = sorted(controls.glob("*/region-union.json"))
+        reports = [
+            (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
+            for path in sorted(controls.glob("*/region-union.json"))
+        ]
         self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
-        for path in reports:
-            expected = json.loads(path.read_text(encoding="utf-8"))
-            with self.subTest(key=expected["key"]):
-                self.assertEqual("open", audit[expected["key"]].proof_class)
-                self.assertEqual(set(expected["handlers"]), set(cooccurrence_handlers(expected["key"])))
-                sites = [reach.resolve_site(handler) for handler in expected["handlers"]]
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for path, expected in reports:
+            with self.subTest(key=expected.key):
+                self.assertEqual("open", audit[expected.key].proof_class)
+                self.assertEqual(set(expected.handlers), set(cooccurrence_handlers(expected.key)))
+                sites = [reach.resolve_site(handler) for handler in expected.handlers]
                 observed = {}
                 for label in ("first", "second", "both"):
                     with tempfile.TemporaryDirectory() as temporary:
@@ -1963,7 +2103,7 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
                             crozier,
                         )
                     observed[label] = {
-                        (site.file, *region)
+                        ReachedRegion(site.file, *region)
                         for site in sites
                         for region in hit.get(site.file, [])
                         if site.holds(tuple(region))
@@ -1971,21 +2111,21 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
                 union = observed["first"] | observed["second"]
                 self.assertNotEqual(union, observed["both"], "a passing union requires reclassification")
                 if os.environ.get("CROZIER_UPDATE_COMBINATION_CONTROLS") == "1":
-                    expected = {
-                        "schema_version": 1,
-                        "key": expected["key"],
-                        "handlers": expected["handlers"],
-                        "counts": {label: len(regions) for label, regions in observed.items()},
-                        "both_only": [list(region) for region in sorted(observed["both"] - union)],
-                        "singles_only": [list(region) for region in sorted(union - observed["both"])],
-                    }
-                    path.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
-                self.assertEqual(1, expected["schema_version"])
-                self.assertEqual(expected["counts"], {label: len(regions) for label, regions in observed.items()})
-                self.assertEqual(expected["both_only"], [list(region) for region in sorted(observed["both"] - union)])
+                    expected = RegionUnionReport(
+                        1,
+                        expected.key,
+                        expected.handlers,
+                        ControlRegionCounts(len(observed["first"]), len(observed["second"]), len(observed["both"])),
+                        tuple(sorted(observed["both"] - union)),
+                        tuple(sorted(union - observed["both"])),
+                    )
+                    path.write_text(json.dumps(asdict(expected), indent=2) + "\n", encoding="utf-8")
                 self.assertEqual(
-                    expected["singles_only"], [list(region) for region in sorted(union - observed["both"])]
+                    expected.counts,
+                    ControlRegionCounts(len(observed["first"]), len(observed["second"]), len(observed["both"])),
                 )
+                self.assertEqual(expected.both_only, tuple(sorted(observed["both"] - union)))
+                self.assertEqual(expected.singles_only, tuple(sorted(union - observed["both"])))
 
     def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
         reach = _module("golden_reach_outcomes", "golden-reach.py")
