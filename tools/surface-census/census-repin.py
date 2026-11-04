@@ -46,9 +46,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple, NoReturn, Protocol
 
-import port_pins
-import reach_document
-
 if TYPE_CHECKING:
     from reach_store import Function, ParsedFile, Store
 
@@ -70,6 +67,11 @@ def _load(name: str, file: str) -> Any:
     spec.loader.exec_module(module)
     return module
 
+
+STORE = _load("reach_store", "reach_store.py")
+port_pins = _load("port_pins", "port_pins.py")
+ATTRIBUTION = _load("residual_attribution_record", "residual_attribution_record.py")
+reach_document = _load("reach_document", "reach_document.py")
 
 REACH = _load("census_repin_golden_reach", "golden-reach.py")
 RS = REACH.RS
