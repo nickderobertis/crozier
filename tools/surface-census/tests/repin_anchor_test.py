@@ -63,6 +63,16 @@ def test_a_line_rustfmt_split_is_followed_into_head(tmp_path: Path) -> None:
     _verb().REACH.resolve_site(moves[SPEC], root)
 
 
+def test_an_unchanged_anchor_with_wider_token_spacing_is_followed(tmp_path: Path) -> None:
+    root, base = repository(tmp_path, BASE, BASE.replace("if x {", "if  x {"))
+    verb = _verb()
+    moves = verb.reanchor_all(root, base)
+    assert list(moves) == [SPEC]
+    verb.rewrite_specs(root, moves)
+    assert verb.REACH.resolve_site(moves[SPEC], root).start == 2
+    assert verb.reanchor_all(root, base) == {}
+
+
 # A second `if x {` line, deeper in the same function: the old pattern now matches two lines.
 DUPLICATED = BASE.replace(
     "    y\n}", "    for _ in 0..1 {\n        if x {\n            continue;\n        }\n    }\n    y\n}"

@@ -312,12 +312,12 @@ def _line_tokens(parsed: ParsedFile, line: int) -> list[int]:
 
 
 def _pattern(parsed: ParsedFile, indices: list[int]) -> str:
-    """A regex matching those tokens as they sit on one line: each escaped, gaps as one space."""
+    """A regex matching those tokens on one line: each escaped, gaps as whitespace."""
     out = []
     for position, k in enumerate(indices):
         token = parsed.tokens[k]
         if position and parsed.tokens[indices[position - 1]].end != token.start:
-            out.append(" ")
+            out.append(r"\s+")
         text = token.text.encode("latin-1").decode("utf-8", "replace")
         for char in text:
             match char:
