@@ -296,11 +296,7 @@ The [frozen witness-search-redo contract](../witness-search-redo/contract.md) ow
 
 ## Handed-off differences
 
-### Present document statuses
-
-The repair-node comparisons below are historical. Present document statuses
-and source hashes are recorded in the authoritative
-[document index](../../fern-measurements/handed-off/documents.tsv).
+The repair-node comparisons below are historical.
 
 
 Every difference met while screening, none repaired: crozier's output is unchanged by this node, and no golden or Fern tree was edited. Each document is listed with the files its comparison touched and the first differing line pair (`-` the certified pair, `+` crozier), grouped under the rule the two apply differently.

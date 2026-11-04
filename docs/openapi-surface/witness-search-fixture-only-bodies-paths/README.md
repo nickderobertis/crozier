@@ -385,11 +385,7 @@ Every open target, and why no declarer this search found is registrable.
 
 ## Handed-off differences
 
-### Present document statuses
-
-The repair-node comparisons below are historical. Present document statuses
-and source hashes are recorded in the authoritative
-[document index](../../fern-measurements/handed-off/documents.tsv).
+The repair-node comparisons below are historical.
 
 
 Every candidate `census.tsv` recorded as differing from the certified pair was re-compared on 2026-10-30 with crozier built at this branch's commit `2dc89c1810b3dff315851aa31089caf70323dbe3` (crozier's own history), against the certified-pair tree the screening generated and retained for it, through `crozier compare` with every catalogued departure applied; each document's SHA-256 was re-verified first. All 58 still differ. None is repaired or departed in this record: the manager ruled that those repairs belong to a separate plan, so crozier's output for each is unchanged from this node's base, and no golden or Fern tree was edited. The 58 split three ways:
