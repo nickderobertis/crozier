@@ -3348,7 +3348,8 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
 #[cfg(unix)]
 #[test]
 fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let source = fixture.join("openapi.yml");
     let expected = fixture.join("fern-expected");
     let (code, result) = compare_with_certified_reference(&source, &expected, None);
@@ -3369,7 +3370,8 @@ fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
 #[cfg(unix)]
 #[test]
 fn declared_reference_example_restrictions_hold_through_compare() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let original: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
             .unwrap();

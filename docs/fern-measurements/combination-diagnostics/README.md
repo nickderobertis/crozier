@@ -13,3 +13,13 @@ The existing union-literals overlay remains beside the other union overlays.
 The real CLI test union_shapes_match_complete_goldens_in_both_enum_modes
 continues to compare the complete tree in both modes, and the departure ledger
 continues to inventory this diagnostic tree. The move creates no new golden.
+
+The harbor-parcel-requests document and its complete Python-enums tree also
+remain unchanged here after HSE supplies the registered parameter/example and
+reference interaction witness. Its canonical tree digest remains
+`def28383c4e105fe07381211f1ceeb199ceaaa20ce3ae25e095fb27d6d779078`.
+`unions::retired_parameter_reference_matches_complete_golden` compares the full
+tree through the catalog, retaining the declared string examples departure.
+`declared_reference_example_restrictions_hold_through_compare` retains the
+adjacent invalid and unsupported-example rejection journeys over copies of
+this same document. Neither retained diagnostic is a hand-written fallback.

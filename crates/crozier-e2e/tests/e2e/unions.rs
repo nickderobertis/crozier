@@ -40,20 +40,31 @@ const OVERLAY_DIR: &str = "fern-expected";
 const DIAGNOSTIC_DIR: &str =
     "docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas";
 
+/// Retired parameter/reference fallback, retained as a complete-tree diagnostic.
+const PARAMETER_DIAGNOSTIC_DIR: &str =
+    "docs/fern-measurements/combination-diagnostics/harbor-parcel-requests";
+
 const MANIFEST: &str = ".crozier-overlay.json";
 
 /// Every literals overlay the comparisons read, as the inventory of compared
 /// goldens records it: its repository-relative path and the file in it no
 /// comparison reads (its manifest).
 pub(super) fn compared() -> Vec<(String, Vec<String>)> {
-    std::iter::once((format!("{DIAGNOSTIC_DIR}/fern-expected"), Vec::new()))
-        .chain(FIXTURES.iter().map(|name| {
-            (
-                format!("{LITERALS_DIR}/{name}/{OVERLAY_DIR}"),
-                vec![MANIFEST.to_string()],
-            )
-        }))
-        .collect()
+    [
+        (format!("{DIAGNOSTIC_DIR}/fern-expected"), Vec::new()),
+        (
+            format!("{PARAMETER_DIAGNOSTIC_DIR}/fern-expected"),
+            Vec::new(),
+        ),
+    ]
+    .into_iter()
+    .chain(FIXTURES.iter().map(|name| {
+        (
+            format!("{LITERALS_DIR}/{name}/{OVERLAY_DIR}"),
+            vec![MANIFEST.to_string()],
+        )
+    }))
+    .collect()
 }
 
 /// Fixtures kept as `measured` probe trees rather than hand-written fixtures:
@@ -197,12 +208,31 @@ fn tree_failures(
         )];
     }
     golden_tree_failures(
-        name,
-        &format!("{}, enum-type={enum_type}", spec.display()),
+        &format!("{name}, enum-type={enum_type}"),
+        &spec.display().to_string(),
         ledger,
         expected,
         out.path(),
     )
+}
+
+/// The retired parameter/reference fallback retains its complete certified tree
+/// after HSE supplies the registered interaction witness.
+#[test]
+fn retired_parameter_reference_matches_complete_golden() {
+    let root = repo_root().join(PARAMETER_DIAGNOSTIC_DIR);
+    let expected = root.join("fern-expected");
+    let ledger = departure_ledger()
+        .golden(&golden_path(&expected), &[])
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    let failures = tree_failures(
+        "harbor-parcel-requests",
+        &root.join("openapi.yml"),
+        &expected,
+        "python-enums",
+        &ledger,
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
 /// The ledger rows `fixture`'s committed python-enums tree is held to.
