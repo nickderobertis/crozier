@@ -190,6 +190,30 @@
     "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/group-placed-nested-type-placement/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/group-placed-nested-type-placement/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/ignored-multipart-query-collision/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/json-ref-body-kept-whole/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/nullable-union-and-unknown-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/nullable-union-and-unknown-body/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/parent-example-map-values/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/split-media-body-orphan-model/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/typed-single-ref-allof-alias/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/x-fern-type-extension/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/R15/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/R17/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/byte-text-response-reference-snippet/fern-expected": {},

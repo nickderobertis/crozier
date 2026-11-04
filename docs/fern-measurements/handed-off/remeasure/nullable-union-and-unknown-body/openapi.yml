@@ -1,0 +1,130 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Seed Shipment Desk",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/shipments": {
+      "get": {
+        "operationId": "get_shipment",
+        "responses": {
+          "200": {
+            "description": "Shipment state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "weight"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "parcel"
+                            },
+                            "weight": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "message"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "notice"
+                            },
+                            "message": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dispatch": {
+      "post": {
+        "operationId": "dispatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dispatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Dispatched"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Dispatch": {
+        "title": "Dispatch",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Parcel"
+          },
+          {
+            "$ref": "#/components/schemas/Notice"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "parcel": "Parcel",
+            "notice": "Notice"
+          }
+        }
+      },
+      "Parcel": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "parcel"
+            ]
+          }
+        }
+      },
+      "Notice": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "notice"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

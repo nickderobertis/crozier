@@ -1168,10 +1168,24 @@ pub enum SdkGroupName {
     Nested(Vec<String>),
 }
 
+/// Explicit Python enum casing supplied by an extension entry.
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
+pub struct EnumValueCasing {
+    /// The `visit` callback parameter name.
+    #[serde(default)]
+    pub snake: Option<String>,
+    /// The Python enum member name.
+    #[serde(rename = "screamingSnake", default)]
+    pub screaming_snake: Option<String>,
+}
+
 /// One entry of `x-crozier-enum` / `x-fern-enum`: the Python member name a wire
 /// value is given, in place of the identifier derived from the value itself.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct EnumValueName {
+    /// Explicit names, retained without deriving their casing again.
+    #[serde(default)]
+    pub casing: Option<EnumValueCasing>,
     /// The member name (`USD` for the value `$`).
     #[serde(default)]
     pub name: Option<String>,
@@ -1620,6 +1634,7 @@ pub struct Components {
 pub(crate) enum LiteralTypeOverride {
     True,
     False,
+    Datetime,
     Unsupported,
 }
 
@@ -1628,6 +1643,7 @@ impl From<String> for LiteralTypeOverride {
         match value.as_str() {
             "literal<true>" => Self::True,
             "literal<false>" => Self::False,
+            "datetime" => Self::Datetime,
             _ => Self::Unsupported,
         }
     }
@@ -1655,7 +1671,7 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
-    /// Boolean literal type override; the crozier spelling is canonical.
+    /// Boolean literal or datetime override; the crozier spelling is canonical.
     #[serde(rename = "x-crozier-type", default)]
     pub(crate) type_crozier: Option<LiteralTypeOverride>,
     /// Fern-compatible spelling of the literal override.
@@ -2092,8 +2108,26 @@ impl Schema {
         match self.type_crozier.as_ref().or(self.type_fern.as_ref())? {
             LiteralTypeOverride::True => Some(true),
             LiteralTypeOverride::False => Some(false),
-            LiteralTypeOverride::Unsupported => None,
+            LiteralTypeOverride::Datetime | LiteralTypeOverride::Unsupported => None,
         }
+    }
+
+    /// A datetime override, with the same canonical precedence as Boolean literals.
+    pub(crate) fn has_datetime_type_override(&self) -> bool {
+        matches!(
+            self.type_crozier.as_ref().or(self.type_fern.as_ref()),
+            Some(LiteralTypeOverride::Datetime)
+        )
+    }
+
+    /// Explicit enum casing reads the canonical extension map first.
+    pub(crate) fn enum_member_casing(&self, value: &str) -> Option<&EnumValueCasing> {
+        self.enum_names_crozier
+            .as_ref()
+            .or(self.enum_names_fern.as_ref())?
+            .get(value)?
+            .casing
+            .as_ref()
     }
 
     /// Per-value docs read the same canonical extension map as member names.
@@ -6592,6 +6626,65 @@ components:
         // The schemas only the ignored ops referenced stay, as they do in Fern's
         // TrueForge golden.
         assert_eq!(schema_keys(&doc), ["Keep", "OnlyFern", "OnlyCrozier"]);
+    }
+
+    #[test]
+    fn enum_casing_preserves_canonical_precedence_and_legacy_name_access() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "string", "enum": ["seed"],
+            "x-fern-enum": {"seed": {"name": "legacyFern", "casing": {"snake": "fern_2_7", "screamingSnake": "FERN_2_7"}}},
+            "x-crozier-enum": {"seed": {"name": "legacyCrozier", "casing": {"snake": "crozier_2_7", "screamingSnake": "CROZIER_2_7"}}}
+        })).unwrap();
+        let casing = schema.enum_member_casing("seed").unwrap();
+        assert_eq!(casing.snake.as_deref(), Some("crozier_2_7"));
+        assert_eq!(casing.screaming_snake.as_deref(), Some("CROZIER_2_7"));
+        assert_eq!(
+            schema.enum_member_names().collect::<Vec<_>>(),
+            vec![("seed", "legacyCrozier")]
+        );
+        assert!(schema.enum_member_casing("missing").is_none());
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "x-fern-enum": {"seed": {"casing": {"snake": "fern_2_7", "screamingSnake": "FERN_2_7"}}},
+            "x-crozier-enum": {"seed": {"name": "canonicalWithoutCasing"}}
+        })).unwrap();
+        assert!(schema.enum_member_casing("seed").is_none());
+    }
+
+    #[test]
+    fn datetime_override_preserves_boolean_literals_and_canonical_precedence() {
+        for (value, boolean, datetime) in [
+            (
+                serde_json::json!({"x-fern-type": "literal<true>"}),
+                Some(true),
+                false,
+            ),
+            (
+                serde_json::json!({"x-fern-type": "literal<false>"}),
+                Some(false),
+                false,
+            ),
+            (serde_json::json!({"x-fern-type": "datetime"}), None, true),
+            (
+                serde_json::json!({"x-crozier-type": "datetime", "x-fern-type": "literal<true>"}),
+                None,
+                true,
+            ),
+            (
+                serde_json::json!({"x-crozier-type": "unsupported", "x-fern-type": "datetime"}),
+                None,
+                false,
+            ),
+            (
+                serde_json::json!({"x-crozier-type": "literal<false>", "x-fern-type": "datetime"}),
+                Some(false),
+                false,
+            ),
+            (serde_json::json!({}), None, false),
+        ] {
+            let schema: Schema = serde_json::from_value(value).unwrap();
+            assert_eq!(schema.bool_literal(), boolean);
+            assert_eq!(schema.has_datetime_type_override(), datetime);
+        }
     }
 
     #[test]

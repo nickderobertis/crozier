@@ -152,8 +152,10 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys, including their enum-mode overlays, took 0.63 s together, require no network or SDK installation, and exercise the existing real-binary boundary rather than introducing expensive setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The document-acceptance handed-off area: documents the certified pair reads
 /// where crozier refused, failed to parse or wrote invalid Python, each
@@ -1061,25 +1063,27 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             }
         }
     }
-    if let Ok(entries) = std::fs::read_dir(root.join(handed_off_type_declarations::DIR)) {
-        for entry in entries.filter_map(Result::ok) {
-            if entry
-                .path()
-                .join(handed_off_type_declarations::LITERALS)
-                .is_dir()
-            {
-                add(
-                    format!(
-                        "{}/{}/{}",
-                        handed_off_type_declarations::DIR,
-                        entry.file_name().to_string_lossy(),
-                        handed_off_type_declarations::LITERALS
-                    ),
-                    departures_ledger::ComparedGolden {
-                        excluded: vec![literals_mode::MANIFEST.to_string()],
-                        carve_outs: Default::default(),
-                    },
-                );
+    for dir in [handed_off_type_declarations::DIR, remeasure::DIR] {
+        if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
+            for entry in entries.filter_map(Result::ok) {
+                if entry
+                    .path()
+                    .join(handed_off_type_declarations::LITERALS)
+                    .is_dir()
+                {
+                    add(
+                        format!(
+                            "{}/{}/{}",
+                            dir,
+                            entry.file_name().to_string_lossy(),
+                            handed_off_type_declarations::LITERALS
+                        ),
+                        departures_ledger::ComparedGolden {
+                            excluded: vec![literals_mode::MANIFEST.to_string()],
+                            carve_outs: Default::default(),
+                        },
+                    );
+                }
             }
         }
     }

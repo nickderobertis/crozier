@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Garden Delivery Modes",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/mode": {
+      "get": {
+        "operationId": "get_mode",
+        "responses": {
+          "200": {
+            "description": "Selected mode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DeliveryModel": {
+        "type": "string",
+        "enum": [
+          "grow-2-7-leaf",
+          "agent-4-12-large",
+          "plain-2a",
+          "plain_03_04",
+          "unit-2024-07-01"
+        ],
+        "x-fern-enum": {
+          "grow-2-7-leaf": {
+            "casing": {
+              "snake": "grow2_7_leaf",
+              "screamingSnake": "GROW2_7_LEAF"
+            }
+          }
+        }
+      }
+    }
+  }
+}

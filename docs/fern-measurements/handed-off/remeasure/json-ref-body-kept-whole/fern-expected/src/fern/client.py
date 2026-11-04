@@ -123,6 +123,60 @@ class FernApi:
         _response = self._raw_client.register_label(label=label, request_options=request_options)
         return _response.data
 
+    def archive_label(
+        self, *, note: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        note : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.archive_label()
+        """
+        _response = self._raw_client.archive_label(note=note, request_options=request_options)
+        return _response.data
+
+    def review_label(
+        self, *, note: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        note : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.review_label()
+        """
+        _response = self._raw_client.review_label(note=note, request_options=request_options)
+        return _response.data
+
 
 def _make_default_async_client(
     timeout: typing.Optional[float],
@@ -257,4 +311,74 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.register_label(label=label, request_options=request_options)
+        return _response.data
+
+    async def archive_label(
+        self, *, note: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        note : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.archive_label()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.archive_label(note=note, request_options=request_options)
+        return _response.data
+
+    async def review_label(
+        self, *, note: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        note : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.review_label()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.review_label(note=note, request_options=request_options)
         return _response.data

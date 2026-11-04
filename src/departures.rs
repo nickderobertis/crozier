@@ -1307,110 +1307,117 @@ fn reference_parameter_block<'a>(
     Some((name, annotation, close, end))
 }
 
+/// Parameter blocks grouped by their actual client method, with source ranges.
+fn reference_parameters(
+    lines: &[&str],
+) -> std::collections::BTreeMap<MethodKey, Vec<(usize, usize)>> {
+    let mut out = std::collections::BTreeMap::<_, Vec<_>>::new();
+    let mut method = None;
+    for index in 0..lines.len() {
+        if let Some(key) = reference_method_key(lines[index]) {
+            method = Some(key);
+        }
+        if let (Some(key), Some((_, _, _, end))) =
+            (&method, reference_parameter_block(lines, index))
+        {
+            out.entry(key.clone()).or_default().push((index, end));
+        }
+    }
+    out
+}
+
 fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "reference.md" {
         return Ok(None);
     }
     let context = pair.context.request_examples();
-    let mut method = None;
-    let mut targets = std::collections::BTreeMap::new();
-    let mut reference = Vec::new();
-    let mut index = 0;
-    while index < pair.fern.len() {
-        let line = pair.fern[index];
-        if let Some(key) = reference_method_key(line) {
-            method = Some(key);
+    let corrected = reference_parameters(pair.crozier);
+    for (key, blocks) in reference_parameters(pair.fern) {
+        let Some(actual) = corrected.get(&key) else {
+            continue;
+        };
+        // An unchanged whole-request block is not a corrected signature.
+        if actual.iter().any(|&(start, _)| {
+            reference_parameter_block(pair.crozier, start)
+                .is_some_and(|(name, _, _, _)| name == "request")
+        }) {
+            continue;
         }
-        if let Some((name, alias, close, end)) = reference_parameter_block(pair.fern, index) {
-            if name == "request" {
-                if let Some((key, fields, parameters, wires)) = method.as_ref().and_then(|key| {
-                    Some((
-                        key,
-                        context.alias_fields.get(alias)?,
-                        context.method_parameters.get(key)?,
-                        context.wire_fields.get(key)?,
-                    ))
-                }) {
-                    let plain = pair.fern[index + 3] == format!("**request:** `{alias}` ")
-                        && pair.fern[index + 4..close]
-                            .iter()
-                            .all(|line| line.trim().is_empty());
-                    if plain
-                        && !parameters.contains_key("request")
-                        && context.json_object_methods.contains(key)
-                        && fields.iter().all(|field| {
-                            parameters.contains_key(field) && wires.contains_key(field)
-                        })
-                    {
-                        if targets.insert(key.clone(), fields.clone()).is_some() {
-                            return Ok(None);
-                        }
-                        reference.push("<flattened-alias-parameters>".to_string());
-                        index = end;
-                        continue;
-                    }
-                }
-            }
+        let Some(parameters) = context.method_parameters.get(&key) else {
+            continue;
+        };
+        if parameters.contains_key("request") || !context.json_object_methods.contains(&key) {
+            continue;
         }
-        reference.push(line.to_string());
-        index += 1;
-    }
-    if targets.is_empty() {
-        return Ok(None);
-    }
-    let mut corrected = Vec::new();
-    let mut seen: std::collections::BTreeMap<MethodKey, BTreeSet<String>> =
-        std::collections::BTreeMap::new();
-    method = None;
-    index = 0;
-    while index < pair.crozier.len() {
-        let line = pair.crozier[index];
-        if let Some(key) = reference_method_key(line) {
-            method = Some(key);
-        }
-        if let Some((name, annotation, close, end)) = reference_parameter_block(pair.crozier, index)
-        {
-            if let Some((key, parameter)) = method.as_ref().and_then(|key| {
-                let fields = targets.get(key)?;
-                if !fields.contains(name) {
-                    return None;
-                }
-                Some((key, context.method_parameters.get(key)?.get(name)?))
-            }) {
-                if annotation != crate::emit::reference_param_annotation(&parameter.annotation) {
-                    return Ok(None);
-                }
-                let mut description = parameter.description.join("\n");
-                while description.ends_with('\n') {
-                    description.pop();
-                }
-                let description = (!description.is_empty()).then_some(description.as_str());
-                let suffix = crate::emit::reference_param_suffix(description);
-                let expected = format!("**{name}:** `{annotation}`{suffix}\n    ");
-
-                if pair.crozier[index + 3..close].join("\n") != expected {
-                    return Ok(None);
-                }
-                let fields = seen.entry(key.clone()).or_default();
-                if !fields.insert(name.to_string()) {
-                    return Ok(None);
-                }
-                if fields.len() == 1 {
-                    corrected.push("<flattened-alias-parameters>".to_string());
-                }
-                index = end;
+        for (start, end) in blocks {
+            let Some(("request", alias, close, _)) = reference_parameter_block(pair.fern, start)
+            else {
+                continue;
+            };
+            let (Some(fields), Some(wires)) = (
+                context.alias_fields.get(alias),
+                context.wire_fields.get(&key),
+            ) else {
+                continue;
+            };
+            if fields.is_empty()
+                || pair.fern[start + 3] != format!("**request:** `{alias}` ")
+                || !pair.fern[start + 4..close]
+                    .iter()
+                    .all(|line| line.trim().is_empty())
+                || !fields
+                    .iter()
+                    .all(|field| parameters.contains_key(field) && wires.contains_key(field))
+            {
                 continue;
             }
+            let mut seen = BTreeSet::new();
+            let mut range: Option<std::ops::Range<usize>> = None;
+            let mut valid = true;
+            for &(first, last) in actual {
+                let Some((name, annotation, close, _)) =
+                    reference_parameter_block(pair.crozier, first)
+                else {
+                    continue;
+                };
+                if !fields.contains(name) {
+                    continue;
+                }
+                let parameter = &parameters[name];
+                let description = parameter.description.join("\n");
+                let description = description.trim_end_matches('\n');
+                let suffix = crate::emit::reference_param_suffix(
+                    (!description.is_empty()).then_some(description),
+                );
+                let expected = format!("**{name}:** `{annotation}`{suffix}\n    ");
+                if annotation != crate::emit::reference_param_annotation(&parameter.annotation)
+                    || pair.crozier[first + 3..close].join("\n") != expected
+                    || !seen.insert(name.to_string())
+                    || range.as_ref().is_some_and(|previous| {
+                        pair.crozier[previous.end..first]
+                            .iter()
+                            .any(|line| !line.trim().is_empty())
+                    })
+                {
+                    valid = false;
+                    break;
+                }
+                match &mut range {
+                    Some(range) => range.end = last,
+                    None => range = Some(first..last),
+                }
+            }
+            if valid && &seen == fields {
+                if let Some(crozier) = range {
+                    return Ok(Some(Region {
+                        fern: start..end,
+                        crozier,
+                    }));
+                }
+            }
         }
-        corrected.push(line.to_string());
-        index += 1;
     }
-    if seen != targets {
-        return Ok(None);
-    }
-    Ok((reference == corrected)
-        .then(|| differing_window(pair.fern, pair.crozier))
-        .flatten())
+    Ok(None)
 }
 
 /// Every `.py` file under `root` as `(relative path, text)`; a module that
@@ -6283,12 +6290,21 @@ mod tests {
             corrected.replace("Shown on cabinet labels.", "Wrong description."),
             corrected.replace("**caption:**", "**unknown:**"),
             corrected.replace("**ticket:** `int`", "**request:** `int`"),
-            corrected.replace("#### 🔌 Usage", "Unexplained heading"),
-            corrected.replace("**request_options:**", "**extra:**"),
         ] {
             assert!(
                 region_of(rule, "reference.md", &fern, &wrong, &context).is_none(),
                 "{wrong}"
+            );
+        }
+        for wrong in [
+            corrected.replace("#### 🔌 Usage", "Unexplained heading"),
+            corrected.replace("**request_options:**", "**extra:**"),
+        ] {
+            let comparison =
+                crate::parity::compare_file(&context, "reference.md", &wrong, &fern).unwrap();
+            assert!(
+                !comparison.matches(),
+                "an adjacent unexplained edit must remain: {wrong}"
             );
         }
         for (from, to) in [

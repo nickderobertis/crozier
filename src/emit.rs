@@ -9298,7 +9298,11 @@ impl<'a> ExampleCtx<'a> {
                             let rendered = self
                                 .value_from_example(inner, &field.to_string())
                                 .unwrap_or_else(|| {
-                                    example_from_json_as(field.clone(), !self.documentation)
+                                    if self.example_matches_type(inner, field) {
+                                        example_from_json_as(field.clone(), !self.documentation)
+                                    } else {
+                                        self.value(inner, Slot::Named(key))
+                                    }
                                 });
                             (key.clone(), rendered)
                         })
@@ -10763,6 +10767,19 @@ impl<'a> ExampleCtx<'a> {
                         });
                         let value = if nullable_shown(&field) && field.example.is_none() {
                             Example::Atom("None".to_string())
+                        } else if field.parent_example
+                            && self.resolves_to_unknown_map(&field.type_ref)
+                            && example.is_some_and(|value| value != "{}")
+                        {
+                            // A value supplied by the enclosing object's example
+                            // is not the unknown map's schema-only fallback.
+                            match self
+                                .value_from_example(&field.type_ref, example.unwrap_or_default())
+                            {
+                                Some(Example::DocDict(pairs)) => Example::ReferenceDict(pairs),
+                                Some(value) => value,
+                                None => self.value(&field.type_ref, Slot::Named(&field.wire_name)),
+                            }
                         } else {
                             self.field_example(
                                 &field.type_ref,

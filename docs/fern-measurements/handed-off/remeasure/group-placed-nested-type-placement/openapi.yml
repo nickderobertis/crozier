@@ -1,0 +1,73 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Garden Depot Ledger",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/records": {
+      "get": {
+        "operationId": "get_record",
+        "responses": {
+          "200": {
+            "description": "Stored record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepotRecord"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DepotRecord": {
+        "type": "object",
+        "x-crozier-sdk-group-name": "depot",
+        "x-fern-sdk-group-name": "depot",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "stored",
+              "released"
+            ]
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "small",
+                    "large"
+                  ]
+                }
+              }
+            }
+          },
+          "warehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          }
+        }
+      },
+      "Warehouse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

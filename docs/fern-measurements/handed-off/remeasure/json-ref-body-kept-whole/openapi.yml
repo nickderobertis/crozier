@@ -27,6 +27,30 @@ paths:
       responses:
         '204':
           description: Registered
+  /labels/archive:
+    post:
+      operationId: archive_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveRegistration'
+      responses:
+        '204':
+          description: Stored
+  /labels/review:
+    post:
+      operationId: review_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveRegistration'
+      responses:
+        '204':
+          description: Stored
 components:
   schemas:
     LabelRegistration:
@@ -34,4 +58,9 @@ components:
       required: [label]
       properties:
         label:
+          type: string
+    ArchiveRegistration:
+      type: object
+      properties:
+        note:
           type: string

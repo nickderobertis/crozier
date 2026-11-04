@@ -2811,22 +2811,41 @@ fn build_enum(
         .filter(|value| seen_values.insert(value.clone()))
         .filter_map(|value| {
             let declared_name = declared.get(value.as_str()).copied();
-            if !seen_names.insert(fern_enum_name_key(&value, declared_name)) {
+            let casing = schema.enum_member_casing(&value);
+            let member_casing = casing
+                .and_then(|casing| casing.screaming_snake.as_deref())
+                .map(str::trim)
+                .filter(|name| !name.is_empty());
+            if !seen_names.insert(fern_enum_name_key(&value, member_casing.or(declared_name))) {
                 return None;
             }
-            let name = declared_name.map_or_else(
-                || naming::enum_member_name(&value),
-                naming::enum_member_name,
+            let name = member_casing.map_or_else(
+                || {
+                    declared_name.map_or_else(
+                        || naming::enum_member_name(&value),
+                        naming::enum_member_name,
+                    )
+                },
+                naming::sanitize_identifier,
             );
             // A member whose Python name an earlier one already took shares its
             // callback: NPQ's `created_at` and `-created_at` are both `CREATED_AT`.
             let visit_param = if let Some(param) = member_params.get(&name) {
                 param.clone()
             } else {
-                let visit = declared_name.map_or_else(
-                    || naming::enum_visit_param(&value),
-                    naming::enum_visit_param,
-                );
+                let visit = casing
+                    .and_then(|casing| casing.snake.as_deref())
+                    .map(str::trim)
+                    .filter(|name| !name.is_empty())
+                    .map_or_else(
+                        || {
+                            declared_name.map_or_else(
+                                || naming::enum_visit_param(&value),
+                                naming::enum_visit_param,
+                            )
+                        },
+                        naming::sanitize_identifier,
+                    );
                 let param = dedupe(visit, &mut seen_params);
                 member_params.insert(name.clone(), param.clone());
                 param
@@ -3223,6 +3242,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // `glossary/types/phrase.py`, as Fern places it, rather than the root
     // `types/`; the root still re-exports it through the package.
     let mut types = builder.types;
+    let component_classes: std::collections::HashSet<_> = doc
+        .components
+        .schemas
+        .keys()
+        .map(|name| ref_to_class(&format!("#/components/schemas/{name}")))
+        .collect();
     for (name, schema) in &doc.components.schemas {
         let module = schema
             .sdk_group_name()
@@ -3238,9 +3263,39 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             continue;
         };
         let class = ref_to_class(&format!("#/components/schemas/{name}"));
-        if let Some(index) = types.iter().position(|decl| decl.name() == class) {
-            let decl = types.remove(index);
-            tag_types.push(TagTypeDecl { module, decl });
+        // Hoisted children inherit their declaring component's package. A
+        // reference to another named component keeps that component's own
+        // placement; only synthetic descendants follow this root.
+        let mut placed = std::collections::HashSet::from([class.clone()]);
+        let mut pending = vec![class];
+        while let Some(name) = pending.pop() {
+            let Some(decl) = types.iter().find(|decl| decl.name() == name) else {
+                continue;
+            };
+            let mut dependencies = referenced_type_names(std::slice::from_ref(decl), &[]);
+            if let TypeDecl::DiscriminatedUnion(union) = decl {
+                dependencies.extend(
+                    union
+                        .members
+                        .iter()
+                        .filter_map(|member| member.source.clone()),
+                );
+            }
+            for dependency in dependencies {
+                if !component_classes.contains(&dependency) && placed.insert(dependency.clone()) {
+                    pending.push(dependency);
+                }
+            }
+        }
+        for decl in std::mem::take(&mut types) {
+            if placed.contains(decl.name()) {
+                tag_types.push(TagTypeDecl {
+                    module: module.clone(),
+                    decl,
+                });
+            } else {
+                types.push(decl);
+            }
         }
     }
     for (class, module) in webhook_placements {
@@ -4467,12 +4522,30 @@ fn build_endpoint(
                 && (schema.one_of.is_some() || schema.any_of.is_some()) =>
         {
             let name = format!("{pascal_ctx}Response");
+            // A nullable wrapper does not add a variant name around its one
+            // nested discriminated union: its models keep the response context.
+            let nested_union = schema
+                .one_of
+                .as_ref()
+                .or(schema.any_of.as_ref())
+                .filter(|members| members.iter().any(is_null_variant))
+                .and_then(|members| {
+                    let mut non_null = members.iter().filter(|member| !is_null_variant(member));
+                    let inner = non_null.next()?;
+                    (non_null.next().is_none()
+                        && (inner.one_of.is_some() || inner.any_of.is_some()))
+                    .then_some(inner)
+                });
             if let Some(response) = hoister.hoist_discriminated_union(
                 &name,
-                schema,
+                nested_union.unwrap_or(schema),
                 clean_doc(schema.description.as_deref()),
             ) {
-                Some(response)
+                Some(if nested_union.is_some() {
+                    optional_type_ref(response)
+                } else {
+                    response
+                })
             } else {
                 let variants = schema
                     .one_of
@@ -4880,7 +4953,9 @@ fn build_endpoint(
                                     .reference
                                     .as_deref()
                                     .and_then(|reference| resolve_ref(doc, reference))
-                                    .is_some_and(|target| target.title.is_none())
+                                    .is_some_and(|target| {
+                                        target.title.is_none() || bare_name_mapped_union(target)
+                                    })
                     })
             });
 
@@ -14286,13 +14361,15 @@ impl Builder<'_> {
         // An `allOf` holding one `$ref` and no fields is an annotated
         // reference rather than inheritance: SFTPGo's `AdminTOTPConfig` is
         // `allOf: [$ref BaseTOTPConfig]` alone and its golden is
-        // `AdminTotpConfig = BaseTotpConfig`, not a subclass. A sibling of any
-        // kind makes it a model that inherits — nonempty declared properties, an explicit
-        // `type: object` without a properties map, or the `additionalProperties` that makes Strapi's
-        // `Entry` a `class Entry(DocumentMeta)`.
+        // `AdminTotpConfig = BaseTotpConfig`, not a subclass. An explicit
+        // `type: object` or `additionalProperties: false` adds no fields and
+        // keeps that alias. Own properties or an open/typed additionalProperties
+        // retain a model, as Strapi's `Entry(DocumentMeta)` does.
         if schema.properties.is_empty()
-            && schema.additional_properties.is_none()
-            && (!is_object_type(schema) || schema.properties.declared())
+            && matches!(
+                &schema.additional_properties,
+                None | Some(AdditionalProperties::Bool(false))
+            )
         {
             if let Some(reference) = single_all_of_ref(schema) {
                 self.push_alias(
@@ -19051,6 +19128,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         };
     }
     match schema.ty.as_ref().and_then(|t| t.primary()) {
+        Some("string") if schema.has_datetime_type_override() => TypeRef::Primitive(Prim::Datetime),
         Some("string") => match schema.format.as_deref() {
             Some("json-string") => TypeRef::Primitive(Prim::Any),
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
