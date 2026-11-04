@@ -75,16 +75,11 @@ Fern tree was regenerated with Fern CLI 5.67.1 and `fernapi/fern-python-sdk`
 Its arm-level covers stand unchanged, since `just handwritten-reach` measures
 them as before.
 
-Each search reads `search-incomplete` because no search was run for these
-regions. The committed arm searches for
-[`ref-pointer-nested-properties`](../golden-reach-witnesses/searches/ref-pointer-nested-properties.md)
-and [`ref-pointer-composition-index`](../golden-reach-witnesses/searches/ref-pointer-composition-index.md)
-found the documents declaring `$ref` pointers through `properties` or a
-composition index. But they probed each declarer only for the pointer-walk sites
-they name, never for these. No census selector reads an unquoted YAML timestamp
-as an example at all. A real-specification search for each behaviour, by
-Contract B, is still owed. It needs census selectors and declared sites for
-these branches first, and the run's planner assigned it outside this
-withdrawal: the selectors and sites to the coverage restatement (#361), the
-searches to a follow-up. Until those land, the four behaviours rest only on
-hand-written evidence, and the YAML-timestamp drop is an open gap.
+The [renewed bounded search](../witness-search-ledger-remainders/README.md#verdicts)
+now gives each behaviour a census selector. Each remains `search-incomplete`:
+the retained archive and acquired pools are unavailable, and only part of the
+handed-off population could be recovered. The record names the inputs read,
+the broader pointer-copy declarers, and the outstanding populations. No real
+witness for the optional non-temporal timestamp drop was found, including in
+the pinned Cyoda document, whose timestamps are temporal. These behaviours
+continue to rest on hand-written evidence.

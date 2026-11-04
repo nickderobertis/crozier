@@ -3481,6 +3481,9 @@ class GrammarContractTests(unittest.TestCase):
     # node-local unless it is here.
     DOCUMENT_COMPARING_PREDICATES = frozenset(
         {
+            "schema.$ref:properties-copy",
+            "schema.oneOf:properties-copy-type-variant",
+            "schema.oneOf:properties-copy-inferred-type",
             "operation.operationId:duplicate",
             "openapi.paths:normalized-collision",
             "components.schemas:normalized-collision",

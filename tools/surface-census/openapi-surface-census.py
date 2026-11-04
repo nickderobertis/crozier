@@ -1837,6 +1837,9 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "schema.$ref:properties-copy",
+    "schema.oneOf:properties-copy-type-variant",
+    "schema.oneOf:properties-copy-inferred-type",
     "operation.requestBody:optional-nullable-enum-multipart-part",
     "operation.requestBody:titled-array-component-oas-three-one",
     "operation.operationId:duplicate",
