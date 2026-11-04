@@ -469,7 +469,7 @@ class GateTableTests(unittest.TestCase):
         commands = {gate.command for gate in gates}
         self.assertEqual(
             {
-                "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
+                "just fixtures-diff {item}",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry",
                 "python3 tools/fern-refusals/fern-refusals.py check",

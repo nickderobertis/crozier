@@ -8,11 +8,10 @@
 # outside the corpus's `unmatched`, or a generation failure, rejects; a processing
 # failure is a comparison that could not run).
 # docs/fern-goldens.md says which family is compared per item and which per family.
-# The corpus row compares summary-only (no text diffs): building them took netbox.dev's
-# reporter past a 16 GB runner over run 41564405289's tree; `just fixtures-diff <corpus>` prints them.
+# The corpus reporter bounds text-diff construction and reports omitted line counts.
 # llmlint: ignore[changed_behavior_has_e2e] These rows run crozier-e2e's whole suite and its corpus reporter, which need the full 1.9 GB reference tree and the e2e build; tools/fern-goldens-weekly/tests/weekly_journeys_test.py drives the same decision code over a synthetic tree with crozier's engine as `crozier compare` and its refusal path as `crozier generate` (the manager's ruling for this workflow), and weekly_test.py holds these rows to the commands that exist.
 family	scope	verdict	command
-corpus	item	fixtures-report	env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}
+corpus	item	fixtures-report	just fixtures-diff {item}
 corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e
 refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry
 refusals	family	exit:0/1	python3 tools/fern-refusals/fern-refusals.py check
