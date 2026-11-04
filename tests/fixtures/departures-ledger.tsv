@@ -2507,11 +2507,6 @@ docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-ex
 docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	README.md	44	anyof-path-param-schema-example
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	README.md	46	anyof-path-param-schema-example
 docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected	README.md	66	anyof-path-param-schema-example
@@ -3487,6 +3482,11 @@ docs/openapi-surface/probe-expected/format-relative-json-pointer	src/fern/core/c
 docs/openapi-surface/probe-expected/format-relative-json-pointer	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/format-relative-json-pointer	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/format-relative-json-pointer	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/harbor-nullable-inline-object	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/harbor-nullable-inline-object	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/harbor-nullable-inline-object	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/harbor-nullable-inline-object	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/harbor-nullable-inline-object	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/header-allow-reserved	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/header-allow-reserved	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/header-allow-reserved	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

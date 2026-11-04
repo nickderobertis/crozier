@@ -55,6 +55,7 @@ format-ipv6	absent-tree	discards	docs/openapi-surface/probe-expected/format-ipv6
 format-iri	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 format-iri-reference	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri-reference	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 format-relative-json-pointer	absent-tree	discards	docs/openapi-surface/probe-expected/format-relative-json-pointer	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
+harbor-nullable-inline-object	absent-tree	measured	docs/openapi-surface/probe-expected/harbor-nullable-inline-object	—	58a20481c757955214a6a50683a0f006030209ab086eb6fd78007b97507f11c2
 header-allow-reserved	absent-tree	discards	docs/openapi-surface/probe-expected/header-allow-reserved	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 header-array	refusal	refuses	docs/openapi-surface/probe-expected/header-array.fern-refusal.txt	—	a4231021e8b933cf51b6172e64f195e6ec37b6680023a5951d529300c1d58933
 header-deprecated	absent-tree	discards	docs/openapi-surface/probe-expected/header-deprecated	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
