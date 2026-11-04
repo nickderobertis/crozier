@@ -8,6 +8,7 @@ crozier's corpus. No measurement, planner or writer is replaced.
 
 from __future__ import annotations
 
+import ast
 import gzip
 import importlib.util
 import json
@@ -103,6 +104,18 @@ def fixture(root: Path) -> None:
     """The real readers' smallest catalogs, with the coverage document as their template."""
     for name in ("surface-census", "witness-search", "corpus"):
         shutil.copytree(REPO / "tools" / name, root / "tools" / name, ignore=shutil.ignore_patterns("__pycache__"))
+    # The real census checks its Rust readings before selecting an interpreter.
+    # Keep those inputs intact beside the synthetic crate's two compiled functions.
+    census_source = (REPO / "tools/surface-census/openapi-surface-census.py").read_text(encoding="utf-8")
+    pinned_files = {
+        ast.literal_eval(node.args[2]).split("::", 1)[0]
+        for node in ast.walk(ast.parse(census_source))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "PortPin"
+    }
+    for name in pinned_files:
+        target = root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / name, target)
     for name in ("justfile", "rust-toolchain.toml", "scripts/census-python.sh", "assets/scaffolding/metadata.json"):
         target = root / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -255,6 +268,22 @@ def fixture(root: Path) -> None:
     git(root, "config", "merge.conflictStyle", "merge")
     git(root, "config", "rerere.enabled", "false")
     commit(root, "synthetic measurement workspace")
+
+
+def test_composition_tree_passes_port_checks_before_refusing_a_broken_selector(tmp_path: Path) -> None:
+    fixture(tmp_path)
+    (tmp_path / "scripts/census-python.sh").write_text("exit 7\n", encoding="utf-8")
+    result = subprocess.run(
+        ["just", "census-repin", "--jobs", "1"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode != 0
+    assert "interpreter selector scripts/census-python.sh" in result.stderr
+    assert "just bootstrap" in result.stderr
+    assert "Traceback" not in result.stderr
 
 
 def test_real_measurement_carries_persists_merges_and_repins_with_recovery(tmp_path: Path) -> None:
