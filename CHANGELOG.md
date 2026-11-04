@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.157](https://github.com/nickderobertis/crozier/compare/v0.0.156...v0.0.157) - 2026-11-04
+
+### Fixed
+
+- *(parity)* match the certified pair's usage snippets on the handed-off documents ([#750](https://github.com/nickderobertis/crozier/pull/750))
+- *(parity)* match the certified pair's client layout and method naming on the handed-off documents ([#724](https://github.com/nickderobertis/crozier/pull/724))
+
 ## [0.0.156](https://github.com/nickderobertis/crozier/compare/v0.0.155...v0.0.156) - 2026-11-03
 
 ### Fixed
