@@ -2646,19 +2646,25 @@ fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
 }
 
 /// A constructor example matching the header's type. Date fields use Fern's
-/// measured date-example form instead of an invalid string placeholder.
+/// measured date-example form instead of an invalid string placeholder, and a
+/// boolean or numeric one the generator's own placeholder for its type, where
+/// Fern writes a `YOUR_*` string (the `non-string-client-header-example`
+/// departure, measured in
+/// docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
 fn global_header_example(header: &GlobalHeader) -> String {
-    if header.py_type() == HeaderType::Date {
-        format!(
+    match header.py_type() {
+        HeaderType::Date => format!(
             "{}=datetime.date.fromisoformat(\"2023-01-15\")",
             header.py_name
-        )
-    } else {
-        format!(
+        ),
+        HeaderType::Bool => format!("{}=True", header.py_name),
+        HeaderType::Int => format!("{}=1", header.py_name),
+        HeaderType::Float => format!("{}=1.1", header.py_name),
+        HeaderType::Str | HeaderType::List(_) => format!(
             "{}=\"YOUR_{}\"",
             header.py_name,
             header.py_name.to_uppercase()
-        )
+        ),
     }
 }
 
@@ -2674,18 +2680,16 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     format!("{pad}{prefix}(...)")
 }
 
-/// Whether an endpoint can anchor the README's representative calls. Fern skips
-/// referenced file-form declarations here even though their methods may still have
-/// a deliberately argument-free worked example in `reference.md`.
+/// Whether an endpoint can anchor the README's representative calls. A
+/// multipart upload is eligible whether its form is inline or a referenced
+/// component, its file part required or a nullable optional one: the certified
+/// pair demonstrates the first such `POST` (measured in
+/// docs/fern-measurements/handed-off/snippet-rendering/readme-endpoint-choice/).
 fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     endpoint_has_worked_example(ep)
         && !root_binary_download_undocumented(ep)
         && path_object_documented(ep, types, tag_decls)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-        && !matches!(&ep.request_body, Some(RequestBody::Form(form))
-            if ep.body_schema_shape == BodySchemaShape::Ref
-                && form.fields.iter().any(|field| field.is_file)
-                && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
 
 /// The endpoint Fern's README and `reference.md` anchor their worked example on:
@@ -9418,7 +9422,11 @@ impl<'a> ExampleCtx<'a> {
                 .iter()
                 .any(|field| field.spec_required && self.resolves_to_any(&field.type_ref))
             {
-                return Some(self.discriminated_union_value(union, Slot::Plain));
+                return Some(self.discriminated_union_value(
+                    union,
+                    union.members.first(),
+                    Slot::Plain,
+                ));
             }
             let mut matched = union.clone();
             if let Some(index) = matched
@@ -9429,8 +9437,21 @@ impl<'a> ExampleCtx<'a> {
                 let chosen = matched.members.remove(index);
                 matched.members.insert(0, chosen);
             }
-            return Some(self.discriminated_union_value(&matched, Slot::Plain));
+            return Some(self.discriminated_union_value(
+                &matched,
+                matched.members.first(),
+                Slot::Plain,
+            ));
         }
+        Some(self.member_from_values(member, values))
+    }
+
+    /// A union member constructed from an example's `values`, as a model is.
+    fn member_from_values(
+        &mut self,
+        member: &crate::ir::UnionMember,
+        values: &serde_json::Map<String, serde_json::Value>,
+    ) -> Example {
         let fields = member
             .fields
             .iter()
@@ -9452,7 +9473,7 @@ impl<'a> ExampleCtx<'a> {
             .collect();
         self.record_ref(&member.class_name);
         let args = self.example_call_args(fields, values);
-        Some(Example::Call(member.class_name.clone(), args))
+        Example::Call(member.class_name.clone(), args)
     }
 
     /// The keyword arguments of a model constructor built from an example's
@@ -9895,7 +9916,16 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Union(variants) => variants
                 .iter()
                 .any(|variant| self.example_matches_type_through(variant, value, aliases)),
-            TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
+            // A list takes an array whose every item fits its item type: an array
+            // of objects is no `List[str]`, so a union of `List[str]` and
+            // `List[Span]` constructs each `Span` (ro-crate's `FilterRange`
+            // ranges, measured in
+            // docs/fern-measurements/handed-off/snippet-rendering/example-map-of-model-values/).
+            TypeRef::List(inner) | TypeRef::Set(inner) => value.as_array().is_some_and(|items| {
+                items
+                    .iter()
+                    .all(|item| self.example_matches_type_through(inner, item, aliases))
+            }),
             TypeRef::Dict(_, _) => value.is_object(),
             TypeRef::Primitive(Prim::Str | Prim::Bytes | Prim::Datetime | Prim::Date)
             | TypeRef::Literal(_) => value.is_string(),
@@ -9965,6 +9995,119 @@ impl<'a> ExampleCtx<'a> {
             }
             TypeRef::Optional(inner) => self.resolves_to_building(inner),
             TypeRef::Union(variants) => variants.iter().any(|v| self.resolves_to_building(v)),
+            _ => false,
+        }
+    }
+
+    /// A union-typed field of a member built from its component's schema
+    /// example: each value the example gives selects its member by the
+    /// discriminant it carries. That member is built from its own component's
+    /// schema example where it declares one (the measurement's
+    /// `SensorReadingChecksItem_Threshold(limit=80)`), synthesized where its
+    /// component is an object without one (Kong's `TimeRange_Relative`), and
+    /// from the value the example gives where the member is inline, crozier
+    /// hoisting it from a composed variant (Kong's
+    /// `AdvancedFiltersItem_ControlPlane(operator=…, value=[…])`). Without a
+    /// usable example the field is synthesized.
+    fn sourced_union_value(&mut self, t: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        let mut inner = t;
+        loop {
+            inner = match inner {
+                TypeRef::Optional(inner) => inner.as_ref(),
+                TypeRef::Named(name) => match self.find(name) {
+                    Some(TypeDecl::Alias(alias)) => &alias.target,
+                    _ => break,
+                },
+                _ => break,
+            };
+        }
+        let (item_type, listed) = match inner {
+            TypeRef::List(item) | TypeRef::Set(item) => (item.as_ref(), true),
+            other => (other, false),
+        };
+        let union = self.discriminated_union_of(item_type);
+        let value = example.and_then(parse_example_value);
+        let (Some(union), Some(value)) = (union, value) else {
+            return self.value(t, Slot::Named(wire));
+        };
+        let build = |ctx: &mut Self, item: &serde_json::Value| -> Option<Example> {
+            let tag = item.get(&union.discriminant_property)?.as_str()?;
+            let member = union
+                .members
+                .iter()
+                .find(|member| member.discriminant == tag)?;
+            // A member crozier hoisted from a composed variant is named for the
+            // member itself (`AdvancedFiltersItemControlPlane`); it is no
+            // component of the document, so the example's values build it.
+            let hoisted = member
+                .class_name
+                .strip_prefix(&format!("{}_", union.name))
+                .map(|suffix| format!("{}{suffix}", union.name));
+            let source = member
+                .source
+                .as_deref()
+                .filter(|source| hoisted.as_deref() != Some(*source))
+                .map(|source| ctx.find(source));
+            match source {
+                Some(Some(TypeDecl::Object(object))) if !object.example_fields.is_empty() => {
+                    Some(ctx.discriminated_union_value(union, Some(member), Slot::Named(wire)))
+                }
+                // A plain component object without an example of its own is the
+                // tag's member synthesized (Kong's `TimeRange_Relative`).
+                Some(Some(TypeDecl::Object(_))) => {
+                    ctx.value_from_example(item_type, &item.to_string())
+                }
+                _ if member.layout.is_wrapped() => {
+                    ctx.value_from_example(item_type, &item.to_string())
+                }
+                _ => Some(ctx.member_from_values(member, item.as_object()?)),
+            }
+        };
+        if listed {
+            let Some(items) = value.as_array() else {
+                return self.value(t, Slot::Named(wire));
+            };
+            let mut built = Vec::with_capacity(items.len());
+            for item in items {
+                match build(self, item) {
+                    Some(example) => built.push(example),
+                    None => built.push(self.value(item_type, Slot::Named(wire))),
+                }
+            }
+            if self.documentation {
+                Example::ReferenceList(built)
+            } else {
+                Example::ExplicitList(built)
+            }
+        } else {
+            build(self, &value).unwrap_or_else(|| self.value(t, Slot::Named(wire)))
+        }
+    }
+
+    /// The discriminated union `t` names, through aliases.
+    fn discriminated_union_of(&self, t: &TypeRef) -> Option<&'a crate::ir::DiscriminatedUnion> {
+        match t {
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::DiscriminatedUnion(union)) => Some(union),
+                Some(TypeDecl::Alias(a)) => self.discriminated_union_of(&a.target),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Whether a type is, through optionals, lists and aliases, a discriminated
+    /// union (`List[SensorReadingChecksItem]`).
+    fn resolves_to_discriminated_union(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
+                self.resolves_to_discriminated_union(inner)
+            }
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::DiscriminatedUnion(_)) => true,
+                Some(TypeDecl::Alias(a)) => self.resolves_to_discriminated_union(&a.target),
+                _ => false,
+            },
             _ => false,
         }
     }
@@ -10372,14 +10515,16 @@ impl<'a> ExampleCtx<'a> {
         result
     }
 
-    /// A discriminated union's synthesized value: its first member, built from
-    /// that member's required fields.
+    /// A discriminated union's synthesized value: `member` (callers pass its
+    /// first, or the one an example's tag names), built from that member's
+    /// required fields.
     fn discriminated_union_value(
         &mut self,
         u: &crate::ir::DiscriminatedUnion,
+        member: Option<&crate::ir::UnionMember>,
         slot: Slot,
     ) -> Example {
-        match u.members.first() {
+        match member {
             // A wrapper holding a union whole passes its payload as `value`,
             // the one argument Fern's docstring writer leaves without a
             // trailing comma (the hand-written `tidepool-survey-log`
@@ -10418,20 +10563,56 @@ impl<'a> ExampleCtx<'a> {
                                 && !is_any_type(&f.type_ref)
                                 && (f.example.is_some() || documentation))
                 };
+                // A member flattened from a component whose schema declares an
+                // `example` is built from that example, every field it names
+                // included; a union-typed field is still synthesized, so a nested
+                // union item takes its own variant's example in turn (Kong's
+                // `ChartTileDefinitionQuery_ApiUsage`, measured as
+                // `PanelReading_Sensors` in
+                // docs/fern-measurements/handed-off/snippet-rendering/request-example-union-variant-fields/).
+                let source_example =
+                    m.source
+                        .as_deref()
+                        .and_then(|source| match self.find(source) {
+                            Some(TypeDecl::Object(object))
+                                if !fallback && !object.example_fields.is_empty() =>
+                            {
+                                Some(object)
+                            }
+                            _ => None,
+                        });
+                let from_source = |f: &Field| {
+                    source_example.and_then(|object| {
+                        object
+                            .example_fields
+                            .contains(&f.wire_name)
+                            .then(|| {
+                                object
+                                    .fields
+                                    .iter()
+                                    .find(|own| own.wire_name == f.wire_name)
+                            })
+                            .flatten()
+                            .filter(|own| !own.deprecated)
+                            .map(|own| own.example.clone())
+                    })
+                };
                 let mut args = Vec::new();
-                for (py_name, wire_name, ty, example, empty_only, null, lengths) in m
+                for (py_name, wire_name, ty, example, empty_only, null, lengths, sourced) in m
                     .fields
                     .iter()
-                    .filter(|f| shown(f))
+                    .filter(|f| shown(f) || from_source(f).is_some())
                     .map(|f| {
+                        let sourced = from_source(f);
                         (
                             f.py_name.clone(),
                             f.wire_name.clone(),
                             f.type_ref.clone(),
-                            f.example.clone(),
+                            sourced.clone().unwrap_or_else(|| f.example.clone()),
                             f.admits_only_empty_object,
-                            f.optional && f.example.is_none(),
+                            f.optional && f.example.is_none() && sourced.is_none(),
                             (f.min_length, f.max_length),
+                            sourced.is_some(),
                         )
                     })
                     .collect::<Vec<_>>()
@@ -10440,6 +10621,15 @@ impl<'a> ExampleCtx<'a> {
                         Example::Atom("None".to_string())
                     } else if empty_only {
                         self.empty_object()
+                    } else if sourced && self.resolves_to_discriminated_union(&ty) {
+                        self.sourced_union_value(&ty, &wire_name, example.as_deref())
+                    } else if let Some(value) = example
+                        .as_deref()
+                        .filter(|_| sourced)
+                        .and_then(|example| self.value_from_example(&ty, example))
+                    {
+                        // An enum the example names is that member (`Window.DAILY`).
+                        value
                     } else {
                         self.field_example(&ty, &wire_name, example.as_deref(), lengths)
                     };
@@ -10527,13 +10717,34 @@ impl<'a> ExampleCtx<'a> {
                         && !fallback
                         && (field.example.is_some() || documentation)
                 };
-                let args = fields
+                // An optional list of a model already being built is cut to `[]`
+                // by the recursion break; the certified pair leaves such a field
+                // out even where the schema-level example names it (payload's
+                // recursive `Where.or`, measured as `Criteria.any_of` in
+                // docs/fern-measurements/handed-off/snippet-rendering/example-empty-array-field/).
+                let recursion_cut = |ctx: &Self, field: &ExampleField| {
+                    field.requirement == Requirement::Optional
+                        && matches!(
+                            match &field.type_ref {
+                                TypeRef::Optional(inner) => inner.as_ref(),
+                                other => other,
+                            },
+                            TypeRef::List(inner) | TypeRef::Set(inner)
+                                if ctx.resolves_to_building(inner)
+                        )
+                };
+                let shown: Vec<ExampleField> = fields
                     .into_iter()
                     .filter(|field| {
                         field.requirement == Requirement::Required
                             || nullable_shown(field)
-                            || field.parent_example && !field.deprecated
+                            || field.parent_example
+                                && !field.deprecated
+                                && !recursion_cut(self, field)
                     })
+                    .collect();
+                let args = shown
+                    .into_iter()
                     .map(|field| {
                         if is_any_type(&field.type_ref) {
                             self.untyped_arguments.insert(field.py_name.clone());
@@ -10595,7 +10806,9 @@ impl<'a> ExampleCtx<'a> {
                     None => Example::Atom("None".to_string()),
                 }
             }
-            Some(TypeDecl::DiscriminatedUnion(u)) => self.discriminated_union_value(u, slot),
+            Some(TypeDecl::DiscriminatedUnion(u)) => {
+                self.discriminated_union_value(u, u.members.first(), slot)
+            }
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
@@ -11503,9 +11716,18 @@ fn build_example_inner(
                         {
                             // A complete schema example keeps nested empty objects;
                             // pruning unknown properties applies to media examples.
+                            // The Markdown writers print each top-level value on
+                            // its own line, unwrapped whatever its width, as a
+                            // media example's are (measured in
+                            // docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
                             serde_json::from_str(example).ok().map(|value| {
                                 match (documentation, example_from_json_as(value, !documentation)) {
-                                    (true, Example::Dict(pairs)) => Example::ReferenceDict(pairs),
+                                    (true, Example::Dict(pairs)) => Example::ReferenceDict(
+                                        pairs
+                                            .into_iter()
+                                            .map(|(key, value)| (key, Example::Atom(value.flat())))
+                                            .collect(),
+                                    ),
                                     (_, rendered) => rendered,
                                 }
                             })
@@ -11522,6 +11744,14 @@ fn build_example_inner(
                 if let Example::DocDict(pairs) = v {
                     v = Example::ReferenceDict(pairs);
                 }
+            }
+            // A body typed by an alias of the unknown type keeps Fern's
+            // `{"key": "value"}` placeholder on one line in the README, as an
+            // unknown field does and as `reference.md` writes it; a map body's
+            // placeholder is wrapped (measured in
+            // docs/fern-measurements/handed-off/snippet-rendering/map-body-placeholder-layout/).
+            if ctx.resolves_to_any(&s.type_ref) {
+                ctx.untyped_arguments.insert("request".to_string());
             }
             // The JSON binary example must have its generated bytes type. The
             // matched method still passes the value directly to `json=`.
@@ -12272,8 +12502,15 @@ fn documentation_client_example_args(
         .chain(
             global_headers
                 .iter()
-                // Nor does it pass an array header, required or not.
-                .filter(|header| header.required() && !header.py_type().is_list())
+                // Nor does it pass an array header, required or not, nor a
+                // boolean or numeric one: its `<wire name>` placeholder is a
+                // string, and the certified pair leaves such a header out of
+                // the construction (measured in
+                // docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
+                .filter(|header| {
+                    header.required()
+                        && matches!(header.py_type(), HeaderType::Str | HeaderType::Date)
+                })
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
         .fold(Vec::new(), |mut args: Vec<String>, arg| {
@@ -12516,8 +12753,24 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // `get_guild_widget_png` documents `guild_id="guild_id"` although its
     // `SnowflakeType` is `^(0|[1-9][0-9]*)$` (measured at fern-python-sdk 5.41.3;
     // 5.20.0 dropped the whole example).
+    // A multipart upload whose media declares an example is an opaque HTTP
+    // transcript to Fern, and gets no worked example, except where the form's
+    // only part is an optional file: the certified pair works that call, the
+    // file placeholder in `reference.md` and no file in the docstring (measured
+    // in docs/fern-measurements/handed-off/snippet-rendering/example-presence/).
     let opaque_multipart_example = ep.body_media_has_example
-        && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
+        && matches!(&ep.request_body, Some(RequestBody::Form(form))
+            if form.fields.iter().any(|field| field.is_file)
+                && !matches!(form.fields.as_slice(), [only] if only.is_file && only.optional));
+    // A multipart upload with a required file part that answers `text/plain`,
+    // a string or `format: byte`, gets no worked example from the certified
+    // pair, and `reference.md` writes the bare `client.<group>.<method>(...)`;
+    // the same upload answering JSON keeps one (measured in
+    // docs/fern-measurements/handed-off/snippet-rendering/example-presence/ and
+    // byte-text-response-reference-snippet/).
+    let required_file_text_upload = ep.text_response
+        && matches!(&ep.request_body, Some(RequestBody::Form(form))
+            if form.fields.iter().any(|field| field.is_file && !field.optional));
     // A list-typed path parameter beside a request body defeats Fern's example
     // generator: it renders every path parameter as a plain string, which the
     // list type rejects once a body makes the wrapper validate, so the endpoint
@@ -12547,8 +12800,13 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // lone `200` of `application/octet-stream` and its golden has no example.
     let binary_download_without_errors =
         ep.binary_response && ep.importer_example_missing && ep.errors.is_empty();
-    !(ep.binary_response && binary_get_has_no_required_args
+    // An argument-less binary `GET` declaring an error response is worked from
+    // that error's example, as the comment above has it for an importer-declined
+    // download (measured as `get_contact_sheet` in
+    // docs/fern-measurements/handed-off/snippet-rendering/example-presence/).
+    !(ep.binary_response && binary_get_has_no_required_args && ep.errors.is_empty()
         || binary_download_without_errors
+        || required_file_text_upload
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -20338,5 +20596,272 @@ mod document_acceptance_tests {
         assert!(raw
             .contents
             .contains("f\"firings/{encode_path_param(firing_id)}\","));
+    }
+}
+
+#[cfg(test)]
+mod snippet_rendering_tests {
+    //! Each snippet-rendering repair driven over its measurement document under
+    //! `docs/fern-measurements/handed-off/snippet-rendering/`: the IR the real
+    //! document builds, the touched function's verdict on it, and the README and
+    //! `reference.md` lines a user reads.
+
+    use crate::ir::Ir;
+
+    fn ir(case: &str) -> Ir {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/handed-off/snippet-rendering")
+            .join(case)
+            .join("openapi.yml");
+        let doc = crate::openapi::load(&path).expect("the measurement document loads");
+        let config = crate::config::GenerateConfig::new(
+            path,
+            std::path::PathBuf::from("out"),
+            Some("fern".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .expect("the config is well formed");
+        crate::ir::build(&doc, &config)
+    }
+
+    fn file(ir: &Ir, name: &str) -> String {
+        super::generate(ir)
+            .expect("the document generates")
+            .into_iter()
+            .find(|file| file.path.to_string_lossy().replace('\\', "/") == name)
+            .unwrap_or_else(|| panic!("no {name}"))
+            .contents
+    }
+
+    fn endpoint<'a>(ir: &'a Ir, method: &str) -> &'a crate::ir::Endpoint {
+        ir.endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == method)
+            .unwrap_or_else(|| panic!("no {method}"))
+    }
+
+    fn assert_contains(text: &str, wanted: &str) {
+        assert!(text.contains(wanted), "missing {wanted:?} in:\n{text}");
+    }
+
+    #[test]
+    fn markdown_constructions_pass_only_the_string_client_headers() {
+        let ir = ir("snippet-rendering");
+        assert_eq!(
+            super::documentation_client_example_args(
+                &ir.auth,
+                &ir.global_headers,
+                &ir.client_path_parameters
+            ),
+            ["tenant_code=\"<X-Tenant-Code>\""]
+        );
+        for name in ["README.md", "reference.md"] {
+            let text = file(&ir, name);
+            assert_contains(&text, "    tenant_code=\"<X-Tenant-Code>\",\n");
+            assert!(!text.contains("strict_mode=\"<"), "{text}");
+            assert!(!text.contains("shift_number=\"<"), "{text}");
+        }
+    }
+
+    #[test]
+    fn docstring_constructions_give_each_client_header_its_declared_type() {
+        let ir = ir("snippet-rendering");
+        let examples: Vec<String> = ir
+            .global_headers
+            .iter()
+            .map(super::global_header_example)
+            .collect();
+        assert_eq!(
+            examples,
+            [
+                "strict_mode=True",
+                "tenant_code=\"YOUR_TENANT_CODE\"",
+                "shift_number=1",
+                "tide_metres=1.1"
+            ]
+        );
+        let client = file(&ir, "src/fern/client.py");
+        assert_contains(
+            &client,
+            "    client = FernApi(\n        strict_mode=True,\n        tenant_code=\"YOUR_TENANT_CODE\",\n        shift_number=1,\n        tide_metres=1.1,\n",
+        );
+        assert!(!client.contains("YOUR_STRICT_MODE"), "{client}");
+    }
+
+    #[test]
+    fn a_free_form_body_schema_example_keeps_each_top_level_value_on_one_line() {
+        let ir = ir("snippet-rendering");
+        for name in ["README.md", "reference.md"] {
+            let text = file(&ir, name);
+            assert_contains(
+                &text,
+                "        \"vessel\": {\"name\": \"Aurora Borealis of the Northern Fjords\", \"flag\": \"Norway\"},\n        \"cargo\": [{\"code\": \"C-100\", \"weight\": 12}, {\"code\": \"C-200\", \"weight\": 7}],\n        \"draft\": 8.5\n",
+            );
+        }
+    }
+
+    #[test]
+    fn the_readme_demonstrates_the_first_post_even_when_it_uploads_a_referenced_file_form() {
+        let ir = ir("readme-endpoint-choice");
+        let upload = endpoint(&ir, "record_firing");
+        assert!(super::readme_endpoint_eligible(
+            upload,
+            &ir.types,
+            &ir.tag_types
+        ));
+        assert_eq!(
+            super::readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("record_firing")
+        );
+        assert_contains(
+            &file(&ir, "README.md"),
+            "client.kilns.record_firing(\n    controller_log=\"example_controller_log\",\n    kiln=\"kiln\",\n)\n",
+        );
+    }
+
+    #[test]
+    fn worked_example_presence_follows_the_download_and_upload_shapes() {
+        let presence = ir("example-presence");
+        let byte_text = ir("byte-text-response-reference-snippet");
+        for (ir, method, worked) in [
+            (&presence, "get_contact_sheet", true),
+            (&presence, "get_archive", false),
+            (&presence, "replace_scan", true),
+            (&presence, "upload_negative", true),
+            (&presence, "add_proof", true),
+            (&presence, "flash_enlarger", false),
+            (&byte_text, "develop_reel", false),
+            (&byte_text, "annotate_reel", false),
+            (&byte_text, "get_reel_log", true),
+        ] {
+            assert_eq!(
+                super::endpoint_has_worked_example(endpoint(ir, method)),
+                worked,
+                "{method}"
+            );
+        }
+        let reference = file(&presence, "reference.md");
+        assert_contains(&reference, "\nclient.darkroom.get_contact_sheet()\n\n```");
+        assert_contains(
+            &reference,
+            "client.darkroom.replace_scan(\n    print_id=\"printId\",\n    scan=\"example_scan\",\n)\n",
+        );
+        assert_contains(
+            &reference,
+            "```python\nclient.darkroom.flash_enlarger(...)\n```",
+        );
+        assert_contains(
+            &file(&byte_text, "reference.md"),
+            "```python\nclient.reels.develop_reel(...)\n```",
+        );
+        let client = file(&presence, "src/fern/darkroom/client.py");
+        assert_contains(
+            &client,
+            "client.darkroom.replace_scan(\n            print_id=\"printId\",\n        )",
+        );
+    }
+
+    #[test]
+    fn an_optional_list_the_recursion_break_empties_leaves_the_model_call() {
+        let ir = ir("example-empty-array-field");
+        let reference = file(&ir, "reference.md");
+        assert_contains(&reference, "    criteria=Criteria(),\n");
+        assert!(!reference.contains("any_of=[]"), "{reference}");
+        // An explicit `[]` in a request example still takes the placeholder.
+        assert_contains(
+            &reference,
+            "        glazes=[\n            \"glazes\"\n        ],\n",
+        );
+    }
+
+    #[test]
+    fn a_union_alternative_list_takes_an_array_only_when_every_item_fits() {
+        let ir = ir("example-map-of-model-values");
+        let reference = file(&ir, "reference.md");
+        assert_contains(&reference, "from fern import FernApi, Span\n");
+        assert_contains(
+            &reference,
+            "        \"sealed\": [\n            Span(\n                from_=\"1921-01-01\",\n                to=\"1921-12-31\",\n            ),\n",
+        );
+        assert_contains(
+            &reference,
+            "        \"language\": [\n            \"Welsh\"\n        ],\n",
+        );
+        assert!(!reference.contains("{\"from\":"), "{reference}");
+    }
+
+    #[test]
+    fn a_union_member_is_built_from_its_components_schema_example() {
+        let ir = ir("request-example-union-variant-fields");
+        let reference = file(&ir, "reference.md");
+        assert_contains(
+            &reference,
+            "from fern import FernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingAlertsItem_Vent, AlertOperator, SensorReadingSeason_Autumn, AutumnSeasonPhase, SensorReadingChecksItem_Threshold\n",
+        );
+        assert_contains(
+            &reference,
+            "        reading=PanelReading_Sensors(\n            channels=[\n                SensorReadingChannelsItem.AIR_TEMPERATURE,\n                SensorReadingChannelsItem.HUMIDITY\n            ],\n            window=Window.DAILY,\n",
+        );
+        // The nested check is the threshold variant's own example, not the value
+        // the reading's example gives it.
+        assert_contains(
+            &reference,
+            "                SensorReadingChecksItem_Threshold(\n                    limit=80,\n",
+        );
+        // A member hoisted from a composed variant is built from the values the
+        // example gives it, the tag choosing the member.
+        assert_contains(
+            &reference,
+            "            alerts=[\n                SensorReadingAlertsItem_Vent(\n                    operator=AlertOperator.ABOVE,\n                    levels=[\n                        \"high\",\n                        \"critical\"\n                    ],\n                )\n            ],\n",
+        );
+        // A plain component without an example of its own is the tag's member,
+        // synthesized: `phase` is its placeholder, not the example's `late`.
+        assert_contains(
+            &reference,
+            "            season=SensorReadingSeason_Autumn(\n                phase=AutumnSeasonPhase.EARLY,\n            ),\n",
+        );
+    }
+
+    #[test]
+    fn an_invalid_union_list_item_is_synthesized_without_discarding_valid_items() {
+        let mut ir = ir("request-example-union-variant-fields");
+        let object = ir
+            .types
+            .iter_mut()
+            .find_map(|decl| match decl {
+                crate::ir::TypeDecl::Object(object) if object.name == "SensorReading" => {
+                    Some(object)
+                }
+                _ => None,
+            })
+            .expect("source component");
+        let alerts = object
+            .fields
+            .iter_mut()
+            .find(|field| field.wire_name == "alerts")
+            .expect("union list field");
+        alerts.example =
+            Some(r#"[{"target":"vent","operator":"above","levels":["high"]},42]"#.into());
+        let reference = file(&ir, "reference.md");
+        assert_contains(&reference, "SensorReadingAlertsItem_Bench(");
+        assert_contains(&reference, "SensorReadingAlertsItem_Vent(");
+        assert_contains(&reference, "operator=AlertOperator.ABOVE,");
+        assert_contains(&reference, "operator=AlertOperator.BELOW,");
+    }
+
+    #[test]
+    fn an_unknown_typed_body_placeholder_stays_on_one_line_in_the_readme() {
+        let ir = ir("map-body-placeholder-layout");
+        assert_contains(
+            &file(&ir, "README.md"),
+            "client.varieties.register_variety(\n    request={\"key\": \"value\"},\n)\n",
+        );
+        assert_contains(
+            &file(&ir, "reference.md"),
+            "    request={\n        \"key\": \"value\"\n    },\n",
+        );
     }
 }

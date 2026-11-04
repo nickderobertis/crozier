@@ -66,6 +66,24 @@
     instead, so the caller's body value never reaches its documented body key.
   evidence: docs/departures/evidence/body-query-parameter-value.md
 
+- id: bracket-query-parameter-call-keyword
+  kind: fern-defect
+  trigger: >-
+    A query parameter whose wire name ends in [], passed in a README or
+    reference.md worked call.
+  fern: >-
+    The call passes the argument as <name>_array=, a keyword the generated
+    sync and async methods do not declare; their argument is <name>.
+  crozier: >-
+    The same call with the generated method's own <name>= keyword, every other
+    byte of the line unchanged; reference.md's parameter list and the method
+    signature stay matched.
+  reason: >-
+    Binding the documented call to the actual certified methods raises
+    TypeError for an unexpected keyword argument. The corrected keyword binds
+    and sends the values under the [] wire name.
+  evidence: docs/departures/evidence/bracket-query-parameter-call-keyword.md
+
 - id: closed-empty-object-example
   kind: fern-defect
   trigger: >-
@@ -453,6 +471,25 @@
     declares. Runtime schema validation demonstrates the serialization failure
     and the rejection of a valid provider response in both Pydantic majors.
   evidence: docs/departures/evidence/nested-discriminator-flat-wire.md
+
+- id: non-string-client-header-example
+  kind: fern-defect
+  trigger: >-
+    A promoted client header the document declares boolean, integer or number,
+    in the client construction of a client.py docstring example.
+  fern: >-
+    The constructor receives the YOUR_<NAME> string placeholder its string
+    headers take, despite the header's bool, int or float annotation.
+  crozier: >-
+    The constructor receives the generator's own placeholder for the declared
+    type (True, 1 or 1.1); string headers keep their YOUR_<NAME> placeholder
+    and the README and reference.md constructions stay matched.
+  reason: >-
+    A YOUR_* placeholder for a non-string type is a standing Fern defect: the
+    certified constructor's annotations reject the string under strict
+    validation, and the client sends it as the header's value. The typed
+    placeholder validates and is sent as the declared value.
+  evidence: docs/departures/evidence/non-string-client-header-example.md
 
 - id: nullable-items-docs
   kind: fern-defect

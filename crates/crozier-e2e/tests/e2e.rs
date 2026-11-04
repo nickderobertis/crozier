@@ -74,6 +74,12 @@ mod naming_wire;
 /// held whole in both enum modes, with the values a design-review ruling keeps.
 #[path = "e2e/handed_off_example_values.rs"]
 mod handed_off_example_values;
+/// The usage-snippet causes the fixture-only witness searches handed off —
+/// how a worked call is written and whether one is written at all — measured
+/// under `docs/fern-measurements/handed-off/snippet-rendering/` and held whole
+/// in both enum modes, with the Fern defects catalogued in their place.
+#[path = "e2e/handed_off_snippet_rendering.rs"]
+mod handed_off_snippet_rendering;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
@@ -915,6 +921,13 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     let mut add = |golden: String, compared: departures_ledger::ComparedGolden| {
         inventory.goldens.insert(golden, compared);
     };
+    add(
+        format!(
+            "{}/request-example-union-variant-fields/unusable-list/fern-expected",
+            handed_off_snippet_rendering::AREA_DIR
+        ),
+        departures_ledger::ComparedGolden::default(),
+    );
     for corpus in registered_diff_corpora() {
         let golden = format!("tests/fixtures/{}/expected", corpus.api);
         if root.join(&golden).is_dir() {
@@ -1003,6 +1016,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
+        (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
         (
             client_structure::CLIENT_STRUCTURE_DIR,
@@ -1070,6 +1084,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             golden,
             departures_ledger::ComparedGolden {
                 excluded: vec![handed_off_example_values::MANIFEST.to_string()],
+                carve_outs: Default::default(),
+            },
+        );
+    }
+    for golden in handed_off_snippet_rendering::compared_overlays() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded: vec![handed_off_snippet_rendering::MANIFEST.to_string()],
                 carve_outs: Default::default(),
             },
         );

@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Kiln Log
+  version: 1.0.0
+  description: A pottery studio's kiln log, written to measure which operation the README demonstrates when the first POST uploads a file.
+servers:
+  - url: https://kilns.studio.example
+paths:
+  /kilns:
+    get:
+      operationId: listKilns
+      tags: [kilns]
+      summary: List kilns
+      parameters:
+        - name: site
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The kilns at the site.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Kiln'
+  /kilns/firings:
+    post:
+      operationId: recordFiring
+      tags: [kilns]
+      summary: Record a firing from its controller log
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FiringUpload'
+      responses:
+        '201':
+          description: The recorded firing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firing'
+  /kilns/glazes:
+    post:
+      operationId: addGlaze
+      tags: [kilns]
+      summary: Add a glaze recipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                cone:
+                  type: integer
+      responses:
+        '201':
+          description: The added glaze.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firing'
+components:
+  schemas:
+    FiringUpload:
+      type: object
+      required: [controller_log, kiln]
+      properties:
+        controller_log:
+          type: string
+          format: binary
+        kiln:
+          type: string
+    Kiln:
+      type: object
+      properties:
+        name:
+          type: string
+    Firing:
+      type: object
+      properties:
+        id:
+          type: string

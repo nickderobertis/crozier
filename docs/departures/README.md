@@ -196,7 +196,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 28 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 30 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -230,6 +230,15 @@ when the two differ.
 - **crozier writes:** The renamed body argument as the JSON property's value, retaining the signature, query mapping, converter annotation and every other statement.
 - **Why:** The method accepts a distinct body argument but sends the query argument instead, so the caller's body value never reaches its documented body key.
 - **Evidence:** [`docs/departures/evidence/body-query-parameter-value.md`](../../docs/departures/evidence/body-query-parameter-value.md)
+
+### `bracket-query-parameter-call-keyword`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A query parameter whose wire name ends in [], passed in a README or reference.md worked call.
+- **Fern writes:** The call passes the argument as <name>_array=, a keyword the generated sync and async methods do not declare; their argument is <name>.
+- **crozier writes:** The same call with the generated method's own <name>= keyword, every other byte of the line unchanged; reference.md's parameter list and the method signature stay matched.
+- **Why:** Binding the documented call to the actual certified methods raises TypeError for an unexpected keyword argument. The corrected keyword binds and sends the values under the [] wire name.
+- **Evidence:** [`docs/departures/evidence/bracket-query-parameter-call-keyword.md`](../../docs/departures/evidence/bracket-query-parameter-call-keyword.md)
 
 ### `closed-empty-object-example`
 
@@ -401,6 +410,15 @@ when the two differ.
 - **crozier writes:** Retains Fern's public classes, fields and value constructors, flattens the wire payload and parses flat responses under Pydantic v1 and v2. Worked examples construct the inner variant through value.
 - **Why:** The certified SDK cannot exchange the payload its own OpenAPI document declares. Runtime schema validation demonstrates the serialization failure and the rejection of a valid provider response in both Pydantic majors.
 - **Evidence:** [`docs/departures/evidence/nested-discriminator-flat-wire.md`](../../docs/departures/evidence/nested-discriminator-flat-wire.md)
+
+### `non-string-client-header-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A promoted client header the document declares boolean, integer or number, in the client construction of a client.py docstring example.
+- **Fern writes:** The constructor receives the YOUR_<NAME> string placeholder its string headers take, despite the header's bool, int or float annotation.
+- **crozier writes:** The constructor receives the generator's own placeholder for the declared type (True, 1 or 1.1); string headers keep their YOUR_<NAME> placeholder and the README and reference.md constructions stay matched.
+- **Why:** A YOUR_* placeholder for a non-string type is a standing Fern defect: the certified constructor's annotations reject the string under strict validation, and the client sends it as the header's value. The typed placeholder validates and is sent as the declared value.
+- **Evidence:** [`docs/departures/evidence/non-string-client-header-example.md`](../../docs/departures/evidence/non-string-client-header-example.md)
 
 ### `nullable-items-docs`
 

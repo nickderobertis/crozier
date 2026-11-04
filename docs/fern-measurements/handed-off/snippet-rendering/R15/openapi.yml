@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: Portrait Gallery
+  version: 1.0.0
+  description: A members' portrait gallery, written to measure the reference.md usage of binary downloads with and without a declared error.
+servers:
+  - url: https://gallery.example
+paths:
+  /portraits/{memberId}/{size}:
+    get:
+      operationId: getPortrait
+      tags: [portraits]
+      summary: Download a member's portrait
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The portrait.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /portraits/{memberId}/{size}/sepia:
+    get:
+      operationId: getSepiaPortrait
+      tags: [portraits]
+      summary: Download a member's sepia portrait
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The portrait.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+  /portraits/{memberId}/thumbnail:
+    get:
+      operationId: getThumbnail
+      tags: [portraits]
+      summary: Download a member's thumbnail
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The thumbnail.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No such member.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string

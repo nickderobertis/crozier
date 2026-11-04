@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: Loom Patterns
+  version: 1.0.0
+  description: A weaving guild's pattern store, written to measure the worked call of a JSON request body whose schema is a binary string.
+servers:
+  - url: https://looms.example
+paths:
+  /patterns/{patternId}/draft:
+    put:
+      operationId: replaceDraft
+      tags: [patterns]
+      summary: Replace a pattern's draft document
+      parameters:
+        - name: patternId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: The draft document's raw bytes.
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+          text/plain:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Replaced.
+  /patterns/{patternId}/chart:
+    put:
+      operationId: replaceChart
+      tags: [patterns]
+      summary: Replace a pattern's chart
+      parameters:
+        - name: patternId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Replaced.

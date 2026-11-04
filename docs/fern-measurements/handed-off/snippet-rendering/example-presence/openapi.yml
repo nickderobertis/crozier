@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: Darkroom
+  version: 1.0.0
+  description: A photo lab's darkroom service, written to measure which binary and file-upload operations get a worked usage example.
+servers:
+  - url: https://darkroom.lab.example
+paths:
+  /contact-sheet:
+    get:
+      operationId: getContactSheet
+      tags: [darkroom]
+      summary: Download today's contact sheet
+      responses:
+        '200':
+          description: The contact sheet.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No sheet has been printed today.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /archive:
+    get:
+      operationId: getArchive
+      tags: [darkroom]
+      summary: Download the whole archive
+      responses:
+        '200':
+          description: The archive.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /prints/{printId}/scan:
+    put:
+      operationId: replaceScan
+      tags: [darkroom]
+      summary: Replace a print's scan
+      parameters:
+        - name: printId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                scan:
+                  type: string
+                  format: binary
+                  description: The scanned image.
+            examples:
+              Scan:
+                value:
+                  scan: <scanned image>
+      responses:
+        '200':
+          description: The print.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Print'
+        '400':
+          description: The scan is unreadable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /prints/uploads:
+    post:
+      operationId: uploadNegative
+      tags: [darkroom]
+      summary: Upload a negative
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [negative]
+              properties:
+                negative:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: The print made from it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Print'
+        '400':
+          description: The negative is unreadable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /prints/{printId}/proofs:
+    post:
+      operationId: addProof
+      tags: [darkroom]
+      summary: Add a proof to a print
+      parameters:
+        - name: printId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [proof]
+              properties:
+                proof:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: The print.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Print'
+        '400':
+          description: The proof is unreadable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /enlarger/firmware:
+    post:
+      operationId: flashEnlarger
+      tags: [darkroom]
+      summary: Flash the enlarger's firmware
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: The enlarger restarts after flashing.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: The image is rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        message:
+          type: string
+    Print:
+      type: object
+      properties:
+        id:
+          type: string

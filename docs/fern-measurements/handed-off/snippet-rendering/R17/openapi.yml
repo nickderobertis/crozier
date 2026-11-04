@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Market Stalls
+  version: 1.0.0
+  description: A farmers' market stall registry, written to measure the order of a worked call's arguments when an optional query parameter is declared before a required one.
+servers:
+  - url: https://stalls.market.example
+paths:
+  /stalls/availability:
+    get:
+      operationId: checkAvailability
+      tags: [stalls]
+      summary: Check a stall's availability
+      parameters:
+        - name: market
+          in: query
+          required: false
+          description: The market's short name.
+          schema:
+            type: string
+          example: riverside
+        - name: row
+          in: query
+          required: true
+          description: The stall row.
+          schema:
+            type: string
+          example: B
+        - name: week
+          in: query
+          required: false
+          schema:
+            type: integer
+          example: 14
+        - name: stall
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 12
+      responses:
+        '200':
+          description: The stall's availability.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  free:
+                    type: boolean

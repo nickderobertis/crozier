@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  title: Harbor Ledger
+  version: 1.0.0
+  description: A port authority's berth and manifest ledger, written to measure how worked calls are rendered in the README and reference.md.
+servers:
+  - url: https://ledger.harbor.example/v1
+paths:
+  /manifests:
+    post:
+      operationId: fileManifest
+      tags: [manifests]
+      summary: File a manifest
+      parameters:
+        - $ref: '#/components/parameters/StrictMode'
+        - $ref: '#/components/parameters/TenantCode'
+        - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                vessel:
+                  name: Aurora Borealis of the Northern Fjords
+                  flag: Norway
+                cargo:
+                  - code: C-100
+                    weight: 12
+                  - code: C-200
+                    weight: 7
+                draft: 8.5
+      responses:
+        '200':
+          description: The filed manifest's receipt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+  /berths:
+    get:
+      operationId: listBerths
+      tags: [berths]
+      summary: List berths
+      parameters:
+        - $ref: '#/components/parameters/StrictMode'
+        - $ref: '#/components/parameters/TenantCode'
+        - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
+        - name: zone
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: codes[]
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: The berths in the zone.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Berth'
+    delete:
+      operationId: releaseBerths
+      tags: [berths]
+      summary: Release berths
+      parameters:
+        - $ref: '#/components/parameters/StrictMode'
+        - $ref: '#/components/parameters/TenantCode'
+        - $ref: '#/components/parameters/ShiftNumber'
+        - $ref: '#/components/parameters/TideMetres'
+        - name: ids[]
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+          example:
+            - B-7
+      responses:
+        '204':
+          description: Released.
+components:
+  parameters:
+    StrictMode:
+      name: X-Strict-Mode
+      in: header
+      required: true
+      description: Must be true for the ledger to accept the request.
+      schema:
+        type: boolean
+        default: true
+    TenantCode:
+      name: X-Tenant-Code
+      in: header
+      required: true
+      description: The port's tenant code.
+      schema:
+        type: string
+    ShiftNumber:
+      name: X-Shift-Number
+      in: header
+      required: true
+      description: The harbour shift the request is filed under.
+      schema:
+        type: integer
+    TideMetres:
+      name: X-Tide-Metres
+      in: header
+      required: true
+      description: The tide height the request is filed against, in metres.
+      schema:
+        type: number
+  schemas:
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string
+    Berth:
+      type: object
+      properties:
+        code:
+          type: string
+        zone:
+          type: string

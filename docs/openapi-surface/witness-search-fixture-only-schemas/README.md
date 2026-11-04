@@ -420,6 +420,17 @@ Every difference met while screening, none repaired: crozier's output is unchang
 - <a id="vendor-json-media-first-content-type"></a>`vendor-json-media-first-content-type`: A request body whose first media type is a vendor JSON range (`application/*+json`) before `application/json`: crozier sends an explicit `content-type: application/json` header, Fern sends none.
 - <a id="yaml-timestamp-parameter-example"></a>`yaml-timestamp-parameter-example`: A parameter `example` that YAML reads as a timestamp (an unquoted ISO date-time): Fern treats it as no example, writing its placeholder or leaving an optional parameter out of the snippet; crozier writes the timestamp.
 
+### Further causes on re-comparison
+
+The table above names one cause per document, the cause of its first differing line. Four of its documents were re-compared on the parity-snippet-rendering branch after their listed cause was repaired, and they still differ through causes another record names. Those causes are listed here so this record no longer implies the listed cause is each document's only one. Proposed names that no record defines yet are drafted follow-ups, not root causes of this record. The per-file attribution is `docs/fern-measurements/handed-off/snippet-rendering/README.md`.
+
+- `revertinc/revert:packages/backend/oas/openapi.yml`: bodies-paths' `reference-body-param-doc`, `orphan-type-emission` and `request-content-type-header`.
+- `Kong/developer.konghq.com:api-specs/konnect/analytics-dashboards/v2/openapi.yaml`: bodies-paths' `allof-description-wrapper` (its example half).
+- `jentic/jentic-public-apis:apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json`: bodies-paths' `request-content-type-header`.
+- `crate-works/ro-crate-api:openapi.yaml`: operations-extensions' `R11`, whose measured rule this document's `$ref`-item form contradicts.
+
+The hathora document and both agentic-commerce copies differ only through proposed names that no record defines.
+
 ## GitHub code search
 
 101 code-search requests (`GET /search/code`, through the guard), 92 answered and 9 refused by GitHub (8 `http-408`, 1 `http-503`); a refused page was retried once. [`code-search.tsv`](code-search.tsv) lists every request (target, query, page, outcome, total result count, results returned) and then every result: its repository, path, commit, blob, whether it was already in a population read, a repeat, newly acquired (with its SHA-256) or not fetchable, and the targets its detectors found it declaring. Results from the Fern project's own repository are not listed. Each of those queries read one to three pages of 100; a query whose total exceeds what was read leaves its target `quota-bounded` for the rest. This dispatch added 20 more, all answered, for the one arm target with no admissible declarer ([below](#the-anyof-array-variant-inline-enum-item-code-search)), so `code-search.tsv` holds 121 requests.
