@@ -1,0 +1,48 @@
+{
+  "name": "gate-timing",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript"
+  ],
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/tools/ci/gate-timing.mjs"
+    ],
+    "production": [
+      "{projectRoot}/core.mjs",
+      "{workspaceRoot}/tools/ci/gate-timing.mjs"
+    ]
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/ci/gate-timing/tests/gate-timing.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci/gate-timing.mjs",
+          "node --check tools/ci/gate-timing/core.mjs",
+          "node --check tools/ci/gate-timing/tests/gate-timing.test.mjs",
+          "node scripts/check-project-boundaries.mjs gate-timing"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
+    }
+  }
+}

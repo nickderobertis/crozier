@@ -1,7 +1,7 @@
 sha256: 0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2
 result: byte-matches
 command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/diffs
-crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
 compare exit: 0
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: 0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2
@@ -14,7 +14,7 @@ compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: reference command finished in 0.04s (exit 0)
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: crozier generation starting
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: crozier generation finished in 0.84s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: crozier generation finished in 0.65s
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0b64b21d18f81307dd5b23b95fb07a35ff28e8af14f8149844229d91458252e2/crozier.yml python: matched
 
 crozier compare report
@@ -28,10 +28,10 @@ crozier compare report
       src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
       src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
       src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
-    timing: reference 0.04s, crozier 0.84s, speed-up 0.05x, saved -0.79s
+    timing: reference 0.04s, crozier 0.65s, speed-up 0.06x, saved -0.61s
 
 Totals: 1 matched, 0 mismatched, 0 could not check
-Timing totals (1 generator(s) where both sides ran): reference 0.04s, crozier 0.84s, speed-up 0.05x, saved -0.79s
+Timing totals (1 generator(s) where both sides ran): reference 0.04s, crozier 0.65s, speed-up 0.06x, saved -0.61s
 Result: every checked generator matched the reference (1 of 1, exit 0)
 
 Licence/provenance evidence (rule: docs/corpus-licensing.md):

@@ -1,7 +1,7 @@
 sha256: c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3
 result: byte-matches
 command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/diffs
-crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
 compare exit: 0
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3
@@ -14,7 +14,7 @@ compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: reference command finished in 0.15s (exit 0)
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: crozier generation starting
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: crozier generation finished in 11.14s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: crozier generation finished in 5.66s
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/c2855984c82dbe7917762e7517435792ff651e47be9e4ecb91bdec6c35c70aa3/crozier.yml python: matched
 
 crozier compare report
@@ -267,10 +267,10 @@ crozier compare report
       src/fern/organization/client.py:5537 schema-rejected-name-example
       src/fern/organization/client.py:5579 schema-rejected-name-example
       src/fern/organization/client.py:5621 schema-rejected-name-example
-    timing: reference 0.15s, crozier 11.14s, speed-up 0.01x, saved -10.99s
+    timing: reference 0.15s, crozier 5.66s, speed-up 0.03x, saved -5.52s
 
 Totals: 1 matched, 0 mismatched, 0 could not check
-Timing totals (1 generator(s) where both sides ran): reference 0.15s, crozier 11.14s, speed-up 0.01x, saved -10.99s
+Timing totals (1 generator(s) where both sides ran): reference 0.15s, crozier 5.66s, speed-up 0.03x, saved -5.52s
 Result: every checked generator matched the reference (1 of 1, exit 0)
 
 Licence/provenance evidence (rule: docs/corpus-licensing.md):

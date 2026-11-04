@@ -2445,6 +2445,13 @@ fn tag_pkg_init_file(
         .iter()
         .flat_map(|d| d.exported_names().into_iter().map(str::to_string))
         .collect();
+    // A child owns a public name it also exports; importing it from both
+    // packages leaves duplicate lazy-map keys and conflicting bindings (#694).
+    names.retain(|name| {
+        !child_types
+            .iter()
+            .any(|(_, exported)| exported.contains(name))
+    });
     names.sort();
     let mut type_checking = from_import_block(".types", &names, 4);
     let mut pairs: Vec<(String, String)> = names
@@ -13200,6 +13207,46 @@ mod tests {
             ["library/members", "library/loans", "library/archive"]
         );
         assert_eq!(children["library/loans"], ["library/loans/renewals"]);
+    }
+
+    #[test]
+    fn a_parent_exports_a_shared_type_from_its_child_once() {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/fern-measurements/handed-off/follow-up-tickets/694/openapi.yml"),
+        )
+        .unwrap();
+        let document = crate::yaml::from_str(&source).unwrap();
+        let files = files_for(document);
+        let parent = files
+            .iter()
+            .find(|(path, _)| path == "src/api/fleets/__init__.py")
+            .or_else(|| {
+                files
+                    .iter()
+                    .find(|(path, _)| path.ends_with("/fleets/__init__.py"))
+            })
+            .expect("the parent package");
+        for name in ["FixedSensor", "MobileSensor"] {
+            assert_eq!(
+                parent.1.matches(&format!("\"{name}\":")).count(),
+                1,
+                "{}",
+                parent.1
+            );
+            assert!(
+                parent.1.contains(&format!("\"{name}\": \".sensors\"")),
+                "{}",
+                parent.1
+            );
+        }
+        assert!(
+            !parent
+                .1
+                .contains("from .types import CreateFleetsRequestSensorsItem, FixedSensor"),
+            "{}",
+            parent.1
+        );
     }
 
     #[test]

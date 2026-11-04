@@ -21156,7 +21156,7 @@ class CoverageRestatementTests(unittest.TestCase):
                 self.index,
                 lambda text: text.replace("#### Golden rows resting only on residual goldens", "#### Missing section"),
             ),
-            "residual row": (self.index, lambda text: text.replace("| `split` |", "| `unknown verdict` |")),
+            "residual row": (self.index, lambda text: text.replace("| `byte-matched` |", "| `unknown verdict` |")),
         }
         originals = {path: path.read_text(encoding="utf-8") for path, _mutate in mutations.values()}
         for name, (path, mutate) in mutations.items():
@@ -21252,11 +21252,21 @@ class CoverageRestatementTests(unittest.TestCase):
         ledger.write_text(text, encoding="utf-8")
         self.assertEqual(0, self.run_restater().returncode)
 
+    def test_byte_matched_residual_attribution_is_accepted(self) -> None:
+        original = self.index.read_text(encoding="utf-8")
+        row = next(
+            line for line in original.splitlines() if line.startswith("| `boolean-schema-true` | `webflow-v2` |")
+        )
+        self.assertTrue(row.endswith("| `byte-matched` |"))
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn(row, self.index.read_text(encoding="utf-8"))
+
     def test_changed_residual_and_witness_populations_reconcile(self) -> None:
         original = self.index.read_text(encoding="utf-8")
         real = int(matched(re.search(r"\*\*(\d+) carry byte-match evidence", original)).group(1))
         unproven = int(matched(re.search(r"\*\*(\d+) remain unproven", original)).group(1))
-        self.index.write_text(original.replace("| `split` |", "| `open gap` |"), encoding="utf-8")
+        self.index.write_text(original.replace("| `byte-matched` |", "| `open gap` |"), encoding="utf-8")
         result = self.run_restater("--write")
         self.assertEqual(0, result.returncode, result.stderr)
         revised = self.index.read_text(encoding="utf-8")
@@ -22217,6 +22227,11 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 seen[name] = path
                 if name in causes:
                     assert row.source == causes[name], f"{name}: wrong source record"
+                elif path.name == "follow-up-tickets.tsv":
+                    assert (
+                        re.fullmatch(r"https://github\.com/nickderobertis/crozier/issues/[1-9][0-9]*", row.source)
+                        and row.source.rsplit("/", 1)[1] == name
+                    ), f"{name}: ticket source must name its cause"
                 else:
                     assert path.name == "remeasure.tsv", f"{name}: unknown cause outside remeasure.tsv"
                     assert row.source == "docs/fern-measurements/handed-off/documents.tsv", f"{name}: remeasure source"
@@ -22398,6 +22413,31 @@ class HandedOffReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "rows in"):
             reconcile_handed_off(self.root)
         (self.directory / "duplicate.tsv").unlink()
+        reconcile_handed_off(self.root)
+
+    def test_follow_up_ticket_area_validates_sources_and_rejects_drift(self) -> None:
+        path = self.directory / "follow-up-tickets.tsv"
+        row = {
+            **self.rows[0],
+            "source": "https://github.com/nickderobertis/crozier/issues/694",
+            "root_cause": "694",
+        }
+        self.write_rows(path, TRIAGE_COLUMNS, [row])
+        reconcile_handed_off(self.root)
+        for source, cause in (
+            ("https://example.org/issues/694", "694"),
+            (row["source"], "695"),
+            (row["source"] + "/comments", "694"),
+        ):
+            with self.subTest(source=source, cause=cause):
+                self.write_rows(path, TRIAGE_COLUMNS, [{**row, "source": source, "root_cause": cause}])
+                with self.assertRaisesRegex(AssertionError, "ticket source"):
+                    reconcile_handed_off(self.root)
+        self.write_rows(path, TRIAGE_COLUMNS, [row])
+        path.rename(self.directory / "other-tickets.tsv")
+        with self.assertRaisesRegex(AssertionError, "unknown cause"):
+            reconcile_handed_off(self.root)
+        (self.directory / "other-tickets.tsv").rename(path)
         reconcile_handed_off(self.root)
 
     def test_document_evidence_and_admitted_index_agree(self) -> None:

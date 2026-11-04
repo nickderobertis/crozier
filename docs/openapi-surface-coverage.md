@@ -210,10 +210,9 @@ real-specification match.
 - **Features no proof covers (0):** the headline's unproven `FIXTURE` gaps and
   residual-only `golden` rows, each of which
   [Unproven features, named](#unproven-features-named) would name; it names none.
-- **Output of a proven row that lands in an `unmatched` file (1):**
-  `boolean-schema-true`'s `src/fern/collections/__init__.py`. Its other generated
-  files are byte-matched on `webflow-v2` and proven; that one is in
-  `webflow-v2`'s measured `unmatched` set, so no byte comparison covers it
+- **Output of a proven row that lands in an `unmatched` file (0):** none.
+  The package-export repair made `boolean-schema-true`'s
+  `src/fern/collections/__init__.py` byte-match on `webflow-v2`
   ([the attribution](#golden-rows-resting-only-on-residual-goldens)).
   `format-idn-hostname`'s `reference.md`, listed here until then, left when
   `short-io` came to byte-match whole.
@@ -3573,9 +3572,8 @@ residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
 splits the files that move by whether the golden test compares them. Two rows
 rest on those two alone, both on `webflow-v2`. `boolean-schema-true` lands in
-byte-matched files and also moves one file its golden does not byte-match,
-so its disposition is `split` — proven where its code lands in byte-matched
-files, unproven in the `unmatched` ones named. `format-idn-hostname` and
+byte-matched files only, including `src/fern/collections/__init__.py` after the
+package-export repair, so its disposition is `byte-matched`. `format-idn-hostname` and
 `format-iri` rested on `short-io` until it reached full parity, and
 `extension-server` on `webflow-v2` until corpus row 2800, `vocode-core`, gave it
 a byte-matched golden-only witness. `schema-example-null` moves no generated file
@@ -3591,7 +3589,7 @@ counts it among hand-written proofs, never real-specification matches.
 
 | key | residual witness | files the feature moves | verdict |
 |---|---|---|---|
-| `boolean-schema-true` | `webflow-v2` | `src/fern/__init__.py`, `src/fern/collections/fields/__init__.py`, `src/fern/collections/fields/types/__init__.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/__init__.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py`; open gap: `src/fern/collections/__init__.py`, which is `unmatched` | `split` |
+| `boolean-schema-true` | `webflow-v2` | `src/fern/__init__.py`, `src/fern/collections/__init__.py`, `src/fern/collections/fields/__init__.py`, `src/fern/collections/fields/types/__init__.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/__init__.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
 
 #### Residual-only golden rows with hand-written proofs
 

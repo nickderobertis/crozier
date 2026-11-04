@@ -190,6 +190,9 @@
     "docs/fern-measurements/handed-off/example-values/property-schema-examples-array/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/schema-examples-array-parameter-value/fern-expected": {},
     "docs/fern-measurements/handed-off/example-values/yaml-timestamp-parameter-example/fern-expected": {},
+    "docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected": {},
+    "docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected": {},
+    "docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected": {},
     "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1708,7 +1711,6 @@
         "unmatched": [
           "reference.md",
           "src/fern/analyze/reports/client.py",
-          "src/fern/collections/__init__.py",
           "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",
@@ -1763,7 +1765,6 @@
         "unmatched": [
           "reference.md",
           "src/fern/analyze/reports/client.py",
-          "src/fern/collections/__init__.py",
           "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
           "src/fern/products/client.py",

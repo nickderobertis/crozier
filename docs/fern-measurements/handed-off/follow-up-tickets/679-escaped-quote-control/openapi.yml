@@ -1,0 +1,38 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Escaped quote readings",
+    "version": "1.0"
+  },
+  "paths": {
+    "/readings": {
+      "get": {
+        "operationId": "getReadings",
+        "responses": {
+          "200": {
+            "description": "Readings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reading"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Reading": {
+        "type": "object",
+        "properties": {
+          "probe\\\"code": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

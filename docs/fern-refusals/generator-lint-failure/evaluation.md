@@ -6,6 +6,14 @@ Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measure
 
 What moved: `server-unbound-placeholder` generates at this pair (fern-python-sdk 5.41.3 formats the server template through a variable) and is a control; crozier already generated it. A tag led by a digit names a sub-client class that is no Python identifier, which Fern's `ruff check` fails (Hyperswitch's `3DS Decision Rule`; the `digit-led-tag` probe, whose `Decision Rule 3DS` control generates); crozier refuses it with this class instead of failing in its own formatting.
 
+A property alias whose unescaped Python literal fails ruff is also refused
+in both modes: the certified generator interpolates wire names directly into
+double-quoted literals. Raw quotes, line breaks and malformed escapes fail;
+a backslash escaping a quote remains valid and generates. The fresh
+[#679 measurement](../../fern-measurements/handed-off/follow-up-tickets/679/README.md)
+keeps the log and exit status. crozier identifies the type and wire name at
+the boundary; ordinary hyphenated aliases still generate.
+
 The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was made

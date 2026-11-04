@@ -1,7 +1,7 @@
 sha256: 74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4
 result: byte-matches
 command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/diffs
-crozier binary sha256: e34d6053d5ced1b55a7395ec3eb68d0164fc10d8c527ea9e7324cec6c5b180f6
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
 compare exit: 0
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: 74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4
@@ -14,7 +14,7 @@ compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: reference command finished in 0.09s (exit 0)
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: crozier generation starting
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: crozier generation finished in 3.08s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: crozier generation finished in 2.29s
 compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4/crozier.yml python: matched
 
 crozier compare report
@@ -30,10 +30,10 @@ crozier compare report
       src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
       src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
       src/fern/query/raw_client.py:92 body-query-parameter-value
-    timing: reference 0.09s, crozier 3.08s, speed-up 0.03x, saved -2.99s
+    timing: reference 0.09s, crozier 2.29s, speed-up 0.04x, saved -2.20s
 
 Totals: 1 matched, 0 mismatched, 0 could not check
-Timing totals (1 generator(s) where both sides ran): reference 0.09s, crozier 3.08s, speed-up 0.03x, saved -2.99s
+Timing totals (1 generator(s) where both sides ran): reference 0.09s, crozier 2.29s, speed-up 0.04x, saved -2.20s
 Result: every checked generator matched the reference (1 of 1, exit 0)
 
 Licence/provenance evidence (rule: docs/corpus-licensing.md):

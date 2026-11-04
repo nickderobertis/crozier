@@ -25,7 +25,8 @@ The area records are [bodies and media](bodies-media.tsv),
 [example values](example-values.tsv),
 [snippet rendering](snippet-rendering.tsv),
 [type declarations](type-declarations.tsv), and
-[union modelling](union-modelling.tsv). Additional causes found while
+[union modelling](union-modelling.tsv), plus the
+[follow-up ticket area](follow-up-tickets.tsv). Additional causes found while
 re-measuring, including the non-table causes moved here under the planner’s
 ruling, are [remeasure](remeasure.tsv); their notes retain their original
 source records and evidence directories.
@@ -107,3 +108,6 @@ sources.
 - `hashicorp/terraform-plugin-codegen-openapi:internal/cmd/testdata/edgecase/openapi_spec.yml@55b2a49774f094d0d8aff834bce5eabe9e8a7345` | `1f6aea4c5e340b482e6441711f83780f2a6026a4755452530094d160747d2427` | 5053 (remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c)
 - `membrane/api-gateway:core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml@c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | `8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89` | 5054 (remeasured-membrane-api-gateway-8340f5da)
 - `ourofoundation/wrappers:nixtla/timegpt/timegpt-openapi.json@79688dd65e7fb2fb670ad30b01b5db5208c1d928` | `9165e7b94aa026f4924cc6bd8bc627719680fc028af864e0c2649168ded7705b` | 4301 (nixtla-timegpt)
+
+The [follow-up ticket area](follow-up-tickets/README.md) reconciles its ticket-URL
+rows as its own causes: each cause is the issue number in its source URL.

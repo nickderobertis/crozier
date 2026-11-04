@@ -5,10 +5,11 @@
 // which projects the tier selected and ran.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { commitChange, git, just, project, ran, scratchWorkspace, write } from "./support.mjs";
+import { taskTimings } from "../../ci/gate-timing.mjs";
+import { commitChange, git, just, project, ran, REPO, scratchWorkspace, write } from "./support.mjs";
 
 test("with NX_BASE unset the affected tier keys off the merge base with origin/main", (t) => {
   const root = scratchWorkspace(t);
@@ -275,16 +276,20 @@ test("a failing target's whole output reaches a slow reader before the gate exit
   // has drained, so the log is past one buffer whatever the load — and only
   // just past it on macOS, where Nx kept 65,904 bytes of this run's log.
   const root = scratchWorkspace(t);
-  const noisy = "node -e \"for (let i = 0; i < 4000; i++) console.log('line ' + i + ' ' + '.'.repeat(60)); setTimeout(() => process.exit(3), 500)\"";
+  const noisy = "node -e \"process.stdout.write(Array.from({ length: 4000 }, (_, i) => 'line ' + i + ' ' + '.'.repeat(60) + '\\\\n').join(''), () => process.exit(3))\"";
   commitChange(root, "a/project.json", project("a", { targets: { test: { command: noisy } } }));
   const env = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true" };
   delete env.NX_SKIP_NX_CACHE;
+  // Nx supplies FORCE_COLOR to its tests while the host sets NO_COLOR. Node
+  // emits their conflict warning asynchronously before the captured replay.
+  // This journey measures replay drainage, so isolate its startup diagnostics.
+  delete env.FORCE_COLOR;
   const slow = spawnSync("sh", ["-c", "just check --projects=a 2>&1 >/dev/null | { sleep 2; cat; }"], { cwd: root, env, encoding: "utf8" });
   const log = /gate: a target failed \(full output above and in (\S+)\)/.exec(slow.stdout);
   assert.ok(log, slow.stdout.slice(-2000));
   const replay = readFileSync(log[1], "utf8");
   assert.ok(replay.length > 64 * 1024, `the run's log holds ${replay.length} bytes`);
-  assert.ok(slow.stdout.startsWith(replay), `${slow.stdout.length} of the log's ${replay.length} bytes reached the reader`);
+  assert.ok(slow.stdout.startsWith(replay), `${slow.stdout.length} of the log's ${replay.length} bytes reached the reader; received prefix=${JSON.stringify(slow.stdout.slice(0,600))}; log prefix=${JSON.stringify(replay.slice(0,600))}`);
 });
 
 test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, in either tier", (t) => {
@@ -414,4 +419,75 @@ test("a toolchain that will not install stops the gate before any target runs", 
   assert.match(run.stderr, /could not install the Rust toolchain rust-toolchain\.toml pins .*; no target ran/);
   assert.match(run.stderr, /rustup self update/);
   assert.ok(!ran(root, "a") && !ran(root, "b"), run.output);
+});
+
+for (const exit of [0, 1]) {
+  test(`task timings survive exit ${exit} without repeating the task`, (t) => {
+    const root = scratchWorkspace(t);
+    write(root, {
+      "a/project.json": project("a", { targets: { test: { command: `node once.cjs ${exit}` } } }),
+      "once.cjs": "const fs = require('fs'); fs.appendFileSync('ran-a', 'once\\n'); process.exit(Number(process.argv[2]));",
+    });
+    const run = just(root, ["test", "--sweep", "--projects=a"]);
+    assert.equal(run.status, exit, run.output);
+    assert.equal(readFileSync(join(root, "ran-a"), "utf8"), "once\n");
+    assert.match(run.output, /gate: task a:test: [0-9.]+s \((success|failure)\)/);
+    const log = run.output.match(/(?:output in |and in )([^\s)]+\.log)/)?.[1];
+    assert.ok(log, run.output);
+    assert.match(readFileSync(log, "utf8"), /gate: task a:test:/);
+  });
+}
+
+for (const damage of ['missing', 'malformed', 'invalid', 'invalid-event']) for (const exit of [0, 1]) {
+  test(`gate retains exit ${exit} and diagnoses ${damage} telemetry`, { skip: process.platform === 'win32' }, (t) => {
+    const root = scratchWorkspace(t);
+    // Forward every call to the installed Nx, then damage only its telemetry.
+    // Both the gate and target still execute their real subprocess boundaries.
+    unlinkSync(join(root, 'node_modules'));
+    mkdirSync(join(root, 'node_modules', '.bin'), { recursive: true });
+    symlinkSync(join(REPO, 'node_modules', 'nx'), join(root, 'node_modules', 'nx'), 'junction');
+    const wrapper = `#!/usr/bin/env node
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const run = spawnSync(process.execPath, [${JSON.stringify(join(REPO, 'node_modules', 'nx', 'dist', 'bin', 'nx.js'))}, ...process.argv.slice(2)], { stdio: 'inherit', env: process.env });
+if (process.argv[2] === 'run-many') {
+  const profile = process.env.NX_PROFILE;
+  ${damage === 'missing' ? "fs.unlinkSync(profile);" : `fs.writeFileSync(profile, ${JSON.stringify(damage === 'malformed' ? '{' : damage === 'invalid-event' ? '[{"ph":"X","name":"a:test","dur":"wrong","args":{"status":"success"}}]' : '{}')});`}
+}
+process.exit(run.status ?? 1);
+`;
+    writeFileSync(join(root, 'node_modules', '.bin', 'nx'), wrapper);
+    chmodSync(join(root, 'node_modules', '.bin', 'nx'), 0o755);
+    write(root, {
+      'a/project.json': project('a', { targets: { test: { command: `node once.cjs ${exit}` } } }),
+      'once.cjs': "require('fs').appendFileSync('ran-a', 'once'); process.exit(Number(process.argv[2]));",
+    });
+    const run = just(root, ['test', '--sweep', '--projects=a']);
+    assert.equal(run.status, exit, run.output);
+    assert.equal(readFileSync(join(root, 'ran-a'), 'utf8'), 'once');
+    assert.match(run.stderr, /gate: task timings unavailable:/);
+    assert.doesNotMatch(run.stdout, /task timings unavailable/);
+    const log = run.output.match(/(?:output in |and in )([^\s)]+\.log)/)?.[1];
+    assert.ok(log, run.output);
+    assert.match(readFileSync(log, 'utf8'), /task timings unavailable:/);
+  });
+}
+
+
+test('gate emits exact profile conversion and cache-replay status without executing again', (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { 'a/project.json': project('a', { targets: { test: { cache:true, command:"node -e \"require('fs').appendFileSync('ran-a','once')\"" } } }) });
+  commitChange(root,'a/src.txt','changed');
+  const first = just(root,['test','--projects=a'],{NX_BASE:undefined});
+  assert.equal(first.status,0,first.output);
+  const firstLog = first.output.match(/output in ([^\s)]+\.log)/)[1];
+  const profile = JSON.parse(readFileSync(firstLog.replace(/\.log$/,'.profile.json'),'utf8'));
+  const event = profile.find((e) => e.ph === 'X' && e.name === 'a:test');
+  assert.ok(first.stdout.includes(`gate: task a:test: ${(event.dur/1000000).toFixed(3)}s (${event.args.status})`));
+  assert.deepEqual(taskTimings([{ph:'X',name:'a:test',dur:1500000,args:{status:'success'}}]),[{name:'a:test',seconds:1.5,status:'success'}]);
+  // Select a on both calls while leaving its target inputs unchanged.
+  const second = just(root,['test','--projects=a'],{NX_BASE:undefined});
+  assert.equal(second.status,0,second.output);
+  assert.match(second.stdout,/gate: task a:test: [0-9.]+s \((local-cache|local-cache-kept-existing|remote-cache)\)/);
+  assert.equal(readFileSync(join(root,'ran-a'),'utf8'),'once');
 });

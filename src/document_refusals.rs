@@ -2377,6 +2377,86 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
+/// Whether Fern's unescaped double-quoted field alias fails Python syntax or lint.
+/// Use the existing ruff dependency for the rare syntax-bearing name:
+/// a backslash can either break an escape or make a quote perfectly valid.
+fn invalid_field_alias_literal(wire_name: &str) -> Result<bool> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+
+    if !wire_name.contains(['"', '\\', '\n', '\r']) {
+        return Ok(false);
+    }
+    let failure = |message: String| Error::Format {
+        file: "field-alias.py".into(),
+        message,
+    };
+    // Read the select/ignore lists from the same compiled pyproject scaffold
+    // that Fern emits. These are trusted asset literals, not document input.
+    let lint = include_str!("../assets/scaffolding/pyproject.toml")
+        .split_once("[tool.ruff.lint]\n")
+        .expect("the scaffold declares Ruff lint")
+        .1;
+    let rules = |name: &str| {
+        lint.split_once(&format!("{name} = ["))
+            .expect("the scaffold declares this rule list")
+            .1
+            .split_once(']')
+            .expect("the scaffold closes this rule list")
+            .0
+            .split('"')
+            .enumerate()
+            .filter(|(index, _)| index % 2 == 1)
+            .map(|(_, rule)| rule)
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let mut command = Command::new("ruff");
+    command.args([
+        "check",
+        "--isolated",
+        "--no-cache",
+        "--select",
+        &rules("select"),
+        "--ignore",
+        &format!("{},E741", rules("ignore")),
+        "--stdin-filename",
+        "field-alias.py",
+        "-",
+    ]);
+    // Isolate the literal from unrelated generated code so this alias alone
+    // decides the refusal, under the emitted SDK's lint rules.
+    let mut child = command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| {
+            failure(format!(
+                "could not run `ruff`: {error}; install ruff and retry"
+            ))
+        })?;
+    child
+        .stdin
+        .take()
+        .expect("stdin was piped")
+        .write_all(format!("alias = \"{wire_name}\"\n").as_bytes())
+        .map_err(|error| failure(format!("could not write source to ruff: {error}")))?;
+    // llmlint: ignore[changed_behavior_has_e2e] Structural substitute for an OS wait failure: this function exclusively owns and waits its child, so inducing waitpid failure would require nonportable process interference. The real CLI journeys exercise spawn failure, broken stdin and an abnormal child exit; this mapping preserves that same actionable formatter-error variant for an OS wait error without classifying it as a Fern refusal.
+    let output = child
+        .wait_with_output()
+        .map_err(|error| failure(format!("waiting on ruff failed: {error}")))?;
+    match output.status.code() {
+        Some(0) => Ok(false),
+        Some(1) => Ok(true),
+        _ => Err(failure(format!(
+            "ruff exited with {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ))),
+    }
+}
+
 /// Reject an SDK whose generated Python pinned Fern's own `ruff check` rejects
 /// (`generator-lint-failure`). crozier's IR names clients, methods, union
 /// variants, fields and server variables as Fern does, so each shape is read
@@ -2446,14 +2526,17 @@ pub fn check_sdk(
             }
             crate::ir::TypeDecl::Alias(_) | crate::ir::TypeDecl::Enum(_) => Vec::new(),
         };
-        // A syntax error: a property whose Python name is empty (`/`).
-        if let Some(field) = fields.iter().find(|field| field.py_name.is_empty()) {
-            return refusal(
-                path,
-                strict,
-                class,
-                &format!("type {} property {:?}", decl.name(), field.wire_name),
-            );
+        // A field name must be an identifier, and its unescaped wire alias
+        // must parse as the Python literal Fern emits (#679).
+        for field in fields {
+            if field.py_name.is_empty() || invalid_field_alias_literal(&field.wire_name)? {
+                return refusal(
+                    path,
+                    strict,
+                    class,
+                    &format!("type {} property {:?}", decl.name(), field.wire_name),
+                );
+            }
         }
     }
     // A syntax error: a sub-client class named from a tag led by a digit
@@ -3555,6 +3638,59 @@ mod tests {
         let error = registry_shape_refusal("duplicate-example-name/numeric-summaries-probe.yml")
             .unwrap_or_default();
         assert!(error.contains("duplicate-example-name"), "{error}");
+    }
+
+    #[test]
+    fn field_alias_validation_respects_existing_python_escapes() {
+        for name in [
+            "probe-code",
+            "probe\\\"code",
+            "probe\\ncode",
+            "probe\" + unknown_alias + \"code",
+        ] {
+            assert!(!invalid_field_alias_literal(name).unwrap(), "{name:?}");
+        }
+        for name in [
+            "probe\"code",
+            "probe\ncode",
+            "probe\rcode",
+            "probe\\x",
+            "probe\\",
+            "probe\\N{NO SUCH NAME}",
+        ] {
+            assert!(invalid_field_alias_literal(name).unwrap(), "{name:?}");
+        }
+    }
+
+    #[test]
+    fn a_field_alias_that_breaks_a_python_literal_is_a_lint_failure() {
+        for name in [
+            "probe\"code",
+            "probe\ncode",
+            "probe\rcode",
+            "probe\\x",
+            "probe\\",
+            "probe\\N{NO SUCH NAME}",
+        ] {
+            let document = serde_json::json!({
+                "openapi": "3.1.0", "info": {"title": "Readings", "version": "1"},
+                "paths": {}, "components": {"schemas": {"Reading": {
+                    "type": "object", "properties": {name: {"type": "string"}}
+                }}}
+            });
+            let error = sdk_refusal(&document.to_string()).expect("Fern's lint failure");
+            assert!(
+                error.contains("generator-lint-failure: type Reading property"),
+                "{error}"
+            );
+        }
+        let document = serde_json::json!({
+            "openapi": "3.1.0", "info": {"title": "Readings", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Reading": {
+                "type": "object", "properties": {"probe-code": {"type": "string"}}
+            }}}
+        });
+        assert_eq!(sdk_refusal(&document.to_string()), None);
     }
 
     #[test]

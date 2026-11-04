@@ -1,0 +1,59 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Quiet readings",
+    "version": "1.0"
+  },
+  "paths": {
+    "/readings": {
+      "get": {
+        "operationId": "getReadings",
+        "responses": {
+          "200": {
+            "description": "Readings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reading"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Silence": {
+        "oneOf": [
+          {
+            "anyOf": [
+              {
+                "type": "null"
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        ]
+      },
+      "Reading": {
+        "type": "object",
+        "properties": {
+          "silence": {
+            "$ref": "#/components/schemas/Silence"
+          }
+        }
+      }
+    }
+  }
+}
