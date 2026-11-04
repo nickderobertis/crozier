@@ -12,6 +12,7 @@ one.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -33,6 +34,43 @@ def git(root: Path, *args: str) -> str:
     return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=True).stdout.strip()
 
 
+def small_inputs(root: Path) -> None:
+    """Keep lock coverage independent of the size of crozier's measured sources."""
+    shutil.rmtree(root / "src")
+    (root / "src").mkdir()
+    (root / "src/lib.rs").write_text("pub fn lock_target() -> u8 { 1 }\n", encoding="utf-8")
+    (root / "src/main.rs").write_text("fn main() {}\n", encoding="utf-8")
+    (root / "crates/crozier-e2e/tests/e2e.rs").write_text(
+        "struct Corpus { api: &'static str }\n"
+        'const LOCK: Corpus = Corpus {\n    api: "lock",\n};\n'
+        "fn assert_committed_corpus_matches(_: &Corpus) { assert_eq!(crozier::lock_target(), 1); }\n"
+        "#[test]\nfn lock_matches_fern_output() { assert_committed_corpus_matches(&LOCK); }\n",
+        encoding="utf-8",
+    )
+    regions = root / "docs/openapi-surface"
+    (regions / "golden-reach-sites.tsv").write_text(
+        "key\tselectors\tsites\tnote\ntype\tschema.type\tsrc/lib.rs::lock_target\t\n", encoding="utf-8"
+    )
+    shutil.rmtree(regions / "handwritten")
+    fixture = regions / "handwritten/lock-fixture"
+    fixture.mkdir(parents=True)
+    document = "openapi: 3.0.3\ninfo: {title: Lock fixture, version: '1'}\npaths: {}\n"
+    (fixture / "openapi.yml").write_text(document, encoding="utf-8")
+    metadata = json.loads((root / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
+    (fixture / "evidence.toml").write_text(
+        f'fern_cli_version = "{metadata["cliVersion"]}"\n'
+        f'fern_python_sdk_version = "{metadata["generatorVersion"]}"\n'
+        f'digest = "{"0" * 64}"\n'
+        'audiences = ["public"]\n[[covers]]\nkey = "type"\n'
+        'arm = "src/lib.rs::lock_target"\nverdict = "config-gated"\n'
+        'search = "docs/openapi-surface/golden-reach-witnesses/searches/type.md#configuration-gate"\n',
+        encoding="utf-8",
+    )
+    golden = root / "tests/fixtures/lock"
+    golden.mkdir()
+    (golden / "openapi.yml").write_text(document, encoding="utf-8")
+
+
 @pytest.fixture(scope="module")
 def clone(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     """This repository's HEAD with the working tree's tooling committed on top, and no remote."""
@@ -45,6 +83,7 @@ def clone(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
             shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
         else:
             shutil.copy2(source, target)
+    small_inputs(root)
     git(root, "add", "-A")
     git(root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "tooling")
     git(root, "remote", "remove", "origin")
