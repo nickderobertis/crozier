@@ -20465,10 +20465,14 @@ class CoverageRestatementTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        drifted = self.run_restater()
+        self.assertEqual(1, drifted.returncode)
+        self.assertIn("derived tables differ", drifted.stderr)
         changed = self.run_restater("--write")
         self.assertEqual(0, changed.returncode, changed.stderr)
         after = matched(re.search(pattern, self.index.read_text(encoding="utf-8")))
         self.assertEqual(int(before[1]) + 1, int(after[1]))
+        self.assertEqual(0, self.run_restater().returncode)
         region.write_text(original, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--write").returncode)
         valid = self.index.read_text(encoding="utf-8")
