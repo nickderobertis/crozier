@@ -436,7 +436,7 @@ for (const exit of [0, 1]) {
 // The real timing CLI with only its external read processes doubled. Seeds are
 // recorded GitHub responses; variants induce cancellation, missing contexts and
 // later attempts without changing any calculation in the implementation.
-import { calculateHead, summarize, validateReport } from '../../ci/gate-timing.mjs';
+import { calculateHead, CLI_OPTIONS, SCHEMA_VERSION, summarize, taskTimings, validateReport } from '../../ci/gate-timing.mjs';
 import { chmodSync, mkdtempSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -455,25 +455,34 @@ const fs = require('fs');
 const a = JSON.parse(fs.readFileSync(process.env.ANSWERS, 'utf8'));
 const args = process.argv.slice(2);
 fs.appendFileSync(process.env.CALLS, JSON.stringify(args) + '\\n');
+fs.appendFileSync(process.env.CALLS+'.timeline', JSON.stringify({args,at:Date.now()}) + '\\n');
 let answer;
+if(args[0] === 'auth' && args[1] === 'token') { process.stdout.write('replay-token'); process.exit(0); }
+if(a.auth && args[0] === 'host' && process.env.GH_TOKEN !== 'replay-token') { console.error('missing bootstrapped token'); process.exit(1); }
+if(a.noOnevcs && args[0] === 'host') { console.error('unrecognized subcommand run-jobs'); process.exit(2); }
 const path = args.at(-1);
 if(args.includes('rate_limit')) {
  const waited = fs.existsSync(process.env.CALLS+'.waited');
- if(a.quota && !waited) { fs.writeFileSync(process.env.CALLS+'.waited',''); answer={resources:{core:{limit:100,remaining:39,reset:0}}}; }
+ if((a.quota || a.quotaFuture) && !waited) { fs.writeFileSync(process.env.CALLS+'.waited',''); answer={resources:{core:{limit:100,remaining:39,reset:a.quotaFuture ? Math.floor(Date.now()/1000)+1 : 0}}}; }
  else answer={resources:{core:{limit:100,remaining:100,reset:0}}};
-} else if(path.endsWith('/protection')) answer={required_status_checks:{contexts:['gate','llmlint']}};
-else if(path.endsWith('/rules/branches/main')) answer=[];
-else if(path.includes('/actions/runs?')) answer={workflow_runs:a.records.map(r=>r.run)};
+} else if(path.endsWith('/protection')) answer=a.protection || {required_status_checks:{contexts:a.contexts || ['gate','llmlint']}};
+else if(path.endsWith('/rules/branches/main')) answer=a.rules || [];
+else if(path.includes('/actions/runs?')) { const page=Number(new URL('https://api.invalid/'+path).searchParams.get('page')); answer={workflow_runs:a.records.map(r=>r.run).slice(a.paginate ? (page-1)*100 : 0, a.paginate ? page*100 : undefined)}; }
 else if(args.includes('run-jobs')) answer={jobs:a.records.find(r=>r.run.id===Number(args[args.indexOf('--run')+1])).jobs};
-else if(/\\/attempts\\//.test(path)) answer={jobs:a.previous};
+else if(/\\/attempts\\//.test(path)) { const jobs=a.previous || a.records.find(r=>r.run.id===Number(path.split('/')[5])).jobs; const page=Number(new URL('https://api.invalid/'+path).searchParams.get('page')); answer={jobs:a.paginateJobs ? jobs.slice((page-1)*100,page*100) : jobs}; }
 else if(/\\/actions\\/runs\\/\\d+$/.test(path)) answer=a.records.find(r=>r.run.id===Number(path.split('/').at(-1)))?.run;
 if(a.missing && path.includes('/actions/runs?')) answer={};
+if(a.badQuota && args.includes('rate_limit')) answer={resources:{core:{limit:'100',remaining:39,reset:null}}};
+if(a.badProtection && path.endsWith('/protection')) answer={required_status_checks:{contexts:[null]}};
+if(a.badRules && path.endsWith('/rules/branches/main')) answer=[{type:'required_status_checks',parameters:{required_status_checks:'bad'}}];
+if(a.badRun && path.includes('/actions/runs?')) answer={workflow_runs:[{...a.records[0].run,id:'bad'}]};
+if(a.badFresh && /\\/actions\\/runs\\/\\d+$/.test(path)) answer={...answer,head_sha:'0'.repeat(40)};
 if(a.fail) { console.error('read refused'); process.exit(1); }
 if(!answer) { console.error('unexpected external request: '+args.join(' ')); process.exit(1); }
 process.stdout.write(JSON.stringify(answer));
 `;
   for (const name of ['gh', 'onevcs']) { writeFileSync(join(root, name), stub); chmodSync(join(root, name), 0o755); }
-  const run = (extra = []) => spawnSync(process.execPath, [timingCLI, 'runs', '--since', '2026-10-31T00:00:00Z', '--until', '2026-11-04T00:00:00Z', '--cache-dir', join(root, 'cache'), ...extra], { encoding: 'utf8', env: { ...process.env, GH_TOKEN: 'replay', PATH: `${root}:${process.env.PATH}`, ANSWERS: answerFile, CALLS: calls } });
+  const run = (extra = [], overrides = {}) => spawnSync(process.execPath, [timingCLI, 'runs', '--since', '2026-10-31T00:00:00Z', '--until', '2026-11-04T00:00:00Z', '--cache-dir', join(root, 'cache'), ...extra], { encoding: 'utf8', env: { ...process.env, GH_TOKEN: 'replay', PATH: `${root}:${process.env.PATH}`, ANSWERS: answerFile, CALLS: calls, ...overrides } });
   return { root, records, answerFile, calls, run };
 }
 
@@ -504,7 +513,7 @@ test('timing CLI reconciles recorded heads, all jobs, real queue, filters and he
   assert.equal(JSON.parse(filtered.stdout).runs.length, 1);
   const help = spawnSync(process.execPath, [timingCLI, '--help'], { encoding: 'utf8' });
   assert.equal(help.status, 0);
-  for (const token of ['--since', '--until', '--limit', '--head-contains', '--cache-dir', '--format', 'schema_version: 1']) assert.ok(help.stdout.includes(token));
+  for (const token of [...Object.keys(CLI_OPTIONS).map((key) => '--'+key), `schema_version: ${SCHEMA_VERSION}`]) assert.ok(help.stdout.includes(token));
   const md = replay.run(['--format', 'markdown']);
   assert.equal(md.status, 0, md.stderr);
   assert.match(md.stdout, /release-pr/);
@@ -663,3 +672,180 @@ process.exit(run.status ?? 1);
     assert.match(readFileSync(log, 'utf8'), /task timings unavailable:/);
   });
 }
+
+
+test('timing CLI uses gh when the onevcs host verb is unavailable', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, noOnevcs: true }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(JSON.parse(run.stdout).runs.length, r.records.length);
+  const calls = readFileSync(r.calls, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.ok(calls.some((args) => args.at(-1).includes('/attempts/1/jobs')));
+});
+
+
+test('timing CLI replays recorded crozier attempts even when timestamp order differs', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const records = JSON.parse(readFileSync(new URL('./fixtures/gate-timing-rerun.json', import.meta.url), 'utf8'));
+  const context = 'visual-docs / report (x86_64)';
+  r.records.push(records[0]);
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, contexts: [context] }));
+  const first = r.run();
+  assert.equal(first.status, 0, first.stderr);
+  assert.equal(JSON.parse(first.stdout).runs.find((h) => h.run_id === 41288057298).gate_seconds, 2669);
+  r.records[r.records.length-1] = records[1];
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, previous: records[0].jobs, contexts: [context] }));
+  const second = r.run();
+  assert.equal(second.status, 0, second.stderr);
+  const head = JSON.parse(second.stdout).runs.find((h) => h.run_id === 41288057298);
+  assert.equal(head.attempt, 2);
+  assert.equal(head.conclusion, 'success');
+  // 09:04:05 earliest observed creation to 09:59:36 last context completion,
+  // including the failed attempt, even though attempt 2 completed earlier.
+  assert.equal(head.gate_seconds, 3331);
+  assert.equal(head.jobs.length, 10);
+});
+
+
+test('timing CLI independently verifies statistics and empty populations', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const seed = r.records.at(-1);
+  const spans = [10, 20, 30, 40];
+  r.records = spans.map((span, i) => ({ run: { ...seed.run, id: 800+i, head_sha: (i+1).toString(16).repeat(40), created_at: '2026-11-01T00:00:00Z' }, jobs: [{ ...seed.jobs[0], name: 'gate', created_at: '2026-11-01T00:00:00Z', started_at: '2026-11-01T00:00:02Z', completed_at: `2026-11-01T00:00:${span}Z` }] }));
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, contexts: ['gate'] }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const report = JSON.parse(run.stdout);
+  assert.deepEqual(report.summary.kinds.pr, { n:4, median:25, p95:40, max:40, observed:4, unsuccessful:0 });
+  assert.deepEqual(report.summary.kinds.main, { n:0, median:null, p95:null, max:null, observed:0, unsuccessful:0 });
+  assert.deepEqual(report.summary.jobs.gate.run, { n:4, median:23, p95:38, max:38 });
+  assert.deepEqual(report.summary.jobs.gate.queue, { n:4, median:2, p95:2, max:2 });
+});
+
+test('timing CLI retains unfinished and never-started required jobs', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const gate = r.records.at(-1).jobs.find((j) => j.name === 'gate');
+  Object.assign(gate, { status:'queued', conclusion:null, started_at:null, completed_at:null });
+  writeFileSync(r.answerFile, JSON.stringify({ records:r.records }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const head = JSON.parse(run.stdout).runs.at(-1);
+  assert.equal(head.gate_seconds, null);
+  assert.match(head.reason, /incomplete/);
+  const job = head.jobs.find((j) => j.name === 'gate');
+  assert.equal(job.queue_seconds, null);
+  assert.equal(job.run_seconds, null);
+  assert.equal(job.start_offset_seconds, 0);
+  assert.match(job.start_offset_reason, /never started/);
+});
+
+test('timing CLI discovers credentials and unions protection with rulesets', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  writeFileSync(r.answerFile, JSON.stringify({ records:r.records, auth:true, protection:{ required_status_checks:{ checks:[{context:'gate'}], contexts:['llmlint'] } }, rules:[{type:'required_status_checks',parameters:{required_status_checks:[{context:'gate'},{context:'llmlint'}]}}] }));
+  const run = r.run([], { GH_TOKEN:undefined, GITHUB_TOKEN:undefined });
+  assert.equal(run.status, 0, run.stderr);
+  assert.deepEqual(JSON.parse(run.stdout).required_contexts, ['gate','llmlint']);
+  const calls = readFileSync(r.calls, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.ok(calls.some((args) => args[0] === 'auth' && args[1] === 'token'));
+});
+
+test('timing CLI pauses external reads until the observed quota reset', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  writeFileSync(r.answerFile, JSON.stringify({ records:r.records, quotaFuture:true }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const report = JSON.parse(run.stdout);
+  const until = Date.parse(report.observation.events[0].until);
+  const timeline = readFileSync(r.calls+'.timeline', 'utf8').trim().split('\n').map(JSON.parse);
+  const firstRead = timeline.find((event) => !event.args.includes('rate_limit'));
+  assert.ok(firstRead.at >= until, 'no protected read precedes the reset supplied by the quota response');
+  assert.deepEqual(report.observation.events.map((e) => e.event), ['quota_wait','quota_resume']);
+});
+
+test('timing CLI paginates workflow history, excludes events, and reports capped sampling', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const excluded = Array.from({length:98}, (_,i) => ({ run:{...r.records[0].run,id:99000+i,event:'workflow_dispatch'},jobs:r.records[0].jobs }));
+  writeFileSync(r.answerFile, JSON.stringify({ records:[...excluded,...r.records], paginate:true }));
+  const run = r.run(['--limit','200']);
+  assert.equal(run.status, 0, run.stderr);
+  const report = JSON.parse(run.stdout);
+  assert.equal(report.runs.length, r.records.length);
+  assert.equal(report.observation.workflow_runs, r.records.length);
+  assert.equal(report.observation.complete, true);
+  assert.ok(readFileSync(r.calls,'utf8').includes('page=2'));
+  const capped = r.run(['--limit','2']);
+  assert.equal(capped.status, 0, capped.stderr);
+  assert.equal(JSON.parse(capped.stdout).observation.complete, false);
+  assert.equal(JSON.parse(capped.stdout).observation.workflow_runs, 2);
+});
+
+test('timing CLI fetches uncached historical attempts and every job page', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const seed = r.records[0];
+  const previous = structuredClone(seed.jobs);
+  while (previous.length < 101) previous.push({...previous[0],name:'historical-'+previous.length});
+  seed.run.run_attempt = 2;
+  seed.jobs = seed.jobs.map((j) => ({...j,run_attempt:2}));
+  writeFileSync(r.answerFile, JSON.stringify({ records:r.records, previous, paginateJobs:true }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const head = JSON.parse(run.stdout).runs.find((h) => h.run_id === seed.run.id);
+  assert.equal(head.jobs.length, 101 + seed.jobs.length);
+  const calls = readFileSync(r.calls,'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(calls.filter((a) => a.at(-1).includes('/attempts/1/jobs')).length, 2);
+  assert.ok(calls.some((a) => a.at(-1).includes('/attempts/1/jobs?per_page=100&page=2')));
+});
+
+test('timing CLI rejects malformed boundary data and mismatched cached identities', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  assert.equal(r.run(['--until','2026-02-30T00:00:00Z']).status, 2);
+  for (const field of ['badQuota','badProtection','badRules','badRun','badFresh']) {
+    writeFileSync(r.answerFile, JSON.stringify({records:r.records,[field]:true}));
+    const run = r.run();
+    assert.equal(run.status, 1, field+': '+run.stderr);
+    assert.equal(run.stdout, '');
+  }
+  writeFileSync(r.answerFile, JSON.stringify({records:r.records}));
+  assert.equal(r.run().status, 0);
+  const file = join(r.root,'cache',`run-${r.records[0].run.id}-attempt-1.json`);
+  const cached = JSON.parse(readFileSync(file,'utf8'));
+  cached.run.id += 1;
+  writeFileSync(file,JSON.stringify(cached));
+  const run = r.run();
+  assert.equal(run.status,1);
+  assert.match(run.stderr,/cached attempt identity mismatch/);
+});
+
+test('gate emits exact profile conversion and cache-replay status without executing again', (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { 'a/project.json': project('a', { targets: { test: { cache:true, command:"node -e \"require('fs').appendFileSync('ran-a','once')\"" } } }) });
+  commitChange(root,'a/src.txt','changed');
+  const first = just(root,['test','--projects=a'],{NX_BASE:undefined});
+  assert.equal(first.status,0,first.output);
+  const firstLog = first.output.match(/output in ([^\s)]+\.log)/)[1];
+  const profile = JSON.parse(readFileSync(firstLog.replace(/\.log$/,'.profile.json'),'utf8'));
+  const event = profile.find((e) => e.ph === 'X' && e.name === 'a:test');
+  assert.ok(first.stdout.includes(`gate: task a:test: ${(event.dur/1000000).toFixed(3)}s (${event.args.status})`));
+  assert.deepEqual(taskTimings([{ph:'X',name:'a:test',dur:1500000,args:{status:'success'}}]),[{name:'a:test',seconds:1.5,status:'success'}]);
+  // Select a on both calls while leaving its target inputs unchanged.
+  const second = just(root,['test','--projects=a'],{NX_BASE:undefined});
+  assert.equal(second.status,0,second.output);
+  assert.match(second.stdout,/gate: task a:test: [0-9.]+s \((local-cache|local-cache-kept-existing|remote-cache)\)/);
+  assert.equal(readFileSync(join(root,'ran-a'),'utf8'),'once');
+});
+
+
+test('timing CLI reports inconsistent job timestamps as unknown', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const job = r.records[0].jobs[0];
+  job.created_at = '2026-11-03T18:01:00Z';
+  job.started_at = '2026-11-03T18:00:00Z';
+  job.completed_at = '2026-11-03T17:59:00Z';
+  writeFileSync(r.answerFile,JSON.stringify({records:r.records}));
+  const run = r.run();
+  assert.equal(run.status,0,run.stderr);
+  const measured = JSON.parse(run.stdout).runs[0].jobs[0];
+  assert.equal(measured.queue_seconds,null);
+  assert.equal(measured.run_seconds,null);
+});
