@@ -15,8 +15,8 @@ Verdict: **refusal-kept**, class `generator-lint-failure`. The refusal rule
 requires both default and `fern-strict` generation to refuse this shape.
 crozier previously reached its own formatter with invalid Python. It now
 reports the class and offending type/property before writing files. For names containing a quote, backslash or line break, the boundary checks
-the unescaped literal with the existing ruff dependency's isolated default
-lint rules. This catches malformed escapes and trailing backslashes too,
+the unescaped literal with the existing ruff dependency, deriving its lint
+rules from the same compiled pyproject scaffold the SDK emits. This catches malformed escapes and trailing backslashes too,
 without refusing a backslash that makes a quote valid. Tool-launch and I/O
 errors remain actionable formatter errors, rather than refusal classifications.
 

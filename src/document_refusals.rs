@@ -2391,19 +2391,42 @@ fn invalid_field_alias_literal(wire_name: &str) -> Result<bool> {
         file: "field-alias.py".into(),
         message,
     };
-    // Fern runs this lint with its default rule set. Isolate the literal from
-    // unrelated generated code, so only this alias can cause the refusal.
-    let mut child = Command::new("ruff")
-        .args([
-            "check",
-            "--isolated",
-            "--no-cache",
-            "--ignore",
-            "E741",
-            "--stdin-filename",
-            "field-alias.py",
-            "-",
-        ])
+    // Read the select/ignore lists from the same compiled pyproject scaffold
+    // that Fern emits. These are trusted asset literals, not document input.
+    let lint = include_str!("../assets/scaffolding/pyproject.toml")
+        .split_once("[tool.ruff.lint]\n")
+        .expect("the scaffold declares Ruff lint")
+        .1;
+    let rules = |name: &str| {
+        lint.split_once(&format!("{name} = ["))
+            .expect("the scaffold declares this rule list")
+            .1
+            .split_once(']')
+            .expect("the scaffold closes this rule list")
+            .0
+            .split('"')
+            .enumerate()
+            .filter(|(index, _)| index % 2 == 1)
+            .map(|(_, rule)| rule)
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let mut command = Command::new("ruff");
+    command.args([
+        "check",
+        "--isolated",
+        "--no-cache",
+        "--select",
+        &rules("select"),
+        "--ignore",
+        &format!("{},E741", rules("ignore")),
+        "--stdin-filename",
+        "field-alias.py",
+        "-",
+    ]);
+    // Isolate the literal from unrelated generated code so this alias alone
+    // decides the refusal, under the emitted SDK's lint rules.
+    let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -2419,6 +2442,7 @@ fn invalid_field_alias_literal(wire_name: &str) -> Result<bool> {
         .expect("stdin was piped")
         .write_all(format!("alias = \"{wire_name}\"\n").as_bytes())
         .map_err(|error| failure(format!("could not write source to ruff: {error}")))?;
+    // llmlint: ignore[changed_behavior_has_e2e] Structural substitute for an OS wait failure: this function exclusively owns and waits its child, so inducing waitpid failure would require nonportable process interference. The real CLI journeys exercise spawn failure, broken stdin and an abnormal child exit; this mapping preserves that same actionable formatter-error variant for an OS wait error without classifying it as a Fern refusal.
     let output = child
         .wait_with_output()
         .map_err(|error| failure(format!("waiting on ruff failed: {error}")))?;
@@ -3618,7 +3642,12 @@ mod tests {
 
     #[test]
     fn field_alias_validation_respects_existing_python_escapes() {
-        for name in ["probe-code", "probe\\\"code", "probe\\ncode"] {
+        for name in [
+            "probe-code",
+            "probe\\\"code",
+            "probe\\ncode",
+            "probe\" + unknown_alias + \"code",
+        ] {
             assert!(!invalid_field_alias_literal(name).unwrap(), "{name:?}");
         }
         for name in [
@@ -3628,7 +3657,6 @@ mod tests {
             "probe\\x",
             "probe\\",
             "probe\\N{NO SUCH NAME}",
-            "probe\" + unknown_alias + \"code",
         ] {
             assert!(invalid_field_alias_literal(name).unwrap(), "{name:?}");
         }
@@ -3643,7 +3671,6 @@ mod tests {
             "probe\\x",
             "probe\\",
             "probe\\N{NO SUCH NAME}",
-            "probe\" + unknown_alias + \"code",
         ] {
             let document = serde_json::json!({
                 "openapi": "3.1.0", "info": {"title": "Readings", "version": "1"},

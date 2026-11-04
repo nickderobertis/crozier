@@ -200,4 +200,54 @@ fn follow_up_ticket_nested_null_identity_keeps_an_occupied_target() {
         "{model}"
     );
 }
+/// An absent formatter is an installation error, not a Fern refusal.
+#[test]
+fn follow_up_ticket_alias_validation_reports_missing_ruff() {
+    let temp = tempfile::tempdir().unwrap();
+    let out = temp.path().join("sdk");
+    let result = super::probe_command(&repo_root().join(DIR).join("679/openapi.yml"), &out)
+        .env("PATH", temp.path())
+        .output()
+        .unwrap();
+    assert!(!result.status.success());
+    let error = String::from_utf8_lossy(&result.stderr);
+    assert!(
+        error.contains("could not run `ruff`") && error.contains("install ruff"),
+        "{error}"
+    );
+    assert!(!error.contains("generator-lint-failure"), "{error}");
+    assert!(!out.exists());
+}
+
+/// Exercise the real CLI's failure handling across a real child-process pipe.
+/// The external ruff double drains stdin before its abnormal exit, or closes
+/// stdin while the large alias is still being sent.
+#[cfg(unix)]
+#[test]
+fn follow_up_ticket_alias_validation_reports_ruff_process_failures() {
+    use std::os::unix::fs::PermissionsExt;
+    for (script, name, diagnostic) in [
+        ("#!/bin/sh\nwhile IFS= read -r line; do :; done\nprintf 'formatter unavailable\\n' >&2\nexit 2\n", "probe\"code".to_string(), "formatter unavailable"),
+        ("#!/bin/sh\nexec 0<&-\nexit 2\n", format!("{}\"", "p".repeat(2 * 1024 * 1024)), "could not write source to ruff"),
+    ] {
+        let temp = tempfile::tempdir().unwrap();
+        let bin = temp.path().join("bin");
+        std::fs::create_dir(&bin).unwrap();
+        let ruff = bin.join("ruff");
+        std::fs::write(&ruff, script).unwrap();
+        std::fs::set_permissions(&ruff, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let source = repo_root().join(DIR).join("679/openapi.yml");
+        let mut document: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(source).unwrap()).unwrap();
+        document["components"]["schemas"]["Reading"]["properties"] = serde_json::json!({name: {"type": "string"}});
+        let spec = temp.path().join("openapi.json");
+        std::fs::write(&spec, document.to_string()).unwrap();
+        let out = temp.path().join("sdk");
+        let result = super::probe_command(&spec, &out).env("PATH", &bin).output().unwrap();
+        assert!(!result.status.success());
+        let error = String::from_utf8_lossy(&result.stderr);
+        assert!(error.contains("formatting field-alias.py with ruff failed") && error.contains(diagnostic), "{error}");
+        assert!(!error.contains("generator-lint-failure"), "{error}");
+        assert!(!out.exists());
+    }
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
