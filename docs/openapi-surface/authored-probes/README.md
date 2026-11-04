@@ -10,8 +10,7 @@ search finishes. They are neither admitted hand-written covers nor limitations.
 
 Each remaining case holds `openapi.yml`, `fern.log` and `fern-expected/`.
 The log records the certified pair's check and generation exits. The complete
-comment-stripped tree is generated through `fern-references.py generate
-authored-probes` at the certified pair in `assets/scaffolding/metadata.json`.
+comment-stripped tree is generated through `just fern-references authored-probes --version 5.41.3` at the certified pair in `assets/scaffolding/metadata.json`.
 Nothing in the expected tree is edited to repair a difference.
 
 `authored_probe_measurements_match_fern` drives the real CLI and byte-compares

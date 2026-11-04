@@ -14,12 +14,13 @@ cause. No ticket was moved.
 `a765cfec420d5f9c3dc4fe5af81396594a27547a591ba6c25ac1248e64a967f7`.
 Its source is committed at `tests/fixtures/corpus-sources/webflow-v2/openapi.yml`.
 
-A fresh generation through `generate-fern-fixture.sh webflow-v2 5.41.3
-<committed-source>`, under the shared generation lock, wrote the complete
+The supported regeneration surface is
+`just fern-goldens-generate --version 5.41.3 --fixture webflow-v2`, under the
+shared generation lock. In this measurement that command initially reported
+the tree current. A subsequent fresh certified generation wrote the complete
 1,501-file `tests/fixtures/webflow-v2/expected/` tree with Fern CLI 5.163.1 and
-Python SDK 5.41.3. The generated files were not edited. The initial
-`just fern-goldens-generate --version 5.41.3 --fixture webflow-v2` had reported
-that tree current; the subsequent direct generation is the fresh measurement.
+Python SDK 5.41.3. The generated files were not edited; that subsequent run,
+rather than the initial current-tree check, supplies the fresh measurement.
 
 ## Collections initializer
 

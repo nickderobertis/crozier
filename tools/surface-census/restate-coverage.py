@@ -355,8 +355,22 @@ def combination_headline_failures(root: Path) -> list[str]:
 AUTHORED_TIER_HEADER = ("schema_version", "case", "tier", "keys", "source", "sha256", "search")
 
 
-def authored_tier_counts(root: Path) -> Counter[str] | None:
-    """Count decided authored scenarios from their versioned source inventory."""
+class AuthoredTier(StrEnum):
+    HANDWRITTEN = "handwritten"
+    OPEN = "open"
+
+
+class AuthoredEvidence(NamedTuple):
+    case: str
+    tier: AuthoredTier
+    keys: tuple[str, ...]
+    source: Path
+    sha256: str
+    search: str
+
+
+def authored_evidence(root: Path) -> list[AuthoredEvidence] | None:
+    """Validate the versioned evidence inventory before using any row."""
     path = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
     if not path.exists():
         return None
@@ -364,23 +378,37 @@ def authored_tier_counts(root: Path) -> Counter[str] | None:
         records = csv.DictReader(stream, delimiter="\t")
         if tuple(records.fieldnames or ()) != AUTHORED_TIER_HEADER:
             raise ValueError(f"{path}: expected the version-1 authored tier columns")
-        counts: Counter[str] = Counter()
+        result = []
         seen = set()
         for row in records:
+            if None in row or any(not isinstance(row.get(key), str) or not row[key] for key in AUTHORED_TIER_HEADER):
+                raise ValueError(f"{path}: incomplete authored tier row")
             name = row["case"]
-            if row["schema_version"] != "1" or row["tier"] not in ("handwritten", "open") or name in seen:
+            if row["schema_version"] != "1" or row["tier"] not in {tier.value for tier in AuthoredTier} or name in seen:
                 raise ValueError(f"{path}: invalid version, tier or duplicate case {name}")
             relative = Path(row["source"])
-            if relative.is_absolute() or ".." in relative.parts:
+            if relative.is_absolute() or ".." in relative.parts or "\\" in row["source"] or ":" in row["source"]:
                 raise ValueError(f"{path}: {name} source must stay inside the repository")
             source = root / relative
             if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != row["sha256"]:
                 raise ValueError(f"{path}: {name} source is missing or its SHA-256 drifted")
-            if not row["keys"] or not row["search"]:
-                raise ValueError(f"{path}: {name} needs its census keys and search record")
             seen.add(name)
-            counts[row["tier"]] += 1
-        return counts
+            result.append(
+                AuthoredEvidence(
+                    name,
+                    AuthoredTier(row["tier"]),
+                    tuple(row["keys"].split(";")),
+                    relative,
+                    row["sha256"],
+                    row["search"],
+                )
+            )
+        return result
+
+
+def authored_tier_counts(root: Path) -> Counter[AuthoredTier] | None:
+    records = authored_evidence(root)
+    return None if records is None else Counter(record.tier for record in records)
 
 
 def restate_authored_tiers(root: Path, text: str) -> str:
@@ -389,31 +417,32 @@ def restate_authored_tiers(root: Path, text: str) -> str:
         return text
     statement = (
         f"- **Authored-probe evidence tiers ({counts.total()} decided, 0 undecided):** "
-        f"{counts['handwritten']} naming cases now have hand-written covers; "
-        f"{counts['open']} combination cases remain explicitly **open and unproven** under "
+        f"{counts[AuthoredTier.HANDWRITTEN]} naming cases now have hand-written covers; "
+        f"{counts[AuthoredTier.OPEN]} combination cases remain explicitly **open and unproven** under "
         "`exhausted-combination-fallback`. The [versioned matrix](openapi-surface/authored-probes/evidence-tiers.tsv) "
         "names each case, its source hash, census keys and decided tier. The "
         "[bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts) "
         "lists the missing populations and every unscreened candidate. Restoring those populations "
         "and completing the exact-trigger and certified screens would finish the open searches."
     )
-    return re.sub(
-        r"- \*\*Authored-probe (?:gaps|evidence tiers).*?(?=\n\nWhere crozier)", statement, text, count=1, flags=re.S
+    rendered, count = re.subn(
+        r"- \*\*Authored-probe (?:gaps|evidence tiers).*?(?=\n\nWhere crozier)",
+        lambda _: statement,
+        text,
+        count=1,
+        flags=re.S,
     )
+    if count != 1:
+        raise ValueError("missing authored tier statement")
+    return rendered
 
 
 def restate_open_combinations(root: Path, text: str) -> str:
     """Name authored open combinations without changing another row's reason."""
-    matrix = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
-    if not matrix.exists():
+    records = authored_evidence(root)
+    if records is None:
         return text
-    with matrix.open(encoding="utf-8", newline="") as stream:
-        owned = {
-            key
-            for row in csv.DictReader(stream, delimiter="\t")
-            if row["tier"] == "open"
-            for key in row["keys"].split(";")
-        }
+    owned = {key for record in records if record.tier == AuthoredTier.OPEN for key in record.keys}
     heading = "#### Unproven combinations, named"
     before, separator, tail = text.partition(heading)
     if not separator:

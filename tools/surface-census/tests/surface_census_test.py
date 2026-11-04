@@ -1069,6 +1069,8 @@ def counted_combination_search(root: Path, key: str, reason: str) -> bool:
     )
     if not match:
         return False
+    if any("\\" in value for value in match.groups()):
+        return False
     paths = [pathlib.PurePosixPath(value) for value in match.groups()]
     if any(path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive for path in paths):
         return False
@@ -6089,8 +6091,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - PARAMETER_EXTENSION_SHAPE_PREDICATES
         - BODY_AND_RESPONSE_PREDICATES
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
-        # Independently discriminated by WithdrawnWitnessSelectorTests and
-        # AuthoredEvidenceTierTests below, rather than this older arm table.
+        # Independently discriminated by the dedicated remainder selector tests
+        # below, rather than this older arm table.
         - {
             "schema.$ref:unresolved-nested-local",
             "operation.operationId:tag-only",
@@ -20357,6 +20359,82 @@ class CoverageRestatementTests(unittest.TestCase):
             check=False,
         )
 
+    def test_authored_inventory_rendering_refuses_truncation_and_recovers(self) -> None:
+        matrix = self.root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        matrix.parent.mkdir(parents=True)
+        source = self.root / "case.yml"
+        source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
+        row = f"1\tcase\topen\tcombo-header-string-default\tcase.yml\t{digest}\tsearch.md\n"
+        matrix.write_text(header + row, encoding="utf-8")
+        initial = self.run_restater("--write")
+        self.assertEqual(0, initial.returncode, initial.stderr)
+        rendered = self.index.read_text(encoding="utf-8")
+        self.assertIn("1 decided, 0 undecided", rendered)
+        self.assertIn("1 combination cases remain", rendered)
+        self.assertIn("| `combo-header-string-default` | `parameters` | `search incomplete`", rendered)
+        unrelated = next(line for line in rendered.splitlines() if line.startswith("| `combo-tag-only-operation-id` |"))
+        matrix.write_text(header + row.replace("\topen\t", "\thandwritten\t"), encoding="utf-8")
+        changed = self.run_restater("--write")
+        self.assertEqual(0, changed.returncode, changed.stderr)
+        self.assertIn("1 naming cases now", self.index.read_text(encoding="utf-8"))
+        self.assertIn(unrelated, self.index.read_text(encoding="utf-8"))
+        matrix.write_text(header + "1\tcase\topen\n", encoding="utf-8")
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("incomplete authored tier row", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        matrix.write_text(header + row, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--write").returncode)
+        valid = self.index.read_text(encoding="utf-8")
+        self.index.write_text(
+            valid.replace("- **Authored-probe evidence tiers", "- **Missing-template"), encoding="utf-8"
+        )
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("authored tier statement", refused.stderr)
+        self.index.write_text(valid, encoding="utf-8")
+        self.assertEqual(0, self.run_restater().returncode)
+
+    def test_authored_snapshot_gap_counts_preserve_cells_and_recover(self) -> None:
+        payload = {
+            "sources": [{"fixture": "sample", "origin": "corpus"}],
+            "rows": [
+                {"selector": "openapi.paths", "fixture": "sample", "count": 1},
+                {"selector": "operation.operationId:digit-leading-method", "fixture": "sample", "count": 1},
+                {"selector": "parameter.in=header&parameter.schema>schema.default", "fixture": "sample", "count": 3},
+            ],
+        }
+        snapshot = self.root / "snapshot.json"
+        snapshot.write_text(json.dumps(payload), encoding="utf-8")
+        region = self.root / "docs/openapi-surface/parameters.md"
+        key = "| combo-header-string-default |"
+        original = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
+        written = self.run_restater("--snapshot-json", str(snapshot), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        positive = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
+        self.assertIn("3 declarations across 1 registered golden sources", positive)
+        self.assertEqual(original.split("|")[:5], positive.split("|")[:5])
+        self.assertEqual(original.split("|")[6:], positive.split("|")[6:])
+        payload["rows"] = [
+            row for row in payload["rows"] if row["selector"] != "parameter.in=header&parameter.schema>schema.default"
+        ]
+        snapshot.write_text(json.dumps(payload), encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(snapshot), "--write").returncode)
+        valid = region.read_text(encoding="utf-8")
+        self.assertIn("0 declarations across 0 registered golden sources", valid)
+        region.write_text(
+            valid.replace("census `parameter.in=header&parameter.schema>schema.default`", "missing selector"),
+            encoding="utf-8",
+        )
+        refused = self.run_restater("--snapshot-json", str(snapshot), "--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("authored gap has no census selector", refused.stderr)
+        region.write_text(valid, encoding="utf-8")
+        recovered = self.run_restater("--snapshot-json", str(snapshot))
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
         written = self.run_restater("--combinations-only", "--write")
@@ -22908,6 +22986,8 @@ class CountedOpenCombinationTests(unittest.TestCase):
             record.write_text(text, encoding="utf-8")
             census_path.write_text("key\tsource\tdocument\n", encoding="utf-8")
             self.assertTrue(counted_combination_search(root, "combo-sample", reason))
+            escaped = reason.replace("openapi-surface/search/", "..\\outside/")
+            self.assertFalse(counted_combination_search(root, "combo-sample", escaped))
             record.write_text(text.split("\n## Missing populations")[0], encoding="utf-8")
             self.assertFalse(counted_combination_search(root, "combo-sample", reason))
             record.write_text(text, encoding="utf-8")
@@ -22919,3 +22999,50 @@ class CountedOpenCombinationTests(unittest.TestCase):
             self.assertTrue(counted_combination_search(root, "combo-sample", reason))
             census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\t\n", encoding="utf-8")
             self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+
+
+class CompletePointerTraversalTests(unittest.TestCase):
+    def test_pointer_segments_and_invalid_neighbors_through_census(self) -> None:
+        target = {"type": "string"}
+        base = {
+            "items": target,
+            "additionalProperties": target,
+            "oneOf": [target],
+            "anyOf": [target],
+            "allOf": [target],
+        }
+        paths = [
+            ("items", False),
+            ("additionalProperties", False),
+            ("oneOf/0", False),
+            ("anyOf/0", False),
+            ("allOf/0", False),
+            ("oneOf/-1", True),
+            ("oneOf/1", True),
+            ("oneOf/no", True),
+            ("oneOf", True),
+            ("unsupported", True),
+            ("items/unknown", True),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, (suffix, _unresolved) in enumerate(paths):
+                name = f"pointer-{index}"
+                document = {
+                    "openapi": "3.0.3",
+                    "info": {"title": name, "version": "1"},
+                    "paths": {},
+                    "components": {"schemas": {"Base": base, "Use": {"$ref": "#/components/schemas/Base/" + suffix}}},
+                }
+                write_json_fixture(root, name, document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.$ref:unresolved-nested-local",
+                "--json",
+            )
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            actual = {row["fixture"] for row in json.loads(completed.stdout)["rows"]}
+            self.assertEqual({f"pointer-{i}" for i, (_, unresolved) in enumerate(paths) if unresolved}, actual)

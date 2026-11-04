@@ -5094,24 +5094,25 @@ def local_schema_pointer_target(reference: Any, schemas: dict[Any, Any]) -> dict
     index = 1
     while index < len(parts) and isinstance(node, dict):
         field = parts[index]
-        if field in ("properties", "$defs"):
-            if index + 1 >= len(parts):
+        match field:
+            case "properties" | "$defs":
+                if index + 1 >= len(parts):
+                    return None
+                entries = node.get(field)
+                node = entries.get(parts[index + 1]) if isinstance(entries, dict) else None
+                index += 2
+            case "items" | "additionalProperties":
+                node = node.get(field)
+                index += 1
+            case "oneOf" | "anyOf" | "allOf":
+                if index + 1 >= len(parts) or not _USIZE.fullmatch(parts[index + 1]):
+                    return None
+                members = node.get(field)
+                member = int(parts[index + 1])
+                node = members[member] if isinstance(members, list) and member < len(members) else None
+                index += 2
+            case _:
                 return None
-            entries = node.get(field)
-            node = entries.get(parts[index + 1]) if isinstance(entries, dict) else None
-            index += 2
-        elif field in ("items", "additionalProperties"):
-            node = node.get(field)
-            index += 1
-        elif field in ("oneOf", "anyOf", "allOf"):
-            if index + 1 >= len(parts) or not _USIZE.fullmatch(parts[index + 1]):
-                return None
-            members = node.get(field)
-            member = int(parts[index + 1])
-            node = members[member] if isinstance(members, list) and member < len(members) else None
-            index += 2
-        else:
-            return None
     return node if index == len(parts) and isinstance(node, dict) else None
 
 
