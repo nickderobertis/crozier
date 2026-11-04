@@ -1436,25 +1436,26 @@ def plan(
                 return full(f"{path} changed, and no function digest can attribute it")
         if path.startswith(E2E):
             continue
-        if path.startswith(CORPUS_SOURCES):
-            name = path[len(CORPUS_SOURCES) :].split("/", 1)[0]
-            for test in by_name.get(name, []) + by_api.get(name, []):
-                rerun.setdefault(test, f"its source document changed ({path})")
-        elif path in ROW_KEYED:
-            keys = _row_keys(root, base["commit"], path)
-            if keys is None:
-                return full(f"{path} is new since the base")
-            for key in keys:
-                for test in by_name.get(key, []) + by_api.get(key, []):
-                    rerun.setdefault(test, f"its {Path(path).name} row changed")
-        elif path.startswith(FIXTURES) and path.count("/") >= 3:
-            api = path[len(FIXTURES) :].split("/", 1)[0]
-            for test in by_api.get(api, []):
-                rerun.setdefault(test, f"its golden's fixture tree changed ({path})")
-        elif path.startswith(HANDWRITTEN) and path.count("/") == 4:
-            name, _, leaf = path[len(HANDWRITTEN) :].partition("/")
-            if name in fixtures and leaf in FIXTURE_INPUTS:
-                rerun_fixtures.setdefault(name, f"its fixture changed ({path})")
+        match path:
+            case path if path.startswith(CORPUS_SOURCES):
+                name = path[len(CORPUS_SOURCES) :].split("/", 1)[0]
+                for test in by_name.get(name, []) + by_api.get(name, []):
+                    rerun.setdefault(test, f"its source document changed ({path})")
+            case path if path in ROW_KEYED:
+                keys = _row_keys(root, base["commit"], path)
+                if keys is None:
+                    return full(f"{path} is new since the base")
+                for key in keys:
+                    for test in by_name.get(key, []) + by_api.get(key, []):
+                        rerun.setdefault(test, f"its {Path(path).name} row changed")
+            case path if path.startswith(FIXTURES) and path.count("/") >= 3:
+                api = path[len(FIXTURES) :].split("/", 1)[0]
+                for test in by_api.get(api, []):
+                    rerun.setdefault(test, f"its golden's fixture tree changed ({path})")
+            case path if path.startswith(HANDWRITTEN) and path.count("/") == 4:
+                name, _, leaf = path[len(HANDWRITTEN) :].partition("/")
+                if name in fixtures and leaf in FIXTURE_INPUTS:
+                    rerun_fixtures.setdefault(name, f"its fixture changed ({path})")
     suite = [path for path in paths if path.startswith(E2E)]
     if suite:
         attributed, reason = e2e_attribution(root, base["commit"], suite, tests, golden_constants)
