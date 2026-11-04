@@ -57,6 +57,7 @@
         "{workspaceRoot}/.github/workflows/release.yml",
         "{workspaceRoot}/tools/ci/tests/support/release.rs",
         "{workspaceRoot}/tools/ci/gate.mjs",
+        "{workspaceRoot}/tools/ci/gate-timing.mjs",
         "{workspaceRoot}/tools/ci/ci-tier.mjs",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/nx.json",

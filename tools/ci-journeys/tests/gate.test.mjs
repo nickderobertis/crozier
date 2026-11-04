@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { commitChange, git, just, project, ran, scratchWorkspace, write } from "./support.mjs";
+import { commitChange, git, just, project, ran, REPO, scratchWorkspace, write } from "./support.mjs";
 
 test("with NX_BASE unset the affected tier keys off the merge base with origin/main", (t) => {
   const root = scratchWorkspace(t);
@@ -275,7 +275,7 @@ test("a failing target's whole output reaches a slow reader before the gate exit
   // has drained, so the log is past one buffer whatever the load — and only
   // just past it on macOS, where Nx kept 65,904 bytes of this run's log.
   const root = scratchWorkspace(t);
-  const noisy = "node -e \"for (let i = 0; i < 4000; i++) console.log('line ' + i + ' ' + '.'.repeat(60)); setTimeout(() => process.exit(3), 500)\"";
+  const noisy = "node -e \"process.stdout.write(Array.from({ length: 4000 }, (_, i) => 'line ' + i + ' ' + '.'.repeat(60) + '\\\\n').join(''), () => process.exit(3))\"";
   commitChange(root, "a/project.json", project("a", { targets: { test: { command: noisy } } }));
   const env = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true" };
   delete env.NX_SKIP_NX_CACHE;
@@ -415,3 +415,251 @@ test("a toolchain that will not install stops the gate before any target runs", 
   assert.match(run.stderr, /rustup self update/);
   assert.ok(!ran(root, "a") && !ran(root, "b"), run.output);
 });
+
+for (const exit of [0, 1]) {
+  test(`task timings survive exit ${exit} without repeating the task`, (t) => {
+    const root = scratchWorkspace(t);
+    write(root, {
+      "a/project.json": project("a", { targets: { test: { command: `node once.cjs ${exit}` } } }),
+      "once.cjs": "const fs = require('fs'); fs.appendFileSync('ran-a', 'once\\n'); process.exit(Number(process.argv[2]));",
+    });
+    const run = just(root, ["test", "--sweep", "--projects=a"]);
+    assert.equal(run.status, exit, run.output);
+    assert.equal(readFileSync(join(root, "ran-a"), "utf8"), "once\n");
+    assert.match(run.output, /gate: task a:test: [0-9.]+s \((success|failure)\)/);
+    const log = run.output.match(/(?:output in |and in )([^\s)]+\.log)/)?.[1];
+    assert.ok(log, run.output);
+    assert.match(readFileSync(log, "utf8"), /gate: task a:test:/);
+  });
+}
+
+// The real timing CLI with only its external read processes doubled. Seeds are
+// recorded GitHub responses; variants induce cancellation, missing contexts and
+// later attempts without changing any calculation in the implementation.
+import { calculateHead, summarize, validateReport } from '../../ci/gate-timing.mjs';
+import { chmodSync, mkdtempSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+const timingCLI = fileURLToPath(new URL('../../ci/gate-timing.mjs', import.meta.url));
+const timingRecords = JSON.parse(readFileSync(new URL('./fixtures/gate-timing.json', import.meta.url), 'utf8'));
+
+function timingReplay(t) {
+  const root = mkdtempSync(join(tmpdir(), 'crozier-timing-replay-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const records = structuredClone(timingRecords);
+  const answerFile = join(root, 'answers.json');
+  const calls = join(root, 'calls.jsonl');
+  writeFileSync(answerFile, JSON.stringify({ records }));
+  const stub = `#!/usr/bin/env node
+const fs = require('fs');
+const a = JSON.parse(fs.readFileSync(process.env.ANSWERS, 'utf8'));
+const args = process.argv.slice(2);
+fs.appendFileSync(process.env.CALLS, JSON.stringify(args) + '\\n');
+let answer;
+const path = args.at(-1);
+if(args.includes('rate_limit')) {
+ const waited = fs.existsSync(process.env.CALLS+'.waited');
+ if(a.quota && !waited) { fs.writeFileSync(process.env.CALLS+'.waited',''); answer={resources:{core:{limit:100,remaining:39,reset:0}}}; }
+ else answer={resources:{core:{limit:100,remaining:100,reset:0}}};
+} else if(path.endsWith('/protection')) answer={required_status_checks:{contexts:['gate','llmlint']}};
+else if(path.endsWith('/rules/branches/main')) answer=[];
+else if(path.includes('/actions/runs?')) answer={workflow_runs:a.records.map(r=>r.run)};
+else if(args.includes('run-jobs')) answer={jobs:a.records.find(r=>r.run.id===Number(args[args.indexOf('--run')+1])).jobs};
+else if(/\\/attempts\\//.test(path)) answer={jobs:a.previous};
+else if(/\\/actions\\/runs\\/\\d+$/.test(path)) answer=a.records.find(r=>r.run.id===Number(path.split('/').at(-1)))?.run;
+if(a.missing && path.includes('/actions/runs?')) answer={};
+if(a.fail) { console.error('read refused'); process.exit(1); }
+if(!answer) { console.error('unexpected external request: '+args.join(' ')); process.exit(1); }
+process.stdout.write(JSON.stringify(answer));
+`;
+  for (const name of ['gh', 'onevcs']) { writeFileSync(join(root, name), stub); chmodSync(join(root, name), 0o755); }
+  const run = (extra = []) => spawnSync(process.execPath, [timingCLI, 'runs', '--since', '2026-10-31T00:00:00Z', '--until', '2026-11-04T00:00:00Z', '--cache-dir', join(root, 'cache'), ...extra], { encoding: 'utf8', env: { ...process.env, GH_TOKEN: 'replay', PATH: `${root}:${process.env.PATH}`, ANSWERS: answerFile, CALLS: calls } });
+  return { root, records, answerFile, calls, run };
+}
+
+test('timing CLI reconciles recorded heads, all jobs, real queue, filters and help', { skip: process.platform === 'win32' }, (t) => {
+  const replay = timingReplay(t);
+  const run = replay.run();
+  assert.equal(run.status, 0, run.stderr);
+  const report = validateReport(JSON.parse(run.stdout));
+  assert.equal(report.runs.length, replay.records.length);
+  assert.equal(report.observation.jobs, replay.records.reduce((n, r) => n + r.jobs.length, 0));
+  for (const record of replay.records) {
+    const actual = report.runs.find((r) => r.run_id === record.run.id);
+    assert.deepEqual(actual, calculateHead([record], ['gate', 'llmlint']));
+  }
+  // Recorded release PR: last required gate completed 20:00:13, creation
+  // 17:53:39. Job queue uses its own creation, not workflow creation.
+  assert.equal(report.runs[0].gate_seconds, 7594);
+  const seed = replay.records[0];
+  const job = seed.jobs.find((j) => j.name === 'llmlint');
+  const measured = report.runs[0].jobs.find((j) => j.name === 'llmlint');
+  assert.equal(measured.queue_seconds, 2);
+  assert.equal(measured.start_offset_seconds, 136);
+  assert.equal(measured.run_seconds, 526);
+  assert.notEqual(job.created_at, seed.run.created_at);
+  assert.deepEqual(report.summary, summarize(report.runs));
+  const filtered = replay.run(['--head-contains', replay.records.at(-1).run.head_sha.slice(0, 7)]);
+  assert.equal(filtered.status, 0, filtered.stderr);
+  assert.equal(JSON.parse(filtered.stdout).runs.length, 1);
+  const help = spawnSync(process.execPath, [timingCLI, '--help'], { encoding: 'utf8' });
+  assert.equal(help.status, 0);
+  for (const token of ['--since', '--until', '--limit', '--head-contains', '--cache-dir', '--format', 'schema_version: 1']) assert.ok(help.stdout.includes(token));
+  const md = replay.run(['--format', 'markdown']);
+  assert.equal(md.status, 0, md.stderr);
+  assert.match(md.stdout, /release-pr/);
+});
+
+test('timing CLI refreshes later attempts while reusing completed responses', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  assert.equal(r.run().status, 0);
+  const before = readFileSync(r.calls, 'utf8').trim().split('\n');
+  const seed = r.records[0];
+  const previous = structuredClone(seed.jobs);
+  seed.run.run_attempt = 2;
+  seed.jobs = seed.jobs.map((j) => ({ ...j, run_attempt: 2, completed_at: '2026-11-03T23:00:00Z' }));
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, previous }));
+  const second = r.run();
+  assert.equal(second.status, 0, second.stderr);
+  const after = readFileSync(r.calls, 'utf8').trim().split('\n').slice(before.length).map(JSON.parse);
+  assert.equal(after.filter((a) => a.includes('run-jobs')).length, 1);
+  assert.ok(after.some((a) => a.at(-1) === `repos/nickderobertis/crozier/actions/runs/${seed.run.id}`));
+  const measured = JSON.parse(second.stdout).runs.find((x) => x.run_id === seed.run.id);
+  assert.equal(measured.attempt, 2);
+  assert.equal(measured.jobs.length, previous.length * 2);
+  assert.equal(measured.gate_seconds, 18381);
+});
+
+test('timing CLI excludes cancelled and missing contexts from passing summary and waits for quota', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  r.records[0].jobs.find((j) => j.name === 'gate').conclusion = 'cancelled';
+  r.records[1].jobs = r.records[1].jobs.filter((j) => j.name !== 'gate');
+  // Main measures every job's completion independently of PR contexts.
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records, quota: true }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const report = JSON.parse(run.stdout);
+  assert.equal(report.runs[0].gate_seconds, null);
+  assert.match(report.runs[0].reason, /cancelled/);
+  assert.equal(report.summary.kinds['release-pr'].unsuccessful, 1);
+  assert.deepEqual(report.observation.events.map((e) => e.event), ['quota_wait', 'quota_resume']);
+  // Induce a missing PR context independently of the main seed.
+  r.records.at(-1).jobs = r.records.at(-1).jobs.filter((j) => j.name !== 'gate');
+  rmSync(join(r.root, 'cache'), { recursive: true });
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  const missing = JSON.parse(r.run().stdout).runs.at(-1);
+  assert.equal(missing.gate_seconds, null);
+  assert.match(missing.reason, /missing/);
+});
+
+test('timing CLI rejects invalid invocation and failed or missing reads', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  assert.equal(r.run(['--limit', '0']).status, 2);
+  assert.equal(r.run(['--until', 'yesterday']).status, 2);
+  for (const variant of ['fail', 'missing']) {
+    writeFileSync(r.answerFile, JSON.stringify({ records: r.records, [variant]: true }));
+    const run = r.run();
+    assert.equal(run.status, 1, run.stderr);
+    assert.equal(run.stdout, '');
+  }
+});
+
+
+test('timing CLI counts sibling workflows and excludes failed gates', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const pr = r.records.at(-1);
+  pr.jobs.find((j) => j.name === 'llmlint').conclusion = 'failure';
+  r.records.push({ run: { ...pr.run, id: 999 }, jobs: [{ ...pr.jobs[0], name: 'visual sibling', run_id: 999 }] });
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const report = JSON.parse(run.stdout);
+  const measured = report.runs.find((head) => head.head_sha === pr.run.head_sha);
+  assert.equal(measured.jobs.length, pr.jobs.length + 1);
+  assert.equal(measured.conclusion, 'failure');
+  assert.equal(typeof measured.gate_seconds, 'number');
+  assert.equal(report.summary.kinds.pr.n, 0);
+  assert.equal(report.summary.kinds.pr.unsuccessful, 1);
+});
+
+
+test('timing CLI refreshes jobs while an attempt is unfinished', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const seed = r.records[0];
+  seed.run.status = 'in_progress';
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  assert.equal(r.run().status, 0);
+  const count = readFileSync(r.calls, 'utf8').trim().split('\n').length;
+  seed.run.status = 'completed';
+  seed.jobs.push({ ...seed.jobs[0], name: 'late matrix job' });
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  assert.ok(JSON.parse(run.stdout).runs[0].jobs.some((j) => j.name === 'late matrix job'));
+  const calls = readFileSync(r.calls, 'utf8').trim().split('\n').slice(count).map(JSON.parse);
+  assert.equal(calls.filter((a) => a.includes('run-jobs')).length, 1);
+});
+
+
+test('timing CLI retains workflows cancelled before any job was created', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  r.records.push({ run: { ...r.records.at(-1).run, id: 41395650386, head_sha: 'b'.repeat(40), conclusion: 'cancelled' }, jobs: [] });
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const head = JSON.parse(run.stdout).runs.at(-1);
+  assert.equal(head.gate_seconds, null);
+  assert.equal(head.conclusion, 'cancelled');
+  assert.match(head.reason, /cancelled workflow/);
+  assert.deepEqual(head.jobs, []);
+});
+
+
+test('timing CLI reports main CI completion separately from other workflows', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  const main = r.records.find((record) => record.run.event === 'push');
+  const expected = calculateHead([main], ['gate', 'llmlint']).gate_seconds;
+  r.records.push({ run: { ...main.run, id: 998, name: 'Visual docs', path: '.github/workflows/visual-docs.yml' }, jobs: [{ ...main.jobs[0], name: 'gallery', completed_at: '2026-11-04T00:00:00Z' }] });
+  writeFileSync(r.answerFile, JSON.stringify({ records: r.records }));
+  const run = r.run();
+  assert.equal(run.status, 0, run.stderr);
+  const measured = JSON.parse(run.stdout).runs.find((head) => head.head_sha === main.run.head_sha);
+  assert.equal(measured.gate_seconds, expected);
+  assert.equal(measured.jobs.length, main.jobs.length + 1);
+});
+
+
+for (const damage of ['missing', 'malformed', 'invalid']) for (const exit of [0, 1]) {
+  test(`gate retains exit ${exit} and diagnoses ${damage} telemetry`, { skip: process.platform === 'win32' }, (t) => {
+    const root = scratchWorkspace(t);
+    // Forward every call to the installed Nx, then damage only its telemetry.
+    // Both the gate and target still execute their real subprocess boundaries.
+    unlinkSync(join(root, 'node_modules'));
+    mkdirSync(join(root, 'node_modules', '.bin'), { recursive: true });
+    symlinkSync(join(REPO, 'node_modules', 'nx'), join(root, 'node_modules', 'nx'), 'junction');
+    const wrapper = `#!/usr/bin/env node
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const run = spawnSync(process.execPath, [${JSON.stringify(join(REPO, 'node_modules', 'nx', 'dist', 'bin', 'nx.js'))}, ...process.argv.slice(2)], { stdio: 'inherit', env: process.env });
+if (process.argv[2] === 'run-many') {
+  const profile = process.env.NX_PROFILE;
+  ${damage === 'missing' ? "fs.unlinkSync(profile);" : `fs.writeFileSync(profile, ${JSON.stringify(damage === 'malformed' ? '{' : '{}')});`}
+}
+process.exit(run.status ?? 1);
+`;
+    writeFileSync(join(root, 'node_modules', '.bin', 'nx'), wrapper);
+    chmodSync(join(root, 'node_modules', '.bin', 'nx'), 0o755);
+    write(root, {
+      'a/project.json': project('a', { targets: { test: { command: `node once.cjs ${exit}` } } }),
+      'once.cjs': "require('fs').appendFileSync('ran-a', 'once'); process.exit(Number(process.argv[2]));",
+    });
+    const run = just(root, ['test', '--sweep', '--projects=a']);
+    assert.equal(run.status, exit, run.output);
+    assert.equal(readFileSync(join(root, 'ran-a'), 'utf8'), 'once');
+    assert.match(run.stderr, /gate: task timings unavailable:/);
+    assert.doesNotMatch(run.stdout, /task timings unavailable/);
+    const log = run.output.match(/(?:output in |and in )([^\s)]+\.log)/)?.[1];
+    assert.ok(log, run.output);
+    assert.match(readFileSync(log, 'utf8'), /task timings unavailable:/);
+  });
+}

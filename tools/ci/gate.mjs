@@ -31,6 +31,7 @@
 // Quiet on success: the tier and the selected projects (and any promoted ones
 // left to their own legs), then one completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
+import { taskTimings } from "./gate-timing.mjs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -317,8 +318,21 @@ function main() {
   const logDir = join(ROOT, ".nx", "logs");
   mkdirSync(logDir, { recursive: true });
   const log = join(logDir, `gate-${process.pid}.log`);
-  const run = spawnSync(nxBin(), args, { cwd: ROOT, env: NX_ENV, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
+  const profile = `.nx/logs/gate-${process.pid}.profile.json`;
+  const run = spawnSync(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, NX_PROFILE: profile }, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
   writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
+  let timing;
+  let timingError = false;
+  try {
+    const events = JSON.parse(readFileSync(join(ROOT, profile), "utf8"));
+    timing = taskTimings(events).map((event) =>
+      `${TOOL}: task ${event.name}: ${event.seconds.toFixed(3)}s (${event.status})`,
+    ).join("\n");
+  } catch (error) {
+    timingError = true;
+    timing = `${TOOL}: task timings unavailable: ${error.message}`;
+  }
+  writeFileSync(log, `${readFileSync(log, "utf8")}\n${timing}\n`);
   if (run.status !== 0) {
     // Exit only once the replay has drained: a pipe takes one buffer's worth
     // (64 KiB on Linux) and an exit drops the rest — the failing target's own
@@ -328,6 +342,8 @@ function main() {
     );
     return;
   }
+  if (timingError) console.error(timing);
+  else console.log(timing);
   console.log(`${TOOL}: ok (${options.targets.join(", ")}; output in ${log})`);
 }
 
