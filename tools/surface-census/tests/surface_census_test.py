@@ -21122,7 +21122,7 @@ class CoverageRestatementTests(unittest.TestCase):
                 self.index,
                 lambda text: text.replace("#### Golden rows resting only on residual goldens", "#### Missing section"),
             ),
-            "residual row": (self.index, lambda text: text.replace("| `split` |", "| `unknown verdict` |")),
+            "residual row": (self.index, lambda text: text.replace("| `byte-matched` |", "| `unknown verdict` |")),
         }
         originals = {path: path.read_text(encoding="utf-8") for path, _mutate in mutations.values()}
         for name, (path, mutate) in mutations.items():
@@ -21218,11 +21218,21 @@ class CoverageRestatementTests(unittest.TestCase):
         ledger.write_text(text, encoding="utf-8")
         self.assertEqual(0, self.run_restater().returncode)
 
+    def test_byte_matched_residual_attribution_is_accepted(self) -> None:
+        original = self.index.read_text(encoding="utf-8")
+        row = next(
+            line for line in original.splitlines() if line.startswith("| `boolean-schema-true` | `webflow-v2` |")
+        )
+        self.assertTrue(row.endswith("| `byte-matched` |"))
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn(row, self.index.read_text(encoding="utf-8"))
+
     def test_changed_residual_and_witness_populations_reconcile(self) -> None:
         original = self.index.read_text(encoding="utf-8")
         real = int(matched(re.search(r"\*\*(\d+) carry byte-match evidence", original)).group(1))
         unproven = int(matched(re.search(r"\*\*(\d+) remain unproven", original)).group(1))
-        self.index.write_text(original.replace("| `split` |", "| `open gap` |"), encoding="utf-8")
+        self.index.write_text(original.replace("| `byte-matched` |", "| `open gap` |"), encoding="utf-8")
         result = self.run_restater("--write")
         self.assertEqual(0, result.returncode, result.stderr)
         revised = self.index.read_text(encoding="utf-8")
