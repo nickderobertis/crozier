@@ -1,0 +1,67 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sample",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tallies": {
+      "post": {
+        "operationId": "postTally",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cage"
+              },
+              "example": {
+                "width": 4
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Perch": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Hutch"
+          },
+          {
+            "$ref": "#/components/schemas/Cage"
+          }
+        ]
+      },
+      "Hutch": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Cage": {
+        "type": "object",
+        "required": [
+          "width"
+        ],
+        "properties": {
+          "width": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

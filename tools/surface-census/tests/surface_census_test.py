@@ -813,6 +813,8 @@ NAMED_COMBINATIONS_HEADING = "#### Unproven combinations, named"
 COMBINATION_PREFIX = "combo-"
 COMBINATIONS_LIST = Path("docs") / "openapi-surface" / "combinations.md"
 COMBINATION_COLUMNS = ("key", "selector", "region", "seam", "owner", "why")
+# This owner opts into the shared class gate when its classified audit lands.
+ENFORCED_COMBINATION_OWNERS = frozenset({"prove-schema-combinations"})
 COMBINATION_OWNERS = {
     "examples": "prove-schema-combinations",
     "models-unions-refs": "prove-schema-combinations",
@@ -12800,6 +12802,35 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
+
+    def test_schema_owner_cannot_leave_a_combination_unclassified(self) -> None:
+        key = "combo-allof-with-required"
+        table = self.root / "docs/openapi-surface/golden-reach-sites.tsv"
+        lines = table.read_text().splitlines()
+        for index, line in enumerate(lines):
+            fields = line.split("\t")
+            if fields[0] == key:
+                fields[2] = "co-occurrence"
+                lines[index] = "\t".join(fields)
+        table.write_text("\n".join(lines) + "\n")
+        audit = self.root / COOCCURRENCE_AUDIT
+        original = audit.read_text(encoding="utf-8")
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        fields[4] = fields[4].partition("; ")[2]
+        audit.write_text(original.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(any(key in failure and "must declare class:" in failure for failure in failures))
+        listing = self.root / COMBINATIONS_LIST
+        selected = next(line for line in listing.read_text().splitlines() if line.startswith(f"| `{key}` |"))
+        listing.write_text(
+            listing.read_text().replace(
+                selected, selected.replace("`prove-schema-combinations`", "`deferred-combination-proof`"), 1
+            )
+        )
+        failures = finished_state_failures(self.root)
+        self.assertEqual([], [failure for failure in failures if key in failure])
+
 
     def test_output_insensitive_feature_is_decided_but_changed_comparison_is_rejected(self) -> None:
         surface = self.root / "docs/openapi-surface"

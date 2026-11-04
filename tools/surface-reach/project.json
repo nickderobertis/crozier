@@ -56,6 +56,8 @@
         "generator",
         "{workspaceRoot}/docs/openapi-surface/*.md",
         "{workspaceRoot}/docs/openapi-surface/*.tsv",
+        "{workspaceRoot}/docs/openapi-surface/combination-open-unions/**/*",
+        "{workspaceRoot}/docs/openapi-surface/combination-interaction-controls/**/*",
         "{workspaceRoot}/docs/openapi-surface/handwritten/**/*",
         "{workspaceRoot}/docs/openapi-surface/probe-expected/MANIFEST.tsv",
         "{workspaceRoot}/docs/openapi-surface/**/*.md",

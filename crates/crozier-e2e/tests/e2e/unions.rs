@@ -36,6 +36,9 @@ const FIXTURES: [&str; 14] = [
 const LITERALS_DIR: &str = "docs/fern-measurements/union-literals";
 /// The directory in each fixture's entry that holds Fern's overlay tree.
 const OVERLAY_DIR: &str = "fern-expected";
+/// Retired fallback retained as complete-tree diagnostic evidence.
+const DIAGNOSTIC_DIR: &str =
+    "docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas";
 
 const MANIFEST: &str = ".crozier-overlay.json";
 
@@ -43,14 +46,13 @@ const MANIFEST: &str = ".crozier-overlay.json";
 /// goldens records it: its repository-relative path and the file in it no
 /// comparison reads (its manifest).
 pub(super) fn compared() -> Vec<(String, Vec<String>)> {
-    FIXTURES
-        .iter()
-        .map(|name| {
+    std::iter::once((format!("{DIAGNOSTIC_DIR}/fern-expected"), Vec::new()))
+        .chain(FIXTURES.iter().map(|name| {
             (
                 format!("{LITERALS_DIR}/{name}/{OVERLAY_DIR}"),
                 vec![MANIFEST.to_string()],
             )
-        })
+        }))
         .collect()
 }
 
@@ -68,6 +70,9 @@ const PROBE_FIXTURES: [&str; 4] = [
 /// A measured probe keeps its document beside the other probes; every other
 /// fixture keeps it in its own hand-written directory.
 fn fixture_spec(name: &str) -> PathBuf {
+    if name == "orchard-dispatch-schemas" {
+        return repo_root().join(DIAGNOSTIC_DIR).join("openapi.yml");
+    }
     if PROBE_FIXTURES.contains(&name) {
         return repo_root()
             .join(PROBE_DOCUMENTS_DIR)
@@ -81,6 +86,9 @@ fn fixture_spec(name: &str) -> PathBuf {
 
 /// The complete tree Fern generated from [`fixture_spec`].
 fn fixture_tree(name: &str) -> PathBuf {
+    if name == "orchard-dispatch-schemas" {
+        return repo_root().join(DIAGNOSTIC_DIR).join("fern-expected");
+    }
     if PROBE_FIXTURES.contains(&name) {
         return repo_root().join(PROBE_EXPECTED_DIR).join(name);
     }

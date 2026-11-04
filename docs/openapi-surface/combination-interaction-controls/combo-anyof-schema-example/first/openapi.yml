@@ -1,0 +1,80 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sample",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tallies": {
+      "post": {
+        "operationId": "postTally",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "crate"
+                ],
+                "properties": {
+                  "crate": {
+                    "$ref": "#/components/schemas/Crate"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Crate": {
+        "type": "object",
+        "required": [
+          "pen"
+        ],
+        "properties": {
+          "pen": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Hutch"
+              },
+              {
+                "$ref": "#/components/schemas/Cage"
+              }
+            ]
+          }
+        }
+      },
+      "Hutch": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Cage": {
+        "type": "object",
+        "required": [
+          "width"
+        ],
+        "properties": {
+          "width": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

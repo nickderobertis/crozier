@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sample",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tallies": {
+      "post": {
+        "operationId": "postTally",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Puppy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Kennel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Puppy": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Kennel"
+          },
+          {
+            "type": "object",
+            "required": [
+              "size"
+            ],
+            "properties": {
+              "note": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "example": {
+          "name": "Max",
+          "note": "messy",
+          "size": 9
+        }
+      }
+    }
+  }
+}
