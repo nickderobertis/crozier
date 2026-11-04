@@ -32,12 +32,12 @@ source records and evidence directories.
 
 ## Final document measurement
 
-[`documents.tsv`](documents.tsv) records all 146 source hashes. Its columns are
-`document`, `sha256`, `source`, `root_causes`, `status`, `corpus_row`, and `note`.
+[`documents.tsv`](documents.tsv) records all 146 source hashes; its header
+names the fields of each document record.
 The planner's land-now amendments allow `differs` and `registration-incomplete`
 only with a corresponding [`residuals.tsv`](residuals.tsv) record; the latter
 means the `python_enums` comparison matches but the literals overlay is missing.
-`residuals.tsv` has columns `sha256`, `file`, `root_cause`, `area`, and `note`.
+The residual record’s header names its fields.
 A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
 note; they are repair work, not undecided triage verdicts.
@@ -57,6 +57,46 @@ simplification clippy requested in `name_refusals`; the nine focused SDK
 journeys passed again after that simplification. No later edit changes generator
 behavior. Prior area reports describe their own repair-node measurements;
 `documents.tsv` is the present status of each real document.
+
+## Coverage measurement provenance
+
+The golden-only measurement first ran all 319 tests at `29df35b9c`: 317
+passed, and AMRC and OpenIAP found departure-ledger pin drift. After the
+existing ledger writer regenerated those pins, the two failed tests were
+measured again at `2e6bdfd88` and passed. Their exports join the 317 successful
+exports from the full run. The generator's `src/`, templates and assets trees
+are identical across these commits, and SHA-256 checks of both instrumented
+executables match before and after the scoped completion. The ledger header
+names the last, source-equivalent measurement commit. Both instrumented golden
+runs held the host measurement lock. The earlier hand-written reach run
+finished before that lock requirement was delivered. The later retirement of
+`thermostat-nullable-member` moved its unchanged source and certified tree into
+the probe inventory and reran its union and probe gates and hand-written reach.
+The closed-empty-object request-property site now names `base_type_ref`, the
+inline-property path the registered witness actually executes, rather than the
+component-field builder. Its reach was rejoined from the same 319 exports.
+The census snapshot was regenerated after the Hashicorp registration-name fix:
+it includes all 319 registered sources (31 original and 288 corpus sources).
+The earlier 318-source snapshot omitted that witness and is superseded. The
+feature search-verdict prose was derived with the existing `region_rows` helper
+(36 exhausted, 74 search-incomplete); the scenario index rows for the two
+retired feature fixtures and the retained nullable-union probes were derived
+through the existing source, settings, catalog and TSV helpers.
+
+Including the Hashicorp witness also superseded the sole cover of
+`harbor-nullable-inline-object`. Its unchanged source and certified tree moved
+into the probe inventory and keep both union-mode comparisons. Under the
+planner’s scoped-regeneration approval, the existing reach-ledger reader and
+serialization dropped only that cover’s contribution: the other 116 measured
+rows retain identical sources, sites and measurements. The arm headline and
+feature aggregates were then regenerated from the remaining evidence.
+The remaining reach-ranking rows, blind-spot arm counts and scenario summary
+were also regenerated through their existing readers. The enum-name
+compatibility annotation preserves the source line count and changes no
+generation behavior. The census scalar mirror now follows string datetime
+overrides; its Rust-body fingerprints were regenerated after review,
+and a new complete corpus census produces identical rows over the same 319
+sources.
 
 ## Newly admitted documents
 
