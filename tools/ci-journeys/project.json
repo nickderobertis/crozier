@@ -42,9 +42,6 @@
       ]
     },
     "test": {
-      "metadata": {
-        "description": "llmlint: ignore[new_command_or_client_gets_its_own_project] This observation-only dispatch explicitly forbids restructuring CI or test suites and requires ci/ci-journeys checks; the timing CLI extends the existing gate driver boundary. llmlint: ignore[expensive_tests_stay_behind_their_own_edge] The gate now imports timing calculations, so this input is a real dependency of existing gate journeys; removing it would cache stale results. Project isolation is outside the authorized no-restructuring scope."
-      },
       "executor": "nx:run-commands",
       "options": {
         "commands": [
@@ -60,7 +57,6 @@
         "{workspaceRoot}/.github/workflows/release.yml",
         "{workspaceRoot}/tools/ci/tests/support/release.rs",
         "{workspaceRoot}/tools/ci/gate.mjs",
-        "{workspaceRoot}/tools/ci/gate-timing.mjs",
         "{workspaceRoot}/tools/ci/ci-tier.mjs",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/nx.json",
@@ -70,8 +66,12 @@
         "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*",
         "{workspaceRoot}/src/yaml.rs",
         "{workspaceRoot}/.github/macos-policy.mjs",
-        "{workspaceRoot}/.github/require-ci-results.mjs"
+        "{workspaceRoot}/.github/require-ci-results.mjs",
+        "^production"
       ]
     }
-  }
+  },
+  "implicitDependencies": [
+    "gate-timing"
+  ]
 }

@@ -29,7 +29,8 @@
 // commit here, a missing or failing Nx.
 //
 // Quiet on success: the tier and the selected projects (and any promoted ones
-// left to their own legs), then one completion line. Nx's own output goes to a
+// left to their own legs), each task's existing duration/status, then one
+// completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
 import { taskTimings } from "./gate-timing.mjs";
 import { execFileSync, spawnSync } from "node:child_process";
