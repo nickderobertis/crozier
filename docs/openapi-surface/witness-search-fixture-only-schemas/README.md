@@ -609,3 +609,34 @@ What became of every target this search left open. `none-registrable` means no d
 | `schema-example-outside-enum` | `none-registrable` | search cannot finish: quota-bounded: 900 code-search results past the pages read ([queries](code-search.tsv)); manager's screening bound: 54 admissible declarers the instrumented run gave no reading for, each named in [`arm-unread.tsv`](arm-unread.tsv) (25 registered or APIs.guru in the base's run: 11 timed out, 14 refused by crozier; 29 code-search and Sourcegraph: 29 refused by crozier) |
 | `type-single` | `none-registrable` | search cannot finish: quota-bounded: 900 code-search results past the pages read ([queries](code-search.tsv)); manager's screening bound: 2171 admissible declarers the instrumented run gave no reading for, each named in [`arm-unread.tsv`](arm-unread.tsv) (781 registered or APIs.guru in the base's run: 277 timed out, 504 refused by crozier; 1390 code-search and Sourcegraph: 1387 refused by crozier, 3 not probed); refused by the corpus rules: 2 APIs.guru declarers the base's run gave no reading for, whose own licence grants nothing |
 | `anyof-array-variant-inline-enum-item` | `none-registrable` | search cannot finish: quota-bounded: 98192 code-search results past the pages read ([queries](code-search.tsv)); manager's screening bound: 1 admissible declarer the instrumented run gave no reading for, each named in [`arm-unread.tsv`](arm-unread.tsv) (1 code-search: 1 refused by crozier) |
+
+## Handed-off document retry (2026-11-04)
+
+At base `c94bb1c1a`, the object-model census re-read all seven documents
+listed under [Newly admitted documents](../../fern-measurements/handed-off/README.md#newly-admitted-documents)
+and every `registered` row of [documents.tsv](../../fern-measurements/handed-off/documents.tsv).
+Those populations are the same seven documents. Each committed source digest
+was verified against the hand-off record before evaluating the conjunctions.
+No document declares any target below, so none can execute its complete
+interaction. These are declaration negatives, not instrumented measurements
+or fresh certified-pair comparisons. No new witness is admitted by this retry.
+The earlier outstanding candidates remain outstanding; this retry does not
+change a `search-incomplete` verdict into `exhausted`.
+
+| key | conjunction | retry outcome |
+|---|---|---|
+| `combo-annotated-ref-property-example` | `schema.properties>schema.allOf:annotated-ref&schema.example` | `search-incomplete`: all seven additional documents are non-declarers |
+| `combo-anyof-beside-properties` | `schema.anyOf&schema.properties:non-empty` | `search-incomplete`: all seven additional documents are non-declarers |
+| `combo-oneof-beside-properties` | `schema.oneOf&schema.properties:non-empty` | `search-incomplete`: all seven additional documents are non-declarers |
+
+Each cell below is the census site count for the column’s complete conjunction.
+
+| document | SHA-256 | `combo-annotated-ref-property-example` | `combo-anyof-beside-properties` | `combo-oneof-beside-properties` |
+|---|---|---:|---:|---:|
+| `APIs-guru/openapi-directory:APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743` | 0 | 0 | 0 |
+| `ourofoundation/wrappers:nixtla/timegpt/timegpt-openapi.json@79688dd65e7fb2fb670ad30b01b5db5208c1d928` | `9165e7b94aa026f4924cc6bd8bc627719680fc028af864e0c2649168ded7705b` | 0 | 0 | 0 |
+| `Grafikart/filemanager-element:openapi.yml@af6fc5f6be961b14b2b2a218ddadac1fe6bbeb46` | `e36a74ce6e86cf994ab1dbc54e4103b8d500590c160a54f61b749345462f2d28` | 0 | 0 | 0 |
+| `arawa/workspace:openapi.json@926f6093e68261c94f4dcd536b0c4451f2013ee8` | `0c8259f6f991dbd2985005b14731e7df52d59496a17249394fefcbaa2ef52689` | 0 | 0 | 0 |
+| `clencyc/MozillaFestivalBackend:openapi.yaml@e70f0150f414d216743311be79d005d900ab81f1` | `b2264b38f17b99bd722b94f94029916705be39cd6359b1b341bc8696f29e6092` | 0 | 0 | 0 |
+| `hashicorp/terraform-plugin-codegen-openapi:internal/cmd/testdata/edgecase/openapi_spec.yml@55b2a49774f094d0d8aff834bce5eabe9e8a7345` | `1f6aea4c5e340b482e6441711f83780f2a6026a4755452530094d160747d2427` | 0 | 0 | 0 |
+| `membrane/api-gateway:core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml@c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | `8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89` | 0 | 0 | 0 |
