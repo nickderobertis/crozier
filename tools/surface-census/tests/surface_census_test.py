@@ -22214,14 +22214,14 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         evidence = directory / "comparisons" / f"{sha}.txt"
         assert evidence.is_file(), f"{sha}: missing comparison record"
         text = evidence.read_text(encoding="utf-8")
-        assert f"sha256: {sha}\n" in text, f"{sha}: comparison hash disagrees"
+        assert re.search(rf"^sha256: {sha}$", text, re.MULTILINE), f"{sha}: comparison hash disagrees"
         expected = (
             "byte-matches"
             if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}
             else status
         )
-        assert f"result: {expected}\n" in text, f"{sha}: comparison result disagrees"
-        assert "command: " in text, f"{sha}: missing comparison command"
+        assert re.search(rf"^result: {re.escape(expected)}$", text, re.MULTILINE), f"{sha}: comparison result disagrees"
+        assert re.search(r"^command: \S.*$", text, re.MULTILINE), f"{sha}: missing comparison command"
         assert "differing files:\n" in text, f"{sha}: missing differing-file list"
         differing = {
             line.removeprefix("- ")
@@ -22408,7 +22408,7 @@ class HandedOffReconciliationTests(unittest.TestCase):
         )
         reconcile_handed_off(self.root)
         evidence.write_text(
-            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\ncertified cache document sha256: {sha}\n",
             encoding="utf-8",
         )
         with self.assertRaisesRegex(AssertionError, "hash disagrees"):
