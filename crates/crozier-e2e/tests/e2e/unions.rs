@@ -1,6 +1,7 @@
 //! The union shapes the hand-written union fixtures prove, driven through the
 //! real binary: each fixture's complete certified tree in both enum modes, the
-//! two union extensions under both spellings and with conflicting values, and
+//! a retired parameter/reference diagnostic, the two union extensions under
+//! both spellings and with conflicting values, and
 //! the refusals beside the shapes that now generate.
 
 use std::path::{Path, PathBuf};
@@ -46,9 +47,9 @@ const PARAMETER_DIAGNOSTIC_DIR: &str =
 
 const MANIFEST: &str = ".crozier-overlay.json";
 
-/// Every literals overlay the comparisons read, as the inventory of compared
-/// goldens records it: its repository-relative path and the file in it no
-/// comparison reads (its manifest).
+/// Every retained diagnostic base and literals overlay the comparisons read,
+/// as the compared-goldens inventory records it: its repository-relative path
+/// and any file no comparison reads (an overlay manifest).
 pub(super) fn compared() -> Vec<(String, Vec<String>)> {
     [
         (format!("{DIAGNOSTIC_DIR}/fern-expected"), Vec::new()),
@@ -218,6 +219,7 @@ fn tree_failures(
 
 /// The retired parameter/reference fallback retains its complete certified tree
 /// after HSE supplies the registered interaction witness.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This retained diagnostic uses the existing crozier-e2e golden-comparison binary and its shared e2eReads edge. Splitting that family into generator-only graph edges affects all golden journeys, beyond this schema-proof change; the drafted follow-up "Give generator replay diagnostics a narrower Nx dependency edge" owns that refactor. The complete-tree comparison remains on the existing required edge.
 #[test]
 fn retired_parameter_reference_matches_complete_golden() {
     let root = repo_root().join(PARAMETER_DIAGNOSTIC_DIR);
