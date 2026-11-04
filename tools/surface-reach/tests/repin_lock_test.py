@@ -12,7 +12,6 @@ one.
 
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import subprocess
@@ -56,10 +55,9 @@ def small_inputs(root: Path) -> None:
     fixture.mkdir(parents=True)
     document = "openapi: 3.0.3\ninfo: {title: Lock fixture, version: '1'}\npaths: {}\n"
     (fixture / "openapi.yml").write_text(document, encoding="utf-8")
-    metadata = json.loads((root / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
     (fixture / "evidence.toml").write_text(
-        f'fern_cli_version = "{metadata["cliVersion"]}"\n'
-        f'fern_python_sdk_version = "{metadata["generatorVersion"]}"\n'
+        'fern_cli_version = "0.0.0"\n'
+        'fern_python_sdk_version = "0.0.0"\n'
         f'digest = "{"0" * 64}"\n'
         'audiences = ["public"]\n[[covers]]\nkey = "type"\n'
         'arm = "src/lib.rs::lock_target"\nverdict = "config-gated"\n'
