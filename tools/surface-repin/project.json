@@ -19,6 +19,7 @@
       "parallelism": false,
       "inputs": [
         "default",
+        "{workspaceRoot}/src/**/*.rs",
         "{workspaceRoot}/tools/surface-census/*",
         "{workspaceRoot}/tools/witness-search/*.py",
         "{workspaceRoot}/tools/corpus/*.py",
