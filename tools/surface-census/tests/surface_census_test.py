@@ -22877,18 +22877,19 @@ class WithdrawnWitnessSelectorTests(unittest.TestCase):
             schemas = document["components"]["schemas"]
             union = schemas["Union"]
             targets = [schemas["variant_properties"], union["oneOf"][1]]
-            if name == "optional":
-                for target in targets:
-                    target["required"] = []
-            elif name == "non-string":
-                for target in targets:
-                    target["properties"]["type"]["type"] = "integer"
-            elif name == "duplicate":
-                targets[1]["properties"]["type"]["enum"] = ["first"]
-            elif name == "discriminator":
-                union["discriminator"] = {"propertyName": "type"}
-            elif name in ("undiscriminated", "canonical-undiscriminated"):
-                union[("x-crozier-" if name.startswith("canonical") else "x-fern-") + "discriminated"] = False
+            match name:
+                case "optional":
+                    for target in targets:
+                        target["required"] = []
+                case "non-string":
+                    for target in targets:
+                        target["properties"]["type"]["type"] = "integer"
+                case "duplicate":
+                    targets[1]["properties"]["type"]["enum"] = ["first"]
+                case "discriminator":
+                    union["discriminator"] = {"propertyName": "type"}
+                case "undiscriminated" | "canonical-undiscriminated":
+                    union[("x-crozier-" if name.startswith("canonical") else "x-fern-") + "discriminated"] = False
             controls.append((name, document))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
