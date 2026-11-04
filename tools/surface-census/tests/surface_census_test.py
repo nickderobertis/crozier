@@ -22376,6 +22376,25 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
     def test_committed_handed_off_records_reconcile(self) -> None:
         reconcile_handed_off(REPO)
 
+    def test_readme_outcome_counts_are_the_document_measurement(self) -> None:
+        directory = REPO / "docs/fern-measurements/handed-off"
+        with (directory / "documents.tsv").open(encoding="utf-8", newline="") as stream:
+            documents = [HandedOffDocumentRecord.parse(row) for row in csv.DictReader(stream, delimiter="\t")]
+        counts = Counter(row.status for row in documents)
+        totals = {
+            "registered": counts[HandedOffStatus.REGISTERED],
+            "decided": counts[HandedOffStatus.REFUSED] + counts[HandedOffStatus.INADMISSIBLE],
+            "listed residuals": counts[HandedOffStatus.DIFFERS] + counts[HandedOffStatus.INCOMPLETE],
+            "could-not-check": counts[HandedOffStatus.COULD_NOT_CHECK] + counts[HandedOffStatus.NOT_COMPARED],
+        }
+        self.assertEqual(sum(totals.values()), len(documents))
+        readme = (directory / "README.md").read_text(encoding="utf-8")
+        self.assertIn(f"records all {len(documents)} source hashes", readme)
+        for label, count in totals.items():
+            self.assertIn(f"**{count} {label}**", readme)
+        self.assertIn(f"{counts[HandedOffStatus.DIFFERS]} `differs`", readme)
+        self.assertIn(f"{counts[HandedOffStatus.INCOMPLETE]} `registration-incomplete`", readme)
+
     def test_removing_a_committed_cause_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)

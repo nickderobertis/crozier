@@ -78,7 +78,7 @@ docs/fern-measurements/bodies-responses/multipart-request-name-literals/fern-exp
 docs/fern-measurements/bodies-responses/multipart-request-name-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-request-name-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	reference.md	39	request-alias-reference-parameters
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	reference.md	36	request-alias-reference-parameters
 docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -630,7 +630,7 @@ docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-exp
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/fern-expected	reference.md	39	request-alias-reference-parameters
+docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/fern-expected	reference.md	36	request-alias-reference-parameters
 docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/reference-body-param-doc/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2098,7 +2098,7 @@ docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected	src/
 docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/superseded-fixtures/request-alias/fern-expected	reference.md	39	request-alias-reference-parameters
+docs/fern-measurements/superseded-fixtures/request-alias/fern-expected	reference.md	36	request-alias-reference-parameters
 docs/fern-measurements/superseded-fixtures/request-alias/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/request-alias/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/superseded-fixtures/request-alias/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -4599,10 +4599,11 @@ tests/fixtures/amrc-acs-directory/expected	reference.md	1286	schema-rejected-nam
 tests/fixtures/amrc-acs-directory/expected	reference.md	1346	schema-rejected-name-example
 tests/fixtures/amrc-acs-directory/expected	reference.md	1406	schema-rejected-name-example
 tests/fixtures/amrc-acs-directory/expected	reference.md	1407	schema-rejected-name-example
-tests/fixtures/amrc-acs-directory/expected	reference.md	1483	schema-rejected-name-example
-tests/fixtures/amrc-acs-directory/expected	reference.md	1484	schema-rejected-name-example
-tests/fixtures/amrc-acs-directory/expected	reference.md	1552	schema-rejected-name-example
-tests/fixtures/amrc-acs-directory/expected	reference.md	1553	schema-rejected-name-example
+tests/fixtures/amrc-acs-directory/expected	reference.md	1437	request-alias-reference-parameters
+tests/fixtures/amrc-acs-directory/expected	reference.md	1491	schema-rejected-name-example
+tests/fixtures/amrc-acs-directory/expected	reference.md	1492	schema-rejected-name-example
+tests/fixtures/amrc-acs-directory/expected	reference.md	1560	schema-rejected-name-example
+tests/fixtures/amrc-acs-directory/expected	reference.md	1561	schema-rejected-name-example
 tests/fixtures/amrc-acs-directory/expected	src/fern/client.py	372	schema-rejected-name-example
 tests/fixtures/amrc-acs-directory/expected	src/fern/client.py	404	schema-rejected-name-example
 tests/fixtures/amrc-acs-directory/expected	src/fern/client.py	436	schema-rejected-name-example
@@ -9784,7 +9785,8 @@ tests/fixtures/openfoodfacts-taxonomy-editor/expected	src/fern/core/client_wrapp
 tests/fixtures/openfoodfacts-taxonomy-editor/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/openfoodfacts-taxonomy-editor/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/openfoodfacts-taxonomy-editor/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/openiap-opencore/expected	reference.md	187	request-alias-reference-parameters
+tests/fixtures/openiap-opencore/expected	reference.md	184	request-alias-reference-parameters
+tests/fixtures/openiap-opencore/expected	reference.md	469	request-alias-reference-parameters
 tests/fixtures/openiap-opencore/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/openiap-opencore/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/openiap-opencore/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
