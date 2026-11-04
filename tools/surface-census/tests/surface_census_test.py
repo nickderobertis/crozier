@@ -22105,6 +22105,18 @@ class HandedOffHash:
 
 
 @dataclass(frozen=True)
+class HandedOffCorpusReference:
+    number: int
+    name: str
+
+    @classmethod
+    def parse(cls, value: str) -> HandedOffCorpusReference:
+        match = re.fullmatch(r"([1-9][0-9]*) \(([A-Za-z0-9][A-Za-z0-9._-]*)\)", value)
+        assert match, f"invalid corpus reference: {value}"
+        return cls(int(match[1]), match[2])
+
+
+@dataclass(frozen=True)
 class HandedOffDocumentRecord:
     document: str
     sha256: HandedOffHash
@@ -22210,6 +22222,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         )
         assert f"result: {expected}\n" in text, f"{sha}: comparison result disagrees"
         assert "command: " in text, f"{sha}: missing comparison command"
+        assert "differing files:\n" in text, f"{sha}: missing differing-file list"
         differing = {
             line.removeprefix("- ")
             for line in text.split("differing files:\n", 1)[-1].split("\n\n", 1)[0].splitlines()
@@ -22222,16 +22235,37 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         match status:
             case HandedOffStatus.REGISTERED:
                 assert row.corpus_row not in {"", "-"}, f"{sha}: missing corpus row"
+                corpus = HandedOffCorpusReference.parse(row.corpus_row)
+                fixtures = root / "tests/fixtures"
+                manifest = (fixtures / "CORPUS.md").read_text(encoding="utf-8")
+                assert f"| {corpus.number} | `{corpus.name}` |" in manifest, f"{sha}: unknown corpus row"
+                sources = (fixtures / "corpus-sources.tsv").read_text(encoding="utf-8")
+                assert any(
+                    cells[0] == corpus.name and cells[-1] == sha
+                    for line in sources.splitlines()
+                    if not line.startswith("#") and len(cells := line.split("\t")) == 4
+                ), f"{sha}: corpus source hash disagrees"
                 registered.add(f"- `{row.document}` | `{sha}` | {row.corpus_row}")
             case HandedOffStatus.INADMISSIBLE:
                 assert "rule:" in row.note and '"' in row.note, f"{sha}: missing inadmissibility evidence"
             case HandedOffStatus.NOT_COMPARED:
                 assert "valid-OpenAPI" in row.note and "empty" in row.note, f"{sha}: unexplained comparison exception"
             case HandedOffStatus.REFUSED:
-                assert "default refusal: " in text and "fern-strict refusal: " in text, f"{sha}: missing refusal modes"
-                assert "certified exit: " in text and "certified diagnostic: " in text, (
-                    f"{sha}: missing certified refusal"
+                default = re.search(r"^default refusal: ([a-z][a-z0-9-]+) \(exit ([1-9][0-9]*)\)$", text, re.MULTILINE)
+                strict = re.search(
+                    r"^fern-strict refusal: ([a-z][a-z0-9-]+) \(exit ([1-9][0-9]*)\)$", text, re.MULTILINE
                 )
+                assert default and strict, f"{sha}: missing nonzero refusal modes"
+                assert default[1] == strict[1], f"{sha}: refusal classes disagree"
+                with (root / "docs/fern-refusals/classes.tsv").open(encoding="utf-8", newline="") as stream:
+                    decided = {
+                        record["class"]
+                        for record in csv.DictReader(stream, delimiter="\t")
+                        if record["status"] != "unevaluated"
+                    }
+                assert default[1] in decided, f"{sha}: undecided refusal class"
+                assert re.search(r"^certified exit: [0-9]+$", text, re.MULTILINE), f"{sha}: missing certified exit"
+                assert re.search(r"^certified diagnostic: .+", text, re.MULTILINE), f"{sha}: missing certified refusal"
             case HandedOffStatus.DIFFERS:
                 assert sha in residuals, f"{sha}: differing document has no residual record"
             case HandedOffStatus.INCOMPLETE:
@@ -22268,6 +22302,12 @@ class HandedOffReconciliationTests(unittest.TestCase):
         self.root = pathlib.Path(self.temp.name)
         self.directory = self.root / "docs/fern-measurements/handed-off"
         self.directory.mkdir(parents=True)
+        fixtures = self.root / "tests/fixtures"
+        fixtures.mkdir(parents=True)
+        (fixtures / "CORPUS.md").write_text("| 5050 | `sample` | github-raw | immutable |\n", encoding="utf-8")
+        (fixtures / "corpus-sources.tsv").write_text(
+            "sample\tsource.yml\timmutable\t" + "a" * 64 + "\n", encoding="utf-8"
+        )
         for index, source in enumerate(HANDED_OFF_SOURCES):
             path = self.root / source
             path.parent.mkdir(parents=True)
@@ -22350,12 +22390,14 @@ class HandedOffReconciliationTests(unittest.TestCase):
         evidence = self.directory / "comparisons" / f"{sha}.txt"
         evidence.parent.mkdir()
         evidence.write_text(
-            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
         )
         with self.assertRaisesRegex(AssertionError, "result disagrees"):
             reconcile_handed_off(self.root)
         evidence.write_text(
-            f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+            f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
         )
         with self.assertRaisesRegex(AssertionError, "Newly admitted documents"):
             reconcile_handed_off(self.root)
@@ -22366,10 +22408,78 @@ class HandedOffReconciliationTests(unittest.TestCase):
         )
         reconcile_handed_off(self.root)
         evidence.write_text(
-            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
         )
         with self.assertRaisesRegex(AssertionError, "hash disagrees"):
             reconcile_handed_off(self.root)
+
+        valid = f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n"
+        evidence.write_text(valid, encoding="utf-8")
+        for label, path, wrong in (
+            ("unknown corpus row", self.root / "tests/fixtures/CORPUS.md", ""),
+            (
+                "corpus source hash",
+                self.root / "tests/fixtures/corpus-sources.tsv",
+                "sample\tsource.yml\timmutable\t" + "b" * 64 + "\n",
+            ),
+            ("missing differing-file list", evidence, valid.replace("differing files:\n", "")),
+        ):
+            with self.subTest(drift=label):
+                original = path.read_text(encoding="utf-8")
+                path.write_text(wrong, encoding="utf-8")
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+                path.write_text(original, encoding="utf-8")
+        reconcile_handed_off(self.root)
+
+    def test_refusals_require_matching_nonzero_modes_and_a_decided_class(self) -> None:
+        sha = "a" * 64
+        document = HandedOffDocumentRecord(
+            document="publisher/api:openapi.yml@" + "b" * 40,
+            sha256=HandedOffHash(sha),
+            source=HANDED_OFF_SOURCES[0],
+            root_causes="cause-0",
+            status=HandedOffStatus.REFUSED,
+            corpus_row="-",
+            note="Recorded refusal",
+        )
+        row = {key: str(value) for key, value in asdict(document).items()}
+        row["sha256"] = str(document.sha256)
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
+        registry = self.root / "docs/fern-refusals/classes.tsv"
+        registry.parent.mkdir(parents=True)
+        shutil.copyfile(REPO / "docs/fern-refusals/classes.tsv", registry)
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        valid = (
+            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\n"
+            "differing files:\n\ndefault refusal: enum-value-unnameable (exit 1)\n"
+            "fern-strict refusal: enum-value-unnameable (exit 1)\n"
+            "certified exit: 1\ncertified diagnostic: enum-name-unsuitable\n"
+        )
+        evidence.write_text(valid, encoding="utf-8")
+        reconcile_handed_off(self.root)
+        for label, wrong in (
+            (
+                "nonzero refusal modes",
+                valid.replace(
+                    "default refusal: enum-value-unnameable (exit 1)", "default refusal: enum-value-unnameable (exit 0)"
+                ),
+            ),
+            (
+                "refusal classes disagree",
+                valid.replace("fern-strict refusal: enum-value-unnameable", "fern-strict refusal: type-name-collision"),
+            ),
+            ("undecided refusal class", valid.replace("enum-value-unnameable", "unrecorded-class")),
+            ("missing certified refusal", valid.replace("certified diagnostic: enum-name-unsuitable\n", "")),
+        ):
+            with self.subTest(drift=label):
+                evidence.write_text(wrong, encoding="utf-8")
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+        evidence.write_text(valid, encoding="utf-8")
+        reconcile_handed_off(self.root)
 
 
 class HandedOffRepositoryRecordTests(unittest.TestCase):

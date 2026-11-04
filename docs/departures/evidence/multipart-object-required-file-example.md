@@ -61,7 +61,7 @@ changes. The line ledger is recorded from `src/parity.rs`, never hand-edited.
 ## A multipart body with no JSON-encoded part
 
 The fault does not depend on the object part. The independently authored
-[`poster-upload`](../../openapi-surface/handwritten/poster-upload/openapi.yml)
+[`poster-upload`](../../fern-measurements/superseded-fixtures/poster-upload/openapi.yml)
 source posts a plain multipart body requiring `title`, `wall` and the binary
 `image`; its complete unedited certified tree uses the same pair, layout,
 names and `python_enums`, with the literals overlay under
